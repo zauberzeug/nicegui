@@ -1,15 +1,14 @@
-from __future__ import annotations
-
 import asyncio
 import inspect
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 from urllib.parse import urlparse
 
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
-from .. import background_tasks
+from .. import background_tasks, json
 from ..context import context
 from ..element import Element
 from ..elements.label import Label
@@ -107,13 +106,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         except Exception as e:
             self.clear()  # NOTE: clear partial content created before the exception
             self._render_error(e)
+            self.client.handle_exception(e)
             return True
 
         self._handle_scrolling(match, behavior='instant')
         if asyncio.iscoroutine(result):
             async def background_task():
                 with self:
-                    await result
+                    try:
+                        await result
+                    except Exception as e:
+                        self.client.handle_exception(e)
+                        raise
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
             self._active_tasks.add(task)
@@ -212,7 +216,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _scroll_to_fragment(self, fragment: str, *, behavior: str) -> None:
         run_javascript(f'''
             requestAnimationFrame(() => {{
-                document.querySelector('#{fragment}, a[name="{fragment}"]')?.scrollIntoView({{ behavior: "{behavior}" }});
+                const frag = {json.dumps(fragment)};
+                const el = document.getElementById(frag) || document.querySelector("a[name=" + JSON.stringify(frag) + "]");
+                el?.scrollIntoView({{ behavior: "{behavior}" }});
             }});
         ''')
 

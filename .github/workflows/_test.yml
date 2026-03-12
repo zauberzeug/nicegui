@@ -32,11 +32,10 @@ jobs:
         run: uv python install ${{ matrix.python }}
       - name: Install dependencies
         run: uv sync
-      - uses: nanasess/setup-chromedriver@v2.3.0
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
         run: uv run pytest
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         if: matrix.scope == 'pytest' && failure()
         with:
           name: screenshots-${{ matrix.python }}

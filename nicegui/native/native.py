@@ -1,14 +1,17 @@
 # pylint: disable=C0116
+from __future__ import annotations
+
 import inspect
 import warnings
+from collections.abc import Callable
 from multiprocessing import Queue
-from typing import Any, Callable, Optional
+from typing import Any
 
 from .. import run
 from ..logging import log
 
-method_queue: Optional[Queue] = None
-response_queue: Optional[Queue] = None
+method_queue: Queue | None = None
+response_queue: Queue | None = None
 
 
 def create_queues() -> None:
@@ -127,7 +130,7 @@ try:
             allow_multiple: bool = False,
             save_filename: str = '',
             file_types: tuple[str, ...] = (),
-        ) -> Optional[tuple[str, ...]]:
+        ) -> tuple[str, ...] | None:
             return await self._request(
                 dialog_type=dialog_type,
                 directory=directory,

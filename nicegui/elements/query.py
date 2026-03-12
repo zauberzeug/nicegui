@@ -1,5 +1,4 @@
 import weakref
-from typing import Optional
 
 from typing_extensions import Self
 
@@ -47,10 +46,10 @@ class Query:
         return element
 
     def classes(self,
-                add: Optional[str] = None, *,
-                remove: Optional[str] = None,
-                toggle: Optional[str] = None,
-                replace: Optional[str] = None,
+                add: str | None = None, *,
+                remove: str | None = None,
+                toggle: str | None = None,
+                replace: str | None = None,
                 ) -> Self:
         """Apply, remove, toggle, or replace HTML classes.
 
@@ -74,7 +73,7 @@ class Query:
         element.props['classes'] = classes
         return self
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
+    def style(self, add: str | None = None, *, remove: str | None = None, replace: str | None = None) \
             -> Self:
         """Apply, remove, or replace CSS definitions.
 
@@ -96,7 +95,7 @@ class Query:
             element.run_method('add_style', element.props['style'])
         return self
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def props(self, add: str | None = None, *, remove: str | None = None) -> Self:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.

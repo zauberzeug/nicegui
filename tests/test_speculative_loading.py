@@ -123,7 +123,7 @@ def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog)
 
 
 def add_speculation_rule(url: str, *, kind: str = 'prerender') -> None:
-    rules = {kind: [{'source': 'list', 'urls': [url], 'eagerness': 'eager'}]}
+    rules = {kind: [{'source': 'list', 'urls': [url], 'eagerness': 'immediate'}]}
     script = '<script type="speculationrules">' + json.dumps(rules) + '</script>'
     ui.add_head_html(script)
 

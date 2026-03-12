@@ -19,12 +19,17 @@ export default {
   props: {
     _autocomplete: Array,
     value: String,
+    id: String,
   },
   data() {
     return {
       inputValue: this.value,
       emitting: true,
     };
+  },
+  beforeUnmount() {
+    const element = mounted_app.elements[this.$props.id.slice(1)];
+    if (element) element.props.value = this.inputValue;
   },
   watch: {
     value(newValue) {
@@ -41,7 +46,7 @@ export default {
     shadowText() {
       if (!this.inputValue) return "";
       const matchingOption = this._autocomplete.find((option) =>
-        option.toLowerCase().startsWith(this.inputValue.toLowerCase())
+        option.toLowerCase().startsWith(this.inputValue.toLowerCase()),
       );
       return matchingOption ? matchingOption.slice(this.inputValue.length) : "";
     },

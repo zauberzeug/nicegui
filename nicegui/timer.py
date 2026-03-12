@@ -1,8 +1,8 @@
 import asyncio
 import time
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from contextlib import AbstractContextManager, nullcontext
-from typing import Any, Callable, Optional
+from typing import Any
 
 from . import background_tasks, core
 from .awaitable_response import AwaitableResponse
@@ -34,11 +34,11 @@ class Timer:
         """
         super().__init__()
         self.interval = interval
-        self.callback: Optional[Callable[..., Any]] = callback
+        self.callback: Callable[..., Any] | None = callback
         self.active = active
         self._is_canceled = False
         self._immediate = immediate
-        self._current_invocation: Optional[asyncio.Task] = None
+        self._current_invocation: asyncio.Task | None = None
 
         coroutine = self._run_once if once else self._run_in_loop
         if core.is_script_mode_preflight():

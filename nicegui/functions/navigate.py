@@ -1,7 +1,8 @@
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 from urllib.parse import urlparse
 
-from .. import background_tasks
+from .. import background_tasks, json
 from ..client import Client
 from ..context import context
 from ..element import Element
@@ -44,7 +45,7 @@ class Navigate:
         """
         run_javascript('history.go(0)')
 
-    def to(self, target: Union[Callable[..., Any], str, Element], new_tab: bool = False) -> None:
+    def to(self, target: Callable[..., Any] | str | Element, new_tab: bool = False) -> None:
         """ui.navigate.to (formerly ui.open)
 
         Can be used to programmatically open a different page or URL.
@@ -89,7 +90,7 @@ class History:
 
         :param url: relative or absolute URL
         """
-        run_javascript(f'history.pushState({{}}, "", "{url}");')
+        run_javascript(f'history.pushState({{}}, "", {json.dumps(url)});')
 
     def replace(self, url: str) -> None:
         """Replace the current URL in the browser history.
@@ -100,7 +101,7 @@ class History:
 
         :param url: relative or absolute URL
         """
-        run_javascript(f'history.replaceState({{}}, "", "{url}");')
+        run_javascript(f'history.replaceState({{}}, "", {json.dumps(url)});')
 
 
 navigate = Navigate()

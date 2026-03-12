@@ -46,6 +46,10 @@ def async_execution():
         We suggest to activate the [pytest-asyncio auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode)
         by either creating a `pytest.ini` file in your project root
         or adding the activation directly to your `pyproject.toml`.
+
+        **Note:** Do not set `asyncio_default_fixture_loop_scope` to anything other than `function` (the default).
+        Using `module`, `session`, or other scopes can interfere with NiceGUI's background tasks
+        and cause issues like binding updates not being reflected in tests.
     ''').classes('bold-links arrow-links')
 
     with ui.row(wrap=False).classes('gap-4 items-center'):

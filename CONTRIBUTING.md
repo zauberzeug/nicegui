@@ -20,7 +20,7 @@ It's designed to be simple, powerful, and fun to use.
 
 ### Tech Stack
 
-- **Python 3.9+** - Core language
+- **Python 3.10+** - Core language
 - **FastAPI/Starlette** - Web framework
 - **Vue 3** - Frontend framework
 - **Quasar** - UI component framework
@@ -73,12 +73,12 @@ The simplest way to setup a fully functioning development environment is to star
 1. Ensure you have VS Code, Docker and the Dev Containers extension installed.
 2. Open the project root directory in VS Code.
 3. Press `F1`, type `Dev Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
-4. Wait until image has been build.
+4. Wait until the image has been built. (On first launch, watch the terminal for a GitHub authentication prompt.)
 5. Happy coding.
 
 ### Locally
 
-To set up a local development environment for NiceGUI, you'll need to have Python 3.9+ and [uv](https://docs.astral.sh/uv/) installed.
+To set up a local development environment for NiceGUI, you'll need to have Python 3.10+ and [uv](https://docs.astral.sh/uv/) installed.
 
 You can install uv using:
 
@@ -100,7 +100,7 @@ There is no special Python version required for development.
 At Zauberzeug we mainly use 3.12.
 This means we sometimes miss some incompatibilities with older versions.
 But these will hopefully be uncovered by the GitHub Actions (see below).
-Also we use the 3.9 Docker container described below to verify compatibility in cases of uncertainty.
+Also we use the 3.10 Docker container described below to verify compatibility in cases of uncertainty.
 
 ### Plain Docker
 
@@ -114,7 +114,7 @@ By default, the development server listens to http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
-We use Python 3.9 as a base to ensure compatibility (see `development.dockerfile`).
+We use Python 3.10 as a base to ensure compatibility (see `development.dockerfile`).
 
 To view the log output, use the command
 
@@ -169,6 +169,10 @@ ui.button('Click me') \
 - Ensure proper use of async (no blocking operations)
 - **Never use `asyncio.create_task()`**, because the garbage collector might remove unfinished tasks.
   Always use `background_tasks.create()` which takes better care of task lifecycle management.
+- **Use `with contextlib.suppress(...)`** from the standard library instead of try-except-pass blocks
+  for cleaner, more declarative exception handling.
+- **Catch `ImportError` for optional dependencies** instead of `ModuleNotFoundError`
+  to handle both missing and broken installations.
 
 ### Workflow Guidelines
 
@@ -211,9 +215,9 @@ uv run pre-commit run --all-files
 > [!TIP]
 > The command may fail with
 >
-> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.9'
+> > RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.10'
 >
-> You will need to install Python 3.9 and make sure it is available in your `PATH`.
+> You will need to install Python 3.10 and make sure it is available in your `PATH`.
 
 These checks will also run automatically before every commit:
 
@@ -281,8 +285,7 @@ Understanding these patterns will help you write code that fits naturally into t
 
 ### Dataclasses
 
-- Use `@dataclass(**KWONLY_SLOTS)` for Python 3.9 compatibility (instead of `@dataclass(kw_only=True, slots=True)`)
-- This pattern is defined in `nicegui/dataclasses.py` and handles version differences automatically
+- Prefer `@dataclass(kw_only=True, slots=True)` for dataclasses
 
 ## Running tests
 
@@ -397,6 +400,24 @@ To get started:
 
 When submitting a PR, please make sure that the code follows the existing coding style and that all tests are passing.
 If you're adding a new feature, please include tests that cover the new functionality.
+
+### AI Co-Authorship
+
+If you used an AI coding agent to help write your PR, please check for co-authorship attribution in your commit messages.
+This helps maintainers understand the origin of changes and smooths the review process.
+
+Some agents add a `Co-authored-by` trailer automatically, but others do not.
+Some even silently **remove** existing co-authorship lines when amending or rebasing commits.
+If you find it missing, please include the appropriate line for your agent in your commit message (pick one):
+
+```
+Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+Co-authored-by: opencode <noreply@opencode.ai>
+```
+
+> [!TIP]
+> PRs are welcome to add co-authorship lines for other coding agents not yet listed here.
 
 ## YouTube
 

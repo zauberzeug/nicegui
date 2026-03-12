@@ -1,6 +1,7 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from ..context import context
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
@@ -9,12 +10,13 @@ DrawerSides = Literal['left', 'right']
 
 class Drawer(ValueElement, default_classes='nicegui-drawer'):
 
+    @resolve_defaults
     def __init__(self,
                  side: DrawerSides, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Drawer
@@ -82,11 +84,12 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
 
 class LeftDrawer(Drawer):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Left drawer
@@ -119,11 +122,12 @@ class LeftDrawer(Drawer):
 
 class RightDrawer(Drawer):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Right drawer

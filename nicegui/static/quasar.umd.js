@@ -14476,16 +14476,16 @@
       controlRef: ref(null)
       /**
            * user supplied additionals:
-      
+
            * innerValue - computed
            * floatingLabel - computed
            * inputRef - computed
-      
+
            * fieldClass - computed
            * hasShadow - computed
-      
+
            * controlEvents - Object with fn(e)
-      
+
            * getControl - fn
            * getInnerAppend - fn
            * getControlChild - fn

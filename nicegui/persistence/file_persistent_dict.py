@@ -1,17 +1,15 @@
 from pathlib import Path
-from typing import Optional
 
 import aiofiles
 
-from nicegui import background_tasks, core, json
-from nicegui.logging import log
-
+from .. import background_tasks, core, json
+from ..logging import log
 from .persistent_dict import PersistentDict
 
 
 class FilePersistentDict(PersistentDict):
 
-    def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
+    def __init__(self, filepath: Path, encoding: str | None = None, *, indent: bool = False) -> None:
         self.filepath = filepath
         self.encoding = encoding
         self.indent = indent

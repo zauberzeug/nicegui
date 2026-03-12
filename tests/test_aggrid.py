@@ -1,12 +1,15 @@
+import inspect
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pandas as pd
 import polars as pl
 import pytest
+from fastapi.responses import FileResponse
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import ui
+from nicegui import Event, app, ui
 from nicegui.testing import Screen
 
 
@@ -209,6 +212,34 @@ def test_api_method_after_creation(screen: Screen):
     assert screen.find_by_class('ag-row-selected')
 
 
+def test_set_module_source(screen: Screen):
+    get_aggrid: Event[[]] = Event()
+
+    @app.get('/custom-aggrid.js')
+    def custom_aggrid():
+        get_aggrid.emit()
+        return FileResponse(Path(inspect.getfile(ui.aggrid)).parent / 'dist' / 'index.js')
+
+    ui.aggrid.set_module_source('/custom-aggrid.js')
+
+    @ui.page('/')
+    async def page():
+        get_aggrid.subscribe(lambda: ui.notify('Load custom bundle'))
+
+        aggrid = ui.aggrid({}, modules=['ClientSideRowModelModule', 'ColumnAutoSizeModule', 'EventApiModule'])
+
+        await ui.context.client.connected()
+        for module in ['ClipboardModule', 'ColumnAutoSizeModule', 'EventApiModule']:
+            is_registered = await ui.run_javascript(f'getElement({aggrid.id}).api.isModuleRegistered("{module}")')
+            ui.label(f'{module}: {is_registered}')
+
+    screen.open('/')
+    screen.should_contain('Load custom bundle')
+    screen.should_contain('ClipboardModule: False')
+    screen.should_contain('ColumnAutoSizeModule: True')
+    screen.should_contain('EventApiModule: True')
+
+
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
 def test_problematic_datatypes(screen: Screen, df_type: str):
     @ui.page('/')
@@ -262,19 +293,25 @@ def test_run_row_method(screen: Screen):
     screen.should_contain('42')
 
 
-def test_run_method_with_function(screen: Screen):
+def test_run_grid_method_xss(screen: Screen):
     @ui.page('/')
     def page():
-        grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+        })
+        ui.button('XSS 1', on_click=lambda: grid.run_grid_method('console.error("X" + "SS")'))
+        ui.button('XSS 2', on_click=lambda: grid.run_grid_method('x", console.error("X" + "SS"), "y'))
 
-        async def print_row(index: int) -> None:
-            ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
-
-        ui.button('Print Row 0', on_click=lambda: print_row(0))
-
+    screen.allowed_js_errors.append('Method "console.error("X" + "SS")" not found.')
+    screen.allowed_js_errors.append('Method "x", console.error("X" + "SS"), "y" not found.')
     screen.open('/')
-    screen.click('Print Row 0')
-    screen.should_contain("Row 0: {'name': 'Alice'}")
+    screen.click('XSS 1')
+    screen.click('XSS 2')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
+    screen.assert_py_logger('ERROR', 'Method "console.error("X" + "SS")" not found.')
+    screen.assert_py_logger('ERROR', 'Method "x", console.error("X" + "SS"), "y" not found.')
 
 
 def test_get_client_data(screen: Screen):
@@ -310,3 +347,12 @@ def test_get_client_data(screen: Screen):
     screen.click('Get Sorted Data')
     screen.wait(0.5)
     assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
+
+
+def test_version_matches_js(screen: Screen):
+    @ui.page('/')
+    async def page():
+        ui.label(await ui.run_javascript('return (await import("nicegui-aggrid")).AllCommunityModule.version'))
+
+    screen.open('/')
+    screen.should_contain(ui.aggrid.VERSION)

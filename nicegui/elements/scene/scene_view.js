@@ -9,29 +9,29 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    this.scene = getElement(this.scene_id).scene;
-    if (this.show_stats) {
+    this.scene = getElement(this.sceneId).scene;
+    if (this.showStats) {
       this.stats = new Stats();
       this.stats.domElement.style.position = "absolute";
       this.stats.domElement.style.top = "0px";
       this.$el.appendChild(this.stats.domElement);
     }
 
-    if (this.camera_type === "perspective") {
+    if (this.cameraType === "perspective") {
       this.camera = new THREE.PerspectiveCamera(
-        this.camera_params.fov,
+        this.cameraParams.fov,
         this.width / this.height,
-        this.camera_params.near,
-        this.camera_params.far
+        this.cameraParams.near,
+        this.cameraParams.far,
       );
     } else {
       this.camera = new THREE.OrthographicCamera(
-        (-this.camera_params.size / 2) * (this.width / this.height),
-        (this.camera_params.size / 2) * (this.width / this.height),
-        this.camera_params.size / 2,
-        -this.camera_params.size / 2,
-        this.camera_params.near,
-        this.camera_params.far
+        (-this.cameraParams.size / 2) * (this.width / this.height),
+        (this.cameraParams.size / 2) * (this.width / this.height),
+        this.cameraParams.size / 2,
+        -this.cameraParams.size / 2,
+        this.cameraParams.near,
+        this.cameraParams.far,
       );
     }
     this.look_at = new THREE.Vector3(0, 0, 0);
@@ -65,7 +65,7 @@ export default {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.renderer.render(this.scene, this.camera);
-      if (this.show_stats) this.stats.update();
+      if (this.showStats) this.stats.update();
     };
     render();
 
@@ -136,7 +136,7 @@ export default {
             look_at_y === null ? this.look_at.y : look_at_y,
             look_at_z === null ? this.look_at.z : look_at_z,
           ],
-          duration * 1000
+          duration * 1000,
         )
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
@@ -150,9 +150,9 @@ export default {
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
       this.camera.aspect = clientWidth / clientHeight;
-      if (this.camera_type === "orthographic") {
-        this.camera.left = (-this.camera.aspect * this.camera_params.size) / 2;
-        this.camera.right = (this.camera.aspect * this.camera_params.size) / 2;
+      if (this.cameraType === "orthographic") {
+        this.camera.left = (-this.camera.aspect * this.cameraParams.size) / 2;
+        this.camera.right = (this.camera.aspect * this.cameraParams.size) / 2;
       }
       this.camera.updateProjectionMatrix();
     },
@@ -161,10 +161,10 @@ export default {
   props: {
     width: Number,
     height: Number,
-    camera_type: String,
-    camera_params: Object,
-    scene_id: String,
+    cameraType: String,
+    cameraParams: Object,
+    sceneId: String,
     fps: Number,
-    show_stats: Boolean,
+    showStats: Boolean,
   },
 };

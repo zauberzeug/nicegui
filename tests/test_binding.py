@@ -1,6 +1,5 @@
 import copy
 import weakref
-from typing import Optional
 
 import pytest
 from selenium.webdriver.common.keys import Keys
@@ -11,7 +10,7 @@ from nicegui.testing import Screen, User
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
     class Model:
-        selection: Optional[tuple[int, int]] = None
+        selection: tuple[int, int] | None = None
     data = Model()
     options = {
         (2, 1): 'option A',

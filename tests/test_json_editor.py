@@ -29,3 +29,26 @@ def test_json_editor_validation(screen: Screen):
 
     screen.open('/')
     screen.should_contain('must be string')
+
+
+def test_json_editor_validate_uuid(screen: Screen):
+    @ui.page('/')
+    def page():
+        editor = ui.json_editor({
+            'content': {'json': {'id': '00000000-0000-0000-0000-000000000000'}},
+        }, schema={
+            'type': 'object',
+            'properties': {
+                'id': {'type': 'string', 'format': 'uuid'},
+            },
+            'required': ['id'],
+        })
+        ui.button('Replace ID', on_click=lambda: editor.properties['content']['json'].update(id='invalid-id'))
+
+    screen.open('/')
+    screen.should_contain('00000000-0000-0000-0000-000000000000')
+    screen.should_not_contain('must match format')
+
+    screen.click('Replace ID')
+    screen.should_contain('invalid-id')
+    screen.should_contain('must match format')

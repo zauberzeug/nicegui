@@ -150,6 +150,8 @@ def css_layers():
     This way, you can define your own classes and use them in your UI elements.
     In the example below, we define a custom class `blue-box` and apply it to two labels.
     Note that the style tag is of type `text/tailwindcss` and not `text/css`.
+
+    Also note: This requires the default Tailwind CSS engine (not UnoCSS).
 ''')
 def tailwind_layers():
     ui.add_head_html('''
@@ -163,8 +165,39 @@ def tailwind_layers():
     ''')
 
     with ui.row():
-        ui.label('Hello').classes('blue-box')
-        ui.label('world').classes('blue-box')
+        # ui.label('Hello').classes('blue-box')
+        # ui.label('world').classes('blue-box')
+        # END OF DEMO
+        ui.label('Hello').classes('bg-blue-500 p-12 text-center shadow-lg rounded-lg text-white')
+        ui.label('world').classes('bg-blue-500 p-12 text-center shadow-lg rounded-lg text-white')
+
+
+@doc.demo('UnoCSS engine', '''
+    As an alternative to using the [Tailwind CSS Play CDN engine](https://v3.tailwindcss.com/docs/installation/play-cdn),
+    you can also use the [UnoCSS engine](https://unocss.dev/) to let Tailwind CSS classes take effect.
+
+    Pass one of the following presets to `ui.run(unocss=...)`:
+
+    - "mini": [UnoCSS Mini preset](https://unocss.dev/presets/mini)
+    - "wind3": [UnoCSS Wind3 preset](https://unocss.dev/presets/wind3)
+    - "wind4": [UnoCSS Wind4 preset](https://unocss.dev/presets/wind4)
+
+    UnoCSS is a smaller library and more performant, especially on small pages.
+    In Lighthouse Desktop, load time for this page went from 1.1s down to 0.7s.
+
+    However, full compatibility with Tailwind CSS is not guaranteed.
+    For example, Tailwind CSS Layers (see above) do not work with UnoCSS.
+
+    *Added in NiceGUI 3.7.0*
+''')
+def unocss_demo():
+    label = ui.label('This label becomes red dynamically.')
+
+    ui.button('Become red', on_click=lambda: ui.run_javascript(f'''
+        {label.html_id}.classList.add("text-red-500")
+    '''))
+
+    # ui.run(unocss='mini')
 
 
 doc.intro(element_filter_documentation)

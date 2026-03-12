@@ -1,5 +1,4 @@
-from typing import Optional
-
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
 from .menu import Menu as menu
@@ -12,11 +11,12 @@ from .time import Time as time
 class TimeInput(LabelElement, ValueElement, DisableableElement):
     LOOPBACK = False
 
+    @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
-                 value: str = '',
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 label: str | None = DEFAULT_PROP | None, *,
+                 placeholder: str | None = DEFAULT_PROP | None,
+                 value: str = DEFAULT_PROPS['model-value'] | '',
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         """Time Input
 
@@ -31,8 +31,7 @@ class TimeInput(LabelElement, ValueElement, DisableableElement):
         """
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
         self._props['for'] = self.html_id
-        if placeholder is not None:
-            self._props['placeholder'] = placeholder
+        self._props.set_optional('placeholder', placeholder)
 
         with self.add_slot('append'):
             with button(icon='schedule', color=None).props('flat round').classes('cursor-pointer') as self.button:

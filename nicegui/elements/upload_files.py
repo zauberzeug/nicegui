@@ -1,11 +1,9 @@
-from __future__ import annotations
-
 import weakref
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from io import BytesIO
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import aiofiles
 import anyio
@@ -151,7 +149,8 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
         if temp_file:
             await temp_file.close()
 
+    filename = PurePosixPath(upload.filename or '').name  # strips all path components
     if temp_file:
-        return LargeFileUpload(upload.filename or '', upload.content_type or '', Path(str(temp_file.name)))
+        return LargeFileUpload(filename, upload.content_type or '', Path(str(temp_file.name)))
     else:
-        return SmallFileUpload(upload.filename or '', upload.content_type or '', buffer.getvalue())
+        return SmallFileUpload(filename, upload.content_type or '', buffer.getvalue())

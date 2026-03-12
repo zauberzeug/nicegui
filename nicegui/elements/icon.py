@@ -1,16 +1,16 @@
-from typing import Optional
-
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.color_elements import TextColorElement
 from .mixins.name_element import NameElement
 
 
 class Icon(NameElement, TextColorElement):
 
+    @resolve_defaults
     def __init__(self,
                  name: str,
                  *,
-                 size: Optional[str] = None,
-                 color: Optional[str] = None,
+                 size: str | None = DEFAULT_PROP | None,
+                 color: str | None = DEFAULT_PROP | None,
                  ) -> None:
         """Icon
 
@@ -24,5 +24,4 @@ class Icon(NameElement, TextColorElement):
         """
         super().__init__(tag='q-icon', name=name, text_color=color)
 
-        if size:
-            self._props['size'] = size
+        self._props.set_optional('size', size)

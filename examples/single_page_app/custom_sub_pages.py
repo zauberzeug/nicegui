@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from nicegui import app, ui
 from nicegui.page_arguments import RouteMatch

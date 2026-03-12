@@ -1,8 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>{{ title }}</title>
     <meta name="viewport" content="{{ viewport }}" />
+    <meta
+      id="nicegui-color-scheme"
+      name="color-scheme"
+      content="{{ ({'True': 'dark', 'False': 'light'}).get(dark, 'normal') }}"
+    />
     <link href="{{ favicon_url }}" rel="shortcut icon" />
     <style>
       @layer theme, base, quasar, nicegui, components, utilities, overrides, quasar_importants;
@@ -26,7 +31,8 @@
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
         .nicegui-dialog-open,
-        .nicegui-select-popup-open {
+        .nicegui-select-popup-open,
+        .nicegui-table-fullscreen {
           scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
         }
       }
@@ -46,6 +52,36 @@
     {% if tailwind %}
     <style type="text/tailwindcss">
       @custom-variant dark (&:where(body.body--dark, body.body--dark *));
+    </style>
+    {% endif %}
+    <!-- prevent Prettier from removing this line -->
+    {% if unocss %}
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/preset-{{unocss}}.global.js"></script>
+    <script>
+      window.__unocss = {
+        presets: [
+          () => window.__unocss_runtime.presets.preset{{unocss.title()}}({
+            dark: {
+              light: 'body.body--light',
+              dark: 'body.body--dark',
+            },
+          }),
+        ],
+        runtime: { ready: () => false },
+        outputToCssLayers: {
+          cssLayerName: (layer) => {
+            if (layer === 'default') return 'utilities';
+            if (layer === 'preflights') return 'base';
+            return undefined;
+          },
+        },
+      };
+    </script>
+    <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/unocss/core.global.js"></script>
+    <style>
+      #app.nicegui-unocss-loading {
+        visibility: hidden;
+      }
     </style>
     {% endif %}
   </head>
@@ -68,7 +104,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <div id="app"></div>
+    <div id="app" {% if unocss %}class="nicegui-unocss-loading" {% endif %}></div>
     <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
       <span>{{ translations.trying_to_reconnect }}</span>
@@ -78,6 +114,14 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
+      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
+      import DOMPurify from "dompurify";
+      if (typeof Element.prototype.setHTML !== "function") {
+        Element.prototype.setHTML = function (html) {
+          this.innerHTML = DOMPurify.sanitize(html);
+        };
+      }
+
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",
         prefix: "{{ prefix | safe }}",
@@ -94,6 +138,14 @@
       {{ vue_scripts | safe }}
 
       app.mount("#app");
+
+      // Scroll to fragment after Vue mounts (browser's native scroll may have failed if element wasn't ready)
+      if (window.location.hash) {
+        Vue.nextTick(() => {
+          const fragment = window.location.hash.substring(1);
+          (document.getElementById(fragment) || document.querySelector(`a[name="${fragment}"]`))?.scrollIntoView();
+        });
+      }
     </script>
   </body>
 </html>

@@ -170,3 +170,37 @@ def test_theme_url(screen: Screen, test_route: str):  # pylint: disable=redefine
 
     screen.open('/')
     assert screen.find_by_tag('rect').value_of_css_property('fill') == 'rgb(254, 248, 239)'
+
+
+def test_click(screen: Screen):
+    events = []
+
+    @ui.page('/')
+    def page():
+        ui.echart({
+            'legend': {
+                'triggerEvent': True,
+            },
+            'radar': {
+                'triggerEvent': True,
+                'indicator': [{'name': name, 'max': 100} for name in ['A', 'B', 'C']],
+            },
+            'series': [{
+                'type': 'radar',
+                'data': [{'name': 'Test', 'value': [77.0, 50.0, 90.0]}],
+                'animation': False,
+            }],
+        }, on_point_click=lambda e: events.append(('point', e)), on_click=lambda e: events.append(('component', e))) \
+            .style('width: 200px; height: 200px')
+
+    screen.open('/')
+    echart = screen.find_by_tag('canvas')
+    for x, y in [(20, 20), (0, 70), (60, 30)]:
+        screen.click_at_position(echart, x, y)
+    screen.wait(0.5)
+    assert [(source, event.component_type, event.name) for source, event in events] == [
+        ('point', 'series', 'Test'),
+        ('component', 'series', 'Test'),
+        ('component', 'legend', None),
+        ('component', 'radar', 'C'),
+    ]

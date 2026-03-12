@@ -119,3 +119,12 @@ def test_add_layer(screen: Screen):
     with screen.implicitly_wait(0.5):
         assert len(screen.find_all_by_tag('rect')) == 1
         assert len(screen.find_all_by_tag('circle')) == 1
+
+
+def test_xss_sanitization(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.interactive_image(size=(100, 100), content='<rect width="100" height="100" onclick="alert(\'XSS\')" />')
+
+    screen.open('/')
+    assert screen.find_all_by_tag('rect')[0].get_attribute('onclick') is None

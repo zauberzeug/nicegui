@@ -28,7 +28,7 @@ instances = {
     'dfw': 2,  # Dallas, Texas (US)
     'mia': 0,   # Miami, Florida (US)
     'sea': 0,  # Seattle, Washington (US)
-    'fra': 4,  # Frankfurt, Germany
+    'fra': 6,  # Frankfurt, Germany
     'ams': 2,  # Amsterdam, Netherlands
     'cdg': 3,  # Paris, France
     'lhr': 2,  # London, England (UK)

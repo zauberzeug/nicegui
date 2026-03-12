@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -18,8 +19,8 @@ class TextElement(Element):
     def bind_text_to(self,
                      target_object: Any,
                      target_name: str = 'text',
-                     forward: Optional[Callable[[Any], Any]] = None, *,
-                     strict: Optional[bool] = None,
+                     forward: Callable[[Any], Any] | None = None, *,
+                     strict: bool | None = None,
                      ) -> Self:
         """Bind the text of this element to the target object's target_name property.
 
@@ -38,8 +39,8 @@ class TextElement(Element):
     def bind_text_from(self,
                        target_object: Any,
                        target_name: str = 'text',
-                       backward: Optional[Callable[[Any], Any]] = None, *,
-                       strict: Optional[bool] = None,
+                       backward: Callable[[Any], Any] | None = None, *,
+                       strict: bool | None = None,
                        ) -> Self:
         """Bind the text of this element from the target object's target_name property.
 
@@ -58,9 +59,9 @@ class TextElement(Element):
     def bind_text(self,
                   target_object: Any,
                   target_name: str = 'text', *,
-                  forward: Optional[Callable[[Any], Any]] = None,
-                  backward: Optional[Callable[[Any], Any]] = None,
-                  strict: Optional[bool] = None,
+                  forward: Callable[[Any], Any] | None = None,
+                  backward: Callable[[Any], Any] | None = None,
+                  strict: bool | None = None,
                   ) -> Self:
         """Bind the text of this element to the target object's target_name property.
 

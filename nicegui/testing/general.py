@@ -5,7 +5,7 @@ from copy import copy
 
 from starlette.routing import Route
 
-from .. import app, binding, core, event, run, ui
+from .. import app, binding, core, dependencies, event, run, ui
 from ..client import Client
 
 
@@ -22,6 +22,7 @@ def prepare_simulation() -> None:
         reconnect_timeout=3.0,
         message_history_length=1000,
         tailwind=True,
+        unocss=None,
         prod_js=True,
         show_welcome_message=False,
     )
@@ -49,8 +50,11 @@ def nicegui_reset_globals():
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
 
+    dependencies.importmap_overrides.clear()
     Client.instances.clear()
     Client.page_routes.clear()
+    Client.shared_head_html = ''
+    Client.shared_body_html = ''
     app.reset()
     binding.reset()
 
@@ -72,7 +76,9 @@ def nicegui_reset_globals():
 
         for func in Client.page_routes:
             if not func.__module__.startswith('tests.'):
-                sys.modules.pop(func.__module__, None)
+                parts = func.__module__.split('.')
+                for i in range(len(parts)):
+                    sys.modules.pop('.'.join(parts[:i+1]), None)  # remove the module and all its parents
 
 
 def _find_all_subclasses(cls: type) -> list[type]:

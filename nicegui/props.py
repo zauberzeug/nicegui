@@ -3,7 +3,7 @@ import re
 import weakref
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from . import helpers
 from .observables import ObservableDict
@@ -61,7 +61,22 @@ class Props(ObservableDict, Generic[T]):
         super().__init__(*args, on_change=self._update, **kwargs)
         self._element = weakref.ref(element)
         self._warnings: dict[str, str] = {}
+        self._renames: dict[str, str] = {}
         self._suspend_count = 0
+
+    def set_optional(self, key: str, value: Any) -> None:
+        """Set a prop value or remove it if None is provided."""
+        if value is None:
+            self.pop(key, None)
+        else:
+            self[key] = value
+
+    def set_bool(self, key: str, value: Any) -> None:
+        """Set a boolean prop value or remove it if falsy value is provided."""
+        if value:
+            self[key] = value
+        else:
+            self.pop(key, None)
 
     @contextmanager
     def suspend_updates(self) -> Iterator[None]:
@@ -83,6 +98,13 @@ class Props(ObservableDict, Generic[T]):
     def _update(self) -> None:
         if self._suspend_count > 0:
             return
+
+        for name, message in self._warnings.items():
+            self._check_warning(name, message)
+
+        for name, rename in self._renames.items():
+            self._check_rename(name, rename)
+
         element = self._element()
         if element is not None:
             element.update()
@@ -90,10 +112,28 @@ class Props(ObservableDict, Generic[T]):
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""
         self._warnings[prop] = message
+        self._check_warning(prop, message)
+
+    def add_rename(self, prop: str, replacement: str) -> None:
+        """Add a rename warning for a prop."""
+        self._renames[prop] = replacement
+        self._check_rename(prop, replacement)
+
+    def _check_warning(self, name: str, message: str) -> None:
+        if name in self:
+            with self.suspend_updates():
+                del self[name]
+            helpers.warn_once(message)
+
+    def _check_rename(self, name: str, rename: str) -> None:
+        if name in self:
+            with self.suspend_updates():
+                self[rename] = self[name]
+            helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
 
     def __call__(self,
-                 add: Optional[str] = None, *,
-                 remove: Optional[str] = None) -> T:
+                 add: str | None = None, *,
+                 remove: str | None = None) -> T:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -111,14 +151,10 @@ class Props(ObservableDict, Generic[T]):
         for key, value in self.parse(add).items():
             if self.get(key) != value:
                 self[key] = value
-        for name, message in self._warnings.items():
-            if name in self:
-                del self[name]
-                helpers.warn_once(message)
         return element
 
     @staticmethod
-    def parse(text: Optional[str]) -> dict[str, Any]:
+    def parse(text: str | None) -> dict[str, Any]:
         """Parse a string of props into a dictionary."""
         if not text:
             return {}

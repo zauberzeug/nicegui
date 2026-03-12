@@ -142,8 +142,11 @@ def show_and_hide_columns():
 @doc.demo('Table with buttons', '''
     You can add buttons to the table cells using a named slot "body-cell-[name]".
     In this example, we add a button to the "action" column.
-    When the button is clicked, a custom "notify" event is emitted with the row as argument.
-    The "notify" event is handled by a lambda function, which emits a notification with the name of the row.
+    When the button is clicked, a notification is shown with the name of the row.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current row and column.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def table_with_buttons():
     columns = [
@@ -155,17 +158,23 @@ def table_with_buttons():
         {'name': 'Bob'},
     ]
     table = ui.table(columns=columns, rows=rows)
-    table.add_slot('body-cell-action', '''
-        <q-td :props="props">
-            <q-btn label="Notify" @click="() => $parent.$emit('notify', props.row)" flat />
-        </q-td>
-    ''')
-    table.on('notify', lambda e: ui.notify(f'Hi {e.args["name"]}!'))
+    with table.add_slot('body-cell-action'):
+        with table.cell('action'):
+            ui.button('Notify').props('flat').on(
+                'click',
+                js_handler='() => emit(props.row.name)',
+                handler=lambda e: ui.notify(e.args),
+            )
 
 
 @doc.demo('Table with drop down selection', '''
     Here is an example of how to use a drop down selection in a table.
-    After emitting a "rename" event from the scoped slot, the `rename` function updates the table rows.
+    After emitting a "update:model-value" event from the `ui.select` element,
+    the `rename` function updates the table rows.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current row and column.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def table_with_drop_down_selection():
     from nicegui import events
@@ -182,22 +191,20 @@ def table_with_drop_down_selection():
     name_options = ['Alice', 'Bob', 'Carol']
 
     def rename(e: events.GenericEventArguments) -> None:
-        for row in rows:
-            if row['id'] == e.args['id']:
-                row['name'] = e.args['name']
+        row_id, name_index = e.args
+        for row in table.rows:
+            if row['id'] == row_id:
+                row['name'] = name_options[name_index]
         ui.notify(f'Table.rows is now: {table.rows}')
 
     table = ui.table(columns=columns, rows=rows).classes('w-full')
-    table.add_slot('body-cell-name', r'''
-        <q-td key="name" :props="props">
-            <q-select
-                v-model="props.row.name"
-                :options="''' + str(name_options) + r'''"
-                @update:model-value="() => $parent.$emit('rename', props.row)"
-            />
-        </q-td>
-    ''')
-    table.on('rename', rename)
+    with table.add_slot('body-cell-name'):
+        with table.cell('name'):
+            ui.select(name_options).props(':model-value=props.row.name').on(
+                'update:model-value',
+                js_handler='(e) => emit(props.row.id, e.value)',
+                handler=rename,
+            )
 
 
 @doc.demo('Table from Pandas DataFrame', '''
@@ -384,6 +391,10 @@ def computed_fields():
     We use the `body-cell-age` slot to insert the `q-badge` into the `age` column.
     The ":color" attribute of the `q-badge` is set to "red" if the age is under 21, otherwise it is set to "green".
     The colon in front of the "color" attribute indicates that the value is a JavaScript expression.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current cell value.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def conditional_formatting():
     columns = [
@@ -396,18 +407,21 @@ def conditional_formatting():
         {'name': 'Carol', 'age': 42},
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
-    table.add_slot('body-cell-age', '''
-        <q-td key="age" :props="props">
-            <q-badge :color="props.value < 21 ? 'red' : 'green'">
-                {{ props.value }}
-            </q-badge>
-        </q-td>
-    ''')
+    with table.add_slot('body-cell-age'):
+        with table.cell('age'):
+            ui.badge().props('''
+                :color="props.value < 21 ? 'red' : 'green'"
+                :label="props.value"
+            ''')
 
 
 @doc.demo('Table cells with links', '''
     Here is a demo of how to insert links into table cells.
     We use the `body-cell-link` slot to insert an `<a>` tag into the `link` column.
+
+    *Since version 3.5.0:*
+    UI elements in scoped slots can access the `props` object to get the current cell value.
+    Previously, the `props` object was only available in Vue templates.
 ''')
 def table_cells_with_links():
     columns = [
@@ -415,16 +429,14 @@ def table_cells_with_links():
         {'name': 'link', 'label': 'Link', 'field': 'link', 'align': 'left'},
     ]
     rows = [
+        {'name': 'Apple', 'link': 'https://apple.com'},
         {'name': 'Google', 'link': 'https://google.com'},
-        {'name': 'Facebook', 'link': 'https://facebook.com'},
-        {'name': 'Twitter', 'link': 'https://twitter.com'},
+        {'name': 'Microsoft', 'link': 'https://microsoft.com'},
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name')
-    table.add_slot('body-cell-link', '''
-        <q-td :props="props">
-            <a :href="props.value">{{ props.value }}</a>
-        </q-td>
-    ''')
+    with table.add_slot('body-cell-link'):
+        with table.cell('link'):
+            ui.link().props(':href=props.value :innerHTML=props.value')
 
 
 @doc.demo('Table cells with HTML', '''
@@ -454,17 +466,37 @@ def table_with_masonry_like_grid():
         {'name': 'Carol', 'age': 42},
     ]
     table = ui.table(columns=columns, rows=rows, row_key='name').props('grid')
-    table.add_slot('item', r'''
-        <q-card flat bordered :props="props" class="m-1">
-            <q-card-section class="text-center">
-                <strong>{{ props.row.name }}</strong>
-            </q-card-section>
-            <q-separator />
-            <q-card-section class="text-center">
-                <div>{{ props.row.age }} years</div>
-            </q-card-section>
-        </q-card>
-    ''')
+    with table.add_slot('item'):
+        with ui.card().tight().props('flat bordered').classes('m-1 items-stretch text-center'):
+            with ui.card_section():
+                ui.label().props(':innerHTML=props.row.name').classes('font-bold')
+            ui.separator()
+            with ui.card_section():
+                ui.label().props(''' :innerHTML="props.row.age + ' years'" ''')
+
+
+@doc.demo('Slot templates with NiceGUI elements', '''
+    Instead of using Vue templates, you can use NiceGUI elements in slot templates.
+    The following demo shows how to use the `props` object in JavaScript to customize buttons and badges.
+    The `js_handler` is used to forward the current value of the cell to the Python `handler`.
+
+    *Added in version 3.5.0*
+''')
+def slot_templates_with_nicegui_elements():
+    table = ui.table(rows=[{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}])
+    with table.add_slot('body-cell-name'):
+        with table.cell('name'):
+            ui.button().props(':label=props.value flat').on(
+                'click',
+                js_handler='() => emit(props.value)',
+                handler=lambda e: ui.notify(f'Clicked {e.args}'),
+            )
+    with table.add_slot('body-cell-age'):
+        with table.cell('age'):
+            ui.badge().props('''
+                :label=props.value
+                :color="props.value < 21 ? 'red' : 'green'"
+            ''')
 
 
 doc.reference(ui.table)

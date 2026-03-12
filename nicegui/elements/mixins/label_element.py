@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -10,17 +11,16 @@ class LabelElement(Element):
     label = BindableProperty(
         on_change=lambda sender, label: cast(Self, sender)._handle_label_change(label))  # pylint: disable=protected-access
 
-    def __init__(self, *, label: Optional[str], **kwargs: Any) -> None:
+    def __init__(self, *, label: str | None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.label = label
-        if label is not None:
-            self._props['label'] = label
+        self._props.set_optional('label', label)
 
     def bind_label_to(self,
                       target_object: Any,
                       target_name: str = 'label',
-                      forward: Optional[Callable[[Any], Any]] = None, *,
-                      strict: Optional[bool] = None,
+                      forward: Callable[[Any], Any] | None = None, *,
+                      strict: bool | None = None,
                       ) -> Self:
         """Bind the label of this element to the target object's target_name property.
 
@@ -39,8 +39,8 @@ class LabelElement(Element):
     def bind_label_from(self,
                         target_object: Any,
                         target_name: str = 'label',
-                        backward: Optional[Callable[[Any], Any]] = None, *,
-                        strict: Optional[bool] = None,
+                        backward: Callable[[Any], Any] | None = None, *,
+                        strict: bool | None = None,
                         ) -> Self:
         """Bind the label of this element from the target object's target_name property.
 
@@ -59,9 +59,9 @@ class LabelElement(Element):
     def bind_label(self,
                    target_object: Any,
                    target_name: str = 'label', *,
-                   forward: Optional[Callable[[Any], Any]] = None,
-                   backward: Optional[Callable[[Any], Any]] = None,
-                   strict: Optional[bool] = None,
+                   forward: Callable[[Any], Any] | None = None,
+                   backward: Callable[[Any], Any] | None = None,
+                   strict: bool | None = None,
                    ) -> Self:
         """Bind the label of this element to the target object's target_name property.
 
@@ -81,19 +81,16 @@ class LabelElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_label(self, label: Optional[str]) -> None:
+    def set_label(self, label: str | None) -> None:
         """Set the label of this element.
 
         :param label: The new label.
         """
         self.label = label
 
-    def _handle_label_change(self, label: Optional[str]) -> None:
+    def _handle_label_change(self, label: str | None) -> None:
         """Called when the label of this element changes.
 
         :param label: The new label.
         """
-        if label is None:
-            del self._props['label']
-        else:
-            self._props['label'] = label
+        self._props.set_optional('label', label)

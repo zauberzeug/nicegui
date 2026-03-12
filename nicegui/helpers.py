@@ -99,7 +99,7 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def schedule_browser(protocol: str, host: str, port: int) -> tuple[threading.Thread, threading.Event]:
+def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking.
@@ -115,15 +115,15 @@ def schedule_browser(protocol: str, host: str, port: int) -> tuple[threading.Thr
     """
     cancel = threading.Event()
 
-    def in_thread(protocol: str, host: str, port: int) -> None:
+    def in_thread(protocol: str, host: str, port: int, path: str) -> None:
         while not is_port_open(host, port):
             if cancel.is_set():
                 return
             time.sleep(0.1)
-        webbrowser.open(f'{protocol}://{host}:{port}/')
+        webbrowser.open(f'{protocol}://{host}:{port}/{path.lstrip("/")}')
 
     host = host if host != '0.0.0.0' else '127.0.0.1'
-    thread = threading.Thread(target=in_thread, args=(protocol, host, port), daemon=True)
+    thread = threading.Thread(target=in_thread, args=(protocol, host, port, path), daemon=True)
     thread.start()
     return thread, cancel
 

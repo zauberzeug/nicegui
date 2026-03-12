@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -33,8 +34,8 @@ class DisableableElement(Element):
     def bind_enabled_to(self,
                         target_object: Any,
                         target_name: str = 'enabled',
-                        forward: Optional[Callable[[Any], Any]] = None, *,
-                        strict: Optional[bool] = None,
+                        forward: Callable[[Any], Any] | None = None, *,
+                        strict: bool | None = None,
                         ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 
@@ -53,8 +54,8 @@ class DisableableElement(Element):
     def bind_enabled_from(self,
                           target_object: Any,
                           target_name: str = 'enabled',
-                          backward: Optional[Callable[[Any], Any]] = None, *,
-                          strict: Optional[bool] = None,
+                          backward: Callable[[Any], Any] | None = None, *,
+                          strict: bool | None = None,
                           ) -> Self:
         """Bind the enabled state of this element from the target object's target_name property.
 
@@ -73,9 +74,9 @@ class DisableableElement(Element):
     def bind_enabled(self,
                      target_object: Any,
                      target_name: str = 'enabled', *,
-                     forward: Optional[Callable[[Any], Any]] = None,
-                     backward: Optional[Callable[[Any], Any]] = None,
-                     strict: Optional[bool] = None,
+                     forward: Callable[[Any], Any] | None = None,
+                     backward: Callable[[Any], Any] | None = None,
+                     strict: bool | None = None,
                      ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 

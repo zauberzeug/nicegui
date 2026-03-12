@@ -1,3 +1,5 @@
+import weakref
+
 from nicegui import binding, ui
 from nicegui.testing import Screen
 
@@ -172,3 +174,41 @@ def test_on_delete(screen: Screen):
     screen.click('Clear row')
     screen.wait(0.5)
     assert deleted_labels == ['Label C', 'Label B', 'Label A']
+
+
+def test_slot_children_cleared_on_delete(screen: Screen):
+    """Slot children are cleared when parent is deleted and no cyclic references are left behind (issue #5110)."""
+    labels = weakref.WeakSet[ui.label]()
+
+    @ui.page('/')
+    def page():
+        with ui.splitter() as splitter:
+            labels.add(ui.label('Default'))
+            with splitter.before:
+                labels.add(ui.label('Before'))
+            with splitter.after:
+                labels.add(ui.label('After'))
+        ui.button('Delete', on_click=splitter.delete).on_click(lambda: ui.notify('Deleted'))
+
+    screen.open('/')
+    screen.click('Delete')
+    screen.should_contain('Deleted')
+    assert len(labels) == 0, 'all labels should be deleted immediately'
+
+
+def test_event_listeners_cleared_on_delete(screen: Screen):
+    """Event listeners are cleared when element is deleted and no cyclic references are left behind (issue #5110)."""
+    buttons = weakref.WeakSet[ui.button]()
+
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            button = ui.button('Click me')
+            button.on('click', lambda: button.set_text('clicked'))  # cycle: button → listener → lambda → button
+            buttons.add(button)
+        ui.button('Delete', on_click=card.clear).on_click(lambda: ui.notify('Deleted'))
+
+    screen.open('/')
+    screen.click('Delete')
+    screen.should_contain('Deleted')
+    assert len(buttons) == 0, 'all buttons should be deleted immediately'

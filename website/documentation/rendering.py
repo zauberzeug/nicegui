@@ -13,6 +13,7 @@ def render_page(documentation: DocumentationPage) -> None:
     ui.page_title('NiceGUI' if not title else title if title.split()[0] == 'NiceGUI' else f'{title} | NiceGUI')
 
     def render_content():
+        first_demo_seen = False
         section_heading(documentation.subtitle or '', documentation.heading)
         for part in documentation.parts:
             if part.title:
@@ -32,7 +33,8 @@ def render_page(documentation: DocumentationPage) -> None:
             if part.ui:
                 part.ui()
             if part.demo:
-                demo(part.demo.function, lazy=part.demo.lazy, tab=part.demo.tab)
+                demo(part.demo.function, lazy=part.demo.lazy and first_demo_seen, tab=part.demo.tab)
+                first_demo_seen = True
             if part.reference:
                 generate_class_doc(part.reference, part.title)
             if part.link:

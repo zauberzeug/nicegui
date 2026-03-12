@@ -34,6 +34,31 @@ def clickable_points() -> None:
     }, on_point_click=ui.notify)
 
 
+@doc.demo('EChart with clickable components', '''
+    Besides series points, you can register a callback for an event
+    when any component registered with `triggerEvent=True` is clicked.
+
+    Hint: Check if that component is a point by checking `e.component_type == 'series'`
+    to avoid double-processing with `on_point_click`.
+
+    *Added in version 3.5.0*
+''')
+def clickable_components() -> None:
+    ui.echart({
+        'legend': {
+            'triggerEvent': True,
+        },
+        'radar': {
+            'triggerEvent': True,
+            'indicator': [{'name': name, 'max': 100} for name in ['A', 'B', 'C']],
+        },
+        'series': [{
+            'type': 'radar',
+            'data': [{'name': 'Test', 'value': [77.0, 50.0, 90.0]}],
+        }],
+    }, on_click=ui.notify)
+
+
 @doc.demo('EChart with dynamic properties', '''
     Dynamic properties can be passed to chart elements to customize them such as apply an axis label format.
     To make a property dynamic, prefix a colon ":" to the property name.

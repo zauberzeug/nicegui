@@ -5,6 +5,8 @@ __all__ = [
     'add_sass',
     'add_scss',
     'aggrid',
+    'altair',
+    'anywidget',
     'audio',
     'avatar',
     'badge',
@@ -78,6 +80,7 @@ __all__ = [
     'notify',
     'number',
     'on',
+    'on_exception',
     'page',
     'page_scroller',
     'page_sticky',
@@ -138,6 +141,8 @@ __all__ = [
 from .context import context
 from .element import Element as element
 from .elements.aggrid import AgGrid as aggrid
+from .elements.altair import Altair as altair
+from .elements.anywidget import AnyWidget as anywidget
 from .elements.audio import Audio as audio
 from .elements.avatar import Avatar as avatar
 from .elements.badge import Badge as badge
@@ -257,6 +262,7 @@ from .functions.javascript import run_javascript
 from .functions.navigate import navigate
 from .functions.notify import notify
 from .functions.on import on
+from .functions.on_exception import on_exception
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
 from .functions.style import add_css, add_sass, add_scss

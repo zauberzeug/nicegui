@@ -2,10 +2,10 @@ import re
 import runpy
 import threading
 import time
-from collections.abc import Generator
-from contextlib import contextmanager
+from collections.abc import Callable, Generator
+from contextlib import contextmanager, suppress
 from pathlib import Path
-from typing import Any, Callable, Optional, Union, overload
+from typing import Any, overload
 from urllib.parse import urlparse
 
 import pytest
@@ -32,10 +32,10 @@ class Screen:
     SCREENSHOT_DIR = Path('screenshots')
     CATCH_JS_ERRORS = True
 
-    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: Optional[pytest.FixtureRequest] = None) -> None:
+    def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest | None = None) -> None:
         self.selenium = selenium
         self.caplog = caplog
-        self.server_thread: Optional[threading.Thread] = None
+        self.server_thread: threading.Thread | None = None
         self.pytest_request = request
         self.ui_run_kwargs: dict[str, Any] = {'port': self.PORT, 'show': False, 'reload': False}
         self.connected = threading.Event()
@@ -97,11 +97,19 @@ class Screen:
                 assert self.server_thread is not None
                 if not self.server_thread.is_alive():
                     raise RuntimeError('The NiceGUI server has stopped running') from e
+        self._wait_for_socket_idle()
 
     def close(self) -> None:
-        """Close the browser."""
+        """Close the browser tab.
+
+        When the driver is session-scoped, closing the last window would invalidate the session.
+        Instead, we navigate to about:blank to trigger disconnection.
+        """
         if self.is_open:
-            self.selenium.close()
+            if len(self.selenium.window_handles) > 1:
+                self.selenium.close()
+            else:
+                self.selenium.get('about:blank')
 
     def switch_to(self, tab_id: int) -> None:
         """Switch to the tab with the given index, or create it if it does not exist."""
@@ -127,15 +135,18 @@ class Screen:
     def wait_for(self, target: Callable[..., bool]) -> None:
         """Wait until the given condition is met."""
 
-    def wait_for(self, target: Union[str, Callable[..., bool]]) -> None:
+    def wait_for(self, target: str | Callable[..., bool]) -> None:
         """Wait until the page contains the given text or the given condition is met."""
         if isinstance(target, str):
             self.should_contain(target)
         if callable(target):
             deadline = time.time() + self.IMPLICIT_WAIT
             while time.time() < deadline:
-                if target():
-                    return
+                try:
+                    if target():
+                        return
+                except StaleElementReferenceException:
+                    pass  # element became stale, retry
                 self.wait(0.1)
             raise AssertionError('Condition not met')
 
@@ -202,11 +213,9 @@ class Screen:
             # HACK: repeat check after a short delay to avoid timing issue on fast machines
             for _ in range(5):
                 element = self.selenium.find_element(By.XPATH, query)
-                try:
+                with suppress(StaleElementReferenceException):
                     if element.is_displayed():
                         return element
-                except StaleElementReferenceException:
-                    pass
                 self.wait(0.2)
             raise AssertionError(f'Found "{text}" but it is hidden')
         except NoSuchElementException as e:
@@ -250,6 +259,28 @@ class Screen:
         """Wait for the given number of seconds."""
         time.sleep(t)
 
+    def _wait_for_socket_idle(self) -> None:
+        """Wait until no new Socket.IO messages have been received for 100ms."""
+        self.selenium.execute_async_script(f'''
+            const callback = arguments[arguments.length - 1];
+            const deadline = Date.now() + {Screen.IMPLICIT_WAIT * 1000};
+            let lastId = window.nextMessageId || 0;
+            let stableSince = Date.now();
+            const check = () => {{
+                const currentId = window.nextMessageId || 0;
+                if (currentId !== lastId) {{
+                    lastId = currentId;
+                    stableSince = Date.now();
+                }}
+                if (Date.now() - stableSince >= 100 || Date.now() >= deadline) {{
+                    callback();
+                }} else {{
+                    setTimeout(check, 20);
+                }}
+            }};
+            setTimeout(check, 20);
+        ''')
+
     def shot(self, name: str, *, failed: bool) -> None:
         """Take a screenshot and store it in the screenshots directory."""
         self.SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
@@ -259,7 +290,7 @@ class Screen:
         print(f'Storing screenshot to {filename}')
         self.selenium.get_screenshot_as_file(filename)
 
-    def assert_py_logger(self, level: str, message: Union[str, re.Pattern]) -> None:
+    def assert_py_logger(self, level: str, message: str | re.Pattern) -> None:
         """Assert that the Python logger has received a message with the given level and text or regex pattern."""
         try:
             assert self.caplog.records, 'Expected a log message'

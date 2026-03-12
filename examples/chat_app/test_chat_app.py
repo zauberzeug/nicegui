@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 from nicegui import ui
 from nicegui.testing import User

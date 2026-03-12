@@ -1,18 +1,20 @@
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from .page_sticky import PageStickyPositions
 
 
 class PageScroller(Element):
 
+    @resolve_defaults
     def __init__(self,
-                 position: PageStickyPositions = 'bottom-right',
+                 position: PageStickyPositions = DEFAULT_PROP | 'bottom-right',
                  x_offset: float = 0,
                  y_offset: float = 0,
                  *,
-                 expand: bool = False,
-                 scroll_offset: float = 1000,
-                 duration: float = 0.3,
-                 reverse: bool = False,
+                 expand: bool = DEFAULT_PROP | False,
+                 scroll_offset: float = DEFAULT_PROP | 1000,
+                 duration: float = DEFAULT_PROP | 0.3,
+                 reverse: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Page scroller
 
@@ -39,7 +41,5 @@ class PageScroller(Element):
         self._props['offset'] = [x_offset, y_offset]
         self._props['scroll-offset'] = scroll_offset
         self._props['duration'] = duration * 1000
-        if expand:
-            self._props['expand'] = True
-        if reverse:
-            self._props['reverse'] = True
+        self._props.set_bool('expand', expand)
+        self._props.set_bool('reverse', reverse)

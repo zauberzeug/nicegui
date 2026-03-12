@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import asyncio
 import time
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from multiprocessing import Manager
 from queue import Empty, Queue
-from typing import Callable
 
 from nicegui import app, background_tasks, run, ui
 

@@ -1,20 +1,10 @@
 #!/usr/bin/env python3
 import models
-from tortoise import Tortoise
+from tortoise.contrib.fastapi import register_tortoise
 
 from nicegui import app, ui
 
-
-async def init_db() -> None:
-    await Tortoise.init(db_url='sqlite://db.sqlite3', modules={'models': ['models']})
-    await Tortoise.generate_schemas()
-
-
-async def close_db() -> None:
-    await Tortoise.close_connections()
-
-app.on_startup(init_db)
-app.on_shutdown(close_db)
+register_tortoise(app, db_url='sqlite://db.sqlite3', modules={'models': ['models']}, generate_schemas=True)
 
 
 @ui.refreshable

@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
@@ -7,10 +7,10 @@ from .mixins.value_element import ValueElement
 class ChoiceElement(ValueElement):
 
     def __init__(self, *,
-                 tag: Optional[str] = None,
-                 options: Union[list, dict],
+                 tag: str | None = None,
+                 options: list | dict,
                  value: Any,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments] | None = None,
                  ) -> None:
         self.options = options
         self._values: list[str] = []
@@ -38,7 +38,7 @@ class ChoiceElement(ValueElement):
             self._update_options()
         super().update()
 
-    def set_options(self, options: Union[list, dict], *, value: Any = ...) -> None:
+    def set_options(self, options: list | dict, *, value: Any = ...) -> None:
         """Set the options of this choice element.
 
         :param options: The new options.

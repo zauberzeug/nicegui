@@ -10,6 +10,7 @@ from . import (
     section_data_elements,
     section_page_layout,
     section_pages_routing,
+    section_security,
     section_styling_appearance,
     section_testing,
     section_text_elements,
@@ -136,6 +137,9 @@ tiles = [
     (section_testing, '''
         Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
      '''),
+    (section_security, '''
+        Learn about security best practices, common vulnerabilities, and how to write secure NiceGUI applications.
+    '''),
 ]
 
 
@@ -143,7 +147,8 @@ tiles = [
 def create_tiles():
     with ui.row().classes('items-center content-between'):
         ui.label('If you like NiceGUI, go and become a')
-        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>', sanitize=False)
+        ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114"'
+                ' class="border-0 outline-[1px] outline-offset-[-1px] outline-[#d1d9e0] dark:outline-[#3d444d] rounded"></iframe>', sanitize=False)
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}') \
@@ -199,6 +204,8 @@ def map_of_nicegui():
                 - `is_deleted`: whether an element has been deleted
         - elements:
             - [`ui.aggrid`](/documentation/aggrid)
+            - [`ui.altair`](/documentation/altair)
+            - [`ui.anywidget`](/documentation/anywidget)
             - [`ui.audio`](/documentation/audio)
             - [`ui.avatar`](/documentation/avatar)
             - [`ui.badge`](/documentation/badge)
@@ -303,6 +310,7 @@ def map_of_nicegui():
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler
+            - [`ui.on_exception`](/documentation/on_exception): register a handler for in-page exceptions (after the page has been sent to the browser)
             - [`ui.page_title`](/documentation/page_title): change the current page title
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions
             - [`ui.run`](/documentation/run) and `ui.run_with`: run the app (standalone or attached to a FastAPI app)
@@ -317,8 +325,9 @@ def map_of_nicegui():
 
         #### `app`
 
-        App-wide storage, mount points and lifecycle hooks.
+        App-wide colors, storage, mount points and lifecycle hooks.
 
+        - [`app.colors()`](/documentation/colors): set the main color theme for the app
         - [`app.storage`](/documentation/storage):
             - `app.storage.tab`: stored in memory on the server, unique per tab
             - `app.storage.client`: stored in memory on the server, unique per client connected to a page

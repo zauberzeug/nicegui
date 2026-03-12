@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from fastapi import Request
 from starlette.routing import Match, Route
 
-from . import core
+from . import core, json
 from .context import context
 from .elements.sub_pages import SubPages
 from .functions.on import on
@@ -78,10 +79,11 @@ class SubPagesRouter:
             not has_any_unresolved_path(client) or  # path is handled by `ui.sub_pages`
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
+            current_path_string = json.dumps(self.current_path)
             client.run_javascript(f'''
-                const fullPath = (window.path_prefix || '') + "{self.current_path}";
+                const fullPath = (window.path_prefix || '') + {current_path_string};
                 if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
-                    history.pushState({{page: "{self.current_path}"}}, "", fullPath);
+                    history.pushState({{page: {current_path_string}}}, "", fullPath);
                 }}
             ''')
         else:

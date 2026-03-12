@@ -1,9 +1,10 @@
 import asyncio
 import gc
 
+import httpx
 import pytest
 
-from nicegui import app, ui
+from nicegui import Client, app, ui
 from nicegui.testing import Screen, User
 
 
@@ -241,3 +242,16 @@ def test_error_in_callback(screen: Screen):
     screen.open('/')
     screen.should_contain('Exception: division by zero')
     screen.assert_py_logger('ERROR', 'division by zero')
+
+
+def test_no_leak_when_client_deleted(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.timer(0.1, lambda: None)
+
+    screen.start_server()
+    httpx.get(screen.url)
+    screen.wait(1)
+    Client.prune_instances(client_age_threshold=0)
+    screen.wait(1)
+    assert not any(isinstance(obj, ui.timer) for obj in gc.get_objects())

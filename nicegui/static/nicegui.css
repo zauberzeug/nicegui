@@ -18,7 +18,7 @@
 .nicegui-tab-panel,
 .nicegui-card,
 .nicegui-carousel-slide,
-.nicegui-expansion .q-expansion-item__content,
+.nicegui-expansion-content,
 .nicegui-scroll-area .q-scrollarea__content {
   display: flex;
   flex-direction: column;
@@ -57,22 +57,13 @@
 .nicegui-stepper .q-stepper__content {
   flex-grow: 1;
 }
-.nicegui-stepper .q-stepper__step-content,
-.nicegui-stepper .q-stepper__step-inner {
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-content,
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-inner {
   height: 100%;
 }
 .nicegui-step .q-stepper__nav {
   padding-top: 8px;
   gap: 8px;
-}
-
-/* HACK: avoid stutter when expansion item is toggled */
-.nicegui-expansion .q-expansion-item__content {
-  padding: 0 var(--nicegui-default-padding);
-}
-.nicegui-expansion .q-expansion-item__content::before,
-.nicegui-expansion .q-expansion-item__content::after {
-  content: ""; /* the gap compensates for the missing vertical padding */
 }
 
 /* revert Tailwind's CSS reset for ui.editor and ui.markdown */
@@ -221,11 +212,11 @@
 }
 .nicegui-log {
   outline: 1px solid rgba(127, 159, 191, 0.15);
+  background-color: rgba(127, 159, 191, 0.05);
 }
 .nicegui-log .q-scrollarea__container {
   scroll-padding-bottom: 0.5rem;
   scroll-snap-type: y proximity;
-  background-color: rgba(127, 159, 191, 0.05);
 }
 .nicegui-log .q-scrollarea__content {
   white-space: pre;
@@ -259,6 +250,11 @@ h6.q-timeline__title {
   height: 10em;
   background-color: AliceBlue;
 }
+.nicegui-joystick > div {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
 .nicegui-scene[data-initializing],
 .nicegui-scene-view[data-initializing] {
   visibility: hidden;
@@ -273,6 +269,9 @@ h6.q-timeline__title {
 }
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
+}
+.js-plotly-plot {
+  box-sizing: content-box; /* HACK: fix overflow when adding borders to the Plotly plot */
 }
 
 /* error popups */
