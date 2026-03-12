@@ -587,9 +587,6 @@ export default {
     backgroundColor: String,
     fps: Number,
     showStats: Boolean,
-    controlType: {
-      type: String,
-      default: "orbit",
-    },
+    controlType: String,
   },
 };
