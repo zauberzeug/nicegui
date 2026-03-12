@@ -226,14 +226,14 @@ def test_no_cyclic_references(screen: Screen):
     assert len(objects) == 0
 
 
-@pytest.mark.parametrize('orbit_type,constructor', [('map', 'MapControls'), ('trackball', 'TrackballControls')])
-def test_custom_controls(screen: Screen, orbit_type: Literal['map', 'trackball'], constructor: str):
+@pytest.mark.parametrize('control_type,constructor', [('map', 'MapControls'), ('trackball', 'TrackballControls')])
+def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball'], constructor: str):
     scene = None
 
     @ui.page('/')
     def page():
         nonlocal scene
-        scene = ui.scene(control_type=orbit_type)
+        scene = ui.scene(control_type=control_type)
 
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
