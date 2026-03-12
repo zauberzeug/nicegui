@@ -187,7 +187,8 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.setup_controls();
+    this.controlClass = { trackball: TrackballControls, map: MapControls, orbit: OrbitControls }[this.controlType];
+    this.controls = new this.controlClass(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -264,16 +265,6 @@ export default {
   },
 
   methods: {
-    setup_controls() {
-      if (this.controlType === "trackball") {
-        this.controls = new TrackballControls(this.camera, this.renderer.domElement);
-      } else if (this.controlType === "map") {
-        this.controls = new MapControls(this.camera, this.renderer.domElement);
-      } else {
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-      }
-    },
-
     create(type, id, parent_id, ...args) {
       if (!this.is_initialized) return;
       let mesh;
@@ -514,7 +505,7 @@ export default {
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
-            this.setup_controls();
+            this.controls = new this.controlClass(this.camera, this.renderer.domElement);
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
