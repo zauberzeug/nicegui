@@ -205,8 +205,8 @@ class Notification(Element, component='notification.js'):
                    *,
                    no_dismiss: bool = False,
                    text: str = '',
-                   color: Optional[str] = 'primary',
-                   icon: Optional[str] = None,
+                   color: str | None = 'primary',
+                   icon: str | None = None,
                    **kwargs: Any) -> Self:
         """Add an action button to the notification, which emits an event when clicked.
 
@@ -242,3 +242,4 @@ class Notification(Element, component='notification.js'):
             action['style'] = f'color: {color};' + action.get('style', '')
         action.update(kwargs)
         self._props['options']['actions'].append(action)
+        return self
