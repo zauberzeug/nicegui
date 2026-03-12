@@ -28,7 +28,7 @@ class ElementFilter(Generic[T]):
                  marker: str | list[str] | None = None,
                  content: str | list[str] | None = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
-                 only_visible: bool = True,
+                 only_visible: bool = False,
                  ) -> None:
         ...
 
@@ -38,7 +38,7 @@ class ElementFilter(Generic[T]):
                  marker: str | list[str] | None = None,
                  content: str | list[str] | None = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
-                 only_visible: bool = True,
+                 only_visible: bool = False,
                  ) -> None:
         ...
 
@@ -47,7 +47,7 @@ class ElementFilter(Generic[T]):
                  marker: str | list[str] | None = None,
                  content: str | list[str] | None = None,
                  local_scope: bool = DEFAULT_LOCAL_SCOPE,
-                 only_visible: bool = True,
+                 only_visible: bool = False,
                  ) -> None:
         """ElementFilter
 
@@ -79,7 +79,7 @@ class ElementFilter(Generic[T]):
         :param marker: filter by element markers; can be a list of strings or a single string where markers are separated by whitespace
         :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a single string or a list of strings which all must match
         :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
-        :param only_visible: if `True` (default), filter out elements that are not visible or whose ancestors are not visible
+        :param only_visible: if `True`, filter out elements that are not visible or whose ancestors are not visible
         """
         self._kind = kind
         self._markers = marker.split() if isinstance(marker, str) else marker or []
@@ -145,7 +145,7 @@ class ElementFilter(Generic[T]):
                     continue
 
             ancestors = set(element.ancestors())
-            if self._only_visible and not all(e.visible for e in ancestors.union({element})):
+            if self._only_visible and (not element.visible or not all(e.visible for e in ancestors)):
                 continue
             if self._within_instances and not ancestors.issuperset(self._within_instances):
                 continue

@@ -264,9 +264,6 @@ async def test_find_only_visible(user: User):
             ui.button('button B')
             ui.label('label B').visible = False
 
-        assert texts(ElementFilter(content='A')) == ['button A']
-        assert texts(ElementFilter(content='B')) == ['button B']
-
         container.visible = False
         assert texts(ElementFilter(content='A', only_visible=True)) == ['button A']
         assert texts(ElementFilter(content='B', only_visible=True)) == []
@@ -285,7 +282,7 @@ async def test_find_hidden(user: User):
         container.visible = False
 
         assert texts(ElementFilter(content='A', only_visible=False)) == ['button A', 'label A']
-        assert texts(ElementFilter(content='B', only_visible=False)) == ['button B', 'label B']
+        assert texts(ElementFilter(content='B')) == ['button B', 'label B']  # `only_visible=False` is the default
 
     await user.open('/')
 
