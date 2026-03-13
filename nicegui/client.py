@@ -269,7 +269,8 @@ class Client:
         """
 
         self.connect_handlers.append(
-            helpers.wrap_with_deprecated_awaitable_handler(handler, registration='client.on_connect()'))
+            helpers.normalize_lifecycle_handler(
+                handler, registration='client.on_connect()', on_awaitable='reject'))
 
     def on_disconnect(self, handler: Callable[..., Any]) -> None:
         """Add a callback to be invoked when the client disconnects.
@@ -279,7 +280,8 @@ class Client:
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
         self.disconnect_handlers.append(
-            helpers.wrap_with_deprecated_awaitable_handler(handler, registration='client.on_disconnect()'))
+            helpers.normalize_lifecycle_handler(
+                handler, registration='client.on_disconnect()', on_awaitable='reject'))
 
     def on_delete(self, handler: Callable[..., Any]) -> None:
         """Add a callback to be invoked when the client is deleted.
@@ -289,7 +291,8 @@ class Client:
         *Added in version 3.0.0*
         """
         self.delete_handlers.append(
-            helpers.wrap_with_deprecated_awaitable_handler(handler, registration='client.on_delete()'))
+            helpers.normalize_lifecycle_handler(
+                handler, registration='client.on_delete()', on_awaitable='reject'))
 
     def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
         """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).
