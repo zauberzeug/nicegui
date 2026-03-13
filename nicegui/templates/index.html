@@ -114,13 +114,12 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
-      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
+      // Load DOMPurify for HTML sanitization
+      // NOTE: Always use DOMPurify instead of native setHTML because native setHTML strips class attributes.
       import DOMPurify from "dompurify";
-      if (typeof Element.prototype.setHTML !== "function") {
-        Element.prototype.setHTML = function (html) {
-          this.innerHTML = DOMPurify.sanitize(html);
-        };
-      }
+      Element.prototype.setHTML = function (html) {
+        this.innerHTML = DOMPurify.sanitize(html);
+      };
 
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",

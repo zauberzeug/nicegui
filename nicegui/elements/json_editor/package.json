@@ -15,7 +15,8 @@
   "overrides": {
     "ajv": ">=8.18.0",
     "lodash-es": "^4.17.23",
-    "svelte": ">=5.53.5"
+    "svelte": ">=5.53.5",
+    "devalue": ">=5.6.4"
   },
   "devDependencies": {
     "rollup": "^4.59.0",
