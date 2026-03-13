@@ -47,8 +47,8 @@ def add_header(menu: ui.left_drawer) -> ui.button:
             .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
         menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat color=white round').classes('lg:hidden')
         with ui.link(target='/').classes('row gap-4 items-center no-wrap mr-auto'):
-            svg.face().classes('w-8 stroke-white stroke-2 max-[610px]:hidden')
-            svg.word().classes('w-24')
+            svg.face().classes('w-8 stroke-white forced-colors:invert stroke-2 max-[610px]:hidden')
+            svg.word().classes('w-24 forced-colors:invert')
 
         with ui.row().classes('max-[1050px]:hidden'):
             for title_, target in menu_items.items():
@@ -66,11 +66,11 @@ def add_header(menu: ui.left_drawer) -> ui.button:
                 .props('flat fab-mini color=white').bind_visibility_from(dark_mode, 'value', lambda mode: mode is None)
 
         with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[515px]:hidden').tooltip('Discord'):
-            svg.discord().classes('fill-white scale-125 m-1')
+            svg.discord().classes('fill-white forced-colors:invert scale-125 m-1')
         with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[465px]:hidden').tooltip('Reddit'):
-            svg.reddit().classes('fill-white scale-125 m-1')
+            svg.reddit().classes('fill-white forced-colors:invert scale-125 m-1')
         with ui.link(target='https://github.com/zauberzeug/nicegui/').classes('max-[365px]:hidden').tooltip('GitHub'):
-            svg.github().classes('fill-white scale-125 m-1')
+            svg.github().classes('fill-white forced-colors:invert scale-125 m-1')
 
         add_star().classes('max-[550px]:hidden')
 

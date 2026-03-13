@@ -39,7 +39,7 @@ def subtitle(content: str) -> ui.markdown:
 def example_link(example: Example | None = None) -> ui.link:
     """Render a link to an example."""
     with ui.link(target=example.url if example else '/examples') \
-            .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
+            .classes('bg-primary-alpha p-4 self-stretch rounded flex flex-col gap-2') \
             .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)') as link:
         ui.label(example.title if example else '...and many more').classes(replace='font-bold')
         ui.markdown(example.description if example else 'Browse through plenty of examples.') \
@@ -77,7 +77,7 @@ def subheading(text: str, *, link: str | None = None, major: bool = False, ancho
         else:
             ui.label(text).classes(classes)
         with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
-            ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
+            ui.icon('link', size='sm').classes('hover-opacity')
 
 
 def create_anchor_name(text: str) -> str:

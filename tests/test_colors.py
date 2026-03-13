@@ -32,3 +32,13 @@ def test_replace_colors(screen: Screen):
     screen.click('Replace')
     screen.wait(0.5)
     assert screen.find_by_tag('button').value_of_css_property('background-color') == 'rgba(255, 0, 0, 1)'
+
+
+def test_at_rule(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.colors(primary='#ff0000', at_rule='@media (min-width: 0px)')
+        ui.button('Test Button')
+
+    screen.open('/')
+    assert screen.find_by_tag('button').value_of_css_property('background-color') == 'rgba(255, 0, 0, 1)'

@@ -21,7 +21,7 @@ html {
 }
 .fancy-em em {
   font-style: normal;
-  color: #5898d4;
+  color: var(--q-primary);
 }
 a:link:not(.browser-window *),
 a:visited:not(.browser-window *) {
@@ -57,13 +57,17 @@ a:active:not(.browser-window *) {
 
 .q-header {
   height: 70px;
-  background-color: #5898d4;
+  background-color: var(--q-primary);
 }
 .q-header.fade {
   padding-top: 20px;
   transform: translateY(-20px);
-  background-color: #5898d4d0;
-  backdrop-filter: blur(5px);
+}
+@media (prefers-reduced-transparency: no-preference) {
+  .q-header.fade {
+    background-color: color-mix(in srgb, var(--q-primary) 82%, transparent);
+    backdrop-filter: blur(5px);
+  }
 }
 .body--dark .q-header {
   background-color: #3e6a94;
@@ -134,8 +138,12 @@ dl.docinfo p {
   margin: 0;
 }
 
+.bg-primary-alpha {
+  background-color: color-mix(in srgb, var(--q-primary) 12.5%, transparent);
+}
+
 .dark-box {
-  background-color: #5898d4;
+  background-color: var(--q-primary);
   width: 100%;
 }
 .body--dark .dark-box {
@@ -202,4 +210,18 @@ dl.docinfo p {
     /* Super Modern Browsers */ url("/fonts/fira-mono-v14-latin-regular.woff") format("woff"),
     /* Modern Browsers */ url("/fonts/fira-mono-v14-latin-regular.ttf") format("truetype"),
     /* Safari, Android, iOS */ url("/fonts/fira-mono-v14-latin-regular.svg#FiraMono") format("svg"); /* Legacy iOS */
+}
+.hover-opacity {
+  opacity: 10%;
+}
+.hover-opacity:hover {
+  opacity: 80%;
+}
+@media (forced-colors: active) {
+  .hover-opacity {
+    opacity: 60%;
+  }
+  .hover-opacity:hover {
+    opacity: 100%;
+  }
 }

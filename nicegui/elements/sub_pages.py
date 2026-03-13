@@ -88,7 +88,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
                 self._set_match(None)
             else:
-                self._handle_scrolling(match, behavior='smooth')
+                self._handle_scrolling(match, behavior='auto')
                 self._set_match(match)
         else:
             self._cancel_active_tasks()

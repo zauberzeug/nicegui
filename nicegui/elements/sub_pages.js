@@ -29,7 +29,7 @@ function handleFragmentNavigation(href, targetUrl) {
   const target = document.getElementById(fragmentName) || document.querySelector(`a[name="${fragmentName}"]`);
   if (!target) return false;
 
-  target.scrollIntoView({ behavior: "smooth" });
+  target.scrollIntoView();
   const cleanHref = stripPathPrefix(href);
   history.pushState({ page: cleanHref }, "", buildFullPath(cleanHref));
   return true;
