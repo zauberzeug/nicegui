@@ -73,7 +73,10 @@ class Navigate:
                 client = context.client
 
                 background_tasks.create(
-                    helpers.await_with_context(client.sub_pages_router._handle_navigate(path), client),
+                    helpers.await_with_context(
+                        client.sub_pages_router._handle_navigate(path),  # pylint: disable=protected-access
+                        client,
+                    ),
                     name='navigate_sub_pages')
                 return
 
