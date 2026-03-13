@@ -8,13 +8,13 @@ import struct
 import threading
 import time
 import webbrowser
+from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from contextlib import AbstractContextManager
 from inspect import Parameter, signature
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypeGuard, TypeVar
 
-from .awaitable_response import AwaitableResponse
 from .context import context
 from .logging import log
 
@@ -23,6 +23,14 @@ if TYPE_CHECKING:
 
 _shown_warnings: set[str] = set()
 _T = TypeVar('_T')
+
+
+class SelfManagedAwaitable(Awaitable):
+    """Marker base for awaitables that manage their own execution."""
+
+    @abstractmethod
+    def __await__(self):
+        """Return an iterator used to await the object."""
 
 
 def warn_once(message: str, *, stack_info: bool = False) -> None:
@@ -128,12 +136,12 @@ def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
     """Determine if a result should be awaited.
 
     Returns ``True`` for awaitables that are not already managed
-    (i.e. not an ``AwaitableResponse`` or an ``asyncio.Task``).
+    (i.e. not a ``SelfManagedAwaitable`` or an ``asyncio.Task``).
 
     Note: We want to await an awaitable result even if the handler is not an async function (like a lambda statement).
     """
 
-    return isinstance(result, Awaitable) and not isinstance(result, (AwaitableResponse, asyncio.Task))
+    return isinstance(result, Awaitable) and not isinstance(result, (SelfManagedAwaitable, asyncio.Task))
 
 
 async def await_with_context(awaitable: Awaitable[_T], ctx: AbstractContextManager) -> _T:
