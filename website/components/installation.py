@@ -1,82 +1,45 @@
 from nicegui import ui
 
 from .. import documentation
-from ..style import link_target
+from .shared import browser_window, code_window, section, section_heading
 
 
-def _code_window(filename: str, icon: str, code_html: str) -> None:
-    """Create a styled code window with filename header."""
-    with ui.element('div').classes('mo-code-window'):
-        with ui.element('div').classes('mo-code-header'):
-            ui.html(
-                f'<span class="mo-code-filename">'
-                f'<i class="material-icons" style="font-size:1rem">{icon}</i> {filename}'
-                f'</span>',
-                sanitize=False,
-            )
-        ui.html(f'<div class="mo-code-body">{code_html}</div>', sanitize=False)
-
-
-def _browser_window(content_html: str) -> None:
-    """Create a styled browser preview window."""
-    with ui.element('div').classes('mo-browser-window'):
-        with ui.element('div').classes('mo-browser-header'):
-            ui.html(
-                '<span class="mo-browser-tab">'
-                '<i class="material-icons" style="font-size:1rem">language</i> localhost:8080'
-                '</span>',
-                sanitize=False,
-            )
-        ui.html(f'<div class="mo-browser-content">{content_html}</div>', sanitize=False)
+def _step(number: int, label: str) -> None:
+    """Render a step number badge with label."""
+    with ui.row().classes('items-center gap-2.5 font-semibold'):
+        ui.label(str(number)).classes('mo-step-num')
+        ui.label(label)
 
 
 def create() -> None:
     """Create the installation section with 3-step flow and Docker expansion."""
-    with ui.element('section').classes('mo-section').props('id=installation'):
-        link_target('installation')
-        with ui.element('div').classes('mo-reveal'):
-            ui.html('<div class="mo-section-label">get_started</div>', sanitize=False)
-            ui.html('<h2 class="mo-section-title">Three lines to a running app.</h2>', sanitize=False)
-            ui.html('<p class="mo-section-desc">Write a Python file, install and run — that\'s it.</p>', sanitize=False)
+    with section('installation'):
+        section_heading('get_started', 'Three lines to a running app.',
+                        'Write a Python file, install and run \u2014 that\u2019s it.')
 
         with ui.element('div').classes('mo-install-steps mo-reveal'):
-            # Step 1: Write
-            with ui.element('div').classes('mo-install-step'):
-                ui.html(
-                    '<div class="mo-step-number"><span class="mo-step-num">1</span> Write</div>',
-                    sanitize=False,
-                )
-                _code_window('main.py', 'description', (
+            with ui.column().classes('mo-install-step'):
+                _step(1, 'Write')
+                code_window('main.py', 'description', (
                     '<span class="kw">from</span> nicegui <span class="kw">import</span> ui\n'
                     'ui.label(<span class="str">\'Hello NiceGUI!\'</span>)\n'
                     'ui.run()'
                 ))
 
-            # Step 2: Run
-            with ui.element('div').classes('mo-install-step'):
-                ui.html(
-                    '<div class="mo-step-number"><span class="mo-step-num">2</span> Run</div>',
-                    sanitize=False,
-                )
-                _code_window('bash', 'terminal', (
+            with ui.column().classes('mo-install-step'):
+                _step(2, 'Run')
+                code_window('bash', 'terminal', (
                     '<span class="op">$</span> pip3 install nicegui\n'
                     '<span class="op">$</span> python3 main.py'
                 ))
 
-            # Step 3: Enjoy
-            with ui.element('div').classes('mo-install-step'):
-                ui.html(
-                    '<div class="mo-step-number"><span class="mo-step-num">3</span> Enjoy</div>',
-                    sanitize=False,
-                )
-                _browser_window(
-                    '<div style="font-size:1rem; margin-bottom:10px">Hello NiceGUI!</div>'
-                    '<button style="padding:5px 14px; border-radius:6px; '
-                    'background:var(--mo-brand-blue); color:white; border:none; '
-                    'font-size:0.8125rem; cursor:pointer; font-family:inherit">Button</button>'
-                )
+            with ui.column().classes('mo-install-step'):
+                _step(3, 'Enjoy')
+                with browser_window():
+                    with ui.column().classes('mo-browser-content'):
+                        ui.label('Hello NiceGUI!')
+                        ui.button('Button').props('unelevated dense color=primary size=sm')
 
-        # Docker expansion
         with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 mt-8'):
             with ui.row().classes('mt-8 w-full justify-center items-center gap-8'):
                 ui.markdown('''

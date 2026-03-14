@@ -1,3 +1,5 @@
+"""Reusable components and helpers for the NiceGUI main page makeover."""
+
 from . import (
     about,
     cta_banner,

@@ -1,15 +1,12 @@
 from nicegui import ui
 
+from .shared import section
+
 
 def create() -> None:
     """Create the CTA banner between demos and examples."""
-    with ui.element('div').classes('mo-cta-banner mo-reveal'):
-        ui.html('<h2 class="mo-cta-banner-title">Browse through plenty of live demos.</h2>', sanitize=False)
-        ui.html(
-            '<p class="mo-cta-banner-subtitle">'
-            'Fun-Fact: This whole website is also coded with NiceGUI.'
-            '</p>',
-            sanitize=False,
-        )
-        ui.link('Documentation', '/documentation') \
-            .classes('mo-btn-primary').style('color: white !important')
+    with section(classes='mo-cta-banner-bg'):
+        with ui.column().classes('mo-reveal items-center text-center'):
+            ui.label('Browse through plenty of live demos.').classes('mo-cta-banner-title')
+            ui.label('Fun-Fact: This whole website is also coded with NiceGUI.').classes('mo-cta-banner-subtitle')
+            ui.link('Documentation', '/documentation').classes('mo-btn-primary')

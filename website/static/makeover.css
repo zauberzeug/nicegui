@@ -45,15 +45,28 @@
 /* Loaded via link tags in head HTML */
 
 /* ========== Section Rhythm ========== */
-.mo-section {
+.mo-section-outer {
   padding: 80px 24px !important;
+  width: 100%;
+}
+.mo-section-outer + .mo-section-outer {
+  padding-top: 0 !important;
+}
+.mo-section-inner {
   max-width: var(--mo-max-w);
   margin: 0 auto;
   width: 100%;
-  display: block !important;
+  gap: 0;
 }
-.mo-section + .mo-section {
-  padding-top: 0 !important;
+/* Ensure children stretch to full width inside the flex column */
+.mo-section-inner > * {
+  width: 100%;
+}
+/* Inline elements like buttons and links should not stretch */
+.mo-section-inner a.mo-btn-secondary,
+.mo-section-inner a.mo-btn-primary,
+.mo-section-inner a.mo-examples-cta {
+  width: auto;
 }
 
 .mo-section-label {
@@ -277,12 +290,6 @@
 }
 
 /* ========== About ========== */
-.mo-about {
-  padding: 120px 24px !important;
-  position: relative;
-  background: var(--mo-bg);
-  width: 100%;
-}
 .mo-about-inner {
   max-width: var(--mo-max-w);
   margin: 0 auto;
@@ -406,24 +413,25 @@
 
 /* ========== Installation Steps ========== */
 .mo-install-steps {
-  display: grid;
+  display: grid !important;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 .mo-install-step {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  align-items: stretch !important;
 }
-.mo-install-step .mo-code-window,
-.mo-install-step .mo-browser-window {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.mo-install-step > .mo-code-window,
+.mo-install-step > .mo-browser-window {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 .mo-install-step .mo-code-body,
 .mo-install-step .mo-browser-content {
-  flex: 1;
+  flex: 1 !important;
 }
 .mo-step-number {
   display: flex;
@@ -448,8 +456,8 @@
 
 /* ========== Bento Feature Grid ========== */
 .mo-bento-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 .mo-bento-card {
@@ -546,17 +554,22 @@
 .mo-demo-tabs-bar .q-tab__indicator {
   background: var(--mo-brand-blue);
 }
+.mo-page .q-tab-panels,
+.mo-page .q-tab-panel {
+  background: transparent;
+}
 
 .mo-demo-playground {
-  display: grid;
+  display: grid !important;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   align-items: stretch;
+  width: 100%;
 }
 
 /* ========== Examples Grid ========== */
 .mo-examples-grid {
-  display: grid;
+  display: grid !important;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
@@ -630,15 +643,8 @@
 }
 
 /* ========== Sponsors ========== */
-.mo-sponsors-section {
+.mo-sponsors-bg {
   background: color-mix(in srgb, var(--mo-warm-accent) 3%, var(--mo-bg));
-  padding: 80px 24px !important;
-  width: 100%;
-}
-.mo-sponsors-inner {
-  max-width: var(--mo-max-w);
-  margin: 0 auto;
-  text-align: center;
 }
 .mo-sponsor-logos {
   display: flex;
@@ -650,13 +656,6 @@
 }
 
 /* ========== Why Section ========== */
-.mo-why-section {
-  padding: 120px 24px !important;
-  position: relative;
-  overflow: hidden;
-  background: var(--mo-bg);
-  width: 100%;
-}
 .mo-why-inner {
   max-width: 860px;
   margin: 0 auto;
@@ -739,14 +738,7 @@
 }
 
 /* ========== CTA Banner ========== */
-.mo-cta-banner {
-  padding: 80px 24px !important;
-  text-align: center;
-  max-width: var(--mo-max-w);
-  margin: 0 auto;
-  width: 100%;
-  position: relative;
-  border-radius: 24px;
+.mo-cta-banner-bg {
   background: radial-gradient(
       ellipse at 30% 50%,
       color-mix(in srgb, var(--mo-brand-blue) 6%, transparent),
@@ -948,7 +940,8 @@
   .mo-header-transparent .q-header .svg_face {
     stroke: var(--mo-text-primary) !important;
   }
-  .mo-header-transparent .q-header svg:not([viewBox="0 0 62.44 71.74"]):not([viewBox="0 0 62.44 16.48"]) {
+  .mo-header-transparent .q-header svg:not([viewBox="0 0 62.44 71.74"]):not([viewBox="0 0 62.44 16.48"]),
+  .mo-header-transparent .q-header svg:not([viewBox="0 0 62.44 71.74"]):not([viewBox="0 0 62.44 16.48"]) path {
     fill: var(--mo-text-secondary) !important;
   }
   .mo-header-transparent .q-header a,
@@ -992,13 +985,16 @@
     grid-template-columns: 1fr;
   }
   .mo-install-steps {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+  }
+  .mo-bento-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
   .mo-demo-playground {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
   .mo-examples-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
   .mo-footer-inner {
     grid-template-columns: repeat(2, 1fr);
@@ -1011,8 +1007,11 @@
   .mo-cta-row {
     flex-direction: column;
   }
+  .mo-bento-grid {
+    grid-template-columns: 1fr !important;
+  }
   .mo-examples-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
   .mo-footer-inner {
     grid-template-columns: 1fr;
