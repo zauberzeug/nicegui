@@ -26,7 +26,7 @@ class ValueElement(Element, Generic[V]):
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
     if TYPE_CHECKING:
-        value: V  # type: ignore[assignment]
+        value: V  # type: ignore[assignment,no-redef]
 
     def __init__(self, *,
                  value: V,
@@ -132,7 +132,7 @@ class ValueElement(Element, Generic[V]):
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client,
                                          value=self._value_to_event_value(value),
-                                         previous_value=self._value_to_event_value(previous_value))
+                                         previous_value=self._value_to_event_value(cast(V, previous_value)))
         for handler in self._change_handlers:
             handle_event(handler, args)
 
