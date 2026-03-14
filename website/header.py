@@ -9,11 +9,18 @@ from .star import add_star
 
 HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
 STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding='utf-8')
+MAKEOVER_CSS = (Path(__file__).parent / 'static' / 'makeover.css').read_text(encoding='utf-8')
+
+FONT_LINKS = '''
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+'''
 
 
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
-    ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
+    ui.add_head_html(HEADER_HTML + FONT_LINKS + f'<style>{STYLE_CSS}</style>' + f'<style>{MAKEOVER_CSS}</style>')
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
         ui.add_head_html('''
             <!-- Privacy-friendly analytics by Plausible -->
