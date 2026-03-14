@@ -15,10 +15,14 @@ def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
     ui.add_head_html(HEADER_HTML + f'<style>{STYLE_CSS}</style>')
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
-        ui.add_head_html(
-            '<script defer data-domain="nicegui.io" src="https://plausible.io/js/script.hash.outbound-links.js">'
-            '</script>'
-        )
+        ui.add_head_html('''
+            <!-- Privacy-friendly analytics by Plausible -->
+            <script async src="https://plausible.io/js/pa-d9tl9pdueh-ArCJfoLv3H.js"></script>
+            <script>
+            window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+            plausible.init()
+            </script>
+        ''')
 
 
 def add_header(menu: ui.left_drawer) -> ui.button:

@@ -73,7 +73,7 @@ The simplest way to setup a fully functioning development environment is to star
 1. Ensure you have VS Code, Docker and the Dev Containers extension installed.
 2. Open the project root directory in VS Code.
 3. Press `F1`, type `Dev Containers: Open Folder in Container`, and hit enter (or use the bottom-left corner icon in VS Code to reopen in container).
-4. Wait until image has been build.
+4. Wait until the image has been built. (On first launch, watch the terminal for a GitHub authentication prompt.)
 5. Happy coding.
 
 ### Locally
@@ -285,8 +285,7 @@ Understanding these patterns will help you write code that fits naturally into t
 
 ### Dataclasses
 
-- Use `@dataclass(**KWONLY_SLOTS)` for Python 3.10 compatibility (instead of `@dataclass(kw_only=True, slots=True)`)
-- This pattern is defined in `nicegui/dataclasses.py` and handles version differences automatically
+- Prefer `@dataclass(kw_only=True, slots=True)` for dataclasses
 
 ## Running tests
 

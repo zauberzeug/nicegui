@@ -31,7 +31,8 @@
           display: inline-flex;  /* HACK: re-apply Quasar's inline styles to override Tailwind */
         }
         .nicegui-dialog-open,
-        .nicegui-select-popup-open {
+        .nicegui-select-popup-open,
+        .nicegui-table-fullscreen {
           scroll-behavior: auto !important; /* HACK: avoid smooth-scrolling when dialogs or select popups close */
         }
       }
@@ -113,13 +114,12 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
-      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
-      if (typeof Element.prototype.setHTML !== "function") {
-        const { default: DOMPurify } = await import("dompurify");
-        Element.prototype.setHTML = function (html) {
-          this.innerHTML = DOMPurify.sanitize(html);
-        };
-      }
+      // Load DOMPurify for HTML sanitization
+      // NOTE: Always use DOMPurify instead of native setHTML because native setHTML strips class attributes.
+      import DOMPurify from "dompurify";
+      Element.prototype.setHTML = function (html) {
+        this.innerHTML = DOMPurify.sanitize(html);
+      };
 
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",

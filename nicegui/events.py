@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cas
 
 from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
-from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -19,44 +18,44 @@ if TYPE_CHECKING:
     from .observables import ObservableCollection
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EventArguments:
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ObservableChangeEventArguments(EventArguments):
     sender: ObservableCollection
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class UiEventArguments(EventArguments):
     sender: Element
     client: Client
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class GenericEventArguments(UiEventArguments):
     args: Any
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ClickEventArguments(UiEventArguments):
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SlideEventArguments(UiEventArguments):
     side: SlideSide
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EChartComponentClickEventArguments(UiEventArguments):
     component_type: str
     name: str | None
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EChartPointClickEventArguments(UiEventArguments):
     component_type: str
     name: str
@@ -69,12 +68,12 @@ class EChartPointClickEventArguments(UiEventArguments):
     value: float | int | list
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class MermaidNodeClickEventArguments(UiEventArguments):
     node_id: str
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneClickHit:
     object_id: str
     object_name: str
@@ -83,7 +82,7 @@ class SceneClickHit:
     z: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneClickEventArguments(ClickEventArguments):
     click_type: str
     button: int
@@ -94,7 +93,7 @@ class SceneClickEventArguments(ClickEventArguments):
     hits: list[SceneClickHit]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneDragEventArguments(ClickEventArguments):
     type: Literal['dragstart', 'dragend']
     object_id: str
@@ -104,12 +103,12 @@ class SceneDragEventArguments(ClickEventArguments):
     z: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ColorPickEventArguments(UiEventArguments):
     color: str
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class MouseEventArguments(UiEventArguments):
     type: str
     image_x: float
@@ -122,19 +121,19 @@ class MouseEventArguments(UiEventArguments):
     shift: bool
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JoystickEventArguments(UiEventArguments):
     action: str
     x: float | None = None
     y: float | None = None
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class UploadEventArguments(UiEventArguments):
     file: FileUpload
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class MultiUploadEventArguments(UiEventArguments):
     files: list[FileUpload]
 
@@ -142,7 +141,7 @@ class MultiUploadEventArguments(UiEventArguments):
 ValueT = TypeVar('ValueT')
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
     value: ValueT
     previous_value: ValueT = ...  # type: ignore[assignment]
@@ -154,19 +153,19 @@ class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
                               'In NiceGUI 4.0 this will raise an error.')
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class TableSelectionEventArguments(UiEventArguments):
     selection: list[Any]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardAction:
     keydown: bool
     keyup: bool
     repeat: bool
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardModifiers:
     alt: bool
     ctrl: bool
@@ -180,7 +179,7 @@ class KeyboardModifiers:
         return sum(self)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardKey:
     name: str
     code: str
@@ -380,14 +379,14 @@ class KeyboardKey:
         return self.name == 'F12'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyEventArguments(UiEventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ScrollEventArguments(UiEventArguments):
     vertical_position: float
     vertical_percentage: float
@@ -399,23 +398,23 @@ class ScrollEventArguments(UiEventArguments):
     horizontal_container_size: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsonEditorSelectEventArguments(UiEventArguments):
     selection: dict
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsonEditorChangeEventArguments(UiEventArguments):
     content: dict
     errors: dict = field(default_factory=dict)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class XtermBellEventArguments(UiEventArguments):
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class XtermDataEventArguments(UiEventArguments):
     data: str
 

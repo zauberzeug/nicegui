@@ -412,7 +412,9 @@ class Element(Visibility):
         """
         if not core.loop:
             return NullResponse()
-        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})', timeout=timeout)
+        return self.client.run_javascript(
+            f'return runMethod({self.id}, {json.dumps(name)}, {json.dumps(args)})', timeout=timeout,
+        )
 
     def get_computed_prop(self, prop_name: str, *, timeout: float = 1) -> AwaitableResponse:
         """Return a computed property.
@@ -424,7 +426,9 @@ class Element(Visibility):
         """
         if not core.loop:
             return NullResponse()
-        return self.client.run_javascript(f'return getComputedProp({self.id}, "{prop_name}")', timeout=timeout)
+        return self.client.run_javascript(
+            f'return getComputedProp({self.id}, {json.dumps(prop_name)})', timeout=timeout,
+        )
 
     def ancestors(self, *, include_self: bool = False) -> Iterator[Element]:
         """Iterate over the ancestors of the element.

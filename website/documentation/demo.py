@@ -22,6 +22,7 @@ def demo(f: Callable, *, lazy: bool = True, tab: str | Callable | None = None) -
             if lazy:
                 spinner = ui.image('/static/loading.gif').classes('w-8 h-8').props('no-spinner no-transition')
 
+                @intersection_observer
                 async def handle_intersection():
                     window.remove(spinner)
                     if helpers.is_coroutine_function(f):
@@ -33,7 +34,6 @@ def demo(f: Callable, *, lazy: bool = True, tab: str | Callable | None = None) -
                             await result()
                         else:
                             result()
-                intersection_observer(on_intersection=handle_intersection)
             else:
                 result = f()
                 if callable(result):

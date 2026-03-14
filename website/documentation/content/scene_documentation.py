@@ -176,6 +176,35 @@ async def wait_for_init() -> None:
             scene.move_camera(x=1, y=-1, z=1.5, duration=2)
 
 
+@doc.demo('Changing Controls', '''
+    You can change the controls of a scene using the `control_type` argument.
+
+    The available control types are:
+
+    - **"orbit" (default)**:
+      Works for most applications.
+      But the camera stops when it orbits over the "north" and "south" poles to maintain a fixed up direction.
+    - "trackball":
+      Similar to orbit, but it keeps going around the poles.
+      It is a good choice for applications where camera flexibility is important.
+    - "map":
+      Allows to pan and zoom like in a 3D map view application.
+      Good for map-like applications such as in [RoSys](https://rosys.io).
+''')
+def change_controls() -> None:
+    ui.label('Orbit controls (default)')
+    with ui.scene(width=285, height=220):
+        ui.scene.sphere()
+
+    ui.label('Trackball controls')
+    with ui.scene(width=285, height=220, control_type='trackball'):
+        ui.scene.sphere()
+
+    ui.label('Map controls')
+    with ui.scene(width=285, height=220, control_type='map'):
+        ui.scene.sphere()
+
+
 @doc.demo(ui.scene_view)
 def scene_views():
     with ui.grid(columns=2).classes('w-full'):

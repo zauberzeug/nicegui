@@ -374,20 +374,22 @@ class App(FastAPI):
         self._disconnect_handlers.clear()
         self._delete_handlers.clear()
         self._exception_handlers[:] = [log.exception]
+        self._page_exception_handler = None
         self.config = AppConfig()
         self.colors()  # reset colors to default
 
     @staticmethod
-    def clients(path: str) -> Iterator[Client]:
-        """Iterate over all connected clients with a matching path.
+    def clients(path: str | None = None) -> Iterator[Client]:
+        """Iterate over clients, with a matching path if provided.
 
-        When using `@ui.page("/path")` each client gets a private view of this page.
+        When using ``@ui.page("/path")``, each client gets a private view of this page.
         Updates must be sent to each client individually, which this iterator simplifies.
+        If ``path`` is ``None`` (default), it yields all clients regardless of their path.
 
         *Added in version 2.7.0*
 
-        :param path: string to filter clients by
+        :param path: string to filter clients by (or ``None`` to get all clients, *added in version 3.9.0*)
         """
         for client in Client.instances.values():
-            if client.page.path == path:
+            if path is None or client.page.path == path:
                 yield client

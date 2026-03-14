@@ -1,6 +1,9 @@
 # Included Web Dependencies
 
 - @tailwindcss/browser: 4.1.13 ([MIT](https://opensource.org/licenses/MIT))
+- @unocss/reset: ^66.6.0 ([MIT](https://opensource.org/licenses/MIT))
+- @unocss/runtime: ^66.6.0 ([MIT](https://opensource.org/licenses/MIT))
+- dompurify: ^3.3.1 ([MPL-2.0](https://opensource.org/licenses/MPL-2.0) or [Apache-2.0](https://opensource.org/licenses/Apache-2.0))
 - quasar: 2.18.5 ([MIT](https://opensource.org/licenses/MIT))
 - sass: ^1.94.0 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.8.1 ([MIT](https://opensource.org/licenses/MIT))
@@ -14,6 +17,7 @@
 - echarts: ^6.0.0 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
 - echarts-gl: ^2.0.9 ([BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause))
 - nipplejs: ^0.10.2 ([MIT](https://opensource.org/licenses/MIT))
+- ajv-formats: ^3.0.1 ([MIT](https://opensource.org/licenses/MIT))
 - vanilla-jsoneditor: ^3.10.0 ([ISC](https://opensource.org/licenses/ISC))
 - leaflet: ^1.9.4 ([BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause))
 - leaflet-draw: ^1.0.4 ([MIT](https://opensource.org/licenses/MIT))
