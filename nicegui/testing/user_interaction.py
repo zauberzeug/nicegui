@@ -5,14 +5,13 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
-from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 
 if TYPE_CHECKING:
     from .user import User
 
-T = TypeVar('T', bound=Element)
+T = TypeVar('T', bound=ui.element)
 
 
 class UserInteraction(Generic[T]):

@@ -10,7 +10,6 @@ import httpx
 import socketio
 
 from nicegui import Client, ElementFilter, ui
-from nicegui.element import Element
 from nicegui.nicegui import _on_handshake
 from nicegui.outbox import Message
 
@@ -22,7 +21,7 @@ from .user_notify import UserNotify
 # pylint: disable=protected-access
 
 
-T = TypeVar('T', bound=Element)
+T = TypeVar('T', bound=ui.element)
 
 
 class User:
@@ -179,7 +178,7 @@ class User:
     @overload
     def find(self,
              target: str,
-             ) -> UserInteraction[Element]:
+             ) -> UserInteraction[ui.element]:
         ...
 
     @overload
@@ -193,7 +192,7 @@ class User:
              *,
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
-             ) -> UserInteraction[Element]:
+             ) -> UserInteraction[ui.element]:
         ...
 
     @overload
@@ -221,7 +220,7 @@ class User:
         return UserInteraction(self, elements, target)
 
     @property
-    def current_layout(self) -> Element:
+    def current_layout(self) -> ui.element:
         """Return the root layout element of the current page."""
         return self._client.layout
 

@@ -308,6 +308,7 @@ def test_ip(screen: Screen):
     screen.open('/')
     screen.should_contain('127.0.0.1')
 
+
 @pytest.mark.parametrize('path', ['/', None])
 def test_multicast(screen: Screen, path: str | None):
     def update():
