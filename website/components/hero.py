@@ -2,16 +2,7 @@ from nicegui import ui
 
 from .. import svg
 
-# Mascot SVG with CSS animation classes on the eye paths
-MASCOT_SVG = svg.HAPPY_FACE_SVG \
-    .replace(
-        'd="M14.7,38.09s3.18-2.52,6.99,0"',
-        'class="svg_eye" d="M14.7,38.09s3.18-2.52,6.99,0"',
-    ) \
-    .replace(
-        'd="M39.71,38.09s3.18-2.52,6.99,0"',
-        'class="svg_eye" d="M39.71,38.09s3.18-2.52,6.99,0"',
-    )
+MASCOT_SVG = svg.HAPPY_FACE_SVG
 
 PIP_COPY_JS = '''() => {
     navigator.clipboard.writeText("pip install nicegui");
