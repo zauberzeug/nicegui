@@ -136,7 +136,8 @@ class ElementFilter(Generic[T]):
                         element_contents.extend(element._labels)  # pylint: disable=protected-access
                 if isinstance(element, Tree):
                     LABEL_KEY = element.props.get('label-key')
-                    element_contents.extend(node[LABEL_KEY] for node in element.nodes(visible=self._only_visible))
+                    nodes = element.nodes(visible=True if self._only_visible else None)
+                    element_contents.extend(node[LABEL_KEY] for node in nodes)
                 if isinstance(element, (Icon, ChatMessage)):
                     element_contents.append(element.props.get('name'))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
