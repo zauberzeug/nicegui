@@ -624,33 +624,23 @@ async def test_trigger_autocomplete(user: User) -> None:
 
 
 async def test_seeing_invisible_elements(user: User) -> None:
-    visible_label = hidden_label = hidden_card = None
-
     @ui.page('/')
     def page():
-        nonlocal visible_label, hidden_label, hidden_card
-        visible_label = ui.label('Visible')
-        hidden_label = ui.label('Hidden')
-        hidden_label.visible = False
-
-        with ui.card() as hidden_card:
-            ui.label('Inside hidden card')
-        hidden_card.visible = False
+        checkbox = ui.checkbox('Check')
+        ui.label('Label A').bind_visibility_from(checkbox, 'value')
+        ui.label('Label B').bind_visibility_from(checkbox, 'value', value=False)
+        with ui.card().bind_visibility_from(checkbox, 'value'):
+            ui.label('Label C')
 
     await user.open('/')
-    with pytest.raises(AssertionError):
-        await user.should_see('Hidden')
-    with pytest.raises(AssertionError):
-        await user.should_not_see('Visible')
-    with pytest.raises(AssertionError):
-        await user.should_see('Inside hidden card')
+    await user.should_not_see('Label A')
+    await user.should_see('Label B')
+    await user.should_not_see('Label C')
 
-    visible_label.visible = False
-    hidden_label.visible = True
-    hidden_card.visible = True
-    await user.should_see('Hidden')
-    await user.should_not_see('Visible')
-    await user.should_see('Inside hidden card')
+    user.find('Check').click()
+    await user.should_see('Label A')
+    await user.should_not_see('Label B')
+    await user.should_see('Label C')
 
 
 async def test_finding_invisible_elements(user: User) -> None:

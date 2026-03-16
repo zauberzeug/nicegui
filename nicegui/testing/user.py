@@ -238,7 +238,8 @@ class User:
             else:
                 elements = set(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True))
         elif isinstance(target, str):
-            elements = set(ElementFilter(marker=target, only_visible=True)).union(ElementFilter(content=target, only_visible=True))
+            elements = set(ElementFilter(marker=target, only_visible=True)) \
+                .union(ElementFilter(content=target, only_visible=True))
         else:
             elements = set(ElementFilter(kind=target, only_visible=True))
         return elements  # type: ignore
