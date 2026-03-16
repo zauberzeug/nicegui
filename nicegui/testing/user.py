@@ -233,14 +233,15 @@ class User:
     ) -> set[T]:
         if target is None:
             if kind is None:
-                elements = set(ElementFilter(marker=marker, content=content))
+                elements = set(ElementFilter(marker=marker, content=content, only_visible=True))
             else:
-                elements = set(ElementFilter(kind=kind, marker=marker, content=content))
+                elements = set(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True))
         elif isinstance(target, str):
-            elements = set(ElementFilter(marker=target)).union(ElementFilter(content=target))
+            elements = set(ElementFilter(marker=target, only_visible=True)) \
+                .union(ElementFilter(content=target, only_visible=True))
         else:
-            elements = set(ElementFilter(kind=target))
-        return {e for e in elements if e.visible}  # type: ignore
+            elements = set(ElementFilter(kind=target, only_visible=True))
+        return elements  # type: ignore
 
     def _build_error_message(self,
                              target: str | type[T] | None = None,
