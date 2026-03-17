@@ -20,6 +20,11 @@ script_mode: bool = False
 script_client: Client | None = None
 
 
+def can_schedule_task() -> bool:
+    """Return whether tasks can be scheduled on the NiceGUI event loop."""
+    return loop is not None and loop.is_running()
+
+
 def is_script_mode_preflight() -> bool:
     """Return whether this is the preflight run of the script mode."""
     return script_mode and not app.is_started  # pylint: disable=undefined-variable # noqa: F821

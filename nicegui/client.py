@@ -5,7 +5,7 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
@@ -101,9 +101,9 @@ class Client:
 
         self.storage = ObservableDict()
 
-        self.connect_handlers: list[Callable[..., Any] | Awaitable] = []
-        self.disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
-        self.delete_handlers: list[Callable[..., Any] | Awaitable] = []
+        self.connect_handlers: list[Callable[..., Any]] = []
+        self.disconnect_handlers: list[Callable[..., Any]] = []
+        self.delete_handlers: list[Callable[..., Any]] = []
 
         self._temporary_socket_id: str | None = None
 
@@ -171,7 +171,8 @@ class Client:
                 'version': __version__,
                 'elements': elements.translate(HTML_ESCAPE_TABLE),
                 'head_html': self.head_html,
-                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
+                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(
+                    vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
@@ -261,30 +262,37 @@ class Client:
         """Download a file from a given URL or raw bytes."""
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
-    def on_connect(self, handler: Callable[..., Any] | Awaitable) -> None:
+    def on_connect(self, handler: Callable[..., Any]) -> None:
         """Add a callback to be invoked when the client connects.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
-        self.connect_handlers.append(handler)
 
-    def on_disconnect(self, handler: Callable[..., Any] | Awaitable) -> None:
+        self.connect_handlers.append(
+            helpers.normalize_lifecycle_handler(
+                handler, registration='client.on_connect()', on_awaitable='reject'))
+
+    def on_disconnect(self, handler: Callable[..., Any]) -> None:
         """Add a callback to be invoked when the client disconnects.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
-        self.disconnect_handlers.append(handler)
+        self.disconnect_handlers.append(
+            helpers.normalize_lifecycle_handler(
+                handler, registration='client.on_disconnect()', on_awaitable='reject'))
 
-    def on_delete(self, handler: Callable[..., Any] | Awaitable) -> None:
+    def on_delete(self, handler: Callable[..., Any]) -> None:
         """Add a callback to be invoked when the client is deleted.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
 
         *Added in version 3.0.0*
         """
-        self.delete_handlers.append(handler)
+        self.delete_handlers.append(
+            helpers.normalize_lifecycle_handler(
+                handler, registration='client.on_delete()', on_awaitable='reject'))
 
     def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
         """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).
@@ -330,6 +338,7 @@ class Client:
                 self._delete_tasks.pop(document_id)
                 await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
+
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
@@ -360,23 +369,16 @@ class Client:
         """Store the result of a JavaScript command. (For internal use only.)"""
         JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
-    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
+    def safe_invoke(self, handler: Callable[..., Any]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
-        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
-            if isinstance(func, Awaitable):
-                async def func_with_client():
-                    with self:
-                        await func
-                background_tasks.create(func_with_client(), name=f'func with client {self.id} {func_name}')
-            else:
-                with self:
-                    result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
-                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
-                    async def result_with_client():
-                        with self:
-                            await result
-                    background_tasks.create(result_with_client(), name=f'result with client {self.id} {func_name}')
+            with self:
+                result = handler(self) if len(inspect.signature(handler).parameters) == 1 else handler()
+                if helpers.should_await(result):
+                    func_name = handler.__name__ if hasattr(handler, '__name__') else str(handler)
+                    background_tasks.create(helpers.await_with_context(result, self),
+                                            name=f'func with client {self.id} {func_name}')
+
         except Exception as e:
             core.app.handle_exception(e)
 
@@ -402,11 +404,10 @@ class Client:
                     result = cast(Callable[[Exception], Any], handler)(exception)
                 else:
                     result = cast(Callable[[], Any], handler)()
-            if helpers.is_coroutine_function(handler):
-                async def wait_for_result(result: Any = result) -> None:
-                    with self.content:
-                        await result
-                background_tasks.create(wait_for_result(), name=f'UI exception {handler.__name__}')
+
+            if helpers.should_await(result):
+                background_tasks.create(
+                    helpers.await_with_context(result, self), name=f'UI exception {handler.__name__}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.

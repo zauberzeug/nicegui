@@ -88,10 +88,8 @@ def test_startup_and_shutdown_handlers(screen: Screen):
 
     app.on_startup(startup)
     app.on_startup(startup_async)
-    app.on_startup(startup_async())
     app.on_shutdown(shutdown)
     app.on_shutdown(shutdown_async)
-    app.on_shutdown(shutdown_async())
 
     @ui.page('/')
     def page():
@@ -99,11 +97,40 @@ def test_startup_and_shutdown_handlers(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async']
+    assert events == ['startup', 'startup_async']
 
     app.shutdown()
     screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
+    assert events == ['startup', 'startup_async', 'shutdown', 'shutdown_async']
+
+
+def test_direct_awaitable_startup_and_shutdown_handlers_are_deprecated(screen: Screen):
+    events: list[str] = []
+
+    async def startup_async():
+        events.append('startup_async')
+
+    async def shutdown_async():
+        events.append('shutdown_async')
+
+    app.on_startup(startup_async())  # type: ignore[arg-type]
+    app.on_shutdown(shutdown_async())  # type: ignore[arg-type]
+    assert any('app.on_startup() is deprecated and will be removed in NiceGUI 4.0' in record.message
+               for record in screen.caplog.records)
+    assert any('app.on_shutdown() is deprecated and will be removed in NiceGUI 4.0' in record.message
+               for record in screen.caplog.records)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert events == ['startup_async']
+
+    app.shutdown()
+    screen.wait(0.5)
+    assert events == ['startup_async', 'shutdown_async']
 
 
 def test_all_lifecycle_handlers_are_called(screen: Screen):

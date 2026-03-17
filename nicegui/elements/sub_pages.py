@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
-from .. import background_tasks, json
+from .. import background_tasks, helpers, json
 from ..context import context
 from ..element import Element
 from ..elements.label import Label
@@ -110,7 +110,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return True
 
         self._handle_scrolling(match, behavior='instant')
-        if asyncio.iscoroutine(result):
+        if helpers.should_await(result):
             async def background_task():
                 with self:
                     try:
@@ -123,7 +123,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._active_tasks.add(task)
 
             def _close_if_canceled(t: asyncio.Task) -> None:
-                if t.cancelled():
+                if t.cancelled() and asyncio.iscoroutine(result):
                     result.close()
                 self._active_tasks.discard(t)
 
