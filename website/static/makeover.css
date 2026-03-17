@@ -31,7 +31,11 @@
 /* ========== Page-level overrides ========== */
 .mo-page {
   background: var(--mo-bg) !important;
-  font-family: "Inter", system-ui, -apple-system, sans-serif !important;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif !important;
   color: var(--mo-text-primary);
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
@@ -49,11 +53,8 @@
   transform: translate(-50%, -50%);
   width: 1400px;
   height: 1000px;
-  background: radial-gradient(
-      ellipse at 40% 45%,
-      color-mix(in srgb, var(--mo-brand-blue) 7%, transparent) 0%,
-      transparent 55%
-    ),
+  background:
+    radial-gradient(ellipse at 40% 45%, color-mix(in srgb, var(--mo-brand-blue) 7%, transparent) 0%, transparent 55%),
     radial-gradient(
       ellipse at 60% 55%,
       color-mix(in srgb, var(--mo-brand-blue-light) 4%, transparent) 0%,
@@ -85,8 +86,14 @@
   animation: mo-blink 5s ease-in-out infinite;
 }
 @keyframes mo-blink {
-  0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.05); }
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.05);
+  }
 }
 
 /* ========== Section label ::before ========== */
@@ -96,16 +103,36 @@
 }
 
 /* ========== Syntax highlighting (code windows) ========== */
-.mo-code-body .kw { color: #8839b0; }
-.mo-code-body .str { color: #3a7d44; }
-.mo-code-body .op { color: #2b8a8a; }
-.mo-code-body .fn { color: #2b6cb0; }
-.mo-code-body .num { color: #b35c00; }
-.body--dark .mo-code-body .kw { color: #c678dd; }
-.body--dark .mo-code-body .str { color: #98c379; }
-.body--dark .mo-code-body .op { color: #56b6c2; }
-.body--dark .mo-code-body .fn { color: #61afef; }
-.body--dark .mo-code-body .num { color: #d19a66; }
+.mo-code-body .kw {
+  color: #8839b0;
+}
+.mo-code-body .str {
+  color: #3a7d44;
+}
+.mo-code-body .op {
+  color: #2b8a8a;
+}
+.mo-code-body .fn {
+  color: #2b6cb0;
+}
+.mo-code-body .num {
+  color: #b35c00;
+}
+.body--dark .mo-code-body .kw {
+  color: #c678dd;
+}
+.body--dark .mo-code-body .str {
+  color: #98c379;
+}
+.body--dark .mo-code-body .op {
+  color: #56b6c2;
+}
+.body--dark .mo-code-body .fn {
+  color: #61afef;
+}
+.body--dark .mo-code-body .num {
+  color: #d19a66;
+}
 
 /* ========== Footer background ========== */
 .mo-footer {
@@ -153,17 +180,31 @@
   animation: mo-toast-fade 2s ease-out forwards;
 }
 @keyframes mo-toast-fade {
-  0% { opacity: 0; transform: translateY(8px); }
-  15% { opacity: 1; transform: translateY(0); }
-  70% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-8px); }
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
 }
 
 /* ========== Scroll Reveal ========== */
 .mo-reveal {
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
 }
 .mo-reveal.mo-visible {
   opacity: 1;
@@ -171,13 +212,21 @@
 }
 
 /* Staggered install steps */
-.mo-install-steps.mo-visible .mo-install-step:nth-child(1) { transition-delay: 0ms; }
-.mo-install-steps.mo-visible .mo-install-step:nth-child(2) { transition-delay: 250ms; }
-.mo-install-steps.mo-visible .mo-install-step:nth-child(3) { transition-delay: 500ms; }
+.mo-install-steps.mo-visible .mo-install-step:nth-child(1) {
+  transition-delay: 0ms;
+}
+.mo-install-steps.mo-visible .mo-install-step:nth-child(2) {
+  transition-delay: 250ms;
+}
+.mo-install-steps.mo-visible .mo-install-step:nth-child(3) {
+  transition-delay: 500ms;
+}
 .mo-install-step {
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
 }
 .mo-install-steps.mo-visible .mo-install-step {
   opacity: 1;
@@ -189,7 +238,10 @@
   .mo-header-transparent .q-header {
     background: transparent !important;
     box-shadow: none !important;
-    transition: background 0.2s, backdrop-filter 0.2s, box-shadow 0.2s;
+    transition:
+      background 0.2s,
+      backdrop-filter 0.2s,
+      box-shadow 0.2s;
   }
   .mo-header-transparent .q-header .svg_letter1,
   .mo-header-transparent .q-header .svg_letter2 {
