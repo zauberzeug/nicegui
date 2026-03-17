@@ -92,13 +92,13 @@ class SubPagesRouter:
     def _other_page_builder_matches_path(self, path: str, client: Client) -> bool:
         """Check if there is any other matching page builder than the one for this client."""
         client_route = client.request.scope.get('route')
+        client_func = getattr(client_route.endpoint, '__func__', client_route.endpoint) if client_route is not None else None
 
         other_routes = [route for route in core.app.routes if isinstance(route, Route)]
         for other_route in other_routes:
             other_func = getattr(other_route.endpoint, '__func__', other_route.endpoint)
             if (
-                client_route is not None and
-                (client_func := getattr(client_route.endpoint, '__func__', client_route.endpoint)) and
+                client_func is not None and
                 getattr(client_func, '__name__', None) == getattr(other_func, '__name__', None) and
                 getattr(client_func, '__module__', None) == getattr(other_func, '__module__', None) and
                 getattr(client_func, '__qualname__', None) == getattr(other_func, '__qualname__', None)
