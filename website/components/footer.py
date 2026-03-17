@@ -5,31 +5,15 @@ DISCORD_SVG = '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColo
 REDDIT_SVG = '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M16 8A8 8 0 110 8a8 8 0 0116 0zm-4.87-2.16a1.07 1.07 0 00-.76.32 5.34 5.34 0 00-2.91-.92l.5-2.33 1.6.34a.76.76 0 10.08-.44l-1.8-.38a.22.22 0 00-.26.17l-.55 2.6a5.38 5.38 0 00-2.98.92 1.07 1.07 0 10-1.18 1.76 2.1 2.1 0 00-.03.36c0 1.82 2.12 3.3 4.74 3.3s4.74-1.48 4.74-3.3a2.1 2.1 0 00-.03-.36 1.07 1.07 0 00-.16-2.04zM5.68 8.84a.76.76 0 111.52 0 .76.76 0 01-1.52 0zm4.26 2.01a2.93 2.93 0 01-1.95.58 2.93 2.93 0 01-1.95-.58.22.22 0 01.31-.31c.43.35 1.04.53 1.64.53s1.21-.18 1.64-.53a.22.22 0 01.31.31zm-.14-1.25a.76.76 0 110-1.52.76.76 0 010 1.52z"/></svg>'
 
 
-def _footer_column(title: str, links: list[tuple[str, str]]) -> None:
-    """Render a footer link column with heading and list of (label, url) pairs."""
-    with ui.column().classes('gap-2.5'):
-        ui.label(title).classes(
-            'text-xs font-semibold uppercase tracking-widest mb-4'
-        ).style('color: var(--mo-text-muted)')
-        for label, url in links:
-            ui.link(label, url).classes(
-                'text-[0.9375rem] no-underline transition-colors duration-150'
-            ).style('color: var(--mo-text-secondary)')
-
-
 def create() -> None:
     """Create the 4-column footer with brand, links, and bottom bar."""
-    with ui.element('footer').classes('mo-footer w-full pt-20 px-6').style(
-        'border-top: 1px solid var(--mo-border)'
-    ):
-        with ui.row().classes(
-            'max-w-[1280px] mx-auto w-full pb-12 gap-12'
-        ).style('display: grid; grid-template-columns: 2fr 1fr 1fr 1fr'):
-            # Brand column
+    with ui.element('footer').classes('mo-footer w-full pt-20 px-6').style('border-top: 1px solid var(--mo-border)'):
+        with ui.row().classes('max-w-[1280px] mx-auto w-full pb-12 gap-12') \
+                .style('display: grid; grid-template-columns: 2fr 1fr 1fr 1fr'):
             with ui.column().classes('gap-3'):
                 ui.markdown('**Nice**GUI').classes('text-lg')
                 ui.label('The Python-based UI framework that shows up in your browser.') \
-                    .classes('text-sm leading-normal').style('color: var(--mo-text-secondary)')
+                    .classes('text-sm leading-normal text-(--mo-text-secondary)')
                 ui.html(f'''
                     <div style="display: flex; gap: 12px; margin-top: 8px">
                         <a href="https://github.com/zauberzeug/nicegui/" aria-label="GitHub"
@@ -70,8 +54,15 @@ def create() -> None:
                 ('Privacy', '/imprint_privacy'),
             ])
 
-        with ui.row().classes(
-            'max-w-[1280px] mx-auto w-full py-5 justify-between items-center text-[0.8125rem]'
-        ).style('border-top: 1px solid var(--mo-border); color: var(--mo-text-muted)'):
+        with ui.row().classes('max-w-[1280px] mx-auto w-full py-5 justify-between items-center text-[0.8125rem] text-(--mo-text-muted)') \
+                .style('border-top: 1px solid var(--mo-border)'):
             ui.markdown('Made with NiceGUI by [Zauberzeug](https://zauberzeug.com)')
             ui.markdown('\u00a9 2025 [Zauberzeug GmbH](https://zauberzeug.com)')
+
+
+def _footer_column(title: str, links: list[tuple[str, str]]) -> None:
+    """Render a footer link column with heading and list of (label, url) pairs."""
+    with ui.column().classes('gap-2.5'):
+        ui.label(title).classes('text-xs font-semibold uppercase tracking-widest mb-4 text-(--mo-text-muted)')
+        for label, url in links:
+            ui.link(label, url).classes('text-[0.9375rem] no-underline transition-colors duration-150 text-(--mo-text-secondary)')

@@ -4,25 +4,13 @@ from .. import documentation
 from .shared import browser_window, code_window, section, section_heading
 
 
-def _step(number: int, label: str) -> None:
-    """Render a step number badge with label."""
-    with ui.row().classes('items-center gap-2.5 font-semibold text-[0.9375rem]'):
-        ui.label(str(number)).classes(
-            'flex items-center justify-center w-[26px] h-[26px] rounded-full'
-            ' text-[0.8125rem] font-bold'
-        ).style('border: 2px solid var(--mo-warm-accent); color: var(--mo-warm-accent)')
-        ui.label(label)
-
-
 def create() -> None:
     """Create the installation section with 3-step flow and Docker expansion."""
     with section('installation'):
         section_heading('get_started', 'Three lines to a running app.',
                         'Write a Python file, install and run \u2014 that\u2019s it.')
 
-        with ui.element('div').classes(
-            'mo-install-steps mo-reveal grid grid-cols-3 gap-6 max-lg:grid-cols-1'
-        ):
+        with ui.element().classes('mo-install-steps mo-reveal grid grid-cols-3 gap-6 max-lg:grid-cols-1'):
             with ui.column().classes('mo-install-step flex flex-col gap-3'):
                 _step(1, 'Write')
                 code_window('main.py', 'description', (
@@ -41,7 +29,7 @@ def create() -> None:
             with ui.column().classes('mo-install-step flex flex-col gap-3'):
                 _step(3, 'Enjoy')
                 with browser_window():
-                    with ui.column().classes('p-6').style('color: var(--mo-text-primary)'):
+                    with ui.column().classes('p-6 text-(--mo-text-primary)'):
                         ui.label('Hello NiceGUI!')
                         ui.button('Button').props('unelevated dense color=primary size=sm')
 
@@ -61,3 +49,11 @@ def create() -> None:
                             -v "$PWD":/app zauberzeug/nicegui
                         ```
                     ''')
+
+
+def _step(number: int, label: str) -> None:
+    """Render a step number badge with label."""
+    with ui.row().classes('items-center gap-2.5 font-semibold text-[0.9375rem]'):
+        ui.label(str(number)) \
+            .classes('flex items-center justify-center w-[26px] h-[26px] rounded-full text-[0.8125rem] font-bold border-2 border-(--mo-warm-accent) text-(--mo-warm-accent)')
+        ui.label(label)

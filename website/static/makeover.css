@@ -242,28 +242,6 @@
   .mo-cta-row {
     flex-direction: column;
   }
-  .mo-why-timeline {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-  }
-  .mo-why-timeline-step {
-    align-items: flex-start;
-    text-align: left;
-    padding: 12px 0 12px 28px;
-    position: relative;
-  }
-  .mo-why-timeline-dot {
-    position: absolute;
-    left: 0;
-    top: 16px;
-  }
-  .mo-why-timeline-connector {
-    width: 2px;
-    height: 16px;
-    margin-top: 0;
-    margin-left: 6px;
-  }
 }
 
 /* ========== NiceGUI overrides ========== */

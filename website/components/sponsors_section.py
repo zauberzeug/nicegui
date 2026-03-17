@@ -14,9 +14,7 @@ def create() -> None:
         section_heading('sponsors', 'Supported by the community.', center=True)
 
         if SPONSORS['special'] or SPONSORS['top']:
-            with ui.row().classes(
-                'flex gap-10 justify-center items-center flex-wrap my-10'
-            ):
+            with ui.row().classes('flex gap-10 justify-center items-center flex-wrap my-10'):
                 for sponsor in SPONSORS['special']:
                     with ui.link(target=SPONSORS['special'][sponsor]):
                         img_path = Path(__file__).parent.parent / 'static' / 'sponsors' / f'{sponsor}.webp'
@@ -45,7 +43,7 @@ def create() -> None:
         with ui.link(target='https://github.com/sponsors/zauberzeug').classes(
             'mo-btn-secondary inline-flex items-center gap-2 px-7 py-2.5 rounded-full'
             ' font-medium text-base cursor-pointer no-underline mx-auto mt-4 w-auto'
-            ' transition-colors duration-150'
-        ).style('border: 1.5px solid var(--mo-brand-blue); color: var(--mo-brand-blue)'):
+            ' transition-colors duration-150 text-(--mo-brand-blue)'
+        ).style('border: 1.5px solid var(--mo-brand-blue)'):
             ui.icon('favorite_border').classes('text-lg')
             ui.label('Become a sponsor')

@@ -13,9 +13,8 @@ def create() -> None:
                         "Interactive examples that showcase NiceGUI's power and flexibility.")
 
         with ui.column().classes('w-full mo-reveal'):
-            with ui.tabs().classes('w-full').style(
-                'border-bottom: 1px solid var(--mo-border)'
-            ).props('no-caps') as tabs:
+            with ui.tabs().classes('w-full').style('border-bottom: 1px solid var(--mo-border)') \
+                    .props('no-caps') as tabs:
                 spa_tab = ui.tab('Single Page App')
                 reactive_tab = ui.tab('Reactive UI')
                 events_tab = ui.tab('Custom Events')
@@ -31,9 +30,7 @@ def create() -> None:
 
 def _demo_playground() -> ui.element:
     """Return a two-column playground container (code left, browser right)."""
-    return ui.element('div').classes(
-        'grid grid-cols-2 gap-6 items-stretch w-full max-lg:grid-cols-1'
-    )
+    return ui.element().classes('grid grid-cols-2 gap-6 items-stretch w-full max-lg:grid-cols-1')
 
 
 def _spa_demo() -> None:
@@ -55,7 +52,7 @@ def _spa_demo() -> None:
         with browser_window():
             with ui.column().classes('p-6'):
                 ui.label('Home').classes('text-xl font-medium mb-3')
-                ui.link('Go to about \u2192', '#').style('color: var(--mo-brand-blue)')
+                ui.link('Go to about \u2192', '#').classes('text-(--mo-brand-blue)')
 
 
 def _reactive_demo() -> None:

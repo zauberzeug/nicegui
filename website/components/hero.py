@@ -21,24 +21,17 @@ def create() -> None:
     """Create the hero section with mascot, title, CTAs, and social proof."""
     with ui.element('section').classes(
         'mo-hero min-h-screen flex flex-col items-center justify-center text-center'
-        ' px-6 pt-[120px] pb-20 relative overflow-hidden w-full'
-    ).style('background: var(--mo-bg)'):
-        with ui.column().classes(
-            'mo-reveal relative z-10 max-w-[800px] flex flex-col items-center gap-6'
-        ):
-            ui.html(MASCOT_SVG, sanitize=False).classes(
-                'mo-hero-mascot w-[180px] h-[180px] stroke-[#5898d4] stroke-2'
-            )
-            ui.markdown('Meet the *NiceGUI*.').classes(
-                'text-[clamp(2.5rem,5vw,4.5rem)] font-semibold tracking-tighter leading-none fancy-em'
-            ).style('color: var(--mo-text-primary)')
-            ui.label('Let any browser be the frontend of your Python code.').classes(
-                'text-xl max-w-[560px] leading-relaxed'
-            ).style('color: var(--mo-text-secondary)')
+        ' px-6 pt-[120px] pb-20 relative overflow-hidden w-full bg-(--mo-bg)'
+    ):
+        with ui.column().classes('mo-reveal relative z-10 max-w-[800px] flex flex-col items-center gap-6'):
+            ui.html(MASCOT_SVG, sanitize=False) \
+                .classes('mo-hero-mascot w-[180px] h-[180px] stroke-[#5898d4] stroke-2')
+            ui.markdown('Meet the *NiceGUI*.') \
+                .classes('text-[clamp(2.5rem,5vw,4.5rem)] font-semibold tracking-tighter leading-none fancy-em text-(--mo-text-primary)')
+            ui.label('Let any browser be the frontend of your Python code.') \
+                .classes('text-xl max-w-[560px] leading-relaxed text-(--mo-text-secondary)')
 
-            with ui.row().classes(
-                'mo-cta-row flex gap-4 items-center flex-wrap justify-center mt-2'
-            ):
+            with ui.row().classes('mo-cta-row flex gap-4 items-center flex-wrap justify-center mt-2'):
                 with ui.link(target='/#installation').classes(
                     'mo-btn-primary inline-flex items-center gap-2 px-7 py-3 rounded-full'
                     ' font-medium text-base cursor-pointer no-underline w-auto'
@@ -53,11 +46,9 @@ def create() -> None:
                                <path d="M3 8h10m-4-4l4 4-4 4" /></svg>''', sanitize=False)
                 with ui.element('button').classes(
                     'inline-flex items-center gap-2 px-6 py-3 rounded-full font-mono text-sm'
-                    ' cursor-pointer transition-colors duration-150 w-auto'
-                ).style(
-                    'border: 1.5px solid var(--mo-border); background: transparent;'
-                    ' color: var(--mo-text-primary)'
-                ).on('click', js_handler=PIP_COPY_JS):
+                    ' cursor-pointer transition-colors duration-150 w-auto text-(--mo-text-primary)'
+                ).style('border: 1.5px solid var(--mo-border); background: transparent') \
+                        .on('click', js_handler=PIP_COPY_JS):
                     ui.html('<code>pip install nicegui</code>', sanitize=False)
                     ui.icon('content_copy').classes('text-sm opacity-50')
 
