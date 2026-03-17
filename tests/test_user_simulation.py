@@ -843,3 +843,15 @@ async def test_storage_tab_persists_across_navigation(user: User) -> None:
     await user.open('/other')
     user.find('Read value').click()
     await user.should_see('ABC')
+
+
+async def test_switching_tabs(user: User) -> None:
+    @ui.page('/')
+    def _():
+        with ui.tabs(on_change=lambda e: ui.notify(f'Switching to {e.value}')):
+            ui.tab('A')
+            ui.tab('B')
+
+    await user.open('/')
+    user.find('A').click()
+    await user.should_see('Switching to A')
