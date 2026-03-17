@@ -63,22 +63,6 @@
     radial-gradient(ellipse at 50% 50%, var(--mo-warm-glow) 0%, transparent 65%);
   pointer-events: none;
 }
-.mo-hero::after {
-  content: "ui.button('Click me')  @ui.page('/')  ui.label('Hello!')  ui.slider(min=0, max=100)  ui.row()  ui.card()  ui.input('Name')  ui.notify('Done!')  ui.run()  with ui.column():  ui.image('logo.png')  ui.switch('Dark mode')  ui.chart()  ui.table()  @ui.refreshable  ui.button('Click me')  @ui.page('/')  ui.label('Hello!')";
-  position: absolute;
-  inset: -50% -20%;
-  font-family: "JetBrains Mono", "Fira Mono", monospace;
-  font-size: 0.875rem;
-  line-height: 2.8;
-  color: var(--mo-text-muted);
-  opacity: 0.04;
-  pointer-events: none;
-  word-spacing: 3em;
-  overflow: hidden;
-  transform: rotate(-12deg);
-  white-space: normal;
-  letter-spacing: 0.02em;
-}
 
 /* ========== Mascot blink animation ========== */
 .mo-hero-mascot .svg_eye {
@@ -162,40 +146,6 @@
 }
 .mo-feature-card:hover::after {
   opacity: 0.3;
-}
-
-/* ========== Copy Toast ========== */
-.mo-copy-toast {
-  position: fixed;
-  z-index: 1000;
-  padding: 8px 16px;
-  border-radius: 8px;
-  background: var(--mo-brand-blue);
-  color: #fff;
-  font-family: "JetBrains Mono", "Fira Mono", monospace;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  pointer-events: none;
-  animation: mo-toast-fade 2s ease-out forwards;
-}
-@keyframes mo-toast-fade {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  15% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
 }
 
 /* ========== Scroll Reveal ========== */

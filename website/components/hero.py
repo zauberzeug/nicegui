@@ -2,30 +2,16 @@ from nicegui import ui
 
 from .. import svg
 
-MASCOT_SVG = svg.HAPPY_FACE_SVG
-
-PIP_COPY_JS = '''() => {
-    navigator.clipboard.writeText("pip install nicegui");
-    const toast = document.createElement("div");
-    toast.className = "mo-copy-toast";
-    toast.textContent = "ui.notify('Copied!')";
-    document.body.appendChild(toast);
-    const rect = event.currentTarget.getBoundingClientRect();
-    toast.style.top = (rect.top - 48) + "px";
-    toast.style.left = (rect.left + rect.width / 2 - toast.offsetWidth / 2) + "px";
-    setTimeout(() => toast.remove(), 2000);
-}'''
-
 
 def create() -> None:
     """Create the hero section with mascot, title, CTAs, and social proof."""
     with ui.element('section').classes(
         'mo-hero min-h-screen flex flex-col items-center justify-center text-center'
-        ' px-6 pt-[120px] pb-20 relative overflow-hidden w-full bg-(--mo-bg)'
+        ' px-6 pb-20 relative overflow-hidden w-full bg-(--mo-bg)'
     ):
-        with ui.column().classes('mo-reveal relative z-10 max-w-[800px] flex flex-col items-center gap-6'):
-            ui.html(MASCOT_SVG, sanitize=False) \
-                .classes('mo-hero-mascot w-[180px] h-[180px] stroke-[#5898d4] stroke-2')
+        with ui.column().classes('mo-reveal relative max-w-[800px] flex flex-col items-center gap-6'):
+            ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
+                .classes('mo-hero-mascot size-40 stroke-[#5898d4] stroke-2 mb-6')
             ui.markdown('Meet the *NiceGUI*.') \
                 .classes('text-[clamp(2.5rem,5vw,4.5rem)] font-semibold tracking-tighter leading-none fancy-em text-(--mo-text-primary)')
             ui.label('Let any browser be the frontend of your Python code.') \
@@ -36,19 +22,20 @@ def create() -> None:
                     'mo-btn-primary inline-flex items-center gap-2 px-7 py-3 rounded-full'
                     ' font-medium text-base cursor-pointer no-underline w-auto'
                     ' transition-all duration-150 hover:-translate-y-px'
-                ).style(
-                    'background: var(--mo-brand-blue); color: #fff;'
-                    ' box-shadow: 0 2px 8px color-mix(in srgb, var(--mo-brand-blue) 30%, transparent)'
-                ):
+                    ' bg-(--mo-brand-blue) text-white'
+                ).style('box-shadow: 0 2px 8px color-mix(in srgb, var(--mo-brand-blue) 30%, transparent)'):
                     ui.label('Get Started')
-                    ui.html('''<svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                               stroke="currentColor" stroke-width="2">
-                               <path d="M3 8h10m-4-4l4 4-4 4" /></svg>''', sanitize=False)
-                with ui.element('button').classes(
+                    ui.html('''
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 8h10m-4-4l4 4-4 4" />
+                        </svg>
+                    ''', sanitize=False)
+                pip_btn = ui.element('button').classes(
                     'inline-flex items-center gap-2 px-6 py-3 rounded-full font-mono text-sm'
                     ' cursor-pointer transition-colors duration-150 w-auto text-(--mo-text-primary)'
-                ).style('border: 1.5px solid var(--mo-border); background: transparent') \
-                        .on('click', js_handler=PIP_COPY_JS):
+                ).style('border: 1.5px solid var(--mo-border); background: transparent')
+                pip_btn.on('click', lambda: ui.notify('Copied!', color='primary'))
+                with pip_btn:
                     ui.html('<code>pip install nicegui</code>', sanitize=False)
                     ui.icon('content_copy').classes('text-sm opacity-50')
 
