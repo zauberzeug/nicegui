@@ -1,4 +1,4 @@
-/* ========== MAKEOVER: Design Tokens ========== */
+/* ========== Design Tokens ========== */
 :root {
   /* Light mode (default) */
   --mo-bg: #fafbfc;
@@ -28,7 +28,7 @@
   --mo-code-bg: #1e222c;
 }
 
-/* Override Quasar page background for makeover pages */
+/* ========== Page-level overrides ========== */
 .mo-page {
   background: var(--mo-bg) !important;
   font-family: "Inter", system-ui, -apple-system, sans-serif !important;
@@ -36,175 +36,11 @@
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
-/* Ensure makeover sections take full width within NiceGUI's flex layout */
 .mo-page > .nicegui-content > * {
   width: 100%;
 }
 
-/* ========== Google Fonts: Inter + JetBrains Mono ========== */
-/* Loaded via link tags in head HTML */
-
-/* ========== Section Rhythm ========== */
-.mo-section-outer {
-  padding: 120px 24px 80px !important;
-  width: 100%;
-}
-.mo-section-outer + .mo-section-outer {
-  padding-top: 0 !important;
-}
-.mo-section-inner {
-  max-width: var(--mo-max-w);
-  margin: 0 auto;
-  width: 100%;
-  gap: 0;
-}
-/* Ensure children stretch to full width inside the flex column */
-.mo-section-inner > * {
-  width: 100%;
-}
-/* Inline elements like buttons and links should not stretch */
-.mo-section-inner a.mo-btn-secondary,
-.mo-section-inner a.mo-btn-primary,
-.mo-section-inner a.mo-examples-cta {
-  width: auto;
-}
-
-.mo-section-label {
-  font-family: "JetBrains Mono", "Fira Mono", ui-monospace, monospace;
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--mo-text-muted);
-  margin-bottom: 12px;
-}
-.mo-section-label::before {
-  content: "# ";
-  color: var(--mo-text-muted);
-}
-
-.mo-section-title {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  font-size: clamp(1.8rem, 3vw, 3rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 12px;
-  color: var(--mo-text-primary);
-}
-
-.mo-section-desc {
-  font-size: 1.0625rem;
-  color: var(--mo-text-secondary);
-  max-width: 640px;
-  line-height: 1.7;
-  margin-bottom: 48px;
-}
-
-/* ========== Brand Emphasis ========== */
-.mo-brand-em {
-  color: var(--mo-brand-blue);
-  font-style: normal;
-}
-
-/* ========== Buttons ========== */
-/*
- * Override multiple layers of specificity:
- *   - style.css:     a:link { color: inherit !important }  /  a:hover { opacity: 0.85 }
- *   - nicegui.css:   .nicegui-link { color: …; text-decoration: underline }
- *                     .nicegui-link:hover { opacity: 0.8 }
- */
-a.mo-btn-primary,
-a.mo-btn-primary:link,
-a.mo-btn-primary:visited,
-.mo-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 28px;
-  border-radius: 9999px;
-  background: var(--mo-brand-blue);
-  color: #fff !important;
-  font-weight: 500;
-  font-size: 1rem;
-  font-family: "Inter", system-ui, sans-serif;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--mo-brand-blue) 30%, transparent);
-  transition: background 0.15s, transform 0.15s;
-  text-decoration: none !important;
-  opacity: 1 !important;
-}
-a.mo-btn-primary:hover,
-a.mo-btn-primary:active,
-.mo-btn-primary:hover {
-  background: var(--mo-brand-blue-light);
-  transform: translateY(-1px);
-  opacity: 1 !important;
-  color: #fff !important;
-}
-
-a.mo-btn-secondary,
-a.mo-btn-secondary:link,
-a.mo-btn-secondary:visited,
-.mo-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 28px;
-  border-radius: 9999px;
-  border: 1.5px solid var(--mo-brand-blue);
-  background: transparent;
-  color: var(--mo-brand-blue) !important;
-  font-weight: 500;
-  font-size: 1rem;
-  font-family: "Inter", system-ui, sans-serif;
-  cursor: pointer;
-  transition: background 0.15s;
-  text-decoration: none !important;
-  opacity: 1 !important;
-}
-a.mo-btn-secondary:hover,
-a.mo-btn-secondary:active,
-.mo-btn-secondary:hover {
-  background: color-mix(in srgb, var(--mo-brand-blue) 8%, transparent);
-  opacity: 1 !important;
-}
-
-.mo-btn-install {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  border: 1.5px solid var(--mo-border);
-  background: transparent;
-  color: var(--mo-text-primary);
-  font-family: "JetBrains Mono", "Fira Mono", ui-monospace, monospace;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: border-color 0.15s;
-  text-decoration: none;
-}
-.mo-btn-install:hover {
-  border-color: var(--mo-brand-blue);
-}
-
-/* ========== Hero ========== */
-.mo-hero {
-  min-height: 100vh;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center;
-  padding: 120px 24px 80px !important;
-  position: relative;
-  overflow: hidden;
-  background: var(--mo-bg);
-  width: 100%;
-}
-
-/* Radial glow */
+/* ========== Hero pseudo-elements (can't do with Tailwind) ========== */
 .mo-hero::before {
   content: "";
   position: absolute;
@@ -226,8 +62,6 @@ a.mo-btn-secondary:active,
     radial-gradient(ellipse at 50% 50%, var(--mo-warm-glow) 0%, transparent 65%);
   pointer-events: none;
 }
-
-/* Code texture */
 .mo-hero::after {
   content: "ui.button('Click me')  @ui.page('/')  ui.label('Hello!')  ui.slider(min=0, max=100)  ui.row()  ui.card()  ui.input('Name')  ui.notify('Done!')  ui.run()  with ui.column():  ui.image('logo.png')  ui.switch('Dark mode')  ui.chart()  ui.table()  @ui.refreshable  ui.button('Click me')  @ui.page('/')  ui.label('Hello!')";
   position: absolute;
@@ -245,256 +79,48 @@ a.mo-btn-secondary:active,
   letter-spacing: 0.02em;
 }
 
-.mo-hero-content {
-  position: relative;
-  z-index: 1;
-  max-width: 800px;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 24px !important;
-}
-
-.mo-hero-title {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  color: var(--mo-text-primary);
-}
-
-.mo-hero-subtitle {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  font-size: 1.25rem;
-  color: var(--mo-text-secondary);
-  max-width: 560px;
-  line-height: 1.6;
-}
-
-.mo-cta-row {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 8px;
-}
-
-.mo-social-proof {
-  font-size: 0.875rem;
-  color: var(--mo-text-muted);
-}
-.mo-social-stars {
-  color: var(--mo-warm-accent);
-}
-
-/* Mascot */
-.mo-hero-mascot {
-  width: 180px;
-  height: 180px;
-}
+/* ========== Mascot blink animation ========== */
 .mo-hero-mascot .svg_eye {
   transform-origin: center 38px;
   animation: mo-blink 5s ease-in-out infinite;
 }
 @keyframes mo-blink {
-  0%,
-  90%,
-  100% {
-    transform: scaleY(1);
-  }
-  95% {
-    transform: scaleY(0.05);
-  }
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.05); }
 }
 
-/* ========== About ========== */
-.mo-about-inner {
-  max-width: var(--mo-max-w);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 64px;
-  align-items: center;
-}
-.mo-about-text {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.mo-about-text p {
-  color: var(--mo-text-secondary);
-  font-size: 1.0625rem;
-  line-height: 1.7;
-  margin: 0;
-}
-.mo-about-text a {
-  color: var(--mo-brand-blue);
-  font-weight: 500;
-  text-decoration: none;
-}
-.mo-about-text a:hover {
-  text-decoration: underline;
-}
-
-/* Demo card */
-.mo-demo-card {
-  background: var(--mo-surface);
-  border: 1px solid var(--mo-border);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-}
-
-/* ========== Code Windows ========== */
-.mo-code-window {
-  background: var(--mo-code-bg);
-  border-radius: 12px;
-  overflow: hidden;
-  font-family: "JetBrains Mono", "Fira Mono", ui-monospace, monospace;
-  font-size: 0.875rem;
-  line-height: 1.6;
-}
-.mo-code-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-.body--dark .mo-code-header {
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-.mo-code-filename {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8125rem;
-  color: #5c6370;
-}
-.body--dark .mo-code-filename {
-  color: #8b929e;
-}
-.mo-code-body {
-  padding: 16px 20px;
-  overflow-x: auto;
-  color: #1a1d26;
-  white-space: pre;
-}
-.body--dark .mo-code-body {
-  color: #edeff3;
-}
-.mo-code-body .kw {
-  color: #8839b0;
-}
-.mo-code-body .str {
-  color: #3a7d44;
-}
-.mo-code-body .op {
-  color: #2b8a8a;
-}
-.body--dark .mo-code-body .kw {
-  color: #c678dd;
-}
-.body--dark .mo-code-body .str {
-  color: #98c379;
-}
-.body--dark .mo-code-body .op {
-  color: #56b6c2;
-}
-
-/* Browser preview */
-.mo-browser-window {
-  background: var(--mo-surface);
-  border-radius: 12px;
-  border: 1px solid var(--mo-border);
-  overflow: hidden;
-}
-.mo-browser-header {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--mo-border);
-}
-.mo-browser-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8125rem;
+/* ========== Section label ::before ========== */
+.mo-section-label::before {
+  content: "# ";
   color: var(--mo-text-muted);
 }
-.mo-browser-content {
-  padding: 24px;
-  font-family: "Inter", sans-serif;
-  font-size: 1rem;
-  color: var(--mo-text-primary);
+
+/* ========== Syntax highlighting (code windows) ========== */
+.mo-code-body .kw { color: #8839b0; }
+.mo-code-body .str { color: #3a7d44; }
+.mo-code-body .op { color: #2b8a8a; }
+.mo-code-body .fn { color: #2b6cb0; }
+.mo-code-body .num { color: #b35c00; }
+.body--dark .mo-code-body .kw { color: #c678dd; }
+.body--dark .mo-code-body .str { color: #98c379; }
+.body--dark .mo-code-body .op { color: #56b6c2; }
+.body--dark .mo-code-body .fn { color: #61afef; }
+.body--dark .mo-code-body .num { color: #d19a66; }
+
+/* ========== Footer background ========== */
+.mo-footer {
+  background: #edf0f3;
+}
+.body--dark .mo-footer {
+  background: color-mix(in srgb, var(--mo-bg) 70%, black);
 }
 
-/* ========== Installation Steps ========== */
-.mo-install-steps {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.mo-install-step {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  align-items: stretch !important;
-}
-.mo-install-step > .mo-code-window,
-.mo-install-step > .mo-browser-window {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-.mo-install-step .mo-code-body,
-.mo-install-step .mo-browser-content {
-  flex: 1 !important;
-}
-.mo-step-number {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  color: var(--mo-text-primary);
-}
-.mo-step-num {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid var(--mo-warm-accent);
-  color: var(--mo-warm-accent);
-  font-size: 0.8125rem;
-  font-weight: 700;
+/* ========== Sponsors warm background ========== */
+.mo-sponsors-bg {
+  background: color-mix(in srgb, var(--mo-warm-accent) 3%, var(--mo-bg));
 }
 
-/* ========== Bento Feature Grid ========== */
-.mo-bento-grid {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.mo-bento-card {
-  background: var(--mo-surface);
-  border: 1px solid var(--mo-border);
-  border-radius: 16px;
-  padding: 28px;
-  transition: transform 0.2s ease, border-color 0.2s ease;
-  cursor: default;
-  position: relative;
-  overflow: hidden;
-}
-.mo-bento-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--mo-brand-blue) 20%, var(--mo-border));
-}
-/* Code overlay on hover */
+/* ========== Bento card hover code overlay ========== */
 .mo-bento-card::after {
   font-family: "JetBrains Mono", "Fira Mono", monospace;
   font-size: 0.6875rem;
@@ -511,374 +137,6 @@ a.mo-btn-secondary:active,
   opacity: 0.3;
 }
 
-.mo-bento-icon {
-  font-size: 2rem;
-  color: var(--mo-brand-blue);
-  margin-bottom: 16px;
-}
-.mo-bento-card h3,
-.mo-bento-card-title {
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.3;
-  margin-bottom: 12px;
-  color: var(--mo-text-primary);
-}
-.mo-bento-card ul,
-.mo-bento-card-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0;
-  margin: 0;
-}
-.mo-bento-card li,
-.mo-bento-card-item {
-  font-size: 0.9375rem;
-  color: var(--mo-text-secondary);
-  line-height: 1.5;
-  padding-left: 16px;
-  position: relative;
-}
-.mo-bento-card li::before,
-.mo-bento-card-item::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 9px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--mo-brand-blue);
-  opacity: 0.5;
-}
-
-/* ========== Demo Tabs ========== */
-.mo-demo-tabs-bar {
-  border-bottom: 1px solid var(--mo-border);
-  margin-bottom: 24px;
-}
-.mo-demo-tabs-bar .q-tab {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--mo-text-muted);
-  text-transform: none;
-  font-family: "Inter", system-ui, sans-serif;
-}
-.mo-demo-tabs-bar .q-tab--active {
-  color: var(--mo-brand-blue);
-}
-.mo-demo-tabs-bar .q-tab__indicator {
-  background: var(--mo-brand-blue);
-}
-.mo-page .q-tab-panels,
-.mo-page .q-tab-panel {
-  background: transparent;
-}
-
-.mo-demo-playground {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: stretch;
-  width: 100%;
-}
-
-/* ========== Examples Grid ========== */
-.mo-examples-grid {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.mo-example-card {
-  background: var(--mo-surface);
-  border: 1px solid var(--mo-border);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: transform 0.2s ease, border-color 0.2s ease;
-  cursor: pointer;
-  text-decoration: none;
-}
-.mo-example-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--mo-brand-blue) 20%, var(--mo-border));
-}
-.mo-example-card:hover .mo-example-img {
-  transform: scale(1.02);
-}
-.mo-example-img-wrap {
-  overflow: hidden;
-  aspect-ratio: 16/9;
-  background: var(--mo-bg);
-}
-.mo-example-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-.mo-example-body {
-  padding: 20px;
-}
-.mo-example-body h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: var(--mo-text-primary);
-}
-.mo-example-body p {
-  font-size: 0.875rem;
-  color: var(--mo-text-secondary);
-  line-height: 1.5;
-  margin: 0 0 12px;
-}
-.mo-example-tags {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.mo-tag {
-  padding: 2px 10px;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--mo-brand-blue) 10%, transparent);
-  color: var(--mo-brand-blue);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-.mo-examples-cta {
-  margin-top: 32px;
-  color: var(--mo-brand-blue);
-  font-weight: 500;
-  font-size: 1rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  text-decoration: none;
-}
-.mo-examples-cta:hover {
-  text-decoration: underline;
-}
-
-/* ========== Sponsors ========== */
-.mo-sponsors-bg {
-  background: color-mix(in srgb, var(--mo-warm-accent) 3%, var(--mo-bg));
-}
-.mo-sponsor-logos {
-  display: flex;
-  gap: 40px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  margin: 40px 0;
-}
-
-/* ========== Why Section ========== */
-.mo-why-inner {
-  max-width: 860px;
-  margin: 0 auto;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-}
-.mo-why-pullquote {
-  font-size: 1.1875rem;
-  font-style: italic;
-  color: var(--mo-text-secondary);
-  line-height: 1.6;
-  margin: 0 0 16px;
-  text-align: center;
-  max-width: 640px;
-}
-.mo-why-timeline {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  width: 100%;
-  margin: 16px 0;
-}
-.mo-why-timeline-step {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-  padding: 0 16px;
-}
-.mo-why-timeline-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--mo-surface);
-  border: 2px solid var(--mo-text-muted);
-  flex-shrink: 0;
-  z-index: 1;
-}
-.mo-why-timeline-step-active .mo-why-timeline-dot {
-  border-color: var(--mo-brand-blue);
-  background: var(--mo-brand-blue);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--mo-brand-blue) 40%, transparent);
-}
-.mo-why-timeline-step strong {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--mo-text-primary);
-}
-.mo-why-timeline-desc {
-  font-size: 0.875rem;
-  color: var(--mo-text-secondary);
-  line-height: 1.5;
-  max-width: 240px;
-}
-.mo-why-timeline-connector {
-  width: 48px;
-  height: 2px;
-  background: var(--mo-border);
-  flex-shrink: 0;
-  margin-top: 6px;
-}
-.mo-why-techstack {
-  color: var(--mo-text-secondary);
-  font-size: 0.9375rem;
-  line-height: 1.7;
-  margin-top: 8px;
-}
-.mo-why-techstack a {
-  color: var(--mo-brand-blue);
-  font-weight: 500;
-  text-decoration: none;
-}
-.mo-why-techstack a:hover {
-  text-decoration: underline;
-}
-
-/* ========== CTA Banner ========== */
-.mo-cta-banner-bg {
-  background: radial-gradient(
-      ellipse at 30% 50%,
-      color-mix(in srgb, var(--mo-brand-blue) 6%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse at 70% 50%,
-      color-mix(in srgb, var(--mo-warm-accent) 5%, transparent),
-      transparent 70%
-    );
-}
-.mo-cta-banner-title {
-  font-family: "Inter", system-ui, sans-serif;
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin-bottom: 8px;
-  color: var(--mo-text-primary);
-}
-.mo-cta-banner-subtitle {
-  color: var(--mo-text-secondary);
-  font-size: 1.125rem;
-  margin-bottom: 32px;
-}
-
-/* ========== Footer ========== */
-.mo-footer {
-  background: #edf0f3;
-  padding: 80px 24px 0 !important;
-  border-top: 1px solid var(--mo-border);
-  width: 100%;
-}
-.body--dark .mo-footer {
-  background: color-mix(in srgb, var(--mo-bg) 70%, black);
-}
-.mo-footer-inner {
-  max-width: var(--mo-max-w);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 48px;
-  padding-bottom: 48px;
-}
-.mo-footer-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.mo-footer-brand-logo {
-  font-size: 1.125rem;
-  font-weight: 400;
-  color: var(--mo-text-primary);
-}
-.mo-footer-brand-logo strong {
-  font-weight: 700;
-}
-.mo-footer-tagline {
-  color: var(--mo-text-secondary);
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-.mo-footer-socials {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-}
-.mo-footer-socials a {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid var(--mo-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--mo-text-muted);
-  transition: border-color 0.15s, color 0.15s;
-  font-size: 1rem;
-  text-decoration: none;
-}
-.mo-footer-socials a:hover {
-  border-color: var(--mo-text-secondary);
-  color: var(--mo-text-primary);
-}
-.mo-footer-col h4 {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--mo-text-muted);
-  margin-bottom: 16px;
-  margin-top: 0;
-}
-.mo-footer-col ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0;
-  margin: 0;
-}
-.mo-footer-col a {
-  font-size: 0.9375rem;
-  color: var(--mo-text-secondary);
-  transition: color 0.15s;
-  text-decoration: none;
-}
-.mo-footer-col a:hover {
-  color: var(--mo-text-primary);
-}
-.mo-footer-bottom {
-  max-width: var(--mo-max-w);
-  margin: 0 auto;
-  padding: 20px 0;
-  border-top: 1px solid var(--mo-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8125rem;
-  color: var(--mo-text-muted);
-}
 /* ========== Copy Toast ========== */
 .mo-copy-toast {
   position: fixed;
@@ -895,22 +153,10 @@ a.mo-btn-secondary:active,
   animation: mo-toast-fade 2s ease-out forwards;
 }
 @keyframes mo-toast-fade {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  15% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
+  0% { opacity: 0; transform: translateY(8px); }
+  15% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
 }
 
 /* ========== Scroll Reveal ========== */
@@ -925,15 +171,9 @@ a.mo-btn-secondary:active,
 }
 
 /* Staggered install steps */
-.mo-install-steps.mo-visible .mo-install-step:nth-child(1) {
-  transition-delay: 0ms;
-}
-.mo-install-steps.mo-visible .mo-install-step:nth-child(2) {
-  transition-delay: 250ms;
-}
-.mo-install-steps.mo-visible .mo-install-step:nth-child(3) {
-  transition-delay: 500ms;
-}
+.mo-install-steps.mo-visible .mo-install-step:nth-child(1) { transition-delay: 0ms; }
+.mo-install-steps.mo-visible .mo-install-step:nth-child(2) { transition-delay: 250ms; }
+.mo-install-steps.mo-visible .mo-install-step:nth-child(3) { transition-delay: 500ms; }
 .mo-install-step {
   opacity: 0;
   transform: translateY(16px);
@@ -945,7 +185,6 @@ a.mo-btn-secondary:active,
 }
 
 /* ========== Header (frosted glass) ========== */
-/* Must be in @layer base so !important beats Tailwind utilities layer (reversed !important cascade) */
 @layer base {
   .mo-header-transparent .q-header {
     background: transparent !important;
@@ -977,7 +216,6 @@ a.mo-btn-secondary:active,
   .mo-header-transparent .q-header .q-btn .q-icon.on-left {
     color: var(--mo-text-secondary) !important;
   }
-  /* Scrolled: frosted glass */
   .mo-header-transparent .q-header.fade {
     background: color-mix(in srgb, var(--mo-surface) 80%, transparent) !important;
     backdrop-filter: blur(12px);
@@ -1000,46 +238,9 @@ a.mo-btn-secondary:active,
 }
 
 /* ========== Responsive ========== */
-@media (max-width: 1024px) {
-  .mo-about-inner {
-    grid-template-columns: 1fr;
-  }
-  .mo-install-steps {
-    grid-template-columns: 1fr !important;
-  }
-  .mo-bento-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-  .mo-demo-playground {
-    grid-template-columns: 1fr !important;
-  }
-  .mo-examples-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-  .mo-footer-inner {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .mo-why-timeline-step {
-    padding: 0 8px;
-  }
-}
 @media (max-width: 640px) {
   .mo-cta-row {
     flex-direction: column;
-  }
-  .mo-bento-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .mo-examples-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .mo-footer-inner {
-    grid-template-columns: 1fr;
-  }
-  .mo-footer-bottom {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
   }
   .mo-why-timeline {
     flex-direction: column;
@@ -1063,4 +264,35 @@ a.mo-btn-secondary:active,
     margin-top: 0;
     margin-left: 6px;
   }
+}
+
+/* ========== NiceGUI overrides ========== */
+/* Inline elements should not stretch in flex columns */
+a.mo-btn-primary,
+a.mo-btn-primary:link,
+a.mo-btn-primary:visited {
+  color: #fff !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+}
+a.mo-btn-primary:hover,
+a.mo-btn-primary:active {
+  opacity: 1 !important;
+  color: #fff !important;
+}
+a.mo-btn-secondary,
+a.mo-btn-secondary:link,
+a.mo-btn-secondary:visited {
+  text-decoration: none !important;
+  opacity: 1 !important;
+}
+a.mo-btn-secondary:hover,
+a.mo-btn-secondary:active {
+  opacity: 1 !important;
+}
+
+/* Transparent tab panels for demos */
+.mo-page .q-tab-panels,
+.mo-page .q-tab-panel {
+  background: transparent;
 }

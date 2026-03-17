@@ -24,8 +24,10 @@ def _simple_demo() -> None:
 def create() -> None:
     """Create the about section with description text and interactive demo card."""
     with section('about', offset='70px'):
-        with ui.row().classes('mo-about-inner mo-reveal items-center'):
-            with ui.column().classes('mo-about-text'):
+        with ui.row().classes(
+            'mo-reveal items-center w-full gap-16 max-w-[1280px] mx-auto'
+        ).style('display: grid; grid-template-columns: 1.5fr 1fr'):
+            with ui.column().classes('gap-4'):
                 section_label('about')
                 section_title('Interact with Python through buttons, dialogs, 3D\u00a0scenes, plots and much more.')
                 ui.markdown('''
@@ -47,5 +49,8 @@ def create() -> None:
                     [GitHub](https://github.com/zauberzeug/nicegui).
                 ''').classes('bold-links').style('color: var(--mo-text-secondary)')
 
-            with ui.column().classes('mo-demo-card'):
+            with ui.column().classes('rounded-2xl p-8').style(
+                'background: var(--mo-surface); border: 1px solid var(--mo-border);'
+                ' box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08)'
+            ):
                 _simple_demo()

@@ -11,13 +11,23 @@ TIMELINE_STEPS = [
 
 def _timeline_step(name: str, description: str, *, active: bool = False) -> None:
     """Render a single step in the Why timeline."""
-    classes = 'mo-why-timeline-step'
-    if active:
-        classes += ' mo-why-timeline-step-active'
-    with ui.column().classes(classes):
-        ui.element('div').classes('mo-why-timeline-dot')
+    active_cls = ' mo-why-timeline-step-active' if active else ''
+    with ui.column().classes(
+        f'mo-why-timeline-step flex-1 flex flex-col items-center gap-3 text-center px-4{active_cls}'
+    ):
+        dot_style = (
+            'border-color: var(--mo-brand-blue); background: var(--mo-brand-blue);'
+            ' box-shadow: 0 0 8px color-mix(in srgb, var(--mo-brand-blue) 40%, transparent)'
+            if active else
+            'background: var(--mo-surface); border: 2px solid var(--mo-text-muted)'
+        )
+        ui.element('div').classes(
+            'mo-why-timeline-dot w-3.5 h-3.5 rounded-full shrink-0 z-10'
+        ).style(dot_style)
         ui.label(name).classes('font-semibold')
-        ui.label(description).classes('mo-why-timeline-desc')
+        ui.label(description).classes(
+            'text-sm leading-normal max-w-[240px]'
+        ).style('color: var(--mo-text-secondary)')
 
 
 def create() -> None:
@@ -25,20 +35,30 @@ def create() -> None:
     with section('why', offset='70px'):
         section_heading('why', 'Why?', center=True)
 
-        with ui.column().classes('mo-why-inner mo-reveal'):
+        with ui.column().classes(
+            'mo-reveal max-w-[860px] mx-auto text-center flex flex-col items-center gap-6'
+        ):
             ui.label(
                 '\u201cWe liked Streamlit but found it does too much magic '
                 'when it comes to state handling.\u201d'
-            ).classes('mo-why-pullquote')
+            ).classes(
+                'text-[1.1875rem] italic leading-relaxed text-center max-w-[640px] mb-4'
+            ).style('color: var(--mo-text-secondary)')
 
-            with ui.row().classes('mo-why-timeline'):
+            with ui.row().classes(
+                'mo-why-timeline flex items-start w-full my-4'
+            ):
                 for i, (name, desc, active) in enumerate(TIMELINE_STEPS):
                     if i > 0:
-                        ui.element('div').classes('mo-why-timeline-connector')
+                        ui.element('div').classes(
+                            'mo-why-timeline-connector w-12 h-0.5 shrink-0 mt-[6px]'
+                        ).style('background: var(--mo-border)')
                     _timeline_step(name, desc, active=active)
 
             ui.markdown('''
                 Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
                 [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
                 and [Uvicorn](https://www.uvicorn.org/) under the hood.
-            ''').classes('mo-why-techstack bold-links')
+            ''').classes('bold-links text-[0.9375rem] leading-relaxed mt-2').style(
+                'color: var(--mo-text-secondary)'
+            )

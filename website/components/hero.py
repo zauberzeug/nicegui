@@ -19,23 +19,49 @@ PIP_COPY_JS = '''() => {
 
 def create() -> None:
     """Create the hero section with mascot, title, CTAs, and social proof."""
-    with ui.element('section').classes('mo-hero'):
-        with ui.column().classes('mo-hero-content mo-reveal'):
-            ui.html(MASCOT_SVG, sanitize=False).classes('mo-hero-mascot stroke-[#5898d4] stroke-2')
-            ui.markdown('Meet the *NiceGUI*.').classes('mo-hero-title fancy-em')
-            ui.label('Let any browser be the frontend of your Python code.').classes('mo-hero-subtitle')
+    with ui.element('section').classes(
+        'mo-hero min-h-screen flex flex-col items-center justify-center text-center'
+        ' px-6 pt-[120px] pb-20 relative overflow-hidden w-full'
+    ).style('background: var(--mo-bg)'):
+        with ui.column().classes(
+            'mo-reveal relative z-10 max-w-[800px] flex flex-col items-center gap-6'
+        ):
+            ui.html(MASCOT_SVG, sanitize=False).classes(
+                'mo-hero-mascot w-[180px] h-[180px] stroke-[#5898d4] stroke-2'
+            )
+            ui.markdown('Meet the *NiceGUI*.').classes(
+                'text-[clamp(2.5rem,5vw,4.5rem)] font-semibold tracking-tighter leading-none fancy-em'
+            ).style('color: var(--mo-text-primary)')
+            ui.label('Let any browser be the frontend of your Python code.').classes(
+                'text-xl max-w-[560px] leading-relaxed'
+            ).style('color: var(--mo-text-secondary)')
 
-            with ui.row().classes('mo-cta-row'):
-                with ui.link(target='/#installation').classes('mo-btn-primary'):
+            with ui.row().classes(
+                'mo-cta-row flex gap-4 items-center flex-wrap justify-center mt-2'
+            ):
+                with ui.link(target='/#installation').classes(
+                    'mo-btn-primary inline-flex items-center gap-2 px-7 py-3 rounded-full'
+                    ' font-medium text-base cursor-pointer no-underline w-auto'
+                    ' transition-all duration-150 hover:-translate-y-px'
+                ).style(
+                    'background: var(--mo-brand-blue); color: #fff;'
+                    ' box-shadow: 0 2px 8px color-mix(in srgb, var(--mo-brand-blue) 30%, transparent)'
+                ):
                     ui.label('Get Started')
                     ui.html('''<svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                                stroke="currentColor" stroke-width="2">
                                <path d="M3 8h10m-4-4l4 4-4 4" /></svg>''', sanitize=False)
-                with ui.element('button').classes('mo-btn-install').on('click', js_handler=PIP_COPY_JS):
+                with ui.element('button').classes(
+                    'inline-flex items-center gap-2 px-6 py-3 rounded-full font-mono text-sm'
+                    ' cursor-pointer transition-colors duration-150 w-auto'
+                ).style(
+                    'border: 1.5px solid var(--mo-border); background: transparent;'
+                    ' color: var(--mo-text-primary)'
+                ).on('click', js_handler=PIP_COPY_JS):
                     ui.html('<code>pip install nicegui</code>', sanitize=False)
                     ui.icon('content_copy').classes('text-sm opacity-50')
 
-            ui.html('''<p class="mo-social-proof">
-                <span class="mo-social-stars">&#9733; 15,000+ GitHub stars</span>
+            ui.html('''<p style="font-size: 0.875rem; color: var(--mo-text-muted)">
+                <span style="color: var(--mo-warm-accent)">&#9733; 15,000+ GitHub stars</span>
                 &middot; Loved by robotics, IoT, and ML teams worldwide
             </p>''', sanitize=False)

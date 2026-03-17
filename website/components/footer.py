@@ -7,27 +7,49 @@ REDDIT_SVG = '<svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor
 
 def _footer_column(title: str, links: list[tuple[str, str]]) -> None:
     """Render a footer link column with heading and list of (label, url) pairs."""
-    with ui.column().classes('mo-footer-col'):
-        ui.label(title).classes('text-xs font-semibold uppercase tracking-wide mb-4') \
-            .style('color: var(--mo-text-muted)')
+    with ui.column().classes('gap-2.5'):
+        ui.label(title).classes(
+            'text-xs font-semibold uppercase tracking-widest mb-4'
+        ).style('color: var(--mo-text-muted)')
         for label, url in links:
-            ui.link(label, url).style('color: var(--mo-text-secondary); font-size: 0.9375rem')
+            ui.link(label, url).classes(
+                'text-[0.9375rem] no-underline transition-colors duration-150'
+            ).style('color: var(--mo-text-secondary)')
 
 
 def create() -> None:
     """Create the 4-column footer with brand, links, and bottom bar."""
-    with ui.element('footer').classes('mo-footer'):
-        with ui.row().classes('mo-footer-inner'):
+    with ui.element('footer').classes('mo-footer w-full pt-20 px-6').style(
+        'border-top: 1px solid var(--mo-border)'
+    ):
+        with ui.row().classes(
+            'max-w-[1280px] mx-auto w-full pb-12 gap-12'
+        ).style('display: grid; grid-template-columns: 2fr 1fr 1fr 1fr'):
             # Brand column
-            with ui.column().classes('mo-footer-brand'):
+            with ui.column().classes('gap-3'):
                 ui.markdown('**Nice**GUI').classes('text-lg')
                 ui.label('The Python-based UI framework that shows up in your browser.') \
-                    .classes('text-sm').style('color: var(--mo-text-secondary)')
+                    .classes('text-sm leading-normal').style('color: var(--mo-text-secondary)')
                 ui.html(f'''
-                    <div class="mo-footer-socials">
-                        <a href="https://github.com/zauberzeug/nicegui/" aria-label="GitHub">{GITHUB_SVG}</a>
-                        <a href="https://discord.gg/TEpFeAaF4f" aria-label="Discord">{DISCORD_SVG}</a>
-                        <a href="https://www.reddit.com/r/nicegui/" aria-label="Reddit">{REDDIT_SVG}</a>
+                    <div style="display: flex; gap: 12px; margin-top: 8px">
+                        <a href="https://github.com/zauberzeug/nicegui/" aria-label="GitHub"
+                           style="width: 36px; height: 36px; border-radius: 50%;
+                                  border: 1px solid var(--mo-border); display: flex;
+                                  align-items: center; justify-content: center;
+                                  color: var(--mo-text-muted); transition: border-color 0.15s, color 0.15s;
+                                  text-decoration: none">{GITHUB_SVG}</a>
+                        <a href="https://discord.gg/TEpFeAaF4f" aria-label="Discord"
+                           style="width: 36px; height: 36px; border-radius: 50%;
+                                  border: 1px solid var(--mo-border); display: flex;
+                                  align-items: center; justify-content: center;
+                                  color: var(--mo-text-muted); transition: border-color 0.15s, color 0.15s;
+                                  text-decoration: none">{DISCORD_SVG}</a>
+                        <a href="https://www.reddit.com/r/nicegui/" aria-label="Reddit"
+                           style="width: 36px; height: 36px; border-radius: 50%;
+                                  border: 1px solid var(--mo-border); display: flex;
+                                  align-items: center; justify-content: center;
+                                  color: var(--mo-text-muted); transition: border-color 0.15s, color 0.15s;
+                                  text-decoration: none">{REDDIT_SVG}</a>
                     </div>
                 ''', sanitize=False)
 
@@ -48,6 +70,8 @@ def create() -> None:
                 ('Privacy', '/imprint_privacy'),
             ])
 
-        with ui.row().classes('mo-footer-bottom'):
+        with ui.row().classes(
+            'max-w-[1280px] mx-auto w-full py-5 justify-between items-center text-[0.8125rem]'
+        ).style('border-top: 1px solid var(--mo-border); color: var(--mo-text-muted)'):
             ui.markdown('Made with NiceGUI by [Zauberzeug](https://zauberzeug.com)')
             ui.markdown('\u00a9 2025 [Zauberzeug GmbH](https://zauberzeug.com)')
