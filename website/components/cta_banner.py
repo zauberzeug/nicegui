@@ -6,12 +6,7 @@ from .shared import section
 def create() -> None:
     """Create the CTA banner between demos and examples."""
     with section('cta'):
-        with ui.column().classes('mo-reveal items-center text-center').style(
-            'background:'
-            ' radial-gradient(ellipse at 30% 50%, color-mix(in srgb, var(--mo-brand-blue) 6%, transparent), transparent 70%),'
-            ' radial-gradient(ellipse at 70% 50%, color-mix(in srgb, var(--mo-warm-accent) 5%, transparent), transparent 70%);'
-            ' border-radius: 24px; padding: 80px 24px'
-        ):
+        with ui.column().classes('mo-reveal w-full items-center text-center gap-0'):
             ui.label('Browse through plenty of live demos.') \
                 .classes('text-[clamp(1.5rem,2.5vw,2.25rem)] font-semibold tracking-tight mb-2 text-(--mo-text-primary)')
             ui.label('Fun-Fact: This whole website is also coded with NiceGUI.') \
