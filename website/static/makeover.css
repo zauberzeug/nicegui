@@ -147,8 +147,8 @@
   background: color-mix(in srgb, var(--mo-warm-accent) 3%, var(--mo-bg));
 }
 
-/* ========== Bento card hover code overlay ========== */
-.mo-bento-card::after {
+/* ========== Feature card hover code overlay ========== */
+.mo-feature-card::after {
   font-family: "JetBrains Mono", "Fira Mono", monospace;
   font-size: 0.6875rem;
   color: var(--mo-brand-blue);
@@ -160,7 +160,7 @@
   pointer-events: none;
   content: "ui.card()";
 }
-.mo-bento-card:hover::after {
+.mo-feature-card:hover::after {
   opacity: 0.3;
 }
 
