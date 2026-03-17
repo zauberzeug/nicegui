@@ -555,6 +555,22 @@ async def test_select_keeps_value_when_toggling_popup(user: User):
     await user.should_see('value = Apple')
 
 
+async def test_select_none_value(user: User) -> None:
+    @ui.page('/')
+    def _():
+        select = ui.select({'a': 'A', None: 'B'}, value=None)
+        ui.label().bind_text_from(select, 'value', lambda v: f'Value: {v}')
+
+    await user.open('/')
+    user.find(ui.select).click()
+    user.find('A').click()
+    await user.should_see('Value: a')
+
+    user.find(ui.select).click()
+    user.find('B').click()
+    await user.should_see('Value: None')
+
+
 async def test_upload_table(user: User) -> None:
     @ui.page('/')
     def page():
