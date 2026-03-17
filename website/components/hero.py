@@ -26,11 +26,16 @@ def create() -> None:
             ui.label('Let any browser be the frontend of your Python code.').classes('mo-hero-subtitle')
 
             with ui.row().classes('mo-cta-row'):
-                ui.link('Get Started', '/#installation').classes('mo-btn-primary')
+                with ui.link(target='/#installation').classes('mo-btn-primary'):
+                    ui.label('Get Started')
+                    ui.html('''<svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                               stroke="currentColor" stroke-width="2">
+                               <path d="M3 8h10m-4-4l4 4-4 4" /></svg>''', sanitize=False)
                 with ui.element('button').classes('mo-btn-install').on('click', js_handler=PIP_COPY_JS):
                     ui.html('<code>pip install nicegui</code>', sanitize=False)
                     ui.icon('content_copy').classes('text-sm opacity-50')
 
-            with ui.row().classes('gap-1 mt-2'):
-                ui.label('\u2605 15,000+ GitHub stars').classes('mo-social-stars')
-                ui.label('\u00b7 Loved by robotics, IoT, and ML teams worldwide').classes('mo-social-proof')
+            ui.html('''<p class="mo-social-proof">
+                <span class="mo-social-stars">&#9733; 15,000+ GitHub stars</span>
+                &middot; Loved by robotics, IoT, and ML teams worldwide
+            </p>''', sanitize=False)

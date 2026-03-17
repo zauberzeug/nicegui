@@ -46,7 +46,7 @@
 
 /* ========== Section Rhythm ========== */
 .mo-section-outer {
-  padding: 80px 24px !important;
+  padding: 120px 24px 80px !important;
   width: 100%;
 }
 .mo-section-outer + .mo-section-outer {
@@ -107,6 +107,15 @@
 }
 
 /* ========== Buttons ========== */
+/*
+ * Override multiple layers of specificity:
+ *   - style.css:     a:link { color: inherit !important }  /  a:hover { opacity: 0.85 }
+ *   - nicegui.css:   .nicegui-link { color: …; text-decoration: underline }
+ *                     .nicegui-link:hover { opacity: 0.8 }
+ */
+a.mo-btn-primary,
+a.mo-btn-primary:link,
+a.mo-btn-primary:visited,
 .mo-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -114,7 +123,7 @@
   padding: 12px 28px;
   border-radius: 9999px;
   background: var(--mo-brand-blue);
-  color: #fff;
+  color: #fff !important;
   font-weight: 500;
   font-size: 1rem;
   font-family: "Inter", system-ui, sans-serif;
@@ -122,13 +131,21 @@
   cursor: pointer;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--mo-brand-blue) 30%, transparent);
   transition: background 0.15s, transform 0.15s;
-  text-decoration: none;
+  text-decoration: none !important;
+  opacity: 1 !important;
 }
+a.mo-btn-primary:hover,
+a.mo-btn-primary:active,
 .mo-btn-primary:hover {
   background: var(--mo-brand-blue-light);
   transform: translateY(-1px);
+  opacity: 1 !important;
+  color: #fff !important;
 }
 
+a.mo-btn-secondary,
+a.mo-btn-secondary:link,
+a.mo-btn-secondary:visited,
 .mo-btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -137,16 +154,20 @@
   border-radius: 9999px;
   border: 1.5px solid var(--mo-brand-blue);
   background: transparent;
-  color: var(--mo-brand-blue);
+  color: var(--mo-brand-blue) !important;
   font-weight: 500;
   font-size: 1rem;
   font-family: "Inter", system-ui, sans-serif;
   cursor: pointer;
   transition: background 0.15s;
-  text-decoration: none;
+  text-decoration: none !important;
+  opacity: 1 !important;
 }
+a.mo-btn-secondary:hover,
+a.mo-btn-secondary:active,
 .mo-btn-secondary:hover {
   background: color-mix(in srgb, var(--mo-brand-blue) 8%, transparent);
+  opacity: 1 !important;
 }
 
 .mo-btn-install {
@@ -263,7 +284,6 @@
 .mo-social-proof {
   font-size: 0.875rem;
   color: var(--mo-text-muted);
-  margin-top: 8px;
 }
 .mo-social-stars {
   color: var(--mo-warm-accent);
