@@ -30,10 +30,8 @@ def create() -> None:
                     [GitHub](https://github.com/zauberzeug/nicegui).
                 ''').classes('bold-links text-(--mo-text-secondary)')
 
-            with ui.column().classes('rounded-2xl p-8').style(
-                'background: var(--mo-surface); border: 1px solid var(--mo-border);'
-                ' box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08)'
-            ):
+            with ui.column().classes('rounded-2xl p-8 bg-(--mo-surface)') \
+                    .style('border: 1px solid var(--mo-border); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08)'):
                 _simple_demo()
 
 
@@ -43,8 +41,8 @@ def _simple_demo() -> None:
         .classes('text-center text-lg py-3 px-4 rounded-lg w-full bg-(--mo-bg) text-(--mo-text-secondary)') \
         .style('border: 1px solid var(--mo-border)')
 
-    with ui.column().classes('gap-3 mt-4 w-full'):
-        ui.button('Click me!', on_click=lambda: output.set_text('Clicked!')).classes('w-full').props('unelevated')
-        ui.input('Type here...', value='abc', on_change=lambda e: output.set_text(e.value)).classes('w-full')
-        ui.slider(min=0, max=100, value=50, on_change=lambda e: output.set_text(e.value)).classes('w-full')
+    with ui.column().classes('gap-3 mt-4 w-full items-stretch'):
+        ui.button('Click me!', on_click=lambda: output.set_text('Clicked!')).props('unelevated no-caps')
+        ui.input(placeholder='Type here...', on_change=lambda e: output.set_text(e.value)).props('outlined dense')
+        ui.slider(min=0, max=100, value=50, on_change=lambda e: output.set_text(e.value))
         ui.checkbox('Check me', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
