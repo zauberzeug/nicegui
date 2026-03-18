@@ -150,6 +150,12 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        accept = request.headers.get('accept', '')
+        if 'text/markdown' in accept and 'text/html' not in accept:
+            from .markdown_response import build_markdown_response
+            response = build_markdown_response(self, status_code)
+            background_tasks.create(self._deferred_delete(), name=f'delete markdown client {self.id}')
+            return response
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
         elements = json.dumps({
@@ -407,6 +413,11 @@ class Client:
                     with self.content:
                         await result
                 background_tasks.create(wait_for_result(), name=f'UI exception {handler.__name__}')
+
+    async def _deferred_delete(self) -> None:
+        """Yield control once, then delete this client."""
+        await asyncio.sleep(0)
+        self.delete()
 
     def delete(self) -> None:
         """Delete a client and all its elements.
