@@ -16,7 +16,7 @@ class NativeConfig:
     def on(self, event_type: str, handler: Handler[NativeEventArguments]) -> None:
         """Register a handler for a native window event.
 
-        Supported events: shown, loaded, minimized, maximized, restored, resized, moved, closed.
+        Supported events: shown, loaded, minimized, maximized, restored, resized, moved, closed, drop.
 
         :param event_type: the event name
         :param handler: callback, may accept a NativeEventArguments parameter or no parameters
