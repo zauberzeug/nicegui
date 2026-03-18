@@ -11,7 +11,6 @@ from .star import add_star
 
 HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
 STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding='utf-8')
-MAKEOVER_CSS = (Path(__file__).parent / 'static' / 'makeover.css').read_text(encoding='utf-8')
 
 FONT_LINKS = '''
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -23,7 +22,9 @@ FONT_LINKS = '''
 
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
-    ui.add_head_html(HEADER_HTML + FONT_LINKS + f'<style>{STYLE_CSS}</style>' + f'<style>{MAKEOVER_CSS}</style>')
+    ui.add_head_html(HEADER_HTML)
+    ui.add_head_html(FONT_LINKS)
+    ui.add_css(STYLE_CSS)
     ui.add_css(f'''
         {HtmlFormatter(nobackground=True, style="solarized-light").get_style_defs(".code-window .codehilite")}
         {HtmlFormatter(nobackground=True, style="solarized-dark").get_style_defs(".body--dark .code-window .codehilite")}

@@ -1,23 +1,60 @@
-html,
+/* ========== Design Tokens ========== */
+:root {
+  /* Light mode (default) */
+  --mo-bg: #fafbfc;
+  --mo-surface: #ffffff;
+  --mo-border: rgba(0, 0, 0, 0.06);
+  --mo-text-primary: #1a1d26;
+  --mo-text-secondary: #5c6370;
+  --mo-text-muted: #9ca3af;
+  --mo-brand-blue: #5898d4;
+  --mo-brand-blue-light: #7ab4e4;
+  --mo-warm-accent: #f0a050;
+  --mo-warm-glow: rgba(240, 160, 80, 0.07);
+  --mo-code-bg: #f0f4f8;
+  --mo-footer-bg: #edf0f3;
+}
+.body--dark {
+  --mo-bg: #0f1117;
+  --mo-surface: #181b23;
+  --mo-border: rgba(255, 255, 255, 0.08);
+  --mo-text-primary: #edeff3;
+  --mo-text-secondary: #8b929e;
+  --mo-text-muted: #565d6b;
+  --mo-code-bg: #1e222c;
+  --mo-footer-bg: color-mix(in srgb, var(--mo-bg) 70%, black);
+}
+
+/* ========== Base ========== */
+html {
+  background: var(--mo-bg) !important;
+  scroll-behavior: smooth;
+  max-width: 100%;
+  overflow-x: hidden;
+  --q-dark-page: #222;
+}
 body {
   max-width: 100%;
   overflow-x: hidden;
+}
+
+/* ========== Page-level overrides ========== */
+.mo-page {
+  background: var(--mo-bg) !important;
   font-family:
-    "Fira Sans",
-    Roboto,
+    "Inter",
+    system-ui,
     -apple-system,
-    "Helvetica Neue",
-    Helvetica,
-    Arial,
-    sans-serif;
-  --q-dark-page: #222;
+    sans-serif !important;
+  color: var(--mo-text-primary);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
 }
-html:has(body.body--light) {
-  background-color: #f8f8f8;
+.mo-page > .nicegui-content > * {
+  width: 100%;
 }
-html {
-  scroll-behavior: smooth;
-}
+
+/* ========== Typography ========== */
 .browser-window {
   font-family:
     Roboto,
@@ -35,6 +72,8 @@ html {
   font-style: normal;
   color: #5898d4;
 }
+
+/* ========== Links ========== */
 a:link:not(.browser-window *),
 a:visited:not(.browser-window *) {
   color: inherit !important;
@@ -54,6 +93,7 @@ a:active:not(.browser-window *) {
   vertical-align: -10%;
 }
 
+/* ========== Documentation tables ========== */
 .rst-param-tables table {
   text-align: left;
   table-layout: auto;
@@ -66,63 +106,6 @@ a:active:not(.browser-window *) {
 .rst-param-tables table th {
   padding-right: 1em;
 }
-
-.q-header {
-  height: 70px;
-  background-color: #5898d4;
-}
-.q-header.fade {
-  background-color: #5898d4d0;
-  backdrop-filter: blur(5px);
-}
-.body--dark .q-header {
-  background-color: #3e6a94;
-}
-.body--dark .q-header.fade {
-  background-color: #3e6a94d0;
-}
-
-.scroll-indicator:after {
-  content: "";
-  display: block;
-  width: 24px;
-  height: 24px;
-  margin: 8px;
-  border-left: 3px solid #444;
-  border-bottom: 3px solid #444;
-  -webkit-transform: rotate(-45deg);
-  transform: rotate(-45deg);
-  -webkit-animation: sdb04 2s infinite;
-  animation: sdb04 1.5s infinite;
-  transition-timing-function: ease;
-}
-.body--dark .scroll-indicator:after {
-  border-left: 3px solid #bbb;
-  border-bottom: 3px solid #bbb;
-}
-@-webkit-keyframes sdb04 {
-  0% {
-    -webkit-transform: rotate(-45deg) translate(0, 0);
-  }
-  15% {
-    -webkit-transform: rotate(-45deg) translate(-10px, 10px);
-  }
-  30% {
-    -webkit-transform: rotate(-45deg) translate(0, 0);
-  }
-}
-@keyframes sdb04 {
-  0% {
-    transform: rotate(-45deg) translate(0, 0);
-  }
-  15% {
-    transform: rotate(-45deg) translate(-10px, 10px);
-  }
-  30% {
-    transform: rotate(-45deg) translate(0, 0);
-  }
-}
-
 dl.field-list,
 dl.docinfo {
   display: grid;
@@ -144,15 +127,121 @@ dl.docinfo p {
   margin: 0;
 }
 
-.dark-box {
-  background-color: #5898d4;
-  width: 100%;
+/* ========== Header (frosted glass) ========== */
+.q-header {
+  height: 70px;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition:
+    background 0.2s,
+    backdrop-filter 0.2s,
+    box-shadow 0.2s;
 }
-.body--dark .dark-box {
-  background-color: #3e6a94;
+.q-header .svg_letter1,
+.q-header .svg_letter2 {
+  fill: var(--mo-text-primary) !important;
+  stroke: var(--mo-text-primary) !important;
+}
+.q-header .svg_face {
+  stroke: var(--mo-text-primary) !important;
+}
+.q-header svg:not([viewBox="0 0 62.44 71.74"]):not([viewBox="0 0 62.44 16.48"]),
+.q-header svg:not([viewBox="0 0 62.44 71.74"]):not([viewBox="0 0 62.44 16.48"]) path {
+  fill: var(--mo-text-secondary) !important;
+}
+.q-header a,
+.q-header .text-white,
+.q-header .text-lg {
+  color: var(--mo-text-secondary) !important;
+}
+.q-header .q-btn .q-icon,
+.q-header .q-btn__content,
+.q-header .q-btn {
+  color: var(--mo-text-secondary) !important;
+}
+.q-header .q-btn .q-icon.on-left {
+  color: var(--mo-text-secondary) !important;
+}
+.q-header.fade {
+  background: color-mix(in srgb, var(--mo-surface) 80%, transparent) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--mo-border) !important;
 }
 
-/* google-webfonts-helper (https://gwfh.mranftl.com/fonts) */
+/* ========== Mascot blink animation ========== */
+.mo-hero-mascot .svg_eye {
+  transform-origin: center 38px;
+  animation: mo-blink 5s ease-in-out infinite;
+}
+@keyframes mo-blink {
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.05);
+  }
+}
+
+/* ========== Scroll Reveal ========== */
+.mo-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+.mo-reveal.mo-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========== NiceGUI overrides ========== */
+a.mo-btn-primary,
+a.mo-btn-primary:link,
+a.mo-btn-primary:visited {
+  color: #fff !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+}
+a.mo-btn-primary:hover,
+a.mo-btn-primary:active {
+  opacity: 1 !important;
+  color: #fff !important;
+}
+a.mo-btn-secondary,
+a.mo-btn-secondary:link,
+a.mo-btn-secondary:visited {
+  text-decoration: none !important;
+  opacity: 1 !important;
+}
+a.mo-btn-secondary:hover,
+a.mo-btn-secondary:active {
+  opacity: 1 !important;
+}
+
+/* Transparent tab panels for demos */
+.mo-page .q-tab-panels,
+.mo-page .q-tab-panel {
+  background: transparent;
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  .mo-reveal {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+  * {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}
+
+/* ========== Fonts ========== */
 /* fira-sans-regular - latin */
 @font-face {
   font-family: "Fira Sans";
@@ -180,20 +269,6 @@ dl.docinfo p {
     /* Super Modern Browsers */ url("/fonts/fira-sans-v16-latin-500.woff") format("woff"),
     /* Modern Browsers */ url("/fonts/fira-sans-v16-latin-500.ttf") format("truetype"),
     /* Safari, Android, iOS */ url("/fonts/fira-sans-v16-latin-500.svg#FiraSans") format("svg"); /* Legacy iOS */
-}
-/* fira-sans-regular - latin */
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 400;
-  src: url("/fonts/fira-sans-v16-latin-regular.eot"); /* IE9 Compat Modes */
-  src:
-    local(""),
-    url("/fonts/fira-sans-v16-latin-regular.eot?#iefix") format("embedded-opentype"),
-    /* IE6-IE8 */ url("/fonts/fira-sans-v16-latin-regular.woff2") format("woff2"),
-    /* Super Modern Browsers */ url("/fonts/fira-sans-v16-latin-regular.woff") format("woff"),
-    /* Modern Browsers */ url("/fonts/fira-sans-v16-latin-regular.ttf") format("truetype"),
-    /* Safari, Android, iOS */ url("/fonts/fira-sans-v16-latin-regular.svg#FiraSans") format("svg"); /* Legacy iOS */
 }
 /* fira-sans-700 - latin */
 @font-face {

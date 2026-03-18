@@ -38,7 +38,6 @@ def create() -> None:
         </script>
     ''')
     ui.context.client.content.classes('mo-page')
-    ui.run_javascript('document.querySelector(".q-layout").classList.add("mo-header-transparent")')
 
     hero_section.create()
     about_section.create()
