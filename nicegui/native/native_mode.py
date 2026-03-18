@@ -10,13 +10,14 @@ import warnings
 from collections.abc import Callable
 from contextlib import suppress
 from multiprocessing.synchronize import Event as MultiprocessingEvent
+from pathlib import Path
 from threading import Event, Thread
 from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
-from . import native
+from . import native, window_icon
 
 with suppress(ImportError):
     with warnings.catch_warnings():
@@ -29,6 +30,7 @@ with suppress(ImportError):
 def _open_window(
     protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue,
+    favicon: str | Path | None = None,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -47,6 +49,24 @@ def _open_window(
     assert window is not None
     closed = Event()
     window.events.closed += closed.set
+
+    if sys.platform == 'win32' and favicon is not None and helpers.is_file(favicon):
+        favicon_path = Path(favicon)
+
+        def on_window_shown() -> None:
+            hwnd = window_icon.find_window_by_title(title)
+            if not hwnd:
+                log.warning('Could not find native window by title to set icon')
+                return
+            icon_path = str(favicon_path.resolve())
+            # Set window icon for title bar and Alt+Tab
+            if not window_icon.set_window_icon_windows(hwnd, icon_path):
+                log.warning('Could not set native window icon (unsupported format?)')
+            # Set property store for taskbar icon
+            app_id = f'nicegui.{title.replace(" ", "_")}'
+            window_icon.set_window_property_store(hwnd, app_id, icon_path)
+        window.events.shown += on_window_shown
+
     _start_window_method_executor(window, method_queue, response_queue, closed)
     webview.start(**core.app.native.start_args)
 
@@ -97,7 +117,8 @@ def _start_window_method_executor(window: webview.Window,
 
 
 def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-             shutdown_event: MultiprocessingEvent | None = None) -> None:
+             shutdown_event: MultiprocessingEvent | None = None,
+             favicon: str | Path | None = None) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
@@ -117,7 +138,8 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
 
     mp.freeze_support()
     native.create_queues()
-    args = protocol, host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    args = (protocol, host, port, title, width, height, fullscreen, frameless,
+            native.method_queue, native.response_queue, favicon)
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
