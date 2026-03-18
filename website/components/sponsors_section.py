@@ -3,6 +3,7 @@ from pathlib import Path
 
 from nicegui import ui
 
+from ..utils import themed_image
 from .shared import section, section_heading
 
 SPONSORS = json.loads((Path(__file__).parent.parent / 'sponsors.json').read_text(encoding='utf-8'))
@@ -21,10 +22,7 @@ def create() -> None:
                         if img_path.exists():
                             ui.interactive_image(f'/static/sponsors/{sponsor}.webp').classes('h-12')
                         else:
-                            ui.interactive_image(f'/static/sponsors/{sponsor}.light.webp') \
-                                .classes('h-12 block dark:!hidden')
-                            ui.interactive_image(f'/static/sponsors/{sponsor}.dark.webp') \
-                                .classes('h-12 hidden dark:!block')
+                            themed_image(f'/static/sponsors/{sponsor}.THEME.webp', classes='h-12')
                 for sponsor in SPONSORS['top']:
                     with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                         ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
