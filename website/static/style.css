@@ -33,6 +33,9 @@ html {
   overflow-x: hidden;
   --q-dark-page: #222;
 }
+html:has(.body--dark) {
+  background: #0f1117 !important;
+}
 body {
   max-width: 100%;
   overflow-x: hidden;
