@@ -101,25 +101,26 @@ class refreshable(Generic[_P, _T]):
         Otherwise, the refresh operations are executed in the background as fire-and-forget tasks.
         """
         self.prune()
+        instance = self.instance
 
         def fire_and_forget() -> None:
-            if coroutines := self._execute_refresh(args, kwargs):
+            if coroutines := self._execute_refresh(args, kwargs, instance=instance):
                 if core.loop and core.loop.is_running():
                     background_tasks.create(asyncio.gather(*coroutines), name=f'refresh {self.func.__name__}')
                 else:
                     core.app.on_startup(asyncio.gather(*coroutines))
 
         async def wait_for_completion() -> None:
-            if coroutines := self._execute_refresh(args, kwargs):
+            if coroutines := self._execute_refresh(args, kwargs, instance=instance):
                 await asyncio.gather(*coroutines)
 
         return AwaitableResponse(fire_and_forget, wait_for_completion)
 
-    def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> list[Awaitable[Any]]:
+    def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any], *, instance: Any) -> list[Awaitable[Any]]:
         """Execute the refresh and return a list of coroutines for async functions."""
         coroutines: list[Awaitable[Any]] = []
         for target in self.targets:
-            if target.instance != self.instance:
+            if target.instance != instance:
                 continue
             target.container.clear()
             target.args = args or target.args
