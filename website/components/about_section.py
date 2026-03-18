@@ -6,8 +6,9 @@ from .shared import section, section_label, section_title
 def create() -> None:
     """Create the about section with description text and interactive demo card."""
     with section('about'):
-        with ui.row().classes('mo-reveal items-center w-full gap-16 max-w-[1280px] mx-auto') \
-                .style('display: grid; grid-template-columns: 1.5fr 1fr'):
+        with ui.grid().classes(
+            'mo-reveal w-full grid-cols-[1.5fr_1fr] max-lg:grid-cols-1 gap-16 items-center justify-items-center'
+        ):
             with ui.column().classes('gap-0'):
                 section_label('about')
                 section_title('Interact with Python through buttons, dialogs, 3D\u00a0scenes, plots and much more.')
@@ -30,7 +31,7 @@ def create() -> None:
                     [GitHub](https://github.com/zauberzeug/nicegui).
                 ''').classes('bold-links text-(--mo-text-secondary)')
 
-            with ui.column().classes('rounded-2xl p-8 bg-(--mo-surface)') \
+            with ui.column().classes('rounded-2xl p-8 bg-(--mo-surface) w-full max-w-120') \
                     .style('border: 1px solid var(--mo-border); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08)'):
                 _simple_demo()
 
