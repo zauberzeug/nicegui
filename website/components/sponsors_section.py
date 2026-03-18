@@ -14,7 +14,7 @@ def create() -> None:
         section_heading('sponsors', 'Supported by the community.', center=True)
 
         if SPONSORS['special'] or SPONSORS['top']:
-            with ui.row().classes('flex gap-10 justify-center items-center flex-wrap my-10'):
+            with ui.row().classes('gap-10 justify-center items-center my-10 w-full'):
                 for sponsor in SPONSORS['special']:
                     with ui.link(target=SPONSORS['special'][sponsor]):
                         img_path = Path(__file__).parent.parent / 'static' / 'sponsors' / f'{sponsor}.webp'
@@ -33,12 +33,12 @@ def create() -> None:
             ui.markdown(f'''
                 as well as {SPONSORS['normal']} other [sponsors](https://github.com/sponsors/zauberzeug)
                 and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
-            ''').classes('text-center')
+            ''').classes('w-full text-center')
         else:
             ui.markdown(f'''
                 {SPONSORS['normal']} [sponsors](https://github.com/sponsors/zauberzeug)
                 and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
-            ''').classes('text-center')
+            ''').classes('w-full text-center')
 
         with ui.link(target='https://github.com/sponsors/zauberzeug').classes(
             'mo-btn-secondary inline-flex items-center gap-2 px-7 py-2.5 rounded-full'
