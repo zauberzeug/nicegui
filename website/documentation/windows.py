@@ -9,7 +9,7 @@ from .intersection_observer import IntersectionObserver as intersection_observer
 def code_window(code: str, *, icon: str = 'description', title: str = 'main.py', language: str = 'python') -> ui.column:
     """Create a window for code."""
     with ui.column().classes('rounded-xl gap-0 bg-(--mo-code-bg) code-window') as window:
-        with ui.row().classes('w-full px-4 py-2.5 items-center text-[0.8125rem] text-(--mo-text-muted)') \
+        with ui.row().classes('w-full px-4 h-16 items-center text-[0.8125rem] text-(--mo-text-muted)') \
                 .style('border-bottom: 1px solid var(--mo-border)'):
             ui.icon(icon).classes('text-base')
             ui.label(title)
@@ -35,7 +35,7 @@ def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy
     """Create a browser window."""
     with ui.column().classes('rounded-xl gap-0 bg-(--mo-surface) browser-window') \
             .style('border: 1px solid var(--mo-border)') as window:
-        with ui.row().classes('w-full px-4 py-2.5 items-center').style('border-bottom: 1px solid var(--mo-border)'):
+        with ui.row().classes('w-full px-4 h-16 items-center').style('border-bottom: 1px solid var(--mo-border)'):
             with ui.row().classes('items-center gap-2 text-[0.8125rem] text-(--mo-text-muted)'):
                 if callable(tab):
                     tab()
