@@ -57,38 +57,6 @@
   }
 }
 
-/* ========== Syntax highlighting (code windows) ========== */
-.mo-code-body .kw {
-  color: #8839b0;
-}
-.mo-code-body .str {
-  color: #3a7d44;
-}
-.mo-code-body .op {
-  color: #2b8a8a;
-}
-.mo-code-body .fn {
-  color: #2b6cb0;
-}
-.mo-code-body .num {
-  color: #b35c00;
-}
-.body--dark .mo-code-body .kw {
-  color: #c678dd;
-}
-.body--dark .mo-code-body .str {
-  color: #98c379;
-}
-.body--dark .mo-code-body .op {
-  color: #56b6c2;
-}
-.body--dark .mo-code-body .fn {
-  color: #61afef;
-}
-.body--dark .mo-code-body .num {
-  color: #d19a66;
-}
-
 /* ========== Scroll Reveal ========== */
 .mo-reveal {
   opacity: 0;
@@ -98,28 +66,6 @@
     transform 0.5s ease-out;
 }
 .mo-reveal.mo-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Staggered install steps */
-.mo-install-steps.mo-visible .mo-install-step:nth-child(1) {
-  transition-delay: 0ms;
-}
-.mo-install-steps.mo-visible .mo-install-step:nth-child(2) {
-  transition-delay: 250ms;
-}
-.mo-install-steps.mo-visible .mo-install-step:nth-child(3) {
-  transition-delay: 500ms;
-}
-.mo-install-step {
-  opacity: 0;
-  transform: translateY(16px);
-  transition:
-    opacity 0.5s ease-out,
-    transform 0.5s ease-out;
-}
-.mo-install-steps.mo-visible .mo-install-step {
   opacity: 1;
   transform: translateY(0);
 }

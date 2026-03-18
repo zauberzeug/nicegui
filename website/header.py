@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from pygments.formatters import HtmlFormatter
+
 from nicegui import app, ui
 
 from . import svg
@@ -22,6 +24,10 @@ FONT_LINKS = '''
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
     ui.add_head_html(HEADER_HTML + FONT_LINKS + f'<style>{STYLE_CSS}</style>' + f'<style>{MAKEOVER_CSS}</style>')
+    ui.add_css(f'''
+        {HtmlFormatter(nobackground=True, style="solarized-light").get_style_defs(".code-window .codehilite")}
+        {HtmlFormatter(nobackground=True, style="solarized-dark").get_style_defs(".body--dark .code-window .codehilite")}
+    ''')
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
         ui.add_head_html('''
             <!-- Privacy-friendly analytics by Plausible -->

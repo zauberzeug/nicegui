@@ -1,7 +1,7 @@
 from nicegui import ui
 from nicegui.testing import Screen
 
-from ..windows import python_window
+from ..windows import code_window, python_window
 from . import doc
 
 
@@ -14,22 +14,19 @@ def screen_fixture():
         Therefore we recommend to only use it if you absolutely have to.
     ''').classes('bold-links arrow-links')
 
-    with python_window(classes='w-[600px]', title='example'):
-        ui.markdown('''
-            ```python
-            from selenium.webdriver.common.keys import Keys
+    python_window(title='example', code='''
+        from selenium.webdriver.common.keys import Keys
 
-            screen.open('/')
-            screen.type(Keys.TAB) # to focus on the first input
-            screen.type('user1')
-            screen.type(Keys.TAB) # to focus the second input
-            screen.type('pass1')
-            screen.click('Log in')
-            screen.should_contain('Hello user1!')
-            screen.click('logout')
-            screen.should_contain('Log in')
-            ```
-        ''')
+        screen.open('/')
+        screen.type(Keys.TAB) # to focus on the first input
+        screen.type('user1')
+        screen.type(Keys.TAB) # to focus the second input
+        screen.type('pass1')
+        screen.click('Log in')
+        screen.should_contain('Hello user1!')
+        screen.click('logout')
+        screen.should_contain('Log in')
+    ''')
 
 
 doc.text('Configuration', '''
@@ -50,14 +47,11 @@ def web_driver():
         To automatically use it for the tests we suggest to add the option `--driver Chrome` to your `pytest.ini`:
     ''').classes('bold-links arrow-links')
 
-    with python_window(classes='w-[600px] h-42', title='pytest.ini'):
-        ui.markdown('''
-            ```ini
-            [pytest]
-            asyncio_mode = auto
-            addopts = "--driver Chrome"
-            ```
-        ''')
+    code_window(title='pytest.ini', language='ini', code='''
+        [pytest]
+        asyncio_mode = auto
+        addopts = "--driver Chrome"
+    ''')
 
 
 doc.reference(Screen)

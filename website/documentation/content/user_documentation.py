@@ -1,7 +1,7 @@
 from nicegui import ui
 from nicegui.testing import User, UserInteraction
 
-from ..windows import python_window
+from ..windows import code_window, python_window
 from . import doc
 
 
@@ -18,17 +18,14 @@ def user_fixture():
         where UI tests are considered to be slow, error prone and expensive, does not apply anymore 🚀.
     ''').classes('bold-links arrow-links')
 
-    with python_window(classes='w-[600px]', title='example'):
-        ui.markdown('''
-            ```python
-            await user.open('/')
-            user.find('Username').type('user1')
-            user.find('Password').type('pass1').trigger('keydown.enter')
-            await user.should_see('Hello user1!')
-            user.find('logout').click()
-            await user.should_see('Log in')
-            ```
-        ''')
+    python_window(title='example', code='''
+        await user.open('/')
+        user.find('Username').type('user1')
+        user.find('Password').type('pass1').trigger('keydown.enter')
+        await user.should_see('Hello user1!')
+        user.find('logout').click()
+        await user.should_see('Log in')
+    ''')
 
     ui.markdown('''
         **NOTE:** The `user` fixture might still miss some features.
@@ -53,21 +50,15 @@ def async_execution():
     ''').classes('bold-links arrow-links')
 
     with ui.row(wrap=False).classes('gap-4 items-center'):
-        with python_window(classes='w-[300px] h-42', title='pytest.ini'):
-            ui.markdown('''
-                ```ini
-                [pytest]
-                asyncio_mode = auto
-                ```
-            ''')
+        code_window(title='pytest.ini', language='ini', code='''
+            [pytest]
+            asyncio_mode = auto
+        ''')
         ui.label('or').classes('text-2xl')
-        with python_window(classes='w-[300px] h-42', title='pyproject.toml'):
-            ui.markdown('''
-                ```toml
-                [tool.pytest.ini_options]
-                asyncio_mode = "auto"
-                ```
-            ''')
+        code_window(title='pyproject.toml', language='toml', code='''
+            [tool.pytest.ini_options]
+            asyncio_mode = "auto"
+        ''')
 
 
 doc.text('Querying', '''
@@ -81,30 +72,24 @@ doc.text('Querying', '''
 @doc.ui
 def querying():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[400px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                with ui.row():
-                    ui.label('Hello World!').mark('greeting')
-                    ui.icon('star')
-                with ui.row():
-                    ui.label('Hello Universe!')
-                    ui.input(placeholder='Type here')
-                ```
-            ''')
+        python_window(title='some UI code', code='''
+            with ui.row():
+                ui.label('Hello World!').mark('greeting')
+                ui.icon('star')
+            with ui.row():
+                ui.label('Hello Universe!')
+                ui.input(placeholder='Type here')
+        ''')
 
-        with python_window(classes='w-[600px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                await user.should_see('greeting')
-                await user.should_see('star')
-                await user.should_see('Hello Universe!')
-                await user.should_see('Type here')
-                await user.should_see('Hello')
-                await user.should_see(marker='greeting')
-                await user.should_see(kind=ui.icon)
-                ```
-            ''')
+        python_window(title='user assertions', code='''
+            await user.should_see('greeting')
+            await user.should_see('star')
+            await user.should_see('Hello Universe!')
+            await user.should_see('Type here')
+            await user.should_see('Hello')
+            await user.should_see(marker='greeting')
+            await user.should_see(kind=ui.icon)
+        ''')
 
 
 doc.text('User Interaction', '''
@@ -119,21 +104,15 @@ doc.text('User Interaction', '''
 @doc.ui
 def trigger_events():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                fruits = ['apple', 'banana', 'cherry']
-                ui.input(label='fruit', autocomplete=fruits)
-                ```
-            ''')
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                await user.open('/')
-                user.find('fruit').type('a').trigger('keydown.tab')
-                await user.should_see('apple')
-                ```
-            ''')
+        python_window(title='some UI code', code='''
+            fruits = ['apple', 'banana', 'cherry']
+            ui.input(label='fruit', autocomplete=fruits)
+        ''')
+        python_window(title='user assertions', code='''
+            await user.open('/')
+            user.find('fruit').type('a').trigger('keydown.tab')
+            await user.should_see('apple')
+        ''')
 
 
 doc.text('Selecting options', '''
@@ -151,27 +130,21 @@ doc.text('Selecting options', '''
 @doc.ui
 def selecting_options_in_a_select():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='UI code'):
-            ui.markdown('''
-                ```python
-                ui.select(
-                    ['Apple', 'Banana', 'Cherry'],
-                    label='Fruits',
-                    multiple=True,
-                    on_change=lambda e: ui.notify(', '.join(e.value)),
-                )
-                ```
-            ''')
+        python_window(title='UI code', code='''
+            ui.select(
+                ['Apple', 'Banana', 'Cherry'],
+                label='Fruits',
+                multiple=True,
+                on_change=lambda e: ui.notify(', '.join(e.value)),
+            )
+        ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                user.find('Fruits').click()
-                user.find('Apple').click()
-                user.find('Banana').click()
-                await user.should_see('Apple, Banana')
-                ```
-            ''')
+        python_window(title='user assertions', code='''
+            user.find('Fruits').click()
+            user.find('Apple').click()
+            user.find('Banana').click()
+            await user.should_see('Apple, Banana')
+        ''')
 
 
 doc.text('Using an ElementFilter', '''
@@ -188,26 +161,20 @@ doc.text('Using an ElementFilter', '''
 @doc.ui
 def using_an_elementfilter():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[400px]', title='UI code'):
-            ui.markdown('''
-                ```python
-                ui.label('1').mark('number')
-                ui.label('2').mark('number')
-                ui.label('3').mark('number')
-                ```
-            ''')
+        python_window(title='UI code', code='''
+            ui.label('1').mark('number')
+            ui.label('2').mark('number')
+            ui.label('3').mark('number')
+        ''')
 
-        with python_window(classes='w-[600px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                with user:
-                    elements = list(ElementFilter(marker='number'))
-                    assert len(elements) == 3
-                    assert elements[0].text == '1'
-                    assert elements[1].text == '2'
-                    assert elements[2].text == '3'
-                ```
-            ''')
+        python_window(title='user assertions', code='''
+            with user:
+                elements = list(ElementFilter(marker='number'))
+                assert len(elements) == 3
+                assert elements[0].text == '1'
+                assert elements[1].text == '2'
+                assert elements[2].text == '3'
+        ''')
 
 
 doc.text('Complex elements', '''
@@ -220,46 +187,40 @@ doc.text('Complex elements', '''
 @doc.ui
 def upload_table():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                async def receive_file(e: events.UploadEventArguments):
-                    content = await e.file.text()
-                    reader = csv.DictReader(content.splitlines())
-                    ui.table(
-                        columns=[{
-                            'name': h,
-                            'label': h.capitalize(),
-                            'field': h,
-                        } for h in reader.fieldnames or []],
-                        rows=list(reader),
-                    )
+        python_window(title='some UI code', code='''
+            async def receive_file(e: events.UploadEventArguments):
+                content = await e.file.text()
+                reader = csv.DictReader(content.splitlines())
+                ui.table(
+                    columns=[{
+                        'name': h,
+                        'label': h.capitalize(),
+                        'field': h,
+                    } for h in reader.fieldnames or []],
+                    rows=list(reader),
+                )
 
-                ui.upload(on_upload=receive_file)
-                ```
-            ''')
+            ui.upload(on_upload=receive_file)
+        ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                from nicegui import ui
+        python_window(title='user assertions', code='''
+            from nicegui import ui
 
-                upload = user.find(ui.upload).elements.pop()
-                await upload.handle_uploads([
-                    ui.upload.SmallFileUpload('data.csv', 'text/csv', b'name,age\\nAlice,30\\nBob,28')
-                ])
-                await user.should_see(ui.table)
-                table = user.find(ui.table).elements.pop()
-                assert table.columns == [
-                    {'name': 'name', 'label': 'Name', 'field': 'name'},
-                    {'name': 'age', 'label': 'Age', 'field': 'age'},
-                ]
-                assert table.rows == [
-                    {'name': 'Alice', 'age': '30'},
-                    {'name': 'Bob', 'age': '28'},
-                ]
-                ```
-            ''')
+            upload = user.find(ui.upload).elements.pop()
+            await upload.handle_uploads([
+                ui.upload.SmallFileUpload('data.csv', 'text/csv', b'name,age\\nAlice,30\\nBob,28')
+            ])
+            await user.should_see(ui.table)
+            table = user.find(ui.table).elements.pop()
+            assert table.columns == [
+                {'name': 'name', 'label': 'Name', 'field': 'name'},
+                {'name': 'age', 'label': 'Age', 'field': 'age'},
+            ]
+            assert table.rows == [
+                {'name': 'Alice', 'age': '30'},
+                {'name': 'Bob', 'age': '28'},
+            ]
+        ''')
 
 
 doc.text('Test Downloads', '''
@@ -273,28 +234,22 @@ doc.text('Test Downloads', '''
 @doc.ui
 def check_outbox():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                @ui.page('/')
-                def page():
-                    def download():
-                        ui.download(b'Hello', filename='hello.txt')
+        python_window(title='some UI code', code='''
+            @ui.page('/')
+            def page():
+                def download():
+                    ui.download(b'Hello', filename='hello.txt')
 
-                    ui.button('Download', on_click=download)
-                ```
-            ''')
+                ui.button('Download', on_click=download)
+        ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                await user.open('/')
-                assert len(user.download.http_responses) == 0
-                user.find('Download').click()
-                response = await user.download.next()
-                assert response.text == 'Hello'
-                ```
-            ''')
+        python_window(title='user assertions', code='''
+            await user.open('/')
+            assert len(user.download.http_responses) == 0
+            user.find('Download').click()
+            response = await user.download.next()
+            assert response.text == 'Hello'
+        ''')
 
 
 doc.text('Multiple Users', '''
@@ -308,22 +263,19 @@ doc.text('Multiple Users', '''
 
 @doc.ui
 def multiple_users():
-    with python_window(classes='w-[600px]', title='example'):
-        ui.markdown('''
-            ```python
-            async def test_chat(create_user: Callable[[], User]) -> None:
-                user1 = create_user()
-                await user1.open('/')
-                user2 = create_user()
-                await user2.open('/')
+    python_window(title='example', code='''
+        async def test_chat(create_user: Callable[[], User]) -> None:
+            user1 = create_user()
+            await user1.open('/')
+            user2 = create_user()
+            await user2.open('/')
 
-                user1.find(ui.input).type('from A').trigger('keydown.enter')
-                await user2.should_see('from A')
-                user2.find(ui.input).type('from B').trigger('keydown.enter')
-                await user1.should_see('from A')
-                await user1.should_see('from B')
-            ```
-        ''')
+            user1.find(ui.input).type('from A').trigger('keydown.enter')
+            await user2.should_see('from A')
+            user2.find(ui.input).type('from B').trigger('keydown.enter')
+            await user1.should_see('from A')
+            await user1.should_see('from B')
+    ''')
 
 
 doc.text('Simulate JavasScript', '''
@@ -338,26 +290,20 @@ doc.text('Simulate JavasScript', '''
 @doc.ui
 def simulate_javascript():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[500px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                @ui.page('/')
-                async def page():
-                    await context.client.connected()
-                    date = await ui.run_javascript('Math.sqrt(1764)')
-                    ui.label(date)
-                ```
-            ''')
+        python_window(title='some UI code', code='''
+            @ui.page('/')
+            async def page():
+                await context.client.connected()
+                date = await ui.run_javascript('Math.sqrt(1764)')
+                ui.label(date)
+        ''')
 
-        with python_window(classes='w-[500px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                user.javascript_rules[re.compile(r'Math.sqrt\\((\\d+)\\)')] = \\
-                    lambda match: int(match.group(1))**0.5
-                await user.open('/')
-                await user.should_see('42')
-                ```
-            ''')
+        python_window(title='user assertions', code='''
+            user.javascript_rules[re.compile(r'Math.sqrt\\((\\d+)\\)')] = \\
+                lambda match: int(match.group(1))**0.5
+            await user.open('/')
+            await user.should_see('42')
+        ''')
 
 
 doc.text('Comparison with the screen fixture', '''
@@ -390,51 +336,42 @@ doc.text('User Simulation Context', '''
 @doc.ui
 def user_simulation_examples():
     with ui.row().classes('gap-4 items-stretch'):
-        with python_window(classes='w-[700px]', title='script mode with root'):
-            ui.markdown('''
-                ```python
-                from nicegui.testing import user_simulation
+        python_window(title='script mode with root', code='''
+            from nicegui.testing import user_simulation
 
-                async def test_click_via_root():
-                    def root():
-                        ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
+            async def test_click_via_root():
+                def root():
+                    ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
 
-                    async with user_simulation(root) as user:
-                        await user.open('/')
-                        await user.should_see('Click me')
-                        user.find(ui.button).click()
-                        await user.should_see('Hello World!')
-                ```
-            ''')
+                async with user_simulation(root) as user:
+                    await user.open('/')
+                    await user.should_see('Click me')
+                    user.find(ui.button).click()
+                    await user.should_see('Hello World!')
+        ''')
 
-        with python_window(classes='w-[700px]', title='main file via path'):
-            ui.markdown('''
-                ```python
-                from nicegui.testing import user_simulation
+        python_window(title='main file via path', code='''
+            from nicegui.testing import user_simulation
 
-                async def test_click_via_main_file():
-                    async with user_simulation(main_file='app.py') as user:
-                        await user.open('/')
-                        await user.should_see('Main file content')
-                ```
-            ''')
+            async def test_click_via_main_file():
+                async with user_simulation(main_file='app.py') as user:
+                    await user.open('/')
+                    await user.should_see('Main file content')
+        ''')
 
-        with python_window(classes='w-[700px]', title='inline UI definitions'):
-            ui.markdown('''
-                ```python
-                from nicegui.testing import user_simulation
+        python_window(title='inline UI definitions', code='''
+            from nicegui.testing import user_simulation
 
-                async def test_inline_pages():
-                    async with user_simulation() as user:
+            async def test_inline_pages():
+                async with user_simulation() as user:
 
-                        @ui.page('/')
-                        def main_page():
-                            ui.label('Main page')
+                    @ui.page('/')
+                    def main_page():
+                        ui.label('Main page')
 
-                        await user.open('/')
-                        await user.should_see('Main page')
-                ```
-            ''')
+                    await user.open('/')
+                    await user.should_see('Main page')
+        ''')
 
 
 doc.reference(User, title='User Reference')

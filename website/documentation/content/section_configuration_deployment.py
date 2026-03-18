@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from ..windows import bash_window, python_window
+from ..windows import bash_window
 from . import doc, run_documentation
 
 doc.title('Configuration & Deployment')
@@ -179,17 +179,14 @@ doc.text('Server Hosting', '''
 
 @doc.ui
 def docker_run():
-    with bash_window(classes='max-w-lg w-full h-44'):
-        ui.markdown('''
-            ```bash
-            docker run -it --restart always \\
+    bash_window('''
+        docker run -it --restart always \\
             -p 80:8080 \\
             -e PUID=$(id -u) \\
             -e PGID=$(id -g) \\
             -v $(pwd)/:/app/ \\
             zauberzeug/nicegui:latest
-            ```
-        ''')
+    ''')
 
 
 doc.text('', '''

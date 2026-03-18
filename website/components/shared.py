@@ -40,26 +40,3 @@ def section_heading(label: str, title: str, description: str = '', *, center: bo
         section_title(title)
         if description:
             section_desc(description)
-
-
-def code_window(filename: str, icon: str, code_html: str) -> None:
-    """Styled code window with filename header and syntax-highlighted body."""
-    with ui.column().classes('rounded-xl overflow-hidden font-mono text-sm leading-relaxed gap-0 bg-(--mo-code-bg)'):
-        with ui.row().classes('items-center justify-between px-4 py-2.5') \
-                .style('border-bottom: 1px solid var(--mo-border)'):
-            with ui.row().classes('items-center gap-2 text-[0.8125rem] text-(--mo-text-muted)'):
-                ui.icon(icon).classes('text-base')
-                ui.label(filename)
-        ui.html(
-            f'<div class="mo-code-body" style="padding: 16px 20px; overflow-x: auto; white-space: pre; color: var(--mo-text-primary)">{code_html}</div>', sanitize=False)
-
-
-def browser_window(url: str = 'localhost:8080') -> ui.column:
-    """Styled browser preview window. Use as context manager to add content."""
-    with ui.column().classes('rounded-xl overflow-hidden gap-0') \
-            .style('background: var(--mo-surface); border: 1px solid var(--mo-border)') as col:
-        with ui.row().classes('items-center px-4 py-2.5').style('border-bottom: 1px solid var(--mo-border)'):
-            with ui.row().classes('items-center gap-2 text-[0.8125rem] text-(--mo-text-muted)'):
-                ui.icon('language').classes('text-base')
-                ui.label(url)
-    return col

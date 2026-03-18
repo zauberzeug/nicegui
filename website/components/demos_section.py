@@ -1,9 +1,10 @@
 import random
-import time
 
 from nicegui import ui
 
-from .shared import browser_window, code_window, section, section_heading
+from ..documentation.content.sub_pages_documentation import FakeSubPages
+from ..documentation.demo import demo
+from .shared import section, section_heading
 
 
 def create() -> None:
@@ -34,84 +35,82 @@ def _demo_playground() -> ui.element:
 
 
 def _spa_demo() -> None:
-    with _demo_playground():
-        code_window('main.py', 'description', (
-            '<span class="kw">from</span> nicegui <span class="kw">import</span> ui\n'
-            '\n'
-            '<span class="kw">with</span> ui.sub_pages(<span class="str">\'/\'</span>):\n'
-            '    <span class="kw">with</span> ui.page(<span class="str">\'/\'</span>):\n'
-            '        ui.label(<span class="str">\'Home\'</span>)\n'
-            '        ui.link(<span class="str">\'Go to about\'</span>, <span class="str">\'/about\'</span>)\n'
-            '\n'
-            '    <span class="kw">with</span> ui.page(<span class="str">\'/about\'</span>):\n'
-            '        ui.label(<span class="str">\'About page\'</span>)\n'
-            '        ui.link(<span class="str">\'Go home\'</span>, <span class="str">\'/\'</span>)\n'
-            '\n'
-            'ui.run()'
-        ))
-        with browser_window():
-            with ui.column().classes('p-6'):
-                ui.label('Home').classes('text-xl font-medium mb-3')
-                ui.link('Go to about \u2192', '#').classes('text-(--mo-brand-blue)')
+    @demo
+    def spa_demo():
+        sub_pages = None  # HIDE
+
+        def root():
+            # ui.sub_pages({
+            #     '/': table_page,
+            #     '/map/{lat}/{lon}': map_page,
+            # }).classes('w-full')
+            nonlocal sub_pages  # HIDE
+            sub_pages = FakeSubPages({'/': table_page, '/map/{lat}/{lon}': map_page}).classes('w-full')  # HIDE
+            sub_pages.init()  # HIDE
+
+        def table_page():
+            ui.table(rows=[
+                {'name': 'New York', 'lat': 40.7119, 'lon': -74.0027},
+                {'name': 'London', 'lat': 51.5074, 'lon': -0.1278},
+                {'name': 'Tokyo', 'lat': 35.6863, 'lon': 139.7722},
+            ]).props('flat bordered') \
+                .on('row-click',  # HIDE
+                    lambda e: sub_pages._render('/map/{lat}/{lon}', lat=e.args[1]['lat'], lon=e.args[1]['lon']))  # HIDE
+            #     .on('row-click', lambda e: ui.navigate.to(f'/map/{e.args[1]["lat"]}/{e.args[1]["lon"]}'))
+
+        def map_page(lat: float, lon: float):
+            ui.leaflet(center=(lat, lon), zoom=10)
+            # ui.link('Back to table', '/')
+            sub_pages.link('Back to table', '/')  # HIDE
+
+        return root
 
 
 def _reactive_demo() -> None:
-    with _demo_playground():
-        code_window('main.py', 'description', (
-            '<span class="kw">from</span> nicegui <span class="kw">import</span> ui\n'
-            '\n'
-            'user_input = ui.input(value=<span class="str">\'Hello\'</span>)\n'
-            'ui.label().bind_text_from(\n'
-            '    user_input, <span class="str">\'value\'</span>, reverse\n'
-            ')\n'
-            '\n'
-            '<span class="kw">def</span> <span class="fn">reverse</span>(text: str) -> str:\n'
-            '    <span class="kw">return</span> text[::-<span class="num">1</span>]\n'
-            '\n'
-            'ui.run()'
-        ))
-        with browser_window():
-            with ui.column().classes('p-6'):
-                user_input = ui.input(value='Hello').classes('w-full')
-                result = ui.label('olleH').classes('text-lg mt-2')
-                user_input.on('update:model-value', lambda e: result.set_text(e.args[::-1]))
+    @demo
+    def reactive_demo():
+        def root():
+            user_input = ui.input(value='Hello')
+            ui.label().bind_text_from(user_input, 'value', reverse)
+
+        def reverse(text: str) -> str:
+            return text[::-1]
+
+        return root
 
 
 def _event_demo() -> None:
-    with _demo_playground():
-        code_window('main.py', 'description', (
-            '<span class="kw">from</span> nicegui <span class="kw">import</span> Event, app, ui\n'
-            '\n'
-            'sensor = Event[float]()\n'
-            '\n'
-            '<span class="op">@</span>app.post(<span class="str">\'/sensor\'</span>)\n'
-            '<span class="kw">def</span> <span class="fn">sensor_webhook</span>(temperature: float):\n'
-            '    sensor.emit(temperature)\n'
-            '\n'
-            'chart = ui.echart({...})\n'
-            '\n'
-            '<span class="kw">def</span> <span class="fn">update_chart</span>(temperature: float):\n'
-            '    data = chart.options[<span class="str">\'series\'</span>][<span class="num">0</span>]'
-            '[<span class="str">\'data\'</span>]\n'
-            '    data.append([time.time(), temperature])\n'
-            '\n'
-            'sensor.subscribe(update_chart)\n'
-            'ui.run()'
-        ))
-        with browser_window():
-            with ui.column().classes('p-6 w-full'):
-                chart = ui.echart({
-                    'xAxis': {'type': 'time', 'axisLabel': {'hideOverlap': True}},
-                    'yAxis': {'type': 'value', 'min': 'dataMin'},
-                    'series': [{'type': 'line', 'data': [], 'smooth': True}],
-                }).classes('w-full h-48')
-                data = chart.options['series'][0]['data']
-                data.append([time.time() * 1000, 24.0])
+    @demo
+    def event_demo():
+        import time
 
-                def add_point() -> None:
-                    d = chart.options['series'][0]['data']
-                    d.append([time.time() * 1000, round(d[-1][1] + (random.random() - 0.5), 1)])
-                    if len(d) > 10:
-                        d.pop(0)
-                    chart.update()
-                ui.timer(1.5, add_point)
+        from nicegui import Event, app
+
+        sensor = Event[float]()
+
+        # @app.post('/sensor')
+        def sensor_webhook(temperature: float):
+            sensor.emit(temperature)
+
+        def root():
+            chart = ui.echart({
+                'xAxis': {'type': 'time', 'axisLabel': {'hideOverlap': True}},
+                'yAxis': {'type': 'value', 'min': 'dataMin'},
+                'series': [{'type': 'line', 'data': [], 'smooth': True}],
+            })
+
+            def update_chart(temperature: float):
+                data = chart.options['series'][0]['data']
+                data.append([time.time(), temperature])
+                if len(data) > 10:
+                    data.pop(0)
+
+            sensor.subscribe(update_chart)
+            # END OF DEMO
+
+            data = chart.options['series'][0]['data']
+            data.append([time.time(), 24.0])
+            ui.timer(1.0, lambda: update_chart(round(data[-1][1] + (random.random() - 0.5), 1)), immediate=False)
+        app  # noqa: B018 to avoid unused import warning
+
+        return root
