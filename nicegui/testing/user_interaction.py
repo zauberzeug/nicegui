@@ -115,6 +115,11 @@ class UserInteraction(Generic[T]):
                     element.value = target_value
                     return self
 
+                elif isinstance(element, ui.tab):
+                    if isinstance(element.tabs, ui.tabs):
+                        element.tabs.value = element.props['name']
+                    return self
+
                 elif isinstance(element, ui.tree) and isinstance(self.target, str):
                     NODE_KEY = element.props.get('node-key')
                     LABEL_KEY = element.props.get('label-key')
