@@ -1,5 +1,7 @@
 from nicegui import ui
 
+from ..utils import phosphor_icon
+
 
 def create() -> None:
     """Create the 4-column footer with brand, links, and bottom bar."""
@@ -50,6 +52,6 @@ def _column(title: str, links: list[tuple[str, str]]) -> None:
 def _icon_link(icon: str, url: str) -> None:
     """Render a circular icon link with hover effect."""
     with ui.link(target=url).classes(
-        'size-9 rounded-full flex items-center justify-center pt-1 transition-colors duration-150'
+        'size-9 rounded-full flex items-center justify-center transition-colors duration-150'
     ).style('border: 1px solid var(--mo-border)'):
-        ui.html(f'<i class="ph-duotone {icon}"></i>', sanitize=False).classes('opacity-50')
+        phosphor_icon(icon).classes('opacity-50')
