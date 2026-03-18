@@ -44,5 +44,5 @@ def _simple_demo() -> None:
     with ui.column().classes('gap-3 mt-4 w-full items-stretch'):
         ui.button('Click me!', on_click=lambda: output.set_text('Clicked!')).props('unelevated no-caps')
         ui.input(placeholder='Type here...', on_change=lambda e: output.set_text(e.value)).props('outlined dense')
-        ui.slider(min=0, max=100, value=50, on_change=lambda e: output.set_text(e.value))
+        ui.slider(min=0, max=100, value=50, on_change=lambda e: output.set_text(f'{e.value:.0f}%'))
         ui.checkbox('Check me', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
