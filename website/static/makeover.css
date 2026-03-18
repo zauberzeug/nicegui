@@ -26,6 +26,9 @@
 }
 
 /* ========== Page-level overrides ========== */
+html {
+  background: var(--mo-bg) !important;
+}
 .mo-page {
   background: var(--mo-bg) !important;
   font-family:
