@@ -21,21 +21,6 @@ def section_heading(subtitle_: str, title_: str) -> None:
     ui.markdown(title_).classes('text-3xl md:text-5xl font-medium mt-[-12px] fancy-em')
 
 
-def heading(title_: str) -> ui.markdown:
-    """Render a heading."""
-    return ui.markdown(title_).classes('text-2xl md:text-3xl xl:text-4xl font-medium text-white')
-
-
-def title(content: str) -> ui.markdown:
-    """Render a title."""
-    return ui.markdown(content).classes('text-4xl sm:text-5xl md:text-6xl font-medium fancy-em')
-
-
-def subtitle(content: str) -> ui.markdown:
-    """Render a subtitle."""
-    return ui.markdown(content).classes('text-xl sm:text-2xl md:text-3xl leading-9')
-
-
 def example_link(example: Example | None = None) -> ui.link:
     """Render a link to an example."""
     with ui.link(target=example.url if example else '/examples') \
@@ -49,21 +34,6 @@ def example_link(example: Example | None = None) -> ui.link:
             ui.interactive_image(example.screenshot) \
                 .classes('w-full object-contain border border-gray-300 rounded-md overflow-hidden aspect-16/9')
     return link
-
-
-def features(icon: str, title_: str, items: list[str]) -> None:
-    """Render a list of features."""
-    with ui.column().classes('gap-1'):
-        ui.icon(icon).classes('max-sm:hidden text-3xl md:text-5xl mb-3 text-primary opacity-80')
-        ui.label(title_).classes('font-bold mb-3')
-        ui.markdown('\n'.join(f'- {item}' for item in items)).classes('bold-links arrow-links -ml-4')
-
-
-def side_menu() -> ui.left_drawer:
-    """Render the side menu."""
-    return ui.left_drawer() \
-        .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
-        .style('height: calc(100% + 20px) !important')
 
 
 def subheading(text: str, *, link: str | None = None, major: bool = False, anchor_name: str | None = None) -> None:
