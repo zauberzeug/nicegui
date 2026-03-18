@@ -43,7 +43,7 @@ def create() -> None:
                     ui.html('<code>pip install nicegui</code>', sanitize=False)
                     ui.icon('content_copy').classes('text-sm opacity-50')
 
-            ui.html('''<p style="font-size: 0.875rem; color: var(--mo-text-muted)">
-                <span style="color: var(--mo-warm-accent)">&#9733; 15,000+ GitHub stars</span>
-                &middot; Loved by robotics, IoT, and ML teams worldwide
-            </p>''', sanitize=False)
+            with ui.row().classes('text-sm text-(--mo-text-muted) gap-2'):
+                ui.html('&#9733; 15,000+ GitHub stars').classes('text-(--mo-warm-accent)')
+                ui.html('&middot;')
+                ui.label('Loved by robotics, IoT, and ML teams worldwide')
