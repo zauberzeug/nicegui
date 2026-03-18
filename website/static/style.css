@@ -130,6 +130,7 @@ dl.docinfo p {
 /* ========== Header (frosted glass) ========== */
 .q-header {
   height: 70px;
+  color: var(--mo-text-secondary) !important;
   background: transparent !important;
   box-shadow: none !important;
   transition:
