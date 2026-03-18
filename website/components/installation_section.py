@@ -7,7 +7,7 @@ from .shared import section, section_heading
 def create() -> None:
     """Create the installation section with 3-step flow and Docker expansion."""
     with section('installation'):
-        section_heading('get_started', 'Three lines to a running app.',
+        section_heading('installation', 'Three lines to a running app.',
                         'Write a Python file, install and run \u2014 that\u2019s it.')
 
         with ui.grid().classes('grid-cols-3 max-lg:grid-cols-1 w-full gap-6 items-stretch'):
