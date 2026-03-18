@@ -151,12 +151,12 @@ def create_tiles():
                 ' class="border-0 outline-[1px] outline-offset-[-1px] outline-[#d1d9e0] dark:outline-[#3d444d] rounded"></iframe>', sanitize=False)
     for documentation, description in tiles:
         page = doc.get_page(documentation)
-        with ui.link(target=f'/documentation/{page.name}') \
-                .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
-                .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
+        with ui.link(target=f'/documentation/{page.name}').classes(
+            'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5'
+        ).style('background: var(--mo-surface); border: 1px solid var(--mo-border)'):
             if page.title:
-                ui.label(page.title.replace('*', '')).classes(replace='text-2xl')
-            ui.markdown(description).classes(replace='bold-links arrow-links')
+                ui.label(page.title.replace('*', '')).classes('text-lg font-semibold mb-1')
+            ui.markdown(description).classes('text-sm leading-normal text-(--mo-text-secondary)')
 
 
 @doc.ui
