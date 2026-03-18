@@ -6,8 +6,7 @@ from .. import svg
 def create() -> None:
     """Create the hero section with mascot, title, CTAs, and social proof."""
     with ui.element('section').classes(
-        'mo-hero min-h-screen flex flex-col items-center justify-center text-center'
-        ' px-6 pb-20 relative overflow-hidden w-full bg-(--mo-bg)'
+        'min-h-screen flex flex-col items-center justify-center text-center px-6 pb-20 relative overflow-hidden w-full bg-(--mo-bg)'
     ):
         ui.element().classes('absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] pointer-events-none') \
             .style('background:'
@@ -22,7 +21,7 @@ def create() -> None:
             ui.label('Let any browser be the frontend of your Python code.') \
                 .classes('text-xl max-w-[560px] leading-relaxed text-(--mo-text-secondary)')
 
-            with ui.row().classes('mo-cta-row flex gap-4 items-center flex-wrap justify-center mt-2'):
+            with ui.row(align_items='center').classes('gap-4 justify-center mt-2'):
                 with ui.link(target='/#installation').classes(
                     'mo-btn-primary inline-flex items-center gap-2 px-7 py-3 rounded-full'
                     ' font-medium text-base cursor-pointer no-underline w-auto'

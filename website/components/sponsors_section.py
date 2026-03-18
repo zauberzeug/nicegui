@@ -10,7 +10,7 @@ SPONSORS = json.loads((Path(__file__).parent.parent / 'sponsors.json').read_text
 
 def create() -> None:
     """Create the sponsors section with logos and contributor info."""
-    with section('sponsors', classes='mo-sponsors-bg'):
+    with section('sponsors', classes='bg-[color-mix(in_srgb,var(--mo-warm-accent)_3%,var(--mo-bg))]'):
         section_heading('sponsors', 'Supported by the community.', center=True)
 
         if SPONSORS['special'] or SPONSORS['top']:

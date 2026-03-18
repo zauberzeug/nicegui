@@ -3,7 +3,7 @@ from nicegui import ui
 
 def create() -> None:
     """Create the 4-column footer with brand, links, and bottom bar."""
-    with ui.element('footer').classes('mo-footer w-full pt-20 px-6').style('border-top: 1px solid var(--mo-border)'):
+    with ui.element('footer').classes('w-full pt-20 px-6 bg-(--mo-footer-bg)').style('border-top: 1px solid var(--mo-border)'):
         with ui.grid().classes('max-w-[1280px] mx-auto w-full pb-12 gap-12 '
                                'grid-cols-[2fr_1fr_1fr_1fr] max-sm:grid-cols-1'):
             with ui.column().classes('gap-3'):

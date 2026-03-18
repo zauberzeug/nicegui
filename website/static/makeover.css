@@ -3,29 +3,26 @@
   /* Light mode (default) */
   --mo-bg: #fafbfc;
   --mo-surface: #ffffff;
-  --mo-surface-hover: #f4f6f8;
   --mo-border: rgba(0, 0, 0, 0.06);
   --mo-text-primary: #1a1d26;
   --mo-text-secondary: #5c6370;
   --mo-text-muted: #9ca3af;
   --mo-brand-blue: #5898d4;
   --mo-brand-blue-light: #7ab4e4;
-  --mo-brand-blue-deep: #3d7cb8;
-  --mo-brand-teal: #34d399;
   --mo-warm-accent: #f0a050;
   --mo-warm-glow: rgba(240, 160, 80, 0.07);
   --mo-code-bg: #f0f4f8;
-  --mo-max-w: 1280px;
+  --mo-footer-bg: #edf0f3;
 }
 .body--dark {
   --mo-bg: #0f1117;
   --mo-surface: #181b23;
-  --mo-surface-hover: #1e222c;
   --mo-border: rgba(255, 255, 255, 0.08);
   --mo-text-primary: #edeff3;
   --mo-text-secondary: #8b929e;
   --mo-text-muted: #565d6b;
   --mo-code-bg: #1e222c;
+  --mo-footer-bg: color-mix(in srgb, var(--mo-bg) 70%, black);
 }
 
 /* ========== Page-level overrides ========== */
@@ -90,19 +87,6 @@
 }
 .body--dark .mo-code-body .num {
   color: #d19a66;
-}
-
-/* ========== Footer background ========== */
-.mo-footer {
-  background: #edf0f3;
-}
-.body--dark .mo-footer {
-  background: color-mix(in srgb, var(--mo-bg) 70%, black);
-}
-
-/* ========== Sponsors warm background ========== */
-.mo-sponsors-bg {
-  background: color-mix(in srgb, var(--mo-warm-accent) 3%, var(--mo-bg));
 }
 
 /* ========== Scroll Reveal ========== */
@@ -193,13 +177,6 @@
   * {
     transition-duration: 0s !important;
     animation-duration: 0s !important;
-  }
-}
-
-/* ========== Responsive ========== */
-@media (max-width: 640px) {
-  .mo-cta-row {
-    flex-direction: column;
   }
 }
 
