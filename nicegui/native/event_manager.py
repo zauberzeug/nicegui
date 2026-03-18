@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from threading import Thread
 
+from .. import core
 from ..events import Handler, NativeEventArguments, handle_event
 from . import native
 
@@ -31,6 +32,11 @@ class EventManager:
             except OSError:
                 pass  # the pipe might already be closed
 
+    def _dispatch(self, data: dict) -> None:
+        args = NativeEventArguments(type=data['type'], args=data.get('args', {}))
+        for handler in self._handlers.get(args.type, []):
+            handle_event(handler, args)
+
     def _event_loop(self) -> None:
         assert native.event_receiver is not None
         while True:
@@ -40,9 +46,10 @@ class EventManager:
                 break  # the pipe was closed
             if data is None:
                 break
-            args = NativeEventArguments(type=data['type'], args=data.get('args', {}))
-            for handler in self._handlers.get(args.type, []):
-                handle_event(handler, args)
+            if core.loop and core.loop.is_running():
+                core.loop.call_soon_threadsafe(self._dispatch, data)
+            else:
+                self._dispatch(data)
 
 
 event_manager = EventManager()
