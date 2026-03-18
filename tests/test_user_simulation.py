@@ -555,6 +555,22 @@ async def test_select_keeps_value_when_toggling_popup(user: User):
     await user.should_see('value = Apple')
 
 
+async def test_select_none_value(user: User) -> None:
+    @ui.page('/')
+    def _():
+        select = ui.select({'a': 'A', None: 'B'}, value=None)
+        ui.label().bind_text_from(select, 'value', lambda v: f'Value: {v}')
+
+    await user.open('/')
+    user.find(ui.select).click()
+    user.find('A').click()
+    await user.should_see('Value: a')
+
+    user.find(ui.select).click()
+    user.find('B').click()
+    await user.should_see('Value: None')
+
+
 async def test_upload_table(user: User) -> None:
     @ui.page('/')
     def page():
@@ -624,25 +640,23 @@ async def test_trigger_autocomplete(user: User) -> None:
 
 
 async def test_seeing_invisible_elements(user: User) -> None:
-    visible_label = hidden_label = None
-
     @ui.page('/')
     def page():
-        nonlocal visible_label, hidden_label
-        visible_label = ui.label('Visible')
-        hidden_label = ui.label('Hidden')
-        hidden_label.visible = False
+        checkbox = ui.checkbox('Check')
+        ui.label('Label A').bind_visibility_from(checkbox, 'value')
+        ui.label('Label B').bind_visibility_from(checkbox, 'value', value=False)
+        with ui.card().bind_visibility_from(checkbox, 'value'):
+            ui.label('Label C')
 
     await user.open('/')
-    with pytest.raises(AssertionError):
-        await user.should_see('Hidden')
-    with pytest.raises(AssertionError):
-        await user.should_not_see('Visible')
+    await user.should_not_see('Label A')
+    await user.should_see('Label B')
+    await user.should_not_see('Label C')
 
-    visible_label.visible = False
-    hidden_label.visible = True
-    await user.should_see('Hidden')
-    await user.should_not_see('Visible')
+    user.find('Check').click()
+    await user.should_see('Label A')
+    await user.should_not_see('Label B')
+    await user.should_see('Label C')
 
 
 async def test_finding_invisible_elements(user: User) -> None:

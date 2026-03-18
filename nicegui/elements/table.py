@@ -441,7 +441,7 @@ class Table(FilterElement, component='table.js'):
             """
             super().__init__('q-tr')
 
-    class header(Element, default_classes='[&>*]:inline'):
+    class header(Element, default_classes='[&>*]:inline-block'):
 
         def __init__(self, column_name: str | None = None) -> None:
             """Header Element

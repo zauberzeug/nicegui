@@ -5,14 +5,13 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from typing_extensions import Self
 
 from nicegui import background_tasks, events, ui
-from nicegui.element import Element
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 
 if TYPE_CHECKING:
     from .user import User
 
-T = TypeVar('T', bound=Element)
+T = TypeVar('T', bound=ui.element)
 
 
 class UserInteraction(Generic[T]):
@@ -87,11 +86,12 @@ class UserInteraction(Generic[T]):
 
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
+                        _NOT_FOUND = object()
                         if isinstance(element.options, dict):
-                            target_value = next((k for k, v in element.options.items() if v == self.target), None)
+                            target_value = next((k for k, v in element.options.items() if v == self.target), _NOT_FOUND)
                         else:
-                            target_value = self.target if self.target in element._values else None  # pylint: disable=protected-access
-                        if target_value is not None:
+                            target_value = self.target if self.target in element._values else _NOT_FOUND  # pylint: disable=protected-access
+                        if target_value is not _NOT_FOUND:
                             # User clicked on a valid option: update the value and close the popup
                             if element.multiple:
                                 if target_value in element.value:

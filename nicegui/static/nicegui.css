@@ -210,6 +210,10 @@
 .nicegui-leaflet video.leaflet-image-layer {
   max-width: none; /* HACK: make the video show up */
 }
+.q-parallax__media > img,
+.q-parallax__media > video {
+  max-width: none; /* HACK: make the parallax image cover the screen as it should */
+}
 .nicegui-log {
   outline: 1px solid rgba(127, 159, 191, 0.15);
   background-color: rgba(127, 159, 191, 0.05);
