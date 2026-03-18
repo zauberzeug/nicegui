@@ -9,6 +9,11 @@ def create() -> None:
         'mo-hero min-h-screen flex flex-col items-center justify-center text-center'
         ' px-6 pb-20 relative overflow-hidden w-full bg-(--mo-bg)'
     ):
+        ui.element().classes('absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] pointer-events-none') \
+            .style('background:'
+                   ' radial-gradient(ellipse at 40% 45%, color-mix(in srgb, var(--mo-brand-blue) 7%, transparent) 0%, transparent 55%),'
+                   ' radial-gradient(ellipse at 60% 55%, color-mix(in srgb, var(--mo-brand-blue-light) 4%, transparent) 0%, transparent 50%),'
+                   ' radial-gradient(ellipse at 50% 50%, var(--mo-warm-glow) 0%, transparent 65%)')
         with ui.column().classes('mo-reveal relative max-w-[800px] flex flex-col items-center gap-6'):
             ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
                 .classes('mo-hero-mascot size-40 stroke-[#5898d4] stroke-2 mb-6')

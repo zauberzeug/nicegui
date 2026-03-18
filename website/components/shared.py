@@ -17,8 +17,7 @@ def section(anchor: str, *, classes: str = '') -> Iterator[None]:
 
 def section_label(text: str) -> ui.label:
     """Monospace section label like ``# get_started``."""
-    return ui.label(text) \
-        .classes('mo-section-label font-mono text-[0.8rem] font-medium tracking-wide text-(--mo-text-muted)')
+    return ui.label(f'# {text}').classes('font-mono text-[0.8rem] font-medium tracking-wide text-(--mo-text-muted)')
 
 
 def section_title(text: str) -> ui.label:

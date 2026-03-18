@@ -44,26 +44,6 @@
   width: 100%;
 }
 
-/* ========== Hero pseudo-elements (can't do with Tailwind) ========== */
-.mo-hero::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 1400px;
-  height: 1000px;
-  background:
-    radial-gradient(ellipse at 40% 45%, color-mix(in srgb, var(--mo-brand-blue) 7%, transparent) 0%, transparent 55%),
-    radial-gradient(
-      ellipse at 60% 55%,
-      color-mix(in srgb, var(--mo-brand-blue-light) 4%, transparent) 0%,
-      transparent 50%
-    ),
-    radial-gradient(ellipse at 50% 50%, var(--mo-warm-glow) 0%, transparent 65%);
-  pointer-events: none;
-}
-
 /* ========== Mascot blink animation ========== */
 .mo-hero-mascot .svg_eye {
   transform-origin: center 38px;
@@ -78,12 +58,6 @@
   95% {
     transform: scaleY(0.05);
   }
-}
-
-/* ========== Section label ::before ========== */
-.mo-section-label::before {
-  content: "# ";
-  color: var(--mo-text-muted);
 }
 
 /* ========== Syntax highlighting (code windows) ========== */
@@ -129,23 +103,6 @@
 /* ========== Sponsors warm background ========== */
 .mo-sponsors-bg {
   background: color-mix(in srgb, var(--mo-warm-accent) 3%, var(--mo-bg));
-}
-
-/* ========== Feature card hover code overlay ========== */
-.mo-feature-card::after {
-  font-family: "JetBrains Mono", "Fira Mono", monospace;
-  font-size: 0.6875rem;
-  color: var(--mo-brand-blue);
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  content: "ui.card()";
-}
-.mo-feature-card:hover::after {
-  opacity: 0.3;
 }
 
 /* ========== Scroll Reveal ========== */

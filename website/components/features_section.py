@@ -51,8 +51,10 @@ def create() -> None:
 def _card(icon: str, title: str, items: list[str]) -> None:
     """Render a single feature card with icon, title, and bullet list."""
     with ui.column() \
-            .classes('mo-feature-card rounded-2xl p-7 gap-0 transition-all duration-200 cursor-default hover:-translate-y-0.5') \
+            .classes('relative rounded-2xl p-7 gap-0 group transition-all duration-200 cursor-default hover:-translate-y-0.5') \
             .style('background: var(--mo-surface); border: 1px solid var(--mo-border)'):
+        ui.label('ui.card()') \
+            .classes('absolute top-2.5 right-3 font-mono text-[0.6875rem] text-(--mo-brand-blue) opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none')
         ui.html(f'<i class="ph-duotone {icon}"></i>', sanitize=False).classes('text-[2rem] text-(--mo-brand-blue)')
         ui.label(title).classes('text-xl font-semibold mb-3 tracking-tight')
         ui.markdown('\n'.join(f'- {item}' for item in items)) \

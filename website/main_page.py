@@ -2,14 +2,14 @@ from nicegui import ui
 
 from .components import (
     SCROLL_REVEAL_JS,
-    about,
-    cta_banner,
-    demos,
+    about_section,
+    cta_section,
+    demos_section,
     examples_section,
-    features,
-    footer,
-    hero,
-    installation,
+    features_section,
+    footer_section,
+    hero_section,
+    installation_section,
     sponsors_section,
     why_section,
 )
@@ -21,13 +21,13 @@ def create() -> None:
     ui.context.client.content.classes('mo-page')
     ui.run_javascript('document.querySelector(".q-layout").classList.add("mo-header-transparent")')
 
-    hero.create()
-    about.create()
-    installation.create()
-    features.create()
-    demos.create()
-    cta_banner.create()
+    hero_section.create()
+    about_section.create()
+    installation_section.create()
+    features_section.create()
+    demos_section.create()
+    cta_section.create()
     examples_section.create()
     sponsors_section.create()
     why_section.create()
-    footer.create()
+    footer_section.create()
