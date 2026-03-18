@@ -26,8 +26,9 @@ def _example_card(example: Example) -> None:
     with ui.link(target=example.url).classes(
         'rounded-2xl overflow-hidden no-underline transition-all duration-200 cursor-pointer hover:-translate-y-0.5'
     ).style('background: var(--mo-surface); border: 1px solid var(--mo-border)'):
-        with ui.element().classes('overflow-hidden aspect-video bg-(--mo-bg)'):
-            ui.interactive_image(example.screenshot).classes('w-full h-full object-cover transition-transform duration-300')
+        with ui.element().classes('overflow-hidden aspect-video bg-white p-4'):
+            ui.interactive_image(example.screenshot) \
+                .classes('w-full h-full object-cover transition-transform duration-300')
         with ui.column().classes('p-5'):
             ui.label(example.title).classes('text-lg font-semibold mb-1')
             ui.label(example.description).classes('text-sm leading-normal mb-3 text-(--mo-text-secondary)')
