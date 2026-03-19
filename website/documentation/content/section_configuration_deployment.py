@@ -42,6 +42,16 @@ doc.intro(run_documentation)
     as pywebview uses it for the EdgeChromium backend.
     This is typically pre-installed on standard Windows installations,
     but may be missing on minimal or freshly installed systems.
+
+    **Port Selection:** In native mode, NiceGUI automatically finds an open port if none is specified via the `port` parameter.
+    This is handled by `native.find_open_port()` which scans ports 8000-8999 by default.
+    This is particularly useful when packaging your app with PyInstaller, allowing multiple copies of the same executable to run simultaneously.
+
+    **Storage in Native Mode:** All [storage types](/documentation/storage) work the same in native mode as in web mode.
+    The storage files are saved to the path specified by `NICEGUI_STORAGE_PATH` environment variable (defaults to ".nicegui" in the working directory).
+    **Important:** If multiple instances run the same file from the same location, they will all try to write to the same storage path, causing conflicts.
+    To run multiple instances of the same file, each instance must use a different `NICEGUI_STORAGE_PATH` environment variable.
+    Alternatively, if you need shared storage across multiple NiceGUI instances, use [Redis storage](/documentation/storage#redis_storage).
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
