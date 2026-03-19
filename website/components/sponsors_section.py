@@ -4,7 +4,7 @@ from pathlib import Path
 from nicegui import ui
 
 from ..utils import themed_image
-from .shared import section, section_heading
+from .shared import cta_button, section, section_heading
 
 SPONSORS = json.loads((Path(__file__).parent.parent / 'sponsors.json').read_text(encoding='utf-8'))
 
@@ -38,10 +38,6 @@ def create() -> None:
                 and {SPONSORS['contributors']} [contributors](https://github.com/zauberzeug/nicegui/graphs/contributors).
             ''').classes('w-full text-center')
 
-        with ui.link(target='https://github.com/sponsors/zauberzeug').classes(
-            'mo-btn-secondary inline-flex items-center gap-2 px-7 py-2.5 rounded-full'
-            ' font-medium text-base cursor-pointer no-underline mx-auto mt-4 w-auto'
-            ' transition-colors duration-150 text-(--mo-brand-blue)'
-        ).style('border: 1.5px solid var(--mo-brand-blue)'):
-            ui.icon('favorite_border').classes('text-lg')
-            ui.label('Become a sponsor')
+        cta_button('Become a sponsor', left_icon='ph-heart', filled=False,
+                   on_click=lambda: ui.navigate.to('https://github.com/sponsors/zauberzeug')) \
+            .classes('mx-auto mt-4')

@@ -1,6 +1,7 @@
 from nicegui import ui
 
 from .. import svg
+from .shared import cta_button
 
 
 def create() -> None:
@@ -22,26 +23,10 @@ def create() -> None:
                 .classes('text-xl max-w-[560px] leading-relaxed text-(--mo-text-secondary)')
 
             with ui.row(align_items='center').classes('gap-4 justify-center mt-2'):
-                with ui.link(target='/#installation').classes(
-                    'mo-btn-primary inline-flex items-center gap-2 px-7 py-3 rounded-full'
-                    ' font-medium text-base cursor-pointer no-underline w-auto'
-                    ' transition-all duration-150 hover:-translate-y-px'
-                    ' bg-(--mo-brand-blue) text-white'
-                ).style('box-shadow: 0 2px 8px color-mix(in srgb, var(--mo-brand-blue) 30%, transparent)'):
-                    ui.label('Get Started')
-                    ui.html('''
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 8h10m-4-4l4 4-4 4" />
-                        </svg>
-                    ''', sanitize=False)
-                pip_btn = ui.element('button').classes(
-                    'inline-flex items-center gap-2 px-6 py-3 rounded-full font-mono text-sm'
-                    ' cursor-pointer transition-colors duration-150 w-auto text-(--mo-text-primary)'
-                ).style('border: 1.5px solid var(--mo-border); background: transparent')
-                pip_btn.on('click', lambda: ui.notify('Copied!', color='primary'))
-                with pip_btn:
-                    ui.html('<code>pip install nicegui</code>', sanitize=False)
-                    ui.icon('content_copy').classes('text-sm opacity-50')
+                cta_button('Get Started', right_icon='ph-arrow-right',
+                           on_click=lambda: ui.navigate.to('/#installation'))
+                cta_button('pip install nicegui', right_icon='ph-copy', filled=False, blue=False, mono=True,
+                           on_click=lambda: ui.notify('Copied!', color='primary'))
 
             with ui.row().classes('text-sm text-(--mo-text-muted) gap-2'):
                 ui.html('&#9733; 15,000+ GitHub stars').classes('text-(--mo-warm-accent)')
