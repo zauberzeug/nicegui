@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from nicegui import binding, ui
 from nicegui.elements.markdown import remove_indentation
 
+from .. import design as d
 from ..style import create_anchor_name, subheading
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 
@@ -60,7 +61,7 @@ def _render_section(class_obj: type, attributes: list[Attribute], *, method_sect
     inherited_attributes = [attribute for attribute in attributes if attribute.base is not class_obj]
     if inherited_attributes:
         with ui.expansion(f'Inherited {"methods" if method_section else "properties"}', icon='account_tree', value=True) \
-                .classes('w-full border border-gray-200 dark:border-gray-800 rounded-md') \
+                .classes(f'w-full {d.BORDER} rounded-xl') \
                 .props('header-class=text-gray-500'):
             for attribute in inherited_attributes:
                 if attribute.name in native_attributes_names:
