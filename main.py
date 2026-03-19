@@ -10,6 +10,7 @@ from starlette.responses import Response
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
 from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website.components import footer_section
 from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
 
@@ -94,6 +95,8 @@ def _main_page() -> None:
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
     }, show_404=False).classes('w-full')
+
+    footer_section.create()
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):

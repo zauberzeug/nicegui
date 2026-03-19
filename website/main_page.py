@@ -6,7 +6,6 @@ from .components import (
     demos_section,
     examples_section,
     features_section,
-    footer_section,
     hero_section,
     installation_section,
     sponsors_section,
@@ -48,4 +47,3 @@ def create() -> None:
     examples_section.create()
     sponsors_section.create()
     why_section.create()
-    footer_section.create()

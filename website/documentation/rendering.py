@@ -48,5 +48,3 @@ def render_page(documentation: DocumentationPage) -> None:
                     documentation.extra_column()
         else:
             render_content()
-    with ui.column().classes('w-full p-4 items-end'):
-        ui.link('Imprint & Privacy', '/imprint_privacy').classes('text-sm')
