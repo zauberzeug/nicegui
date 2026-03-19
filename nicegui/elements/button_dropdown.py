@@ -2,6 +2,7 @@ from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
+from ..js_action import has_js_action, js_action
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -10,6 +11,7 @@ from .mixins.value_element import ValueElement
 
 
 class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundColorElement, ValueElement):
+    LOOPBACK = False
 
     @resolve_defaults
     def __init__(self,
@@ -54,20 +56,26 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
 
         *Added in version 2.22.0*
         """
-        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+        if has_js_action(callback):
+            self.on('click', callback, [])
+        else:
+            self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 
+    @js_action.value(True)
     def open(self) -> None:
         """Open the dropdown."""
         self.value = True
 
+    @js_action.value(False)
     def close(self) -> None:
         """Close the dropdown."""
         self.value = False
 
+    @js_action.toggle()
     def toggle(self) -> None:
         """Toggle the dropdown."""
         self.value = not self.value

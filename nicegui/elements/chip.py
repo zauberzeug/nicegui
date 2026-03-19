@@ -2,6 +2,7 @@ from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
+from ..js_action import has_js_action
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
@@ -55,5 +56,8 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the chip is clicked."""
         self._props['clickable'] = True
-        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+        if has_js_action(callback):
+            self.on('click', callback, [])
+        else:
+            self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self

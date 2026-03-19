@@ -273,7 +273,7 @@ function renderRecursively(elements, id, propsContext) {
       };
       throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
       if (element.props["loopback"] === False && event.type == "update:modelValue") {
-        element.props["model-value"] = args;
+        element.props["model-value"] = args.length === 1 ? args[0] : args;
       }
     };
 
