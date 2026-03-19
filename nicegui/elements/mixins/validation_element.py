@@ -4,13 +4,13 @@ from typing import Any, TypeAlias
 from typing_extensions import Self
 
 from ... import background_tasks, helpers
-from .value_element import ValueElement
+from .value_element import V, ValueElement
 
 ValidationFunction: TypeAlias = Callable[[Any], str | None | Awaitable[str | None]]
 ValidationDict = dict[str, Callable[[Any], bool]]
 
 
-class ValidationElement(ValueElement):
+class ValidationElement(ValueElement[V]):
 
     def __init__(self, validation: ValidationFunction | ValidationDict | None, **kwargs: Any) -> None:
         self._validation = validation
@@ -93,7 +93,7 @@ class ValidationElement(ValueElement):
         self._auto_validation = False
         return self
 
-    def _handle_value_change(self, value: Any) -> None:
+    def _handle_value_change(self, value: V) -> None:
         super()._handle_value_change(value)
         if self._auto_validation:
             self.validate(return_result=False)

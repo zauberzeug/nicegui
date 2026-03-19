@@ -4,7 +4,7 @@ from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 
-class Footer(ValueElement, default_classes='nicegui-footer'):
+class Footer(ValueElement[bool], default_classes='nicegui-footer'):
 
     @resolve_defaults
     def __init__(self, *,

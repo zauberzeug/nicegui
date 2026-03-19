@@ -246,7 +246,7 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
-class CodeMirror(ValueElement, DisableableElement,
+class CodeMirror(ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
@@ -258,7 +258,7 @@ class CodeMirror(ValueElement, DisableableElement,
         self,
         value: str = '',
         *,
-        on_change: Handler[ValueChangeEventArguments] | None = None,
+        on_change: Handler[ValueChangeEventArguments[str]] | None = None,
         language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,

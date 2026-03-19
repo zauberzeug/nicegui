@@ -12,7 +12,7 @@ class Toggle(ChoiceElement, DisableableElement):
     def __init__(self,
                  options: list | dict, *,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  clearable: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Toggle

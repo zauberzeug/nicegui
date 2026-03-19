@@ -8,7 +8,7 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Input(LabelElement, ValidationElement, DisableableElement, component='input.js'):
+class Input(LabelElement, ValidationElement[str], DisableableElement, component='input.js'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
@@ -21,7 +21,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
                  password_toggle_button: bool = False,
                  prefix: str | None = None,
                  suffix: str | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  autocomplete: list[str] | None = DEFAULT_PROPS['_autocomplete'] | None,
                  validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:

@@ -16,9 +16,9 @@ class Tree(FilterElement):
                  node_key: str = DEFAULT_PROP | 'id',
                  label_key: str = DEFAULT_PROP | 'label',
                  children_key: str = DEFAULT_PROP | 'children',
-                 on_select: Handler[ValueChangeEventArguments] | None = None,
-                 on_expand: Handler[ValueChangeEventArguments] | None = None,
-                 on_tick: Handler[ValueChangeEventArguments] | None = None,
+                 on_select: Handler[ValueChangeEventArguments[Any]] | None = None,
+                 on_expand: Handler[ValueChangeEventArguments[Any]] | None = None,
+                 on_tick: Handler[ValueChangeEventArguments[Any]] | None = None,
                  tick_strategy: Literal['leaf', 'leaf-filtered', 'strict'] | None = DEFAULT_PROP | None,
                  ) -> None:
         """Tree
@@ -91,7 +91,7 @@ class Tree(FilterElement):
                 handle_event(handler, args)
         self.on('update:ticked', handle_ticked)
 
-    def on_select(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_select(self, callback: Handler[ValueChangeEventArguments[Any]]) -> Self:
         """Add a callback to be invoked when the selection changes."""
         self._props.setdefault('selected', None)
         self._select_handlers.append(callback)
@@ -111,13 +111,13 @@ class Tree(FilterElement):
         """Remove node selection."""
         return self.select(None)
 
-    def on_expand(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_expand(self, callback: Handler[ValueChangeEventArguments[Any]]) -> Self:
         """Add a callback to be invoked when the expansion changes."""
         self._props.setdefault('expanded', [])
         self._expand_handlers.append(callback)
         return self
 
-    def on_tick(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_tick(self, callback: Handler[ValueChangeEventArguments[Any]]) -> Self:
         """Add a callback to be invoked when a node is ticked or unticked."""
         self._props.setdefault('ticked', [])
         self._props.setdefault('tick-strategy', 'leaf')
