@@ -31,8 +31,8 @@ def create() -> None:
                 ('Sponsors', 'https://github.com/sponsors/zauberzeug'),
             ])
             _column('Legal', [
-                ('Imprint', '/imprint_privacy'),
-                ('Privacy', '/imprint_privacy'),
+                ('Imprint', '/imprint_privacy#imprint'),
+                ('Privacy', '/imprint_privacy#privacy'),
             ])
 
         with ui.row().classes(

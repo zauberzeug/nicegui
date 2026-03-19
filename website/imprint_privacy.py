@@ -1,14 +1,18 @@
 from nicegui import ui
-from website.documentation.rendering import section_heading, subheading
+
+from . import design as d
+from .components.shared import section
 
 
-def create():
+def create() -> None:
     ui.page_title('Imprint & Privacy | NiceGUI')
 
-    with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
-        section_heading('', 'Imprint')
-        subheading('Zauberzeug GmbH')
-        ui.markdown('''
+    with section('imprint', classes='py-32!'):
+        ui.link_target('imprint')
+        _heading('Imprint')
+
+        _subheading('Zauberzeug GmbH')
+        _text('''
             Hohenholter Str. 43, 48329 Havixbeck, Germany
 
             Represented by Rodion (Rodja) Trappe
@@ -16,18 +20,15 @@ def create():
             Phone: +49 2507 3817, Email: info@zauberzeug.com
         ''')
 
-        subheading('Registry entry')
-        ui.markdown('''
-            Registry court: Amtsgericht Coesfeld, Registry number: HRB 14215
-        ''')
+        _subheading('Registry entry')
+        _text('Registry court: Amtsgericht Coesfeld, Registry number: HRB 14215')
 
-        subheading('Tax')
-        ui.markdown('''
-            Sales tax identification number according to §27a Sales Tax Act: DE286384205
-        ''')
+        _subheading('Tax')
+        _text('Sales tax identification number according to §27a Sales Tax Act: DE286384205')
 
-        section_heading('', 'Privacy Policy')
-        ui.markdown('''
+        ui.link_target('privacy')
+        _heading('Privacy Policy')
+        _text('''
             We use [Plausible Analytics](https://plausible.io) to understand how you interact with our site.
             Plausible Analytics is a privacy-first analytics tool
             that does not use cookies or collect any personal data or personally identifiable information (PII).
@@ -43,3 +44,15 @@ def create():
             For more details on Plausible Analytics and its data policy,
             visit <https://plausible.io/data-policy>.
         ''')
+
+
+def _heading(text: str) -> ui.label:
+    return ui.label(text).classes(f'{d.TEXT_SECTION_TITLE} font-medium tracking-tight mt-16')
+
+
+def _subheading(text: str) -> ui.label:
+    return ui.label(text).classes('text-xl font-medium mt-8')
+
+
+def _text(content: str) -> ui.markdown:
+    return ui.markdown(content).classes(f'{d.TEXT_SECONDARY} mt-4')
