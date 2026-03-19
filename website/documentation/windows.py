@@ -16,7 +16,7 @@ ICONS = {
 
 def code_window(code: str = '', *, title: str = 'main.py', language: str = 'python') -> ui.column:
     """Create a window for code. If code is empty, returns the body column for use as context manager."""
-    with ui.column().classes(f'rounded-xl gap-0 {d.BG_CODE} code-window') as window:
+    with ui.column().classes(f'rounded-xl gap-0 min-w-0 {d.BG_CODE} code-window') as window:
         with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_B}'):
             phosphor_icon(ICONS.get(language, 'ph-file')).classes('text-base')
             ui.label(title)

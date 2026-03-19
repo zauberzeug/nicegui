@@ -26,7 +26,7 @@ def screen_fixture():
         screen.should_contain('Hello user1!')
         screen.click('logout')
         screen.should_contain('Log in')
-    ''')
+    ''').classes('w-full')
 
 
 doc.text('Configuration', '''
@@ -51,7 +51,7 @@ def web_driver():
         [pytest]
         asyncio_mode = auto
         addopts = "--driver Chrome"
-    ''')
+    ''').classes('w-full')
 
 
 doc.reference(Screen)

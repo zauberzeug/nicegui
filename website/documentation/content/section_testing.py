@@ -52,12 +52,12 @@ def project_code():
             ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
 
         ui.run(root)
-    ''', title='app.py').classes('max-w-[820px] w-full h-48')
+    ''', title='app.py').classes('w-full')
 
 
 @doc.ui
 def project_pytest():
-    with ui.row(wrap=False).classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window('''
             from nicegui import ui
             from nicegui.testing import User
@@ -67,13 +67,13 @@ def project_pytest():
                 await user.should_see('Click me')
                 user.find(ui.button).click()
                 await user.should_see('Hello World!')
-        ''', title='test_app.py').classes('w-[400px]')
+        ''', title='test_app.py')
         code_window('''
             [pytest]
             asyncio_mode = auto
             main_file = app.py
             addopts = -p nicegui.testing.user_plugin
-        ''', title='pytest.ini', language='ini').classes('w-[400px]')
+        ''', title='pytest.ini', language='ini')
 
 
 doc.text('', '''

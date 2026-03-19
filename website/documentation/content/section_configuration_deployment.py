@@ -72,7 +72,7 @@ doc.text('', '''
 
 @doc.ui
 def native_main_guard():
-    with ui.row().classes('w-full items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window('''
             from nicegui import app, ui
 
@@ -80,7 +80,7 @@ def native_main_guard():
 
             if __name__ == '__main__':
                 ui.run(native=True, reload=False)
-        ''', title='good_example.py').classes('max-w-lg w-full')
+        ''', title='good_example.py')
         python_window('''
             from nicegui import app, ui
 
@@ -88,7 +88,7 @@ def native_main_guard():
                 app.native.window_args['resizable'] = False  # ignored
 
                 ui.run(native=True, reload=False)
-        ''', title='bad_example.py').classes('max-w-lg w-full')
+        ''', title='bad_example.py')
 
 
 # Show a helpful workaround until issue is fixed upstream.
@@ -180,7 +180,7 @@ def docker_run():
             -e PGID=$(id -g) \\
             -v $(pwd)/:/app/ \\
             zauberzeug/nicegui:latest
-    ''')
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -203,7 +203,7 @@ def docker_compose():
                 - PGID=1000 # change this to your group id
             volumes:
                 - ./:/app/
-    ''', title='docker-compose.yml', language='yaml').classes('max-w-lg w-full h-60')
+    ''', title='docker-compose.yml', language='yaml').classes('w-full')
 
 
 doc.text('', '''
@@ -227,7 +227,7 @@ def uvicorn_ssl():
             ssl_certfile="<path_to_certfile>",
             ssl_keyfile="<path_to_keyfile>",
         )
-    ''').classes('max-w-lg w-full')
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -256,7 +256,7 @@ doc.text('Package for Installation', '''
 
 @doc.ui
 def pyinstaller():
-    with ui.row().classes('w-full items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window('''
             from nicegui import native, ui
 
@@ -264,10 +264,10 @@ def pyinstaller():
                 ui.label('Hello from PyInstaller')
 
             ui.run(root, reload=False, port=native.find_open_port())
-        ''').classes('max-w-lg w-full')
+        ''')
         bash_window('''
             nicegui-pack --onefile --name "myapp" main.py
-        ''').classes('max-w-lg w-full')
+        ''')
 
 
 doc.text('', '''
@@ -327,7 +327,7 @@ def install_pyinstaller():
         source venv/bin/activate
         pip install nicegui
         pip install pyinstaller
-    ''').classes('max-w-lg w-full h-42 self-center')
+    ''').classes('w-full')
 
 
 doc.text('', '''

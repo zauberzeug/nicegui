@@ -25,7 +25,7 @@ def user_fixture():
         await user.should_see('Hello user1!')
         user.find('logout').click()
         await user.should_see('Log in')
-    ''')
+    ''').classes('w-full')
 
     ui.markdown('''
         **NOTE:** The `user` fixture might still miss some features.
@@ -49,12 +49,14 @@ def async_execution():
         and cause issues like binding updates not being reflected in tests.
     ''').classes('bold-links arrow-links')
 
-    with ui.row(wrap=False).classes('gap-4 items-center'):
+    with ui.grid().classes('w-full grid-cols-[1fr_auto_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         code_window(title='pytest.ini', language='ini', code='''
             [pytest]
             asyncio_mode = auto
         ''')
-        ui.label('or').classes('text-2xl')
+
+        ui.label('or').classes('m-auto')
+
         code_window(title='pyproject.toml', language='toml', code='''
             [tool.pytest.ini_options]
             asyncio_mode = "auto"
@@ -71,7 +73,7 @@ doc.text('Querying', '''
 
 @doc.ui
 def querying():
-    with ui.row().classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='some UI code', code='''
             with ui.row():
                 ui.label('Hello World!').mark('greeting')
@@ -103,11 +105,12 @@ doc.text('User Interaction', '''
 
 @doc.ui
 def trigger_events():
-    with ui.row().classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='some UI code', code='''
             fruits = ['apple', 'banana', 'cherry']
             ui.input(label='fruit', autocomplete=fruits)
         ''')
+
         python_window(title='user assertions', code='''
             await user.open('/')
             user.find('fruit').type('a').trigger('keydown.tab')
@@ -129,7 +132,7 @@ doc.text('Selecting options', '''
 
 @doc.ui
 def selecting_options_in_a_select():
-    with ui.row().classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='UI code', code='''
             ui.select(
                 ['Apple', 'Banana', 'Cherry'],
@@ -160,7 +163,7 @@ doc.text('Using an ElementFilter', '''
 
 @doc.ui
 def using_an_elementfilter():
-    with ui.row().classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='UI code', code='''
             ui.label('1').mark('number')
             ui.label('2').mark('number')
@@ -186,7 +189,7 @@ doc.text('Complex elements', '''
 
 @doc.ui
 def upload_table():
-    with ui.row().classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='some UI code', code='''
             async def receive_file(e: events.UploadEventArguments):
                 content = await e.file.text()
@@ -233,7 +236,7 @@ doc.text('Test Downloads', '''
 
 @doc.ui
 def check_outbox():
-    with ui.row().classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='some UI code', code='''
             @ui.page('/')
             def page():
@@ -275,7 +278,7 @@ def multiple_users():
             user2.find(ui.input).type('from B').trigger('keydown.enter')
             await user1.should_see('from A')
             await user1.should_see('from B')
-    ''')
+    ''').classes('w-full')
 
 
 doc.text('Simulate JavasScript', '''
@@ -289,7 +292,7 @@ doc.text('Simulate JavasScript', '''
 
 @doc.ui
 def simulate_javascript():
-    with ui.row().classes('gap-4 items-stretch'):
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='some UI code', code='''
             @ui.page('/')
             async def page():
@@ -335,21 +338,21 @@ doc.text('User Simulation Context', '''
 
 @doc.ui
 def user_simulation_examples():
-    with ui.row().classes('gap-4 items-stretch'):
-        python_window(title='script mode with root', code='''
-            from nicegui.testing import user_simulation
+    python_window(title='script mode with root', code='''
+        from nicegui.testing import user_simulation
 
-            async def test_click_via_root():
-                def root():
-                    ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
+        async def test_click_via_root():
+            def root():
+                ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
 
-                async with user_simulation(root) as user:
-                    await user.open('/')
-                    await user.should_see('Click me')
-                    user.find(ui.button).click()
-                    await user.should_see('Hello World!')
-        ''')
+            async with user_simulation(root) as user:
+                await user.open('/')
+                await user.should_see('Click me')
+                user.find(ui.button).click()
+                await user.should_see('Hello World!')
+    ''').classes('w-full')
 
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         python_window(title='main file via path', code='''
             from nicegui.testing import user_simulation
 
