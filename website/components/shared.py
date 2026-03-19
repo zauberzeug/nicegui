@@ -19,19 +19,19 @@ def section(anchor: str, *, classes: str = '') -> Iterator[None]:
 
 def section_label(text: str) -> ui.label:
     """Monospace section label like ``# get_started``."""
-    return ui.label(f'# {text}').classes(f'font-mono text-[0.8rem] font-medium tracking-wide {d.TEXT_MUTED}')
+    return ui.label(f'# {text}').classes(f'{d.TEXT_13PX_MONO} font-medium tracking-wide {d.TEXT_MUTED}')
 
 
 def section_title(text: str) -> ui.label:
     """Large section title."""
     return ui.label(text) \
-        .classes(f'text-[clamp(1.8rem,3vw,3rem)] font-semibold tracking-tight leading-tight mb-3 {d.TEXT_PRIMARY}')
+        .classes(f'{d.TEXT_SECTION_TITLE} font-semibold tracking-tight leading-tight mb-3 {d.TEXT_PRIMARY}')
 
 
 def section_desc(text: str) -> ui.label:
     """Section description paragraph."""
     return ui.label(text) \
-        .classes(f'text-[1.0625rem] max-w-[640px] leading-relaxed mb-12 {d.TEXT_SECONDARY}')
+        .classes(f'{d.TEXT_19PX} max-w-[640px] leading-relaxed mb-12 {d.TEXT_SECONDARY}')
 
 
 def cta_button(

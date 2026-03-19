@@ -12,7 +12,7 @@ def create() -> None:
         with ui.column().classes('mo-reveal max-w-[860px] mx-auto text-center flex flex-col items-center gap-6'):
             ui.label('\u201cWe liked Streamlit but found it does too much magic '
                      'when it comes to state handling.\u201d') \
-                .classes(f'text-[1.1875rem] italic leading-relaxed text-center max-w-[640px] mb-4 {d.TEXT_SECONDARY}')
+                .classes(f'{d.TEXT_19PX} italic leading-relaxed text-center max-w-[640px] mb-4 {d.TEXT_SECONDARY}')
 
             with ui.row(wrap=False).classes('max-sm:flex-col max-sm:items-center'):
                 _step('Streamlit', 'Great for quick dashboards, but implicit re-runs make complex state tricky.')
@@ -25,7 +25,7 @@ def create() -> None:
                 Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
                 [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
                 and [Uvicorn](https://www.uvicorn.org/) under the hood.
-            ''').classes(f'bold-links text-[0.9375rem] leading-relaxed mt-2 {d.TEXT_SECONDARY}')
+            ''').classes(f'bold-links {d.TEXT_15PX} leading-relaxed mt-2 {d.TEXT_SECONDARY}')
 
 
 def _step(name: str, description: str, active: bool = False) -> None:

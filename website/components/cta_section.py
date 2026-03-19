@@ -9,7 +9,7 @@ def create() -> None:
     with section('cta'):
         with ui.column().classes('mo-reveal w-full items-center text-center gap-0'):
             ui.label('Browse through plenty of live demos.') \
-                .classes(f'text-[clamp(1.5rem,2.5vw,2.25rem)] font-semibold tracking-tight mb-2 {d.TEXT_PRIMARY}')
+                .classes(f'{d.TEXT_CTA_TITLE} font-semibold tracking-tight mb-2 {d.TEXT_PRIMARY}')
             ui.label('Fun-Fact: This whole website is also coded with NiceGUI.') \
                 .classes(f'text-lg mb-8 {d.TEXT_SECONDARY}')
             cta_button('Documentation', on_click=lambda: ui.navigate.to('/documentation'))

@@ -17,7 +17,7 @@ def create() -> None:
             ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
                 .classes(f'mo-hero-mascot size-40 stroke-[{d.BRAND_BLUE}] stroke-2 mb-6')
             ui.markdown('Meet the *NiceGUI*.') \
-                .classes(f'text-[clamp(2.5rem,5vw,4.5rem)] font-semibold tracking-tighter leading-none fancy-em {d.TEXT_PRIMARY}')
+                .classes(f'{d.TEXT_HERO} font-semibold tracking-tighter leading-none fancy-em {d.TEXT_PRIMARY}')
             ui.label('Let any browser be the frontend of your Python code.') \
                 .classes(f'text-xl max-w-[560px] leading-relaxed {d.TEXT_SECONDARY}')
 

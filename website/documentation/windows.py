@@ -17,7 +17,7 @@ ICONS = {
 def code_window(code: str, *, title: str = 'main.py', language: str = 'python') -> ui.column:
     """Create a window for code."""
     with ui.column().classes(f'rounded-xl gap-0 {d.BG_CODE} code-window') as window:
-        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center text-[0.8125rem] {d.TEXT_MUTED} {d.BORDER_B}'):
+        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_B}'):
             phosphor_icon(ICONS.get(language, 'ph-file')).classes('text-base')
             ui.label(title)
             ui.space()
@@ -42,7 +42,7 @@ def python_window(code: str, *, title: str = 'main.py') -> ui.column:
 def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy: bool = True) -> ui.column:
     """Create a browser window."""
     with ui.column().classes(f'rounded-xl gap-0 {d.BG_SURFACE} {d.BORDER} browser-window') as window:
-        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center text-[0.8125rem] {d.TEXT_MUTED} {d.BORDER_B}'):
+        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_B}'):
             if callable(tab):
                 tab()
             else:

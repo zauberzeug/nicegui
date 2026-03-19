@@ -36,7 +36,7 @@ def create() -> None:
             ])
 
         with ui.row().classes(
-            f'max-w-[1280px] mx-auto w-full py-5 justify-between items-center text-[0.8125rem] {d.TEXT_MUTED} {d.BORDER_T}'
+            f'max-w-[1280px] mx-auto w-full py-5 justify-between items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_T}'
         ):
             ui.markdown('Made with NiceGUI by [Zauberzeug](https://zauberzeug.com)')
             ui.markdown('\u00a9 2025 [Zauberzeug GmbH](https://zauberzeug.com)')
@@ -47,8 +47,7 @@ def _column(title: str, links: list[tuple[str, str]]) -> None:
     with ui.column().classes('gap-2.5'):
         ui.label(title).classes(f'text-xs font-semibold uppercase tracking-widest mb-4 {d.TEXT_MUTED}')
         for label, url in links:
-            ui.link(label, url) \
-                .classes(f'text-[0.9375rem] no-underline transition-colors duration-150 {d.TEXT_SECONDARY}')
+            ui.link(label, url).classes(f'{d.TEXT_15PX} no-underline transition-colors duration-150 {d.TEXT_SECONDARY}')
 
 
 def _icon_link(icon: str, url: str) -> None:
