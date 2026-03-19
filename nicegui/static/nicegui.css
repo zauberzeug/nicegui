@@ -182,6 +182,18 @@
   display: none;
 }
 
+/* skip to main content link */
+.nicegui-skip-to-main {
+  position: absolute;
+  left: -9999px;
+}
+.nicegui-skip-to-main:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
 /* other NiceGUI elements */
 .nicegui-grid {
   display: grid;
