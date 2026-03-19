@@ -8,7 +8,7 @@ import weakref
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 from typing_extensions import dataclass_transform
 
@@ -270,6 +270,18 @@ def reset() -> None:
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
+
+
+@overload
+def bindable_dataclass(cls: None = ..., /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> type[DataclassInstance]: ...
+
+
+@overload
+def bindable_dataclass(cls: TC, /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> IdentityFunction: ...
 
 
 @dataclass_transform()
