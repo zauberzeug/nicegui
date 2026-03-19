@@ -4,7 +4,7 @@ from . import (
     user_documentation,
 )
 
-from ..windows import python_window
+from ..windows import code_window, python_window
 from nicegui import ui
 
 doc.title('*Testing*')
@@ -45,44 +45,35 @@ doc.text('Set main file', '''
 
 @doc.ui
 def project_code():
-    with python_window(classes='max-w-[820px] w-full h-48', title='app.py'):
-        ui.markdown('''
-            ```python
-            from nicegui import ui
+    python_window('''
+        from nicegui import ui
 
-            def root() -> None:
-                ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
+        def root() -> None:
+            ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
 
-            ui.run(root)
-            ```
-        ''')
+        ui.run(root)
+    ''', title='app.py').classes('max-w-[820px] w-full h-48')
 
 
 @doc.ui
 def project_pytest():
     with ui.row(wrap=False).classes('gap-4 items-stretch'):
-        with python_window(classes='w-[400px]', title='test_app.py'):
-            ui.markdown('''
-                ```python
-                from nicegui import ui
-                from nicegui.testing import User
+        python_window('''
+            from nicegui import ui
+            from nicegui.testing import User
 
-                async def test_click(user: User) -> None:
-                    await user.open('/')
-                    await user.should_see('Click me')
-                    user.find(ui.button).click()
-                    await user.should_see('Hello World!')
-                ```
-            ''')
-        with python_window(classes='w-[400px]', title='pytest.ini'):
-            ui.markdown('''
-                ```ini
-                [pytest]
-                asyncio_mode = auto
-                main_file = app.py
-                addopts = -p nicegui.testing.user_plugin
-                ```
-            ''')
+            async def test_click(user: User) -> None:
+                await user.open('/')
+                await user.should_see('Click me')
+                user.find(ui.button).click()
+                await user.should_see('Hello World!')
+        ''', title='test_app.py').classes('w-[400px]')
+        code_window('''
+            [pytest]
+            asyncio_mode = auto
+            main_file = app.py
+            addopts = -p nicegui.testing.user_plugin
+        ''', title='pytest.ini', language='ini').classes('w-[400px]')
 
 
 doc.text('', '''
