@@ -15,7 +15,7 @@ def create() -> None:
         )
         with ui.column().classes('mo-reveal relative max-w-[800px] flex flex-col items-center gap-6'):
             ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
-                .classes(f'mo-hero-mascot size-40 stroke-[{d.BRAND_BLUE}] stroke-2 mb-6')
+                .classes(f'mo-hero-mascot size-40 stroke-[{d.BLUE}] stroke-2 mb-6')
             ui.markdown('Meet the *NiceGUI*.') \
                 .classes(f'{d.TEXT_HERO} font-semibold tracking-tighter leading-none fancy-em {d.TEXT_PRIMARY}')
             ui.label('Let any browser be the frontend of your Python code.') \
@@ -28,6 +28,6 @@ def create() -> None:
                            on_click=lambda: ui.notify('Copied!', color='primary'))
 
             with ui.row().classes(f'text-sm {d.TEXT_MUTED} gap-2'):
-                ui.html('&#9733; 15,000+ GitHub stars').classes(d.TEXT_WARM_ACCENT)
+                ui.html('&#9733; 15,000+ GitHub stars').classes(d.TEXT_ACCENT)
                 ui.html('&middot;')
                 ui.label('Loved by robotics, IoT, and ML teams worldwide')

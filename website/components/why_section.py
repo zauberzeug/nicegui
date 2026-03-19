@@ -31,8 +31,7 @@ def create() -> None:
 def _step(name: str, description: str, active: bool = False) -> None:
     """Render a single step in the Why timeline."""
     with ui.column(align_items='center').classes('gap-3'):
-        ui.element().classes('size-3.5 rounded-full') \
-            .classes(d.BG_BRAND_BLUE if active else d.BORDER_2)
+        ui.element().classes('size-3.5 rounded-full').classes(d.BG_BLUE if active else d.BORDER_2)
         ui.label(name).classes('font-semibold')
         ui.label(description).classes(f'text-sm leading-normal max-w-[240px] {d.TEXT_SECONDARY}')
 

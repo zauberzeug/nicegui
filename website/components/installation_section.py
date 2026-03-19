@@ -52,5 +52,5 @@ def _step(number: int, label: str) -> None:
     """Render a step number badge with label."""
     with ui.row().classes(f'items-center gap-2.5 font-semibold {d.TEXT_15PX}'):
         ui.label(str(number)) \
-            .classes(f'flex items-center justify-center size-[26px] rounded-full {d.TEXT_13PX} font-bold border-2 {d.BORDER_WARM_ACCENT} {d.TEXT_WARM_ACCENT}')
+            .classes(f'flex items-center justify-center size-[26px] rounded-full {d.TEXT_13PX} font-bold border-2 {d.BORDER_ACCENT} {d.TEXT_ACCENT}')
         ui.label(label)

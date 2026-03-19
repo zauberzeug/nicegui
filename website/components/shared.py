@@ -55,9 +55,9 @@ def cta_button(
                 phosphor_icon(right_icon).classes(d.TEXT_MUTED if not filled and not blue else '')
 
     if filled:
-        button.classes(f'text-white {d.SHADOW_BRAND} {d.BG_BRAND_BLUE if blue else d.BG_WARM_ACCENT}')
+        button.classes(f'text-white {d.SHADOW_BLUE} {d.BG_BLUE if blue else d.BG_ACCENT}')
     else:
-        button.classes(f'bg-transparent {d.TEXT_PRIMARY_IMPORTANT} {d.BORDER_BRAND_BLUE if blue else d.BORDER_SUBTLE}')
+        button.classes(f'bg-transparent {d.TEXT_PRIMARY_IMPORTANT} {d.BORDER_BLUE if blue else d.BORDER_SUBTLE}')
 
     if mono:
         button.classes('!font-mono !text-sm')

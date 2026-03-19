@@ -19,7 +19,7 @@ def create() -> None:
                     example_card(example)
 
         ui.link('Browse all examples \u2192', '/examples') \
-            .classes(f'mo-reveal mt-8 font-medium no-underline inline-flex items-center gap-1 hover:underline w-auto {d.TEXT_BRAND_BLUE}')
+            .classes(f'mo-reveal mt-8 font-medium no-underline inline-flex items-center gap-1 hover:underline w-auto {d.TEXT_BLUE}')
 
 
 def example_card(example: Example) -> None:
