@@ -121,7 +121,7 @@ def create() -> None:
                 'customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'custom CSS and classes',
                 'modern look with material design',
-                '[Tailwind CSS](https://tailwindcss.com/)',
+                '[Tailwind CSS](/documentation/section_foundations#styling)',
             ])
             features('source', 'Coding', [
                 'single page apps with [ui.sub_pages](/documentation/sub_pages)',
@@ -130,10 +130,10 @@ def create() -> None:
                 'super powerful [testing framework](/documentation/section_testing)',
             ])
             features('anchor', 'Foundation', [
-                'generic [Vue](https://vuejs.org/) to Python bridge',
-                'dynamic GUI through [Quasar](https://quasar.dev/)',
-                'content is served with [FastAPI](https://fastapi.tiangolo.com/)',
-                'Python 3.10+',
+                'generic [Vue](/documentation/section_foundations#ui_framework) to Python bridge',
+                'dynamic GUI through [Quasar](/documentation/section_foundations#component_library)',
+                'content is served with [FastAPI](/documentation/section_foundations#backend)',
+                'real-time sync via [Socket.IO](/documentation/section_foundations#real-time_communication)',
             ])
 
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1600px] mx-auto'):
