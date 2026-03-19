@@ -55,6 +55,22 @@ async def test_with_page_definitions():
         await user.should_see('Page A')
 
 
+async def test_main_file_and_root_raises(tmp_path: Path):
+    main_file = tmp_path / 'main.py'
+    main_file.write_text('from nicegui import ui\nui.run()\n', encoding='utf-8')
+    with pytest.raises(ValueError, match=r'main_file.*root'):
+        async with user_simulation(lambda: None, main_file=main_file):
+            pass
+
+
+async def test_main_file_and_run_kwargs_raises(tmp_path: Path):
+    main_file = tmp_path / 'main.py'
+    main_file.write_text('from nicegui import ui\nui.run()\n', encoding='utf-8')
+    with pytest.raises(ValueError, match=r'main_file.*run_kwargs'):
+        async with user_simulation(main_file=main_file, title='Should fail'):
+            pass
+
+
 @pytest.mark.parametrize('file_content', [
     textwrap.dedent('''
         from nicegui import ui

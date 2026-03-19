@@ -138,6 +138,9 @@ async def _startup() -> None:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
         app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
+    if core.app.config.diagnostics:
+        from . import diagnostics  # pylint: disable=import-outside-toplevel
+        app.add_route('/_nicegui/diagnostics', diagnostics.get_diagnostics)
     core.loop = asyncio.get_running_loop()
     run.setup()
     app.start()
