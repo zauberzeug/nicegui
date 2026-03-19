@@ -422,6 +422,12 @@ class XtermDataEventArguments(UiEventArguments):
     data: str
 
 
+@dataclass(kw_only=True, slots=True)
+class XtermResizeEventArguments(UiEventArguments):
+    cols: int
+    rows: int
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 
