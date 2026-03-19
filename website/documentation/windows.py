@@ -3,6 +3,7 @@ from collections.abc import Callable
 from nicegui import helpers, ui
 from nicegui.elements.markdown import remove_indentation
 
+from .. import design as d
 from ..utils import phosphor_icon
 from .intersection_observer import IntersectionObserver as intersection_observer
 
@@ -15,9 +16,8 @@ ICONS = {
 
 def code_window(code: str, *, title: str = 'main.py', language: str = 'python') -> ui.column:
     """Create a window for code."""
-    with ui.column().classes('rounded-xl gap-0 bg-(--mo-code-bg) code-window') as window:
-        with ui.row().classes('w-full px-4 h-16 gap-2 items-center text-[0.8125rem] text-(--mo-text-muted)') \
-                .style('border-bottom: 1px solid var(--mo-border)'):
+    with ui.column().classes(f'rounded-xl gap-0 {d.BG_CODE} code-window') as window:
+        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center text-[0.8125rem] {d.TEXT_MUTED} {d.BORDER_B}'):
             phosphor_icon(ICONS.get(language, 'ph-file')).classes('text-base')
             ui.label(title)
             ui.space()
@@ -41,10 +41,8 @@ def python_window(code: str, *, title: str = 'main.py') -> ui.column:
 
 def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy: bool = True) -> ui.column:
     """Create a browser window."""
-    with ui.column().classes('rounded-xl gap-0 bg-(--mo-surface) browser-window') \
-            .style('border: 1px solid var(--mo-border)') as window:
-        with ui.row().classes('w-full px-4 h-16 gap-2 items-center text-[0.8125rem] text-(--mo-text-muted)') \
-                .style('border-bottom: 1px solid var(--mo-border)'):
+    with ui.column().classes(f'rounded-xl gap-0 {d.BG_SURFACE} {d.BORDER} browser-window') as window:
+        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center text-[0.8125rem] {d.TEXT_MUTED} {d.BORDER_B}'):
             if callable(tab):
                 tab()
             else:

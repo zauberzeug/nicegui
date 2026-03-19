@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from .. import design as d
 from .shared import section, section_label, section_title
 
 
@@ -18,29 +19,27 @@ def create() -> None:
                     and machine learning. Designed to work smoothly with connected peripherals like
                     webcams and GPIO pins in IoT setups, NiceGUI streamlines the management of all
                     your code in one place.
-                ''').classes('text-(--mo-text-secondary)')
+                ''').classes(d.TEXT_SECONDARY)
                 ui.markdown('''
                     With a gentle learning curve, NiceGUI is user-friendly for beginners and offers
                     advanced customization for experienced users, ensuring simplicity for basic tasks
                     and feasibility for complex projects.
-                ''').classes('text-(--mo-text-secondary)')
+                ''').classes(d.TEXT_SECONDARY)
                 ui.markdown('''
                     Available as
                     [PyPI package](https://pypi.org/project/nicegui/),
                     [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on
                     [GitHub](https://github.com/zauberzeug/nicegui).
-                ''').classes('bold-links text-(--mo-text-secondary)')
+                ''').classes(f'bold-links {d.TEXT_SECONDARY}')
 
-            with ui.column().classes('rounded-2xl p-8 bg-(--mo-surface) w-full max-w-120') \
-                    .style('border: 1px solid var(--mo-border); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08)'):
+            with ui.column().classes(f'rounded-2xl p-8 w-full max-w-120 {d.BG_SURFACE} {d.BORDER} {d.SHADOW_CARD}'):
                 _simple_demo()
 
 
 def _simple_demo() -> None:
     """Create a simplified interactive demo matching the click dummy style."""
     output = ui.label('Try it out!') \
-        .classes('text-center text-lg py-3 px-4 rounded-lg w-full bg-(--mo-bg) text-(--mo-text-secondary)') \
-        .style('border: 1px solid var(--mo-border)')
+        .classes(f'text-center text-lg py-3 px-4 rounded-lg w-full {d.BG} {d.TEXT_SECONDARY} {d.BORDER}')
 
     with ui.column().classes('gap-3 mt-4 w-full items-stretch'):
         ui.button('Click me!', on_click=lambda: output.set_text('Clicked!')).props('unelevated no-caps')

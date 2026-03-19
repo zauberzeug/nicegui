@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from .. import design as d
 from ..utils import phosphor_icon
 from .shared import section, section_heading
 
@@ -51,12 +52,10 @@ def create() -> None:
 
 def _card(icon: str, title: str, items: list[str]) -> None:
     """Render a single feature card with icon, title, and bullet list."""
-    with ui.column() \
-            .classes('relative rounded-2xl p-7 gap-0 group transition-all duration-200 cursor-default hover:-translate-y-0.5') \
-            .style('background: var(--mo-surface); border: 1px solid var(--mo-border)'):
+    with ui.column().classes(f'relative rounded-2xl p-7 gap-0 group transition-all duration-200 cursor-default hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'):
         ui.label('ui.card()') \
-            .classes('absolute top-2.5 right-3 font-mono text-[0.6875rem] text-(--mo-brand-blue) opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none')
-        phosphor_icon(icon).classes('text-[2rem] text-(--mo-brand-blue)')
+            .classes(f'absolute top-2.5 right-3 font-mono text-[0.6875rem] {d.TEXT_BRAND_BLUE} opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none')
+        phosphor_icon(icon).classes(f'text-[2rem] {d.TEXT_BRAND_BLUE}')
         ui.label(title).classes('text-xl font-semibold mb-3 tracking-tight')
         ui.markdown('\n'.join(f'- {item}' for item in items)) \
-            .classes('text-[0.9375rem] leading-7 text-(--mo-text-secondary) [&_ul]:pl-4 [&_li]:pl-1 [&_li]:marker:text-(--mo-brand-blue)/50')
+            .classes(f'text-[0.9375rem] leading-7 {d.TEXT_SECONDARY} [&_ul]:pl-4 [&_li]:pl-1 [&_li]:marker:{d.TEXT_BRAND_BLUE}/50')

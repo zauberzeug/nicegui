@@ -2,6 +2,7 @@ import random
 
 from nicegui import ui
 
+from .. import design as d
 from ..documentation.content.sub_pages_documentation import FakeSubPages
 from ..documentation.demo import demo
 from .shared import section, section_heading
@@ -14,8 +15,7 @@ def create() -> None:
                         "Interactive examples that showcase NiceGUI's power and flexibility.")
 
         with ui.column().classes('w-full mo-reveal'):
-            with ui.tabs().classes('w-full').style('border-bottom: 1px solid var(--mo-border)') \
-                    .props('no-caps') as tabs:
+            with ui.tabs().classes(f'w-full {d.BORDER_B}').props('no-caps') as tabs:
                 spa_tab = ui.tab('Single Page App')
                 reactive_tab = ui.tab('Reactive UI')
                 events_tab = ui.tab('Custom Events')

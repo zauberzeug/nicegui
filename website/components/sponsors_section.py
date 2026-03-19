@@ -3,6 +3,7 @@ from pathlib import Path
 
 from nicegui import ui
 
+from .. import design as d
 from ..utils import themed_image
 from .shared import cta_button, section, section_heading
 
@@ -11,7 +12,7 @@ SPONSORS = json.loads((Path(__file__).parent.parent / 'sponsors.json').read_text
 
 def create() -> None:
     """Create the sponsors section with logos and contributor info."""
-    with section('sponsors', classes='bg-[color-mix(in_srgb,var(--mo-warm-accent)_3%,var(--mo-bg))]'):
+    with section('sponsors', classes=d.BG_SPONSORS):
         section_heading('sponsors', 'Supported by the community.', center=True)
 
         if SPONSORS['special'] or SPONSORS['top']:

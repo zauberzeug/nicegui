@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from .. import design as d
 from ..documentation.windows import bash_window, browser_window, python_window
 from .shared import section, section_heading
 
@@ -51,5 +52,5 @@ def _step(number: int, label: str) -> None:
     """Render a step number badge with label."""
     with ui.row().classes('items-center gap-2.5 font-semibold text-[0.9375rem]'):
         ui.label(str(number)) \
-            .classes('flex items-center justify-center w-[26px] h-[26px] rounded-full text-[0.8125rem] font-bold border-2 border-(--mo-warm-accent) text-(--mo-warm-accent)')
+            .classes(f'flex items-center justify-center w-[26px] h-[26px] rounded-full text-[0.8125rem] font-bold border-2 border-[{d.WARM_ACCENT}] text-[{d.WARM_ACCENT}]')
         ui.label(label)

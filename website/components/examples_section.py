@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from .. import design as d
 from ..examples import Example, examples
 from .shared import section, section_heading
 
@@ -18,18 +19,17 @@ def create() -> None:
                     example_card(example)
 
         ui.link('Browse all examples \u2192', '/examples') \
-            .classes('mo-reveal mt-8 font-medium no-underline inline-flex items-center gap-1 hover:underline w-auto text-(--mo-brand-blue)')
+            .classes(f'mo-reveal mt-8 font-medium no-underline inline-flex items-center gap-1 hover:underline w-auto {d.TEXT_BRAND_BLUE}')
 
 
 def example_card(example: Example) -> None:
     """Render a single example card with screenshot, title, and description."""
     with ui.link(target=example.url).classes(
-        'rounded-2xl overflow-hidden no-underline transition-all duration-200 cursor-pointer hover:-translate-y-0.5'
-    ).style('background: var(--mo-surface); border: 1px solid var(--mo-border)'):
-        with ui.element().classes('overflow-hidden aspect-video bg-white p-4') \
-                .style('border-bottom: 1px solid var(--mo-border)'):
+        f'rounded-2xl overflow-hidden no-underline transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
+    ):
+        with ui.element().classes(f'overflow-hidden aspect-video bg-white p-4 {d.BORDER_B}'):
             ui.interactive_image(example.screenshot) \
                 .classes('w-full h-full object-cover transition-transform duration-300')
         with ui.column().classes('p-5'):
             ui.label(example.title).classes('text-lg font-semibold mb-1')
-            ui.label(example.description).classes('text-sm leading-normal mb-3 text-(--mo-text-secondary)')
+            ui.label(example.description).classes(f'text-sm leading-normal mb-3 {d.TEXT_SECONDARY}')

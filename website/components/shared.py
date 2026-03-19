@@ -3,6 +3,7 @@ from contextlib import contextmanager
 
 from nicegui import ui
 
+from .. import design as d
 from ..style import link_target
 from ..utils import phosphor_icon
 
@@ -18,19 +19,19 @@ def section(anchor: str, *, classes: str = '') -> Iterator[None]:
 
 def section_label(text: str) -> ui.label:
     """Monospace section label like ``# get_started``."""
-    return ui.label(f'# {text}').classes('font-mono text-[0.8rem] font-medium tracking-wide text-(--mo-text-muted)')
+    return ui.label(f'# {text}').classes(f'font-mono text-[0.8rem] font-medium tracking-wide {d.TEXT_MUTED}')
 
 
 def section_title(text: str) -> ui.label:
     """Large section title."""
     return ui.label(text) \
-        .classes('text-[clamp(1.8rem,3vw,3rem)] font-semibold tracking-tight leading-tight mb-3 text-(--mo-text-primary)')
+        .classes(f'text-[clamp(1.8rem,3vw,3rem)] font-semibold tracking-tight leading-tight mb-3 {d.TEXT_PRIMARY}')
 
 
 def section_desc(text: str) -> ui.label:
     """Section description paragraph."""
     return ui.label(text) \
-        .classes('text-[1.0625rem] max-w-[640px] leading-relaxed mb-12 text-(--mo-text-secondary)')
+        .classes(f'text-[1.0625rem] max-w-[640px] leading-relaxed mb-12 {d.TEXT_SECONDARY}')
 
 
 def cta_button(
@@ -51,15 +52,12 @@ def cta_button(
                 phosphor_icon(left_icon)
             ui.label(title)
             if right_icon:
-                phosphor_icon(right_icon).classes('text-(--mo-text-muted)' if not filled and not blue else '')
+                phosphor_icon(right_icon).classes(d.TEXT_MUTED if not filled and not blue else '')
 
     if filled:
-        button.classes('bg-(--mo-brand-blue)' if blue else 'bg-(--mo-warm-accent)') \
-            .classes('text-white') \
-            .style('box-shadow: 0 2px 8px color-mix(in srgb, var(--mo-brand-blue) 30%, transparent)')
+        button.classes(f'text-white {d.SHADOW_BRAND} {d.BG_BRAND_BLUE if blue else d.BG_WARM_ACCENT}')
     else:
-        button.classes('bg-transparent text-(--mo-text-primary)!') \
-            .style('border: 1.5px solid var(--mo-brand-blue)' if blue else 'border: 1.5px solid var(--mo-border)')
+        button.classes(f'bg-transparent {d.TEXT_PRIMARY_IMPORTANT} {d.BORDER_BRAND_BLUE if blue else d.BORDER_SUBTLE}')
 
     if mono:
         button.classes('!font-mono !text-sm')

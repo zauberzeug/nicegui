@@ -1,33 +1,20 @@
-/* ========== Design Tokens ========== */
+/* ========== Design Tokens (for CSS-only rules like .q-header) ========== */
 :root {
-  /* Light mode (default) */
-  --mo-bg: #fafbfc;
-  --mo-surface: #ffffff;
-  --mo-border: rgba(0, 0, 0, 0.06);
   --mo-text-primary: #1a1d26;
   --mo-text-secondary: #5c6370;
-  --mo-text-muted: #9ca3af;
-  --mo-brand-blue: #5898d4;
-  --mo-brand-blue-light: #7ab4e4;
-  --mo-warm-accent: #f0a050;
-  --mo-warm-glow: rgba(240, 160, 80, 0.07);
-  --mo-code-bg: #f0f4f8;
-  --mo-footer-bg: #edf0f3;
+  --mo-surface: #ffffff;
+  --mo-border: rgba(0, 0, 0, 0.06);
 }
 .body--dark {
-  --mo-bg: #0f1117;
-  --mo-surface: #181b23;
-  --mo-border: rgba(255, 255, 255, 0.08);
   --mo-text-primary: #edeff3;
   --mo-text-secondary: #8b929e;
-  --mo-text-muted: #565d6b;
-  --mo-code-bg: #1e222c;
-  --mo-footer-bg: color-mix(in srgb, var(--mo-bg) 70%, black);
+  --mo-surface: #181b23;
+  --mo-border: rgba(255, 255, 255, 0.08);
 }
 
 /* ========== Base ========== */
 html {
-  background: var(--mo-bg) !important;
+  background: #fafbfc !important;
   scroll-behavior: smooth;
   max-width: 100%;
   overflow-x: hidden;
@@ -43,15 +30,19 @@ body {
 
 /* ========== Page-level overrides ========== */
 .mo-page {
-  background: var(--mo-bg) !important;
+  background: #fafbfc !important;
   font-family:
     "Inter",
     system-ui,
     -apple-system,
     sans-serif !important;
-  color: var(--mo-text-primary);
+  color: #1a1d26;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+}
+.body--dark .mo-page {
+  background: #0f1117 !important;
+  color: #edeff3;
 }
 .mo-page > .nicegui-content > * {
   width: 100%;

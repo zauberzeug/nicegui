@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from ... import design as d
 from . import (
     doc,
     section_action_events,
@@ -152,11 +153,11 @@ def create_tiles():
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}').classes(
-            'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5'
-        ).style('background: var(--mo-surface); border: 1px solid var(--mo-border)'):
+            f'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
+        ):
             if page.title:
                 ui.label(page.title.replace('*', '')).classes('text-lg font-semibold mb-1')
-            ui.markdown(description).classes('text-sm leading-normal text-(--mo-text-secondary)')
+            ui.markdown(description).classes(f'text-sm leading-normal {d.TEXT_SECONDARY}')
 
 
 @doc.ui
