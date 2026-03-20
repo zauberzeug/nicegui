@@ -27,7 +27,7 @@ def create() -> None:
                 cta_button('pip install nicegui', right_icon='ph-copy', filled=False, blue=False, mono=True,
                            on_click=lambda: ui.notify('Copied!', color='primary'))
 
-            with ui.row().classes(f'text-sm {d.TEXT_MUTED} gap-2'):
+            with ui.row().classes(f'justify-center text-sm {d.TEXT_MUTED} gap-2'):
                 ui.label().bind_text_from(github_stars.stars, 'long_string').classes(d.TEXT_ACCENT)
                 ui.html('&middot;')
                 ui.label('Loved by robotics, IoT, and ML teams worldwide')

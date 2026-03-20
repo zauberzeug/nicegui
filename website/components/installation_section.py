@@ -34,7 +34,7 @@ def create() -> None:
                 browser_window(lambda: ui.label('Hello NiceGUI!'), lazy=False).classes('grow')
 
         with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 mt-8'):
-            with ui.row().classes('mt-8 w-full gap-8'):
+            with ui.grid().classes('grid-cols-2 max-sm:grid-cols-1 w-full gap-6'):
                 ui.markdown('''
                     With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui)
                     you can start the server without installing any packages.
@@ -45,7 +45,7 @@ def create() -> None:
                 bash_window('''
                     docker run -it --rm -p 8888:8080 \\\\
                         -v "$PWD":/app zauberzeug/nicegui
-                ''')
+                ''').classes('grow')
 
 
 def _step(number: int, label: str) -> None:

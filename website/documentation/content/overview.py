@@ -146,7 +146,7 @@ tiles = [
 
 @doc.extra_column
 def create_tiles():
-    with ui.row(align_items='center').classes('mx-auto'):
+    with ui.row(align_items='center').classes('mx-auto gap-y-1'):
         ui.label('Do you like NiceGUI? Become a')
         ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114"'
                 ' class="border-0 outline-[1px] outline-offset-[-1px] outline-[#d1d9e0] dark:outline-[#3d444d] rounded"></iframe>', sanitize=False)
