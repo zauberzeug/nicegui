@@ -19,6 +19,7 @@ FONT_LINKS = '''
     <link href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" rel="stylesheet" />
 '''
 
+
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
     ui.add_head_html(HEADER_HTML)
@@ -119,6 +120,6 @@ def _github_badge() -> None:
     with ui.link(target='https://github.com/zauberzeug/nicegui/') \
             .classes(f'rounded-full px-3.5 py-1.5 {d.TEXT_13PX} {d.BORDER} max-[500px]:hidden '
                      'hover:border-gray-500 transition-[border-color] duration-150'):
-        with ui.row().classes('gap-2 items-center'):
+        with ui.row().classes(f'gap-2 items-center {d.TEXT_MUTED}'):
             phosphor_icon('ph-github-logo').classes('text-base')
             ui.label('15k+')
