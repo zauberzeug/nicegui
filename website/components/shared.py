@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from nicegui import ui
 
 from .. import design as d
-from ..style import link_target
 from ..utils import phosphor_icon
 
 
@@ -12,7 +11,7 @@ from ..utils import phosphor_icon
 def section(anchor: str, *, classes: str = '') -> Iterator[None]:
     """Full-width section wrapper with max-width inner container."""
     with ui.element('section').classes(f'w-full py-20 first:pt-[120px] px-6 {classes}'):
-        link_target(anchor)
+        ui.link_target(anchor).classes('scroll-mt-32')
         with ui.column().classes('max-w-[1280px] mx-auto w-full gap-0'):
             yield
 

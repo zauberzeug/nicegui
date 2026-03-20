@@ -5,14 +5,6 @@ from nicegui import ui
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 
-def link_target(name: str, offset: str = '0') -> ui.link_target:
-    """Create a link target that can be linked to with a hash."""
-    target = ui.link_target(name).style(f'position: absolute; top: {offset}; left: 0')
-    assert target.parent_slot is not None
-    target.parent_slot.parent.classes('relative')
-    return target
-
-
 def section_heading(subtitle_: str, title_: str) -> None:
     """Render a section heading with a subtitle."""
     ui.label(subtitle_).classes('md:text-lg font-bold')
