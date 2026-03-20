@@ -20,7 +20,7 @@ body {
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
-.body--dark body {
+body.body--dark {
   background: #0f1117 !important;
   color: #edeff3;
 }
