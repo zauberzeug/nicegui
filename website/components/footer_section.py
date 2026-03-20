@@ -25,9 +25,10 @@ def create() -> None:
                 ('PyPI', 'https://pypi.org/project/nicegui/'),
             ])
             _column('Community', [
-                ('Discord', 'https://discord.gg/TEpFeAaF4f'),
-                ('Contributing', 'https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md'),
                 ('Discussions', 'https://github.com/zauberzeug/nicegui/discussions'),
+                ('Discord', 'https://discord.gg/TEpFeAaF4f'),
+                ('Reddit', 'https://www.reddit.com/r/nicegui/'),
+                ('Contributing', 'https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md'),
                 ('Sponsors', 'https://github.com/sponsors/zauberzeug'),
             ])
             _column('Legal', [
