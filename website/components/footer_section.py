@@ -1,7 +1,7 @@
 from nicegui import ui
 
 from .. import design as d
-from ..utils import phosphor_icon
+from ..design import phosphor_icon
 
 
 def create() -> None:

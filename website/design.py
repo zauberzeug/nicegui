@@ -1,4 +1,10 @@
-"""Design constants for the NiceGUI website. Use via f-strings in .classes() calls."""
+"""Design constants and helpers for the NiceGUI website."""
+
+import re
+
+from nicegui import ui
+
+SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 # --- Raw color values ---
 
@@ -75,3 +81,41 @@ BG_HERO_GLOW = (
     f'radial-gradient(ellipse at 60% 55%, color-mix(in srgb, {BLUE_LIGHT} 4%, transparent) 0%, transparent 50%),'
     f'radial-gradient(ellipse at 50% 50%, {WARM_GLOW} 0%, transparent 65%)]'
 ).replace(' ', '_')
+
+
+# --- Helpers ---
+
+def section_heading(subtitle_: str, title_: str) -> None:
+    """Render a section heading with a subtitle."""
+    ui.label(subtitle_).classes('md:text-lg font-bold')
+    ui.markdown(title_).classes('text-3xl md:text-5xl font-medium mt-[-12px] fancy-em')
+
+
+def subheading(text: str, *, link: str | None = None, major: bool = False, anchor_name: str | None = None) -> None:
+    """Render a subheading with an anchor that can be linked to with a hash."""
+    name = anchor_name or create_anchor_name(text)
+    ui.html(f'<div id="{name}"></div>', sanitize=False).style('position: relative; top: -90px')
+    with ui.row().classes('gap-2 items-center relative'):
+        classes = 'text-3xl' if major else 'text-2xl'
+        if link:
+            ui.link(text, link).classes(classes)
+        else:
+            ui.label(text).classes(classes)
+        with ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'):
+            ui.icon('link', size='sm').classes('opacity-10 hover:opacity-80')
+
+
+def create_anchor_name(text: str) -> str:
+    """Create an anchor name that can be linked to with a hash."""
+    return SPECIAL_CHARACTERS.sub('_', text).lower()
+
+
+def phosphor_icon(name: str) -> ui.html:
+    """Render a Phosphor duotone icon, e.g. ``phosphor_icon('ph-code')``."""
+    return ui.html(f'<i class="ph-duotone {name}"></i>', sanitize=False).classes('-mb-1')
+
+
+def themed_image(src: str, *, classes: str = '') -> None:
+    """Show one image in light mode and another in dark mode."""
+    ui.interactive_image(src.replace('THEME', 'light')).classes(f'block dark:!hidden {classes}')
+    ui.interactive_image(src.replace('THEME', 'dark')).classes(f'hidden dark:!block {classes}')

@@ -1,9 +1,9 @@
 from nicegui import __version__, background_tasks, events, ui
 
 from . import design as d
+from .design import phosphor_icon
 from .documentation import CustomRestructuredText as custom_restructured_text
 from .documentation.search import search_index
-from .utils import phosphor_icon
 
 
 class Search:

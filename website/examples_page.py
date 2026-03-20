@@ -1,8 +1,8 @@
 from nicegui import ui
 
 from .components.examples_section import example_card
+from .design import section_heading
 from .examples import examples
-from .style import section_heading
 
 
 def create() -> None:

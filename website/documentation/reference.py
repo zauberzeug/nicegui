@@ -6,7 +6,7 @@ from nicegui import binding, ui
 from nicegui.elements.markdown import remove_indentation
 
 from .. import design as d
-from ..style import create_anchor_name, subheading
+from ..design import create_anchor_name, subheading
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 
 

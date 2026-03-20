@@ -4,7 +4,7 @@ from pathlib import Path
 from nicegui import ui
 
 from .. import design as d
-from ..utils import themed_image
+from ..design import themed_image
 from .shared import cta_button, section, section_heading
 
 SPONSORS = json.loads((Path(__file__).parent.parent / 'sponsors.json').read_text(encoding='utf-8'))

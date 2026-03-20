@@ -16,7 +16,7 @@ from . import (
     section_testing,
     section_text_elements,
 )
-from ...style import subheading
+from ...design import subheading
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 

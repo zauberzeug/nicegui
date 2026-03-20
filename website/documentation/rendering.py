@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from ..style import section_heading, subheading
+from ..design import section_heading, subheading
 from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo

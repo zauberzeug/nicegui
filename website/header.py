@@ -7,8 +7,8 @@ from nicegui import app, ui
 
 from . import design as d
 from . import github_stars
+from .design import phosphor_icon
 from .search import Search
-from .utils import phosphor_icon
 
 HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
 STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding='utf-8')

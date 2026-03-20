@@ -4,7 +4,7 @@ from nicegui import helpers, ui
 from nicegui.elements.markdown import remove_indentation
 
 from .. import design as d
-from ..utils import phosphor_icon
+from ..design import phosphor_icon
 from .intersection_observer import IntersectionObserver as intersection_observer
 
 ICONS = {

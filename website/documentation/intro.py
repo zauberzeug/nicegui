@@ -3,7 +3,7 @@ from collections.abc import Callable
 
 from nicegui import ui
 
-from ..style import subheading
+from ..design import subheading
 from .content.sub_pages_documentation import FakeSubPages
 from .demo import demo
 
