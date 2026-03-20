@@ -164,11 +164,6 @@ def create_tiles():
 def map_of_nicegui():
     ui.separator().classes('mt-6')
     subheading('Map of NiceGUI', anchor_name='map-of-nicegui')
-    ui.add_css('''
-        .map-of-nicegui a code {
-            font-weight: bold;
-        }
-    ''')
     ui.markdown('''
         This overview shows the structure of NiceGUI.
         It is a map of the NiceGUI namespace and its contents.
@@ -504,4 +499,4 @@ def map_of_nicegui():
 
         - [`Screen`](/documentation/section_testing#screen_fixture) fixture: start a real (headless) browser to interact with your application
         - [`User`](/documentation/section_testing#user_fixture) fixture: simulate user interaction on a Python level (fast)
-    ''').classes('map-of-nicegui')
+    ''')

@@ -54,8 +54,9 @@ a:hover:not(.browser-window *),
 a:active:not(.browser-window *) {
   opacity: 0.85;
 }
-.nicegui-markdown a:link:not(.browser-window *) {
-  font-weight: 500;
+.nicegui-markdown a:link:not(.browser-window *),
+.nicegui-markdown a:link:not(.browser-window *) code {
+  font-weight: 600;
 }
 /* ========== Documentation tables ========== */
 .rst-param-tables table {
