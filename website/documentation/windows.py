@@ -27,7 +27,7 @@ def code_window(code: str = '', *, title: str = 'main.py', language: str = 'pyth
                     phosphor_icon('ph-copy').classes('text-lg')
         if code:
             ui.markdown(f'````{language}\n{remove_indentation(code)}\n````') \
-                .classes('w-full h-full px-4 py-2 overflow-auto')
+                .classes('w-full h-full py-2 [&_pre]:px-4 [&_pre]:overflow-auto')
     return window
 
 
