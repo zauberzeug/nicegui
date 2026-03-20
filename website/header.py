@@ -6,6 +6,7 @@ from pygments.formatters import HtmlFormatter
 from nicegui import app, ui
 
 from . import design as d
+from . import github_stars
 from .search import Search
 from .utils import phosphor_icon
 
@@ -122,4 +123,4 @@ def _github_badge() -> None:
                      'hover:border-gray-500 transition-[border-color] duration-150'):
         with ui.row().classes(f'gap-2 items-center {d.TEXT_MUTED}'):
             phosphor_icon('ph-github-logo').classes('text-base')
-            ui.label('15k+')
+            ui.label().bind_text_from(github_stars.stars, 'short_string')

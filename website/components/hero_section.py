@@ -1,7 +1,7 @@
 from nicegui import ui
 
 from .. import design as d
-from .. import svg
+from .. import github_stars, svg
 from .shared import cta_button
 
 
@@ -28,6 +28,6 @@ def create() -> None:
                            on_click=lambda: ui.notify('Copied!', color='primary'))
 
             with ui.row().classes(f'text-sm {d.TEXT_MUTED} gap-2'):
-                ui.html('&#9733; 15,000+ GitHub stars').classes(d.TEXT_ACCENT)
+                ui.label().bind_text_from(github_stars.stars, 'long_string').classes(d.TEXT_ACCENT)
                 ui.html('&middot;')
                 ui.label('Loved by robotics, IoT, and ML teams worldwide')
