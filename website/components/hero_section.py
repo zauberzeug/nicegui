@@ -8,7 +8,7 @@ from .shared import cta_button
 def create() -> None:
     """Create the hero section with mascot, title, CTAs, and social proof."""
     with ui.element('section').classes(
-        f'min-h-screen flex flex-col items-center justify-center text-center px-6 pb-20 relative overflow-hidden w-full {d.BG}'
+        f'-mt-16 pt-16 min-h-screen flex flex-col items-center justify-center text-center px-6 pb-20 relative overflow-hidden w-full {d.BG}'
     ):
         ui.element().classes(
             f'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] pointer-events-none {d.BG_HERO_GLOW}'

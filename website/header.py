@@ -5,20 +5,19 @@ from pygments.formatters import HtmlFormatter
 
 from nicegui import app, ui
 
-from . import svg
+from . import design as d
 from .search import Search
-from .star import add_star
+from .utils import phosphor_icon
 
 HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
 STYLE_CSS = (Path(__file__).parent / 'static' / 'style.css').read_text(encoding='utf-8')
 
 FONT_LINKS = '''
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" rel="stylesheet" />
 '''
-
 
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
@@ -57,37 +56,27 @@ def add_header(menu: ui.left_drawer) -> ui.button:
             body: JSON.stringify({{value: {e.value}}}),
         }});
     '''))
-    with ui.header() \
-            .classes('items-center duration-200 p-0 px-4 no-wrap') \
-            .style('box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)'):
+    with ui.header().classes(
+        'items-center p-0 px-6 no-wrap h-16'
+        ' !bg-transparent !shadow-none transition-[background,backdrop-filter,box-shadow] duration-200'
+        ' [&.fade]:!bg-[color-mix(in_srgb,var(--mo-surface)_80%,transparent)]'
+        ' [&.fade]:backdrop-blur-[12px] [&.fade]:!shadow-[0_1px_0_var(--mo-border)]'
+    ):
         menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat round').classes('lg:hidden')
-        with ui.link(target='/').classes('row gap-4 items-center no-wrap mr-auto'):
-            svg.face().classes('w-8 stroke-2 max-[610px]:hidden')
-            svg.word().classes('w-24')
+        with ui.link(target='/'):
+            ui.markdown('**Nice**GUI').classes(f'{d.TEXT_19PX} {d.TEXT_PRIMARY} tracking-wide')
 
-        with ui.row().classes('max-[1050px]:hidden'):
+        ui.space()
+
+        with ui.row().classes(f'{d.TEXT_SECONDARY} gap-8 max-[1050px]:hidden'):
             for title_, target in menu_items.items():
-                ui.link(title_, target).classes(replace='text-lg')
+                ui.link(title_, target).classes(d.TEXT_15PX)
 
-        search = Search()
-        search.create_button()
-
-        with ui.element().classes('max-[420px]:hidden').tooltip('Cycle theme mode through dark, light, and system/auto.'):
-            ui.button(icon='dark_mode', on_click=lambda: dark_mode.set_value(None)) \
-                .props('flat fab-mini').bind_visibility_from(dark_mode, 'value', value=True)
-            ui.button(icon='light_mode', on_click=lambda: dark_mode.set_value(True)) \
-                .props('flat fab-mini').bind_visibility_from(dark_mode, 'value', value=False)
-            ui.button(icon='brightness_auto', on_click=lambda: dark_mode.set_value(False)) \
-                .props('flat fab-mini').bind_visibility_from(dark_mode, 'value', lambda mode: mode is None)
-
-        with ui.link(target='https://discord.gg/TEpFeAaF4f').classes('max-[515px]:hidden').tooltip('Discord'):
-            svg.discord().classes('scale-125 m-1')
-        with ui.link(target='https://www.reddit.com/r/nicegui/').classes('max-[465px]:hidden').tooltip('Reddit'):
-            svg.reddit().classes('scale-125 m-1')
-        with ui.link(target='https://github.com/zauberzeug/nicegui/').classes('max-[365px]:hidden').tooltip('GitHub'):
-            svg.github().classes('scale-125 m-1')
-
-        add_star().classes('max-[550px]:hidden')
+        with ui.row().classes('gap-2 items-center ml-8'):
+            search = Search()
+            _search_pill(search)
+            _theme_toggle(dark_mode)
+            _github_badge()
 
         with ui.row().classes('min-[1051px]:hidden'):
             with ui.button(icon='more_vert').props('flat round'):
@@ -96,3 +85,40 @@ def add_header(menu: ui.left_drawer) -> ui.button:
                         ui.menu_item(title_, on_click=lambda target=target: ui.navigate.to(target))
 
     return menu_button
+
+
+def _search_pill(search: Search) -> None:
+    """Search button styled as a pill with keyboard shortcut hint."""
+    with ui.button(on_click=search.open_dialog, color='transparent') \
+            .props('unelevated no-caps rounded') \
+            .classes(f'header-search-pill px-3.5 {d.TEXT_13PX} {d.BORDER} max-[700px]:hidden '
+                     'hover:border-gray-500 transition-[border-color] duration-150'):
+        with ui.row().classes(f'gap-2 items-center {d.TEXT_MUTED}'):
+            phosphor_icon('ph-magnifying-glass').classes('text-base')
+            ui.label('Search').classes('font-normal')
+            ui.label('\u2318K').classes(f'{d.TEXT_13PX_MONO} px-1.5 rounded {d.BG_SURFACE} {d.BORDER} {d.TEXT_MUTED}')
+
+
+def _theme_toggle(dark_mode: ui.dark_mode) -> None:
+    """Single theme toggle button cycling dark → light → auto."""
+    with ui.element().classes('saturate-0 max-[420px]:hidden') \
+            .tooltip('Cycle theme mode through dark, light, and system/auto.'):
+        with ui.button(on_click=lambda: dark_mode.set_value(None)).props('flat round') \
+                .classes('size-9').bind_visibility_from(dark_mode, 'value', value=True):
+            phosphor_icon('ph-moon').classes('text-[1.125rem]')
+        with ui.button(on_click=lambda: dark_mode.set_value(True)).props('flat round') \
+                .classes('size-9').bind_visibility_from(dark_mode, 'value', value=False):
+            phosphor_icon('ph-sun').classes('text-[1.125rem]')
+        with ui.button(on_click=lambda: dark_mode.set_value(False)).props('flat round') \
+                .classes('size-9').bind_visibility_from(dark_mode, 'value', lambda mode: mode is None):
+            phosphor_icon('ph-circle-half').classes('text-[1.125rem]')
+
+
+def _github_badge() -> None:
+    """GitHub link with star count badge."""
+    with ui.link(target='https://github.com/zauberzeug/nicegui/') \
+            .classes(f'rounded-full px-3.5 py-1.5 {d.TEXT_13PX} {d.BORDER} max-[500px]:hidden '
+                     'hover:border-gray-500 transition-[border-color] duration-150'):
+        with ui.row().classes('gap-2 items-center'):
+            phosphor_icon('ph-github-logo').classes('text-base')
+            ui.label('15k+')

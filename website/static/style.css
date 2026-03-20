@@ -121,48 +121,6 @@ dl.docinfo p {
   margin: 0;
 }
 
-/* ========== Header (frosted glass) ========== */
-.q-header {
-  height: 70px;
-  color: var(--mo-text-secondary) !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  transition:
-    background 0.2s,
-    backdrop-filter 0.2s,
-    box-shadow 0.2s;
-}
-.q-header .svg_letter1,
-.q-header .svg_letter2 {
-  fill: var(--mo-text-primary) !important;
-  stroke: var(--mo-text-primary) !important;
-}
-.q-header .svg_face {
-  stroke: var(--mo-text-primary) !important;
-}
-.q-header svg:not([viewBox="0 0 62.44 71.74"]):not([viewBox="0 0 62.44 16.48"]),
-.q-header svg:not([viewBox="0 0 62.44 71.74"]):not([viewBox="0 0 62.44 16.48"]) path {
-  fill: var(--mo-text-secondary) !important;
-}
-.q-header a,
-.q-header .text-white,
-.q-header .text-lg {
-  color: var(--mo-text-secondary) !important;
-}
-.q-header .q-btn .q-icon,
-.q-header .q-btn__content,
-.q-header .q-btn {
-  color: var(--mo-text-secondary) !important;
-}
-.q-header .q-btn .q-icon.on-left {
-  color: var(--mo-text-secondary) !important;
-}
-.q-header.fade {
-  background: color-mix(in srgb, var(--mo-surface) 80%, transparent) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 1px 0 var(--mo-border) !important;
-}
 
 /* ========== Mascot blink animation ========== */
 .mo-hero-mascot .svg_eye {

@@ -39,7 +39,7 @@ class Search:
         with ui.dialog() as self.dialog, ui.card().tight().classes(f'w-[800px] h-[600px] {d.BG_SURFACE} {d.BORDER}'):
             with ui.row().classes(f'w-full items-center gap-3 px-4 py-3 {d.BORDER_B}'):
                 phosphor_icon('ph-magnifying-glass').classes(f'text-xl {d.TEXT_MUTED}')
-                self.input = ui.input(placeholder='Search documentation', on_change=self.handle_input) \
+                self.input = ui.input(placeholder='Search documentation', on_change=self._handle_input) \
                     .classes('flex-grow').props('borderless autofocus')
                 ui.button('ESC', on_click=self.dialog.close) \
                     .props('padding="2px 8px" outline size=sm').classes(f'shadow {d.TEXT_MUTED}')
@@ -52,13 +52,7 @@ class Search:
             }
         }''')
 
-    def create_button(self) -> ui.button:
-        with ui.button(on_click=self.open_dialog).props('flat round size=sm') \
-                .tooltip('Press Ctrl+K or / to search the documentation') as button:
-            phosphor_icon('ph-magnifying-glass').classes('text-lg')
-        return button
-
-    def handle_input(self, e: events.ValueChangeEventArguments) -> None:
+    def _handle_input(self, e: events.ValueChangeEventArguments) -> None:
         async def handle_input() -> None:
             with self.results:
                 indices = await ui.run_javascript(f'''

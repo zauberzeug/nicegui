@@ -10,7 +10,7 @@ from ..utils import phosphor_icon
 @contextmanager
 def section(anchor: str, *, classes: str = '') -> Iterator[None]:
     """Full-width section wrapper with max-width inner container."""
-    with ui.element('section').classes(f'w-full py-20 first:pt-[120px] px-6 {classes}'):
+    with ui.element('section').classes(f'w-full py-20 px-6 {classes}'):
         ui.link_target(anchor).classes('scroll-mt-32')
         with ui.column().classes('max-w-[1280px] mx-auto w-full gap-0'):
             yield
