@@ -62,6 +62,7 @@ class custom_sub_pages(ui.sub_pages):
 @ui.page('/imprint_privacy')
 def _main_page() -> None:
     ui.context.client.content.classes('p-0 gap-0')
+
     header.add_head_html()
 
     with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} p-8') as menu:

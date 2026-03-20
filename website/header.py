@@ -105,8 +105,8 @@ def _search_pill(search: Search) -> None:
 
 def _theme_toggle(dark_mode: ui.dark_mode) -> None:
     """Single theme toggle button cycling dark → light → auto."""
-    with ui.element().classes('saturate-0 max-[420px]:hidden') \
-            .tooltip('Cycle theme mode through dark, light, and system/auto.'):
+    with ui.element().classes('saturate-0 max-[420px]:hidden'):
+        d.tooltip('Cycle theme mode through dark, light, and system/auto.')
         with ui.button(on_click=lambda: dark_mode.set_value(None)).props('flat round') \
                 .classes('size-9').bind_visibility_from(dark_mode, 'value', value=True):
             phosphor_icon('ph-moon').classes('text-[1.125rem]')

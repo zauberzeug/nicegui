@@ -119,3 +119,8 @@ def themed_image(src: str, *, classes: str = '') -> None:
     """Show one image in light mode and another in dark mode."""
     ui.interactive_image(src.replace('THEME', 'light')).classes(f'block dark:!hidden {classes}')
     ui.interactive_image(src.replace('THEME', 'dark')).classes(f'hidden dark:!block {classes}')
+
+
+def tooltip(text: str) -> ui.tooltip:
+    """Create a tooltip with consistent styling."""
+    return ui.tooltip(text).classes(f'rounded-xl {BG} {BORDER} {TEXT_SECONDARY} {TEXT_13PX}')
