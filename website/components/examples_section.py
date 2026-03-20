@@ -27,7 +27,7 @@ def example_card(example: Example) -> None:
     with ui.link(target=example.url).classes(
         f'rounded-2xl overflow-hidden no-underline transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
     ):
-        with ui.element().classes(f'overflow-hidden aspect-video bg-white p-4 {d.BORDER_B}'):
+        with ui.element().classes(f'overflow-hidden aspect-video bg-white p-4 dark:brightness-[0.85] {d.BORDER_B}'):
             ui.interactive_image(example.screenshot) \
                 .classes('size-full object-cover transition-transform duration-300')
         with ui.column().classes('p-5'):
