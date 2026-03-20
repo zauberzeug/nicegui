@@ -15,10 +15,16 @@ def create() -> None:
                         "Interactive examples that showcase NiceGUI's power and flexibility.")
 
         with ui.column().classes('w-full reveal'):
-            with ui.tabs().classes(f'w-full {d.BORDER_B}').props('no-caps') as tabs:
-                spa_tab = ui.tab('Single Page App')
-                reactive_tab = ui.tab('Reactive UI')
-                events_tab = ui.tab('Custom Events')
+            tab_classes = (
+                '[&_.q-focus-helper]:hidden'
+                f' {d.TEXT_MUTED}'
+                f' hover:text-[{d._TEXT_SECONDARY_LIGHT}] dark:hover:text-[{d._TEXT_SECONDARY_DARK}]'
+                f' [&.q-tab--active]:!text-[{d.BLUE}]'
+            )
+            with ui.tabs().classes(f'w-full {d.BORDER_B}').props('no-caps align=left') as tabs:
+                spa_tab = ui.tab('Single Page App').classes(tab_classes)
+                reactive_tab = ui.tab('Reactive UI').classes(tab_classes)
+                events_tab = ui.tab('Custom Events').classes(tab_classes)
 
             with ui.tab_panels(tabs, value=spa_tab).classes('w-full bg-transparent'):
                 with ui.tab_panel(spa_tab).classes('p-0'):
