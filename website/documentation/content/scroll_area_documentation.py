@@ -6,9 +6,9 @@ from . import doc
 @doc.demo(ui.scroll_area)
 def main_demo() -> None:
     with ui.row():
-        with ui.scroll_area().classes('w-32 h-32 border'):
+        with ui.scroll_area().classes('size-32 border'):
             ui.label('I scroll. ' * 20)
-        with ui.column().classes('p-4 w-32 h-32 border'):
+        with ui.column().classes('p-4 size-32 border'):
             ui.label('I will not scroll. ' * 10)
 
 
@@ -22,7 +22,7 @@ def main_demo() -> None:
 ''')
 def scroll_events():
     position = ui.number('scroll position:').props('readonly')
-    with ui.card().classes('w-32 h-32'):
+    with ui.card().classes('size-32'):
         with ui.scroll_area(on_scroll=lambda e: position.set_value(e.vertical_percentage)):
             ui.label('I scroll. ' * 20)
 

@@ -27,7 +27,7 @@ def code_window(code: str = '', *, title: str = 'main.py', language: str = 'pyth
                     phosphor_icon('ph-copy').classes('text-lg')
         if code:
             ui.markdown(f'````{language}\n{remove_indentation(code)}\n````') \
-                .classes('w-full h-full py-2 [&_pre]:px-4 [&_pre]:overflow-auto')
+                .classes('size-full py-2 [&_pre]:px-4 [&_pre]:overflow-auto')
     return window
 
 
@@ -51,9 +51,9 @@ def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy
                 phosphor_icon('ph-globe').classes('text-base')
                 ui.label(tab or 'localhost:8080')
 
-        with ui.column().classes('w-full h-full p-4'):
+        with ui.column().classes('size-full p-4'):
             if lazy:
-                spinner = ui.image('/static/loading.gif').classes('w-8 h-8').props('no-spinner no-transition')
+                spinner = ui.image('/static/loading.gif').classes('size-8').props('no-spinner no-transition')
 
                 @intersection_observer
                 async def handle_intersection():

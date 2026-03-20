@@ -26,7 +26,7 @@ def create() -> None:
                             themed_image(f'/static/sponsors/{sponsor}.THEME.webp', classes='h-12')
                 for sponsor in SPONSORS['top']:
                     with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
-                        ui.image(f'https://github.com/{sponsor}.png').classes('w-12 h-12 border')
+                        ui.image(f'https://github.com/{sponsor}.png').classes('size-12 border')
                         ui.label(f'@{sponsor}')
 
             ui.markdown(f'''

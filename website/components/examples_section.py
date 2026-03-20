@@ -29,7 +29,7 @@ def example_card(example: Example) -> None:
     ):
         with ui.element().classes(f'overflow-hidden aspect-video bg-white p-4 {d.BORDER_B}'):
             ui.interactive_image(example.screenshot) \
-                .classes('w-full h-full object-cover transition-transform duration-300')
+                .classes('size-full object-cover transition-transform duration-300')
         with ui.column().classes('p-5'):
             ui.label(example.title).classes('text-lg font-semibold mb-1')
             ui.label(example.description).classes(f'text-sm leading-normal mb-3 {d.TEXT_SECONDARY}')
