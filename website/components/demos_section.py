@@ -14,13 +14,13 @@ def create() -> None:
         section_heading('demos', 'See it in action.',
                         "Interactive examples that showcase NiceGUI's power and flexibility.")
 
-        with ui.column().classes('w-full mo-reveal'):
+        with ui.column().classes('w-full reveal'):
             with ui.tabs().classes(f'w-full {d.BORDER_B}').props('no-caps') as tabs:
                 spa_tab = ui.tab('Single Page App')
                 reactive_tab = ui.tab('Reactive UI')
                 events_tab = ui.tab('Custom Events')
 
-            with ui.tab_panels(tabs, value=spa_tab).classes('w-full'):
+            with ui.tab_panels(tabs, value=spa_tab).classes('w-full bg-transparent'):
                 with ui.tab_panel(spa_tab).classes('p-0'):
                     _spa_demo()
                 with ui.tab_panel(reactive_tab).classes('p-0'):

@@ -9,8 +9,7 @@ def create() -> None:
     with section('why'):
         section_heading('why', 'Why?', center=True)
 
-        # with ui.column().classes('mo-reveal max-w-[860px] mx-auto items-center gap-16'):
-        with ui.row(wrap=False).classes('mo-reveal py-8 self-center text-center max-sm:flex-col max-sm:items-center'):
+        with ui.row(wrap=False).classes('reveal py-8 self-center text-center max-sm:flex-col max-sm:items-center'):
             _step(0, 'Streamlit', 'Great for quick dashboards, but implicit re-runs make complex state tricky.')
             _separator()
             _step(1, 'JustPy', 'Right idea \u2014 components in Python \u2014 but too bare-bones for production UIs.')
@@ -21,7 +20,7 @@ def create() -> None:
             Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
             [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
             and [Uvicorn](https://www.uvicorn.org/) under the hood.
-        ''').classes(f'mo-reveal self-center text-center bold-links {d.TEXT_15PX} leading-relaxed mt-2 {d.TEXT_SECONDARY}')
+        ''').classes(f'reveal self-center text-center bold-links {d.TEXT_15PX} leading-relaxed mt-2 {d.TEXT_SECONDARY}')
 
 
 def _step(number: int, name: str, description: str) -> None:

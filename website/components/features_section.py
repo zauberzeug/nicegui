@@ -11,7 +11,7 @@ def create() -> None:
         section_heading('features', 'Code nicely.',
                         'Everything you need to build sophisticated web UIs, all from Python.')
 
-        with ui.grid().classes('mo-reveal w-full grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1'):
+        with ui.grid().classes('reveal w-full grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1'):
             _card('ph-arrows-left-right', 'Interaction', [
                 'Buttons, switches, sliders, inputs and more',
                 'Notifications, dialogs and menus',

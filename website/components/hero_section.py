@@ -13,7 +13,7 @@ def create() -> None:
         ui.element().classes(
             f'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] pointer-events-none {d.BG_HERO_GLOW}'
         )
-        with ui.column().classes('mo-reveal relative max-w-[800px] flex flex-col items-center gap-6'):
+        with ui.column().classes('reveal relative max-w-[800px] flex flex-col items-center gap-6'):
             ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
                 .classes(f'mo-hero-mascot size-40 stroke-[{d.BLUE}] stroke-2 mb-6')
             ui.markdown('Meet the *NiceGUI*.') \

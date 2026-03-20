@@ -8,7 +8,7 @@ def create() -> None:
     """Create the about section with description text and interactive demo card."""
     with section('about'):
         with ui.grid().classes(
-            'mo-reveal w-full grid-cols-[1.5fr_1fr] max-lg:grid-cols-1 gap-16 items-center justify-items-center'
+            'reveal w-full grid-cols-[1.5fr_1fr] max-lg:grid-cols-1 gap-16 items-center justify-items-center'
         ):
             with ui.column().classes('gap-0'):
                 section_label('about')

@@ -12,7 +12,7 @@ def create() -> None:
                         'Write a Python file, install and run \u2014 that\u2019s it.')
 
         with ui.grid().classes('grid-cols-3 max-lg:grid-cols-1 w-full gap-6 items-stretch'):
-            with ui.column().classes('mo-reveal gap-3 items-stretch'):
+            with ui.column().classes('reveal gap-3 items-stretch'):
                 _step(1, 'Write')
                 python_window('''
                     from nicegui import ui
@@ -22,14 +22,14 @@ def create() -> None:
                     ui.run()
                 ''').classes('grow')
 
-            with ui.column().classes('mo-reveal gap-3 items-stretch delay-250!'):
+            with ui.column().classes('reveal gap-3 items-stretch delay-250!'):
                 _step(2, 'Run')
                 bash_window('''
                     $ pip3 install nicegui
                     $ python3 main.py
                 ''').classes('grow')
 
-            with ui.column().classes('mo-reveal gap-3 items-stretch delay-500!'):
+            with ui.column().classes('reveal gap-3 items-stretch delay-500!'):
                 _step(3, 'Enjoy')
                 browser_window(lambda: ui.label('Hello NiceGUI!'), lazy=False).classes('grow')
 

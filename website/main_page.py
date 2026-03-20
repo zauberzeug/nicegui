@@ -15,15 +15,14 @@ from .components import (
 
 def create() -> None:
     """Create the content of the main page."""
-    ui.context.client.content.classes('mo-page')
     ui.run_javascript('''
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
-                if (entry.isIntersecting) entry.target.classList.add('mo-visible');
+                if (entry.isIntersecting) entry.target.classList.add('visible');
             });
         }, { threshold: 0.1 });
         function observeAll() {
-            document.querySelectorAll('.mo-reveal').forEach((el) => {
+            document.querySelectorAll('.reveal').forEach((el) => {
                 if (!el.dataset.moObserved) {
                     el.dataset.moObserved = '1';
                     observer.observe(el);

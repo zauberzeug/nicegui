@@ -37,7 +37,7 @@ def create() -> None:
             ])
 
         with ui.row().classes(
-            f'max-w-[1280px] mx-auto w-full py-5 justify-between items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_T}'
+            f'max-w-[1280px] mx-auto w-full py-4 justify-between items-center {d.TEXT_13PX} {d.TEXT_SECONDARY} {d.BORDER_T}'
         ):
             ui.markdown('Made with NiceGUI by [Zauberzeug](https://zauberzeug.com)')
             ui.markdown('\u00a9 2025 [Zauberzeug GmbH](https://zauberzeug.com)')
