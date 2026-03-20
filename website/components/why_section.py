@@ -9,33 +9,33 @@ def create() -> None:
     with section('why'):
         section_heading('why', 'Why?', center=True)
 
-        with ui.column().classes('mo-reveal max-w-[860px] mx-auto text-center flex flex-col items-center gap-6'):
-            ui.label('\u201cWe liked Streamlit but found it does too much magic '
-                     'when it comes to state handling.\u201d') \
-                .classes(f'{d.TEXT_19PX} italic leading-relaxed text-center max-w-[640px] mb-4 {d.TEXT_SECONDARY}')
+        # with ui.column().classes('mo-reveal max-w-[860px] mx-auto items-center gap-16'):
+        with ui.row(wrap=False).classes('mo-reveal py-8 self-center text-center max-sm:flex-col max-sm:items-center'):
+            _step(0, 'Streamlit', 'Great for quick dashboards, but implicit re-runs make complex state tricky.')
+            _separator()
+            _step(1, 'JustPy', 'Right idea \u2014 components in Python \u2014 but too bare-bones for production UIs.')
+            _separator()
+            _step(2, 'NiceGUI', 'Explicit state, rich components, and batteries included \u2014 the sweet spot.')
 
-            with ui.row(wrap=False).classes('max-sm:flex-col max-sm:items-center'):
-                _step('Streamlit', 'Great for quick dashboards, but implicit re-runs make complex state tricky.')
-                _separator()
-                _step('JustPy', 'Right idea \u2014 components in Python \u2014 but too bare-bones for production UIs.')
-                _separator()
-                _step('NiceGUI', 'Explicit state, rich components, and batteries included \u2014 the sweet spot.', True)
-
-            ui.markdown('''
-                Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
-                [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
-                and [Uvicorn](https://www.uvicorn.org/) under the hood.
-            ''').classes(f'bold-links {d.TEXT_15PX} leading-relaxed mt-2 {d.TEXT_SECONDARY}')
+        ui.markdown('''
+            Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
+            [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
+            and [Uvicorn](https://www.uvicorn.org/) under the hood.
+        ''').classes(f'mo-reveal self-center text-center bold-links {d.TEXT_15PX} leading-relaxed mt-2 {d.TEXT_SECONDARY}')
 
 
-def _step(name: str, description: str, active: bool = False) -> None:
+def _step(number: int, name: str, description: str) -> None:
     """Render a single step in the Why timeline."""
     with ui.column(align_items='center').classes('gap-3'):
-        ui.element().classes('size-3.5 rounded-full').classes(d.BG_BLUE if active else d.BORDER_2)
+        dot = ui.element().classes('size-3.5 rounded-full')
+        if number == 2:
+            dot.classes(d.BG_BLUE).style(f'box-shadow: 0 0 8px color-mix(in srgb, {d.BLUE} 40%, transparent)')
+        else:
+            dot.classes('border-2 border-gray-500/50')
         ui.label(name).classes('font-semibold')
         ui.label(description).classes(f'text-sm leading-normal max-w-[240px] {d.TEXT_SECONDARY}')
 
 
 def _separator() -> None:
     """Render the separator line between steps in the Why timeline."""
-    ui.element().classes(f'm-2 w-12 h-0.5 max-sm:w-0.5 max-sm:h-4 {d.BG_BORDER}')
+    ui.element().classes('m-2 w-12 h-0.5 max-sm:w-0.5 max-sm:h-4 bg-gray-500/15')
