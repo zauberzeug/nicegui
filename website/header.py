@@ -84,9 +84,10 @@ def add_header(menu: ui.left_drawer) -> ui.button:
 
         with ui.row().classes('min-[1051px]:hidden'):
             with ui.button(icon='more_vert').props('flat round'):
-                with ui.menu().classes('text-lg'):
+                with ui.menu().classes(f'rounded-xl {d.BG_SURFACE} {d.BORDER} no-shadow'):
                     for title_, target in menu_items.items():
-                        ui.menu_item(title_, on_click=lambda target=target: ui.navigate.to(target))
+                        ui.menu_item(title_, on_click=lambda target=target: ui.navigate.to(target)) \
+                            .classes(f'{d.TEXT_15PX} {d.TEXT_SECONDARY}')
 
     return menu_button
 
