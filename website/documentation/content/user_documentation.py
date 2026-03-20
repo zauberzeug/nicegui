@@ -16,7 +16,7 @@ def user_fixture():
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
         Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
         where UI tests are considered to be slow, error prone and expensive, does not apply anymore 🚀.
-    ''').classes('bold-links arrow-links')
+    ''')
 
     python_window(title='example', code='''
         await user.open('/')
@@ -31,7 +31,7 @@ def user_fixture():
         **NOTE:** The `user` fixture might still miss some features.
         Please let us know in separate feature requests
         [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
-    ''').classes('bold-links arrow-links')
+    ''')
 
 
 @doc.part('Async execution')
@@ -47,7 +47,7 @@ def async_execution():
         **Note:** Do not set `asyncio_default_fixture_loop_scope` to anything other than `function` (the default).
         Using `module`, `session`, or other scopes can interfere with NiceGUI's background tasks
         and cause issues like binding updates not being reflected in tests.
-    ''').classes('bold-links arrow-links')
+    ''')
 
     with ui.grid().classes('w-full grid-cols-[1fr_auto_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
         code_window(title='pytest.ini', language='ini', code='''

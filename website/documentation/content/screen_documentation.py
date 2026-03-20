@@ -12,7 +12,7 @@ def screen_fixture():
         This is only necessary if you have browser-specific behavior to test.
         NiceGUI itself is thoroughly tested with this fixture to ensure each component works as expected.
         Therefore we recommend to only use it if you absolutely have to.
-    ''').classes('bold-links arrow-links')
+    ''')
 
     python_window(title='example', code='''
         from selenium.webdriver.common.keys import Keys
@@ -45,7 +45,7 @@ def web_driver():
         The `screen` fixture uses Selenium under the hood.
         Currently it is only tested with the Chrome driver.
         To automatically use it for the tests we suggest to add the option `--driver Chrome` to your `pytest.ini`:
-    ''').classes('bold-links arrow-links')
+    ''')
 
     code_window(title='pytest.ini', language='ini', code='''
         [pytest]

@@ -504,4 +504,4 @@ def map_of_nicegui():
 
         - [`Screen`](/documentation/section_testing#screen_fixture) fixture: start a real (headless) browser to interact with your application
         - [`User`](/documentation/section_testing#user_fixture) fixture: simulate user interaction on a Python level (fast)
-    ''').classes('map-of-nicegui arrow-links bold-links')
+    ''').classes('map-of-nicegui')

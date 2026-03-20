@@ -54,16 +54,9 @@ a:hover:not(.browser-window *),
 a:active:not(.browser-window *) {
   opacity: 0.85;
 }
-.bold-links a:link {
+.nicegui-markdown a:link:not(.browser-window *) {
   font-weight: 500;
 }
-.arrow-links a:link:not(.auto-link)::after {
-  content: "north_east";
-  font-family: "Material Icons";
-  font-weight: 100;
-  vertical-align: -10%;
-}
-
 /* ========== Documentation tables ========== */
 .rst-param-tables table {
   text-align: left;

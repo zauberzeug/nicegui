@@ -106,6 +106,6 @@ def create_intro() -> None:
 def _main_page_demo(title: str, explanation: str) -> Callable:
     def decorator(f: Callable) -> Callable:
         subheading(title)
-        ui.markdown(explanation).classes('bold-links arrow-links')
+        ui.markdown(explanation)
         return demo(f)
     return decorator

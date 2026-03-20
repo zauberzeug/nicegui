@@ -30,7 +30,7 @@ def create() -> None:
                     [PyPI package](https://pypi.org/project/nicegui/),
                     [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on
                     [GitHub](https://github.com/zauberzeug/nicegui).
-                ''').classes(f'bold-links {d.TEXT_SECONDARY}')
+                ''').classes(d.TEXT_SECONDARY)
 
             with ui.column().classes(f'rounded-2xl p-8 w-full max-w-120 {d.BG_SURFACE} {d.BORDER} {d.SHADOW_CARD}'):
                 _simple_demo()

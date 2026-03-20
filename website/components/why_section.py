@@ -20,7 +20,7 @@ def create() -> None:
             Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
             [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
             and [Uvicorn](https://www.uvicorn.org/) under the hood.
-        ''').classes(f'reveal self-center text-center bold-links {d.TEXT_15PX} leading-relaxed mt-2 {d.TEXT_SECONDARY}')
+        ''').classes(f'reveal self-center text-center {d.TEXT_15PX} leading-relaxed mt-2 {d.TEXT_SECONDARY}')
 
 
 def _step(number: int, name: str, description: str) -> None:
