@@ -11,3 +11,8 @@ class Separator(Element, default_classes='nicegui-separator'):
         It serves as a separator for cards, menus and other component containers and is similar to HTML's <hr> tag.
         """
         super().__init__('q-separator')
+
+    def _to_markdown(self) -> str:
+        if not self.visible:
+            return ''
+        return '---'

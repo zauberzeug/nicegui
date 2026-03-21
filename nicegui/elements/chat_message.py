@@ -55,7 +55,15 @@ class ChatMessage(LabelElement):
         self._props.set_optional('stamp', stamp)
         self._props.set_optional('avatar', avatar)
         self._props['sent'] = sent
+        self._markdown_text = text
 
         with self:
             for line in text:
                 Html(line, sanitize=sanitize)
+
+    def _to_markdown(self) -> str:
+        if not self.visible:
+            return ''
+        name = self._props.get('name', '')
+        text = '\n'.join(html.unescape(line).replace('<br />', '\n') for line in self._markdown_text)
+        return f'**{name}**: {text}' if name else text

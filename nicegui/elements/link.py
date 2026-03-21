@@ -33,6 +33,13 @@ class Link(TextElement, component='link.js', default_classes='nicegui-link'):
             self._props['href'] = Client.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
 
+    def _to_markdown(self) -> str:
+        if not self.visible:
+            return ''
+        text = self._text or ''
+        href = self._props.get('href', '#')
+        return f'[{text}]({href})'
+
 
 class LinkTarget(Element):
 

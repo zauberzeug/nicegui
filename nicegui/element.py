@@ -212,6 +212,39 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
+    MARKDOWN_SKIP: bool = False
+    '''Set to True on non-visual elements (timers, keyboard handlers, etc.) to exclude from markdown output.'''
+
+    def _to_markdown(self) -> str:
+        """Convert this element to a markdown representation."""
+        if not self.visible or self.MARKDOWN_SKIP:
+            return ''
+        # Content elements (Markdown, Html, Mermaid)
+        if hasattr(self, 'content') and isinstance(self.content, str):
+            return self.content or ''
+        # Text elements (Label, Badge, Chip)
+        if self._text is not None:
+            return self._text
+        # Label+Value elements (Input, Select, Number, DateInput, ...)
+        if hasattr(self, 'label') and hasattr(self, 'value'):
+            label = self.label or ''
+            value = self.value
+            if isinstance(value, list):
+                value = ', '.join(str(v) for v in value)
+            return f'{label}: {value}' if label else str(value or '')
+        # Recurse into children
+        return self._children_to_markdown()
+
+    def _children_to_markdown(self) -> str:
+        """Collect markdown from all child elements across all slots."""
+        parts = []
+        for slot in self.slots.values():
+            for child in slot.children:
+                md = child._to_markdown()  # pylint: disable=protected-access
+                if md:
+                    parts.append(md)
+        return '\n\n'.join(parts)
+
     def _to_dict(self) -> dict[str, Any]:
         return {
             'tag': self.tag,

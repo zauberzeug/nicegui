@@ -10,6 +10,7 @@ from ..style import Style
 
 
 class QueryElement(Element, component='query.js'):
+    MARKDOWN_SKIP = True
 
     def __init__(self, selector: str) -> None:
         super().__init__()

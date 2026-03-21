@@ -28,6 +28,7 @@ NotificationType: TypeAlias = Literal[
 
 
 class Notification(Element, component='notification.js'):
+    MARKDOWN_SKIP = True
 
     def __init__(self,
                  message: Any = '', *,
