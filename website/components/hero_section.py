@@ -15,7 +15,7 @@ def create() -> None:
         )
         with ui.column().classes('reveal relative max-w-[800px] flex flex-col items-center gap-6'):
             ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
-                .classes(f'mo-hero-mascot size-40 stroke-[{d.BLUE}] stroke-2 mb-6')
+                .classes(f'hero-mascot size-40 stroke-[{d.BLUE}] stroke-2 mb-6')
             ui.markdown('Meet the *NiceGUI*.') \
                 .classes(f'{d.TEXT_HERO} font-semibold tracking-tighter leading-none fancy-em {d.TEXT_PRIMARY}')
             ui.label('Let any browser be the frontend of your Python code.') \
