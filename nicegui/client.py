@@ -124,6 +124,8 @@ class Client:
         *Updated in version 2.0.0: The IP address is available even before the client connects.*
         *Updated in version 3.0.0: The IP address is always defined (never ``None``).*
         """
+        if forwarded_for := self.request.headers.get('x-forwarded-for'):
+            return forwarded_for.split(',')[0].strip()
         return self.request.client.host if self.request.client is not None else ''
 
     @property
