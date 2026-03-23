@@ -871,3 +871,16 @@ async def test_switching_tabs(user: User) -> None:
     await user.open('/')
     user.find('A').click()
     await user.should_see('Switching to A')
+
+
+async def test_switching_tabs_wrapped_in_row(user: User) -> None:
+    @ui.page('/')
+    def _():
+        with ui.tabs(on_change=lambda e: ui.notify(f'Switching to {e.value}')):
+            with ui.row():
+                ui.tab('A')
+                ui.tab('B')
+
+    await user.open('/')
+    user.find('A').click()
+    await user.should_see('Switching to A')
