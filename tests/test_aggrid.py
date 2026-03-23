@@ -293,19 +293,25 @@ def test_run_row_method(screen: Screen):
     screen.should_contain('42')
 
 
-def test_run_method_with_function(screen: Screen):
+def test_run_grid_method_xss(screen: Screen):
     @ui.page('/')
     def page():
-        grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+        })
+        ui.button('XSS 1', on_click=lambda: grid.run_grid_method('console.error("X" + "SS")'))
+        ui.button('XSS 2', on_click=lambda: grid.run_grid_method('x", console.error("X" + "SS"), "y'))
 
-        async def print_row(index: int) -> None:
-            ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
-
-        ui.button('Print Row 0', on_click=lambda: print_row(0))
-
+    screen.allowed_js_errors.append('Method "console.error("X" + "SS")" not found.')
+    screen.allowed_js_errors.append('Method "x", console.error("X" + "SS"), "y" not found.')
     screen.open('/')
-    screen.click('Print Row 0')
-    screen.should_contain("Row 0: {'name': 'Alice'}")
+    screen.click('XSS 1')
+    screen.click('XSS 2')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
+    screen.assert_py_logger('ERROR', 'Method "console.error("X" + "SS")" not found.')
+    screen.assert_py_logger('ERROR', 'Method "x", console.error("X" + "SS"), "y" not found.')
 
 
 def test_get_client_data(screen: Screen):

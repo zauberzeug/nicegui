@@ -2,11 +2,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class AppConfig:
     endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
     socket_io_js_query_params: dict = field(default_factory=dict)

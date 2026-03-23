@@ -6,7 +6,9 @@ const {
   CSS3DRenderer,
   DragControls,
   GLTFLoader,
+  MapControls,
   OrbitControls,
+  TrackballControls,
   STLLoader,
   THREE,
   TWEEN,
@@ -76,6 +78,7 @@ export default {
 
   mounted() {
     this.scene = new THREE.Scene();
+    this.clock = new THREE.Clock();
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
@@ -184,7 +187,8 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controlClass = { trackball: TrackballControls, map: MapControls }[this.controlType] || OrbitControls;
+    this.controls = new this.controlClass(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -212,6 +216,7 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
+      this.controls.update(this.clock.getDelta());
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -500,7 +505,7 @@ export default {
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
-            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            this.controls = new this.controlClass(this.camera, this.renderer.domElement);
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
@@ -582,5 +587,6 @@ export default {
     backgroundColor: String,
     fps: Number,
     showStats: Boolean,
+    controlType: String,
   },
 };

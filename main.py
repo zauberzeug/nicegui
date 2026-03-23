@@ -10,6 +10,7 @@ from starlette.responses import Response
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
 from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
 
 @app.add_middleware
@@ -64,9 +65,16 @@ def _main_page() -> None:
     with ui.left_drawer() \
             .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
             .style('height: calc(100% + 20px) !important') as menu:
-        tree = ui.tree(documentation.tree.nodes, label_key='title',
-                       on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+        tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
             .classes('w-full').props('accordion no-connectors no-selection-unset')
+        tree.visible = False
+        spinner = ui.image('/static/loading.gif').classes('w-8 h-8 m-auto').props('no-spinner no-transition')
+
+        @intersection_observer
+        def update_tree() -> None:
+            tree.props['nodes'] = documentation.tree.nodes
+            tree.visible = True
+            spinner.delete()
     menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}

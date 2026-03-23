@@ -15,13 +15,12 @@ from . import background_tasks, core, helpers
 from .awaitable_response import AwaitableResponse
 from .client import Client
 from .context import context
-from .dataclasses import KWONLY_SLOTS
 from .slot import Slot
 
 P = ParamSpec('P')
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Callback(Generic[P]):
     func: Callable[P, Any] | Callable[[], Any]
     filepath: str
