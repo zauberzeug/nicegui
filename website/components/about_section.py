@@ -38,10 +38,9 @@ def create() -> None:
 
 def _simple_demo() -> None:
     """Create a simplified interactive demo matching the click dummy style."""
-    output = ui.label('Try it out!') \
-        .classes(f'text-center text-lg py-3 px-4 rounded-lg w-full {d.BG} {d.TEXT_SECONDARY} {d.BORDER}')
-
-    with ui.column().classes('gap-3 mt-4 w-full items-stretch'):
+    with ui.column().classes('w-full items-stretch'):
+        output = ui.label('Try it out!') \
+            .classes(f'min-h-14 p-3 text-center text-lg rounded-lg overflow-auto {d.BG} {d.TEXT_SECONDARY} {d.BORDER}')
         ui.button('Click me!', on_click=lambda: output.set_text('Clicked!')).props('unelevated no-caps')
         ui.input(placeholder='Type here...', on_change=lambda e: output.set_text(e.value)).props('outlined dense')
         ui.slider(min=0, max=100, value=50, on_change=lambda e: output.set_text(f'{e.value:.0f}%'))
