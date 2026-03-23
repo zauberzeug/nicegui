@@ -4,7 +4,8 @@ from __future__ import annotations
 import inspect
 import warnings
 from collections.abc import Callable
-from multiprocessing import Queue
+from multiprocessing import Pipe, Queue
+from multiprocessing.connection import Connection
 from typing import Any
 
 from .. import run
@@ -12,18 +13,21 @@ from ..logging import log
 
 method_queue: Queue | None = None
 response_queue: Queue | None = None
+event_receiver: Connection | None = None
+event_sender: Connection | None = None
 
 
 def create_queues() -> None:
-    """Create the message queues. (For internal use only.)"""
-    global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
+    """Create the message queues and event pipe. (For internal use only.)"""
+    global method_queue, response_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
     method_queue = Queue()
     response_queue = Queue()
+    event_receiver, event_sender = Pipe(duplex=False)
 
 
 def remove_queues() -> None:
-    """Remove the message queues by closing them and waiting for threads to finish. (For internal use only.)"""
-    global method_queue, response_queue  # pylint: disable=global-statement # noqa: PLW0603
+    """Remove the message queues and event pipe. (For internal use only.)"""
+    global method_queue, response_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
     if method_queue is not None:
         method_queue.close()
         method_queue.join_thread()
@@ -32,6 +36,12 @@ def remove_queues() -> None:
         response_queue.close()
         response_queue.join_thread()
         response_queue = None
+    if event_receiver is not None:
+        event_receiver.close()
+        event_receiver = None
+    if event_sender is not None:
+        event_sender.close()
+        event_sender = None
 
 
 try:

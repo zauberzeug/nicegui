@@ -255,6 +255,25 @@ async def test_find_in_local_scope(user: User):
     await user.open('/')
 
 
+async def test_find_only_visible(user: User):
+    @ui.page('/')
+    def page():
+        ui.button('button A')
+        ui.label('label A').visible = False
+        with ui.row() as row:
+            row.visible = False
+            ui.button('button B')
+            ui.label('label B').visible = False
+
+        assert texts(ElementFilter(content='A')) == ['button A', 'label A']
+        assert texts(ElementFilter(content='B')) == ['button B', 'label B']
+
+        assert texts(ElementFilter(content='A', only_visible=True)) == ['button A']
+        assert texts(ElementFilter(content='B', only_visible=True)) == []
+
+    await user.open('/')
+
+
 async def test_setting_classes(user: User):
     @ui.page('/')
     def page():
