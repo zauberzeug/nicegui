@@ -29,7 +29,7 @@ class LinearProgress(ValueElement, TextColorElement):
 
         if show_value:
             with self:
-                label().classes('absolute-center text-sm text-white').bind_text_from(self, 'value')
+                label().classes('absolute-center text-white').style('font-size: 0.875rem').bind_text_from(self, 'value')
 
 
 class CircularProgress(ValueElement, TextColorElement):
@@ -65,4 +65,4 @@ class CircularProgress(ValueElement, TextColorElement):
 
         if show_value:
             with self:
-                label().classes('absolute-center text-xs').bind_text_from(self, 'value')
+                label().classes('absolute-center').style('font-size: 0.75rem').bind_text_from(self, 'value')

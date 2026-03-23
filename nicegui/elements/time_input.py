@@ -34,7 +34,7 @@ class TimeInput(LabelElement, ValueElement, DisableableElement):
         self._props.set_optional('placeholder', placeholder)
 
         with self.add_slot('append'):
-            with button(icon='schedule', color=None).props('flat round').classes('cursor-pointer') as self.button:
+            with button(icon='schedule', color=None).props('flat round').style('cursor: pointer') as self.button:
                 with menu() as self.menu:
                     self.picker = time()
 

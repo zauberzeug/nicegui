@@ -42,7 +42,7 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
         with self.add_slot('append'):
             self.picker = color_picker(on_pick=lambda e: self.set_value(e.color))
             self.button = button(on_click=self.open_picker, icon='colorize') \
-                .props('flat round', remove='color').classes('cursor-pointer')
+                .props('flat round', remove='color').style('cursor: pointer')
 
         self.preview = preview
         self._update_preview()
