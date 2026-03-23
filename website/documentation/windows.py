@@ -17,14 +17,14 @@ ICONS = {
 def code_window(code: str = '', *, title: str = 'main.py', language: str = 'python') -> ui.column:
     """Create a window for code. If code is empty, returns the body column for use as context manager."""
     with ui.column().classes(f'rounded-xl gap-0 min-w-0 {d.BG_CODE} code-window') as window:
-        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_B}'):
+        with _header_row():
             phosphor_icon(ICONS.get(language, 'ph-file')).classes('text-base')
             ui.label(title)
             if code:
                 ui.space()
                 with ui.button(on_click=lambda: ui.clipboard.write(code)) \
-                        .props('flat round size=sm').classes('opacity-30 hover:opacity-100 transition-opacity'):
-                    phosphor_icon('ph-copy').classes('text-lg')
+                        .props('flat round size=xs').classes('opacity-30 hover:opacity-100 transition-opacity'):
+                    phosphor_icon('ph-copy').classes('text-base')
         if code:
             ui.markdown(f'````{language}\n{remove_indentation(code)}\n````') \
                 .classes('w-full grow py-2 overflow-x-auto [&_pre]:px-4 [&_pre]:w-fit [&_pre]:min-w-full')
@@ -43,8 +43,8 @@ def python_window(code: str = '', *, title: str = 'main.py') -> ui.column:
 
 def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy: bool = True) -> ui.column:
     """Create a browser window."""
-    with ui.column().classes(f'rounded-xl gap-0 {d.BG_SURFACE} {d.BORDER} browser-window') as window:
-        with ui.row().classes(f'w-full px-4 h-16 gap-2 items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_B}'):
+    with ui.column().classes(f'rounded-xl gap-0 {d.BG_SURFACE} {d.RING} browser-window') as window:
+        with _header_row():
             if callable(tab):
                 tab()
             else:
@@ -74,3 +74,7 @@ def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy
                         'async functions are not supported in non-lazy demos'
                     result()
     return window
+
+
+def _header_row() -> ui.row:
+    return ui.row().classes(f'w-full px-4 h-12 shrink-0 gap-2 items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_B}')

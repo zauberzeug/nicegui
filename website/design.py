@@ -60,6 +60,7 @@ BORDER_2 = f'border-2 border-[{_BORDER_LIGHT}] dark:border-[{_BORDER_DARK}]'
 BORDER_BLUE = f'border-[1.5px] border-[{BLUE}]'
 BORDER_ACCENT = f'border-[{ACCENT}]'
 BORDER_SUBTLE = f'border-[1.5px] border-[{_BORDER_LIGHT}] dark:border-[{_BORDER_DARK}]'
+RING = f'ring-1 ring-[{_BORDER_LIGHT}] dark:ring-[{_BORDER_DARK}]'
 
 # Shadows
 SHADOW_BLUE = f'shadow-[0_2px_8px_color-mix(in_srgb,{BLUE}_30%,transparent)]'
