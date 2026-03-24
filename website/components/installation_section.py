@@ -2,7 +2,7 @@ from nicegui import ui
 
 from .. import design as d
 from ..documentation.windows import bash_window, browser_window, python_window
-from .shared import section, section_heading
+from .shared import phosphor_icon, section, section_heading
 
 
 def create() -> None:
@@ -33,7 +33,12 @@ def create() -> None:
                 _step(3, 'Enjoy')
                 browser_window(lambda: ui.label('Hello NiceGUI!'), lazy=False).classes('grow')
 
-        with ui.expansion('...or use Docker to run your main.py').classes('w-full gap-2 mt-8'):
+        with ui.expansion().classes('w-full gap-2 mt-8 [&_.q-focus-helper]:hidden').props('expand-icon=none') as expansion:
+            with expansion.add_slot('header'), ui.row(align_items='center'):
+                icon = phosphor_icon('ph-caret-right').classes(f'text-base {d.TEXT_BLUE} transition-transform')
+                ui.label('Or use Docker to run your main.py') \
+                    .classes(f'hover:text-[{d._TEXT_SECONDARY_LIGHT}] dark:hover:text-[{d._TEXT_SECONDARY_DARK}]')
+                expansion.on_value_change(lambda: icon.style(f'transform: rotate({90 if expansion.value else 0}deg)'))
             with ui.grid().classes('grid-cols-2 max-sm:grid-cols-1 w-full gap-6'):
                 ui.markdown('''
                     With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui)
