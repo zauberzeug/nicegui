@@ -89,16 +89,18 @@ a:active:not(.browser-window *) {
 }
 
 /* ========== Scroll Reveal ========== */
-.reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition:
-    opacity 0.5s ease-out,
-    transform 0.5s ease-out;
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
+@media not print {
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.5s ease-out,
+      transform 0.5s ease-out;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ========== Reduced Motion ========== */
