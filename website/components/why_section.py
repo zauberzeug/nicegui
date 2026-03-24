@@ -31,8 +31,8 @@ def _step(number: int, name: str, description: str) -> None:
             dot.classes(d.BG_BLUE).style(f'box-shadow: 0 0 8px color-mix(in srgb, {d.BLUE} 40%, transparent)')
         else:
             dot.classes('border-2 border-gray-500/50')
-        ui.label(name).classes('font-semibold')
-        ui.label(description).classes(f'text-sm leading-normal max-w-[240px] {d.TEXT_SECONDARY}')
+        ui.label(name).classes(f'{d.TEXT_19PX} font-semibold')
+        ui.label(description).classes(f'{d.TEXT_15PX} leading-normal max-w-[240px] {d.TEXT_SECONDARY}')
 
 
 def _separator() -> None:

@@ -10,9 +10,9 @@ def create() -> None:
         with ui.grid().classes('max-w-[1280px] mx-auto w-full pb-12 gap-12 '
                                'grid-cols-[2fr_1fr_1fr_1fr] max-sm:grid-cols-1'):
             with ui.column().classes('gap-3'):
-                ui.markdown('**Nice**GUI').classes('text-lg -mt-3')
-                ui.label('The Python-based UI framework that shows up in your browser.') \
-                    .classes(f'text-sm leading-normal {d.TEXT_SECONDARY}')
+                ui.markdown('**Nice**GUI').classes(f'{d.TEXT_19PX} -mt-3')
+                ui.label('The Python UI framework that shows up in your browser.') \
+                    .classes(f'{d.TEXT_15PX} leading-normal {d.TEXT_SECONDARY}')
                 with ui.row().classes('gap-3 mt-2'):
                     _icon_link('ph-github-logo', 'https://github.com/zauberzeug/nicegui/')
                     _icon_link('ph-discord-logo', 'https://discord.gg/TEpFeAaF4f')
@@ -46,7 +46,7 @@ def create() -> None:
 def _column(title: str, links: list[tuple[str, str]]) -> None:
     """Render a footer link column with heading and list of (label, url) pairs."""
     with ui.column().classes('gap-2.5'):
-        ui.label(title).classes(f'text-xs font-semibold uppercase tracking-widest mb-4 {d.TEXT_MUTED}')
+        ui.label(title).classes(f'{d.TEXT_13PX} font-semibold uppercase tracking-widest mb-4 {d.TEXT_MUTED}')
         for label, url in links:
             ui.link(label, url).classes(f'{d.TEXT_15PX} no-underline transition-colors duration-150 {d.TEXT_SECONDARY}')
 

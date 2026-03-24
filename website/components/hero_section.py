@@ -19,7 +19,7 @@ def create() -> None:
             ui.markdown('Meet the *NiceGUI*.') \
                 .classes(f'{d.TEXT_HERO} font-semibold tracking-tighter leading-none fancy-em {d.TEXT_PRIMARY}')
             ui.label('Let any browser be the frontend of your Python code.') \
-                .classes(f'text-xl max-w-[560px] leading-relaxed {d.TEXT_SECONDARY}')
+                .classes(f'{d.TEXT_19PX} max-w-[560px] leading-relaxed {d.TEXT_SECONDARY}')
 
             with ui.row(align_items='center').classes('gap-4 justify-center mt-2'):
                 cta_button('Get Started', right_icon='ph-arrow-right',
@@ -27,7 +27,7 @@ def create() -> None:
                 cta_button('pip install nicegui', right_icon='ph-copy', filled=False, blue=False, mono=True,
                            on_click=lambda: ui.notify('Copied!', color='primary'))
 
-            with ui.row().classes(f'justify-center text-sm {d.TEXT_MUTED} gap-2'):
+            with ui.row().classes(f'justify-center {d.TEXT_15PX} {d.TEXT_MUTED} gap-2'):
                 ui.label().bind_text_from(github_stars.stars, 'long_string').classes(d.TEXT_ACCENT)
                 ui.html('&middot;')
                 ui.label('Loved by robotics, IoT, and ML teams worldwide')

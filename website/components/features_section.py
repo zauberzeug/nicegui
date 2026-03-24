@@ -57,6 +57,6 @@ def _card(icon: str, title: str, items: list[str]) -> None:
             .classes(f'absolute top-2.5 right-3 font-mono {d.TEXT_13PX} {d.TEXT_BLUE} opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none')
         phosphor_icon(icon) \
             .classes(f'{d.TEXT_32PX} {d.TEXT_BLUE} [&_i::before]:text-[{d.ACCENT}] [&_i::before]:!opacity-40 [&_i::after]:relative')
-        ui.label(title).classes('text-xl font-semibold mb-3 tracking-tight')
+        ui.label(title).classes(f'{d.TEXT_19PX} font-semibold mb-3 tracking-tight')
         ui.markdown('\n'.join(f'- {item}' for item in items)) \
             .classes(f'{d.TEXT_15PX} leading-7 {d.TEXT_SECONDARY} [&_ul]:pl-4 [&_li]:pl-1 [&_li]:marker:{d.TEXT_BLUE}/50')

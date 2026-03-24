@@ -156,8 +156,8 @@ def create_tiles():
             f'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
         ):
             if page.title:
-                ui.label(page.title.replace('*', '')).classes('text-lg font-semibold mb-1')
-            ui.markdown(description).classes(f'text-sm leading-normal {d.TEXT_SECONDARY}')
+                ui.label(page.title.replace('*', '')).classes(f'{d.TEXT_19PX} font-semibold mb-1')
+            ui.markdown(description).classes(f'leading-normal {d.TEXT_SECONDARY}')
 
 
 @doc.ui

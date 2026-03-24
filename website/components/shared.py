@@ -59,7 +59,7 @@ def cta_button(
         button.classes(f'bg-transparent {d.TEXT_PRIMARY_IMPORTANT} {d.BORDER_BLUE if blue else d.BORDER_SUBTLE}')
 
     if mono:
-        button.classes('!font-mono !text-sm')
+        button.classes(d.TEXT_13PX_MONO)
 
     return button
 

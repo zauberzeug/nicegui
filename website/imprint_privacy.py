@@ -51,7 +51,7 @@ def _heading(text: str) -> ui.label:
 
 
 def _subheading(text: str) -> ui.label:
-    return ui.label(text).classes('text-xl font-medium mt-8')
+    return ui.label(text).classes(f'{d.TEXT_19PX} font-medium mt-8')
 
 
 def _text(content: str) -> ui.markdown:

@@ -71,6 +71,7 @@ TEXT_13PX = 'text-[0.8125rem]'
 TEXT_13PX_MONO = 'text-[0.8rem] font-mono'  # section label (slightly smaller for mono)
 TEXT_15PX = 'text-[0.9375rem]'
 TEXT_19PX = 'text-[1.1875rem]'
+TEXT_24PX = 'text-[1.5rem]'
 TEXT_32PX = 'text-[2rem]'
 TEXT_HERO = 'text-[clamp(2.5rem,5vw,4.5rem)]'
 TEXT_SECTION_TITLE = 'text-[clamp(1.8rem,3vw,3rem)]'
@@ -88,8 +89,8 @@ BG_HERO_GLOW = (
 
 def section_heading(subtitle_: str, title_: str) -> None:
     """Render a section heading with a subtitle."""
-    ui.label(subtitle_).classes('md:text-lg font-bold')
-    ui.markdown(title_).classes('text-3xl md:text-5xl font-medium mt-[-12px] fancy-em')
+    ui.label(subtitle_).classes(f'{TEXT_19PX} font-medium {TEXT_SECONDARY}')
+    ui.markdown(title_).classes(f'{TEXT_SECTION_TITLE} font-medium mt-[-12px] fancy-em')
 
 
 def subheading(text: str, *, link: str | None = None, major: bool = False, anchor_name: str | None = None) -> None:
@@ -97,7 +98,7 @@ def subheading(text: str, *, link: str | None = None, major: bool = False, ancho
     name = anchor_name or create_anchor_name(text)
     ui.html(f'<div id="{name}"></div>', sanitize=False).style('position: relative; top: -90px')
     with ui.row().classes('group gap-2 items-center relative'):
-        classes = 'text-3xl' if major else 'text-2xl'
+        classes = TEXT_32PX if major else TEXT_24PX
         if link:
             ui.link(text, link).classes(classes)
         else:
