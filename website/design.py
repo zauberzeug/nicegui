@@ -77,13 +77,6 @@ TEXT_HERO = 'text-[clamp(2.5rem,5vw,4.5rem)]'
 TEXT_SECTION_TITLE = 'text-[clamp(1.8rem,3vw,3rem)]'
 TEXT_CTA_TITLE = 'text-[clamp(1.5rem,2.5vw,2.25rem)]'
 
-# Hero glow gradient
-BG_HERO_GLOW = (
-    f'bg-[radial-gradient(ellipse at 40% 45%, color-mix(in srgb, {BLUE} 7%, transparent) 0%, transparent 55%),'
-    f'radial-gradient(ellipse at 60% 55%, color-mix(in srgb, {BLUE_LIGHT} 4%, transparent) 0%, transparent 50%),'
-    f'radial-gradient(ellipse at 50% 50%, {WARM_GLOW} 0%, transparent 65%)]'
-).replace(' ', '_')
-
 
 # --- Helpers ---
 
