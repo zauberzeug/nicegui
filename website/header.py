@@ -131,8 +131,8 @@ def _theme_toggle(dark_mode: ui.dark_mode) -> None:
 def _github_badge() -> None:
     """GitHub link with star count badge."""
     with ui.link(target='https://github.com/zauberzeug/nicegui/') \
-            .classes(f'rounded-full px-3.5 py-1.5 {d.TEXT_13PX} {d.BORDER} {SM_UP} '
-                     'hover:border-gray-500 transition-[border-color] duration-150'):
-        with ui.row().classes(f'gap-2 items-center {d.TEXT_MUTED}'):
+            .classes(f'rounded-full px-3.5 py-[0.4em] {d.TEXT_13PX} {d.BORDER} {d.BORDER_ACCENT}! {SM_UP} '
+                     f'hover:{d.BG_ACCENT}/10 duration-150'):
+        with ui.row().classes(f'gap-2 items-center {d.TEXT_ACCENT}'):
             phosphor_icon('ph-github-logo').classes('text-base')
             ui.label().bind_text_from(github_stars.stars, 'string').classes(MD_UP)
