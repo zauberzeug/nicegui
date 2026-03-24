@@ -41,4 +41,4 @@ def create() -> None:
 
         cta_button('Become a sponsor', left_icon='ph-heart', filled=False,
                    on_click=lambda: ui.navigate.to('https://github.com/sponsors/zauberzeug')) \
-            .classes('mx-auto mt-4')
+            .classes(f'mx-auto mt-4 {d.BORDER_ACCENT} [&_.ph-heart]:{d.TEXT_ACCENT}')
