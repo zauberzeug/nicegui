@@ -95,6 +95,21 @@ def create() -> None:
                         ```
                     ''')
 
+    with ui.column().classes('dark-box p-8 lg:p-16 my-16'):
+        with ui.column().classes('mx-auto items-center gap-y-8 gap-x-32 lg:flex-row'):
+            with ui.column().classes('gap-1 max-lg:items-center max-lg:text-center'):
+                ui.markdown('Or, let your AI do it') \
+                    .classes('text-white text-2xl md:text-3xl font-medium fancy-em')
+                ui.markdown('''
+                    **Most LLMs already know NiceGUI** — but when that isn't enough,
+                    our data-rich documentation index puts the full API reference, descriptions, and code examples into a single JSON file.
+
+                    Ideal for **RAG pipelines**, **custom AI tooling**, or just exploring the possibilities with your favorite model.
+                ''').classes('text-white text-lg md:text-xl')
+            ui.link('Learn more', '/documentation/section_configuration_deployment#documentation_index') \
+                .style('color: black !important') \
+                .classes('rounded-full mx-auto px-12 py-2 bg-white font-medium text-lg md:text-xl')
+
     with ui.column().classes('w-full p-8 lg:p-16 bold-links arrow-links max-w-[1600px] mx-auto'):
         link_target('features')
         section_heading('Features', 'Code *nicely*')
