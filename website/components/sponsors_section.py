@@ -13,7 +13,7 @@ SPONSORS = json.loads((Path(__file__).parent.parent / 'sponsors.json').read_text
 
 def create() -> None:
     """Create the sponsors section with logos and contributor info."""
-    with section('sponsors', classes=d.BG_SPONSORS):
+    with section('sponsors'), ui.column().classes(f'reveal w-full {d.BG_BLUE}/25 rounded-xl py-16 {d.SHADOW_CARD}'):
         section_heading('sponsors', 'Supported by the community.', center=True)
 
         ui.label('Join thousands of developers building with NiceGUI!') \

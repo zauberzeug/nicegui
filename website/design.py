@@ -41,7 +41,6 @@ BG_CODE = f'bg-[{_BG_CODE_LIGHT}] dark:bg-[{_BG_CODE_DARK}]'
 BG_FOOTER = f'bg-[{_BG_FOOTER_LIGHT}] dark:bg-[{_BG_FOOTER_DARK}]'
 BG_BLUE = f'bg-[{BLUE}]'
 BG_ACCENT = f'bg-[{ACCENT}]'
-BG_SPONSORS = f'bg-[color-mix(in_srgb,{ACCENT}_3%,{_BG_LIGHT})] dark:bg-[color-mix(in_srgb,{ACCENT}_3%,{_BG_DARK})]'
 BG_BORDER = f'bg-[{_BORDER_LIGHT}] dark:bg-[{_BORDER_DARK}]'
 
 # Text
