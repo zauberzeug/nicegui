@@ -52,7 +52,9 @@ class Air:
             headers: dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             if forwarded_for := headers.get('x-forwarded-for'):
-                self.client._transport.client = (forwarded_for.split(',')[0].strip(), 0)
+                transport = self.client._transport  # pylint: disable=protected-access
+                assert isinstance(transport, httpx.ASGITransport)
+                transport.client = (forwarded_for.split(',')[0].strip(), 0)
             url = 'http://test' + data['path']
             request = self.client.build_request(
                 data['method'],
