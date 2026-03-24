@@ -23,7 +23,12 @@ def generate_class_doc(class_obj: type, part_title: str) -> None:
     if doc and ':param' in doc:
         subheading('Initializer', anchor_name=create_anchor_name(part_title.replace('Reference', 'Initializer')))
         description = remove_indentation(doc.split('\n', 1)[-1])
-        lines = [line.replace(':param ', ':') for line in description.splitlines() if ':param' in line]
+        lines: list[str] = []
+        for line in description.splitlines():
+            if ':param' in line:
+                lines.append(line.replace(':param ', ':'))
+            elif lines and line and line[0].isspace():
+                lines[-1] += '\n' + line
         custom_restructured_text('\n'.join(lines)).classes('rst-param-tables')
 
     mro = [base for base in class_obj.__mro__ if base.__module__.startswith('nicegui.')]

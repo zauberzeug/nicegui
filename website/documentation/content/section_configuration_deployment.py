@@ -58,6 +58,25 @@ def native_mode_demo():
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
 
+@doc.demo('Native Window Events', '''
+    In native mode you can react to window lifecycle events using `app.native.on`.
+    Handlers can be sync or async and optionally accept a `NativeEventArguments` parameter.
+    Supported events: "shown", "loaded", "minimized", "maximized", "restored", "resized", "moved", "closed", "drop".
+    The "resized" event provides `width` and `height` in `e.args`, "moved" provides `x` and `y`,
+    and "drop" provides `files` with a list of filesystem paths.
+''', tab=lambda: ui.label('NiceGUI'))
+def native_events_demo():
+    from nicegui import app
+
+    ui.label('Try this demo in native mode to see the events in action!')
+
+    # app.native.on('minimized', lambda: print('Window minimized'))
+    # app.native.on('resized', lambda e: print(f'{e.args["width"]}x{e.args["height"]}'))
+    # app.native.on('drop', lambda e: print(f'Dropped files: {e.args["files"]}'))
+    #
+    # ui.run(native=True)
+
+
 doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
