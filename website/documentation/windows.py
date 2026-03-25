@@ -9,7 +9,7 @@ from .intersection_observer import IntersectionObserver as intersection_observer
 
 ICONS = {
     'python': 'ph-file-py',
-    'bash': 'ph-terminal-window',
+    'console': 'ph-terminal-window',
     'ini': 'ph-file-ini',
 }
 
@@ -33,7 +33,7 @@ def code_window(code: str = '', *, title: str = 'main.py', language: str = 'pyth
 
 def bash_window(code: str = '', *, title: str = 'bash') -> ui.column:
     """Create a window for bash code."""
-    return code_window(code, title=title, language='bash')
+    return code_window(code, title=title, language='console')
 
 
 def python_window(code: str = '', *, title: str = 'main.py') -> ui.column:
