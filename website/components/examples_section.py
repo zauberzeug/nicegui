@@ -26,7 +26,7 @@ def example_card(example: Example) -> None:
     """Render a single example card with screenshot, title, and description."""
     with ui.link(target=example.url).classes(
         'rounded-2xl overflow-hidden no-underline transition-all duration-200 cursor-pointer hover:-translate-y-0.5'
-        f' {d.BG_SURFACE} {d.BORDER} hover:{d.BORDER_ACCENT}'
+        f' {d.BG_SURFACE} {d.BORDER} hover:{d.SHADOW_CARD}'
     ):
         with ui.element().classes(f'overflow-hidden aspect-video bg-white p-4 dark:brightness-[0.85] {d.BORDER_B}'):
             ui.interactive_image(example.screenshot) \
