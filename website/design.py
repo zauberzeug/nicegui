@@ -82,7 +82,7 @@ TEXT_CTA_TITLE = 'text-[clamp(1.5rem,2.5vw,2.25rem)]'
 def section_heading(subtitle_: str, title_: str) -> None:
     """Render a section heading with a subtitle."""
     ui.label(subtitle_).classes(f'{TEXT_19PX} font-medium {TEXT_SECONDARY}')
-    ui.markdown(title_).classes(f'{TEXT_SECTION_TITLE} font-medium mt-[-12px] fancy-em')
+    ui.markdown(title_).classes(f'{TEXT_SECTION_TITLE} font-medium mt-[-12px] [&_em]:not-italic [&_em]:{TEXT_BLUE}')
 
 
 def subheading(text: str, *, link: str | None = None, major: bool = False, anchor_name: str | None = None) -> None:

@@ -25,7 +25,7 @@ def create() -> None:
             ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
                 .classes(f'hero-mascot size-40 stroke-[{d.BLUE}] stroke-2 mb-8')
             ui.markdown('Meet the *NiceGUI*.') \
-                .classes(f'{d.TEXT_HERO} font-semibold tracking-tighter leading-none fancy-em {d.TEXT_PRIMARY} -mb-2')
+                .classes(f'{d.TEXT_HERO} font-semibold tracking-tighter leading-none [&_em]:not-italic [&_em]:{d.TEXT_BLUE} {d.TEXT_PRIMARY} -mb-2')
             ui.markdown('''
                 Let any browser be the frontend of your Python code.<br>
                 Loved by robotics, IoT, and ML teams worldwide.
