@@ -7,7 +7,7 @@ from .components.shared import section
 def create() -> None:
     ui.page_title('Imprint & Privacy | NiceGUI')
 
-    with section('imprint', classes='py-32!'):
+    with section('imprint'):
         ui.link_target('imprint')
         _heading('Imprint')
 

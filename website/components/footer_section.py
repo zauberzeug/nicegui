@@ -6,7 +6,7 @@ from ..design import phosphor_icon
 
 def create() -> None:
     """Create the 4-column footer with brand, links, and bottom bar."""
-    with ui.element('footer').classes(f'w-full pt-20 px-6 {d.BG_FOOTER} {d.BORDER_T}'):
+    with ui.element('footer').classes(f'w-full mt-20 pt-20 px-6 {d.BG_FOOTER} {d.BORDER_T}'):
         with ui.grid().classes('max-w-[1280px] mx-auto w-full pb-12 gap-12 '
                                'grid-cols-[2fr_1fr_1fr_1fr] max-sm:grid-cols-1'):
             with ui.column().classes('gap-3'):
