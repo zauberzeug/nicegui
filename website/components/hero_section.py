@@ -28,4 +28,4 @@ def create() -> None:
                 cta_button('Get Started', right_icon='ph-arrow-right',
                            on_click=lambda: ui.navigate.to('/#installation'))
                 cta_button('pip install nicegui', right_icon='ph-copy', filled=False, blue=False, mono=True,
-                           on_click=lambda: ui.notify('Copied!', color='primary'))
+                           on_click=lambda: (ui.clipboard.write('pip install nicegui'), ui.notify('Copied!', color='primary')))
