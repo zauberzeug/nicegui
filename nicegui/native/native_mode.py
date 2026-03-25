@@ -3,6 +3,7 @@ from __future__ import annotations
 import _thread
 import multiprocessing as mp
 import queue
+import re
 import socket
 import sys
 import time
@@ -52,6 +53,7 @@ def _open_window(
     window.events.closed += closed.set
     _bind_pywebview_events(window, event_sender)
     _start_window_method_executor(window, method_queue, response_queue, closed)
+    _warn_if_esm_unsupported(window)
     webview.start(**core.app.native.start_args)
 
 
@@ -125,6 +127,25 @@ def _start_window_method_executor(window: webview.Window,
                 log.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
+
+
+def _warn_if_esm_unsupported(window: webview.Window) -> None:
+    """Log an error after page load if the browser engine lacks ES module / import map support."""
+    def check() -> None:
+        try:
+            user_agent = window.evaluate_js('navigator.userAgent') or ''
+            match = re.search(r'Chrome/(\d+)', user_agent)
+            if match and int(match.group(1)) < 89:
+                log.error(
+                    'The webview browser engine (Chrome/%s) does not support import maps. '
+                    'NiceGUI requires Chrome 89+ (or an equivalent engine). '
+                    'On Linux, install PyQt6 or PySide6 instead of PyQt5.',
+                    match.group(1),
+                )
+        except Exception:
+            pass
+
+    window.events.loaded += check
 
 
 def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
