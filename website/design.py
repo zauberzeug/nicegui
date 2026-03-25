@@ -11,7 +11,6 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 BLUE = '#5898d4'
 BLUE_LIGHT = '#7ab4e4'
 ACCENT = '#f0a050'
-WARM_GLOW = 'rgba(240,160,80,0.07)'
 
 _BG_LIGHT = '#fafbfc'
 _BG_DARK = '#0f1117'

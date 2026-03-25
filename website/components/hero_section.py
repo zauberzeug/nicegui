@@ -4,22 +4,15 @@ from .. import design as d
 from .. import svg
 from .shared import cta_button
 
-GLOW = (
-    'bg-['
-    f'radial-gradient(ellipse at 40% 45%, color-mix(in srgb, {d.BLUE} 12%, transparent) 0%, transparent 55%),'
-    f'radial-gradient(ellipse at 60% 55%, color-mix(in srgb, {d.BLUE_LIGHT} 8%, transparent) 0%, transparent 50%),'
-    f'radial-gradient(ellipse at 50% 50%, {d.WARM_GLOW} 0%, transparent 65%)'
-    ']'
-).replace(' ', '_')
-
 
 def create() -> None:
     """Create the hero section with mascot, title, CTAs, and social proof."""
     with ui.element('section').classes(
-        f'-mt-16 pt-16 min-h-screen flex flex-col items-center justify-center text-center px-6 pb-20 relative overflow-hidden w-full {d.BG}'
+        f'-mt-16 pt-24 min-h-screen flex flex-col items-center justify-center text-center px-6 pb-20 relative overflow-hidden w-full {d.BG}'
     ):
         ui.element().classes(
-            f'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] pointer-events-none {GLOW}'
+            f'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] pointer-events-none '
+            f'bg-[radial-gradient(ellipse_at_50%_48%,color-mix(in_srgb,{d.BLUE}_10%,transparent)_0%,transparent_60%)]'
         )
         with ui.column(align_items='center').classes('reveal'):
             ui.html(svg.HAPPY_FACE_SVG, sanitize=False) \
