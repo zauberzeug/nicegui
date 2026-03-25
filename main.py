@@ -67,7 +67,8 @@ def _main_page() -> None:
 
     with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} p-8') as menu:
         tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
-            .classes('w-full').props('accordion no-connectors no-selection-unset')
+            .classes(r'w-full [&_.q-tree\_\_children]:pl-4') \
+            .props('accordion no-connectors no-selection-unset icon=chevron_right color=primary')
         tree.visible = False
         spinner = ui.image('/static/loading.gif').classes('w-8 h-8 m-auto').props('no-spinner no-transition')
 
