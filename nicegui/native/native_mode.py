@@ -3,7 +3,6 @@ from __future__ import annotations
 import _thread
 import multiprocessing as mp
 import queue
-import re
 import socket
 import sys
 import time
@@ -132,18 +131,12 @@ def _start_window_method_executor(window: webview.Window,
 def _warn_if_esm_unsupported(window: webview.Window) -> None:
     """Log an error after page load if the browser engine lacks ES module / import map support."""
     def check() -> None:
-        try:
-            user_agent = window.evaluate_js('navigator.userAgent') or ''
-            match = re.search(r'Chrome/(\d+)', user_agent)
-            if match and int(match.group(1)) < 89:
-                log.error(
-                    'The webview browser engine (Chrome/%s) does not support import maps. '
-                    'NiceGUI requires Chrome 89+ (or an equivalent engine). '
-                    'On Linux, install PyQt6 or PySide6 instead of PyQt5.',
-                    match.group(1),
-                )
-        except Exception:
-            pass
+        if not window.evaluate_js('typeof Vue !== "undefined"'):
+            log.error(
+                'Vue failed to load, and NiceGUI critically relies on it. '
+                'This typically means the webview browser engine does not support import maps (requires Chrome 89+). '
+                'On Linux, install PyQt6 or PySide6 instead of PyQt5.',
+            )
 
     window.events.loaded += check
 
