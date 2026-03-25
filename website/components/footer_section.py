@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from nicegui import ui
 
 from .. import design as d
@@ -40,7 +42,7 @@ def create() -> None:
             f'max-w-[1280px] mx-auto w-full py-4 justify-between items-center {d.TEXT_13PX} {d.TEXT_SECONDARY} {d.BORDER_T}'
         ):
             ui.markdown('Made with NiceGUI by [Zauberzeug](https://zauberzeug.com)')
-            ui.markdown('\u00a9 2025 [Zauberzeug GmbH](https://zauberzeug.com)')
+            ui.markdown(f'\u00a9 {datetime.now().year} [Zauberzeug GmbH](https://zauberzeug.com)')
 
 
 def _column(title: str, links: list[tuple[str, str]]) -> None:
