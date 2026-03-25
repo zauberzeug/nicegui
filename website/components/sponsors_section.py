@@ -20,9 +20,18 @@ def create() -> None:
             .classes(f'self-center text-center {d.TEXT_SECONDARY}')
 
         with ui.row(align_items='center').classes('gap-12 justify-center my-10 w-full'):
-            _fact('ph-star', stars.string, 'GitHub Stars')
-            _fact('ph-github-logo', str(SPONSORS['contributors']), 'Contributors')
-            _fact('ph-heart', str(SPONSORS['total']), 'Sponsors')
+            with ui.column(align_items='center').classes('gap-0'):
+                phosphor_icon('ph-star').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
+                ui.label().classes(d.TEXT_24PX).bind_text_from(stars, 'string')
+                ui.label('GitHub Stars').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
+            with ui.column(align_items='center').classes('gap-0'):
+                phosphor_icon('ph-github-logo').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
+                ui.label(str(SPONSORS['contributors'])).classes(d.TEXT_24PX)
+                ui.label('Contributors').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
+            with ui.column(align_items='center').classes('gap-0'):
+                phosphor_icon('ph-heart').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
+                ui.label(str(SPONSORS['total'])).classes(d.TEXT_24PX)
+                ui.label('Sponsors').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
 
         with ui.row(align_items='center').classes('gap-10 justify-center my-5 w-full'):
             for sponsor in SPONSORS['special']:
@@ -41,10 +50,3 @@ def create() -> None:
             cta_button('Become a sponsor', left_icon='ph-heart', filled=False,
                        on_click=lambda: ui.navigate.to('https://github.com/sponsors/zauberzeug')) \
                 .classes(f'{d.BORDER_ACCENT} [&_.ph-heart]:{d.TEXT_ACCENT}')
-
-
-def _fact(icon: str, number: str, label: str) -> None:
-    with ui.column(align_items='center').classes('gap-0'):
-        phosphor_icon(icon).classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
-        ui.label(number).classes(d.TEXT_24PX)
-        ui.label(label).classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
