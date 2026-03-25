@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from ... import design as d
 from . import (
     doc,
     section_action_events,
@@ -15,7 +16,7 @@ from . import (
     section_testing,
     section_text_elements,
 )
-from ...style import subheading
+from ...design import subheading
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 
@@ -145,29 +146,24 @@ tiles = [
 
 @doc.extra_column
 def create_tiles():
-    with ui.row().classes('items-center content-between'):
-        ui.label('If you like NiceGUI, go and become a')
+    with ui.row(align_items='center').classes('mx-auto gap-y-1'):
+        ui.label('Do you like NiceGUI? Become a')
         ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114"'
                 ' class="border-0 outline-[1px] outline-offset-[-1px] outline-[#d1d9e0] dark:outline-[#3d444d] rounded"></iframe>', sanitize=False)
     for documentation, description in tiles:
         page = doc.get_page(documentation)
-        with ui.link(target=f'/documentation/{page.name}') \
-                .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
-                .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
+        with ui.link(target=f'/documentation/{page.name}').classes(
+            f'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
+        ):
             if page.title:
-                ui.label(page.title.replace('*', '')).classes(replace='text-2xl')
-            ui.markdown(description).classes(replace='bold-links arrow-links')
+                ui.label(page.title.replace('*', '')).classes(f'{d.TEXT_19PX} font-semibold mb-1')
+            ui.markdown(description).classes(f'leading-normal {d.TEXT_SECONDARY}')
 
 
 @doc.ui
 def map_of_nicegui():
     ui.separator().classes('mt-6')
     subheading('Map of NiceGUI', anchor_name='map-of-nicegui')
-    ui.add_css('''
-        .map-of-nicegui a code {
-            font-weight: bold;
-        }
-    ''')
     ui.markdown('''
         This overview shows the structure of NiceGUI.
         It is a map of the NiceGUI namespace and its contents.
@@ -503,4 +499,4 @@ def map_of_nicegui():
 
         - [`Screen`](/documentation/section_testing#screen_fixture) fixture: start a real (headless) browser to interact with your application
         - [`User`](/documentation/section_testing#user_fixture) fixture: simulate user interaction on a Python level (fast)
-    ''').classes('map-of-nicegui arrow-links bold-links')
+    ''')

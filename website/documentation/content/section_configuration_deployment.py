@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from ..windows import bash_window, python_window
+from ..windows import bash_window, code_window, python_window
 from . import doc, run_documentation
 
 doc.title('Configuration & Deployment')
@@ -91,29 +91,23 @@ doc.text('', '''
 
 @doc.ui
 def native_main_guard():
-    with ui.row().classes('w-full items-stretch'):
-        with python_window('good_example.py', classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import app, ui
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import app, ui
 
-                app.native.window_args['resizable'] = False  # works
+            app.native.window_args['resizable'] = False  # works
 
-                if __name__ == '__main__':
-                    ui.run(native=True, reload=False)
-                ```
-            ''')
-        with python_window('bad_example.py', classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import app, ui
+            if __name__ == '__main__':
+                ui.run(native=True, reload=False)
+        ''', title='good_example.py')
+        python_window('''
+            from nicegui import app, ui
 
-                if __name__ == '__main__':
-                    app.native.window_args['resizable'] = False  # ignored
+            if __name__ == '__main__':
+                app.native.window_args['resizable'] = False  # ignored
 
-                    ui.run(native=True, reload=False)
-                ```
-            ''')
+                ui.run(native=True, reload=False)
+        ''', title='bad_example.py')
 
 
 # Show a helpful workaround until issue is fixed upstream.
@@ -198,17 +192,14 @@ doc.text('Server Hosting', '''
 
 @doc.ui
 def docker_run():
-    with bash_window(classes='max-w-lg w-full h-44'):
-        ui.markdown('''
-            ```bash
-            docker run -it --restart always \\
+    bash_window('''
+        docker run -it --restart always \\
             -p 80:8080 \\
             -e PUID=$(id -u) \\
             -e PGID=$(id -g) \\
             -v $(pwd)/:/app/ \\
             zauberzeug/nicegui:latest
-            ```
-        ''')
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -220,21 +211,18 @@ doc.text('', '''
 
 @doc.ui
 def docker_compose():
-    with python_window('docker-compose.yml', classes='max-w-lg w-full h-60'):
-        ui.markdown('''
-            ```yaml
-            app:
-                image: zauberzeug/nicegui:latest
-                restart: always
-                ports:
-                    - 80:8080
-                environment:
-                    - PUID=1000 # change this to your user id
-                    - PGID=1000 # change this to your group id
-                volumes:
-                    - ./:/app/
-            ```
-        ''')
+    code_window('''
+        app:
+            image: zauberzeug/nicegui:latest
+            restart: always
+            ports:
+                - 80:8080
+            environment:
+                - PUID=1000 # change this to your user id
+                - PGID=1000 # change this to your group id
+            volumes:
+                - ./:/app/
+    ''', title='docker-compose.yml', language='yaml').classes('w-full')
 
 
 doc.text('', '''
@@ -250,18 +238,15 @@ doc.text('', '''
 
 @doc.ui
 def uvicorn_ssl():
-    with python_window('main.py', classes='max-w-lg w-full'):
-        ui.markdown('''
-            ```python
-            from nicegui import ui
+    python_window('''
+        from nicegui import ui
 
-            ui.run(
-                port=443,
-                ssl_certfile="<path_to_certfile>",
-                ssl_keyfile="<path_to_keyfile>",
-            )
-            ```
-        ''')
+        ui.run(
+            port=443,
+            ssl_certfile="<path_to_certfile>",
+            ssl_keyfile="<path_to_keyfile>",
+        )
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -290,24 +275,18 @@ doc.text('Package for Installation', '''
 
 @doc.ui
 def pyinstaller():
-    with ui.row().classes('w-full items-stretch'):
-        with python_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import native, ui
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
 
-                def root():
-                    ui.label('Hello from PyInstaller')
+            def root():
+                ui.label('Hello from PyInstaller')
 
-                ui.run(root, reload=False, port=native.find_open_port())
-                ```
-            ''')
-        with bash_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```bash
-                nicegui-pack --onefile --name "myapp" main.py
-                ```
-            ''')
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            nicegui-pack --onefile --name "myapp" main.py
+        ''')
 
 
 doc.text('', '''
@@ -362,15 +341,12 @@ doc.text('', '''
 
 @doc.ui
 def install_pyinstaller():
-    with bash_window(classes='max-w-lg w-full h-42 self-center'):
-        ui.markdown('''
-            ```bash
-            python -m venv venv
-            source venv/bin/activate
-            pip install nicegui
-            pip install pyinstaller
-            ```
-        ''')
+    bash_window('''
+        python -m venv venv
+        source venv/bin/activate
+        pip install nicegui
+        pip install pyinstaller
+    ''').classes('w-full')
 
 
 doc.text('', '''
