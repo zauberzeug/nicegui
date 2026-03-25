@@ -20,7 +20,7 @@
 ## Theming
 
 - **Dark mode** uses Quasar's `.body--dark` class, not Tailwind's `dark:`. Use `dark:` in Tailwind classes for dark-mode variants — Tailwind is configured to respect `.body--dark`.
-- **`themed_image()`** from `utils.py` handles light/dark image variants. Pass a path with `THEME` placeholder (e.g., `logo.THEME.webp`).
+- **`themed_image()`** from `design.py` handles light/dark image variants. Pass a path with `THEME` placeholder (e.g., `logo.THEME.webp`).
 - **Phosphor icons** via the shared helper instead of inline SVG or Material icons for decorative/brand icons.
 
 ## Interactivity
