@@ -12,8 +12,8 @@ BLUE = '#5898d4'
 BLUE_LIGHT = '#7ab4e4'
 ACCENT = '#f0a050'
 
-_BG_LIGHT = '#fafbfc'
-_BG_DARK = '#0f1117'
+_BG_LIGHT = '#fafbfc'  # defined in style.css as well; keep in sync
+_BG_DARK = '#0f1117'  # defined in style.css as well; keep in sync
 _BG_SURFACE_LIGHT = '#ffffff'
 _BG_SURFACE_DARK = '#181b23'
 _BG_CODE_LIGHT = '#f0f4f8'
@@ -21,8 +21,8 @@ _BG_CODE_DARK = '#1e222c'
 _BG_FOOTER_LIGHT = '#edf0f3'
 _BG_FOOTER_DARK = f'color-mix(in_srgb,{_BG_DARK}_70%,black)'
 
-_TEXT_PRIMARY_LIGHT = '#1a1d26'
-_TEXT_PRIMARY_DARK = '#edeff3'
+_TEXT_PRIMARY_LIGHT = '#1a1d26'  # defined in style.css as well; keep in sync
+_TEXT_PRIMARY_DARK = '#edeff3'  # defined in style.css as well; keep in sync
 _TEXT_SECONDARY_LIGHT = '#4a4f5a'
 _TEXT_SECONDARY_DARK = '#9ba2ae'
 _TEXT_MUTED_LIGHT = '#7d8590'
