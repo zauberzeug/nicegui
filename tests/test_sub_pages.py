@@ -1217,6 +1217,8 @@ def test_refresh_sub_page(screen: Screen):
     def inner_other(args: PageArguments):
         calls['inner_other'] += 1
         ui.button('Refresh inner other', on_click=args.frame.refresh)
+        with ui.card():
+            ui.button('Refresh nested', on_click=ui.context.client.sub_pages_router.refresh)
 
     screen.open('/')
     screen.wait(0.2)
@@ -1241,6 +1243,10 @@ def test_refresh_sub_page(screen: Screen):
     screen.click('Refresh via SubPages')
     screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
+
+    screen.click('Refresh nested')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 4, 'inner_main': 2, 'inner_other': 5}
 
 
 def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Screen):

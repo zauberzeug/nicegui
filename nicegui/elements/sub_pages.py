@@ -12,7 +12,6 @@ from .. import background_tasks, json
 from ..context import context
 from ..element import Element
 from ..elements.label import Label
-from ..functions.javascript import run_javascript
 from ..logging import log
 from ..page_arguments import PageArguments, RouteMatch
 
@@ -214,7 +213,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._scroll_to_top(behavior=behavior)
 
     def _scroll_to_fragment(self, fragment: str, *, behavior: str) -> None:
-        run_javascript(f'''
+        self.client.run_javascript(f'''
             requestAnimationFrame(() => {{
                 const frag = {json.dumps(fragment)};
                 const el = document.getElementById(frag) || document.querySelector("a[name=" + JSON.stringify(frag) + "]");
@@ -223,7 +222,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         ''')
 
     def _scroll_to_top(self, *, behavior: str) -> None:
-        run_javascript(f'''
+        self.client.run_javascript(f'''
             requestAnimationFrame(() => {{ window.scrollTo({{top: 0, left: 0, behavior: "{behavior}"}}); }});
         ''')
 
