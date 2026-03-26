@@ -20,8 +20,8 @@ script_mode: bool = False
 script_client: Client | None = None
 
 
-def can_schedule_task() -> bool:
-    """Return whether tasks can be scheduled on the NiceGUI event loop."""
+def is_loop_running() -> bool:
+    """Return whether the NiceGUI event loop is running and tasks can be scheduled."""
     return loop is not None and loop.is_running()
 
 

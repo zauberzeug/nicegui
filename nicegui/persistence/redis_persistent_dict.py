@@ -77,7 +77,7 @@ class RedisPersistentDict(PersistentDict):
         def create_listener_task() -> None:
             self._listener_task = background_tasks.create(listen(), name=f'redis-listen-{self.key}')
 
-        if core.can_schedule_task():
+        if core.is_loop_running():
             create_listener_task()
         else:
             core.app.on_startup(create_listener_task)

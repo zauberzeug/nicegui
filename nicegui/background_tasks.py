@@ -54,7 +54,7 @@ def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> None
     :param awaitable: the awaitable to schedule
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
     """
-    if core.can_schedule_task():
+    if core.is_loop_running():
         create(awaitable, name=name)
     else:
         core.app.on_startup(lambda: create(awaitable, name=name))
@@ -93,7 +93,7 @@ def create_lazy(awaitable: Awaitable[Any] | None = None, *, name: str,
 
 def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
     """Create a lazy task, or defer to app startup if the event loop isn't running yet."""
-    if core.can_schedule_task():
+    if core.is_loop_running():
         create_lazy(awaitable, name=name)
     else:
         core.app.on_startup(lambda: create_lazy(awaitable, name=name))

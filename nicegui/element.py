@@ -410,7 +410,7 @@ class Element(Visibility):
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.can_schedule_task():
+        if not core.is_loop_running():
             return NullResponse()
         return self.client.run_javascript(
             f'return runMethod({self.id}, {json.dumps(name)}, {json.dumps(args)})', timeout=timeout,
@@ -424,7 +424,7 @@ class Element(Visibility):
         :param prop_name: name of the computed prop
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.can_schedule_task():
+        if not core.is_loop_running():
             return NullResponse()
         return self.client.run_javascript(
             f'return getComputedProp({self.id}, {json.dumps(prop_name)})', timeout=timeout,
