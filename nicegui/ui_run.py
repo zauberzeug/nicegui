@@ -135,7 +135,7 @@ def run(root: Callable | None = None, *,
                 'To use multiple pages, either move all UI into page functions or use ui.sub_pages.'
             )
 
-        if helpers.is_pytest():
+        if core.is_pytest():
             raise RuntimeError('Script mode is not supported in pytest. '
                                'Please pass a root function to ui.run() or use page decorators.')
         if core.app.is_started:
@@ -173,7 +173,7 @@ def run(root: Callable | None = None, *,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
-    if not helpers.is_pytest() and gzip_middleware_factory is not None:
+    if not core.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
@@ -205,7 +205,7 @@ def run(root: Callable | None = None, *,
             core.app.license_info = dict(license_info) if license_info else None
         core.app.setup()
 
-    if helpers.is_user_simulation():
+    if core.is_user_simulation():
         set_storage_secret(storage_secret, session_middleware_kwargs)
         return
 
@@ -247,7 +247,7 @@ def run(root: Callable | None = None, *,
     assert host is not None
     assert port is not None
 
-    if helpers.is_pytest():
+    if core.is_pytest():
         port = int(os.environ['NICEGUI_SCREEN_TEST_PORT'])
         show = False
         reload = False

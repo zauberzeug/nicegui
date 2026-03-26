@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from starlette.types import ASGIApp
 
-from . import core, helpers, storage
+from . import core, storage
 from .air import Air
 from .language import Language
 from .logging import log
@@ -92,7 +92,7 @@ def run_with(
     )
     core.root = root
     storage.set_storage_secret(storage_secret, session_middleware_kwargs, parent_app=app)
-    if not helpers.is_pytest() and gzip_middleware_factory is not None:
+    if not core.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
