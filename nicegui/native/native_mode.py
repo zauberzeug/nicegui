@@ -135,7 +135,7 @@ def _warn_if_esm_unsupported(window: webview.Window) -> None:
             log.error(
                 'Vue failed to load, and NiceGUI critically relies on it. '
                 'This typically means the webview browser engine does not support import maps (requires Chrome 89+). '
-                'On Linux, install PyQt6 or PySide6 instead of PyQt5.',
+                'On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.',
             )
 
     window.events.loaded += check

@@ -39,7 +39,7 @@ doc.intro(run_documentation)
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
 
     Native mode requires a browser engine with ES module and import map support (Chrome 89+).
-    On Linux, this means you need Qt6 (PyQt6 or PySide6) — Qt5's WebEngine (Chromium ~87) is not sufficient.
+    On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.
 
     On Windows, native mode requires the .NET Framework to be installed,
     as pywebview uses it for the EdgeChromium backend.
