@@ -3,7 +3,7 @@ from typing import Literal
 from collections.abc import Callable
 
 
-from ....style import create_anchor_name
+from ....design import create_anchor_name
 
 
 @dataclass(kw_only=True, slots=True)

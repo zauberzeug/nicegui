@@ -104,7 +104,7 @@ top_sponsors = [
 json_path.write_text(json.dumps({
     'special': special_sponsors,
     'top': top_sponsors,
-    'normal': len(sponsors) - len(top_sponsors) - len(special_sponsors),
+    'total': len(sponsors),
     'contributors': len(contributors),
 }, indent=2) + '\n', encoding='utf-8')
 
@@ -117,7 +117,7 @@ readme_path = Path('README.md')
 readme_content = readme_path.read_text(encoding='utf-8')
 updated_content = re.sub(
     r'<!-- SPONSORS -->.*?<!-- SPONSORS -->',
-    f'<!-- SPONSORS -->\n{sponsor_html}\n<!-- SPONSORS -->',
+    f'<!-- SPONSORS -->\n\n{sponsor_html}\n<!-- SPONSORS -->',
     readme_content,
     flags=re.DOTALL,
 )

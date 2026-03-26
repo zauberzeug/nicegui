@@ -1,62 +1,78 @@
 from collections.abc import Callable
-from typing import Literal
 
-from nicegui import ui
+from nicegui import helpers, ui
+from nicegui.elements.markdown import remove_indentation
 
-WindowType = Literal['python', 'bash', 'browser']
+from .. import design as d
+from ..design import phosphor_icon
+from .intersection_observer import IntersectionObserver as intersection_observer
 
-WINDOW_BG_COLORS = {
-    'python': ('#eef5fb', '#2b323b'),
-    'bash': ('#e8e8e8', '#2b323b'),
-    'browser': ('#ffffff', '#181c21'),
+ICONS = {
+    'python': 'ph-file-py',
+    'console': 'ph-terminal-window',
+    'ini': 'ph-file-ini',
 }
 
 
-def _dots() -> None:
-    with ui.row().classes('gap-1 relative left-[1px] top-[1px]'):
-        ui.icon('circle').classes('text-[13px] text-red-400')
-        ui.icon('circle').classes('text-[13px] text-yellow-400')
-        ui.icon('circle').classes('text-[13px] text-green-400')
+def code_window(code: str = '', *, title: str = 'main.py', language: str = 'python') -> ui.column:
+    """Create a window for code. If code is empty, returns the body column for use as context manager."""
+    with ui.column().classes(f'rounded-xl gap-0 min-w-0 {d.BG_CODE} code-window') as window:
+        with _header_row():
+            phosphor_icon(ICONS.get(language, 'ph-file')).classes('text-base')
+            ui.label(title)
+            if code:
+                ui.space()
+                with ui.button(on_click=lambda: ui.clipboard.write(code)) \
+                        .props('flat round size=xs').classes('opacity-30 hover:opacity-100 transition-opacity'):
+                    phosphor_icon('ph-copy').classes('text-base')
+        if code:
+            ui.markdown(f'````{language}\n{remove_indentation(code)}\n````') \
+                .classes('w-full grow py-2 overflow-x-auto [&_pre]:px-4 [&_pre]:w-fit [&_pre]:min-w-full')
+    return window
 
 
-def _window(type_: WindowType, *, title: str = '', tab: str | Callable = '', classes: str = '') -> ui.column:
-    bar_color = ('#00000010', '#ffffff10')
-    color = WINDOW_BG_COLORS[type_]
-    with ui.card() \
-            .classes(f'no-wrap bg-[{color[0]}] dark:bg-[{color[1]}] rounded-xl overflow-hidden p-0 gap-0 {classes}') \
-            .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
-        with ui.row().classes(f'w-full h-8 p-2 bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}]'):
-            _dots()
-            if title:
-                ui.label(title) \
-                    .classes('text-sm text-gray-600 dark:text-gray-400 absolute left-1/2 top-[6px]') \
-                    .style('transform: translateX(-50%)')
-            if tab:
-                with ui.row().classes('gap-0'):
-                    with ui.label().classes(f'w-2 h-[24px] bg-[{color[0]}] dark:bg-[{color[1]}]'):
-                        ui.label().classes(
-                            f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-br-[6px]')
-                    with ui.row().classes(f'text-sm text-gray-600 dark:text-gray-400 px-6 py-1 h-[24px] rounded-t-[6px] bg-[{color[0]}] dark:bg-[{color[1]}] items-center gap-2'):
-                        if callable(tab):
-                            tab()
-                        else:
-                            ui.label(tab)
-                    with ui.label().classes(f'w-2 h-[24px] bg-[{color[0]}] dark:bg-[{color[1]}]'):
-                        ui.label().classes(
-                            f'w-full h-full bg-[{bar_color[0]}] dark:bg-[{bar_color[1]}] rounded-bl-[6px]')
-        return ui.column().classes('w-full h-full overflow-auto')
+def bash_window(code: str = '', *, title: str = 'bash') -> ui.column:
+    """Create a window for bash code."""
+    return code_window(code, title=title, language='console')
 
 
-def python_window(title: str | None = None, *, classes: str = '') -> ui.column:
+def python_window(code: str = '', *, title: str = 'main.py') -> ui.column:
     """Create a window for Python code."""
-    return _window('python', title=title or 'main.py', classes=classes).classes('px-4 py-2 python-window')
+    return code_window(code, title=title, language='python')
 
 
-def bash_window(*, classes: str = '') -> ui.column:
-    """Create a window for Bash code."""
-    return _window('bash', title='bash', classes=classes).classes('px-4 py-2 bash-window')
-
-
-def browser_window(title: str | Callable | None = None, *, classes: str = '') -> ui.column:
+def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy: bool = True) -> ui.column:
     """Create a browser window."""
-    return _window('browser', tab=title or 'NiceGUI', classes=classes).classes('p-4 browser-window')
+    with ui.column().classes(f'rounded-xl gap-0 {d.BG_SURFACE} {d.RING} browser-window') as window:
+        with _header_row():
+            if callable(tab):
+                tab()
+            else:
+                phosphor_icon('ph-globe').classes('text-base')
+                ui.label(tab or 'localhost:8080')
+
+        with ui.column().classes('size-full p-4'):
+            if lazy:
+                spinner = ui.image('/static/loading.gif').classes('size-8').props('no-spinner no-transition')
+
+                @intersection_observer
+                async def handle_intersection():
+                    window.remove(spinner)
+                    result = content()
+                    if helpers.should_await(result):
+                        result = await result
+                    if callable(result):
+                        inner_result = result()
+                        if helpers.should_await(inner_result):
+                            await inner_result
+            else:
+                result = content()
+                if callable(result):
+                    assert not helpers.should_await(result), \
+                        'async functions are not supported in non-lazy demos'
+                    result()
+    return window
+
+
+def _header_row() -> ui.row:
+    return ui.row().classes(f'w-full px-4 h-12 shrink-0 gap-2 items-center {d.TEXT_13PX} {d.TEXT_MUTED} {d.BORDER_B}')
