@@ -171,8 +171,7 @@ class Client:
                 'version': __version__,
                 'elements': elements.translate(HTML_ESCAPE_TABLE),
                 'head_html': self.head_html,
-                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(
-                    vue_html),
+                'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
@@ -268,9 +267,7 @@ class Client:
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
 
-        self.connect_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='client.on_connect()', on_awaitable='reject'))
+        self.connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_connect()'))
 
     def on_disconnect(self, handler: Callable[..., Any]) -> None:
         """Add a callback to be invoked when the client disconnects.
@@ -279,9 +276,7 @@ class Client:
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
-        self.disconnect_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='client.on_disconnect()', on_awaitable='reject'))
+        self.disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_disconnect()'))
 
     def on_delete(self, handler: Callable[..., Any]) -> None:
         """Add a callback to be invoked when the client is deleted.
@@ -290,9 +285,7 @@ class Client:
 
         *Added in version 3.0.0*
         """
-        self.delete_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='client.on_delete()', on_awaitable='reject'))
+        self.delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_delete()'))
 
     def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
         """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).

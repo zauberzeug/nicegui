@@ -46,7 +46,7 @@ class Outbox:
         self._should_stop = False
         self._enqueue_event: asyncio.Event | None = None
 
-        create_or_defer(self.loop(),  name=f'outbox loop {client.id}')
+        create_or_defer(self.loop(), name=f'outbox loop {client.id}')
 
     @property
     def client(self) -> Client:

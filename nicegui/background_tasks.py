@@ -95,10 +95,9 @@ def create_lazy(awaitable: Awaitable[Any] | None = None, *, name: str,
 def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
     """Create a lazy task, or defer to app startup if the event loop isn't running yet."""
     if core.can_schedule_task():
-        return create_lazy(awaitable, name=name)
-
-    core.app.on_startup(lambda: create_lazy(awaitable, name=name))
-    return None
+        create_lazy(awaitable, name=name)
+    else:
+        core.app.on_startup(lambda: create_lazy(awaitable, name=name))
 
 
 class _AwaitOnShutdown:

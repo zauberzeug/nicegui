@@ -108,9 +108,7 @@ class App(FastAPI):
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
-        self._connect_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='app.on_connect()', on_awaitable='reject'))
+        self._connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_connect()'))
 
     def on_disconnect(self, handler: Callable[..., Any]) -> None:
         """Called every time a new client disconnects from NiceGUI.
@@ -119,9 +117,7 @@ class App(FastAPI):
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
-        self._disconnect_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='app.on_disconnect()', on_awaitable='reject'))
+        self._disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_disconnect()'))
 
     def on_delete(self, handler: Callable[..., Any]) -> None:
         """Called when a client is deleted.
@@ -130,9 +126,7 @@ class App(FastAPI):
 
         *Added in version 3.0.0*
         """
-        self._delete_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='app.on_delete()', on_awaitable='reject'))
+        self._delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_delete()'))
 
     def on_startup(self, handler: Callable[..., Any]) -> None:
         """Called when NiceGUI is started or restarted.
@@ -145,9 +139,7 @@ class App(FastAPI):
             if core.script_mode:
                 raise RuntimeError('Unable to register a startup in script mode. Use a `@ui.page` function instead.')
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
-        self._startup_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='app.on_startup()', on_awaitable='deprecate'))
+        self._startup_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_startup()', reject=False))
 
     def on_shutdown(self, handler: Callable[..., Any]) -> None:
         """Called when NiceGUI is shut down or restarted.
@@ -155,9 +147,7 @@ class App(FastAPI):
         The callback can be synchronous or asynchronous.
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
         """
-        self._shutdown_handlers.append(
-            helpers.normalize_lifecycle_handler(
-                handler, registration='app.on_shutdown()', on_awaitable='deprecate'))
+        self._shutdown_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_shutdown()', reject=False))
 
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.

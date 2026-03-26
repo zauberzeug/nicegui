@@ -13,7 +13,7 @@ from collections.abc import Awaitable, Callable
 from contextlib import AbstractContextManager
 from inspect import Parameter, signature
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeGuard, TypeVar
+from typing import TYPE_CHECKING, Any, TypeGuard, TypeVar
 
 from .context import context
 from .logging import log
@@ -149,12 +149,11 @@ async def await_with_context(awaitable: Awaitable[_T], ctx: AbstractContextManag
     with ctx:
         return await awaitable
 
-# DEPRECATED: remove direct awaitable startup/shutdown registrations in NiceGUI 4.0
+
 def normalize_lifecycle_handler(
-        handler: Callable[..., Any] | Awaitable[Any],
-        *,
-        registration: str,
-        on_awaitable: Literal['reject', 'deprecate'],
+    handler: Callable[..., Any] | Awaitable[Any],
+    registration: str, *,
+    reject: bool = True,
 ) -> Callable[..., Any]:
     """Normalize lifecycle handler registration for callable-only and deprecated-awaitable paths."""
     if callable(handler):
@@ -162,21 +161,15 @@ def normalize_lifecycle_handler(
     if not isinstance(handler, Awaitable):
         raise TypeError(f'{registration} expects a synchronous or asynchronous function.')
 
-    if on_awaitable == 'reject':
-        raise TypeError(
-            f'{registration} expects a synchronous or asynchronous function, not an awaitable object. '
-            'Pass the function itself instead of calling it.',
-        )
+    if reject:
+        raise TypeError(f'{registration} expects a synchronous or asynchronous function, not an awaitable object. '
+                        'Pass the function itself instead of calling it.',)
 
     # DEPRECATED: remove direct awaitable lifecycle registrations in NiceGUI 4.0
-    warn_once(
-        f'Passing an awaitable directly to {registration} is deprecated and will be removed in NiceGUI 4.0. '
-        'Pass a synchronous or asynchronous function instead.',
-    )
-
     def wrapped_handler() -> Awaitable[Any]:
         return handler
-
+    warn_once(f'Passing an awaitable directly to {registration} is deprecated and will be removed in NiceGUI 4.0. '
+              'Pass a synchronous or asynchronous function instead.')
     wrapped_handler.__name__ = f'deprecated {registration} awaitable'
     return wrapped_handler
 
