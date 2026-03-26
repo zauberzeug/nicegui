@@ -8,7 +8,7 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 # --- Raw color values ---
 
-BLUE = '#5898d4'
+BLUE = '#5898d4'  # defined in style.css as well; keep in sync
 BLUE_LIGHT = '#7ab4e4'
 ACCENT = '#f0a050'
 
