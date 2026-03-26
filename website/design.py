@@ -53,6 +53,7 @@ TEXT_ACCENT = f'text-[{ACCENT}]'
 # Borders
 BORDER = f'border border-[{_BORDER_LIGHT}] dark:border-[{_BORDER_DARK}]'
 BORDER_B = f'border-b border-b-[{_BORDER_LIGHT}] dark:border-b-[{_BORDER_DARK}]'
+BORDER_R = f'border-r border-r-[{_BORDER_LIGHT}] dark:border-r-[{_BORDER_DARK}]'
 BORDER_T = f'border-t border-t-[{_BORDER_LIGHT}] dark:border-t-[{_BORDER_DARK}]'
 BORDER_2 = f'border-2 border-[{_BORDER_LIGHT}] dark:border-[{_BORDER_DARK}]'
 BORDER_BLUE = f'border-[1.5px] border-[{BLUE}]'
