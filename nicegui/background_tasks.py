@@ -48,17 +48,16 @@ def create(awaitable: Awaitable[Any] | None = None, *, name: str = 'unnamed task
     return task
 
 
-def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> asyncio.Task | None:
+def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> None:
     """Create a background task, or defer to app startup if the event loop isn't running yet.
 
     :param awaitable: the awaitable to schedule
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
-    :return: the created task, or ``None`` if deferred to startup
     """
     if core.can_schedule_task():
-        return create(awaitable, name=name)
-    core.app.on_startup(lambda: create(awaitable, name=name))
-    return None
+        create(awaitable, name=name)
+    else:
+        core.app.on_startup(lambda: create(awaitable, name=name))
 
 
 @overload
