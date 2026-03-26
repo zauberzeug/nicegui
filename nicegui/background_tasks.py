@@ -116,10 +116,8 @@ def await_on_shutdown(func: F) -> F:
 
     *Added in version 2.16.0*
     """
-
     def wrapper(*args: Any, **kwargs: Any) -> Awaitable[Any]:
         return _AwaitOnShutdown(lambda: func(*args, **kwargs))
-
     return cast(F, wrapper)
 
 
@@ -130,7 +128,6 @@ def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
 
     async def wrapper() -> Any:
         return await awaitable
-
     return wrapper()
 
 

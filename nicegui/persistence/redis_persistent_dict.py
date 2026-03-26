@@ -92,7 +92,6 @@ class RedisPersistentDict(PersistentDict):
             pipeline.set(self.key, data, ex=self.ttl)
             pipeline.publish(self.key + 'changes', data)
             await pipeline.execute()
-
         background_tasks.create_lazy_or_defer(backup(), name=f'redis-{self.key}')
 
     async def close(self) -> None:

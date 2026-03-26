@@ -331,7 +331,6 @@ class Client:
                 self._delete_tasks.pop(document_id)
                 await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
-
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 

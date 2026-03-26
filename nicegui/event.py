@@ -72,15 +72,15 @@ class Event(Generic[P]):
         assert frame is not None
         frame = frame.f_back
         assert frame is not None
-
-        expect_args = helpers.expects_arguments(callback)
-        expect_args |= (
-            isinstance(getattr(callback, '__self__', None), Event) and
-            getattr(callback, '__name__', None) in {'emit', 'call'}
+        callback_ = Callback[P](
+            func=callback,
+            expect_args=helpers.expects_arguments(callback) or (
+                isinstance(getattr(callback, '__self__', None), Event) and
+                getattr(callback, '__name__', None) in {'emit', 'call'}
+            ),
+            filepath=frame.f_code.co_filename,
+            line=frame.f_lineno,
         )
-
-        callback_ = Callback[P](func=callback, expect_args=expect_args, filepath=frame.f_code.co_filename,
-                                line=frame.f_lineno)
         client: Client | None = None
         if Slot.get_stack():  # NOTE: additional check before accessing `context.slot` which would enter script mode
             callback_.slot = weakref.ref(context.slot)

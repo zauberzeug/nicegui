@@ -169,7 +169,6 @@ class page:
                         except Exception as e:
                             client.handle_exception(e)
                             return create_500_error_page(e, request)
-
                 task = background_tasks.create(wait_for_result(),
                                                name=f'wait for result of page "{client.page.path}"',
                                                handle_exceptions=False)

@@ -74,7 +74,6 @@ class refreshable(Generic[_P, _T]):
             def refresh(*args: Any, _instance=self.instance, **kwargs: Any) -> AwaitableResponse:
                 self.instance = _instance
                 return attribute(*args, **kwargs)
-
             return refresh
         return attribute
 
