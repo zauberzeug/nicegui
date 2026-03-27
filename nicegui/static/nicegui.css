@@ -351,3 +351,6 @@ h6.q-timeline__title {
   font-family: sans-serif;
   color: #888;
 }
+#esm-fallback ~ * {
+  display: none;
+}
