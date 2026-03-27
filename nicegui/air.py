@@ -38,7 +38,6 @@ class Air:
         self.log = logging.getLogger('nicegui.air')
         self.token = token
         self.relay = socketio.AsyncClient()
-        self.client = httpx.AsyncClient(transport=httpx.ASGITransport(app=core.app))
         self.streaming_client = httpx.AsyncClient()
         self.connecting = False
         self.streams: dict[str, Stream] = {}
@@ -52,13 +51,7 @@ class Air:
             headers: dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
-            request = self.client.build_request(
-                data['method'],
-                url,
-                params=data['params'],
-                headers=headers,
-                content=data['body'],
-            )
+            request = httpx.Request(data['method'], url, params=data['params'], headers=headers, content=data['body'])
             forwarded_for = headers.get('x-forwarded-for', '127.0.0.1').split(',')[0].strip()
             transport = httpx.ASGITransport(core.app, client=(forwarded_for, 0))
             response = await transport.handle_async_request(request)
@@ -100,12 +93,7 @@ class Air:
             headers: dict[str, Any] = data['headers']
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
             data['params']['nicegui_chunk_size'] = 1024
-            request = self.client.build_request(
-                data['method'],
-                url,
-                params=data['params'],
-                headers=headers,
-            )
+            request = httpx.Request(data['method'], url, params=data['params'], headers=headers)
             response = await self.streaming_client.send(request, stream=True)
             stream_id = str(uuid4())
             self.streams[stream_id] = Stream(data=response.aiter_bytes(), response=response)
