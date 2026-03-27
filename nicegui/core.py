@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
@@ -19,16 +18,6 @@ air: Air | None = None
 root: Callable | None = None
 script_mode: bool = False
 script_client: Client | None = None
-
-
-def is_pytest() -> bool:
-    """Check if the code is running in pytest."""
-    return 'PYTEST_CURRENT_TEST' in os.environ
-
-
-def is_user_simulation() -> bool:
-    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
-    return 'NICEGUI_USER_SIMULATION' in os.environ
 
 
 def is_script_mode_preflight() -> bool:

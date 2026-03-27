@@ -1,4 +1,5 @@
-from .. import core
+import os
+
 from .elements import require_top_level_layout
 from .files import hash_file_path, is_file
 from .functions import expects_arguments, is_coroutine_function
@@ -22,21 +23,11 @@ __all__ = [
 ]
 
 
-def is_pytest() -> bool:  # DEPRECATED
-    """Check if the code is running in pytest.
-
-    .. deprecated::
-        Use ``core.is_pytest()`` instead.
-    """
-    warn_once('helpers.is_pytest() is deprecated, use core.is_pytest() instead')
-    return core.is_pytest()
+def is_pytest() -> bool:
+    """Check if the code is running in pytest."""
+    return 'PYTEST_CURRENT_TEST' in os.environ
 
 
-def is_user_simulation() -> bool:  # DEPRECATED
-    """Check if the code is running with user simulation.
-
-    .. deprecated::
-        Use ``core.is_user_simulation()`` instead.
-    """
-    warn_once('helpers.is_user_simulation() is deprecated, use core.is_user_simulation() instead')
-    return core.is_user_simulation()
+def is_user_simulation() -> bool:
+    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
+    return 'NICEGUI_USER_SIMULATION' in os.environ

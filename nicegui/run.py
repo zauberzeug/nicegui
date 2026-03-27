@@ -11,7 +11,7 @@ from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec
 
-from . import core
+from . import core, helpers
 
 process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
@@ -121,7 +121,7 @@ def reset() -> None:
 
 def tear_down() -> None:
     """Kill all processes and threads."""
-    if core.is_pytest():
+    if helpers.is_pytest():
         return
 
     if process_pool is not None:
