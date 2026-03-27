@@ -14,21 +14,15 @@ def create() -> None:
                 section_label('about')
                 section_title('Interact with Python through buttons, dialogs, 3D\u00a0scenes, plots and much more.')
                 ui.markdown('''
-                    NiceGUI manages web development details, letting you focus on Python code
-                    for diverse applications, including robotics, IoT solutions, smart home automation,
-                    and machine learning. Designed to work smoothly with connected peripherals like
-                    webcams and GPIO pins in IoT setups, NiceGUI streamlines the management of all
-                    your code in one place.
-                ''').classes(d.TEXT_SECONDARY)
+                    NiceGUI manages web development details, letting you focus on Python code.
+                    Designed to work smoothly with connected peripherals like webcams and GPIO pins,
+                    it streamlines the management of all your code in one place.
+                ''').classes(f'{d.TEXT_SECONDARY} max-lg:hidden')
                 ui.markdown('''
-                    With a gentle learning curve, NiceGUI is user-friendly for beginners and offers
-                    advanced customization for experienced users, ensuring simplicity for basic tasks
-                    and feasibility for complex projects.
-                ''').classes(d.TEXT_SECONDARY)
-                ui.markdown('''
-                    Available as
-                    [PyPI package](https://pypi.org/project/nicegui/),
-                    [Docker image](https://hub.docker.com/r/zauberzeug/nicegui) and on
+                    From a quick prototype to a production dashboard — one codebase, any browser, all your peripherals.
+                    Available on
+                    [PyPI](https://pypi.org/project/nicegui/),
+                    [Docker](https://hub.docker.com/r/zauberzeug/nicegui) and
                     [GitHub](https://github.com/zauberzeug/nicegui).
                 ''').classes(d.TEXT_SECONDARY)
 

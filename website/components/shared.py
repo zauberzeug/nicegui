@@ -68,7 +68,8 @@ def section_heading(label: str, title: str, description: str = '', *, center: bo
     """Grouped section heading (label + title + optional description)."""
     extra = 'items-center text-center' if center else ''
     with ui.column().classes(f'reveal gap-0 w-full {extra}'):
-        section_label(label)
+        if label:
+            section_label(label)
         section_title(title)
         if description:
             section_desc(description)

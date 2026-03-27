@@ -50,9 +50,13 @@ a:hover:not(.browser-window *),
 a:active:not(.browser-window *) {
   opacity: 0.85;
 }
-.nicegui-markdown a:link:not(.browser-window *),
-.nicegui-markdown a:link:not(.browser-window *) code {
-  font-weight: 600;
+.nicegui-markdown a:any-link:not(.browser-window *),
+.nicegui-markdown a:any-link:not(.browser-window *) * {
+  color: #5898d4 !important;
+}
+.nicegui-markdown a:hover:not(.browser-window *) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 /* ========== Documentation tables ========== */
 .rst-param-tables table {

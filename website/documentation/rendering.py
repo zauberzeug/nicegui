@@ -38,7 +38,7 @@ def render_page(documentation: DocumentationPage) -> None:
             if part.reference:
                 generate_class_doc(part.reference, part.title)
             if part.link:
-                ui.link('See more...', f'/documentation/{part.link}').classes('font-medium')
+                ui.markdown(f'[See more \u2192](/documentation/{part.link})')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         if documentation.extra_column:
             with ui.grid().classes('grid-cols-[2fr_1fr] max-[600px]:grid-cols-[1fr] gap-x-8 gap-y-16'):

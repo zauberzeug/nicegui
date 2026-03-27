@@ -8,7 +8,7 @@ from .shared import section, section_heading
 def create() -> None:
     """Create the Why section with pull-quote and value propositions."""
     with section('why'):
-        section_heading('why', 'Why?', center=True)
+        section_heading('', 'Why?', center=True)
 
         with ui.column(align_items='center').classes('reveal gap-2 self-center text-center mt-6'):
             ui.label('\u201cWe like Streamlit but find it does too much magic when it comes to state handling.\u201d') \
