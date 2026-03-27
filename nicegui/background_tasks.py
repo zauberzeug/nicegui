@@ -1,9 +1,9 @@
 """inspired from https://quantlane.com/blog/ensure-asyncio-task-exceptions-get-logged/"""
 import asyncio
 from collections.abc import Awaitable, Callable, Coroutine, Generator
-from typing import Any, TypeVar, cast
+from typing import Any, TypeVar, cast, overload
 
-from . import core
+from . import core, helpers
 from .logging import log
 
 running_tasks: set[asyncio.Task] = set()
@@ -12,47 +12,91 @@ lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
 _await_tasks_on_shutdown: set[asyncio.Task] = set()
 
 
-def create(coroutine: Awaitable, *, name: str = 'unnamed task', handle_exceptions: bool = True) -> asyncio.Task:
+@overload
+def create(awaitable: Awaitable[Any], *, name: str = 'unnamed task',
+           handle_exceptions: bool = True) -> asyncio.Task: ...
+
+
+@overload
+def create(*, coroutine: Awaitable[Any], name: str = 'unnamed task',
+           handle_exceptions: bool = True) -> asyncio.Task: ...
+
+
+def create(awaitable: Awaitable[Any] | None = None, *, name: str = 'unnamed task',
+           handle_exceptions: bool = True, coroutine: Awaitable[Any] | None = None) -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
 
-    :param coroutine: the coroutine or awaitable to wrap
+    :param awaitable: the awaitable to wrap
+    :param coroutine: deprecated alias for ``awaitable``; will be removed in NiceGUI 4.0
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
     :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the global exception handlers
     """
+    awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create')
     assert core.loop is not None
-    real_coroutine = coroutine if asyncio.iscoroutine(coroutine) else asyncio.wait_for(coroutine, None)
-    task: asyncio.Task = core.loop.create_task(real_coroutine, name=name)
+    coroutine = _ensure_coroutine(awaitable)
+    task: asyncio.Task = core.loop.create_task(coroutine, name=name)
     if handle_exceptions:
         task.add_done_callback(_handle_exceptions)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
-    if isinstance(coroutine, _AwaitOnShutdown):
+    if isinstance(awaitable, _AwaitOnShutdown):
         _await_tasks_on_shutdown.add(task)
         task.add_done_callback(_await_tasks_on_shutdown.discard)
     return task
 
 
-def create_lazy(coroutine: Awaitable, *, name: str) -> None:
+def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> None:
+    """Create a background task, or defer to app startup if the event loop isn't running yet.
+
+    :param awaitable: the awaitable to schedule
+    :param name: the name of the task which is helpful for debugging (default: "unnamed task")
+    """
+    if core.is_loop_running():
+        create(awaitable, name=name)
+    else:
+        core.app.on_startup(lambda: create(awaitable, name=name))
+
+
+@overload
+def create_lazy(awaitable: Awaitable[Any], *, name: str) -> None: ...
+
+
+@overload
+def create_lazy(*, coroutine: Awaitable[Any], name: str) -> None: ...
+
+
+def create_lazy(awaitable: Awaitable[Any] | None = None, *, name: str,
+                coroutine: Awaitable[Any] | None = None) -> None:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
     """
+    awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create_lazy')
     if name in lazy_tasks_running:
         if name in lazy_coroutines_waiting:
             lazy_coroutines_waiting[name].close()
-        lazy_coroutines_waiting[name] = _ensure_coroutine(coroutine)
+        lazy_coroutines_waiting[name] = _ensure_coroutine(awaitable)
         return
 
-    def finalize(name: str) -> None:
+    def finalize(_) -> None:
         lazy_tasks_running.pop(name)
         if name in lazy_coroutines_waiting:
             create_lazy(lazy_coroutines_waiting.pop(name), name=name)
-    task = create(coroutine, name=name)
+
+    task = create(awaitable, name=name)
     lazy_tasks_running[name] = task
-    task.add_done_callback(lambda _: finalize(name))
+    task.add_done_callback(finalize)
+
+
+def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
+    """Create a lazy task, or defer to app startup if the event loop isn't running yet."""
+    if core.is_loop_running():
+        create_lazy(awaitable, name=name)
+    else:
+        core.app.on_startup(lambda: create_lazy(awaitable, name=name))
 
 
 class _AwaitOnShutdown:
@@ -67,7 +111,7 @@ F = TypeVar('F', bound=Callable[..., Awaitable[Any]])
 
 
 def await_on_shutdown(func: F) -> F:
-    """Tag a coroutine function so tasks created from it won't be cancelled during shutdown.
+    """Tag an async function so tasks created from it won't be cancelled during shutdown.
 
     *Added in version 2.16.0*
     """
@@ -84,6 +128,22 @@ def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
     async def wrapper() -> Any:
         return await awaitable
     return wrapper()
+
+
+# DEPRECATED: remove `coroutine` keyword aliases in NiceGUI 4.0
+def _resolve_awaitable(awaitable: Awaitable[Any] | None, coroutine: Awaitable[Any] | None, *,
+                       function_name: str) -> Awaitable[Any]:
+    if awaitable is None:
+        if coroutine is None:
+            raise TypeError(f"{function_name}() missing 1 required argument: 'awaitable'")
+        helpers.warn_once(
+            f'Using `{function_name}(coroutine=...)` is deprecated and will be removed in NiceGUI 4.0. '
+            f'Use `{function_name}(awaitable=...)` instead.',
+        )
+        return coroutine
+    if coroutine is not None:
+        raise TypeError(f'{function_name}() received both awaitable and deprecated coroutine arguments')
+    return awaitable
 
 
 def _handle_exceptions(task: asyncio.Task) -> None:
