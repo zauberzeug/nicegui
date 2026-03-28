@@ -188,6 +188,14 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
     return client.build_response(request, 500)
 
 
+@app.post('/_nicegui/heartbeat')
+async def _heartbeat(request: Request) -> Response:
+    data = await request.json()
+    if client := Client.instances.get(data['client_id']):
+        client._handle_heartbeat()  # pylint: disable=protected-access
+    return Response(status_code=200)
+
+
 @sio.on('connect')
 async def _on_connect(sid: str, data: dict[str, Any], _=None) -> None:
     query = {k: v[0] for k, v in urllib.parse.parse_qs(data.get('QUERY_STRING', '')).items()}
