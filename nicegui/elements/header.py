@@ -4,7 +4,7 @@ from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 
-class Header(ValueElement, component='header.js', default_classes='nicegui-header'):
+class Header(ValueElement[bool], component='header.js', default_classes='nicegui-header'):
 
     @resolve_defaults
     def __init__(self, *,

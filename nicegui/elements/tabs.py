@@ -11,11 +11,11 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class Tabs(ValueElement):
+class Tabs(ValueElement[Any]):
 
     def __init__(self, *,
                  value: Tab | TabPanel | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  ) -> None:
         """Tabs
 
@@ -59,13 +59,13 @@ class Tab(LabelElement, IconElement, DisableableElement):
                               'This will raise an error in NiceGUI 4.0.')
 
 
-class TabPanels(ValueElement):
+class TabPanels(ValueElement[Any]):
 
     @resolve_defaults
     def __init__(self,
                  tabs: Tabs | None = None, *,
                  value: Tab | TabPanel | str | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  animated: bool = DEFAULT_PROP | True,
                  keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:

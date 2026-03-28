@@ -9,12 +9,12 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Carousel(ValueElement):
+class Carousel(ValueElement[Any]):
 
     @resolve_defaults
     def __init__(self, *,
                  value: str | CarouselSlide | None = DEFAULT_PROPS['model-value'] | None,
-                 on_value_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  animated: bool = DEFAULT_PROP | False,
                  arrows: bool = DEFAULT_PROP | False,
                  navigation: bool = DEFAULT_PROP | False,
