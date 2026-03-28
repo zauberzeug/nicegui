@@ -9,6 +9,7 @@ import time
 import warnings
 from collections.abc import Callable
 from contextlib import suppress
+from multiprocessing.connection import Connection
 from multiprocessing.synchronize import Event as MultiprocessingEvent
 from threading import Event, Thread
 from typing import Any
@@ -17,18 +18,20 @@ from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
 from . import native
+from .event_manager import event_manager
 
 with suppress(ImportError):
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
+        import webview.dom
     optional_features.register('webview')
 
 
 def _open_window(
     protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue,
+    method_queue: mp.Queue, response_queue: mp.Queue, event_sender: Connection,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -47,8 +50,36 @@ def _open_window(
     assert window is not None
     closed = Event()
     window.events.closed += closed.set
+    _bind_pywebview_events(window, event_sender)
     _start_window_method_executor(window, method_queue, response_queue, closed)
     webview.start(**core.app.native.start_args)
+
+
+def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> None:
+    def send(event_type: str, **kwargs: Any) -> None:
+        try:
+            event_sender.send({'type': event_type, 'args': kwargs})
+        except OSError:
+            pass
+
+    def bind_drop() -> None:
+        window.dom.document.events.dragover += \
+            webview.dom.DOMEventHandler(lambda _: 0, True, False)  # type: ignore[arg-type]
+        window.dom.document.events.drop += \
+            webview.dom.DOMEventHandler(lambda e: send('drop', files=[  # type: ignore[arg-type]
+                file_.get('pywebviewFullPath', '') for file_ in e.get('dataTransfer', {}).get('files', [])
+            ]), True, False)
+
+    window.events.shown += lambda: send('shown')
+    window.events.loaded += lambda: send('loaded')
+    window.events.loaded += bind_drop
+    window.events.minimized += lambda: send('minimized')
+    window.events.maximized += lambda: send('maximized')
+    window.events.restored += lambda: send('restored')
+    window.events.resized += lambda width, height: send('resized', width=width, height=height)
+    window.events.moved += lambda x, y: send('moved', x=x, y=y)
+    window.events.closed += lambda: send('closed')
+    # NOTE: 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -108,6 +139,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
         while not core.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
+        event_manager.stop()
         native.remove_queues()
 
     if not optional_features.has('webview'):
@@ -117,7 +149,9 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
 
     mp.freeze_support()
     native.create_queues()
-    args = protocol, host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    event_manager.start()
+    args = (protocol, host, port, title, width, height, fullscreen, frameless,
+            native.method_queue, native.response_queue, native.event_sender)
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 

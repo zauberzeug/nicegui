@@ -54,6 +54,7 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self.camera = camera or Scene.perspective_camera()
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
+        self._initialized_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
@@ -69,15 +70,14 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         return self
 
     def _handle_init(self) -> None:
+        self._initialized_event.set()
         self.move_camera(duration=0)
         self.run_method('init')
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
-        event = asyncio.Event()
-        self.on('init', event.set, [])
         await self.client.connected()
-        await event.wait()
+        await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

@@ -6,7 +6,10 @@ from typing import Any
 import orjson
 from fastapi.responses import JSONResponse
 
-HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+try:
+    HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+except (ModuleNotFoundError, ValueError):
+    HAS_NUMPY = False
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 

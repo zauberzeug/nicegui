@@ -123,19 +123,21 @@ function runMethod(target, method_name, args) {
   if (typeof target === "object") {
     if (method_name in target) {
       return target[method_name](...args);
-    } else {
-      return eval(method_name)(target, ...args);
+    }
+  } else {
+    const element = getElement(target);
+    if (element === null || element === undefined) return;
+    if (method_name in element) {
+      return element[method_name](...args);
+    } else if (method_name in (element.$refs.qRef || [])) {
+      return element.$refs.qRef[method_name](...args);
     }
   }
-  const element = getElement(target);
-  if (element === null || element === undefined) return;
-  if (method_name in element) {
-    return element[method_name](...args);
-  } else if (method_name in (element.$refs.qRef || [])) {
-    return element.$refs.qRef[method_name](...args);
-  } else {
-    return eval(method_name)(element, ...args);
+  let msg = `Method "${method_name}" not found.`;
+  if (method_name.includes("=>") || method_name.startsWith("(")) {
+    msg += " To run arbitrary JavaScript, use ui.run_javascript() instead.";
   }
+  logAndEmit("error", msg);
 }
 
 function getComputedProp(target, prop_name) {
@@ -224,6 +226,7 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
+
 function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
@@ -399,7 +402,7 @@ function createApp(elements, options) {
       mounted_app = this;
       window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
-      const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
+      const url = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host;
       window.path_prefix = options.prefix;
       window.nextMessageId = options.query.next_message_id;
       window.ackedMessageId = -1;

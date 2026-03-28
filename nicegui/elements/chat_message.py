@@ -32,7 +32,7 @@ class ChatMessage(LabelElement):
         :param sent: render as a sent message (so from current user) (default: ``False``)
         :param text_html: render text as HTML (default: ``False``)
         :param sanitize: sanitization mode (only relevant when ``text_html=True``):
-            ``True`` (default) uses client-side sanitization via setHTML or DOMPurify,
+            ``True`` (default) uses client-side sanitization via DOMPurify,
             ``False`` disables sanitization (use only with trusted content),
             or pass a callable to apply server-side sanitization
         """

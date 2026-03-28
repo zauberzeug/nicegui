@@ -1258,6 +1258,24 @@ def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Scre
     screen.should_contain('404: sub page /other/1 not found')
 
 
+def test_navigate_from_root_page_to_other_page(screen: Screen):
+    def root():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', '/other')
+
+    @ui.page('/other')
+    def other_page():
+        ui.label('Other')
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path == '/other'
+
+
 def test_remaining_path_for_wildcard_routing(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
@@ -1311,3 +1329,27 @@ def test_sub_pages_against_xss_by_path(screen: Screen):
     screen.click('Go to XSS')
     screen.wait(1)
     assert 'XSS' not in screen.render_js_logs()
+
+
+def test_sub_pages_navigation_with_header(screen: Screen):
+    # regression test for #5816
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        with ui.header():
+            ui.link('Index', '/')
+            ui.link('Other', '/other')
+
+        ui.sub_pages({
+            '/': lambda: ui.label('Index page'),
+            '/other': lambda: ui.label('Other page'),
+        })
+
+    screen.open('/')
+    screen.should_contain('Index page')
+
+    screen.click('Other')
+    screen.should_contain('Other page')
+
+    screen.click('Index')
+    screen.should_contain('Index page')

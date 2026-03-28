@@ -12,6 +12,7 @@ from starlette.types import ASGIApp
 from . import core, helpers, storage
 from .air import Air
 from .language import Language
+from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .nicegui import _shutdown, _startup
 from .server import Server
@@ -58,10 +59,21 @@ def run_with(
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param unocss: use UnoCSS with the specified preset instead of Tailwind CSS (default: ``None``, options: "mini", "wind3", "wind4", *added in version 3.7.0*)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
-    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.user and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
+    if core.script_mode:
+        log.warning(
+            'NiceGUI elements were created outside of a page context before ui.run_with() was called.\n'
+            'This is not supported and the elements will be discarded.\n'
+            'Move UI element creation into a @ui.page function or an app.on_startup handler.'
+        )
+        if core.script_client is not None:
+            core.script_client.delete()
+            core.script_client = None
+        core.script_mode = False
+
     core.app.config.add_run_config(
         reload=False,
         title=title,
@@ -79,7 +91,7 @@ def run_with(
         cache_control_directives=cache_control_directives,
     )
     core.root = root
-    storage.set_storage_secret(storage_secret, session_middleware_kwargs)
+    storage.set_storage_secret(storage_secret, session_middleware_kwargs, parent_app=app)
     if not helpers.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)

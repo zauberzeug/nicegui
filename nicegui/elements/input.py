@@ -67,7 +67,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
                     is_hidden = self._props.get('type') == 'password'
                     icon.props(f'name={"visibility" if is_hidden else "visibility_off"}')
                     self.props(f'type={"text" if is_hidden else "password"}')
-                icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
+                icon = Icon('visibility_off').style('cursor: pointer').on('click', toggle_type)
 
         self._props['_autocomplete'] = autocomplete or []
 

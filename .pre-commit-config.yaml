@@ -36,3 +36,12 @@ repos:
           )$
         additional_dependencies:
           - tomli; python_version<'3.11'
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        args: ["--wrap", "keep", "--number"]
+        exclude: ^\.cursor/
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-simple-breaks

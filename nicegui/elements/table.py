@@ -1,4 +1,3 @@
-import importlib.util
 from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
@@ -16,15 +15,13 @@ from ..events import (
 from ..logging import log
 from .mixins.filter_element import FilterElement
 
-if importlib.util.find_spec('pandas'):
-    optional_features.register('pandas')
-    if TYPE_CHECKING:
-        import pandas as pd
+optional_features.try_register('pandas')
+if TYPE_CHECKING:
+    import pandas as pd
 
-if importlib.util.find_spec('polars'):
-    optional_features.register('polars')
-    if TYPE_CHECKING:
-        import polars as pl
+optional_features.try_register('polars')
+if TYPE_CHECKING:
+    import polars as pl
 
 
 class Table(FilterElement, component='table.js'):
@@ -444,7 +441,7 @@ class Table(FilterElement, component='table.js'):
             """
             super().__init__('q-tr')
 
-    class header(Element, default_classes='[&>*]:inline'):
+    class header(Element, default_classes='nicegui-table-header'):
 
         def __init__(self, column_name: str | None = None) -> None:
             """Header Element
