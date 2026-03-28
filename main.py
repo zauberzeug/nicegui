@@ -89,6 +89,8 @@ def _main_page() -> None:
         </script>
     ''')
 
+    ui.skip_to_main()
+
     custom_sub_pages({
         '/': main_page.create,
         '/examples': examples_page.create,
