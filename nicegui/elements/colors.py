@@ -4,6 +4,7 @@ from .mixins.color_elements import QUASAR_COLORS
 
 
 class Colors(Element, component='colors.js'):
+    MARKDOWN_SKIP = True
 
     @resolve_defaults
     def __init__(self, *,

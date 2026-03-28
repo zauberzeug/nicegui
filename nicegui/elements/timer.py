@@ -7,6 +7,7 @@ from ..timer import Timer as BaseTimer
 
 
 class Timer(BaseTimer, Element, component='timer.js'):
+    MARKDOWN_SKIP = True
 
     def _get_context(self) -> AbstractContextManager:
         return self.parent_slot or nullcontext()

@@ -6,6 +6,7 @@ from .mixins.value_element import ValueElement
 
 
 class Menu(ValueElement):
+    MARKDOWN_SKIP = True
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:

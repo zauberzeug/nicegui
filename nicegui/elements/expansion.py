@@ -41,5 +41,17 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement,
         """Close the expansion."""
         self.value = False
 
+    def _to_markdown(self) -> str:
+        if not self.visible:
+            return ''
+        parts = []
+        label = self._props.get('label', '')
+        if label:
+            parts.append(f'### {label}')
+        children_md = self._children_to_markdown()
+        if children_md:
+            parts.append(children_md)
+        return '\n\n'.join(parts)
+
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text

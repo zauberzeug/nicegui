@@ -4,6 +4,7 @@ from .mixins.name_element import NameElement
 
 
 class Icon(NameElement, TextColorElement):
+    MARKDOWN_SKIP = True
 
     @resolve_defaults
     def __init__(self,

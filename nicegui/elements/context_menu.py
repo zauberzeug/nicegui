@@ -2,6 +2,7 @@ from ..element import Element
 
 
 class ContextMenu(Element):
+    MARKDOWN_SKIP = True
 
     def __init__(self) -> None:
         """Context Menu
