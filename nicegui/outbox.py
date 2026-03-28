@@ -104,8 +104,9 @@ class Outbox:
                 coros = []
                 if self.updates:
                     data = {
-                        element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
+                        element_id: None if element is deleted else diff  # type: ignore
                         for element_id, element in self.updates.items()
+                        if isinstance(element, Deleted) or (diff := element._to_dict_diff()) is not None  # pylint: disable=protected-access
                     }
                     js_components = [
                         component
@@ -119,7 +120,8 @@ class Outbox:
                             'components': [{'key': c.key, 'tag': c.tag} for c in js_components],
                         })))
                         self._loaded_components.update(c.name for c in js_components)
-                    coros.append(self._emit((client.id, 'update', data)))
+                    if data:
+                        coros.append(self._emit((client.id, 'update', data)))
                     self.updates.clear()
 
                 if self.messages:

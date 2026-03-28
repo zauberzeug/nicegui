@@ -4,7 +4,7 @@ import inspect
 import re
 import weakref
 from collections.abc import Callable, Iterator, Sequence
-from copy import copy
+from copy import copy, deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
@@ -37,6 +37,28 @@ if TYPE_CHECKING:
 TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\U00010000-\U000EFFFF]'
 TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]'
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
+
+
+def _compute_diff(current: dict[str, Any], previous: dict[str, Any]) -> dict[str, Any] | None:
+    """Compute the difference between current and previous element state.
+
+    Returns a dict containing only changed properties, or None if nothing changed.
+    For nested dicts, recursively computes diff at arbitrary depth.
+    For other values (lists, strings, etc.), the entire value is included if changed.
+    Uses None values to signal that a property should be deleted.
+    """
+    diff: dict[str, Any] = {}
+    for key in current.keys() | previous.keys():
+        curr_val, prev_val = current.get(key), previous.get(key)
+        if curr_val == prev_val:
+            continue
+        if isinstance(curr_val, dict):
+            nested = _compute_diff(curr_val, prev_val if isinstance(prev_val, dict) else {})
+            if nested:
+                diff[key] = nested
+        else:
+            diff[key] = curr_val
+    return diff or None
 
 
 class Element(Visibility):
@@ -73,6 +95,7 @@ class Element(Visibility):
         self.default_slot = self.add_slot('default')
         self._update_method: str | None = None
         self._deleted: bool = False
+        self._last_sent: dict[str, Any] | None = None
 
         client.elements[self.id] = self
         self._parent_slot: weakref.ref[Slot] | None = None
@@ -399,6 +422,42 @@ class Element(Visibility):
         if self.is_deleted:
             return
         self.client.outbox.enqueue_update(self)
+
+    def _set_client_prop(self, prop: str, value: Any) -> None:
+        """Mark a prop as already known by the client, avoiding unnecessary transmission.
+
+        This is used for LOOPBACK=False value elements where the client updates the value
+        locally without waiting for server confirmation.
+        """
+        if self._last_sent is not None:
+            if 'props' in self._last_sent:
+                self._last_sent['props'][prop] = deepcopy(value)
+
+    def _to_dict_full(self) -> dict[str, Any]:
+        """Return full element dict and update _last_sent.
+
+        Calls _to_dict() exactly once. Use for initial element transmission.
+        """
+        current = self._to_dict()
+        self._last_sent = deepcopy(current)
+        return current
+
+    def _to_dict_diff(self) -> dict[str, Any] | None:
+        """Return diff from last sent state and update _last_sent.
+
+        Calls _to_dict() exactly once. Use for differential updates.
+        Returns None if nothing changed (unless element has update_method).
+        """
+        current = self._to_dict()
+        previous = self._last_sent
+        self._last_sent = deepcopy(current)
+
+        if previous is None:
+            return current
+        diff = _compute_diff(current, previous)
+        if diff is None and self._update_method:
+            return {}  # ensure element is included so Vue update method gets called
+        return diff
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method on the client side.
