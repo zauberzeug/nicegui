@@ -80,8 +80,8 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         ' transition-[background,backdrop-filter,box-shadow] duration-200'
         f' [&.fade]:!bg-[color-mix(in_srgb,{d._BG_SURFACE_LIGHT}_80%,transparent)]'
         f' dark:[&.fade]:!bg-[color-mix(in_srgb,{d._BG_SURFACE_DARK}_80%,transparent)]'
-        f' [&.fade]:backdrop-blur-[12px] [&.fade]:!shadow-[0_1px_0_{d._BORDER_LIGHT}]'
-        f' dark:[&.fade]:!shadow-[0_1px_0_{d._BORDER_DARK}]'
+        f' [&.fade]:backdrop-blur-[12px] [&.fade,&.force-border]:!shadow-[0_1px_0_{d._BORDER_LIGHT}]'
+        f' dark:[&.fade,&.force-border]:!shadow-[0_1px_0_{d._BORDER_DARK}]'
     ):
         menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat round').classes('lg:hidden')
         with ui.link(target='/'):

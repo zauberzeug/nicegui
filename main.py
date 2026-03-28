@@ -65,7 +65,7 @@ def _main_page() -> None:
 
     header.add_head_html()
 
-    with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} {d.BORDER_R} {d.BORDER_T} p-8') as menu:
+    with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} {d.BORDER_R} p-8') as menu:
         tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
             .classes(r'w-full [&_.q-tree\_\_children]:pl-4') \
             .props('accordion no-connectors no-selection-unset icon=chevron_right color=primary')
@@ -101,10 +101,12 @@ def _main_page() -> None:
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):
+            ui.query('.q-header').classes('force-border')
             menu_button.visible = True
             if window_state['is_desktop'] is not None:
                 menu.value = window_state['is_desktop']
         else:
+            ui.query('.q-header').classes(remove='force-border')
             menu_button.visible = False
             menu.value = False
     ui.context.client.sub_pages_router.on_path_changed(_update_menu)
