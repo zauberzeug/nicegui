@@ -342,22 +342,3 @@ h6.q-timeline__title {
   position: absolute;
   right: 1.5em;
 }
-#esm-fallback {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  height: 100vh;
-  font-family: sans-serif;
-  color: #888;
-  opacity: 0;
-  animation: esm-fallback-reveal 0s 1s forwards;
-}
-@keyframes esm-fallback-reveal {
-  to {
-    opacity: 1;
-  }
-}
-#esm-fallback ~ * {
-  display: none;
-}
