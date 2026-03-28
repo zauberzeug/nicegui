@@ -47,7 +47,7 @@ class Search:
                 ui.button('ESC', on_click=self.dialog.close) \
                     .props('padding="2px 8px" outline size=sm').classes(f'shadow {d.TEXT_MUTED}')
             self.results = ui.element('q-list').classes('w-full overflow-auto').props('separator')
-            self.selected_index = -1
+            self.selected_index = 0
         ui.keyboard().on('key', self.open_dialog, js_handler='''(e) => {
             if (e.action !== 'keydown') return;
             if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
@@ -94,7 +94,7 @@ class Search:
                 child.classes(remove=HIGHLIGHT_CLASS)
 
     def _select_next(self) -> None:
-        self.selected_index = min(self.selected_index + 1, count - 1) if (count := len(list(self.results))) else -1
+        self.selected_index = min(self.selected_index + 1, len(list(self.results)) - 1)
         self._update_highlight()
 
     def _select_prev(self) -> None:
