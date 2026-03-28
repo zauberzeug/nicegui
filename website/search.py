@@ -94,7 +94,7 @@ class Search:
                 child.classes(remove=HIGHLIGHT_CLASS)
 
     def _select_next(self) -> None:
-        self.selected_index = min(self.selected_index + 1, len(list(self.results)) - 1)
+        self.selected_index = min(self.selected_index + 1, len(self.results.default_slot.children) - 1)
         self._update_highlight()
 
     def _select_prev(self) -> None:
@@ -102,7 +102,7 @@ class Search:
         self._update_highlight()
 
     def _navigate_to_selected(self) -> None:
-        children = list(self.results)
+        children = self.results.default_slot.children
         if 0 <= self.selected_index < len(children):
             ui.navigate.to(children[self.selected_index].props['href'])
             self.dialog.close()
