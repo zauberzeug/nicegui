@@ -44,7 +44,7 @@ class ValidationElement(ValueElement):
 
         :param error: The optional error message
         """
-        new_error_prop = None if self.validation is None else (error is not None)
+        new_error_prop = None if error is None and self.validation is None else (error is not None)
         if self._error == error and self._props['error'] == new_error_prop:
             return
         self._error = error

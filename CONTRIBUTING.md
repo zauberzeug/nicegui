@@ -285,8 +285,7 @@ Understanding these patterns will help you write code that fits naturally into t
 
 ### Dataclasses
 
-- Use `@dataclass(**KWONLY_SLOTS)` for Python 3.10 compatibility (instead of `@dataclass(kw_only=True, slots=True)`)
-- This pattern is defined in `nicegui/dataclasses.py` and handles version differences automatically
+- Prefer `@dataclass(kw_only=True, slots=True)` for dataclasses
 
 ## Running tests
 

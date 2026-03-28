@@ -15,7 +15,6 @@ import socketio.exceptions
 
 from . import background_tasks, core, helpers
 from .client import Client
-from .dataclasses import KWONLY_SLOTS
 from .logging import log
 from .timer import Timer as timer
 
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Stream:
     data: AsyncIterator[bytes]
     response: httpx.Response
@@ -52,6 +51,10 @@ class Air:
         async def _handle_http(data: dict[str, Any]) -> dict[str, Any]:
             headers: dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
+            if forwarded_for := headers.get('x-forwarded-for'):
+                transport = self.client._transport  # pylint: disable=protected-access
+                assert isinstance(transport, httpx.ASGITransport)
+                transport.client = (forwarded_for.split(',')[0].strip(), 0)
             url = 'http://test' + data['path']
             request = self.client.build_request(
                 data['method'],
@@ -163,7 +166,7 @@ class Air:
         async def _handle_connect() -> None:
             self.log.debug('connected.')
             # NOTE: reset the warning so it can be shown again if connection breaks in the future
-            helpers._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
+            helpers.warnings._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
         async def _handle_disconnect() -> None:

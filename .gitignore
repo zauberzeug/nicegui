@@ -14,3 +14,6 @@ venv
 .DS_Store
 .env
 node_modules/
+.playwright-mcp/
+.claude/settings.local.json
+CLAUDE.local.md
