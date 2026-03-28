@@ -45,6 +45,8 @@ doc.intro(run_documentation)
     as pywebview uses it for the EdgeChromium backend.
     This is typically pre-installed on standard Windows installations,
     but may be missing on minimal or freshly installed systems.
+
+    On Windows, a file-path `favicon` is also used as the native window icon (taskbar, title bar); `.ico` recommended.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app

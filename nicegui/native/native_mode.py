@@ -11,13 +11,14 @@ from collections.abc import Callable
 from contextlib import suppress
 from multiprocessing.connection import Connection
 from multiprocessing.synchronize import Event as MultiprocessingEvent
+from pathlib import Path
 from threading import Event, Thread
 from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
-from . import native
+from . import native, window_icon
 from .event_manager import event_manager
 
 with suppress(ImportError):
@@ -32,6 +33,7 @@ with suppress(ImportError):
 def _open_window(
     protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue, event_sender: Connection,
+    favicon: str | Path | None = None,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -51,6 +53,24 @@ def _open_window(
     closed = Event()
     window.events.closed += closed.set
     _bind_pywebview_events(window, event_sender)
+
+    if sys.platform == 'win32' and favicon is not None and helpers.is_file(favicon):
+        favicon_path = Path(favicon)
+
+        def on_window_shown() -> None:
+            hwnd = window_icon.find_window_by_title(title)
+            if not hwnd:
+                log.warning('Could not find native window by title to set icon')
+                return
+            icon_path = str(favicon_path.resolve())
+            # Set window icon for title bar and Alt+Tab
+            if not window_icon.set_window_icon_windows(hwnd, icon_path):
+                log.warning('Could not set native window icon (unsupported format?)')
+            # Set property store for taskbar icon
+            app_id = f'nicegui.{title.replace(" ", "_")}'
+            window_icon.set_window_property_store(hwnd, app_id, icon_path)
+        window.events.shown += on_window_shown
+
     _start_window_method_executor(window, method_queue, response_queue, closed)
     _warn_if_esm_unsupported(window)
     webview.start(**core.app.native.start_args)
@@ -142,7 +162,8 @@ def _warn_if_esm_unsupported(window: webview.Window) -> None:
 
 
 def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-             shutdown_event: MultiprocessingEvent | None = None) -> None:
+             shutdown_event: MultiprocessingEvent | None = None,
+             favicon: str | Path | None = None) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
@@ -165,7 +186,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
     native.create_queues()
     event_manager.start()
     args = (protocol, host, port, title, width, height, fullscreen, frameless,
-            native.method_queue, native.response_queue, native.event_sender)
+            native.method_queue, native.response_queue, native.event_sender, favicon)
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 

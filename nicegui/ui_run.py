@@ -240,7 +240,9 @@ def run(root: Callable | None = None, *,
         native_host = '127.0.0.1' if host == '0.0.0.0' else host
         if reload:
             shutdown_event = multiprocessing.Event()
-        native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless, shutdown_event)
+        native_favicon = str(Path(favicon).resolve()) if favicon and helpers.is_file(favicon) else favicon
+        native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless,
+                               shutdown_event, native_favicon)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
