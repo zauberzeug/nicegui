@@ -37,11 +37,11 @@ LG_DOWN = 'min-[1050px]:hidden'
 
 
 class SolarizedLight(SolarizedLightStyle):
-    styles = make_style({**LIGHT_COLORS, 'base0': d._TEXT_SECONDARY_LIGHT})
+    styles = make_style({**LIGHT_COLORS, 'base0': d._TEXT_PRIMARY_LIGHT, 'base01': d._TEXT_SECONDARY_LIGHT})
 
 
 class SolarizedDark(SolarizedDarkStyle):
-    styles = make_style({**DARK_COLORS, 'base0': d._TEXT_SECONDARY_DARK})
+    styles = make_style({**DARK_COLORS, 'base0': d._TEXT_PRIMARY_DARK, 'base01': d._TEXT_SECONDARY_DARK})
 
 
 def add_head_html() -> None:
