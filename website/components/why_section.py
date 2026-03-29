@@ -32,8 +32,9 @@ def create() -> None:
         ui.markdown('''\
             Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
             [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
-            and [Uvicorn](https://www.uvicorn.org/) under the hood.\
-        ''').classes(f'reveal self-center text-center {d.TEXT_15PX} leading-relaxed mt-10 {d.TEXT_SECONDARY}')
+            and [Uvicorn](https://www.uvicorn.org/) under the hood.
+            [Learn more →](/documentation/section_foundations)\
+        ''').classes(f'reveal self-center text-center {d.TEXT_15PX} leading-relaxed mt-10 {d.TEXT_SECONDARY} bold-links arrow-links')
 
 
 def _pillar(icon: str, title: str, description: str) -> None:
