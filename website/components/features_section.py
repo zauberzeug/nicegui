@@ -49,6 +49,9 @@ def create() -> None:
                 'Python 3.10+',
             ])
 
+        ui.markdown('[Learn more about the technological foundations →](/documentation/section_foundations)') \
+            .classes(f'reveal text-center {d.TEXT_15PX} {d.TEXT_SECONDARY} bold-links arrow-links')
+
 
 def _card(icon: str, title: str, items: list[str]) -> None:
     """Render a single feature card with icon, title, and bullet list."""
