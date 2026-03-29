@@ -16,8 +16,7 @@ def test_skip_to_main(screen: Screen):
     assert button.get_attribute('innerText') == 'Skip to main content'
     assert button.get_attribute('data-target') == str(target.id)
 
-    screen.selenium.execute_script('arguments[0].focus();', button)
-    button.click()
+    screen.selenium.execute_script('arguments[0].focus(); arguments[0].click();', button)
     screen.wait(0.5)
     assert screen.selenium.switch_to.active_element.get_attribute('id') == f'c{target.id}'
 
