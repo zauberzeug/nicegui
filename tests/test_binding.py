@@ -414,7 +414,7 @@ def test_nested_strict_mode_validation(screen: Screen):
 
     @ui.page('/')
     def page():
-        with pytest.raises(KeyError, match=r'non-existing key "a->b->c"'):
+        with pytest.raises(KeyError, match=r'non-existing key "a\.b\.c"'):
             ui.input().bind_value(data, ('a', 'b', 'c'), strict=True)
 
     screen.open('/')

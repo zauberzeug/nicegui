@@ -28,7 +28,7 @@ class IconElement(Element):
         The update happens immediately and whenever a value changes.
 
         :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to (single key as string) or a tuple of nested keys.
+        :param target_name: The name of the property to bind to (string or tuple of strings for nested keys).
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary, *added in version 3.0.0*).
@@ -48,7 +48,7 @@ class IconElement(Element):
         The update happens immediately and whenever a value changes.
 
         :param target_object: The object to bind from.
-        :param target_name: The name of the property to bind from (single key as string) or a tuple of nested keys.
+        :param target_name: The name of the property to bind from (string or tuple of strings for nested keys).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
             performs a check if the object is not a dictionary, *added in version 3.0.0*).
@@ -70,7 +70,7 @@ class IconElement(Element):
         The backward binding takes precedence for the initial synchronization.
 
         :param target_object: The object to bind to.
-        :param target_name: The name of the property to bind to (single key as string) or a tuple of nested keys.
+        :param target_name: The name of the property to bind to (string or tuple of strings for nested keys).
         :param forward: A function to apply to the value before applying it to the target (default: identity).
         :param backward: A function to apply to the value before applying it to this element (default: identity).
         :param strict: Whether to check (and raise) if the target object has the specified property (default: None,

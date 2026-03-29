@@ -21,9 +21,9 @@ def _normalize_name(name: PropertyName) -> tuple[str, ...]:
     return name
 
 
-def _display_name(name: PropertyName) -> str:
+def _display_name(name: tuple[str, ...]) -> str:
     """Return a human-readable representation of a property name."""
-    return '->'.join(_normalize_name(name))
+    return '.'.join(name)
 
 
 def _path_contains_dict(obj: Any, name: PropertyName) -> bool:
