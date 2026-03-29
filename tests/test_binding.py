@@ -289,7 +289,8 @@ def test_binding_refresh_interval_none(screen: Screen):
         'WARNING', 'Starting active binding loop even though it was disabled via binding_refresh_interval=None.',
     )
 
-def test_nested_dict_binding(screen: Screen):
+
+async def test_nested_dict_binding(user: User):
     """Test basic nested dictionary binding with tuple syntax."""
     data = {}
 
@@ -297,17 +298,15 @@ def test_nested_dict_binding(screen: Screen):
     def page():
         ui.input('Username').bind_value(data, ('profile', 'username'))
 
-    screen.open('/')
-    screen.type(Keys.TAB)  # Focus the input
-    screen.type('Alice')
-    screen.type(Keys.TAB)  # Commit the value
-    screen.wait(0.1)
+    await user.open('/')
+    user.find(ui.input).type('Alice')
+    await user.should_see('Alice')
 
     assert 'profile' in data
     assert data['profile']['username'] == 'Alice'
 
 
-def test_nested_auto_creation(screen: Screen):
+async def test_nested_auto_creation(user: User):
     """Test that intermediate dictionaries are auto-created."""
     data: dict = {}
 
@@ -315,22 +314,18 @@ def test_nested_auto_creation(screen: Screen):
     def page():
         ui.input().bind_value(data, ('a', 'b', 'c'))
 
-    screen.open('/')
-    screen.type(Keys.TAB)
-    screen.type('value')
-    screen.type(Keys.TAB)
-    screen.wait(0.1)
+    await user.open('/')
+    user.find(ui.input).type('value')
+    await user.should_see('value')
 
-    # Check that nested structure was created
     assert 'a' in data
     assert 'b' in data['a']
     assert 'c' in data['a']['b']
     assert data['a']['b']['c'] == 'value'
 
 
-def test_nested_storage_binding(screen: Screen):
+async def test_nested_storage_binding(user: User):
     """Test binding to nested keys in storage."""
-    # Use a simple dict instead of app.storage to avoid storage_secret requirement
     storage = {}
 
     @ui.page('/')
@@ -338,18 +333,15 @@ def test_nested_storage_binding(screen: Screen):
         ui.input().bind_value(storage, ('settings', 'theme'))
         ui.label().bind_text_from(storage, ('settings', 'theme'))
 
-    screen.open('/')
-    screen.type(Keys.TAB)
-    screen.type('dark')
-    screen.type(Keys.TAB)
-    screen.wait(0.1)
+    await user.open('/')
+    user.find(ui.input).type('dark')
+    await user.should_see('dark')
 
     assert 'settings' in storage
     assert storage['settings']['theme'] == 'dark'
-    screen.should_contain('dark')
 
 
-def test_nested_with_transformation(screen: Screen):
+async def test_nested_with_transformation(user: User):
     """Test nested binding with forward/backward transformations."""
     data = {}
 
@@ -364,29 +356,26 @@ def test_nested_with_transformation(screen: Screen):
             backward=lambda v: f'Volume: {v}%'
         )
 
-    screen.open('/')
-    screen.wait(0.1)
-    screen.should_contain('Volume: 50%')
+    await user.open('/')
+    await user.should_see('Volume: 50%')
 
 
-def test_single_key_backward_compatible(screen: Screen):
+async def test_single_key_backward_compatible(user: User):
     """Ensure single string keys still work exactly as before."""
     data = {}
 
     @ui.page('/')
     def page():
-        ui.input().bind_value(data, 'name')  # Old style
+        ui.input().bind_value(data, 'name')
 
-    screen.open('/')
-    screen.type(Keys.TAB)  # Focus the input
-    screen.type('Alice')
-    screen.type(Keys.TAB)  # Commit
-    screen.wait(0.1)
+    await user.open('/')
+    user.find(ui.input).type('Alice')
+    await user.should_see('Alice')
 
     assert data['name'] == 'Alice'
 
 
-def test_mixed_object_dict_nesting(screen: Screen):
+async def test_mixed_object_dict_nesting(user: User):
     """Test binding through mixed object attributes and dict keys."""
     class Config:
         def __init__(self):
@@ -398,17 +387,15 @@ def test_mixed_object_dict_nesting(screen: Screen):
     def page():
         ui.input().bind_value(config, ('data', 'username'))
 
-    screen.open('/')
-    screen.type(Keys.TAB)
-    screen.type('test')
-    screen.type(Keys.TAB)
-    screen.wait(0.1)
+    await user.open('/')
+    user.find(ui.input).type('test')
+    await user.should_see('test')
 
     assert 'username' in config.data
     assert config.data['username'] == 'test'
 
 
-def test_nested_strict_mode_validation(screen: Screen):
+async def test_nested_strict_mode_validation(user: User):
     """Test that strict mode validates nested paths correctly."""
     data = {}
 
@@ -417,10 +404,10 @@ def test_nested_strict_mode_validation(screen: Screen):
         with pytest.raises(KeyError, match=r'non-existing key "a\.b\.c"'):
             ui.input().bind_value(data, ('a', 'b', 'c'), strict=True)
 
-    screen.open('/')
+    await user.open('/')
 
 
-def test_single_key_strict_mode_validation(screen: Screen):
+async def test_single_key_strict_mode_validation(user: User):
     """Test that strict mode validates single keys correctly."""
     data = {}
 
@@ -429,10 +416,10 @@ def test_single_key_strict_mode_validation(screen: Screen):
         with pytest.raises(KeyError, match=r'non-existing key "missing"'):
             ui.input().bind_value(data, 'missing', strict=True)
 
-    screen.open('/')
+    await user.open('/')
 
 
-def test_deep_nesting(screen: Screen):
+async def test_deep_nesting(user: User):
     """Test binding with 4+ nested levels."""
     data = {}
 
@@ -440,13 +427,10 @@ def test_deep_nesting(screen: Screen):
     def page():
         ui.input().bind_value(data, ('level1', 'level2', 'level3', 'level4'))
 
-    screen.open('/')
-    screen.type(Keys.TAB)
-    screen.type('deep')
-    screen.type(Keys.TAB)
-    screen.wait(0.1)
+    await user.open('/')
+    user.find(ui.input).type('deep')
+    await user.should_see('deep')
 
-    # Check nested structure was created
     assert 'level1' in data
     assert 'level2' in data['level1']
     assert 'level3' in data['level1']['level2']
@@ -465,21 +449,17 @@ def test_nested_visibility_binding(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Content')
-    # Verify the column is initially visible (no 'hidden' class)
     columns = screen.selenium.find_elements(By.CSS_SELECTOR, '.test-column.hidden')
     assert len(columns) == 0, 'Column should be visible when visibility is True'
 
-    # Change visibility to False and verify
     data['ui']['sidebar']['visible'] = False
     screen.wait(0.5)
-    # Content should still exist in DOM but be hidden
     screen.should_not_contain('Content')
-    # Verify the 'hidden' class is applied when visibility is False
     columns = screen.selenium.find_elements(By.CSS_SELECTOR, '.test-column.hidden')
     assert len(columns) > 0, 'Column should be hidden when visibility is False'
 
 
-def test_generic_bind_with_tuple(screen: Screen):
+async def test_generic_bind_with_tuple(user: User):
     """Test that generic bind() function accepts tuple syntax."""
     data1 = {'config': {'message': 'Hello'}}
 
@@ -488,23 +468,21 @@ def test_generic_bind_with_tuple(screen: Screen):
         label = ui.label()
         binding.bind(label, 'text', data1, ('config', 'message'))
 
-    screen.open('/')
-    screen.wait(0.1)
-    screen.should_contain('Hello')
+    await user.open('/')
+    await user.should_see('Hello')
 
 
-def test_nested_text_binding(screen: Screen):
+async def test_nested_text_binding(user: User):
     """Test nested binding with text elements."""
-    data = {}
+    data: dict = {}
 
     @ui.page('/')
     def page():
         ui.label().bind_text_from(data, ('messages', 'welcome'))
 
     data['messages'] = {'welcome': 'Welcome!'}
-    screen.open('/')
-    screen.wait(0.1)
-    screen.should_contain('Welcome!')
+    await user.open('/')
+    await user.should_see('Welcome!')
 
 
 def test_nested_enabled_binding(screen: Screen):
@@ -517,12 +495,10 @@ def test_nested_enabled_binding(screen: Screen):
 
     screen.open('/')
     screen.wait(0.1)
-    # Verify the button is disabled initially
     button = screen.selenium.find_element(By.CSS_SELECTOR, '.test-button')
     assert button.get_attribute('aria-disabled') == 'true' or button.get_attribute('disabled') is not None, \
         'Button should be disabled when enabled is False'
 
-    # Change to enabled and verify
     data['ui']['button']['enabled'] = True
     screen.wait(0.5)
     button = screen.selenium.find_element(By.CSS_SELECTOR, '.test-button')
@@ -530,7 +506,7 @@ def test_nested_enabled_binding(screen: Screen):
         'Button should be enabled when enabled is True'
 
 
-def test_default_parameter_still_works(screen: Screen):
+async def test_default_parameter_still_works(user: User):
     """Test that calling bind methods without additional args still works."""
     class Model:
         value = 'test'
@@ -539,14 +515,13 @@ def test_default_parameter_still_works(screen: Screen):
 
     @ui.page('/')
     def page():
-        # Should default to 'value' property
         ui.input().bind_value_from(data)
 
-    screen.open('/')
-    screen.should_contain_input('test')
+    await user.open('/')
+    await user.should_see('test')
 
 
-def test_empty_tuple_validation(screen: Screen):
+async def test_empty_tuple_validation(user: User):
     """Test that empty tuples are rejected with clear error messages."""
     data = {}
 
@@ -555,10 +530,10 @@ def test_empty_tuple_validation(screen: Screen):
         with pytest.raises(ValueError, match='cannot be empty'):
             ui.input().bind_value(data, ())
 
-    screen.open('/')
+    await user.open('/')
 
 
-def test_empty_string_validation(screen: Screen):
+async def test_empty_string_validation(user: User):
     """Test that empty strings are rejected with clear error messages."""
     data = {}
 
@@ -567,10 +542,10 @@ def test_empty_string_validation(screen: Screen):
         with pytest.raises(ValueError, match='cannot be an empty string'):
             ui.input().bind_value(data, '')
 
-    screen.open('/')
+    await user.open('/')
 
 
-def test_non_string_tuple_validation(screen: Screen):
+async def test_non_string_tuple_validation(user: User):
     """Test that tuples with non-string elements are rejected."""
     data = {}
 
@@ -579,4 +554,4 @@ def test_non_string_tuple_validation(screen: Screen):
         with pytest.raises(ValueError, match='must contain only strings'):
             ui.input().bind_value(data, ('valid', 123))  # type: ignore[arg-type]
 
-    screen.open('/')
+    await user.open('/')
