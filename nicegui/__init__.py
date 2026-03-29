@@ -1,6 +1,7 @@
 from . import binding, elements, html, run, storage, ui
 from .api_router import APIRouter
 from .app.app import App
+from .binding_nested import PropertyName
 from .client import Client
 from .context import context
 from .element_filter import ElementFilter
@@ -16,6 +17,7 @@ __all__ = [
     'ElementFilter',
     'Event',
     'PageArguments',
+    'PropertyName',
     '__version__',
     'app',
     'binding',
