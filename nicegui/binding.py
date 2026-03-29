@@ -32,18 +32,26 @@ TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
 
 
-def _has_attribute(obj: object | Mapping, name: PropertyName) -> bool:
-    try:
-        _get_attribute(obj, name)
-        return True
-    except (KeyError, AttributeError):
-        return False
+_MISSING = object()
 
 
-def _get_attribute(obj: object | Mapping, name: PropertyName) -> Any:
-    keys = _normalize_name(name)
+def _try_get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
+    """Try to get a nested attribute. Returns _MISSING if not found."""
     current = obj
-    for key in keys:
+    try:
+        for key in name:
+            if isinstance(current, Mapping):
+                current = current[key]
+            else:
+                current = getattr(current, key)
+    except (KeyError, AttributeError):
+        return _MISSING
+    return current
+
+
+def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
+    current = obj
+    for key in name:
         if isinstance(current, Mapping):
             current = current[key]
         else:
@@ -51,10 +59,9 @@ def _get_attribute(obj: object | Mapping, name: PropertyName) -> Any:
     return current
 
 
-def _set_attribute(obj: object | Mapping, name: PropertyName, value: Any) -> None:
-    keys = _normalize_name(name)
+def _set_attribute(obj: object | Mapping, name: tuple[str, ...], value: Any) -> None:
     current = obj
-    for key in keys[:-1]:
+    for key in name[:-1]:
         if isinstance(current, dict):
             if key not in current:
                 current[key] = {}
@@ -67,7 +74,7 @@ def _set_attribute(obj: object | Mapping, name: PropertyName, value: Any) -> Non
                 )
             current = getattr(current, key)
 
-    final_key = keys[-1]
+    final_key = name[-1]
     if isinstance(current, dict):
         current[final_key] = value
     else:
@@ -94,10 +101,11 @@ def _refresh_step() -> None:
     t = time.time()
     for link in active_links:
         (source_obj, source_name, target_obj, target_name, transform) = link
-        if _has_attribute(source_obj, source_name):
-            source_value = _get_attribute(source_obj, source_name)
+        source_value = _try_get_attribute(source_obj, source_name)
+        if source_value is not _MISSING:
             value = transform(source_value) if transform else source_value
-            if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != value:
+            target_value = _try_get_attribute(target_obj, target_name)
+            if target_value is _MISSING or target_value != value:
                 _set_attribute(target_obj, target_name, value)
                 _propagate(target_obj, target_name)
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
@@ -105,7 +113,7 @@ def _refresh_step() -> None:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
-def _propagate(source_obj: Any, source_name: PropertyName) -> None:
+def _propagate(source_obj: Any, source_name: tuple[str, ...]) -> None:
     token = propagation_visited.set(set())
     try:
         _propagate_recursively(source_obj, source_name)
@@ -113,33 +121,32 @@ def _propagate(source_obj: Any, source_name: PropertyName) -> None:
         propagation_visited.reset(token)
 
 
-def _propagate_recursively(source_obj: Any, source_name: PropertyName) -> None:
+def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> None:
     visited = propagation_visited.get()
     assert visited is not None, 'propagation_visited is not set'
 
     source_obj_id = id(source_obj)
-    source_name_normalized = _normalize_name(source_name)
-    if (source_obj_id, source_name_normalized) in visited:
+    if (source_obj_id, source_name) in visited:
         return
-    visited.add((source_obj_id, source_name_normalized))
+    visited.add((source_obj_id, source_name))
 
-    if not _has_attribute(source_obj, source_name):
+    source_value = _try_get_attribute(source_obj, source_name)
+    if source_value is _MISSING:
         return
-    source_value = _get_attribute(source_obj, source_name)
 
-    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name_normalized), []):
-        target_name_normalized = _normalize_name(target_name)
-        if (id(target_obj), target_name_normalized) in visited:
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+        if (id(target_obj), target_name) in visited:
             continue
 
         target_value = transform(source_value) if transform else source_value
-        if not _has_attribute(target_obj, target_name) or _get_attribute(target_obj, target_name) != target_value:
+        current = _try_get_attribute(target_obj, target_name)
+        if current is _MISSING or current != target_value:
             _set_attribute(target_obj, target_name, target_value)
             _propagate_recursively(target_obj, target_name)
 
 
-def _check_attribute_exists(other_obj: Any, other_name: PropertyName, *, role: Literal['self', 'other']) -> None:
-    if not _has_attribute(other_obj, other_name):
+def _check_attribute_exists(other_obj: Any, other_name: tuple[str, ...], *, role: Literal['self', 'other']) -> None:
+    if _try_get_attribute(other_obj, other_name) is _MISSING:
         display = _display_name(other_name)
         if isinstance(other_obj, Mapping):
             raise KeyError(
@@ -152,7 +159,8 @@ def _check_attribute_exists(other_obj: Any, other_name: PropertyName, *, role: L
         )
 
 
-def _check_self_and_other_attribute(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: PropertyName,
+def _check_self_and_other_attribute(self_obj: Any, self_name: tuple[str, ...], other_obj: Any,
+                                    other_name: tuple[str, ...],
                                     self_strict: bool | None, other_strict: bool | None) -> None:
     if self_strict or (self_strict is None and not _path_contains_dict(self_obj, self_name)):
         _check_attribute_exists(self_obj, self_name, role='self')
@@ -178,14 +186,14 @@ def bind_to(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: 
     :param other_strict: Whether to check (and raise) if the second object has the specified property
         (default: None, performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
-    _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
-    self_name_normalized = _normalize_name(self_name)
-    other_name_normalized = _normalize_name(other_name)
-    bindings[(id(self_obj), self_name_normalized)].append((self_obj, other_obj, other_name_normalized, forward))
-    if (id(self_obj), self_name_normalized) not in bindable_properties:
-        active_links.append((self_obj, self_name_normalized, other_obj, other_name_normalized, forward))
+    self_name_norm = _normalize_name(self_name)
+    other_name_norm = _normalize_name(other_name)
+    _check_self_and_other_attribute(self_obj, self_name_norm, other_obj, other_name_norm, self_strict, other_strict)
+    bindings[(id(self_obj), self_name_norm)].append((self_obj, other_obj, other_name_norm, forward))
+    if (id(self_obj), self_name_norm) not in bindable_properties:
+        active_links.append((self_obj, self_name_norm, other_obj, other_name_norm, forward))
         _active_links_added.set()
-    _propagate(self_obj, self_name)
+    _propagate(self_obj, self_name_norm)
 
 
 def bind_from(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: PropertyName,
@@ -206,14 +214,14 @@ def bind_from(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name
     :param other_strict: Whether to check (and raise) if the second object has the specified property (default: None,
         performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
-    _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
-    self_name_normalized = _normalize_name(self_name)
-    other_name_normalized = _normalize_name(other_name)
-    bindings[(id(other_obj), other_name_normalized)].append((other_obj, self_obj, self_name_normalized, backward))
-    if (id(other_obj), other_name_normalized) not in bindable_properties:
-        active_links.append((other_obj, other_name_normalized, self_obj, self_name_normalized, backward))
+    self_name_norm = _normalize_name(self_name)
+    other_name_norm = _normalize_name(other_name)
+    _check_self_and_other_attribute(self_obj, self_name_norm, other_obj, other_name_norm, self_strict, other_strict)
+    bindings[(id(other_obj), other_name_norm)].append((other_obj, self_obj, self_name_norm, backward))
+    if (id(other_obj), other_name_norm) not in bindable_properties:
+        active_links.append((other_obj, other_name_norm, self_obj, self_name_norm, backward))
         _active_links_added.set()
-    _propagate(other_obj, other_name)
+    _propagate(other_obj, other_name_norm)
 
 
 def bind(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: PropertyName, *,
@@ -238,9 +246,11 @@ def bind(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: Pro
     :param other_strict: Whether to check (and raise) if the second object has the specified property (default: None,
         performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
-    _check_self_and_other_attribute(self_obj, self_name, other_obj, other_name, self_strict, other_strict)
-    bind_from(self_obj, self_name, other_obj, other_name, backward=backward, self_strict=False, other_strict=False)
-    bind_to(self_obj, self_name, other_obj, other_name, forward=forward, self_strict=False, other_strict=False)
+    self_name_norm = _normalize_name(self_name)
+    other_name_norm = _normalize_name(other_name)
+    _check_self_and_other_attribute(self_obj, self_name_norm, other_obj, other_name_norm, self_strict, other_strict)
+    bind_from(self_obj, self_name_norm, other_obj, other_name_norm, backward=backward, self_strict=False, other_strict=False)
+    bind_to(self_obj, self_name_norm, other_obj, other_name_norm, forward=forward, self_strict=False, other_strict=False)
 
 
 class BindableProperty:
@@ -262,9 +272,10 @@ class BindableProperty:
         if has_attr and not value_changed:
             return
         setattr(owner, '___' + self.name, value)
-        key = (id(owner), _normalize_name(str(self.name)))
+        name_norm = (self.name,)
+        key = (id(owner), name_norm)
         bindable_properties[key] = owner
-        _propagate(owner, self.name)
+        _propagate(owner, name_norm)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
 
@@ -357,9 +368,9 @@ def _make_copyable(cls: type[T]) -> None:
         def creator_with_hook(*args, **kwargs) -> T:
             copy = creator(*args, **kwargs)
             for attr_name in dir(obj):
-                normalized_name = _normalize_name(attr_name)
-                if (id(obj), normalized_name) in bindable_properties:
-                    bindable_properties[(id(copy), normalized_name)] = copy
+                key = (id(obj), (attr_name,))
+                if key in bindable_properties:
+                    bindable_properties[(id(copy), (attr_name,))] = copy
             return copy
         return (creator_with_hook, *reduced[1:])
     copyreg.pickle(cls, _pickle_function)
