@@ -36,7 +36,7 @@ def _has_attribute(obj: object | Mapping, name: PropertyName) -> bool:
     try:
         _get_attribute(obj, name)
         return True
-    except (KeyError, AttributeError, TypeError):
+    except (KeyError, AttributeError):
         return False
 
 
@@ -57,14 +57,14 @@ def _set_attribute(obj: object | Mapping, name: PropertyName, value: Any) -> Non
     for key in keys[:-1]:
         if isinstance(current, dict):
             if key not in current:
-                try:
-                    current[key] = type(current)()
-                except (TypeError, ValueError):
-                    current[key] = {}
+                current[key] = {}
             current = current[key]
         else:
             if not hasattr(current, key):
-                setattr(current, key, {})
+                raise AttributeError(
+                    f'Cannot auto-create intermediate attribute "{key}" on object of type '
+                    f'{current.__class__.__name__}. Only dict intermediates are auto-created.'
+                )
             current = getattr(current, key)
 
     final_key = keys[-1]

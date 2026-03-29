@@ -40,5 +40,5 @@ def _path_contains_dict(obj: Any, name: PropertyName) -> bool:
                 return True
             current = getattr(current, key)
         return isinstance(current, Mapping)
-    except (KeyError, AttributeError, TypeError):
+    except (KeyError, AttributeError):
         return False
