@@ -121,7 +121,8 @@ def _documentation_detail_page(name: str, tree: ui.tree) -> None:
     elif name in documentation.redirects:
         ui.navigate.to('/documentation/' + documentation.redirects[name])
     else:
-        ui.label(f'Documentation for "{name}" could not be found.').classes('absolute-center')
+        with ui.column().classes('w-full min-h-[50vh] items-center justify-center text-center p-16'):
+            ui.label(f'Documentation for "{name}" could not be found.')
 
 
 @app.get('/status')
