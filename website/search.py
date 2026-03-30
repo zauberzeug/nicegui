@@ -36,14 +36,16 @@ class Search:
             }
             </script>
         ''')
-        with ui.dialog() as self.dialog, ui.card().tight().classes(f'w-[800px] h-[600px] {d.BG_SURFACE} {d.BORDER}'):
-            with ui.row().classes(f'w-full items-center gap-3 px-4 py-3 {d.BORDER_B}'):
+        with ui.dialog() as self.dialog, ui.card().tight().props('flat') \
+                .classes(f'w-[800px] h-[600px] {d.BG_SURFACE} {d.BORDER} rounded-xl'):
+            with ui.row().classes(f'w-full items-center gap-3 px-4 {d.BORDER_B}'):
                 phosphor_icon('ph-magnifying-glass').classes(f'text-xl {d.TEXT_MUTED}')
                 self.input = ui.input(placeholder='Search documentation', on_change=self._handle_input) \
                     .classes('flex-grow').props('borderless autofocus') \
                     .on('keydown.down.prevent', self._select_next) \
                     .on('keydown.up.prevent', self._select_prev) \
-                    .on('keydown.enter', self._navigate_to_selected)
+                    .on('keydown.enter', self._navigate_to_selected) \
+                    .on('keydown.esc', self.dialog.close)
                 ui.button('ESC', on_click=self.dialog.close) \
                     .props('padding="2px 8px" outline size=sm').classes(f'shadow {d.TEXT_MUTED}')
             self.results = ui.element('q-list').classes('w-full overflow-auto').props('separator')
@@ -74,13 +76,13 @@ class Search:
                         continue
                     with ui.link(target=result_item['url']).on('click', self.dialog.close) \
                             .classes(f'block px-4 py-3 no-underline {d.BORDER_B} hover:opacity-80'):
-                        ui.label(result_item['title']).classes('font-medium')
+                        ui.label(result_item['title']).classes(f'{d.TEXT_13PX} font-medium')
                         intro = result_item['content'].split(':param')[0]
                         if result_item['format'] == 'md':
                             element = ui.markdown(intro)
                         else:
                             element = custom_restructured_text(intro)
-                        element.classes(f'line-clamp-1 {d.TEXT_MUTED}')
+                        element.classes(f'line-clamp-1 {d.TEXT_MUTED} {d.TEXT_13PX} [&_p]:m-0')
                 self._update_highlight()
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
 
