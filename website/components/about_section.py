@@ -26,7 +26,7 @@ def create() -> None:
                     [PyPI](https://pypi.org/project/nicegui/),
                     [Docker](https://hub.docker.com/r/zauberzeug/nicegui) and
                     [GitHub](https://github.com/zauberzeug/nicegui).
-                ''')
+                ''').classes(d.TEXT_SECONDARY)
 
             with ui.column().classes(f'rounded-2xl p-8 w-full max-w-120 {d.BG_SURFACE} {d.BORDER} {d.SHADOW_CARD}'):
                 _simple_demo()
