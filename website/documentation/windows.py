@@ -68,9 +68,8 @@ def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy
             else:
                 result = content()
                 if callable(result):
-                    assert not helpers.should_await(result), \
-                        'async functions are not supported in non-lazy demos'
-                    result()
+                    inner_result = result()
+                    assert not helpers.should_await(inner_result), 'async functions are not supported in non-lazy demos'
     return window
 
 
