@@ -16,19 +16,17 @@ def create() -> None:
                 ui.markdown('''
                     NiceGUI manages web development details, letting you focus on Python code.
                     Connect peripherals like webcams and GPIO pins, build interactive UIs,
-                    and run your entire application from a single script.\n
-                    Available on
-                    [PyPI](https://pypi.org/project/nicegui/),
-                    [Docker](https://hub.docker.com/r/zauberzeug/nicegui) and
-                    [GitHub](https://github.com/zauberzeug/nicegui).
+                    and run your entire application from a single script.
                 ''').classes(f'{d.TEXT_SECONDARY} max-lg:hidden')
                 ui.markdown('''
-                    Build web UIs and connect to the world with peripherals, all in Python.\n
+                    Focus on Python - connect peripherals, build interactive UIs, and run everything from a single script.
+                ''').classes(f'{d.TEXT_SECONDARY} lg:hidden')
+                ui.markdown('''
                     Available on
                     [PyPI](https://pypi.org/project/nicegui/),
                     [Docker](https://hub.docker.com/r/zauberzeug/nicegui) and
                     [GitHub](https://github.com/zauberzeug/nicegui).
-                ''').classes(f'{d.TEXT_SECONDARY} lg:hidden')
+                ''')
 
             with ui.column().classes(f'rounded-2xl p-8 w-full max-w-120 {d.BG_SURFACE} {d.BORDER} {d.SHADOW_CARD}'):
                 _simple_demo()
