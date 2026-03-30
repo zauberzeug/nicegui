@@ -70,7 +70,8 @@ class ValidationElement(ValueElement):
                     if asyncio.iscoroutine(result):
                         result.close()
                     raise NotImplementedError(
-                        'The validate method cannot return results for async validation functions.')
+                        'The validate method cannot return results for async validation functions.',
+                    )
 
                 async def await_error():
                     self.error = await result

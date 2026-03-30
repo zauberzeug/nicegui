@@ -29,9 +29,9 @@ def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
     return isinstance(result, Awaitable) and not isinstance(result, (AwaitableResponse, asyncio.Task))
 
 
-async def await_with_context(awaitable: Awaitable[_T], ctx: AbstractContextManager) -> _T:
+async def await_with_context(awaitable: Awaitable[_T], context: AbstractContextManager) -> _T:
     """Await an awaitable within a context manager."""
-    with ctx:
+    with context:
         return await awaitable
 
 
