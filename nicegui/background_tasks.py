@@ -23,8 +23,10 @@ def create(*, coroutine: Awaitable[Any], name: str = 'unnamed task',
            handle_exceptions: bool = True) -> asyncio.Task: ...
 
 
-def create(awaitable: Awaitable[Any] | None = None, *, name: str = 'unnamed task',
-           handle_exceptions: bool = True, coroutine: Awaitable[Any] | None = None) -> asyncio.Task:
+def create(awaitable: Awaitable[Any] | None = None, *,
+           coroutine: Awaitable[Any] | None = None,
+           name: str = 'unnamed task',
+           handle_exceptions: bool = True) -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
@@ -69,8 +71,9 @@ def create_lazy(awaitable: Awaitable[Any], *, name: str) -> None: ...
 def create_lazy(*, coroutine: Awaitable[Any], name: str) -> None: ...
 
 
-def create_lazy(awaitable: Awaitable[Any] | None = None, *, name: str,
-                coroutine: Awaitable[Any] | None = None) -> None:
+def create_lazy(awaitable: Awaitable[Any] | None = None, *,
+                coroutine: Awaitable[Any] | None = None,
+                name: str) -> None:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
@@ -86,7 +89,6 @@ def create_lazy(awaitable: Awaitable[Any] | None = None, *, name: str,
         lazy_tasks_running.pop(name)
         if name in lazy_coroutines_waiting:
             create_lazy(lazy_coroutines_waiting.pop(name), name=name)
-
     task = create(awaitable, name=name)
     lazy_tasks_running[name] = task
     task.add_done_callback(finalize)
@@ -132,15 +134,14 @@ def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
 
 
 # DEPRECATED: remove `coroutine` keyword aliases in NiceGUI 4.0
-def _resolve_awaitable(awaitable: Awaitable[Any] | None, coroutine: Awaitable[Any] | None, *,
+def _resolve_awaitable(awaitable: Awaitable[Any] | None,
+                       coroutine: Awaitable[Any] | None, *,
                        function_name: str) -> Awaitable[Any]:
     if awaitable is None:
         if coroutine is None:
-            raise TypeError(f"{function_name}() missing 1 required argument: 'awaitable'")
-        warn_once(
-            f'Using `{function_name}(coroutine=...)` is deprecated and will be removed in NiceGUI 4.0. '
-            f'Use `{function_name}(awaitable=...)` instead.',
-        )
+            raise TypeError(f'{function_name}() missing 1 required argument: "awaitable"')
+        warn_once(f'Using `{function_name}(coroutine=...)` is deprecated and will be removed in NiceGUI 4.0. '
+                  f'Use `{function_name}(awaitable=...)` instead.')
         return coroutine
     if coroutine is not None:
         raise TypeError(f'{function_name}() received both awaitable and deprecated coroutine arguments')
