@@ -44,7 +44,8 @@ class Search:
                     .classes('flex-grow').props('borderless autofocus') \
                     .on('keydown.down.prevent', self._select_next) \
                     .on('keydown.up.prevent', self._select_prev) \
-                    .on('keydown.enter', self._navigate_to_selected)
+                    .on('keydown.enter', self._navigate_to_selected) \
+                    .on('keydown.esc', self.dialog.close)
                 ui.button('ESC', on_click=self.dialog.close) \
                     .props('padding="2px 8px" outline size=sm').classes(f'shadow {d.TEXT_MUTED}')
             self.results = ui.element('q-list').classes('w-full overflow-auto').props('separator')
