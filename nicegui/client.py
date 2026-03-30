@@ -50,7 +50,7 @@ class ClientConnectionTimeout(TimeoutError):
 
 
 class Client:
-    page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
+    page_routes: ClassVar[dict[Callable, str]] = {}
     '''Maps page builders to their routes.'''
 
     instances: ClassVar[dict[str, Client]] = {}
@@ -101,9 +101,9 @@ class Client:
 
         self.storage = ObservableDict()
 
-        self.connect_handlers: list[Callable[..., Any]] = []
-        self.disconnect_handlers: list[Callable[..., Any]] = []
-        self.delete_handlers: list[Callable[..., Any]] = []
+        self.connect_handlers: list[Callable] = []
+        self.disconnect_handlers: list[Callable] = []
+        self.delete_handlers: list[Callable] = []
 
         self._temporary_socket_id: str | None = None
 
@@ -252,7 +252,7 @@ class Client:
 
         return AwaitableResponse(send_and_forget, send_and_wait)
 
-    def open(self, target: Callable[..., Any] | str, new_tab: bool = False) -> None:
+    def open(self, target: Callable | str, new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
@@ -261,7 +261,7 @@ class Client:
         """Download a file from a given URL or raw bytes."""
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
-    def on_connect(self, handler: Callable[..., Any]) -> None:
+    def on_connect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client connects.
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
@@ -269,7 +269,7 @@ class Client:
 
         self.connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_connect()'))
 
-    def on_disconnect(self, handler: Callable[..., Any]) -> None:
+    def on_disconnect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client disconnects.
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
@@ -278,7 +278,7 @@ class Client:
         """
         self.disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_disconnect()'))
 
-    def on_delete(self, handler: Callable[..., Any]) -> None:
+    def on_delete(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client is deleted.
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
@@ -361,7 +361,7 @@ class Client:
         """Store the result of a JavaScript command. (For internal use only.)"""
         JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
-    def safe_invoke(self, func: Callable[..., Any]) -> None:
+    def safe_invoke(self, func: Callable) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
         try:
             with self:
