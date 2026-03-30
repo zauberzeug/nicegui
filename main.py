@@ -101,12 +101,10 @@ def _main_page() -> None:
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):
-            ui.query('.q-header').classes('force-border')
             menu_button.visible = True
             if window_state['is_desktop'] is not None:
                 menu.value = window_state['is_desktop']
         else:
-            ui.query('.q-header').classes(remove='force-border')
             menu_button.visible = False
             menu.value = False
     ui.context.client.sub_pages_router.on_path_changed(_update_menu)
