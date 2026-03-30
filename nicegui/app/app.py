@@ -92,12 +92,12 @@ class App(FastAPI):
 
         self._state = State.STOPPED
 
-    def safe_invoke(self, handler: Callable[..., Any]) -> None:
+    def safe_invoke(self, func: Callable[..., Any]) -> None:
         """Invoke the potentially async function and catch any exceptions."""
         try:
-            result = handler()
+            result = func()
             if helpers.should_await(result):
-                func_name = handler.__name__ if hasattr(handler, '__name__') else str(handler)
+                func_name = func.__name__ if hasattr(func, '__name__') else str(func)
                 background_tasks.create(result, name=f'func {func_name}')
 
         except Exception as e:

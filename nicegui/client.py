@@ -361,15 +361,14 @@ class Client:
         """Store the result of a JavaScript command. (For internal use only.)"""
         JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
-    def safe_invoke(self, handler: Callable[..., Any]) -> None:
+    def safe_invoke(self, func: Callable[..., Any]) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
         try:
             with self:
-                result = handler(self) if len(inspect.signature(handler).parameters) == 1 else handler()
+                result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
                 if helpers.should_await(result):
-                    func_name = handler.__name__ if hasattr(handler, '__name__') else str(handler)
-                    background_tasks.create(helpers.await_with_context(result, self),
-                                            name=f'func with client {self.id} {func_name}')
+                    name = f'func with client {self.id} {func.__name__ if hasattr(func, "__name__") else func}'
+                    background_tasks.create(helpers.await_with_context(result, self), name=name)
 
         except Exception as e:
             core.app.handle_exception(e)
