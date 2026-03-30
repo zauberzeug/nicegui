@@ -1,6 +1,6 @@
 import asyncio
 import gc
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 import pytest
 
@@ -100,8 +100,8 @@ async def test_inner_async_function_is_awaited_on_shutdown(user: User, create: C
 
 
 def test_create_or_defer_with_loop_not_running(monkeypatch: pytest.MonkeyPatch) -> None:
-    startup_handlers = []
-    created = []
+    startup_handlers: list[Callable] = []
+    created: list[tuple[Awaitable, str]] = []
     loop = asyncio.new_event_loop()
 
     async def coroutine() -> None:
@@ -112,10 +112,9 @@ def test_create_or_defer_with_loop_not_running(monkeypatch: pytest.MonkeyPatch) 
     try:
         monkeypatch.setattr(core, 'loop', loop)
         monkeypatch.setattr(app, 'on_startup', startup_handlers.append)
-        monkeypatch.setattr(background_tasks, 'create',
-                            lambda awaitable, *, name: created.append((awaitable, name)))
+        monkeypatch.setattr(background_tasks, 'create', lambda awaitable, *, name: created.append((awaitable, name)))
 
-        assert background_tasks.create_or_defer(task, name='deferred') is None
+        background_tasks.create_or_defer(task, name='deferred')
         assert len(startup_handlers) == 1
         assert callable(startup_handlers[0])
 
