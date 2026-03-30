@@ -6,8 +6,7 @@ import weakref
 from collections import deque
 from typing import TYPE_CHECKING, Any
 
-from . import core
-from .background_tasks import create_or_defer
+from . import background_tasks, core
 from .dependencies import JsComponent
 
 if TYPE_CHECKING:
@@ -46,7 +45,7 @@ class Outbox:
         self._should_stop = False
         self._enqueue_event: asyncio.Event | None = None
 
-        create_or_defer(self.loop(), name=f'outbox loop {client.id}')
+        background_tasks.create_or_defer(self.loop(), name=f'outbox loop {client.id}')
 
     @property
     def client(self) -> Client:

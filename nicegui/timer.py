@@ -4,8 +4,7 @@ from collections.abc import Callable
 from contextlib import AbstractContextManager, nullcontext
 from typing import Any
 
-from . import core, helpers
-from .background_tasks import create_or_defer
+from . import background_tasks, core, helpers
 from .binding import BindableProperty
 
 
@@ -43,7 +42,7 @@ class Timer:
         coroutine = self._run_once if once else self._run_in_loop
         if core.is_script_mode_preflight():
             return
-        create_or_defer(coroutine(), name=str(callback))
+        background_tasks.create_or_defer(coroutine(), name=str(callback))
 
     def _get_context(self) -> AbstractContextManager:
         return nullcontext()
