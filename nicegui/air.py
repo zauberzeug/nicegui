@@ -166,7 +166,7 @@ class Air:
         async def _handle_connect() -> None:
             self.log.debug('connected.')
             # NOTE: reset the warning so it can be shown again if connection breaks in the future
-            helpers._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
+            helpers.warnings._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
         async def _handle_disconnect() -> None:
