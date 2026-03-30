@@ -6,7 +6,6 @@ import urllib
 from collections.abc import Callable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -43,13 +42,13 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: list[Callable[..., Any]] = []
-        self._shutdown_handlers: list[Callable[..., Any]] = []
-        self._connect_handlers: list[Callable[..., Any]] = []
-        self._disconnect_handlers: list[Callable[..., Any]] = []
-        self._delete_handlers: list[Callable[..., Any]] = []
-        self._exception_handlers: list[Callable[..., Any]] = [log.exception]
-        self._page_exception_handler: Callable[..., Any] | None = None
+        self._startup_handlers: list[Callable] = []
+        self._shutdown_handlers: list[Callable] = []
+        self._connect_handlers: list[Callable] = []
+        self._disconnect_handlers: list[Callable] = []
+        self._delete_handlers: list[Callable] = []
+        self._exception_handlers: list[Callable] = [log.exception]
+        self._page_exception_handler: Callable | None = None
 
         self.colors()  # populate Quasar config with default colors
 
@@ -89,28 +88,25 @@ class App(FastAPI):
             result = handler(self) if len(inspect.signature(handler).parameters) == 1 else handler()
             if helpers.should_await(result):
                 await result
-
         self._state = State.STOPPED
 
-    def safe_invoke(self, func: Callable[..., Any]) -> None:
+    def safe_invoke(self, func: Callable) -> None:
         """Invoke the potentially async function and catch any exceptions."""
         try:
             result = func()
             if helpers.should_await(result):
-                func_name = func.__name__ if hasattr(func, '__name__') else str(func)
-                background_tasks.create(result, name=f'func {func_name}')
-
+                background_tasks.create(result, name=f'func {func.__name__ if hasattr(func, "__name__") else func}')
         except Exception as e:
             self.handle_exception(e)
 
-    def on_connect(self, handler: Callable[..., Any]) -> None:
+    def on_connect(self, handler: Callable) -> None:
         """Called every time a new client connects to NiceGUI.
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
         self._connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_connect()'))
 
-    def on_disconnect(self, handler: Callable[..., Any]) -> None:
+    def on_disconnect(self, handler: Callable) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
@@ -119,7 +115,7 @@ class App(FastAPI):
         """
         self._disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_disconnect()'))
 
-    def on_delete(self, handler: Callable[..., Any]) -> None:
+    def on_delete(self, handler: Callable) -> None:
         """Called when a client is deleted.
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
@@ -128,7 +124,7 @@ class App(FastAPI):
         """
         self._delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_delete()'))
 
-    def on_startup(self, handler: Callable[..., Any]) -> None:
+    def on_startup(self, handler: Callable) -> None:
         """Called when NiceGUI is started or restarted.
 
         The callback can be synchronous or asynchronous.
@@ -141,7 +137,7 @@ class App(FastAPI):
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_startup()'))
 
-    def on_shutdown(self, handler: Callable[..., Any]) -> None:
+    def on_shutdown(self, handler: Callable) -> None:
         """Called when NiceGUI is shut down or restarted.
 
         The callback can be synchronous or asynchronous.

@@ -369,7 +369,6 @@ class Client:
                 if helpers.should_await(result):
                     name = f'func with client {self.id} {func.__name__ if hasattr(func, "__name__") else func}'
                     background_tasks.create(helpers.await_with_context(result, self), name=name)
-
         except Exception as e:
             core.app.handle_exception(e)
 
@@ -395,10 +394,9 @@ class Client:
                     result = cast(Callable[[Exception], Any], handler)(exception)
                 else:
                     result = cast(Callable[[], Any], handler)()
-
             if helpers.should_await(result):
-                background_tasks.create(
-                    helpers.await_with_context(result, self.content), name=f'UI exception {handler.__name__}')
+                background_tasks.create(helpers.await_with_context(result, self.content),
+                                        name=f'UI exception {handler.__name__}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.
