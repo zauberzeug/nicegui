@@ -35,20 +35,12 @@ async def await_with_context(awaitable: Awaitable[_T], ctx: AbstractContextManag
         return await awaitable
 
 
-def normalize_lifecycle_handler(
-    handler: Callable[..., Any] | Awaitable[Any],
-    registration: str, *,
-    reject: bool = True,
-) -> Callable[..., Any]:
+def normalize_lifecycle_handler(handler: Callable[..., Any] | Awaitable[Any], registration: str) -> Callable[..., Any]:
     """Normalize lifecycle handler registration for callable-only and deprecated-awaitable paths."""
     if callable(handler):
         return handler
     if not isinstance(handler, Awaitable):
         raise TypeError(f'{registration} expects a synchronous or asynchronous function.')
-
-    if reject:
-        raise TypeError(f'{registration} expects a synchronous or asynchronous function, not an awaitable object. '
-                        'Pass the function itself instead of calling it.',)
 
     # DEPRECATED: remove direct awaitable lifecycle registrations in NiceGUI 4.0
     def wrapped_handler() -> Awaitable[Any]:
