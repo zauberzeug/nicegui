@@ -39,8 +39,7 @@ def create(awaitable: Awaitable[Any] | None = None, *,
     """
     awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create')
     assert core.loop is not None
-    coroutine = _ensure_coroutine(awaitable)
-    task: asyncio.Task = core.loop.create_task(coroutine, name=name)
+    task = core.loop.create_task(_ensure_coroutine(awaitable), name=name)
     if handle_exceptions:
         task.add_done_callback(_handle_exceptions)
     running_tasks.add(task)
