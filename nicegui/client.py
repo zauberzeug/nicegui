@@ -399,7 +399,7 @@ class Client:
 
             if helpers.should_await(result):
                 background_tasks.create(
-                    helpers.await_with_context(result, self), name=f'UI exception {handler.__name__}')
+                    helpers.await_with_context(result, self.content), name=f'UI exception {handler.__name__}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.
