@@ -40,10 +40,14 @@ class Search:
             with ui.row().classes(f'w-full items-center gap-3 px-4 py-3 {d.BORDER_B}'):
                 phosphor_icon('ph-magnifying-glass').classes(f'text-xl {d.TEXT_MUTED}')
                 self.input = ui.input(placeholder='Search documentation', on_change=self._handle_input) \
-                    .classes('flex-grow').props('borderless autofocus')
+                    .classes('flex-grow').props('borderless autofocus') \
+                    .on('keydown.down.prevent', self._select_next) \
+                    .on('keydown.up.prevent', self._select_prev) \
+                    .on('keydown.enter', self._navigate_to_selected)
                 ui.button('ESC', on_click=self.dialog.close) \
                     .props('padding="2px 8px" outline size=sm').classes(f'shadow {d.TEXT_MUTED}')
             self.results = ui.element('q-list').classes('w-full overflow-auto').props('separator')
+            self.selected_index = 0
         ui.keyboard().on('key', self.open_dialog, js_handler='''(e) => {
             if (e.action !== 'keydown') return;
             if (e.key === '/' || (e.key === 'k' && (e.ctrlKey || e.metaKey))) {
@@ -61,6 +65,7 @@ class Search:
                     return window.fuse.search("{e.value}", {{ limit }}).map(result => result.refIndex);
                 ''', timeout=6)
                 self.results.clear()
+                self.selected_index = 0
                 for index in indices:
                     if not 0 <= index < len(search_index):
                         continue
@@ -76,7 +81,31 @@ class Search:
                         else:
                             element = custom_restructured_text(intro)
                         element.classes(f'line-clamp-1 {d.TEXT_MUTED}')
+                self._update_highlight()
         background_tasks.create_lazy(handle_input(), name='handle_search_input')
+
+    def _update_highlight(self) -> None:
+        HIGHLIGHT_CLASS = 'bg-gray-500/7'
+        for i, child in enumerate(self.results):
+            if i == self.selected_index:
+                child.classes(HIGHLIGHT_CLASS)
+                ui.run_javascript(f'getElement({child.id}).$el.scrollIntoView({{block: "nearest"}})')
+            else:
+                child.classes(remove=HIGHLIGHT_CLASS)
+
+    def _select_next(self) -> None:
+        self.selected_index = min(self.selected_index + 1, len(self.results.default_slot.children) - 1)
+        self._update_highlight()
+
+    def _select_prev(self) -> None:
+        self.selected_index = max(self.selected_index - 1, 0)
+        self._update_highlight()
+
+    def _navigate_to_selected(self) -> None:
+        children = self.results.default_slot.children
+        if 0 <= self.selected_index < len(children):
+            ui.navigate.to(children[self.selected_index].props['href'])
+            self.dialog.close()
 
     def open_dialog(self) -> None:
         self.input.run_method('select')

@@ -52,6 +52,7 @@ def _open_window(
     window.events.closed += closed.set
     _bind_pywebview_events(window, event_sender)
     _start_window_method_executor(window, method_queue, response_queue, closed)
+    _warn_if_esm_unsupported(window)
     webview.start(**core.app.native.start_args)
 
 
@@ -125,6 +126,19 @@ def _start_window_method_executor(window: webview.Window,
                 log.exception(f'error in window.{method_name}')
 
     Thread(target=window_method_executor).start()
+
+
+def _warn_if_esm_unsupported(window: webview.Window) -> None:
+    """Log an error after page load if the browser engine lacks ES module / import map support."""
+    def check() -> None:
+        if not window.evaluate_js('typeof Vue !== "undefined"'):
+            log.error(
+                'Vue failed to load, and NiceGUI critically relies on it. '
+                'This typically means the webview browser engine does not support import maps (requires Chrome 89+). '
+                'On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.',
+            )
+
+    window.events.loaded += check
 
 
 def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,

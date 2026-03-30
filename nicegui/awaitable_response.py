@@ -1,10 +1,9 @@
 from collections.abc import Callable
 
 from . import background_tasks
-from .helpers import SelfManagedAwaitable
 
 
-class AwaitableResponse(SelfManagedAwaitable):
+class AwaitableResponse:
 
     def __init__(self, fire_and_forget: Callable, wait_for_result: Callable) -> None:
         """Awaitable Response

@@ -3,7 +3,8 @@ import asyncio
 from collections.abc import Awaitable, Callable, Coroutine, Generator
 from typing import Any, TypeVar, cast, overload
 
-from . import core, helpers
+from . import core
+from .helpers.warnings import warn_once
 from .logging import log
 
 running_tasks: set[asyncio.Task] = set()
@@ -136,7 +137,7 @@ def _resolve_awaitable(awaitable: Awaitable[Any] | None, coroutine: Awaitable[An
     if awaitable is None:
         if coroutine is None:
             raise TypeError(f"{function_name}() missing 1 required argument: 'awaitable'")
-        helpers.warn_once(
+        warn_once(
             f'Using `{function_name}(coroutine=...)` is deprecated and will be removed in NiceGUI 4.0. '
             f'Use `{function_name}(awaitable=...)` instead.',
         )
