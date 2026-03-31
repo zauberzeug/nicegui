@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any, Literal, TypeVar
 from typing_extensions import dataclass_transform
 
 from . import core
-from .binding_nested import PropertyName, _display_name, _normalize_name, _path_contains_dict
 from .logging import log
 
 if TYPE_CHECKING:
@@ -21,9 +20,13 @@ if TYPE_CHECKING:
 
 MAX_PROPAGATION_TIME = 0.01
 
-propagation_visited: ContextVar[set[tuple[int, tuple[str, ...]]] | None] = ContextVar('propagation_visited', default=None)
+propagation_visited: ContextVar[set[tuple[int, tuple[str, ...]]] | None] = \
+    ContextVar('propagation_visited', default=None)
 
-bindings: defaultdict[tuple[int, tuple[str, ...]], list[tuple[Any, Any, tuple[str, ...], Callable[[Any], Any] | None]]] = defaultdict(list)
+bindings: defaultdict[
+    tuple[int, tuple[str, ...]],
+    list[tuple[Any, Any, tuple[str, ...], Callable[[Any], Any] | None]]
+] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[tuple[int, tuple[str, ...]], Any] = weakref.WeakValueDictionary()
 active_links: list[tuple[Any, tuple[str, ...], Any, tuple[str, ...], Callable[[Any], Any] | None]] = []
 _active_links_added = asyncio.Event()
@@ -46,16 +49,6 @@ def _try_get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
                 current = getattr(current, key)
     except (KeyError, AttributeError):
         return _MISSING
-    return current
-
-
-def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
-    current = obj
-    for key in name:
-        if isinstance(current, Mapping):
-            current = current[key]
-        else:
-            current = getattr(current, key)
     return current
 
 
@@ -147,7 +140,7 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
 
 def _check_attribute_exists(other_obj: Any, other_name: tuple[str, ...], *, role: Literal['self', 'other']) -> None:
     if _try_get_attribute(other_obj, other_name) is _MISSING:
-        display = _display_name(other_name)
+        display = '.'.join(other_name)
         if isinstance(other_obj, Mapping):
             raise KeyError(
                 f'Could not bind non-existing key "{display}". '
@@ -168,7 +161,7 @@ def _check_self_and_other_attribute(self_obj: Any, self_name: tuple[str, ...], o
         _check_attribute_exists(other_obj, other_name, role='other')
 
 
-def bind_to(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: PropertyName,
+def bind_to(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...],
             forward: Callable[[Any], Any] | None = None, *,
             self_strict: bool | None = None, other_strict: bool | None = None) -> None:
     """Bind the property of one object to the property of another object.
@@ -196,7 +189,7 @@ def bind_to(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: 
     _propagate(self_obj, self_name_norm)
 
 
-def bind_from(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: PropertyName,
+def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...],
               backward: Callable[[Any], Any] | None = None, *,
               self_strict: bool | None = None, other_strict: bool | None = None) -> None:
     """Bind the property of one object from the property of another object.
@@ -224,7 +217,7 @@ def bind_from(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name
     _propagate(other_obj, other_name_norm)
 
 
-def bind(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: PropertyName, *,
+def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...], *,
          forward: Callable[[Any], Any] | None = None,
          backward: Callable[[Any], Any] | None = None,
          self_strict: bool | None = None,
@@ -249,8 +242,29 @@ def bind(self_obj: Any, self_name: PropertyName, other_obj: Any, other_name: Pro
     self_name_norm = _normalize_name(self_name)
     other_name_norm = _normalize_name(other_name)
     _check_self_and_other_attribute(self_obj, self_name_norm, other_obj, other_name_norm, self_strict, other_strict)
-    bind_from(self_obj, self_name_norm, other_obj, other_name_norm, backward=backward, self_strict=False, other_strict=False)
-    bind_to(self_obj, self_name_norm, other_obj, other_name_norm, forward=forward, self_strict=False, other_strict=False)
+    bind_from(self_obj, self_name_norm, other_obj, other_name_norm,
+              backward=backward, self_strict=False, other_strict=False)
+    bind_to(self_obj, self_name_norm, other_obj, other_name_norm,
+            forward=forward, self_strict=False, other_strict=False)
+
+
+def _normalize_name(name: str | tuple[str, ...]) -> tuple[str, ...]:
+    """Convert property name to normalized tuple format."""
+    assert name, 'Property name cannot be empty'
+    if isinstance(name, tuple):
+        assert all(isinstance(key, str) for key in name), 'Property name tuple must contain only strings'
+    return name if isinstance(name, tuple) else (name,)
+
+
+def _path_contains_dict(obj: Any, name: tuple[str, ...]) -> bool:
+    """Check if the nested path traverses through any dict/Mapping."""
+    for key in name:
+        if isinstance(obj, Mapping):
+            return True
+        if not hasattr(obj, key):
+            return False
+        obj = getattr(obj, key)
+    return False
 
 
 class BindableProperty:

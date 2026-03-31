@@ -527,7 +527,7 @@ async def test_empty_tuple_validation(user: User):
 
     @ui.page('/')
     def page():
-        with pytest.raises(ValueError, match='cannot be empty'):
+        with pytest.raises(AssertionError, match='cannot be empty'):
             ui.input().bind_value(data, ())
 
     await user.open('/')
@@ -539,7 +539,7 @@ async def test_empty_string_validation(user: User):
 
     @ui.page('/')
     def page():
-        with pytest.raises(ValueError, match='cannot be an empty string'):
+        with pytest.raises(AssertionError, match='cannot be empty'):
             ui.input().bind_value(data, '')
 
     await user.open('/')
@@ -551,7 +551,7 @@ async def test_non_string_tuple_validation(user: User):
 
     @ui.page('/')
     def page():
-        with pytest.raises(ValueError, match='must contain only strings'):
+        with pytest.raises(AssertionError, match='must contain only strings'):
             ui.input().bind_value(data, ('valid', 123))  # type: ignore[arg-type]
 
     await user.open('/')
