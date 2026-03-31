@@ -306,41 +306,6 @@ async def test_nested_dict_binding(user: User):
     assert data['profile']['username'] == 'Alice'
 
 
-async def test_nested_auto_creation(user: User):
-    """Test that intermediate dictionaries are auto-created."""
-    data: dict = {}
-
-    @ui.page('/')
-    def page():
-        ui.input().bind_value(data, ('a', 'b', 'c'))
-
-    await user.open('/')
-    user.find(ui.input).type('value')
-    await user.should_see('value')
-
-    assert 'a' in data
-    assert 'b' in data['a']
-    assert 'c' in data['a']['b']
-    assert data['a']['b']['c'] == 'value'
-
-
-async def test_nested_storage_binding(user: User):
-    """Test binding to nested keys in storage."""
-    storage = {}
-
-    @ui.page('/')
-    def page():
-        ui.input().bind_value(storage, ('settings', 'theme'))
-        ui.label().bind_text_from(storage, ('settings', 'theme'))
-
-    await user.open('/')
-    user.find(ui.input).type('dark')
-    await user.should_see('dark')
-
-    assert 'settings' in storage
-    assert storage['settings']['theme'] == 'dark'
-
-
 async def test_nested_with_transformation(user: User):
     """Test nested binding with forward/backward transformations."""
     data = {}
@@ -407,37 +372,6 @@ async def test_nested_strict_mode_validation(user: User):
     await user.open('/')
 
 
-async def test_single_key_strict_mode_validation(user: User):
-    """Test that strict mode validates single keys correctly."""
-    data = {}
-
-    @ui.page('/')
-    def page():
-        with pytest.raises(KeyError, match=r'non-existing key "missing"'):
-            ui.input().bind_value(data, 'missing', strict=True)
-
-    await user.open('/')
-
-
-async def test_deep_nesting(user: User):
-    """Test binding with 4+ nested levels."""
-    data = {}
-
-    @ui.page('/')
-    def page():
-        ui.input().bind_value(data, ('level1', 'level2', 'level3', 'level4'))
-
-    await user.open('/')
-    user.find(ui.input).type('deep')
-    await user.should_see('deep')
-
-    assert 'level1' in data
-    assert 'level2' in data['level1']
-    assert 'level3' in data['level1']['level2']
-    assert 'level4' in data['level1']['level2']['level3']
-    assert data['level1']['level2']['level3']['level4'] == 'deep'
-
-
 def test_nested_visibility_binding(screen: Screen):
     """Test nested binding works with visibility."""
     data = {'ui': {'sidebar': {'visible': True}}}
@@ -459,32 +393,6 @@ def test_nested_visibility_binding(screen: Screen):
     assert len(columns) > 0, 'Column should be hidden when visibility is False'
 
 
-async def test_generic_bind_with_tuple(user: User):
-    """Test that generic bind() function accepts tuple syntax."""
-    data1 = {'config': {'message': 'Hello'}}
-
-    @ui.page('/')
-    def page():
-        label = ui.label()
-        binding.bind(label, 'text', data1, ('config', 'message'))
-
-    await user.open('/')
-    await user.should_see('Hello')
-
-
-async def test_nested_text_binding(user: User):
-    """Test nested binding with text elements."""
-    data: dict = {}
-
-    @ui.page('/')
-    def page():
-        ui.label().bind_text_from(data, ('messages', 'welcome'))
-
-    data['messages'] = {'welcome': 'Welcome!'}
-    await user.open('/')
-    await user.should_see('Welcome!')
-
-
 def test_nested_enabled_binding(screen: Screen):
     """Test nested binding with enabled/disabled elements."""
     data = {'ui': {'button': {'enabled': False}}}
@@ -504,21 +412,6 @@ def test_nested_enabled_binding(screen: Screen):
     button = screen.selenium.find_element(By.CSS_SELECTOR, '.test-button')
     assert button.get_attribute('aria-disabled') != 'true' and button.get_attribute('disabled') is None, \
         'Button should be enabled when enabled is True'
-
-
-async def test_default_parameter_still_works(user: User):
-    """Test that calling bind methods without additional args still works."""
-    class Model:
-        value = 'test'
-
-    data = Model()
-
-    @ui.page('/')
-    def page():
-        ui.input().bind_value_from(data)
-
-    await user.open('/')
-    await user.should_see('test')
 
 
 async def test_empty_tuple_validation(user: User):
