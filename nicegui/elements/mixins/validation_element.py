@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any, TypeAlias, cast
 
@@ -63,16 +62,12 @@ class ValidationElement(ValueElement):
         :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
+        if return_result and helpers.is_coroutine_function(self._validation):
+            raise NotImplementedError('The validate method cannot return results for async validation functions.')
+
         if callable(self._validation):
             result = self._validation(self.value)
             if helpers.should_await(result):
-                if return_result:
-                    if asyncio.iscoroutine(result):
-                        result.close()
-                    raise NotImplementedError(
-                        'The validate method cannot return results for async validation functions.',
-                    )
-
                 async def await_error():
                     self.error = await result
                 background_tasks.create(await_error(), name=f'validate {self.id}')

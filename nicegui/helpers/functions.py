@@ -1,4 +1,6 @@
 import asyncio
+import functools
+import sys
 from collections.abc import Awaitable, Callable
 from contextlib import AbstractContextManager
 from inspect import Parameter, signature
@@ -7,7 +9,23 @@ from typing import Any, TypeGuard, TypeVar
 from ..awaitable_response import AwaitableResponse
 from .warnings import warn_once
 
+if sys.version_info < (3, 13):
+    from asyncio import iscoroutinefunction
+else:
+    from inspect import iscoroutinefunction
+
 _T = TypeVar('_T')
+
+
+def is_coroutine_function(obj: Any) -> bool:
+    """Check if the object is a coroutine function.
+
+    This function is needed because functools.partial is not a coroutine function, but its func attribute is.
+    Note: It will return false for coroutine objects.
+    """
+    while isinstance(obj, functools.partial):
+        obj = obj.func
+    return iscoroutinefunction(obj)
 
 
 def expects_arguments(func: Callable) -> bool:

@@ -2,7 +2,13 @@ import os
 
 from .elements import require_top_level_layout
 from .files import hash_file_path, is_file
-from .functions import await_with_context, expects_arguments, normalize_lifecycle_handler, should_await
+from .functions import (
+    await_with_context,
+    expects_arguments,
+    is_coroutine_function,
+    normalize_lifecycle_handler,
+    should_await,
+)
 from .network import is_port_open, schedule_browser
 from .strings import event_type_to_camel_case, kebab_to_camel_case
 from .warnings import warn_once
@@ -12,6 +18,7 @@ __all__ = [
     'event_type_to_camel_case',
     'expects_arguments',
     'hash_file_path',
+    'is_coroutine_function',
     'is_file',
     'is_port_open',
     'is_pytest',
