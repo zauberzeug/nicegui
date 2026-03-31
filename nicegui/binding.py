@@ -158,11 +158,12 @@ def bind_to(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, oth
 
     The binding works one way only, from the first object to the second.
     The update happens immediately and whenever a value changes.
+    The name parameters also accept a tuple of strings for nested keys (*since version 3.10.0*).
 
     :param self_obj: The object to bind from.
-    :param self_name: The name of the property to bind from (string or tuple of strings for nested keys).
+    :param self_name: The name of the property to bind from.
     :param other_obj: The object to bind to.
-    :param other_name: The name of the property to bind to (string or tuple of strings for nested keys).
+    :param other_name: The name of the property to bind to.
     :param forward: A function to apply to the value before applying it (default: identity).
     :param self_strict: Whether to check (and raise) if the first object has the specified property
         (default: None, performs a check if the object is not a dictionary, *added in version 3.0.0*).
@@ -186,11 +187,12 @@ def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, o
 
     The binding works one way only, from the second object to the first.
     The update happens immediately and whenever a value changes.
+    The name parameters also accept a tuple of strings for nested keys (*since version 3.10.0*).
 
     :param self_obj: The object to bind to.
-    :param self_name: The name of the property to bind to (string or tuple of strings for nested keys).
+    :param self_name: The name of the property to bind to.
     :param other_obj: The object to bind from.
-    :param other_name: The name of the property to bind from (string or tuple of strings for nested keys).
+    :param other_name: The name of the property to bind from.
     :param backward: A function to apply to the value before applying it (default: identity).
     :param self_strict: Whether to check (and raise) if the first object has the specified property (default: None,
         performs a check if the object is not a dictionary, *added in version 3.0.0*).
@@ -216,12 +218,13 @@ def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_
 
     The binding works both ways, from the first object to the second and from the second to the first.
     The update happens immediately and whenever a value changes.
+    The name parameters also accept a tuple of strings for nested keys (*since version 3.10.0*).
     The backward binding takes precedence for the initial synchronization.
 
     :param self_obj: First object to bind.
-    :param self_name: The name of the first property to bind (string or tuple of strings for nested keys).
+    :param self_name: The name of the first property to bind.
     :param other_obj: The second object to bind.
-    :param other_name: The name of the second property to bind (string or tuple of strings for nested keys).
+    :param other_name: The name of the second property to bind.
     :param forward: A function to apply to the value before applying it to the second object (default: identity).
     :param backward: A function to apply to the value before applying it to the first object (default: identity).
     :param self_strict: Whether to check (and raise) if the first object has the specified property (default: None,
