@@ -225,6 +225,7 @@ disable = [
     "R0915", # Too many statements
     "R0917", # Too many positional arguments
     "R1705", # Unnecessary "else" after "return"
+    "R1720", # Unnecessary "else" after "raise"
     "W0102", # Dangerous default value as argument
     "W0718", # Catching too general exception
     "W1203", # Use % formatting in logging functions

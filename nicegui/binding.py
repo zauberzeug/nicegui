@@ -122,16 +122,22 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
             _propagate_recursively(target_obj, target_name)
 
 
-def _check_attribute_exists(other_obj: Any, other_name: tuple[str, ...], *, role: Literal['self', 'other']) -> None:
-    if _get_attribute(other_obj, other_name) is _MISSING:
-        display = '.'.join(other_name)
-        if isinstance(other_obj, Mapping):
-            raise KeyError(
-                f'Could not bind non-existing key "{display}". '
-                f'To allow missing keys (lazy binding), remove {role}_strict=True or add the key before binding.'
-            )
+def _check_attribute_exists(obj: Any, name: tuple[str, ...], *, role: Literal['self', 'other']) -> None:
+    if _get_attribute(obj, name) is not _MISSING:
+        return
+    for key in name:
+        try:
+            obj = obj[key] if isinstance(obj, Mapping) else getattr(obj, key)
+        except (KeyError, AttributeError):
+            break
+    if isinstance(obj, Mapping):
+        raise KeyError(
+            f'Could not bind non-existing key "{".".join(name)}". '
+            f'To allow missing keys (lazy binding), remove {role}_strict=True or add the key before binding.'
+        )
+    else:
         raise AttributeError(
-            f'Could not bind non-existing attribute "{display}" on object of type {other_obj.__class__.__name__}. '
+            f'Could not bind non-existing attribute "{".".join(name)}" on object of type {obj.__class__.__name__}. '
             f'To allow missing attributes (lazy binding), add {role}_strict=False or add the attribute before binding.'
         )
 
