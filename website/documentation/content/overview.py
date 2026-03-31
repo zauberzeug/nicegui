@@ -456,9 +456,9 @@ def map_of_nicegui():
 
         Run async functions in the background.
 
-        - `create()`: create a background task
-        - `create_lazy()`: prevent two tasks with the same name from running at the same time
-        - `await_on_shutdown`: mark a coroutine function to be awaited during shutdown (by default all background tasks are cancelled)
+        - `create()`, `create_or_defer()`: create a background task
+        - `create_lazy()`, `create_lazy_or_defer()`: prevent two tasks with the same name from running at the same time
+        - `await_on_shutdown`: mark an async function to be awaited during shutdown (by default all background tasks are cancelled)
 
         #### `run`
 

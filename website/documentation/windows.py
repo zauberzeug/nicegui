@@ -58,21 +58,18 @@ def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy
                 @intersection_observer
                 async def handle_intersection():
                     window.remove(spinner)
-                    if helpers.is_coroutine_function(content):
-                        result = await content()
-                    else:
-                        result = content()
+                    result = content()
+                    if helpers.should_await(result):
+                        result = await result
                     if callable(result):
-                        if helpers.is_coroutine_function(result):
-                            await result()
-                        else:
-                            result()
+                        inner_result = result()
+                        if helpers.should_await(inner_result):
+                            await inner_result
             else:
                 result = content()
                 if callable(result):
-                    assert not helpers.is_coroutine_function(result), \
-                        'async functions are not supported in non-lazy demos'
-                    result()
+                    inner_result = result()
+                    assert not helpers.should_await(inner_result), 'async functions are not supported in non-lazy demos'
     return window
 
 

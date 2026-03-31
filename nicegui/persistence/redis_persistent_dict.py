@@ -77,7 +77,7 @@ class RedisPersistentDict(PersistentDict):
         def create_listener_task() -> None:
             self._listener_task = background_tasks.create(listen(), name=f'redis-listen-{self.key}')
 
-        if core.loop and core.loop.is_running():
+        if core.is_loop_running():
             create_listener_task()
         else:
             core.app.on_startup(create_listener_task)
@@ -92,10 +92,7 @@ class RedisPersistentDict(PersistentDict):
             pipeline.set(self.key, data, ex=self.ttl)
             pipeline.publish(self.key + 'changes', data)
             await pipeline.execute()
-        if core.loop:
-            background_tasks.create_lazy(backup(), name=f'redis-{self.key}')
-        else:
-            core.app.on_startup(backup())
+        background_tasks.create_lazy_or_defer(backup(), name=f'redis-{self.key}')
 
     async def close(self) -> None:
         """Close Redis connection and subscription."""
@@ -108,7 +105,4 @@ class RedisPersistentDict(PersistentDict):
 
     def clear(self) -> None:
         super().clear()
-        if core.loop:
-            background_tasks.create_lazy(self.redis_client.delete(self.key), name=f'redis-delete-{self.key}')
-        else:
-            core.app.on_startup(self.redis_client.delete(self.key))
+        background_tasks.create_lazy_or_defer(self.redis_client.delete(self.key), name=f'redis-delete-{self.key}')
