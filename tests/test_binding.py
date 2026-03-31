@@ -328,5 +328,8 @@ async def test_nested_binding(data_type: str, initialize: bool, user: User):
         assert data == {'config': {'volume': 50}}
     if data_type == 'object-dict':
         assert data.config == {'volume': 50}
-    if data_type == 'dict-object' and initialize:
-        assert data['config'].volume == 50
+    if data_type == 'dict-object':
+        if initialize:
+            assert data['config'].volume == 50
+        else:
+            assert data == {'config': {'volume': 50}}
