@@ -40,38 +40,36 @@ _MISSING = object()
 
 def _try_get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
     """Try to get a nested attribute. Returns _MISSING if not found."""
-    current = obj
     try:
         for key in name:
-            if isinstance(current, Mapping):
-                current = current[key]
+            if isinstance(obj, Mapping):
+                obj = obj[key]
             else:
-                current = getattr(current, key)
+                obj = getattr(obj, key)
     except (KeyError, AttributeError):
         return _MISSING
-    return current
+    return obj
 
 
 def _set_attribute(obj: object | Mapping, name: tuple[str, ...], value: Any) -> None:
-    current = obj
     for key in name[:-1]:
-        if isinstance(current, dict):
-            if key not in current:
-                current[key] = {}
-            current = current[key]
+        if isinstance(obj, dict):
+            if key not in obj:
+                obj[key] = {}
+            obj = obj[key]
         else:
-            if not hasattr(current, key):
+            if not hasattr(obj, key):
                 raise AttributeError(
                     f'Cannot auto-create intermediate attribute "{key}" on object of type '
-                    f'{current.__class__.__name__}. Only dict intermediates are auto-created.'
+                    f'{obj.__class__.__name__}. Only dict intermediates are auto-created.'
                 )
-            current = getattr(current, key)
+            obj = getattr(obj, key)
 
     final_key = name[-1]
-    if isinstance(current, dict):
-        current[final_key] = value
+    if isinstance(obj, dict):
+        obj[final_key] = value
     else:
-        setattr(current, final_key, value)
+        setattr(obj, final_key, value)
 
 
 async def refresh_loop() -> None:
