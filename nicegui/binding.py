@@ -6,7 +6,7 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
@@ -48,7 +48,7 @@ def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
 
 def _set_attribute(obj: object | Mapping, name: tuple[str, ...], value: Any) -> None:
     for key in name[:-1]:
-        if isinstance(obj, dict):
+        if isinstance(obj, MutableMapping):
             obj = obj.setdefault(key, {})
         else:
             type_ = obj.__class__.__name__
@@ -56,7 +56,7 @@ def _set_attribute(obj: object | Mapping, name: tuple[str, ...], value: Any) -> 
             if obj is _MISSING:
                 raise AttributeError(f'Cannot traverse intermediate attribute "{key}" on object of type {type_}. '
                                      'Only dict intermediates are auto-created for missing keys.')
-    if isinstance(obj, dict):
+    if isinstance(obj, MutableMapping):
         obj[name[-1]] = value
     else:
         setattr(obj, name[-1], value)
