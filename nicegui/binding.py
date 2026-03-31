@@ -54,8 +54,8 @@ def _set_attribute(obj: object | Mapping, name: tuple[str, ...], value: Any) -> 
             type_ = obj.__class__.__name__
             obj = getattr(obj, key, _MISSING)
             if obj is _MISSING:
-                raise AttributeError(f'Cannot auto-create intermediate attribute "{key}" on object of type {type_}. '
-                                     'Only dict intermediates are auto-created.')
+                raise AttributeError(f'Cannot traverse intermediate attribute "{key}" on object of type {type_}. '
+                                     'Only dict intermediates are auto-created for missing keys.')
     if isinstance(obj, dict):
         obj[name[-1]] = value
     else:
