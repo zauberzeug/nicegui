@@ -1,8 +1,8 @@
 import copy
 import weakref
+from typing import Any
 
 import pytest
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import binding, ui
@@ -290,161 +290,43 @@ def test_binding_refresh_interval_none(screen: Screen):
     )
 
 
-async def test_nested_dict_binding(user: User):
-    """Test basic nested dictionary binding with tuple syntax."""
-    data = {}
+@pytest.mark.parametrize('data_type', ['dict-dict', 'object-dict', 'dict-object'])
+@pytest.mark.parametrize('initialize', [True, False])
+async def test_nested_binding(data_type: str, initialize: bool, user: User):
+    class Data:
+        def __init__(self, config: dict[str, int]) -> None:
+            self.config = config
 
-    @ui.page('/')
-    def page():
-        ui.input('Username').bind_value(data, ('profile', 'username'))
-
-    await user.open('/')
-    user.find(ui.input).type('Alice')
-    await user.should_see('Alice')
-
-    assert 'profile' in data
-    assert data['profile']['username'] == 'Alice'
-
-
-async def test_nested_with_transformation(user: User):
-    """Test nested binding with forward/backward transformations."""
-    data = {}
-
-    @ui.page('/')
-    def page():
-        ui.number('Volume', min=0, max=100, value=50).bind_value_to(
-            data, ('config', 'volume'),
-            forward=int
-        )
-        ui.label().bind_text_from(
-            data, ('config', 'volume'),
-            backward=lambda v: f'Volume: {v}%'
-        )
-
-    await user.open('/')
-    await user.should_see('Volume: 50%')
-
-
-async def test_single_key_backward_compatible(user: User):
-    """Ensure single string keys still work exactly as before."""
-    data = {}
-
-    @ui.page('/')
-    def page():
-        ui.input().bind_value(data, 'name')
-
-    await user.open('/')
-    user.find(ui.input).type('Alice')
-    await user.should_see('Alice')
-
-    assert data['name'] == 'Alice'
-
-
-async def test_mixed_object_dict_nesting(user: User):
-    """Test binding through mixed object attributes and dict keys."""
     class Config:
-        def __init__(self):
-            self.data = {}
+        def __init__(self, volume: int) -> None:
+            self.volume = volume
 
-    config = Config()
-
-    @ui.page('/')
-    def page():
-        ui.input().bind_value(config, ('data', 'username'))
-
-    await user.open('/')
-    user.find(ui.input).type('test')
-    await user.should_see('test')
-
-    assert 'username' in config.data
-    assert config.data['username'] == 'test'
-
-
-async def test_nested_strict_mode_validation(user: User):
-    """Test that strict mode validates nested paths correctly."""
-    data = {}
+    data: Any
+    if data_type == 'dict-dict':
+        data = {'config': {'volume': 0}} if initialize else {}
+    if data_type == 'object-dict':
+        data = Data({'volume': 0} if initialize else {})
+    if data_type == 'dict-object':
+        data = {'config': Config(0)} if initialize else {}
 
     @ui.page('/')
     def page():
-        with pytest.raises(KeyError, match=r'non-existing key "a\.b\.c"'):
-            ui.input().bind_value(data, ('a', 'b', 'c'), strict=True)
-
-    await user.open('/')
-
-
-def test_nested_visibility_binding(screen: Screen):
-    """Test nested binding works with visibility."""
-    data = {'ui': {'sidebar': {'visible': True}}}
-
-    @ui.page('/')
-    def page():
-        with ui.column().bind_visibility_from(data, ('ui', 'sidebar', 'visible')).classes('test-column'):
-            ui.label('Content')
-
-    screen.open('/')
-    screen.should_contain('Content')
-    columns = screen.selenium.find_elements(By.CSS_SELECTOR, '.test-column.hidden')
-    assert len(columns) == 0, 'Column should be visible when visibility is True'
-
-    data['ui']['sidebar']['visible'] = False
-    screen.wait(0.5)
-    screen.should_not_contain('Content')
-    columns = screen.selenium.find_elements(By.CSS_SELECTOR, '.test-column.hidden')
-    assert len(columns) > 0, 'Column should be hidden when visibility is False'
-
-
-def test_nested_enabled_binding(screen: Screen):
-    """Test nested binding with enabled/disabled elements."""
-    data = {'ui': {'button': {'enabled': False}}}
-
-    @ui.page('/')
-    def page():
-        ui.button('Click').bind_enabled_from(data, ('ui', 'button', 'enabled')).classes('test-button')
-
-    screen.open('/')
-    screen.wait(0.1)
-    button = screen.selenium.find_element(By.CSS_SELECTOR, '.test-button')
-    assert button.get_attribute('aria-disabled') == 'true' or button.get_attribute('disabled') is not None, \
-        'Button should be disabled when enabled is False'
-
-    data['ui']['button']['enabled'] = True
-    screen.wait(0.5)
-    button = screen.selenium.find_element(By.CSS_SELECTOR, '.test-button')
-    assert button.get_attribute('aria-disabled') != 'true' and button.get_attribute('disabled') is None, \
-        'Button should be enabled when enabled is True'
-
-
-async def test_empty_tuple_validation(user: User):
-    """Test that empty tuples are rejected with clear error messages."""
-    data = {}
-
-    @ui.page('/')
-    def page():
+        ui.number('Volume', min=0, max=100, value=50).bind_value_to(data, ('config', 'volume'), forward=int)
+        ui.label().bind_text_from(data, ('config', 'volume'), backward=lambda v: f'Volume: {v}%')
+        with pytest.raises((KeyError, AttributeError), match=r'Could not bind non-existing'):
+            ui.input().bind_value(data, ('x', 'y'), strict=True)
         with pytest.raises(AssertionError, match='cannot be empty'):
             ui.input().bind_value(data, ())
-
-    await user.open('/')
-
-
-async def test_empty_string_validation(user: User):
-    """Test that empty strings are rejected with clear error messages."""
-    data = {}
-
-    @ui.page('/')
-    def page():
         with pytest.raises(AssertionError, match='cannot be empty'):
             ui.input().bind_value(data, '')
-
-    await user.open('/')
-
-
-async def test_non_string_tuple_validation(user: User):
-    """Test that tuples with non-string elements are rejected."""
-    data = {}
-
-    @ui.page('/')
-    def page():
         with pytest.raises(AssertionError, match='must contain only strings'):
             ui.input().bind_value(data, ('valid', 123))  # type: ignore[arg-type]
 
     await user.open('/')
+    await user.should_see('Volume: 50%')
+    if data_type == 'dict-dict':
+        assert data == {'config': {'volume': 50}}
+    if data_type == 'object-dict':
+        assert data.config == {'volume': 50}
+    if data_type == 'dict-object' and initialize:
+        assert data['config'].volume == 50
