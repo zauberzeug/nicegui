@@ -218,8 +218,8 @@ def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_
 
     The binding works both ways, from the first object to the second and from the second to the first.
     The update happens immediately and whenever a value changes.
-    The name parameters also accept a tuple of strings for nested keys (*since version 3.10.0*).
     The backward binding takes precedence for the initial synchronization.
+    The name parameters also accept a tuple of strings for nested keys (*since version 3.10.0*).
 
     :param self_obj: First object to bind.
     :param self_name: The name of the first property to bind.

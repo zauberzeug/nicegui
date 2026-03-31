@@ -84,8 +84,8 @@ class DisableableElement(Element):
 
         The binding works both ways, from this element to the target and from the target to this element.
         The update happens immediately and whenever a value changes.
-        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
         The backward binding takes precedence for the initial synchronization.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
