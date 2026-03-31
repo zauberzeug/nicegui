@@ -82,11 +82,9 @@ def _refresh_step() -> None:
     t = time.time()
     for link in active_links:
         (source_obj, source_name, target_obj, target_name, transform) = link
-        source_value = _get_attribute(source_obj, source_name)
-        if source_value is not _MISSING:
+        if (source_value := _get_attribute(source_obj, source_name)) is not _MISSING:
             value = transform(source_value) if transform else source_value
-            target_value = _get_attribute(target_obj, target_name)
-            if target_value is _MISSING or target_value != value:
+            if (target_value := _get_attribute(target_obj, target_name)) is _MISSING or target_value != value:
                 _set_attribute(target_obj, target_name, value)
                 _propagate(target_obj, target_name)
         del link, source_obj, target_obj  # pylint: disable=modified-iterating-list
@@ -111,8 +109,7 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
         return
     visited.add((source_obj_id, source_name))
 
-    source_value = _get_attribute(source_obj, source_name)
-    if source_value is _MISSING:
+    if (source_value := _get_attribute(source_obj, source_name)) is _MISSING:
         return
 
     for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
@@ -120,8 +117,7 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
             continue
 
         target_value = transform(source_value) if transform else source_value
-        current = _get_attribute(target_obj, target_name)
-        if current is _MISSING or current != target_value:
+        if (current := _get_attribute(target_obj, target_name)) is _MISSING or current != target_value:
             _set_attribute(target_obj, target_name, target_value)
             _propagate_recursively(target_obj, target_name)
 
