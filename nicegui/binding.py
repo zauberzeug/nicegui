@@ -128,7 +128,7 @@ def _check_attribute_exists(other_obj: Any, other_name: tuple[str, ...], *, role
         if isinstance(other_obj, Mapping):
             raise KeyError(
                 f'Could not bind non-existing key "{display}". '
-                f'To allow missing keys (lazy binding), remove {role}_strict=True or add the keys before binding.'
+                f'To allow missing keys (lazy binding), remove {role}_strict=True or add the key before binding.'
             )
         raise AttributeError(
             f'Could not bind non-existing attribute "{display}" on object of type {other_obj.__class__.__name__}. '
@@ -163,14 +163,14 @@ def bind_to(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, oth
     :param other_strict: Whether to check (and raise) if the second object has the specified property
         (default: None, performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
-    self_name_norm = _normalize_name(self_name)
-    other_name_norm = _normalize_name(other_name)
-    _check_self_and_other_attribute(self_obj, self_name_norm, other_obj, other_name_norm, self_strict, other_strict)
-    bindings[(id(self_obj), self_name_norm)].append((self_obj, other_obj, other_name_norm, forward))
-    if (id(self_obj), self_name_norm) not in bindable_properties:
-        active_links.append((self_obj, self_name_norm, other_obj, other_name_norm, forward))
+    self_name_tuple = _normalize_name(self_name)
+    other_name_tuple = _normalize_name(other_name)
+    _check_self_and_other_attribute(self_obj, self_name_tuple, other_obj, other_name_tuple, self_strict, other_strict)
+    bindings[(id(self_obj), self_name_tuple)].append((self_obj, other_obj, other_name_tuple, forward))
+    if (id(self_obj), self_name_tuple) not in bindable_properties:
+        active_links.append((self_obj, self_name_tuple, other_obj, other_name_tuple, forward))
         _active_links_added.set()
-    _propagate(self_obj, self_name_norm)
+    _propagate(self_obj, self_name_tuple)
 
 
 def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...],
@@ -191,14 +191,14 @@ def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, o
     :param other_strict: Whether to check (and raise) if the second object has the specified property (default: None,
         performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
-    self_name_norm = _normalize_name(self_name)
-    other_name_norm = _normalize_name(other_name)
-    _check_self_and_other_attribute(self_obj, self_name_norm, other_obj, other_name_norm, self_strict, other_strict)
-    bindings[(id(other_obj), other_name_norm)].append((other_obj, self_obj, self_name_norm, backward))
-    if (id(other_obj), other_name_norm) not in bindable_properties:
-        active_links.append((other_obj, other_name_norm, self_obj, self_name_norm, backward))
+    self_name_tuple = _normalize_name(self_name)
+    other_name_tuple = _normalize_name(other_name)
+    _check_self_and_other_attribute(self_obj, self_name_tuple, other_obj, other_name_tuple, self_strict, other_strict)
+    bindings[(id(other_obj), other_name_tuple)].append((other_obj, self_obj, self_name_tuple, backward))
+    if (id(other_obj), other_name_tuple) not in bindable_properties:
+        active_links.append((other_obj, other_name_tuple, self_obj, self_name_tuple, backward))
         _active_links_added.set()
-    _propagate(other_obj, other_name_norm)
+    _propagate(other_obj, other_name_tuple)
 
 
 def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...], *,
@@ -223,12 +223,12 @@ def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_
     :param other_strict: Whether to check (and raise) if the second object has the specified property (default: None,
         performs a check if the object is not a dictionary, *added in version 3.0.0*).
     """
-    self_name_norm = _normalize_name(self_name)
-    other_name_norm = _normalize_name(other_name)
-    _check_self_and_other_attribute(self_obj, self_name_norm, other_obj, other_name_norm, self_strict, other_strict)
-    bind_from(self_obj, self_name_norm, other_obj, other_name_norm,
+    self_name_tuple = _normalize_name(self_name)
+    other_name_tuple = _normalize_name(other_name)
+    _check_self_and_other_attribute(self_obj, self_name_tuple, other_obj, other_name_tuple, self_strict, other_strict)
+    bind_from(self_obj, self_name_tuple, other_obj, other_name_tuple,
               backward=backward, self_strict=False, other_strict=False)
-    bind_to(self_obj, self_name_norm, other_obj, other_name_norm,
+    bind_to(self_obj, self_name_tuple, other_obj, other_name_tuple,
             forward=forward, self_strict=False, other_strict=False)
 
 
@@ -270,10 +270,8 @@ class BindableProperty:
         if has_attr and not value_changed:
             return
         setattr(owner, '___' + self.name, value)
-        name_norm = (self.name,)
-        key = (id(owner), name_norm)
-        bindable_properties[key] = owner
-        _propagate(owner, name_norm)
+        bindable_properties[(id(owner), (self.name,))] = owner
+        _propagate(owner, (self.name,))
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
 
@@ -366,8 +364,7 @@ def _make_copyable(cls: type[T]) -> None:
         def creator_with_hook(*args, **kwargs) -> T:
             copy = creator(*args, **kwargs)
             for attr_name in dir(obj):
-                key = (id(obj), (attr_name,))
-                if key in bindable_properties:
+                if (id(obj), (attr_name,)) in bindable_properties:
                     bindable_properties[(id(copy), (attr_name,))] = copy
             return copy
         return (creator_with_hook, *reduced[1:])
