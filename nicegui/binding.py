@@ -34,18 +34,13 @@ _active_links_added = asyncio.Event()
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
 
-
 _MISSING = object()
 
 
-def _try_get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
-    """Try to get a nested attribute. Returns _MISSING if not found."""
+def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
     try:
         for key in name:
-            if isinstance(obj, Mapping):
-                obj = obj[key]
-            else:
-                obj = getattr(obj, key)
+            obj = obj[key] if isinstance(obj, Mapping) else getattr(obj, key)
     except (KeyError, AttributeError):
         return _MISSING
     return obj
@@ -54,22 +49,17 @@ def _try_get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
 def _set_attribute(obj: object | Mapping, name: tuple[str, ...], value: Any) -> None:
     for key in name[:-1]:
         if isinstance(obj, dict):
-            if key not in obj:
-                obj[key] = {}
-            obj = obj[key]
+            obj = obj.setdefault(key, {})
         else:
-            if not hasattr(obj, key):
-                raise AttributeError(
-                    f'Cannot auto-create intermediate attribute "{key}" on object of type '
-                    f'{obj.__class__.__name__}. Only dict intermediates are auto-created.'
-                )
-            obj = getattr(obj, key)
-
-    final_key = name[-1]
+            type_ = obj.__class__.__name__
+            obj = getattr(obj, key, _MISSING)
+            if obj is _MISSING:
+                raise AttributeError(f'Cannot auto-create intermediate attribute "{key}" on object of type {type_}. '
+                                     'Only dict intermediates are auto-created.')
     if isinstance(obj, dict):
-        obj[final_key] = value
+        obj[name[-1]] = value
     else:
-        setattr(obj, final_key, value)
+        setattr(obj, name[-1], value)
 
 
 async def refresh_loop() -> None:
@@ -92,10 +82,10 @@ def _refresh_step() -> None:
     t = time.time()
     for link in active_links:
         (source_obj, source_name, target_obj, target_name, transform) = link
-        source_value = _try_get_attribute(source_obj, source_name)
+        source_value = _get_attribute(source_obj, source_name)
         if source_value is not _MISSING:
             value = transform(source_value) if transform else source_value
-            target_value = _try_get_attribute(target_obj, target_name)
+            target_value = _get_attribute(target_obj, target_name)
             if target_value is _MISSING or target_value != value:
                 _set_attribute(target_obj, target_name, value)
                 _propagate(target_obj, target_name)
@@ -121,7 +111,7 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
         return
     visited.add((source_obj_id, source_name))
 
-    source_value = _try_get_attribute(source_obj, source_name)
+    source_value = _get_attribute(source_obj, source_name)
     if source_value is _MISSING:
         return
 
@@ -130,14 +120,14 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
             continue
 
         target_value = transform(source_value) if transform else source_value
-        current = _try_get_attribute(target_obj, target_name)
+        current = _get_attribute(target_obj, target_name)
         if current is _MISSING or current != target_value:
             _set_attribute(target_obj, target_name, target_value)
             _propagate_recursively(target_obj, target_name)
 
 
 def _check_attribute_exists(other_obj: Any, other_name: tuple[str, ...], *, role: Literal['self', 'other']) -> None:
-    if _try_get_attribute(other_obj, other_name) is _MISSING:
+    if _get_attribute(other_obj, other_name) is _MISSING:
         display = '.'.join(other_name)
         if isinstance(other_obj, Mapping):
             raise KeyError(
