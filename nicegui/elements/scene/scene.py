@@ -109,6 +109,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['camera-params'] = self.camera.params
         self.objects: dict[str, Object3D] = {}
         self.stack: list[Object3D | SceneObject] = [SceneObject()]
+        self._initialized_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
@@ -177,15 +178,14 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         return attribute
 
     def _handle_init(self) -> None:
+        self._initialized_event.set()
         self.move_camera(duration=0)
         self.run_method('init_objects', [obj.data for obj in self.objects.values()])
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
-        event = asyncio.Event()
-        self.on('init', event.set, [])
         await self.client.connected()
-        await event.wait()
+        await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

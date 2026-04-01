@@ -73,6 +73,37 @@ def test_adding_single_media_file(screen: Screen):
     assert_video_file_streaming(url_path)
 
 
+def test_invalid_range_header_returns_416(screen: Screen):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        for range_value in ['bytes=1000-500', 'bytes=9999-10000', 'bytes=abc-def', 'invalid']:
+            r = http_client.get(f'http://localhost:{Screen.PORT}/media/test.mp4', headers={'Range': range_value})
+            assert r.status_code == 416, f'Expected 416 for Range: {range_value}'
+
+
+def test_malicious_chunk_size_is_clamped(screen: Screen):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        for chunk_size in [-1, 0, -9999]:
+            r = http_client.get(
+                f'http://localhost:{Screen.PORT}/media/test.mp4?nicegui_chunk_size={chunk_size}',
+                headers={'Range': 'bytes=0-1000'},
+            )
+            assert r.status_code == 206
+
+
 @pytest.mark.parametrize('url_path', ['/static', '/static/'])
 def test_get_from_static_files_dir(url_path: str, screen: Screen):
     app.add_static_files(url_path, Path(TEST_DIR).parent, max_cache_age=3456)

@@ -10,7 +10,6 @@ import httpx
 import socketio
 
 from nicegui import Client, ElementFilter, ui
-from nicegui.element import Element
 from nicegui.nicegui import _on_handshake
 from nicegui.outbox import Message
 
@@ -22,7 +21,7 @@ from .user_notify import UserNotify
 # pylint: disable=protected-access
 
 
-T = TypeVar('T', bound=Element)
+T = TypeVar('T', bound=ui.element)
 
 
 class User:
@@ -179,7 +178,7 @@ class User:
     @overload
     def find(self,
              target: str,
-             ) -> UserInteraction[Element]:
+             ) -> UserInteraction[ui.element]:
         ...
 
     @overload
@@ -193,7 +192,7 @@ class User:
              *,
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
-             ) -> UserInteraction[Element]:
+             ) -> UserInteraction[ui.element]:
         ...
 
     @overload
@@ -221,7 +220,7 @@ class User:
         return UserInteraction(self, elements, target)
 
     @property
-    def current_layout(self) -> Element:
+    def current_layout(self) -> ui.element:
         """Return the root layout element of the current page."""
         return self._client.layout
 
@@ -234,14 +233,15 @@ class User:
     ) -> set[T]:
         if target is None:
             if kind is None:
-                elements = set(ElementFilter(marker=marker, content=content))
+                elements = set(ElementFilter(marker=marker, content=content, only_visible=True))
             else:
-                elements = set(ElementFilter(kind=kind, marker=marker, content=content))
+                elements = set(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True))
         elif isinstance(target, str):
-            elements = set(ElementFilter(marker=target)).union(ElementFilter(content=target))
+            elements = set(ElementFilter(marker=target, only_visible=True)) \
+                .union(ElementFilter(content=target, only_visible=True))
         else:
-            elements = set(ElementFilter(kind=target))
-        return {e for e in elements if e.visible}  # type: ignore
+            elements = set(ElementFilter(kind=target, only_visible=True))
+        return elements  # type: ignore
 
     def _build_error_message(self,
                              target: str | type[T] | None = None,

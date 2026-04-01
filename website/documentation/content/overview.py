@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from ... import design as d
 from . import (
     doc,
     section_action_events,
@@ -8,6 +9,7 @@ from . import (
     section_configuration_deployment,
     section_controls,
     section_data_elements,
+    section_foundations,
     section_page_layout,
     section_pages_routing,
     section_security,
@@ -15,7 +17,7 @@ from . import (
     section_testing,
     section_text_elements,
 )
-from ...style import subheading
+from ...design import subheading
 
 doc.title('*NiceGUI* Documentation', 'Reference, Demos and more')
 
@@ -140,34 +142,32 @@ tiles = [
     (section_security, '''
         Learn about security best practices, common vulnerabilities, and how to write secure NiceGUI applications.
     '''),
+    (section_foundations, '''
+        Why Vue, Quasar, FastAPI, and Tailwind CSS — and how they fit together.
+    '''),
 ]
 
 
 @doc.extra_column
 def create_tiles():
-    with ui.row().classes('items-center content-between'):
-        ui.label('If you like NiceGUI, go and become a')
+    with ui.row(align_items='center').classes('mx-auto gap-y-1'):
+        ui.label('Do you like NiceGUI? Become a')
         ui.html('<iframe src="https://github.com/sponsors/zauberzeug/button" title="Sponsor zauberzeug" height="32" width="114"'
                 ' class="border-0 outline-[1px] outline-offset-[-1px] outline-[#d1d9e0] dark:outline-[#3d444d] rounded"></iframe>', sanitize=False)
     for documentation, description in tiles:
         page = doc.get_page(documentation)
-        with ui.link(target=f'/documentation/{page.name}') \
-                .classes('bg-[#5898d420] p-4 self-stretch rounded flex flex-col gap-2') \
-                .style('box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1)'):
+        with ui.link(target=f'/documentation/{page.name}').classes(
+            f'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
+        ):
             if page.title:
-                ui.label(page.title.replace('*', '')).classes(replace='text-2xl')
-            ui.markdown(description).classes(replace='bold-links arrow-links')
+                ui.label(page.title.replace('*', '')).classes(f'{d.TEXT_19PX} font-semibold mb-1')
+            ui.markdown(description).classes(f'leading-normal {d.TEXT_SECONDARY}')
 
 
 @doc.ui
 def map_of_nicegui():
     ui.separator().classes('mt-6')
     subheading('Map of NiceGUI', anchor_name='map-of-nicegui')
-    ui.add_css('''
-        .map-of-nicegui a code {
-            font-weight: bold;
-        }
-    ''')
     ui.markdown('''
         This overview shows the structure of NiceGUI.
         It is a map of the NiceGUI namespace and its contents.
@@ -315,6 +315,7 @@ def map_of_nicegui():
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions
             - [`ui.run`](/documentation/run) and `ui.run_with`: run the app (standalone or attached to a FastAPI app)
             - [`ui.run_javascript`](/documentation/run#run_custom_javascript_on_the_client_side): run custom JavaScript on the client side (can use `getElement()`, `getHtmlElement()`, and `emitEvent()`)
+            - [`ui.status_code`](/documentation/status_code): set the HTTP status code for the current page response
             - [`ui.teleport`](/documentation/teleport): teleport an element to a different location in the HTML DOM
             - [`ui.timer`](/documentation/timer): run a function periodically or once after a delay
             - `ui.update`: send updates of multiple elements to the client
@@ -460,9 +461,9 @@ def map_of_nicegui():
 
         Run async functions in the background.
 
-        - `create()`: create a background task
-        - `create_lazy()`: prevent two tasks with the same name from running at the same time
-        - `await_on_shutdown`: mark a coroutine function to be awaited during shutdown (by default all background tasks are cancelled)
+        - `create()`, `create_or_defer()`: create a background task
+        - `create_lazy()`, `create_lazy_or_defer()`: prevent two tasks with the same name from running at the same time
+        - `await_on_shutdown`: mark an async function to be awaited during shutdown (by default all background tasks are cancelled)
 
         #### `run`
 
@@ -503,4 +504,4 @@ def map_of_nicegui():
 
         - [`Screen`](/documentation/section_testing#screen_fixture) fixture: start a real (headless) browser to interact with your application
         - [`User`](/documentation/section_testing#user_fixture) fixture: simulate user interaction on a Python level (fast)
-    ''').classes('map-of-nicegui arrow-links bold-links')
+    ''')

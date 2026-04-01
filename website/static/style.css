@@ -1,28 +1,46 @@
-html,
-body {
+/* ========== Base ========== */
+html {
+  background: #fafbfc !important;
+  scroll-behavior: smooth;
   max-width: 100%;
   overflow-x: hidden;
-  font-family: "Fira Sans", Roboto, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
   --q-dark-page: #222;
 }
-html:has(body.body--light) {
-  background-color: #f8f8f8;
+html:has(.body--dark) {
+  background: #0f1117 !important;
 }
-html {
-  scroll-behavior: smooth;
+body {
+  background: #fafbfc !important;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif !important;
+  color: #1a1d26;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
 }
+body.body--dark {
+  background: #0f1117 !important;
+  color: #edeff3;
+}
+
+/* ========== Typography ========== */
 .browser-window {
-  font-family: Roboto, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:
+    Roboto,
+    -apple-system,
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
 }
-.bash-window code,
-.python-window code {
-  font-family: "Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
+.code-window code {
+  font-family:
+    "Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
-.fancy-em em {
-  font-style: normal;
-  color: #5898d4;
-}
+
+/* ========== Links ========== */
 a:link:not(.browser-window *),
 a:visited:not(.browser-window *) {
   color: inherit !important;
@@ -32,16 +50,15 @@ a:hover:not(.browser-window *),
 a:active:not(.browser-window *) {
   opacity: 0.85;
 }
-.bold-links a:link {
-  font-weight: 500;
+.nicegui-markdown a:any-link:not(.browser-window *),
+.nicegui-markdown a:any-link:not(.browser-window *) * {
+  color: #5898d4 !important;
 }
-.arrow-links a:link:not(.auto-link)::after {
-  content: "north_east";
-  font-family: "Material Icons";
-  font-weight: 100;
-  vertical-align: -10%;
+.nicegui-markdown a:hover:not(.browser-window *) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-
+/* ========== Documentation tables ========== */
 .rst-param-tables table {
   text-align: left;
   table-layout: auto;
@@ -55,151 +72,46 @@ a:active:not(.browser-window *) {
   padding-right: 1em;
 }
 
-.q-header {
-  height: 70px;
-  background-color: #5898d4;
+/* ========== Mascot blink animation ========== */
+.hero-mascot .svg_eye {
+  transform-origin: center 38px;
+  animation: blink 5s ease-in-out infinite;
 }
-.q-header.fade {
-  padding-top: 20px;
-  transform: translateY(-20px);
-  background-color: #5898d4d0;
-  backdrop-filter: blur(5px);
-}
-.body--dark .q-header {
-  background-color: #3e6a94;
-}
-.body--dark .q-header.fade {
-  background-color: #3e6a94d0;
-}
-
-.scroll-indicator:after {
-  content: "";
-  display: block;
-  width: 24px;
-  height: 24px;
-  margin: 8px;
-  border-left: 3px solid #444;
-  border-bottom: 3px solid #444;
-  -webkit-transform: rotate(-45deg);
-  transform: rotate(-45deg);
-  -webkit-animation: sdb04 2s infinite;
-  animation: sdb04 1.5s infinite;
-  transition-timing-function: ease;
-}
-.body--dark .scroll-indicator:after {
-  border-left: 3px solid #bbb;
-  border-bottom: 3px solid #bbb;
-}
-@-webkit-keyframes sdb04 {
-  0% {
-    -webkit-transform: rotate(-45deg) translate(0, 0);
+@keyframes blink {
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
   }
-  15% {
-    -webkit-transform: rotate(-45deg) translate(-10px, 10px);
-  }
-  30% {
-    -webkit-transform: rotate(-45deg) translate(0, 0);
-  }
-}
-@keyframes sdb04 {
-  0% {
-    transform: rotate(-45deg) translate(0, 0);
-  }
-  15% {
-    transform: rotate(-45deg) translate(-10px, 10px);
-  }
-  30% {
-    transform: rotate(-45deg) translate(0, 0);
+  95% {
+    transform: scaleY(0.05);
   }
 }
 
-dl.field-list,
-dl.docinfo {
-  display: grid;
-  grid-template-columns: max-content auto;
-  margin: 1em 0;
-}
-dl.field-list dt,
-dl.docinfo dt {
-  grid-column-start: 1;
-  margin-right: 1em;
-  font-weight: 500;
-}
-dl.field-list dd,
-dl.docinfo dd {
-  grid-column-start: 2;
-}
-dl.field-list p,
-dl.docinfo p {
-  margin: 0;
+/* ========== Scroll Reveal ========== */
+@media not print {
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.5s ease-out,
+      transform 0.5s ease-out;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dark-box {
-  background-color: #5898d4;
-  width: 100%;
-}
-.body--dark .dark-box {
-  background-color: #3e6a94;
-}
-
-/* google-webfonts-helper (https://gwfh.mranftl.com/fonts) */
-/* fira-sans-regular - latin */
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 400;
-  src: url("/fonts/fira-sans-v16-latin-regular.eot"); /* IE9 Compat Modes */
-  src: local(""), url("/fonts/fira-sans-v16-latin-regular.eot?#iefix") format("embedded-opentype"),
-    /* IE6-IE8 */ url("/fonts/fira-sans-v16-latin-regular.woff2") format("woff2"),
-    /* Super Modern Browsers */ url("/fonts/fira-sans-v16-latin-regular.woff") format("woff"),
-    /* Modern Browsers */ url("/fonts/fira-sans-v16-latin-regular.ttf") format("truetype"),
-    /* Safari, Android, iOS */ url("/fonts/fira-sans-v16-latin-regular.svg#FiraSans") format("svg"); /* Legacy iOS */
-}
-/* fira-sans-500 - latin */
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 500;
-  src: url("/fonts/fira-sans-v16-latin-500.eot"); /* IE9 Compat Modes */
-  src: local(""), url("/fonts/fira-sans-v16-latin-500.eot?#iefix") format("embedded-opentype"),
-    /* IE6-IE8 */ url("/fonts/fira-sans-v16-latin-500.woff2") format("woff2"),
-    /* Super Modern Browsers */ url("/fonts/fira-sans-v16-latin-500.woff") format("woff"),
-    /* Modern Browsers */ url("/fonts/fira-sans-v16-latin-500.ttf") format("truetype"),
-    /* Safari, Android, iOS */ url("/fonts/fira-sans-v16-latin-500.svg#FiraSans") format("svg"); /* Legacy iOS */
-}
-/* fira-sans-regular - latin */
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 400;
-  src: url("/fonts/fira-sans-v16-latin-regular.eot"); /* IE9 Compat Modes */
-  src: local(""), url("/fonts/fira-sans-v16-latin-regular.eot?#iefix") format("embedded-opentype"),
-    /* IE6-IE8 */ url("/fonts/fira-sans-v16-latin-regular.woff2") format("woff2"),
-    /* Super Modern Browsers */ url("/fonts/fira-sans-v16-latin-regular.woff") format("woff"),
-    /* Modern Browsers */ url("/fonts/fira-sans-v16-latin-regular.ttf") format("truetype"),
-    /* Safari, Android, iOS */ url("/fonts/fira-sans-v16-latin-regular.svg#FiraSans") format("svg"); /* Legacy iOS */
-}
-/* fira-sans-700 - latin */
-@font-face {
-  font-family: "Fira Sans";
-  font-style: normal;
-  font-weight: 700;
-  src: url("/fonts/fira-sans-v16-latin-700.eot"); /* IE9 Compat Modes */
-  src: local(""), url("/fonts/fira-sans-v16-latin-700.eot?#iefix") format("embedded-opentype"),
-    /* IE6-IE8 */ url("/fonts/fira-sans-v16-latin-700.woff2") format("woff2"),
-    /* Super Modern Browsers */ url("/fonts/fira-sans-v16-latin-700.woff") format("woff"),
-    /* Modern Browsers */ url("/fonts/fira-sans-v16-latin-700.ttf") format("truetype"),
-    /* Safari, Android, iOS */ url("/fonts/fira-sans-v16-latin-700.svg#FiraSans") format("svg"); /* Legacy iOS */
-}
-/* fira-mono-regular - latin */
-@font-face {
-  font-family: "Fira Mono";
-  font-style: normal;
-  font-weight: 400;
-  src: url("/fonts/fira-mono-v14-latin-regular.eot"); /* IE9 Compat Modes */
-  src: local(""), url("/fonts/fira-mono-v14-latin-regular.eot?#iefix") format("embedded-opentype"),
-    /* IE6-IE8 */ url("/fonts/fira-mono-v14-latin-regular.woff2") format("woff2"),
-    /* Super Modern Browsers */ url("/fonts/fira-mono-v14-latin-regular.woff") format("woff"),
-    /* Modern Browsers */ url("/fonts/fira-mono-v14-latin-regular.ttf") format("truetype"),
-    /* Safari, Android, iOS */ url("/fonts/fira-mono-v14-latin-regular.svg#FiraMono") format("svg"); /* Legacy iOS */
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+  * {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
 }

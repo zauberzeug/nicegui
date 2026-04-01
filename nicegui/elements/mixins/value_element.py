@@ -39,7 +39,8 @@ class ValueElement(Element, Generic[V]):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: list[Handler[ValueChangeEventArguments[V]]] = [on_value_change] if on_value_change else []
+        self._change_handlers: list[Handler[ValueChangeEventArguments[V]]] = \
+            [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
@@ -54,7 +55,7 @@ class ValueElement(Element, Generic[V]):
 
     def bind_value_to(self,
                       target_object: Any,
-                      target_name: str = 'value',
+                      target_name: str | tuple[str, ...] = 'value',
                       forward: Callable[[V], Any] | None = None, *,
                       strict: bool | None = None,
                       ) -> Self:
@@ -62,6 +63,7 @@ class ValueElement(Element, Generic[V]):
 
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -74,7 +76,7 @@ class ValueElement(Element, Generic[V]):
 
     def bind_value_from(self,
                         target_object: Any,
-                        target_name: str = 'value',
+                        target_name: str | tuple[str, ...] = 'value',
                         backward: Callable[[Any], V] | None = None, *,
                         strict: bool | None = None,
                         ) -> Self:
@@ -82,6 +84,7 @@ class ValueElement(Element, Generic[V]):
 
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
@@ -94,7 +97,7 @@ class ValueElement(Element, Generic[V]):
 
     def bind_value(self,
                    target_object: Any,
-                   target_name: str = 'value', *,
+                   target_name: str | tuple[str, ...] = 'value', *,
                    forward: Callable[[V], Any] | None = None,
                    backward: Callable[[Any], V] | None = None,
                    strict: bool | None = None,
@@ -104,6 +107,7 @@ class ValueElement(Element, Generic[V]):
         The binding works both ways, from this element to the target and from the target to this element.
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.

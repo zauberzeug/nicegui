@@ -1217,6 +1217,8 @@ def test_refresh_sub_page(screen: Screen):
     def inner_other(args: PageArguments):
         calls['inner_other'] += 1
         ui.button('Refresh inner other', on_click=args.frame.refresh)
+        with ui.card():
+            ui.button('Refresh nested', on_click=ui.context.client.sub_pages_router.refresh)
 
     screen.open('/')
     screen.wait(0.2)
@@ -1242,6 +1244,10 @@ def test_refresh_sub_page(screen: Screen):
     screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
 
+    screen.click('Refresh nested')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 4, 'inner_main': 2, 'inner_other': 5}
+
 
 def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Screen):
     """Regression test for #5437: navigation crashed with KeyError: 'route'."""
@@ -1256,6 +1262,24 @@ def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Scre
     screen.open('/')
     screen.click('other/1')
     screen.should_contain('404: sub page /other/1 not found')
+
+
+def test_navigate_from_root_page_to_other_page(screen: Screen):
+    def root():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', '/other')
+
+    @ui.page('/other')
+    def other_page():
+        ui.label('Other')
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path == '/other'
 
 
 def test_remaining_path_for_wildcard_routing(screen: Screen):

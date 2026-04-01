@@ -50,6 +50,7 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
         self.layers: list[Layer] = []
         self.is_initialized = False
+        self._initialized_event = asyncio.Event()
 
         # read-write public API
         self.center = center
@@ -95,15 +96,14 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
     def _handle_init(self) -> None:
         self.is_initialized = True
+        self._initialized_event.set()
         for layer in self.layers:
             self.run_method('add_layer', layer.to_dict(), layer.id)
 
     async def initialized(self) -> None:
         """Wait until the map is initialized."""
-        event = asyncio.Event()
-        self.on('init', event.set, [])
         await self.client.connected()
-        await event.wait()
+        await self._initialized_event.wait()
 
     def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False
