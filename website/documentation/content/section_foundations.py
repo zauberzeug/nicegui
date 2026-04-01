@@ -126,8 +126,7 @@ def _():
 
             ##### The Outbox
 
-            Every client has an [outbox](/documentation/section_action_events)
-            that batches element updates and messages in an async loop.
+            Every client has an outbox that batches element updates and messages in an async loop.
             Rather than emitting each property change immediately,
             the outbox collects all pending updates and sends them together via `sio.emit()` to the client's room.
 
