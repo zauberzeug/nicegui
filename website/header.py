@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from pygments.formatters import HtmlFormatter
+from pygments.styles.solarized import DARK_COLORS, LIGHT_COLORS, SolarizedDarkStyle, SolarizedLightStyle, make_style
 
 from nicegui import app, ui
 
@@ -35,14 +36,22 @@ LG_UP = 'max-[1050px]:hidden'
 LG_DOWN = 'min-[1050px]:hidden'
 
 
+class SolarizedLight(SolarizedLightStyle):
+    styles = make_style({**LIGHT_COLORS, 'base0': d._TEXT_PRIMARY_LIGHT, 'base01': d._TEXT_SECONDARY_LIGHT})
+
+
+class SolarizedDark(SolarizedDarkStyle):
+    styles = make_style({**DARK_COLORS, 'base0': d._TEXT_PRIMARY_DARK, 'base01': d._TEXT_SECONDARY_DARK})
+
+
 def add_head_html() -> None:
     """Add the code from header.html and reference style.css."""
     ui.add_head_html(HEADER_HTML)
     ui.add_head_html(FONT_LINKS)
     ui.add_css(STYLE_CSS)
     ui.add_css(f'''
-        {HtmlFormatter(nobackground=True, style="solarized-light").get_style_defs(".code-window .codehilite")}
-        {HtmlFormatter(nobackground=True, style="solarized-dark").get_style_defs(".body--dark .code-window .codehilite")}
+        {HtmlFormatter(nobackground=True, style=SolarizedLight).get_style_defs(".code-window .codehilite")}
+        {HtmlFormatter(nobackground=True, style=SolarizedDark).get_style_defs(".body--dark .code-window .codehilite")}
     ''')
     if os.environ.get('ENABLE_ANALYTICS', 'false').lower() == 'true':
         ui.add_head_html('''
@@ -71,8 +80,11 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         ' transition-[background,backdrop-filter,box-shadow] duration-200'
         f' [&.fade]:!bg-[color-mix(in_srgb,{d._BG_SURFACE_LIGHT}_80%,transparent)]'
         f' dark:[&.fade]:!bg-[color-mix(in_srgb,{d._BG_SURFACE_DARK}_80%,transparent)]'
-        f' [&.fade]:backdrop-blur-[12px] [&.fade]:!shadow-[0_1px_0_{d._BORDER_LIGHT}]'
-        f' dark:[&.fade]:!shadow-[0_1px_0_{d._BORDER_DARK}]'
+        f' [&.fade]:backdrop-blur-[12px]'
+        f' [&.fade]:!shadow-[0_1px_0_{d._BORDER_LIGHT}]'
+        f' [&.fade]:dark:!shadow-[0_1px_0_{d._BORDER_DARK}]'
+        f' [.q-layout:has(.q-drawer--standard:not(.q-layout--prevent-focus))_&]:!shadow-[0_1px_0_{d._BORDER_LIGHT}]'
+        f' [.q-layout:has(.q-drawer--standard:not(.q-layout--prevent-focus))_&]:dark:!shadow-[0_1px_0_{d._BORDER_DARK}]'
     ):
         menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat round').classes('lg:hidden')
         with ui.link(target='/'):

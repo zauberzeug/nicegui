@@ -1,13 +1,11 @@
-import asyncio
 import inspect
 import os
 import platform
 import signal
 import urllib
-from collections.abc import Awaitable, Callable, Iterator
+from collections.abc import Callable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -44,13 +42,13 @@ class App(FastAPI):
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
-        self._startup_handlers: list[Callable[..., Any] | Awaitable] = []
-        self._shutdown_handlers: list[Callable[..., Any] | Awaitable] = []
-        self._connect_handlers: list[Callable[..., Any] | Awaitable] = []
-        self._disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
-        self._delete_handlers: list[Callable[..., Any] | Awaitable] = []
-        self._exception_handlers: list[Callable[..., Any]] = [log.exception]
-        self._page_exception_handler: Callable[..., Any] | None = None
+        self._startup_handlers: list[Callable] = []
+        self._shutdown_handlers: list[Callable] = []
+        self._connect_handlers: list[Callable] = []
+        self._disconnect_handlers: list[Callable] = []
+        self._delete_handlers: list[Callable] = []
+        self._exception_handlers: list[Callable] = [log.exception]
+        self._page_exception_handler: Callable | None = None
 
         self.colors()  # populate Quasar config with default colors
 
@@ -86,59 +84,50 @@ class App(FastAPI):
     async def stop(self) -> None:
         """Stop NiceGUI. (For internal use only.)"""
         self._state = State.STOPPING
-        for t in self._shutdown_handlers:
-            if isinstance(t, Awaitable):
-                await t
-            else:
-                result = t(self) if len(inspect.signature(t).parameters) == 1 else t()
-                if helpers.is_coroutine_function(t):
-                    await result
+        for handler in self._shutdown_handlers:
+            result = handler(self) if len(inspect.signature(handler).parameters) == 1 else handler()
+            if helpers.should_await(result):
+                await result
         self._state = State.STOPPED
 
-    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
+    def safe_invoke(self, func: Callable) -> None:
         """Invoke the potentially async function and catch any exceptions."""
-        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
-            if isinstance(func, Awaitable):
-                async def await_func():
-                    await func
-                background_tasks.create(await_func(), name=f'func {func_name}')
-            else:
-                result = func()
-                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
-                    async def await_result():
-                        await result
-                    background_tasks.create(await_result(), name=f'result {func_name}')
+            result = func()
+            if helpers.should_await(result):
+                background_tasks.create(result, name=f'func {func.__name__ if hasattr(func, "__name__") else func}')
         except Exception as e:
             self.handle_exception(e)
 
-    def on_connect(self, handler: Callable | Awaitable) -> None:
+    def on_connect(self, handler: Callable) -> None:
         """Called every time a new client connects to NiceGUI.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
-        self._connect_handlers.append(handler)
+        self._connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_connect()'))
 
-    def on_disconnect(self, handler: Callable | Awaitable) -> None:
+    def on_disconnect(self, handler: Callable) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
-        self._disconnect_handlers.append(handler)
+        self._disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_disconnect()'))
 
-    def on_delete(self, handler: Callable | Awaitable) -> None:
+    def on_delete(self, handler: Callable) -> None:
         """Called when a client is deleted.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
 
         *Added in version 3.0.0*
         """
-        self._delete_handlers.append(handler)
+        self._delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_delete()'))
 
-    def on_startup(self, handler: Callable | Awaitable) -> None:
+    def on_startup(self, handler: Callable) -> None:
         """Called when NiceGUI is started or restarted.
+
+        The callback can be synchronous or asynchronous.
 
         Needs to be called before `ui.run()`.
         """
@@ -146,14 +135,15 @@ class App(FastAPI):
             if core.script_mode:
                 raise RuntimeError('Unable to register a startup in script mode. Use a `@ui.page` function instead.')
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
-        self._startup_handlers.append(handler)
+        self._startup_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_startup()'))
 
-    def on_shutdown(self, handler: Callable | Awaitable) -> None:
+    def on_shutdown(self, handler: Callable) -> None:
         """Called when NiceGUI is shut down or restarted.
 
+        The callback can be synchronous or asynchronous.
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
         """
-        self._shutdown_handlers.append(handler)
+        self._shutdown_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_shutdown()'))
 
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
@@ -168,7 +158,7 @@ class App(FastAPI):
             context.client.handle_exception(exception)
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
-            if helpers.is_coroutine_function(handler):
+            if helpers.should_await(result):
                 background_tasks.create(result, name=f'exception {handler.__name__}')
 
     def on_page_exception(self, handler: Callable) -> None:

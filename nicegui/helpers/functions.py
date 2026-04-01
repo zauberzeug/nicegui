@@ -1,13 +1,20 @@
+import asyncio
 import functools
 import sys
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
+from contextlib import AbstractContextManager
 from inspect import Parameter, signature
-from typing import Any
+from typing import Any, TypeGuard, TypeVar
+
+from ..awaitable_response import AwaitableResponse
+from .warnings import warn_once
 
 if sys.version_info < (3, 13):
     from asyncio import iscoroutinefunction
 else:
     from inspect import iscoroutinefunction
+
+_T = TypeVar('_T')
 
 
 def is_coroutine_function(obj: Any) -> bool:
@@ -27,3 +34,36 @@ def expects_arguments(func: Callable) -> bool:
                p.kind is not Parameter.VAR_POSITIONAL and
                p.kind is not Parameter.VAR_KEYWORD
                for p in signature(func).parameters.values())
+
+
+def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
+    """Determine if a result should be awaited.
+
+    Returns ``True`` for awaitables that are not already managed
+    (i.e. not an ``AwaitableResponse`` or an ``asyncio.Task``).
+
+    Note: We want to await an awaitable result even if the handler is not an async function (like a lambda statement).
+    """
+    return isinstance(result, Awaitable) and not isinstance(result, (AwaitableResponse, asyncio.Task))
+
+
+async def await_with_context(awaitable: Awaitable[_T], context: AbstractContextManager) -> _T:
+    """Await an awaitable within a context manager."""
+    with context:
+        return await awaitable
+
+
+def normalize_lifecycle_handler(handler: Callable[..., Any] | Awaitable[Any], registration: str) -> Callable[..., Any]:
+    """Normalize lifecycle handler registration for callable-only and deprecated-awaitable paths."""
+    if callable(handler):
+        return handler
+    if not isinstance(handler, Awaitable):
+        raise TypeError(f'{registration} expects a synchronous or asynchronous function.')
+
+    # DEPRECATED: remove direct awaitable lifecycle registrations in NiceGUI 4.0
+    def wrapped_handler() -> Awaitable[Any]:
+        return handler
+    warn_once(f'Passing an awaitable directly to {registration} is deprecated and will be removed in NiceGUI 4.0. '
+              'Pass a synchronous or asynchronous function instead.')
+    wrapped_handler.__name__ = f'deprecated {registration} awaitable'
+    return wrapped_handler

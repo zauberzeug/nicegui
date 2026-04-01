@@ -268,7 +268,7 @@ Understanding these patterns will help you write code that fits naturally into t
 
 ### Async and Background Tasks
 
-- Use `helpers.is_coroutine_function()` to check if a handler is async
+- Use `helpers.should_await()` to check if a result should be awaited
 - Use `helpers.expects_arguments()` to check if a handler expects arguments
 - Use `core.app.handle_exception()` for handling exceptions in background tasks
 

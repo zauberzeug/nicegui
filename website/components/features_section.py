@@ -13,39 +13,44 @@ def create() -> None:
 
         with ui.grid().classes('reveal w-full grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1'):
             _card('ph-arrows-left-right', 'Interaction', [
-                'Buttons, switches, sliders, inputs and more',
-                'Notifications, dialogs and menus',
-                'Interactive images with SVG overlays',
-                'Web pages and native window apps',
+                '[Buttons](/documentation/button), [switches](/documentation/switch), '
+                '[sliders](/documentation/slider), [inputs](/documentation/input), ...',
+                '[Notifications](/documentation/notification), [dialogs](/documentation/dialog) '
+                'and [menus](/documentation/menu)',
+                '[Interactive images](/documentation/interactive_image) with SVG overlays',
+                'Web pages and [native window apps](/documentation/section_configuration_deployment#native_mode)',
             ])
             _card('ph-layout', 'Layout', [
-                'Navigation bars, tabs, panels',
-                'Rows, columns, grids and cards',
-                'HTML and Markdown elements',
+                '[Navigation bars](/documentation/page_layout), [tabs](/documentation/tabs), '
+                '[panels](/documentation/expansion)',
+                '[Rows](/documentation/row), [columns](/documentation/column), '
+                '[grids](/documentation/grid) and [cards](/documentation/card)',
+                '[HTML](/documentation/html) and [Markdown](/documentation/markdown) elements',
                 'Flex layout by default',
             ])
             _card('ph-chart-line-up', 'Visualization', [
-                'Charts, diagrams, tables, audio/video',
-                '3D scenes',
-                'Straight-forward data binding',
-                'Built-in timer for data refresh',
+                '[Charts](/documentation/echart), [tables](/documentation/table), '
+                '[audio](/documentation/audio)/[video](/documentation/video)',
+                '[3D scenes](/documentation/scene)',
+                'Straight-forward [data binding](/documentation/section_binding_properties)',
+                'Built-in [timer](/documentation/timer) for data refresh',
             ])
             _card('ph-paint-brush', 'Styling', [
-                'Customizable color themes',
+                'Customizable [color themes](/documentation/section_styling_appearance#color_theming)',
                 'Custom CSS and classes',
                 'Modern look with material design',
-                'Tailwind CSS',
+                '[Tailwind CSS](https://tailwindcss.com/)',
             ])
             _card('ph-code', 'Coding', [
-                'Single page apps with ui.sub_pages',
+                'Single page apps with [ui.sub_pages](/documentation/sub_pages)',
                 'Auto-reload on code change',
-                'Persistent user sessions',
-                'Super powerful testing framework',
+                'Persistent [user sessions](/documentation/storage)',
+                'Super powerful [testing framework](/documentation/section_testing)',
             ])
             _card('ph-anchor', 'Foundation', [
-                'Generic Vue to Python bridge',
-                'Dynamic GUI through Quasar',
-                'Content served with FastAPI',
+                'Generic [Vue](https://vuejs.org/) to Python bridge',
+                'Dynamic GUI through [Quasar](https://quasar.dev/)',
+                'Content served with [FastAPI](https://fastapi.tiangolo.com/)',
                 'Python 3.10+',
             ])
 

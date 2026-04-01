@@ -50,7 +50,7 @@ def _column(title: str, links: list[tuple[str, str]]) -> None:
     with ui.column().classes('gap-2.5'):
         ui.label(title).classes(f'{d.TEXT_13PX} font-semibold uppercase tracking-widest mb-4 {d.TEXT_MUTED}')
         for label, url in links:
-            ui.link(label, url).classes(f'{d.TEXT_15PX} no-underline transition-colors duration-150 {d.TEXT_SECONDARY}')
+            ui.link(label, url).classes(f'{d.TEXT_15PX} transition-colors duration-150 {d.TEXT_SECONDARY}')
 
 
 def _icon_link(icon: str, url: str) -> None:
