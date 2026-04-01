@@ -16,7 +16,7 @@ def create() -> None:
             cta_button('Documentation', on_click=lambda: ui.navigate.to('/documentation')).classes('mb-12')
             ui.markdown('''
                 **Or, let your AI do it!**
-                Most LLMs already know NiceGUI.
-                Our [documentation index](/documentation/section_configuration_deployment#documentation_index)
+                Most LLMs already know NiceGUI, and
+                our [documentation index](/documentation/section_configuration_deployment#documentation_index)
                 puts the full API into a single JSON file.
             ''').classes(f'{d.TEXT_15PX} {d.TEXT_SECONDARY} max-w-120')
