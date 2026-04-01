@@ -4,8 +4,7 @@ from typing import Literal
 import pytest
 from selenium.webdriver.common.by import By
 
-from nicegui import ui
-from nicegui.events import ClickEventArguments
+from nicegui import events, ui
 from nicegui.testing import Screen
 
 
@@ -13,7 +12,7 @@ def click_sync_no_args():
     ui.label('click_sync_no_args')
 
 
-def click_sync_with_args(_: ClickEventArguments):
+def click_sync_with_args(_: events.ClickEventArguments):
     ui.label('click_sync_with_args')
 
 
@@ -22,7 +21,7 @@ async def click_async_no_args():
     ui.label('click_async_no_args')
 
 
-async def click_async_with_args(_: ClickEventArguments):
+async def click_async_with_args(_: events.ClickEventArguments):
     await asyncio.sleep(0.1)
     ui.label('click_async_with_args')
 

@@ -15,7 +15,7 @@ class Html(ContentElement, component='html.js'):
 
         :param content: the HTML code to be displayed
         :param sanitize: sanitization mode:
-            ``True`` (default) uses client-side sanitization via setHTML or DOMPurify,
+            ``True`` (default) uses client-side sanitization via DOMPurify,
             ``False`` disables sanitization (use only with trusted content),
             or pass a callable to apply server-side sanitization
         :param tag: the HTML tag to wrap the content in (default: "div")

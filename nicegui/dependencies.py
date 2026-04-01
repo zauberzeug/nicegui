@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from . import core
-from .dataclasses import KWONLY_SLOTS
 from .helpers import hash_file_path
 from .vbuild import VBuild
 from .version import __version__
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
     from .element import Element
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Component:
     key: str
     name: str
@@ -36,19 +35,19 @@ class Component:
         return f'nicegui-{self.name}'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class VueComponent(Component):
     html: str
     script: str
     style: str
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsComponent(Component):
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Resource:
     key: str
     path: Path
@@ -59,13 +58,13 @@ class Resource:
         self._keys.add(self.key)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class DynamicResource:
     name: str
     function: Callable
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Import:
     name: str
     path: Path
@@ -76,7 +75,7 @@ class Import:
         self._names.add(self.name)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Library(Import):
     key: str
     _keys: ClassVar[set[str]] = set()
@@ -86,7 +85,7 @@ class Library(Import):
         self._keys.add(self.key)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EsmModule(Import):
     pass
 

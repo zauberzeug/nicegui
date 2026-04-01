@@ -46,6 +46,19 @@ def test_leaflet(screen: Screen):
     screen.should_contain('Center: 51.505, -0.090')
 
 
+def test_await_initialized_twice(screen: Screen):
+    @ui.page('/')
+    async def page():
+        m = ui.leaflet()
+        await m.initialized()
+        await m.initialized()  # should not cause re-rendering warning
+        ui.label('Leaflet initialized')
+
+    screen.open('/')
+    screen.should_contain('Leaflet initialized')
+    assert not screen.caplog.records
+
+
 def test_leaflet_unhide(screen: Screen):
     requested_tiles = set()
 

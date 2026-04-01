@@ -19,7 +19,7 @@ class ContentElement(Element):
 
     def bind_content_to(self,
                         target_object: Any,
-                        target_name: str = 'content',
+                        target_name: str | tuple[str, ...] = 'content',
                         forward: Callable[[Any], Any] | None = None, *,
                         strict: bool | None = None,
                         ) -> Self:
@@ -27,6 +27,7 @@ class ContentElement(Element):
 
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -39,7 +40,7 @@ class ContentElement(Element):
 
     def bind_content_from(self,
                           target_object: Any,
-                          target_name: str = 'content',
+                          target_name: str | tuple[str, ...] = 'content',
                           backward: Callable[[Any], Any] | None = None, *,
                           strict: bool | None = None,
                           ) -> Self:
@@ -47,6 +48,7 @@ class ContentElement(Element):
 
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
@@ -59,7 +61,7 @@ class ContentElement(Element):
 
     def bind_content(self,
                      target_object: Any,
-                     target_name: str = 'content', *,
+                     target_name: str | tuple[str, ...] = 'content', *,
                      forward: Callable[[Any], Any] | None = None,
                      backward: Callable[[Any], Any] | None = None,
                      strict: bool | None = None,
@@ -69,6 +71,7 @@ class ContentElement(Element):
         The binding works both ways, from this element to the target and from the target to this element.
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.

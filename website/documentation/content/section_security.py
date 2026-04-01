@@ -161,6 +161,21 @@ doc.text('', '''
 ''')
 
 
+doc.text('Client-Side Secrets', '''
+    NiceGUI assigns each client session a unique `client_id` (a random UUID).
+    This ID is used to route Socket.IO messages between the browser and the server.
+    A client session is considered **compromised** if either the `client_id` or client-side cookies are exposed to an attacker.
+
+    **To protect client sessions:**
+
+    - **Serve pages over HTTPS** in production to prevent traffic sniffing.
+    - **Do not serve untrusted content** from the same origin
+      (e.g. serving user-uploaded HTML files could leak secrets via JavaScript).
+    - **Do not expose `client_id`** in logs, URLs, or API responses visible to other users.
+    - **Treat `client_id` like a session token**: anyone who knows it can send events on behalf of that client.
+''')
+
+
 doc.text('Additional Resources', '''
     **Security Advisories:**
 

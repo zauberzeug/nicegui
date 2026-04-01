@@ -8,11 +8,10 @@ from urllib.parse import urlparse
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
-from .. import background_tasks, json
+from .. import background_tasks, helpers, json
 from ..context import context
 from ..element import Element
 from ..elements.label import Label
-from ..functions.javascript import run_javascript
 from ..logging import log
 from ..page_arguments import PageArguments, RouteMatch
 
@@ -110,7 +109,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return True
 
         self._handle_scrolling(match, behavior='instant')
-        if asyncio.iscoroutine(result):
+        if helpers.should_await(result):
             async def background_task():
                 with self:
                     try:
@@ -123,7 +122,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._active_tasks.add(task)
 
             def _close_if_canceled(t: asyncio.Task) -> None:
-                if t.cancelled():
+                if t.cancelled() and asyncio.iscoroutine(result):
                     result.close()
                 self._active_tasks.discard(t)
 
@@ -214,7 +213,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             self._scroll_to_top(behavior=behavior)
 
     def _scroll_to_fragment(self, fragment: str, *, behavior: str) -> None:
-        run_javascript(f'''
+        self.client.run_javascript(f'''
             requestAnimationFrame(() => {{
                 const frag = {json.dumps(fragment)};
                 const el = document.getElementById(frag) || document.querySelector("a[name=" + JSON.stringify(frag) + "]");
@@ -223,7 +222,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         ''')
 
     def _scroll_to_top(self, *, behavior: str) -> None:
-        run_javascript(f'''
+        self.client.run_javascript(f'''
             requestAnimationFrame(() => {{ window.scrollTo({{top: 0, left: 0, behavior: "{behavior}"}}); }});
         ''')
 
