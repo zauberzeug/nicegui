@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from ..search import index_sizes
 from ..windows import bash_window, code_window, python_window
 from . import doc, run_documentation
 
@@ -403,24 +404,14 @@ doc.text('Documentation Index', '''
 
 @doc.ui
 def _documentation_index_table():
-    import json as _json
-
-    from ..search import examples_index, search_index, sitewide_index
-
-    sitewide_entries = len(sitewide_index)
-    sitewide_tokens = len(_json.dumps(sitewide_index)) // 4000
-    search_entries = len(search_index)
-    search_tokens = len(_json.dumps(search_index)) // 4000
-    examples_entries = len(examples_index)
-    examples_tokens = len(_json.dumps(examples_index)) // 4000
-
     ui.markdown(f'''
         **Available indices:**
+
         | Endpoint | Entries | Tokens | Includes code | Use case |
         | -------- | ------- | ------ | ------------- | -------- |
-        | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | {sitewide_entries} | {sitewide_tokens}k | Yes | RAG, AI tooling, full context                                                    |
-        | [`/static/search_index.json`](https://nicegui.io/static/search_index.json)     | {search_entries}   | {search_tokens}k   | No  | Powers the on-site doc search; includes GitHub examples                          |
-        | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | {examples_entries} | {examples_tokens}k | No  | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
+        | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | {index_sizes['sitewide']['entries']} | ~{index_sizes['sitewide']['tokens']}k | Yes | RAG, AI tooling, full context                                                    |
+        | [`/static/search_index.json`](https://nicegui.io/static/search_index.json)     | {index_sizes['search']['entries']}   | ~{index_sizes['search']['tokens']}k   | No  | Powers the on-site doc search; includes GitHub examples                          |
+        | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | {index_sizes['examples']['entries']} | ~{index_sizes['examples']['tokens']}k | No  | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
     ''')
 
 
