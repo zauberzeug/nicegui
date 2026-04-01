@@ -1,7 +1,10 @@
 import asyncio
+import sys
 
 import httpx
 import pytest
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from nicegui import PageArguments, background_tasks, ui
 from nicegui.testing import Screen
@@ -1359,3 +1362,19 @@ def test_sub_pages_navigation_with_header(screen: Screen):
 
     screen.click('Index')
     screen.should_contain('Index page')
+
+
+def test_ctrl_click_opens_link_in_new_tab(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({
+            '/': lambda: ui.link('Go to other', '/other'),
+            '/other': lambda: ui.label('Other page'),
+        })
+
+    screen.open('/')
+    element = screen.find('Go to other')
+    modifier = Keys.COMMAND if sys.platform == 'darwin' else Keys.CONTROL
+    ActionChains(screen.selenium).key_down(modifier).click(element).key_up(modifier).perform()
+    screen.wait_for(lambda: len(screen.selenium.window_handles) == 2)
