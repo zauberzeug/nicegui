@@ -29,12 +29,12 @@ def create() -> None:
                     '100+ components, reactive data binding, charts & plots, 3D\u00a0scenes, native desktop apps, '
                     'and Docker support \u2014 all out of the box.')
 
-        ui.markdown('''\
+        ui.markdown('''
             Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
             [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
             and [Uvicorn](https://www.uvicorn.org/) under the hood.
-            [Learn more →](/documentation/section_foundations)\
-        ''').classes(f'reveal self-center text-center {d.TEXT_15PX} leading-relaxed mt-10 {d.TEXT_SECONDARY} bold-links arrow-links')
+            [Learn more →](/documentation/section_foundations)
+        ''').classes(f'reveal self-center text-center {d.TEXT_15PX} leading-relaxed mt-10 {d.TEXT_SECONDARY}')
 
 
 def _pillar(icon: str, title: str, description: str) -> None:

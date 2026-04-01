@@ -1,19 +1,20 @@
 from nicegui import ui
 
 from . import doc
+from ... import design as d
 
-doc.title('Technological Foundations', 'Built on giants')
+doc.title('Technological *Foundations*', 'Built on giants')
 
 doc.text('', '''
     NiceGUI follows a backend-first philosophy:
-    all UI logic lives in Python while the framework handles all the web development details.
+    All UI logic lives in Python while the framework handles all the web development details.
     Under the hood, a carefully chosen stack of open-source technologies makes this possible.
 ''')
 
 
 @doc.part('UI Framework')
 def _():
-    with ui.grid().classes('grid-cols-[2fr_1fr] max-[800px]:grid-cols-1 w-full gap-8 items-start'):
+    with ui.grid().classes('grid-cols-[2fr_1fr] max-xl:grid-cols-1 w-full gap-8 items-start'):
         ui.markdown('''
             ##### Vue.js
 
@@ -23,33 +24,31 @@ def _():
             Vue's reactive model enables seamless real-time updates —
             when your Python code changes a property, the browser updates instantly.
 
-            And if the built-in elements aren't enough,
-            you can [create your own Vue components](/documentation/section_configuration_deployment#custom_vue_components)
+            And if the built-in elements aren't enough, you can
+            [create your own Vue components](/documentation/section_configuration_deployment#custom_vue_components)
             (see the [example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)).
 
-            There is also alpha-level support for plugging in
+            There is also experimental support for plugging in
             [other Vue UI frameworks](/documentation/section_styling_appearance#using_other_vue_ui_frameworks)
             like Element Plus or Vuetify, though this requires hands-on work
             since all native NiceGUI elements expect Quasar.
-        ''').classes('bold-links arrow-links')
+        ''')
         ui.mermaid('''
             graph TD
-                N["NiceGUI Element"] -- "props & slots" --> V["Vue Component"]
-                V -- "reactive render" --> D["Browser DOM"]
-        ''')
+                N["NiceGUI Element"] -- "props & slots" --> V["Vue Component"] -- "reactive render" --> D["Browser DOM"]
+        ''').classes(d.MERMAID_CLASSES)
 
 
 @doc.part('Component Library')
 def _():
-    with ui.grid().classes('grid-cols-[2fr_1fr] max-[800px]:grid-cols-1 w-full gap-8 items-start'):
+    with ui.grid().classes('grid-cols-[2fr_1fr] max-xl:grid-cols-1 w-full gap-8 items-start'):
         ui.markdown('''
             ##### Quasar
 
             [Quasar](https://quasar.dev/) provides 70+ production-ready, Material Design UI components —
             from [buttons](/documentation/button) and [inputs](/documentation/input)
             to [dialogs](/documentation/dialog) and [tables](/documentation/table).
-            NiceGUI wraps these as Python elements,
-            giving you a polished interface out of the box.
+            NiceGUI wraps these as Python elements, giving you a polished interface out of the box.
 
             Each NiceGUI element exposes the most commonly used options as `__init__` parameters.
             Names mostly match their Quasar counterparts, though NiceGUI occasionally renames
@@ -57,30 +56,28 @@ def _():
             The full set of Quasar props is always available via
             [`.props()`](/documentation/section_styling_appearance#styling).
 
-            Explore the rich set of
-            [icons](/documentation/icon), [layouts](/documentation/page_layout),
+            Explore the rich set of [icons](/documentation/icon), [layouts](/documentation/page_layout),
             and interactive widgets.
 
-            Quasar was chosen because it offers a comprehensive, batteries-included component library
-            built on Vue — so NiceGUI can provide high-level Python elements
-            without reinventing every widget from scratch.
-        ''').classes('bold-links arrow-links')
+            Quasar was chosen because it offers a comprehensive, batteries-included component library built on Vue —
+            so NiceGUI can provide high-level Python elements without reinventing every widget from scratch.
+        ''')
         ui.markdown('''
-            | NiceGUI | Quasar | Example `.props()` |
-            | --- | --- | --- |
-            | `ui.button` | `q-btn` | `'flat color=red icon=star'` |
-            | `ui.slider` | `q-slider` | `'label-always snap'` |
-            | `ui.checkbox` | `q-checkbox` | `'keep-color'` |
-            | `ui.switch` | `q-toggle` | `'icon=alarm'` |
-            | `ui.card` | `q-card` | `'bordered flat'` |
-            | `ui.badge` | `q-badge` | `'floating color=negative'` |
-            | `ui.tabs` | `q-tabs` | `'dense inline-label'` |
+            | NiceGUI       | Quasar       | Example `.props()`           |
+            | ------------- | ------------ | ---------------------------- |
+            | `ui.button`   | `q-btn`      | `'flat color=red icon=star'` |
+            | `ui.slider`   | `q-slider`   | `'label-always snap'`        |
+            | `ui.checkbox` | `q-checkbox` | `'keep-color'`               |
+            | `ui.switch`   | `q-toggle`   | `'icon=alarm'`               |
+            | `ui.card`     | `q-card`     | `'bordered flat'`            |
+            | `ui.badge`    | `q-badge`    | `'floating color=negative'`  |
+            | `ui.tabs`     | `q-tabs`     | `'dense inline-label'`       |
         ''')
 
 
 @doc.part('Backend')
 def _():
-    with ui.grid().classes('grid-cols-[2fr_1fr] max-[800px]:grid-cols-1 w-full gap-8 items-start'):
+    with ui.grid().classes('grid-cols-[2fr_1fr] max-xl:grid-cols-1 w-full gap-8 items-start'):
         ui.markdown('''
             ##### FastAPI
 
@@ -97,19 +94,19 @@ def _():
             [on top of your own FastAPI app](/documentation/section_pages_routing#api_responses)
             via `ui.run_with()`.
             You can also mount additional ASGI apps alongside NiceGUI on the same Uvicorn server.
-        ''').classes('bold-links arrow-links')
+        ''')
         ui.mermaid('''
             graph TD
                 N["NiceGUI"] --> F["FastAPI"]
                 R["Other Routes"] -. "REST / API" .-> F
                 F --> U["Uvicorn"]
                 A["Other ASGI Apps"] -. "mount" .-> U
-        ''')
+        ''').classes(d.MERMAID_CLASSES)
 
 
 @doc.part('Real-Time Communication')
 def _():
-    with ui.grid().classes('grid-cols-[2fr_1fr] max-[800px]:grid-cols-1 w-full gap-8 items-start'):
+    with ui.grid().classes('grid-cols-[2fr_1fr] max-xl:grid-cols-1 w-full gap-8 items-start'):
         ui.markdown('''
             ##### Socket.IO
 
@@ -132,14 +129,13 @@ def _():
             Every client has an [outbox](/documentation/section_action_events)
             that batches element updates and messages in an async loop.
             Rather than emitting each property change immediately,
-            the outbox collects all pending updates and sends them together
-            via `sio.emit()` to the client's room.
+            the outbox collects all pending updates and sends them together via `sio.emit()` to the client's room.
 
             Each message gets a sequential ID and is stored in a history buffer.
             When a client reconnects after a brief drop, it reports the last message ID it received,
             and the outbox **rewinds** and replays everything since — no full page reload needed.
             Clients acknowledge received messages so the server can prune old history.
-        ''').classes('bold-links arrow-links')
+        ''')
         ui.mermaid('''
             graph TD
                 N["NiceGUI"] --> O["Outbox"]
@@ -149,17 +145,16 @@ def _():
                 S -- "event handler" --> N
                 B -. "ack" .-> S
                 S -. "prune history" .-> O
-        ''')
+        ''').classes(d.MERMAID_CLASSES)
 
 
 @doc.part('Styling')
 def _():
-    with ui.grid().classes('grid-cols-[2fr_1fr] max-[800px]:grid-cols-1 w-full gap-8 items-start'):
+    with ui.grid().classes('grid-cols-[2fr_1fr] max-xl:grid-cols-1 w-full gap-8 items-start'):
         ui.markdown('''
             NiceGUI supports three CSS engines.
-            All of them work through the
-            [`.classes()`](/documentation/section_styling_appearance#styling) method —
-            apply classes like `bg-blue-500 text-white p-4` directly in Python,
+            All of them work through the [`.classes()`](/documentation/section_styling_appearance#styling) method —
+            apply classes like "bg-blue-500 text-white p-4" directly in Python,
             no separate CSS files, no context switching.
 
             ##### Tailwind CSS
@@ -174,7 +169,7 @@ def _():
 
             [UnoCSS](/documentation/section_styling_appearance#unocss) is a lighter alternative
             that is largely Tailwind-compatible while being more resource-friendly.
-            Use the `mini` preset for the smallest bundle.
+            Use the "mini" preset for the smallest bundle.
 
             ##### Quasar CSS
 
@@ -186,7 +181,7 @@ def _():
 
             Try the interactive styling playground in the
             [Styling & Appearance](/documentation/section_styling_appearance#styling) section.
-        ''').classes('bold-links arrow-links')
+        ''')
         with ui.column().classes('w-full gap-4'):
             for name, features, lightweight in [
                 ('Tailwind CSS', 1.0, 0.2),
@@ -195,11 +190,11 @@ def _():
             ]:
                 with ui.column().classes('w-full gap-1'):
                     ui.label(name).classes('font-bold text-sm')
-                    with ui.row().classes('w-full items-center gap-2'):
-                        ui.label('Features').classes('text-xs w-20')
+                    with ui.row(wrap=False).classes('w-full items-center gap-2'):
+                        ui.label('Features').classes('text-xs min-w-18')
                         ui.linear_progress(value=features, show_value=False).classes('flex-grow').props('color=primary')
-                    with ui.row().classes('w-full items-center gap-2'):
-                        ui.label('Lightweight').classes('text-xs w-20')
+                    with ui.row(wrap=False).classes('w-full items-center gap-2'):
+                        ui.label('Lightweight').classes('text-xs min-w-18')
                         ui.linear_progress(value=lightweight, show_value=False).classes(
                             'flex-grow').props('color=green')
 
@@ -214,12 +209,10 @@ doc.text('How It All Fits Together', '''
     - **FastAPI** serves pages and REST endpoints on **Uvicorn**
     - **Tailwind CSS** / **UnoCSS** / **Quasar CSS** handle styling
 
-    A single Uvicorn worker handles everything — no multi-process synchronization needed,
-    thanks to full async support.
-    UI events flow from the browser through Socket.IO to Python handlers,
-    which push updates back via the outbox
+    A single Uvicorn worker handles everything — no multi-process synchronization needed, thanks to full async support.
+    UI events flow from the browser through Socket.IO to Python handlers, which push updates back via the outbox
     that batches and tracks messages for seamless reconnection.
 
-    For more details, see the [overview](/documentation) and the
-    [configuration & deployment](/documentation/section_configuration_deployment) section.
+    For more details, see the [overview](/documentation)
+    and the [configuration & deployment](/documentation/section_configuration_deployment) section.
 ''')
