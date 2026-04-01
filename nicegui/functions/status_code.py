@@ -8,4 +8,6 @@ def status_code(code: int) -> None:
 
     :param code: HTTP status code (e.g. 200, 404, 503)
     """
+    if not 100 <= code <= 599:
+        raise ValueError(f'Invalid HTTP status code: {code}')
     context.client.status_code = code
