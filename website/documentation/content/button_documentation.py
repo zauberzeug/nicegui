@@ -18,7 +18,7 @@ def icons() -> None:
         with ui.button():
             ui.label('sub-elements')
             ui.image('https://picsum.photos/id/377/640/360') \
-                .classes('rounded-full w-16 h-16 ml-4')
+                .classes('rounded-full size-16 ml-4')
 
 
 @doc.demo('Await button click', '''
@@ -96,7 +96,7 @@ def toggle_button() -> None:
 def fab() -> None:
     ui.colors(accent='#6AD4DD')
     # with ui.page_sticky(x_offset=18, y_offset=18):
-    with ui.row().classes('w-full h-full justify-end items-end'):  # HIDE
+    with ui.row().classes('size-full justify-end items-end'):  # HIDE
         ui.button(icon='home', on_click=lambda: ui.notify('home')) \
             .props('fab color=accent')
 

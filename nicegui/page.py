@@ -139,10 +139,8 @@ class page:
                 for key, handler in core.app.exception_handlers.items():
                     if key == 500 or (isinstance(key, type) and isinstance(e, key)):
                         result = handler(request, e)
-                        if helpers.is_coroutine_function(handler):
-                            async def await_handler(result: Any) -> None:
-                                await result
-                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
+                        if helpers.should_await(result):
+                            background_tasks.create(result, name=f'exception handler {handler.__name__}')
 
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)
@@ -161,7 +159,8 @@ class page:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
                     return create_500_error_page(e, request)
-            if helpers.is_coroutine_function(func):
+
+            if helpers.should_await(result):
                 async def wait_for_result() -> Response | None:
                     with client:
                         try:
@@ -174,16 +173,18 @@ class page:
                                                handle_exceptions=False)
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                    name=f'wait for connection {client.page.path}',
                 )
-                await asyncio.wait([
+                done, _ = await asyncio.wait([
                     task,
                     task_wait_for_connection,
                 ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
-                if not task_wait_for_connection.done() and not task.done():
-                    task_wait_for_connection.cancel()
+                if not done:
                     task.cancel()
                     log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
                     client.delete()
+                if not task_wait_for_connection.done():
+                    task_wait_for_connection.cancel()
                 if task.done():
                     result = task.result()
                 else:
