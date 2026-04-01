@@ -9,6 +9,7 @@ from . import (
     section_configuration_deployment,
     section_controls,
     section_data_elements,
+    section_foundations,
     section_page_layout,
     section_pages_routing,
     section_security,
@@ -140,6 +141,9 @@ tiles = [
      '''),
     (section_security, '''
         Learn about security best practices, common vulnerabilities, and how to write secure NiceGUI applications.
+    '''),
+    (section_foundations, '''
+        Why Vue, Quasar, FastAPI, and Tailwind CSS — and how they fit together.
     '''),
 ]
 
@@ -311,6 +315,7 @@ def map_of_nicegui():
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions
             - [`ui.run`](/documentation/run) and `ui.run_with`: run the app (standalone or attached to a FastAPI app)
             - [`ui.run_javascript`](/documentation/run#run_custom_javascript_on_the_client_side): run custom JavaScript on the client side (can use `getElement()`, `getHtmlElement()`, and `emitEvent()`)
+            - [`ui.status_code`](/documentation/status_code): set the HTTP status code for the current page response
             - [`ui.teleport`](/documentation/teleport): teleport an element to a different location in the HTML DOM
             - [`ui.timer`](/documentation/timer): run a function periodically or once after a delay
             - `ui.update`: send updates of multiple elements to the client
