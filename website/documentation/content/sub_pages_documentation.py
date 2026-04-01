@@ -1,8 +1,8 @@
 import asyncio
 from typing import Any
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 
-from nicegui import PageArguments, background_tasks, ui
+from nicegui import PageArguments, background_tasks, helpers, ui
 from nicegui.sub_pages_router import SubPagesRouter
 
 from . import doc
@@ -40,7 +40,7 @@ class FakeSubPages(ui.column):
         async def render() -> None:
             with self.clear():
                 result = self.routes[route](**self.data, **kwargs)
-                if isinstance(result, Awaitable):
+                if helpers.should_await(result):
                     await result
         self.task = background_tasks.create(render())
 

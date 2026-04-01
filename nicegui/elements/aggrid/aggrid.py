@@ -1,4 +1,3 @@
-import importlib.util
 from typing import TYPE_CHECKING, Literal, cast
 
 from typing_extensions import Self
@@ -9,15 +8,13 @@ from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...dependencies import register_importmap_override
 from ...element import Element
 
-if importlib.util.find_spec('pandas'):
-    optional_features.register('pandas')
-    if TYPE_CHECKING:
-        import pandas as pd
+optional_features.try_register('pandas')
+if TYPE_CHECKING:
+    import pandas as pd
 
-if importlib.util.find_spec('polars'):
-    optional_features.register('polars')
-    if TYPE_CHECKING:
-        import polars as pl
+optional_features.try_register('polars')
+if TYPE_CHECKING:
+    import polars as pl
 
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):

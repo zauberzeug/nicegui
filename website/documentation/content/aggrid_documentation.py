@@ -250,18 +250,25 @@ def aggrid_run_row_method():
               on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 99))
 
 
-@doc.demo('Filter return values', '''
-    You can filter the return values of method calls by passing string that defines a JavaScript function.
-    This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
-''')
+@doc.ui
 def aggrid_filter_return_values():
+    ui.link_target('filter_return_values')
+
+
+@doc.demo('Access grid API via JavaScript', '''
+    You can access the AG Grid API directly via `ui.run_javascript()` for more complex operations.
+    This demo accesses the grid API to get the first displayed row's data.
+''')
+def aggrid_access_api_via_javascript():
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}],
         'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
     })
 
     async def get_first_name() -> None:
-        row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
+        row = await ui.run_javascript(
+            f'return getElement({grid.id}).api.getDisplayedRowAtIndex(0).data',
+        )
         ui.notify(row['name'])
 
     ui.button('Get First Name', on_click=get_first_name)

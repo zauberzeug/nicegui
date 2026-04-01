@@ -23,10 +23,10 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
         super().__init__(content=remove_indentation(content))
 
         with self:
-            self.markdown = markdown().classes('overflow-auto h-full') \
+            self.markdown = markdown().style('overflow: auto; height: 100%') \
                 .bind_content_from(self, 'content', lambda content: f'```{language}\n{content}\n```')
             self.copy_button = button(icon='content_copy', on_click=self.show_checkmark) \
-                .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80') \
+                .props('round flat size=sm').classes('nicegui-code-copy') \
                 .on('click', js_handler=f'() => navigator.clipboard.writeText(getElement("{self.id}").content)')
 
         self._props['content'] = self.content

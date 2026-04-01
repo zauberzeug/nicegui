@@ -5,7 +5,10 @@ from typing import Any
 
 from fastapi.responses import JSONResponse
 
-HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+try:
+    HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+except (ModuleNotFoundError, ValueError):
+    HAS_NUMPY = False
 
 
 def dumps(obj: Any,

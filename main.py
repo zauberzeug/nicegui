@@ -9,7 +9,10 @@ from starlette.responses import Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
+from website import design as d
 from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website.components import footer_section
+from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
 
 @app.add_middleware
@@ -59,14 +62,21 @@ class custom_sub_pages(ui.sub_pages):
 @ui.page('/imprint_privacy')
 def _main_page() -> None:
     ui.context.client.content.classes('p-0 gap-0')
+
     header.add_head_html()
 
-    with ui.left_drawer() \
-            .classes('column no-wrap gap-1 bg-[#eee] dark:bg-[#1b1b1b] mt-[-20px] px-8 py-20') \
-            .style('height: calc(100% + 20px) !important') as menu:
-        tree = ui.tree(documentation.tree.nodes, label_key='title',
-                       on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
-            .classes('w-full').props('accordion no-connectors no-selection-unset')
+    with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} {d.BORDER_R} p-8') as menu:
+        tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+            .classes(r'w-full [&_.q-tree\_\_children]:pl-4') \
+            .props('accordion no-connectors no-selection-unset icon=chevron_right color=primary')
+        tree.visible = False
+        spinner = ui.image('/static/loading.gif').classes('w-8 h-8 m-auto').props('no-spinner no-transition')
+
+        @intersection_observer
+        def update_tree() -> None:
+            tree.props['nodes'] = documentation.tree.nodes
+            tree.visible = True
+            spinner.delete()
     menu_button = header.add_header(menu)
 
     window_state = {'is_desktop': None}
@@ -86,6 +96,8 @@ def _main_page() -> None:
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
     }, show_404=False).classes('w-full')
+
+    footer_section.create()
 
     def _update_menu(path: str):
         if path.startswith('/documentation/'):
@@ -108,7 +120,8 @@ def _documentation_detail_page(name: str, tree: ui.tree) -> None:
         ui.navigate.to('/documentation/' + documentation.redirects[name])
     else:
         ui.status_code(404)
-        ui.label(f'Documentation for "{name}" could not be found.').classes('absolute-center')
+        with ui.column().classes('w-full min-h-[50vh] items-center justify-center text-center p-16'):
+            ui.label(f'Documentation for "{name}" could not be found.')
 
 
 @app.get('/status')
