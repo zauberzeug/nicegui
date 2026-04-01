@@ -391,13 +391,13 @@ doc.text('Documentation Index', '''
     NiceGUI serves its entire documentation as machine-readable JSON endpoints.
     Each index is a JSON array of objects with these fields:
 
-    | Field     | Type    | Description                                                                                   |
-    | --------- | ------- | --------------------------------------------------------------------------------------------- |
-    | `title`   | string  | Section heading, e.g. `"Button: Click Handler"` or `"Example: Chat App"`                      |
-    | `content` | string  | Description or search text (Markdown or reStructuredText)                                     |
-    | `format`  | string  | Content format — `"md"` or `"rst"`                                                            |
-    | `url`     | string  | Doc page path or GitHub example link                                                          |
-    | `demo`    | string? | Complete Python demo code, or `""` if none (sitewide index only; key absent in other indices) |
+    | Field     | Type    | Description                                                                                 |
+    | --------- | ------- | ------------------------------------------------------------------------------------------- |
+    | `title`   | string  | Section heading, e.g. "Button: Click Handler" or "Example: Chat App"                        |
+    | `content` | string  | Description or search text (Markdown or reStructuredText)                                   |
+    | `format`  | string  | Content format — "md" or "rst"                                                              |
+    | `url`     | string  | Doc page path or GitHub example link                                                        |
+    | `demo`    | string? | Complete Python demo code, or "" if none (sitewide index only; key absent in other indices) |
 
     **Available indices:**
 
