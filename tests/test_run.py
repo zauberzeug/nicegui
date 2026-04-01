@@ -8,6 +8,7 @@ from pickle import PicklingError
 import pytest
 
 from nicegui import app, run, ui
+from nicegui.app.app import State
 from nicegui.testing import User
 
 
@@ -93,3 +94,36 @@ async def test_run_cpu_bound_survive_bad_function(user: User):
 
     await user.open('/')
     await user.should_see('excellent')
+
+
+@pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
+async def test_returns_none_when_app_is_stopping(user: User, func: Callable):
+    @ui.page('/')
+    async def index():
+        original_state = app._state
+        app._state = State.STOPPING
+        try:
+            result = await func(delayed_hello)
+            ui.label(f'result={result}')
+        finally:
+            app._state = original_state
+
+    await user.open('/')
+    await user.should_see('result=None')
+
+
+@pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
+async def test_strict_raises_when_app_is_stopping(user: User, func: Callable):
+    @ui.page('/')
+    async def index():
+        original_state = app._state
+        app._state = State.STOPPING
+        try:
+            with pytest.raises(run.CancelledError, match='app is stopping'):
+                await func(delayed_hello, strict=True)
+            ui.label('raised')
+        finally:
+            app._state = original_state
+
+    await user.open('/')
+    await user.should_see('raised')

@@ -7,7 +7,7 @@ from concurrent.futures.process import BrokenProcessPool
 from contextlib import suppress
 from functools import partial
 from pickle import PicklingError
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar, overload
 
 from typing_extensions import ParamSpec
 
@@ -18,6 +18,15 @@ thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')
 R = TypeVar('R')
+
+
+class CancelledError(asyncio.CancelledError):
+    """Raised by ``cpu_bound`` / ``io_bound`` when *strict=True* and the
+    background work is cancelled or the app is shutting down.
+
+    A subclass of :class:`asyncio.CancelledError` so that existing
+    ``except CancelledError`` handlers continue to work.
+    """
 
 
 def setup() -> None:
@@ -57,27 +66,47 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
         raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
 
 
-async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+async def _run(executor: Any, callback: Callable[P, R], *args: P.args,
+               strict: bool = False, **kwargs: P.kwargs) -> R | None:
     if core.app.is_stopping:
-        return  # type: ignore  # the assumption is that the user's code no longer cares about this value
+        if strict:
+            raise CancelledError('app is stopping')
+        return None
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
     except RuntimeError as e:
         if 'cannot schedule new futures after shutdown' not in str(e):
             raise
-    except asyncio.CancelledError:
-        pass
-    return  # type: ignore  # the assumption is that the user's code no longer cares about this value
+        if strict:
+            raise CancelledError('cannot schedule new futures after shutdown') from e
+    except asyncio.CancelledError as e:
+        if strict:
+            raise CancelledError('task was cancelled') from e
+    return None
 
 
-async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+@overload
+async def cpu_bound(callback: Callable[P, R], *args: P.args, strict: Literal[True],
+                    **kwargs: P.kwargs) -> R: ...
+
+
+@overload
+async def cpu_bound(callback: Callable[P, R], *args: P.args, strict: Literal[False] = ...,
+                    **kwargs: P.kwargs) -> R | None: ...
+
+
+async def cpu_bound(callback: Callable[P, R], *args: P.args, strict: bool = False,
+                    **kwargs: P.kwargs) -> R | None:
     """Run a CPU-bound function in a separate process.
 
     `run.cpu_bound` needs to execute the function in a separate process.
     For this it needs to transfer the whole state of the passed function to the process (which is done with pickle).
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
+
+    If *strict* is ``True``, a :class:`run.CancelledError` is raised instead of
+    silently returning ``None`` when the task is cancelled or the app is shutting down.
     """
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
 
@@ -85,7 +114,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
         raise RuntimeError('Process pool not set up.')
 
     try:
-        return await _run(process_pool, safe_callback, callback, *args, **kwargs)
+        return await _run(process_pool, safe_callback, callback, *args, strict=strict, **kwargs)
     except PicklingError as e:
         if core.script_mode:
             raise RuntimeError('Unable to run CPU-bound in script mode. Use a `@ui.page` function instead.') from e
@@ -99,9 +128,24 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
             raise e
 
 
-async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-    """Run an I/O-bound function in a separate thread."""
-    return await _run(thread_pool, callback, *args, **kwargs)
+@overload
+async def io_bound(callback: Callable[P, R], *args: P.args, strict: Literal[True],
+                   **kwargs: P.kwargs) -> R: ...
+
+
+@overload
+async def io_bound(callback: Callable[P, R], *args: P.args, strict: Literal[False] = ...,
+                   **kwargs: P.kwargs) -> R | None: ...
+
+
+async def io_bound(callback: Callable[P, R], *args: P.args, strict: bool = False,
+                   **kwargs: P.kwargs) -> R | None:
+    """Run an I/O-bound function in a separate thread.
+
+    If *strict* is ``True``, a :class:`run.CancelledError` is raised instead of
+    silently returning ``None`` when the task is cancelled or the app is shutting down.
+    """
+    return await _run(thread_pool, callback, *args, strict=strict, **kwargs)
 
 
 def reset() -> None:
