@@ -391,21 +391,21 @@ doc.text('Documentation Index', '''
     NiceGUI serves its entire documentation as machine-readable JSON endpoints.
     Each index is a JSON array of objects with these fields:
 
-    | Field     | Type   | Description |
-    | --------- | ------ | ----------- |
-    | `title`   | string | Section heading, e.g. `"Button: Click Handler"` or `"Example: Chat App"` |
-    | `content` | string | Description or search text (Markdown or reStructuredText) |
-    | `format`  | string | Content format — `"md"` or `"rst"` |
-    | `url`     | string | Doc page path or GitHub example link |
+    | Field     | Type    | Description                                                                                   |
+    | --------- | ------- | --------------------------------------------------------------------------------------------- |
+    | `title`   | string  | Section heading, e.g. `"Button: Click Handler"` or `"Example: Chat App"`                      |
+    | `content` | string  | Description or search text (Markdown or reStructuredText)                                     |
+    | `format`  | string  | Content format — `"md"` or `"rst"`                                                            |
+    | `url`     | string  | Doc page path or GitHub example link                                                          |
     | `demo`    | string? | Complete Python demo code, or `""` if none (sitewide index only; key absent in other indices) |
 
     **Available indices:**
 
-    | Endpoint | Entries | Tokens | Includes code | Use case |
-    | -------- | ------- | ------ | ------------- | -------- |
-    | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | ~740 | ~140k | Yes | RAG, AI tooling, full context |
-    | [`/static/search_index.json`](https://nicegui.io/static/search_index.json) | ~800 | ~100k | No | Powers the on-site doc search; includes GitHub examples |
-    | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | ~60 | ~3k | No | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
+    | Endpoint                                                                       | Entries | Tokens | Includes code | Use case                                                                         |
+    | ------------------------------------------------------------------------------ | ------- | ------ | ------------- | -------------------------------------------------------------------------------- |
+    | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | ~740    | ~140k  | Yes           | RAG, AI tooling, full context                                                    |
+    | [`/static/search_index.json`](https://nicegui.io/static/search_index.json)     | ~800    | ~100k  | No            | Powers the on-site doc search; includes GitHub examples                          |
+    | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | ~60     | ~3k    | No            | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
 
     We welcome contributions for MCP servers, AI agent skills, and enhanced RAG implementations —
     see the [contributing guide](https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md).
