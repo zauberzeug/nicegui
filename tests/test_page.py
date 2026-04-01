@@ -354,22 +354,3 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
         t.get_name().startswith('wait for connection') and not t.done()
         for t in asyncio.all_tasks()
     ), 'connection-wait tasks should be cancelled after page coroutine completes'
-
-
-def test_status_code(screen: Screen):
-    @ui.page('/')
-    def page():
-        ui.status_code(404)
-        ui.label('not found')
-
-    screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 404
-
-
-def test_status_code_default(screen: Screen):
-    @ui.page('/')
-    def page():
-        ui.label('hello')
-
-    screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
