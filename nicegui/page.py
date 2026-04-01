@@ -201,7 +201,7 @@ class page:
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
-            return client.build_response(request, client.status_code or 200)
+            return client.build_response(request, client.status_code)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
         # NOTE adding request as a parameter so we can pass it to the client in the decorated function

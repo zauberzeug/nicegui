@@ -95,7 +95,7 @@ class Client:
                     self.content = Element('div').classes('nicegui-content')
 
         self.title: str | None = None
-        self.status_code: int | None = None
+        self.status_code: int = 200
 
         self._head_html = ''
         self._body_html = ''
