@@ -1,23 +1,47 @@
 import random
-from collections.abc import Callable
 
 from nicegui import ui
 
-from ..style import subheading
-from .content.sub_pages_documentation import FakeSubPages
-from .demo import demo
+from .. import design as d
+from ..documentation.content.sub_pages_documentation import FakeSubPages
+from ..documentation.demo import demo
+from .shared import section, section_heading
 
 
-def create_intro() -> None:
-    @_main_page_demo('Single-Page Applications', '''
-        Build applications with fast client-side routing using [`ui.sub_pages`](/documentation/sub_pages)
-        and a `root` function as single entry point.
-        For each visitor, the `root` function is executed and generates the interface.
-        [`ui.link`](/documentation/link) and [`ui.navigate`](/documentation/navigate) can be used to navigate to other sub pages.
+def create() -> None:
+    """Create the demos section with tab-based interactive demos."""
+    with section('demos'):
+        section_heading('demos', 'See it in action.',
+                        "Interactive examples that showcase NiceGUI's power and flexibility.")
 
-        If you do not want a single-page application, you can also use [`@ui.page('/your/path')`](/documentation/page)
-        to define standalone content available at a specific path.
-    ''')
+        with ui.column().classes('w-full reveal'):
+            tab_classes = (
+                '[&_.q-focus-helper]:hidden'
+                f' {d.TEXT_MUTED}'
+                f' hover:text-[{d._TEXT_SECONDARY_LIGHT}] dark:hover:text-[{d._TEXT_SECONDARY_DARK}]'
+                f' [&.q-tab--active]:!text-[{d.BLUE}]'
+            )
+            with ui.tabs().classes(f'w-full {d.BORDER_B}').props('no-caps align=left') as tabs:
+                spa_tab = ui.tab('Single Page App').classes(tab_classes)
+                reactive_tab = ui.tab('Reactive UI').classes(tab_classes)
+                events_tab = ui.tab('Custom Events').classes(tab_classes)
+
+            with ui.tab_panels(tabs, value=spa_tab).classes('w-full bg-transparent'):
+                with ui.tab_panel(spa_tab).classes('p-0'):
+                    _spa_demo()
+                with ui.tab_panel(reactive_tab).classes('p-0'):
+                    _reactive_demo()
+                with ui.tab_panel(events_tab).classes('p-0'):
+                    _event_demo()
+
+
+def _demo_playground() -> ui.element:
+    """Return a two-column playground container (code left, browser right)."""
+    return ui.element().classes('grid grid-cols-2 gap-6 items-stretch w-full max-lg:grid-cols-1')
+
+
+def _spa_demo() -> None:
+    @demo
     def spa_demo():
         sub_pages = None  # HIDE
 
@@ -35,9 +59,10 @@ def create_intro() -> None:
                 {'name': 'New York', 'lat': 40.7119, 'lon': -74.0027},
                 {'name': 'London', 'lat': 51.5074, 'lon': -0.1278},
                 {'name': 'Tokyo', 'lat': 35.6863, 'lon': 139.7722},
-                # HIDE
-            ]).on('row-click', lambda e: sub_pages._render('/map/{lat}/{lon}', lat=e.args[1]['lat'], lon=e.args[1]['lon']))
-            # ]).on('row-click', lambda e: ui.navigate.to(f'/map/{e.args[1]["lat"]}/{e.args[1]["lon"]}'))
+            ]).props('flat bordered') \
+                .on('row-click',  # HIDE
+                    lambda e: sub_pages._render('/map/{lat}/{lon}', lat=e.args[1]['lat'], lon=e.args[1]['lon']))  # HIDE
+            #     .on('row-click', lambda e: ui.navigate.to(f'/map/{e.args[1]["lat"]}/{e.args[1]["lon"]}'))
 
         def map_page(lat: float, lon: float):
             ui.leaflet(center=(lat, lon), zoom=10)
@@ -46,13 +71,10 @@ def create_intro() -> None:
 
         return root
 
-    @_main_page_demo('Reactive Transformations', '''
-        Create real-time interfaces with automatic updates.
-        Type and watch text flow in both directions.
-        When input changes, the [binding](/documentation/section_binding_properties) transforms the text
-        with a custom Python function and updates the label.
-    ''')
-    def binding_demo():
+
+def _reactive_demo() -> None:
+    @demo
+    def reactive_demo():
         def root():
             user_input = ui.input(value='Hello')
             ui.label().bind_text_from(user_input, 'value', reverse)
@@ -62,13 +84,10 @@ def create_intro() -> None:
 
         return root
 
-    @_main_page_demo('Event System', '''
-        Use an [Event](/documentation/event) to trigger actions and pass data.
-        Here we have an IoT temperature sensor submitting its readings
-        to a [FastAPI endpoint](/documentation/section_pages_routing#api_responses) with path "/sensor".
-        When a new value arrives, it emits an event for the chart to be updated.
-    ''')
-    def event_system_demo():
+
+def _event_demo() -> None:
+    @demo
+    def event_demo():
         import time
 
         from nicegui import Event, app
@@ -101,11 +120,3 @@ def create_intro() -> None:
         app  # noqa: B018 to avoid unused import warning
 
         return root
-
-
-def _main_page_demo(title: str, explanation: str) -> Callable:
-    def decorator(f: Callable) -> Callable:
-        subheading(title)
-        ui.markdown(explanation).classes('bold-links arrow-links')
-        return demo(f)
-    return decorator

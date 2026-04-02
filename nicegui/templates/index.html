@@ -93,6 +93,7 @@
     <script type="module">
       import * as Vue from "vue";
       globalThis.Vue = Vue;
+      document.getElementById("esm-fallback")?.remove();
     </script>
     {% if prod_js %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
@@ -104,6 +105,28 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
+    <style>
+      #esm-fallback {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        height: 100vh;
+        font-family: sans-serif;
+        color: #888;
+        opacity: 0;
+        animation: esm-fallback-reveal 0s 1s forwards;
+      }
+      @keyframes esm-fallback-reveal {
+        to {
+          opacity: 1;
+        }
+      }
+      #esm-fallback ~ * {
+        display: none;
+      }
+    </style>
+    <div id="esm-fallback">Your browser does not support ES modules.<br />Please use a modern browser.</div>
     <div id="app" {% if unocss %}class="nicegui-unocss-loading" {% endif %}></div>
     <div id="popup" class="nicegui-error-popup" aria-hidden="true">
       <span>{{ translations.connection_lost }}</span>
@@ -114,13 +137,12 @@
       <span>{{ translations.message_too_long_body }}</span>
     </div>
     <script type="module">
-      // Load DOMPurify for HTML sanitization, polyfill for browsers without native setHTML
+      // Load DOMPurify for HTML sanitization
+      // NOTE: Always use DOMPurify instead of native setHTML because native setHTML strips class attributes.
       import DOMPurify from "dompurify";
-      if (typeof Element.prototype.setHTML !== "function") {
-        Element.prototype.setHTML = function (html) {
-          this.innerHTML = DOMPurify.sanitize(html);
-        };
-      }
+      Element.prototype.setHTML = function (html) {
+        this.innerHTML = DOMPurify.sanitize(html);
+      };
 
       const app = createApp(parseElements(String.raw`{{ elements | safe }}`), {
         version: "{{ version }}",

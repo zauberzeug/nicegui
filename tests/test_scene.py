@@ -1,6 +1,8 @@
 import weakref
+from typing import Literal
 
 import numpy as np
+import pytest
 from selenium.common.exceptions import JavascriptException
 
 from nicegui import app, ui
@@ -222,3 +224,17 @@ def test_no_cyclic_references(screen: Screen):
     screen.open('/')
     screen.click('Clear')
     assert len(objects) == 0
+
+
+@pytest.mark.parametrize('control_type,constructor', [('map', 'MapControls'), ('trackball', 'TrackballControls')])
+def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball'], constructor: str):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(control_type=control_type)
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+    assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
