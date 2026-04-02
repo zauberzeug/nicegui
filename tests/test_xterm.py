@@ -99,3 +99,22 @@ def test_run_terminal_method(screen: Screen) -> None:
     screen.open('/')
     screen.should_contain('Hello NiceGUI!')
     screen.should_contain('Selected text: nicegui.io')
+
+
+def test_write_while_xterm_is_in_inactive_tab_panel(screen: Screen) -> None:
+    @ui.page('/')
+    def page() -> None:
+        with ui.tabs() as tabs:
+            ui.tab('One')
+            ui.tab('Two')
+
+        with ui.tab_panels(tabs, value='One'):
+            with ui.tab_panel('One'):
+                ui.button('Write while hidden', on_click=lambda: terminal.writeln('This is queued output'))
+            with ui.tab_panel('Two'):
+                terminal = ui.xterm()
+
+    screen.open('/')
+    screen.click('Write while hidden')
+    screen.click('Two')
+    screen.should_contain('This is queued output')
