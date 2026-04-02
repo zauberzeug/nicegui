@@ -4,7 +4,7 @@ import gc
 import httpx
 import pytest
 
-from nicegui import Client, app, ui
+from nicegui import Client, app, background_tasks, ui
 from nicegui.testing import Screen, User
 
 
@@ -242,6 +242,26 @@ def test_error_in_callback(screen: Screen):
     screen.open('/')
     screen.should_contain('Exception: division by zero')
     screen.assert_py_logger('ERROR', 'division by zero')
+
+
+def test_once_timer_task_cancelled_on_client_delete(screen: Screen):
+    @ui.page('/', reconnect_timeout=0)
+    def page():
+        async def long_running():
+            ui.label('started')
+            await asyncio.sleep(100)
+        ui.timer(0, long_running, once=True)
+
+    def count_sleeping_tasks():
+        return sum(1 for t in background_tasks.running_tasks if not t.done() and 'long_running' in (t.get_name() or ''))
+
+    screen.open('/')
+    screen.should_contain('started')
+    assert count_sleeping_tasks() == 1, 'there is one timer task'
+
+    screen.close()
+    screen.wait(0.5)
+    assert count_sleeping_tasks() == 0, 'timer task should be cancelled after client deletion'
 
 
 def test_no_leak_when_client_deleted(screen: Screen):
