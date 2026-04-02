@@ -52,7 +52,7 @@ def resizing():
         ui.element('q-resize-observer').on('resize', terminal.fit)
 
     label = ui.label()
-    terminal.on_resize(lambda e: label.set_text(f'Size: {e.args["cols"]}x{e.args["rows"]}'))
+    terminal.on_resize(lambda e: label.set_text(f'Size: {e.cols}x{e.rows}'))
 
 
 @doc.demo('Showing output of a subprocess', '''
