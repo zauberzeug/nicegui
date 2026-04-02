@@ -45,10 +45,7 @@ class Outbox:
         self._should_stop = False
         self._enqueue_event: asyncio.Event | None = None
 
-        if core.app.is_started:
-            background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
-        else:
-            core.app.on_startup(self.loop)
+        background_tasks.create_or_defer(self.loop(), name=f'outbox loop {client.id}')
 
     @property
     def client(self) -> Client:

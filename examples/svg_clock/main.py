@@ -11,10 +11,10 @@ def build_svg() -> str:
     """
     now = datetime.now()
     seconds_angle = now.second / 60 * 360
-    minutes_angle = now.minute / 60 * 360 + seconds_angle / 60
+    minutes_angle = now.minute / 60 * 360
     hours_angle = now.hour / 12 * 360 + minutes_angle / 12
     return f'''
-        <svg width="800" height="800" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <svg width="100%" height="100%" viewBox="0 0 800 800" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <circle cx="400" cy="400" r="400" fill="#fff"/>
             <use transform="matrix(-1,0,0,1,800,0)" xlink:href="#c"/>
             <g id="c">
@@ -46,7 +46,7 @@ def build_svg() -> str:
     '''
 
 
-clock = ui.html(sanitize=False).classes('self-center')
+clock = ui.html(sanitize=False).classes('self-center w-1/2')
 ui.timer(1, lambda: clock.set_content(build_svg()))
 
 ui.run()

@@ -6,13 +6,12 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from ...awaitable_response import AwaitableResponse
-from ...dataclasses import KWONLY_SLOTS
 
 if TYPE_CHECKING:
     from .leaflet import Leaflet
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Layer:
     current_leaflet: ClassVar[Leaflet | None] = None
     leaflet: Leaflet = field(init=False)

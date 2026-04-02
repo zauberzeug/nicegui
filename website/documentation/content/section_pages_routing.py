@@ -9,6 +9,7 @@ from . import (
     page_documentation,
     page_layout_documentation,
     page_title_documentation,
+    status_code_documentation,
     sub_pages_documentation,
 )
 
@@ -58,6 +59,7 @@ def parameter_demo():
 
 
 doc.intro(page_title_documentation)
+doc.intro(status_code_documentation)
 doc.intro(navigate_documentation)
 
 doc.redirects['open'] = 'navigate#ui_navigate_to_(formerly_ui_open)'

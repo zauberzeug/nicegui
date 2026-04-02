@@ -77,6 +77,10 @@ Before claiming a task complete, verify:
 - **Ask the user** by presenting options and trade-offs if strategy is unclear
 - **Start broad, then narrow**: Explore with semantic search, then drill into specific files
 
+## Creating Pull Requests
+
+When creating a pull request, always use the repository's PR template (`.github/PULL_REQUEST_TEMPLATE.md`) with its **Motivation**, **Implementation**, and **Progress** sections. Do not invent alternative formats like "Summary" or "Test plan".
+
 ---
 
 ## Code Review Guidelines

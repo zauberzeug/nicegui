@@ -136,7 +136,7 @@ doc.text('Error handling', '''
 
 
 @doc.demo('Lifecycle events', '''
-    You can register coroutines or functions to be called for the following lifecycle events:
+    You can register synchronous or asynchronous functions to be called for the following lifecycle events:
 
     - `app.on_startup`: called when NiceGUI is started or restarted
     - `app.on_shutdown`: called when NiceGUI is shut down or restarted

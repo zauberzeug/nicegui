@@ -1,5 +1,5 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, cast
 
 from typing_extensions import Self
 
@@ -44,7 +44,7 @@ class ValidationElement(ValueElement):
 
         :param error: The optional error message
         """
-        new_error_prop = None if self.validation is None else (error is not None)
+        new_error_prop = None if error is None and self.validation is None else (error is not None)
         if self._error == error and self._props['error'] == new_error_prop:
             return
         self._error = error
@@ -62,21 +62,17 @@ class ValidationElement(ValueElement):
         :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
-        if helpers.is_coroutine_function(self._validation):
-            async def await_error():
-                assert callable(self._validation)
-                result = self._validation(self.value)
-                assert isinstance(result, Awaitable)
-                self.error = await result
-            if return_result:
-                raise NotImplementedError('The validate method cannot return results for async validation functions.')
-            background_tasks.create(await_error(), name=f'validate {self.id}')
-            return True
+        if return_result and helpers.is_coroutine_function(self._validation):
+            raise NotImplementedError('The validate method cannot return results for async validation functions.')
 
         if callable(self._validation):
             result = self._validation(self.value)
-            assert not isinstance(result, Awaitable)
-            self.error = result
+            if helpers.should_await(result):
+                async def await_error():
+                    self.error = await result
+                background_tasks.create(await_error(), name=f'validate {self.id}')
+                return True
+            self.error = cast(str | None, result)
             return self.error is None
 
         if isinstance(self._validation, dict):

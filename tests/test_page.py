@@ -309,9 +309,10 @@ def test_ip(screen: Screen):
     screen.should_contain('127.0.0.1')
 
 
-def test_multicast(screen: Screen):
+@pytest.mark.parametrize('path', ['/', None])
+def test_multicast(screen: Screen, path: str | None):
     def update():
-        for client in app.clients('/'):
+        for client in app.clients(path):
             with client:
                 ui.label('added')
 
