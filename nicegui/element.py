@@ -220,8 +220,8 @@ class Element(Visibility):
         if not self.visible or self.MARKDOWN_SKIP:
             return ''
         # Content elements (Markdown, Html, Mermaid)
-        if hasattr(self, 'content') and isinstance(self.content, str):
-            return self.content or ''
+        if hasattr(self, 'content') and isinstance(self.content, str):  # pylint: disable=no-member
+            return self.content or ''  # pylint: disable=no-member
         # Text elements (Label, Badge, Chip)
         if self._text is not None:
             return self._text

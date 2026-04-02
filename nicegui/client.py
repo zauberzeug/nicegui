@@ -21,6 +21,7 @@ from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
+from .markdown_response import build_markdown_response
 from .observables import ObservableDict
 from .outbox import Outbox
 from .sub_pages_router import SubPagesRouter
@@ -152,7 +153,6 @@ class Client:
         """Build a FastAPI response for the client."""
         accept = request.headers.get('accept', '')
         if 'text/markdown' in accept and 'text/html' not in accept:
-            from .markdown_response import build_markdown_response
             response = build_markdown_response(self, status_code)
             background_tasks.create(self._deferred_delete(), name=f'delete markdown client {self.id}')
             return response
