@@ -16,23 +16,13 @@ from nicegui import core, events, ui
 
 @ui.page('/')
 def _page():
-    initial_cols = 100
-    initial_rows = 20
-    terminal = ui.xterm({'cols': initial_cols, 'rows': initial_rows})
-    ui.button('Fill', on_click=lambda: terminal.classes('size-full'))
-    ui.button('Fit', on_click=terminal.fit)
+    terminal = ui.xterm().classes('w-full')
+    ui.element('q-resize-observer').on('resize', terminal.fit)
 
     pty_pid, pty_fd = pty.fork()  # create a new pseudo-terminal (pty) fork of the process
     if pty_pid == pty.CHILD:
         os.execv('/bin/bash', ('bash',))  # child process of the fork gets replaced with "bash"
     print('Terminal opened')
-
-    # sends to the pty the control code to inform it of the current terminal size
-    def set_terminal_size(cols: int, rows: int):
-        fcntl.ioctl(pty_fd, termios.TIOCSWINSZ, struct.pack('HHHH', rows, cols, 0, 0))
-    # you can check it by running this in the xterm terminal:
-    # python -c "import os; print(os.get_terminal_size())"
-    set_terminal_size(initial_cols, initial_rows)
 
     @partial(core.loop.add_reader, pty_fd)
     def pty_to_terminal():
@@ -53,8 +43,8 @@ def _page():
 
     @terminal.on_resize
     def resize_terminal(event: events.XtermResizeEventArguments):
-        print(f'A resize happened: {event=}')
-        set_terminal_size(event.cols, event.rows)
+        fcntl.ioctl(pty_fd, termios.TIOCSWINSZ, struct.pack('HHHH', event.rows, event.cols, 0, 0))
+        print(f'Terminal resized to {event.cols}x{event.rows}')
 
     @ui.context.client.on_delete
     def kill_bash():
