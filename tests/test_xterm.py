@@ -54,8 +54,7 @@ def test_bell_and_data_events(screen: Screen) -> None:
         terminal = ui.xterm()
         terminal.on_bell(lambda: counts.update(bell=counts['bell'] + 1))
         terminal.on_data(lambda: counts.update(data=counts['data'] + 1))
-        # never called, no resize happening here
-        terminal.on_resize(lambda: counts.update(data=counts['resize'] + 1))
+        terminal.on_resize(lambda: counts.update(data=counts['resize'] + 1))  # never called, no resize happening here
 
         ui.button('Ring Bell', on_click=lambda: terminal.write('\x07'))
         ui.button('Input 456', on_click=lambda: terminal.input('456'))
@@ -77,8 +76,7 @@ def test_fit_and_resize_event(screen: Screen) -> None:
     @ui.page('/')
     def main():
         with ui.card().classes('size-96'):
-            terminal = ui.xterm()
-            terminal.on_resize(lambda e: ui.notify(f'Size: {e.cols}x{e.rows}'))
+            terminal = ui.xterm().on_resize(lambda e: ui.notify(f'Size: {e.cols}x{e.rows}'))
 
         ui.button('Fill', on_click=lambda: terminal.classes('size-full'))
         ui.button('Fit', on_click=terminal.fit)

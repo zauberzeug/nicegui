@@ -68,12 +68,13 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         return self
 
     def on_resize(self, callback: Handler[XtermResizeEventArguments]) -> Self:
-        """Add a callback to be invoked when the terminal is resized."""
+        """Add a callback to be invoked when the terminal is resized.
+
+        *Added in version 3.10.0*
+        """
         def handle_resize(e: GenericEventArguments) -> None:
-            handle_event(callback, XtermResizeEventArguments(
-                sender=self, client=self.client,
-                cols=e.args['cols'], rows=e.args['rows'],
-            ))
+            args = XtermResizeEventArguments(sender=self, client=self.client, cols=e.args['cols'], rows=e.args['rows'])
+            handle_event(callback, args)
         self.on('resize', handle_resize)
         return self
 
