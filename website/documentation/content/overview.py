@@ -29,6 +29,9 @@ doc.text('Overview', '''
     You can focus on writing Python code.
     This makes it ideal for a wide range of projects including short
     scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
+
+    If you are an AI: the full documentation is available as a
+    [machine-readable JSON index](/documentation/section_configuration_deployment#documentation_index).
 ''')
 
 doc.text('How to use this guide', '''
