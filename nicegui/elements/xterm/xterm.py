@@ -18,7 +18,12 @@ from ...events import (
 class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
     @resolve_defaults
-    def __init__(self, options: dict | None = DEFAULT_PROP | None) -> None:
+    def __init__(self,
+                 options: dict | None = DEFAULT_PROP | None, *,
+                 on_bell: Handler[XtermBellEventArguments] | None = None,
+                 on_data: Handler[XtermDataEventArguments] | None = None,
+                 on_resize: Handler[XtermResizeEventArguments] | None = None,
+                 ) -> None:
         """Xterm
 
         This element is a wrapper around `xterm.js <https://github.com/xtermjs/xterm.js>`_ to emulate a terminal.
@@ -28,11 +33,22 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
         :param options: A dictionary of options to configure the terminal, see the
                         `xterm.js documentation <https://xtermjs.org/docs/api/terminal/classes/terminal/#constructor>`_.
+        :param on_bell: Optional callback to be invoked when the terminal's bell is triggered (*added in version 3.10.0*).
+        :param on_data: Optional callback to be invoked when the user types or pastes into the terminal (*added in version 3.10.0*).
+                        In a typical setup, this should be passed on to the backing pty.
+        :param on_resize: Optional callback to be invoked when the terminal is resized (*added in version 3.10.0*).
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'dist')
 
         self._props['options'] = options or {}
+
+        if on_bell:
+            self.on_bell(on_bell)
+        if on_data:
+            self.on_data(on_data)
+        if on_resize:
+            self.on_resize(on_resize)
 
     async def get_rows(self) -> int:
         """Get the number of rows in the terminal's viewport."""
