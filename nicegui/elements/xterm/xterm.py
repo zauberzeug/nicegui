@@ -5,13 +5,25 @@ from typing_extensions import Self
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
-from ...events import GenericEventArguments, Handler, XtermBellEventArguments, XtermDataEventArguments, handle_event
+from ...events import (
+    GenericEventArguments,
+    Handler,
+    XtermBellEventArguments,
+    XtermDataEventArguments,
+    XtermResizeEventArguments,
+    handle_event,
+)
 
 
 class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
     @resolve_defaults
-    def __init__(self, options: dict | None = DEFAULT_PROP | None) -> None:
+    def __init__(self,
+                 options: dict | None = DEFAULT_PROP | None, *,
+                 on_bell: Handler[XtermBellEventArguments] | None = None,
+                 on_data: Handler[XtermDataEventArguments] | None = None,
+                 on_resize: Handler[XtermResizeEventArguments] | None = None,
+                 ) -> None:
         """Xterm
 
         This element is a wrapper around `xterm.js <https://github.com/xtermjs/xterm.js>`_ to emulate a terminal.
@@ -21,11 +33,22 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
         :param options: A dictionary of options to configure the terminal, see the
                         `xterm.js documentation <https://xtermjs.org/docs/api/terminal/classes/terminal/#constructor>`_.
+        :param on_bell: Optional callback to be invoked when the terminal's bell is triggered (*added in version 3.10.0*).
+        :param on_data: Optional callback to be invoked when the user types or pastes into the terminal (*added in version 3.10.0*).
+                        In a typical setup, this should be passed on to the backing pty.
+        :param on_resize: Optional callback to be invoked when the terminal is resized (*added in version 3.10.0*).
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'dist')
 
         self._props['options'] = options or {}
+
+        if on_bell:
+            self.on_bell(on_bell)
+        if on_data:
+            self.on_data(on_data)
+        if on_resize:
+            self.on_resize(on_resize)
 
     async def get_rows(self) -> int:
         """Get the number of rows in the terminal's viewport."""
@@ -58,6 +81,17 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         def handle_data(e: GenericEventArguments) -> None:
             handle_event(callback, XtermDataEventArguments(sender=self, client=self.client, data=e.args))
         self.on('data', handle_data)
+        return self
+
+    def on_resize(self, callback: Handler[XtermResizeEventArguments]) -> Self:
+        """Add a callback to be invoked when the terminal is resized.
+
+        *Added in version 3.10.0*
+        """
+        def handle_resize(e: GenericEventArguments) -> None:
+            args = XtermResizeEventArguments(sender=self, client=self.client, cols=e.args['cols'], rows=e.args['rows'])
+            handle_event(callback, args)
+        self.on('resize', handle_resize)
         return self
 
     def input(self, data: str, *, was_user_input: bool = True) -> AwaitableResponse:
