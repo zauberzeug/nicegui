@@ -500,14 +500,6 @@ function createApp(elements, options) {
               delete this.elements[id];
               continue;
             }
-            const existing = this.elements[id];
-            if (existing && existing.props && element.props && existing.props["loopback"] === true) {
-              for (const key of Object.keys(existing.props)) {
-                if (key.startsWith("model") && !(key in element.props)) {
-                  element.props[key] = existing.props[key];
-                }
-              }
-            }
             replaceUndefinedAttributes(element);
             this.elements[id] = element;
           }

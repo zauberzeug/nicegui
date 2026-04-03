@@ -83,12 +83,8 @@ class Outbox:
 
     @staticmethod
     def _build_element_dict(element: Element) -> dict[str, Any]:
-        """Build the update dict for an element, omitting VALUE_PROP if the value came from the client."""
-        element_dict = element._to_dict()  # pylint: disable=protected-access
-        if getattr(element, '_value_from_client', False):
-            element_dict.get('props', {}).pop(getattr(element, 'VALUE_PROP', None), None)  # type: ignore[arg-type]
-            element._value_from_client = False  # type: ignore[attr-defined]  # pylint: disable=protected-access
-        return element_dict
+        """Build the update dict for an element."""
+        return element._to_dict()  # pylint: disable=protected-access
 
     async def loop(self) -> None:
         """Send updates and messages to all clients in an endless loop."""
