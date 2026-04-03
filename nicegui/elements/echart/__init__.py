@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING
+
 from ...dependencies import setup_esm_package
 
 __getattr__, __dir__ = setup_esm_package(__file__, __name__, 'nicegui-echart', {'EChart': '.echart'})
-__all__ = ['EChart']  # pylint: disable=undefined-all-variable
+__all__ = ['EChart']
+
+if TYPE_CHECKING:
+    from .echart import EChart
