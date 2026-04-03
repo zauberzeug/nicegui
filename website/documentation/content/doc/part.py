@@ -2,19 +2,18 @@ from dataclasses import dataclass
 from typing import Literal
 from collections.abc import Callable
 
-from nicegui.dataclasses import KWONLY_SLOTS
 
-from ....style import create_anchor_name
+from ....design import create_anchor_name
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Demo:
     function: Callable
     lazy: bool = True
     tab: str | Callable | None = None
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class DocumentationPart:
     title: str | None = None
     description: str | None = None

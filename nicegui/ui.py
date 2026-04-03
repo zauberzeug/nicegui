@@ -86,6 +86,7 @@ __all__ = [
     'page_sticky',
     'page_title',
     'pagination',
+    'parallax',
     'plotly',
     'pyplot',
     'query',
@@ -112,6 +113,7 @@ __all__ = [
     'spinner',
     'splitter',
     'state',
+    'status_code',
     'step',
     'stepper',
     'stepper_navigation',
@@ -210,6 +212,7 @@ from .elements.number import Number as number
 from .elements.page_scroller import PageScroller as page_scroller
 from .elements.page_sticky import PageSticky as page_sticky
 from .elements.pagination import Pagination as pagination
+from .elements.parallax import Parallax as parallax
 from .elements.plotly import Plotly as plotly
 from .elements.progress import CircularProgress as circular_progress
 from .elements.progress import LinearProgress as linear_progress
@@ -265,6 +268,7 @@ from .functions.on import on
 from .functions.on_exception import on_exception
 from .functions.page_title import page_title
 from .functions.refreshable import refreshable, refreshable_method, state
+from .functions.status_code import status_code
 from .functions.style import add_css, add_sass, add_scss
 from .functions.update import update
 from .page import page

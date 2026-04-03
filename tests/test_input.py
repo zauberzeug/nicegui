@@ -125,6 +125,15 @@ def test_input_with_multi_word_error_message(screen: Screen):
     screen.should_contain('Some multi word error message')
 
 
+def test_setting_error_without_validation(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.input('Name').error = 'Something is wrong'
+
+    screen.open('/')
+    screen.should_contain('Something is wrong')
+
+
 def test_autocompletion(screen: Screen):
     input_ = None
 

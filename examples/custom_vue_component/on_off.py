@@ -1,9 +1,9 @@
 from collections.abc import Callable
 
-from nicegui.element import Element
+from nicegui import ui
 
 
-class OnOff(Element, component='on_off.vue'):
+class OnOff(ui.element, component='on_off.vue'):
 
     def __init__(self, title: str, *, on_change: Callable | None = None) -> None:
         super().__init__()

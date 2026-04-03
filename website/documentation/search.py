@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from fastapi.responses import JSONResponse
@@ -12,6 +13,7 @@ PATH = Path(__file__).parent.parent / 'static' / 'search_index.json'
 search_index: list[dict[str, str]] = []
 sitewide_index: list[dict[str, str]] = []
 examples_index: list[dict[str, str]] = []
+index_sizes: dict[str, dict[str, int]] = {}
 
 
 @app.get('/static/search_index.json')
@@ -36,6 +38,9 @@ def build_search_index() -> None:
     search_index[:] = _collect_documentation_parts(include_code=False) + _collect_examples()
     sitewide_index[:] = _collect_documentation_parts(include_code=True)
     examples_index[:] = _collect_examples()
+    index_sizes['sitewide'] = {'entries': len(sitewide_index), 'tokens': len(json.dumps(sitewide_index)) // 4000}
+    index_sizes['search'] = {'entries': len(search_index), 'tokens': len(json.dumps(search_index)) // 4000}
+    index_sizes['examples'] = {'entries': len(examples_index), 'tokens': len(json.dumps(examples_index)) // 4000}
 
 
 def _collect_documentation_parts(*, include_code: bool = False) -> list[dict[str, str]]:

@@ -5,6 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
+from fastapi import FastAPI
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
@@ -41,15 +42,30 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
 
 
 def set_storage_secret(storage_secret: str | None = None,
-                       session_middleware_kwargs: dict[str, Any] | None = None) -> None:
-    """Set storage_secret and add request tracking middleware."""
-    if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
-        # NOTE not using "add_middleware" because it would be the wrong order
+                       session_middleware_kwargs: dict[str, Any] | None = None, *,
+                       parent_app: FastAPI | None = None) -> None:
+    """Set storage_secret and add request tracking middleware.
+
+    If a ``parent_app`` with SessionMiddleware is provided, its secret is reused
+    and no additional SessionMiddleware is added.
+    A warning is issued if a different ``storage_secret`` was provided explicitly.
+    """
+    if parent_app and (parent_sm := next((m for m in parent_app.user_middleware if m.cls == SessionMiddleware), None)):
+        parent_secret = str(parent_sm.kwargs['secret_key'] if 'secret_key' in parent_sm.kwargs else parent_sm.args[0])
+        if storage_secret is not None and storage_secret != parent_secret:
+            helpers.warn_once('Ignoring storage_secret because the parent app already has SessionMiddleware')
+        if session_middleware_kwargs:
+            helpers.warn_once('Ignoring session_middleware_kwargs because the parent app already has SessionMiddleware')
+        Storage.secret = parent_secret
         core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
-    elif storage_secret is not None:
-        core.app.add_middleware(RequestTrackingMiddleware)
-        core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **(session_middleware_kwargs or {}))
-    Storage.secret = storage_secret
+    else:
+        if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
+            # NOTE not using "add_middleware" because it would be the wrong order
+            core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
+        elif storage_secret is not None:
+            core.app.add_middleware(RequestTrackingMiddleware)
+            core.app.add_middleware(SessionMiddleware, secret_key=storage_secret, **(session_middleware_kwargs or {}))
+        Storage.secret = storage_secret
 
 
 class Storage:

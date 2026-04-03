@@ -139,10 +139,8 @@ class page:
                 for key, handler in core.app.exception_handlers.items():
                     if key == 500 or (isinstance(key, type) and isinstance(e, key)):
                         result = handler(request, e)
-                        if helpers.is_coroutine_function(handler):
-                            async def await_handler(result: Any) -> None:
-                                await result
-                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
+                        if helpers.should_await(result):
+                            background_tasks.create(result, name=f'exception handler {handler.__name__}')
 
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)
@@ -161,7 +159,8 @@ class page:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
                     return create_500_error_page(e, request)
-            if helpers.is_coroutine_function(func):
+
+            if helpers.should_await(result):
                 async def wait_for_result() -> Response | None:
                     with client:
                         try:
@@ -202,7 +201,7 @@ class page:
             if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
-            return client.build_response(request)
+            return client.build_response(request, client.status_code)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
         # NOTE adding request as a parameter so we can pass it to the client in the decorated function
