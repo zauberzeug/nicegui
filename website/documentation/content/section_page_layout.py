@@ -20,6 +20,7 @@ from . import (
     scroll_area_documentation,
     separator_documentation,
     skeleton_documentation,
+    skip_to_main_documentation,
     space_documentation,
     splitter_documentation,
     stepper_documentation,
@@ -92,6 +93,7 @@ doc.intro(scroll_area_documentation)
 doc.intro(separator_documentation)
 doc.intro(space_documentation)
 doc.intro(skeleton_documentation)
+doc.intro(skip_to_main_documentation)
 doc.intro(splitter_documentation)
 doc.intro(tabs_documentation)
 doc.intro(stepper_documentation)
