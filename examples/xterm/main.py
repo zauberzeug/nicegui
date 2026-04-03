@@ -3,9 +3,12 @@
 
 WARNING: This example gives the clients full access to the server through Bash. Use with caution!
 """
+import fcntl
 import os
 import pty
 import signal
+import struct
+import termios
 from functools import partial
 
 from nicegui import core, events, ui
@@ -13,7 +16,8 @@ from nicegui import core, events, ui
 
 @ui.page('/')
 def _page():
-    terminal = ui.xterm()
+    terminal = ui.xterm().classes('w-full')
+    ui.element('q-resize-observer').on('resize', terminal.fit)
 
     pty_pid, pty_fd = pty.fork()  # create a new pseudo-terminal (pty) fork of the process
     if pty_pid == pty.CHILD:
@@ -36,6 +40,11 @@ def _page():
             os.write(pty_fd, event.data.encode('utf-8'))
         except OSError:
             pass  # error writing to the pty; probably bash was exited
+
+    @terminal.on_resize
+    def resize_terminal(event: events.XtermResizeEventArguments):
+        fcntl.ioctl(pty_fd, termios.TIOCSWINSZ, struct.pack('HHHH', event.rows, event.cols, 0, 0))
+        print(f'Terminal resized to {event.cols}x{event.rows}')
 
     @ui.context.client.on_delete
     def kill_bash():

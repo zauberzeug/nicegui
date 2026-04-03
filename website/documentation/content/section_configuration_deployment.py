@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from ..search import index_sizes
 from ..windows import bash_window, code_window, python_window
 from . import doc, run_documentation
 
@@ -385,6 +386,38 @@ doc.text('', '''
         ui.run(native=True, reload=False)
     ```
 
+''')
+
+doc.text('Documentation Index', '''
+    NiceGUI serves its entire documentation as machine-readable JSON endpoints.
+    Each index is a JSON array of objects with these fields:
+
+    | Field     | Type    | Description                                                                                 |
+    | --------- | ------- | ------------------------------------------------------------------------------------------- |
+    | `title`   | string  | Section heading, e.g. "Button: Click Handler" or "Example: Chat App"                        |
+    | `content` | string  | Description or search text (Markdown or reStructuredText)                                   |
+    | `format`  | string  | Content format: "md" or "rst"                                                              |
+    | `url`     | string  | Doc page path or GitHub example link                                                        |
+    | `demo`    | string? | Complete Python demo code, or "" if none (sitewide index only; key absent in other indices) |
+''')
+
+
+@doc.ui
+def _documentation_index_table():
+    ui.markdown(f'''
+        **Available indices:**
+
+        | Endpoint | Entries | Tokens | Includes code | Use case |
+        | -------- | ------- | ------ | ------------- | -------- |
+        | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | {index_sizes['sitewide']['entries']} | ~{index_sizes['sitewide']['tokens']}k | Yes | RAG, AI tooling, full context                                                    |
+        | [`/static/search_index.json`](https://nicegui.io/static/search_index.json)     | {index_sizes['search']['entries']}   | ~{index_sizes['search']['tokens']}k   | No  | Powers the on-site doc search; includes GitHub examples                          |
+        | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | {index_sizes['examples']['entries']} | ~{index_sizes['examples']['tokens']}k | No  | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
+    ''')
+
+
+doc.text('', '''
+    We welcome contributions for MCP servers, AI agent skills, and enhanced RAG implementations —
+    see the [contributing guide](https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md).
 ''')
 
 doc.text('NiceGUI On Air', '''

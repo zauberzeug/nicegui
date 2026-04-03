@@ -8,7 +8,7 @@ from .shared import section, section_heading
 def create() -> None:
     """Create the Why section with pull-quote and value propositions."""
     with section('why'):
-        section_heading('why', 'Why?', center=True)
+        section_heading('', 'Why?', center=True)
 
         with ui.column(align_items='center').classes('reveal gap-2 self-center text-center mt-6'):
             ui.label('\u201cWe like Streamlit but find it does too much magic when it comes to state handling.\u201d') \
@@ -29,10 +29,11 @@ def create() -> None:
                     '100+ components, reactive data binding, charts & plots, 3D\u00a0scenes, native desktop apps, '
                     'and Docker support \u2014 all out of the box.')
 
-        ui.markdown('''\
+        ui.markdown('''
             Built with [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) on the frontend,
             [FastAPI](https://fastapi.tiangolo.com/), [Starlette](https://www.starlette.io/),
-            and [Uvicorn](https://www.uvicorn.org/) under the hood.\
+            and [Uvicorn](https://www.uvicorn.org/) under the hood.
+            [Learn more →](/documentation/section_foundations)
         ''').classes(f'reveal self-center text-center {d.TEXT_15PX} leading-relaxed mt-10 {d.TEXT_SECONDARY}')
 
 

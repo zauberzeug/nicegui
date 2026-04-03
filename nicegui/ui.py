@@ -137,6 +137,7 @@ _LAZY_IMPORTS = {
     'refreshable': ('.functions.refreshable', 'refreshable'),
     'refreshable_method': ('.functions.refreshable', 'refreshable_method'),
     'state': ('.functions.refreshable', 'state'),
+    'status_code': ('.functions.status_code', 'status_code'),
     'add_css': ('.functions.style', 'add_css'),
     'add_sass': ('.functions.style', 'add_sass'),
     'add_scss': ('.functions.style', 'add_scss'),
@@ -261,6 +262,7 @@ __all__ = [
     'spinner',
     'splitter',
     'state',
+    'status_code',
     'step',
     'stepper',
     'stepper_navigation',
@@ -418,6 +420,7 @@ if TYPE_CHECKING:
     from .functions.on_exception import on_exception
     from .functions.page_title import page_title
     from .functions.refreshable import refreshable, refreshable_method, state
+    from .functions.status_code import status_code
     from .functions.style import add_css, add_sass, add_scss
     from .functions.update import update
     from .page import page

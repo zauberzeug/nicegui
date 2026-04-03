@@ -32,6 +32,10 @@ class Timer(BaseTimer, Element, component='timer.js'):
             super()._should_stop()
         )
 
+    def _handle_delete(self) -> None:
+        self.cancel(with_current_invocation=True)
+        super()._handle_delete()
+
     def _cleanup(self) -> None:
         super()._cleanup()
         if not self._deleted:

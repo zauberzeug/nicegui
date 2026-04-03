@@ -39,6 +39,7 @@ window.addEventListener("popstate", handleStateEvent);
 window.addEventListener("pushstate", handleStateEvent);
 
 document.addEventListener("click", (e) => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   const a = e.target.closest("a[href]");
   if (a && a.target !== "_blank" && !a.hasAttribute("download")) {
     const href = a.getAttribute("href");

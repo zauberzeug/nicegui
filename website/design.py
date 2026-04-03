@@ -8,12 +8,12 @@ SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
 
 # --- Raw color values ---
 
-BLUE = '#5898d4'
+BLUE = '#5898d4'  # defined in style.css as well; keep in sync
 BLUE_LIGHT = '#7ab4e4'
 ACCENT = '#f0a050'
 
-_BG_LIGHT = '#fafbfc'
-_BG_DARK = '#0f1117'
+_BG_LIGHT = '#fafbfc'  # defined in style.css as well; keep in sync
+_BG_DARK = '#0f1117'  # defined in style.css as well; keep in sync
 _BG_SURFACE_LIGHT = '#ffffff'
 _BG_SURFACE_DARK = '#181b23'
 _BG_CODE_LIGHT = '#f0f4f8'
@@ -21,8 +21,8 @@ _BG_CODE_DARK = '#1e222c'
 _BG_FOOTER_LIGHT = '#edf0f3'
 _BG_FOOTER_DARK = f'color-mix(in_srgb,{_BG_DARK}_70%,black)'
 
-_TEXT_PRIMARY_LIGHT = '#1a1d26'
-_TEXT_PRIMARY_DARK = '#edeff3'
+_TEXT_PRIMARY_LIGHT = '#1a1d26'  # defined in style.css as well; keep in sync
+_TEXT_PRIMARY_DARK = '#edeff3'  # defined in style.css as well; keep in sync
 _TEXT_SECONDARY_LIGHT = '#4a4f5a'
 _TEXT_SECONDARY_DARK = '#9ba2ae'
 _TEXT_MUTED_LIGHT = '#7d8590'
@@ -53,6 +53,7 @@ TEXT_ACCENT = f'text-[{ACCENT}]'
 # Borders
 BORDER = f'border border-[{_BORDER_LIGHT}] dark:border-[{_BORDER_DARK}]'
 BORDER_B = f'border-b border-b-[{_BORDER_LIGHT}] dark:border-b-[{_BORDER_DARK}]'
+BORDER_R = f'border-r border-r-[{_BORDER_LIGHT}] dark:border-r-[{_BORDER_DARK}]'
 BORDER_T = f'border-t border-t-[{_BORDER_LIGHT}] dark:border-t-[{_BORDER_DARK}]'
 BORDER_2 = f'border-2 border-[{_BORDER_LIGHT}] dark:border-[{_BORDER_DARK}]'
 BORDER_BLUE = f'border-[1.5px] border-[{BLUE}]'
@@ -74,6 +75,16 @@ TEXT_32PX = 'text-[2rem]'
 TEXT_HERO = 'text-[clamp(2.5rem,5vw,4.5rem)]'
 TEXT_SECTION_TITLE = 'text-[clamp(1.8rem,3vw,3rem)]'
 TEXT_CTA_TITLE = 'text-[clamp(1.5rem,2.5vw,2.25rem)]'
+
+# Mermaid
+MERMAID_CLASSES = f'''
+    [&_rect]:fill-[{_BG_SURFACE_LIGHT}]! [&_rect]:dark:fill-[{_BG_SURFACE_DARK}]!
+    [&_rect]:stroke-[{_BORDER_LIGHT}]! [&_rect]:dark:stroke-[{_BORDER_DARK}]!
+    [&_span]:text-[{_TEXT_PRIMARY_LIGHT}]! [&_span]:dark:text-[{_TEXT_PRIMARY_DARK}]!
+    [&_.edgeLabel>p]:bg-[{_BG_LIGHT}]! [&_.edgeLabel>p]:dark:bg-[{_BG_DARK}]!
+    [&_.edgeLabel>p]:text-[{_TEXT_SECONDARY_LIGHT}]! [&_.edgeLabel>p]:dark:text-[{_TEXT_SECONDARY_DARK}]!
+    [&_path]:stroke-[{_TEXT_PRIMARY_LIGHT}]! [&_path]:dark:stroke-[{_TEXT_PRIMARY_DARK}]!
+'''
 
 
 # --- Helpers ---
