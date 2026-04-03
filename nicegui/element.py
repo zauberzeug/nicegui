@@ -25,6 +25,7 @@ from .dependencies import (
 )
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
+from .js_action import JsAction
 from .props import Props
 from .slot import Slot
 from .style import Style
@@ -337,7 +338,7 @@ class Element(Visibility):
 
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
-           handler: events.Handler[events.GenericEventArguments] | None = None,
+           handler: events.Handler[events.GenericEventArguments] | JsAction | None = None,
            args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
            *,
            throttle: float = 0.0,
@@ -362,6 +363,10 @@ class Element(Visibility):
         Note that the arguments ``throttle``, ``leading_events``, and ``trailing_events`` are only relevant
         when emitting events to the server.
 
+        If ``handler`` is a ``JsAction`` (from a ``@js_action``-decorated method), its ``js_handler``
+        runs on the client for instant feedback, while the Python handler runs on the server with
+        loopback suppressed to avoid redundant updates.
+
         *Updated in version 2.18.0: Both handlers can be specified at the same time.*
 
         :param type: name of the event (e.g. "click", "mousedown", or "update:model-value")
@@ -372,6 +377,9 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
+        if isinstance(handler, JsAction) and js_handler == '(...args) => emit(...args)':
+            js_handler = handler._js_handler  # pylint: disable=protected-access
+            handler = handler._call_without_loopback  # pylint: disable=protected-access
         if handler or js_handler:
             listener = EventListener(
                 element_id=self.id,

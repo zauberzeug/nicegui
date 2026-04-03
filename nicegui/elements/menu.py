@@ -1,11 +1,13 @@
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler
+from ..js_action import js_action
 from .context_menu import ContextMenu
 from .item import Item
 from .mixins.value_element import ValueElement
 
 
 class Menu(ValueElement):
+    LOOPBACK = False
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
@@ -26,14 +28,17 @@ class Menu(ValueElement):
                                 'The prop "touch-position" is not supported by `ui.menu`. '
                                 'Use "ui.context_menu()" instead.')
 
+    @js_action.value(True)
     def open(self) -> None:
         """Open the menu."""
         self.value = True
 
+    @js_action.value(False)
     def close(self) -> None:
         """Close the menu."""
         self.value = False
 
+    @js_action.toggle()
     def toggle(self) -> None:
         """Toggle the menu."""
         self.value = not self.value
