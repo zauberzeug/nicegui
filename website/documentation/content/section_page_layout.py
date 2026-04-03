@@ -20,6 +20,7 @@ from . import (
     scroll_area_documentation,
     separator_documentation,
     skeleton_documentation,
+    sortable_documentation,
     space_documentation,
     splitter_documentation,
     stepper_documentation,
@@ -86,6 +87,7 @@ def clear_containers_demo():
     ui.button('Clear', on_click=container.clear)
 
 
+doc.intro(sortable_documentation)
 doc.intro(teleport_documentation)
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
