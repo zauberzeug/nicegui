@@ -40,7 +40,7 @@ def cta_button(
     filled: bool = True,
     blue: bool = True,
     mono: bool = False,
-    on_click: Callable,
+    on_click: Callable | None = None,
 ) -> ui.button:
     """Styled CTA button with optional Phosphor icons."""
     with ui.button(on_click=on_click) \
