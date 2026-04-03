@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any, Literal, TypeAlias
 
 from typing_extensions import Self
@@ -95,6 +96,8 @@ class Notification(Element, component='notification.js'):
                 self.clear()
                 self.delete()
         self.on('dismiss', handle_dismiss)
+
+        self._action_count = 0
 
     @property
     def message(self) -> str:
@@ -201,22 +204,17 @@ class Notification(Element, component='notification.js'):
     def set_visibility(self, visible: bool) -> None:
         raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
 
-    def add_action(self, event_name: str,
+    def add_action(self,
+                   on_click: Callable,
                    *,
                    no_dismiss: bool = False,
                    text: str = '',
                    color: str | None = 'primary',
                    icon: str | None = None,
                    **kwargs: Any) -> Self:
-        """Add an action button to the notification, which emits an event when clicked.
+        """Add an action button to the notification.
 
-        To do anything useful, you need to also subscribe to the event you specify in `event_name` to handle the button click (e.g. ``notification.on('my-event', ...)``).
-
-        (Unless you want to simply make a dismiss button, then any arbitrary event name can be used, and you can choose to not subscribe to it.)
-
-        Note: There will be no arguments passed to the event handler, because there are none from Quasar.
-
-        :param event_name: the name of the event to be emitted when the action button is clicked
+        :param on_click: callback to be invoked when the action button is clicked
         :param no_dismiss: if True, the notification will not be dismissed when the action button is clicked (default: False)
         :param text: the label of the action button
         :param color: the color of the action button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
@@ -224,22 +222,27 @@ class Notification(Element, component='notification.js'):
 
         Note: You can pass additional keyword arguments according to `Quasar's QBtn API <https://quasar.dev/vue-components/button#qbtn-api>`_.
         """
-        assert '"' not in event_name, 'Event names must not contain double quotes (")'
+        event_name = f'action_{self._action_count}'
+        self._action_count += 1
 
         self._props['options'].setdefault('actions', [])
 
-        action = {
+        action: dict[str, Any] = {
             'noDismiss': no_dismiss,
             'label': text,
-            'icon': icon,
             ':handler': f'() => getElement({self.id}).$emit("{event_name}")',
         }
+        if icon is not None:
+            action['icon'] = icon
+        action.update(kwargs)
         if color in QUASAR_COLORS:
             action['color'] = color
         elif color in TAILWIND_COLORS:
             action['class'] = f'text-{color} ' + action.get('class', '')
         elif color is not None:
             action['style'] = f'color: {color};' + action.get('style', '')
-        action.update(kwargs)
         self._props['options']['actions'].append(action)
+
+        self.on(event_name, on_click)
+
         return self
