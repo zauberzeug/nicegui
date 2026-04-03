@@ -9,7 +9,7 @@ self.onmessage = function (e) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ client_id: clientId }),
-      }).catch(() => {});
+      }).catch((err) => console.debug("heartbeat failed:", err));
     }, interval);
   } else if (e.data.type === "stop") {
     if (intervalId) clearInterval(intervalId);

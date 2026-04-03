@@ -419,11 +419,17 @@ function createApp(elements, options) {
         window.heartbeatWorker = new Worker(
           `${options.prefix}/_nicegui/${options.version}/static/nicegui-heartbeat.js`,
         );
+        window.addEventListener("pagehide", () => {
+          if (window.heartbeatWorker) {
+            window.heartbeatWorker.postMessage({ type: "stop" });
+            window.heartbeatWorker.terminate();
+          }
+        });
         window.heartbeatWorker.postMessage({
           type: "start",
-          url: `${window.location.origin}${options.prefix}/_nicegui/heartbeat`,
+          url: `${options.prefix}/_nicegui/heartbeat`,
           clientId: window.clientId,
-          interval: Math.max(options.reconnect_timeout * 0.5, 0.5) * 1000,
+          interval: Math.max(options.reconnect_timeout * 0.5, 2) * 1000,
         });
       }
 

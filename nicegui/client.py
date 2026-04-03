@@ -78,6 +78,7 @@ class Client:
         self.on_air = False
         self._num_connections: defaultdict[str, int] = defaultdict(int)
         self._delete_tasks: dict[str, asyncio.Task] = {}
+        self._pending_tab_ids: dict[str, str | None] = {}
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
@@ -316,7 +317,7 @@ class Client:
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
-        tab_id_to_close = self.tab_id
+        self._pending_tab_ids[document_id] = self.tab_id
         self.tab_id = None
 
         for t in self.disconnect_handlers:
@@ -324,20 +325,33 @@ class Client:
         for t in core.app._disconnect_handlers:  # pylint: disable=protected-access
             self.safe_invoke(t)
 
+        self._create_delete_task(document_id)
+
+    def _create_delete_task(self, document_id: str) -> None:
+        """Schedule deletion of client content after reconnect timeout."""
         async def delete_content() -> None:
             await asyncio.sleep(self.page.resolve_reconnect_timeout())
             if self._num_connections[document_id] == 0:
-                self._num_connections.pop(document_id)
-                self._delete_tasks.pop(document_id)
-                await core.app.storage.close_tab(tab_id_to_close)
+                self._num_connections.pop(document_id, None)
+                self._delete_tasks.pop(document_id, None)
+                tab_id = self._pending_tab_ids.pop(document_id, None)
+                if tab_id is not None:
+                    await core.app.storage.close_tab(tab_id)
                 self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
     def _handle_heartbeat(self) -> None:
-        """Cancel pending delete tasks to keep the client alive during blocking browser dialogs."""
+        """Reset pending delete tasks to keep the client alive during blocking browser dialogs."""
         for document_id in list(self._delete_tasks):
-            self._cancel_delete_task(document_id)
+            self._reschedule_delete_task(document_id)
+
+    def _reschedule_delete_task(self, document_id: str) -> None:
+        """Cancel the current delete task and create a new one with a fresh timeout."""
+        if document_id not in self._delete_tasks:
+            return
+        self._delete_tasks.pop(document_id).cancel()
+        self._create_delete_task(document_id)
 
     def _cancel_delete_task(self, document_id: str) -> None:
         if document_id in self._delete_tasks:

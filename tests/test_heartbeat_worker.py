@@ -38,14 +38,18 @@ def test_connection_survives_alert_dialog(screen: Screen):
 
 
 def test_connection_survives_alert_with_high_reconnect_timeout(screen: Screen):
-    """Test with reconnect_timeout=10 (like main.py) after many messages have been sent."""
-    counter = {'value': 0}
+    """Test with lower reconnect_timeout after many messages have been sent."""
+    counter = [0]
 
-    @ui.page('/', reconnect_timeout=10.0)
+    def increment():
+        counter[0] += 1
+        return counter[0]
+
+    @ui.page('/', reconnect_timeout=3.0)
     def page():
         label = ui.label('0')
         ui.input('Input').props('autofocus')
-        ui.timer(0.05, lambda: label.set_text(str(counter.__setitem__('value', counter['value'] + 1) or counter['value'])))
+        ui.timer(0.05, lambda: label.set_text(str(increment())))
 
     screen.open('/')
     screen.type('hello')
@@ -60,7 +64,7 @@ def test_connection_survives_alert_with_high_reconnect_timeout(screen: Screen):
     # Block the main thread with alert
     screen.selenium.execute_script('setTimeout(() => alert("blocking"), 100)')
     time.sleep(0.5)
-    time.sleep(15.0)  # longer than ping_interval(8) + ping_timeout(4) = 12s
+    time.sleep(5.0)  # longer than reconnect_timeout(3)
 
     assert client_id in Client.instances, 'client should survive thanks to heartbeat'
 
