@@ -9,7 +9,7 @@ def _simulate_sortend_event(screen: Screen, item: ui.element, *,
     source = source or item.parent_slot.parent
     target = target or item.parent_slot.parent
     screen.selenium.execute_script(f'''
-        // update client-side element tree to prevent snap-back
+        // Mirrors the slot manipulation in sortable.js onEnd handler — keep in sync.
         const fromSlot = window.mounted_app?.elements?.[{source.id}]?.slots?.default;
         const toSlot = window.mounted_app?.elements?.[{target.id}]?.slots?.default;
         if (fromSlot && fromSlot.ids) {{

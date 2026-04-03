@@ -30,7 +30,10 @@ class SortableElement(Element):
         Returns a ``Sortable`` controller that can be used to enable/disable sorting
         and change options.
 
-        :param options: dictionary of raw SortableJS options (merged with named params)
+        Note: Setting a custom HTML ID on the container (e.g. via ``.props('id="my-list"')``) is not supported
+        and will break the internal slot synchronization.
+
+        :param options: dictionary of raw SortableJS options (overrides named params like ``animation`` if both are given)
         :param on_end: callback invoked when a sort operation ends (fires on the source container only, even for cross-container moves)
         :param animation: animation duration in seconds (default: 0.15)
         :param handle: CSS selector for drag handle elements (default: ``None``, entire item is draggable)
