@@ -280,6 +280,7 @@ def run(root: Callable | None = None, *,
         reload_dirs=split_args(uvicorn_reload_dirs) if reload else None,
         log_level=uvicorn_logging_level,
         ws='wsproto',
+        timeout_graceful_shutdown=kwargs.pop('timeout_graceful_shutdown', 10),
         **kwargs,
     )
     config.storage_secret = storage_secret
