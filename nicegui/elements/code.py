@@ -48,11 +48,8 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
     def _update_copy_button(self) -> None:
         self.copy_button.set_visibility(time.time() > self._last_scroll + 1.0)
 
-    def _to_markdown(self) -> str:
-        if not self.visible:
-            return ''
-        lang = self._language or ''
-        return f'```{lang}\n{self.content}\n```'
+    def _render_markdown(self) -> str:
+        return f'```{self._language or ""}\n{self.content}\n```'
 
     def _handle_content_change(self, content: str) -> None:
         self._props['content'] = content

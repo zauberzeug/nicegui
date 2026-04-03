@@ -35,6 +35,9 @@ class Carousel(ValueElement):
         self._props['arrows'] = arrows
         self._props['navigation'] = navigation
 
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown()
+
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, CarouselSlide) else value
 

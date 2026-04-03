@@ -12,7 +12,5 @@ class Separator(Element, default_classes='nicegui-separator'):
         """
         super().__init__('q-separator')
 
-    def _to_markdown(self) -> str:
-        if not self.visible:
-            return ''
+    def _render_markdown(self) -> str:
         return '---'

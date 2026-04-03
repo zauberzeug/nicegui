@@ -22,5 +22,10 @@ def build_markdown_response(client: Client, status_code: int = 200) -> Response:
         content=content,
         media_type='text/markdown; charset=utf-8',
         status_code=status_code,
-        headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
+        headers={
+            'Cache-Control': 'no-store',
+            # X-NiceGUI-Content lets clients programmatically distinguish NiceGUI page responses
+            # from other responses (e.g. static files, API endpoints) without parsing the body.
+            'X-NiceGUI-Content': 'page',
+        },
     )

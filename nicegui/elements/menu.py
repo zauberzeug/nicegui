@@ -6,7 +6,6 @@ from .mixins.value_element import ValueElement
 
 
 class Menu(ValueElement):
-    MARKDOWN_SKIP = True
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
@@ -26,6 +25,9 @@ class Menu(ValueElement):
         self._props.add_warning('touch-position',
                                 'The prop "touch-position" is not supported by `ui.menu`. '
                                 'Use "ui.context_menu()" instead.')
+
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown() if self.value else ''
 
     def open(self) -> None:
         """Open the menu."""

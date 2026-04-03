@@ -9,7 +9,6 @@ from .mixins.value_element import ValueElement
 
 
 class Dialog(ValueElement, component='dialog.js'):
-    MARKDOWN_SKIP = True
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
@@ -66,6 +65,9 @@ class Dialog(ValueElement, component='dialog.js'):
         """Submit the dialog with the given result."""
         self._result = result
         self.submitted.set()
+
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown() if self.value else ''
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

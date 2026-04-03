@@ -28,7 +28,9 @@ NotificationType: TypeAlias = Literal[
 
 
 class Notification(Element, component='notification.js'):
-    MARKDOWN_SKIP = True
+
+    def _render_markdown(self) -> str:
+        return str(self._props.get('options', {}).get('message', ''))
 
     def __init__(self,
                  message: Any = '', *,

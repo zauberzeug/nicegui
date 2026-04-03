@@ -21,6 +21,9 @@ class ScrollArea(Element, default_classes='nicegui-scroll-area'):
         if on_scroll:
             self.on_scroll(on_scroll)
 
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown()
+
     def on_scroll(self, callback: Handler[ScrollEventArguments]) -> Self:
         """Add a callback to be invoked when the scroll position changes."""
         self.on('scroll', lambda e: self._handle_scroll(callback, e), args=[

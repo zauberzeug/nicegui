@@ -125,9 +125,7 @@ class Table(FilterElement, component='table.js'):
 
         return super()._to_dict()
 
-    def _to_markdown(self) -> str:
-        if not self.visible:
-            return ''
+    def _render_markdown(self) -> str:
         columns = self._props.get('columns', [])
         rows = self._props.get('rows', [])
         title = self._props.get('title')

@@ -22,9 +22,5 @@ class Switch(TextElement, ValueElement, DisableableElement):
         """
         super().__init__(tag='q-toggle', text=text, value=value, on_value_change=on_change)
 
-    def _to_markdown(self) -> str:
-        if not self.visible:
-            return ''
-        check = 'x' if self.value else ' '
-        text = self._text or ''
-        return f'- [{check}] {text}'
+    def _render_markdown(self) -> str:
+        return f'- [{"x" if self.value else " "}] {self._text or ""}'

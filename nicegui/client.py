@@ -153,6 +153,8 @@ class Client:
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
         accept = request.headers.get('accept', '')
+        # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
+        # It works for the real use case: agents sending exactly `Accept: text/markdown`.
         if 'text/markdown' in accept and 'text/html' not in accept:
             response = build_markdown_response(self, status_code)
             background_tasks.create(self._deferred_delete(), name=f'delete markdown client {self.id}')
