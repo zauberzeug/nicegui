@@ -9,12 +9,12 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Carousel(ValueElement[Any]):
+class Carousel(ValueElement[str | None]):
 
     @resolve_defaults
     def __init__(self, *,
                  value: str | CarouselSlide | None = DEFAULT_PROPS['model-value'] | None,
-                 on_value_change: Handler[ValueChangeEventArguments[Any]] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  animated: bool = DEFAULT_PROP | False,
                  arrows: bool = DEFAULT_PROP | False,
                  navigation: bool = DEFAULT_PROP | False,
@@ -30,10 +30,18 @@ class Carousel(ValueElement[Any]):
         :param arrows: whether to show arrows for manual slide navigation (default: `False`)
         :param navigation: whether to show navigation dots for manual slide navigation (default: `False`)
         """
-        super().__init__(tag='q-carousel', value=value, on_value_change=on_value_change)
+        _value = value.props['name'] if isinstance(value, CarouselSlide) else value
+        super().__init__(tag='q-carousel', value=_value, on_value_change=on_value_change)
         self._props['animated'] = animated
         self._props['arrows'] = arrows
         self._props['navigation'] = navigation
+
+    def set_value(self, value: str | CarouselSlide | None) -> None:
+        """Set the value of this element.
+
+        :param value: slide name or `CarouselSlide` element
+        """
+        super().set_value(value.props['name'] if isinstance(value, CarouselSlide) else value)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, CarouselSlide) else value

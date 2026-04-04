@@ -1,16 +1,14 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 from typing_extensions import Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
-from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
-
-V = TypeVar('V')
+from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, ValueT, handle_event
 
 
-class ValueElement(Element, Generic[V]):
+class ValueElement(Element, Generic[ValueT]):
     VALUE_PROP: str = 'model-value'
     '''Name of the prop that holds the value of the element'''
 
@@ -26,11 +24,11 @@ class ValueElement(Element, Generic[V]):
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
     if TYPE_CHECKING:
-        value: V  # type: ignore[assignment,no-redef]
+        value: ValueT  # type: ignore[assignment,no-redef]
 
     def __init__(self, *,
-                 value: V,
-                 on_value_change: Handler[ValueChangeEventArguments[V]] | None = None,
+                 value: ValueT,
+                 on_value_change: Handler[ValueChangeEventArguments[ValueT]] | None = None,
                  throttle: float = 0,
                  **kwargs: Any,
                  ) -> None:
@@ -39,7 +37,7 @@ class ValueElement(Element, Generic[V]):
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
-        self._change_handlers: list[Handler[ValueChangeEventArguments[V]]] = \
+        self._change_handlers: list[Handler[ValueChangeEventArguments[ValueT]]] = \
             [on_value_change] if on_value_change else []
 
         def handle_change(e: GenericEventArguments) -> None:
@@ -48,7 +46,7 @@ class ValueElement(Element, Generic[V]):
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
-    def on_value_change(self, callback: Handler[ValueChangeEventArguments[V]]) -> Self:
+    def on_value_change(self, callback: Handler[ValueChangeEventArguments[ValueT]]) -> Self:
         """Add a callback to be invoked when the value changes."""
         self._change_handlers.append(callback)
         return self
@@ -56,7 +54,7 @@ class ValueElement(Element, Generic[V]):
     def bind_value_to(self,
                       target_object: Any,
                       target_name: str | tuple[str, ...] = 'value',
-                      forward: Callable[[V], Any] | None = None, *,
+                      forward: Callable[[ValueT], Any] | None = None, *,
                       strict: bool | None = None,
                       ) -> Self:
         """Bind the value of this element to the target object's target_name property.
@@ -77,7 +75,7 @@ class ValueElement(Element, Generic[V]):
     def bind_value_from(self,
                         target_object: Any,
                         target_name: str | tuple[str, ...] = 'value',
-                        backward: Callable[[Any], V] | None = None, *,
+                        backward: Callable[[Any], ValueT] | None = None, *,
                         strict: bool | None = None,
                         ) -> Self:
         """Bind the value of this element from the target object's target_name property.
@@ -98,8 +96,8 @@ class ValueElement(Element, Generic[V]):
     def bind_value(self,
                    target_object: Any,
                    target_name: str | tuple[str, ...] = 'value', *,
-                   forward: Callable[[V], Any] | None = None,
-                   backward: Callable[[Any], V] | None = None,
+                   forward: Callable[[ValueT], Any] | None = None,
+                   backward: Callable[[Any], ValueT] | None = None,
                    strict: bool | None = None,
                    ) -> Self:
         """Bind the value of this element to the target object's target_name property.
@@ -121,14 +119,14 @@ class ValueElement(Element, Generic[V]):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_value(self, value: V) -> None:
+    def set_value(self, value: ValueT) -> None:
         """Set the value of this element.
 
         :param value: The value to set.
         """
         self.value = value
 
-    def _handle_value_change(self, value: V) -> None:
+    def _handle_value_change(self, value: ValueT) -> None:
         previous_value = self._props.get(self.VALUE_PROP)
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
@@ -136,15 +134,15 @@ class ValueElement(Element, Generic[V]):
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client,
                                          value=self._value_to_event_value(value),
-                                         previous_value=self._value_to_event_value(cast(V, previous_value)))
+                                         previous_value=self._value_to_event_value(cast(ValueT, previous_value)))
         for handler in self._change_handlers:
             handle_event(handler, args)
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> V:
+    def _event_args_to_value(self, e: GenericEventArguments) -> ValueT:
         return e.args
 
-    def _value_to_model_value(self, value: V) -> Any:
+    def _value_to_model_value(self, value: ValueT) -> Any:
         return value
 
-    def _value_to_event_value(self, value: V) -> Any:
+    def _value_to_event_value(self, value: ValueT) -> Any:
         return value

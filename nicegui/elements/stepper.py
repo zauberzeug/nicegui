@@ -11,12 +11,12 @@ from .mixins.icon_element import IconElement
 from .mixins.value_element import ValueElement
 
 
-class Stepper(ValueElement[Any], default_classes='nicegui-stepper'):
+class Stepper(ValueElement[str | None], default_classes='nicegui-stepper'):
 
     @resolve_defaults
     def __init__(self, *,
                  value: str | Step | None = DEFAULT_PROPS['model-value'] | None,
-                 on_value_change: Handler[ValueChangeEventArguments[Any]] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:
         """Stepper
@@ -32,8 +32,16 @@ class Stepper(ValueElement[Any], default_classes='nicegui-stepper'):
         :param on_value_change: callback to be executed when the selected step changes
         :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
-        super().__init__(tag='q-stepper', value=value, on_value_change=on_value_change)
+        _value = cast('str | None', value.props['name'] if isinstance(value, Step) else value)
+        super().__init__(tag='q-stepper', value=_value, on_value_change=on_value_change)
         self._props.set_bool('keep-alive', keep_alive)
+
+    def set_value(self, value: str | Step | None) -> None:
+        """Set the value of this element.
+
+        :param value: step name or `Step` element
+        """
+        super().set_value(cast('str | None', value.props['name'] if isinstance(value, Step) else value))
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, Step) else value
