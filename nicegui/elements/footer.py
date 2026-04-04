@@ -42,6 +42,9 @@ class Footer(ValueElement, default_classes='nicegui-footer'):
 
         self.move(target_index=-1)
 
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown()
+
     def toggle(self) -> None:
         """Toggle the footer"""
         self.value = not self.value

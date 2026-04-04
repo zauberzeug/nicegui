@@ -21,3 +21,6 @@ class Checkbox(TextElement, ValueElement, DisableableElement):
         :param on_change: callback to execute when value changes
         """
         super().__init__(tag='q-checkbox', text=text, value=value, on_value_change=on_change)
+
+    def _render_markdown(self) -> str:
+        return f'- [{"x" if self.value else " "}] {self._text or ""}'

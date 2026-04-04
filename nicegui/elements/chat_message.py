@@ -46,6 +46,7 @@ class ChatMessage(LabelElement):
             text = []
         if isinstance(text, str):
             text = [text]
+        self._original_text = list(text)  # store before HTML escaping for lossless markdown roundtrip
         if not text_html:
             text = [html.escape(part) for part in text]
             text = [part.replace('\n', '<br />') for part in text]
@@ -59,3 +60,8 @@ class ChatMessage(LabelElement):
         with self:
             for line in text:
                 Html(line, sanitize=sanitize)
+
+    def _render_markdown(self) -> str:
+        name = self._props.get('name', '')
+        text = '\n'.join(self._original_text)
+        return f'**{name}**: {text}' if name else text

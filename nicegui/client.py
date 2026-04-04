@@ -21,6 +21,7 @@ from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
+from .markdown_response import build_markdown_response
 from .observables import ObservableDict
 from .outbox import Outbox
 from .sub_pages_router import SubPagesRouter
@@ -151,6 +152,13 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        accept = request.headers.get('accept', '')
+        # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
+        # It works for the real use case: agents sending exactly `Accept: text/markdown`.
+        if 'text/markdown' in accept and 'text/html' not in accept:
+            response = build_markdown_response(self, status_code)
+            background_tasks.create(self._deferred_delete(), name=f'delete markdown client {self.id}')
+            return response
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
         elements = json.dumps({
@@ -398,6 +406,11 @@ class Client:
             if helpers.should_await(result):
                 background_tasks.create(helpers.await_with_context(result, self.content),
                                         name=f'UI exception {handler.__name__}')
+
+    async def _deferred_delete(self) -> None:
+        """Yield control once, then delete this client."""
+        await asyncio.sleep(0)
+        self.delete()
 
     def delete(self) -> None:
         """Delete a client and all its elements.

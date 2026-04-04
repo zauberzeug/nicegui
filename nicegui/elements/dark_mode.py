@@ -4,6 +4,7 @@ from .mixins.value_element import ValueElement
 
 
 class DarkMode(ValueElement, component='dark_mode.js'):
+    MARKDOWN_SKIP = True
     VALUE_PROP = 'value'
 
     @resolve_defaults

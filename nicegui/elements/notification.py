@@ -29,6 +29,9 @@ NotificationType: TypeAlias = Literal[
 
 class Notification(Element, component='notification.js'):
 
+    def _render_markdown(self) -> str:
+        return str(self._props.get('options', {}).get('message', ''))
+
     def __init__(self,
                  message: Any = '', *,
                  position: NotificationPosition = 'bottom',
