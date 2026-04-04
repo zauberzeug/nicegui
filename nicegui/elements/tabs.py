@@ -11,11 +11,11 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class Tabs(ValueElement):
+class Tabs(ValueElement[str | None]):
 
     def __init__(self, *,
                  value: Tab | TabPanel | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  ) -> None:
         """Tabs
 
@@ -25,7 +25,15 @@ class Tabs(ValueElement):
         :param value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
         :param on_change: callback to be executed when the selected tab changes (*since version 3.6.0*: event ``value`` is the tab name)
         """
-        super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
+        _value = value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
+        super().__init__(tag='q-tabs', value=_value, on_value_change=on_change)
+
+    def set_value(self, value: Tab | TabPanel | str | None) -> None:
+        """Set the value of this element.
+
+        :param value: tab name, `Tab` element, or `TabPanel` element
+        """
+        super().set_value(value.props['name'] if isinstance(value, (Tab, TabPanel)) else value)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
@@ -59,13 +67,13 @@ class Tab(LabelElement, IconElement, DisableableElement):
                               'This will raise an error in NiceGUI 4.0.')
 
 
-class TabPanels(ValueElement):
+class TabPanels(ValueElement[str | None]):
 
     @resolve_defaults
     def __init__(self,
                  tabs: Tabs | None = None, *,
                  value: Tab | TabPanel | str | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  animated: bool = DEFAULT_PROP | True,
                  keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:
@@ -84,11 +92,19 @@ class TabPanels(ValueElement):
         :param animated: whether the tab panels should be animated (default: `True`)
         :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
         """
-        super().__init__(tag='q-tab-panels', value=value, on_value_change=on_change)
+        _value = value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
+        super().__init__(tag='q-tab-panels', value=_value, on_value_change=on_change)
         if tabs is not None:
             tabs.bind_value(self, 'value')
         self._props.set_bool('animated', animated)
         self._props.set_bool('keep-alive', keep_alive)
+
+    def set_value(self, value: Tab | TabPanel | str | None) -> None:
+        """Set the value of this element.
+
+        :param value: tab name, `Tab` element, or `TabPanel` element
+        """
+        super().set_value(value.props['name'] if isinstance(value, (Tab, TabPanel)) else value)
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value

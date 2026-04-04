@@ -4,7 +4,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Range(ValueElement, DisableableElement):
+class Range(ValueElement[dict[str, float] | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self, *,
@@ -12,7 +12,7 @@ class Range(ValueElement, DisableableElement):
                  max: float,  # pylint: disable=redefined-builtin
                  step: float = DEFAULT_PROP | 1.0,
                  value: dict[str, float] | None = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[dict[str, float] | None]] | None = None,
                  ) -> None:
         """Range
 
