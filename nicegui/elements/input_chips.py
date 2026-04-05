@@ -7,14 +7,14 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class InputChips(LabelElement, ValidationElement[list[str] | None], DisableableElement):
+class InputChips(LabelElement, ValidationElement[list[str]], DisableableElement):
 
     @resolve_defaults
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None,
                  *,
                  value: list[str] | None = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments[list[str] | None]] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[list[str]]] | None = None,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] = DEFAULT_PROP | 'toggle',
                  clearable: bool = DEFAULT_PROP | False,
                  validation: ValidationFunction | ValidationDict | None = None,
@@ -55,5 +55,5 @@ class InputChips(LabelElement, ValidationElement[list[str] | None], DisableableE
         self._props['hide-dropdown-icon'] = True
         self._props['clearable'] = clearable
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> list[str] | None:
+    def _event_args_to_value(self, e: GenericEventArguments) -> list[str]:
         return e.args or []
