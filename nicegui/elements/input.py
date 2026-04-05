@@ -16,12 +16,12 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str = DEFAULT_PROP | '',  # DEPRECATED: change to None in NiceGUI 4.0 (also derived classes)
+                 value: str | None = DEFAULT_PROP | '',  # DEPRECATED: change default to None in NiceGUI 4.0 (also derived classes)
                  password: bool = DEFAULT_PROP | False,
                  password_toggle_button: bool = False,
                  prefix: str | None = None,
                  suffix: str | None = None,
-                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  autocomplete: list[str] | None = DEFAULT_PROPS['_autocomplete'] | None,
                  validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
