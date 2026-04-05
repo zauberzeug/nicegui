@@ -117,9 +117,8 @@ class SelectableElement(Element):
 
         :param selected: The new selection state.
         """
-        previous_value = self._props.get('selected')
+        previous_value = self._props.get('selected', False)
         self._props['selected'] = selected
-        args = ValueChangeEventArguments(sender=self, client=self.client, value=selected,
-                                         previous_value=cast(bool, previous_value))
+        args = ValueChangeEventArguments(sender=self, client=self.client, value=selected, previous_value=previous_value)
         for handler in self._selection_change_handlers:
             handle_event(handler, args)
