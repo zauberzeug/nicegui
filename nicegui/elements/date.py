@@ -15,7 +15,9 @@ class Date(ValueElement[Any], DisableableElement):
                  ) = DEFAULT_PROPS['model-value'] | None,
                  *,
                  mask: str = DEFAULT_PROP | 'YYYY-MM-DD',
-                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None) -> None:
+                 on_change: Handler[ValueChangeEventArguments[
+                     str | dict[str, str] | list[str] | list[str | dict[str, str]] | None
+                 ]] | None = None) -> None:
         """Date Picker
 
         This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.
