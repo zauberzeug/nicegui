@@ -126,7 +126,7 @@ class ValueElement(Element, Generic[ValueT]):
         """
         self.value = value
 
-    def _handle_value_change(self, value: ValueT) -> None:
+    def _handle_value_change(self, value: Any) -> None:
         previous_value = self._props.get(self.VALUE_PROP)
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
@@ -134,15 +134,15 @@ class ValueElement(Element, Generic[ValueT]):
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client,
                                          value=self._value_to_event_value(value),
-                                         previous_value=self._value_to_event_value(cast(ValueT, previous_value)))
+                                         previous_value=self._value_to_event_value(previous_value))
         for handler in self._change_handlers:
             handle_event(handler, args)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> ValueT:
         return e.args
 
-    def _value_to_model_value(self, value: ValueT) -> Any:
+    def _value_to_model_value(self, value: Any) -> Any:
         return value
 
-    def _value_to_event_value(self, value: ValueT) -> Any:
+    def _value_to_event_value(self, value: Any) -> ValueT:
         return value

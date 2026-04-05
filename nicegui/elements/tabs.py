@@ -35,10 +35,10 @@ class Tabs(ValueElement[str | None]):
         """
         super().set_value(value.props['name'] if isinstance(value, (Tab, TabPanel)) else value)
 
-    def _value_to_model_value(self, value: Any) -> Any:
+    def _value_to_model_value(self, value: Any) -> str | None:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
-    def _value_to_event_value(self, value: Any) -> Any:
+    def _value_to_event_value(self, value: Any) -> str | None:
         return self._value_to_model_value(value)
 
 
@@ -106,10 +106,10 @@ class TabPanels(ValueElement[str | None]):
         """
         super().set_value(value.props['name'] if isinstance(value, (Tab, TabPanel)) else value)
 
-    def _value_to_model_value(self, value: Any) -> Any:
+    def _value_to_model_value(self, value: Any) -> str | None:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
-    def _value_to_event_value(self, value: Any) -> Any:
+    def _value_to_event_value(self, value: Any) -> str | None:
         return self._value_to_model_value(value)
 
 

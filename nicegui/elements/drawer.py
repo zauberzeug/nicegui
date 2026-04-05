@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from ..context import context
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
@@ -77,7 +77,7 @@ class Drawer(ValueElement[bool | None], default_classes='nicegui-drawer'):
         """Hide the drawer"""
         self.value = False
 
-    def _handle_value_change(self, value: bool | None) -> None:
+    def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         self._props['show-if-above'] = value is None
 

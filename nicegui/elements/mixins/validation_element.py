@@ -90,7 +90,7 @@ class ValidationElement(ValueElement[ValueT]):
         self._auto_validation = False
         return self
 
-    def _handle_value_change(self, value: ValueT) -> None:
+    def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         if self._auto_validation:
             self.validate(return_result=False)
