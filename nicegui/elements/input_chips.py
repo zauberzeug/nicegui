@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Literal
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -55,5 +55,5 @@ class InputChips(LabelElement, ValidationElement[list[str] | None], DisableableE
         self._props['hide-dropdown-icon'] = True
         self._props['clearable'] = clearable
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> list[str] | None:
         return e.args or []

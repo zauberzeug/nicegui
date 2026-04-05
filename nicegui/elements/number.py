@@ -142,7 +142,7 @@ class Number(LabelElement, ValidationElement[float | None], DisableableElement):
         self.value = float(self.format % value) if self.format else value
         self.update()
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> float | None:
         if not e.args:
             return None
         return float(e.args)
