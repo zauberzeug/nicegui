@@ -119,6 +119,7 @@ class SelectableElement(Element):
         """
         previous_value = self._props.get('selected')
         self._props['selected'] = selected
-        args = ValueChangeEventArguments(sender=self, client=self.client, value=selected, previous_value=cast(bool, previous_value))
+        args = ValueChangeEventArguments(sender=self, client=self.client, value=selected,
+                                         previous_value=cast(bool, previous_value))
         for handler in self._selection_change_handlers:
             handle_event(handler, args)
