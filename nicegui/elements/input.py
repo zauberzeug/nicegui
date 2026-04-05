@@ -16,7 +16,7 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str | None = DEFAULT_PROP | '',  # DEPRECATED: change default to None in NiceGUI 4.0 (also derived classes)
+                 value: str | None = DEFAULT_PROP | '',  # DEPRECATED: change to None in 4.0 (also derived classes)
                  password: bool = DEFAULT_PROP | False,
                  password_toggle_button: bool = False,
                  prefix: str | None = None,
