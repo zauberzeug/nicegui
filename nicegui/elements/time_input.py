@@ -16,7 +16,7 @@ class TimeInput(LabelElement, ValueElement[str | None], DisableableElement):
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
                  value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  ) -> None:
         """Time Input
 
