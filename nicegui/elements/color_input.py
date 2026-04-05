@@ -21,7 +21,7 @@ class ColorInput(LabelElement, ValueElement[str | None], DisableableElement):
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str = DEFAULT_PROPS['model-value'] | '',
+                 value: str | None = DEFAULT_PROPS['model-value'] | '',
                  on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  preview: bool = False,
                  ) -> None:
