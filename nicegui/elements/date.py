@@ -1,21 +1,19 @@
+from typing import Any
+
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Date(ValueElement[str | dict[str, str] | list[str] | list[str | dict[str, str]] | None], DisableableElement):
+class Date(ValueElement[Any], DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 value: (
-                     str | dict[str, str] | list[str] | list[str | dict[str, str]] | None
-                 ) = DEFAULT_PROPS['model-value'] | None,
+                 value: Any = DEFAULT_PROPS['model-value'] | None,
                  *,
                  mask: str = DEFAULT_PROP | 'YYYY-MM-DD',
-                 on_change: Handler[ValueChangeEventArguments[
-                     str | dict[str, str] | list[str] | list[str | dict[str, str]] | None
-                 ]] | None = None) -> None:
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None) -> None:
         """Date Picker
 
         This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.
