@@ -1,20 +1,17 @@
-from __future__ import annotations
+from typing import Any
 
-from typing import Any, cast
-
-from ..context import context
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
-from .mixins.disableable_element import DisableableElement
+from .carousel_slide import CarouselSlide
 from .mixins.value_element import ValueElement
 
 
-class Carousel(ValueElement[str | None]):
+class Carousel(ValueElement[str | CarouselSlide | None]):
 
     @resolve_defaults
     def __init__(self, *,
                  value: str | CarouselSlide | None = DEFAULT_PROPS['model-value'] | None,
-                 on_value_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
+                 on_value_change: Handler[ValueChangeEventArguments[str | CarouselSlide | None]] | None = None,
                  animated: bool = DEFAULT_PROP | False,
                  arrows: bool = DEFAULT_PROP | False,
                  navigation: bool = DEFAULT_PROP | False,
@@ -30,17 +27,10 @@ class Carousel(ValueElement[str | None]):
         :param arrows: whether to show arrows for manual slide navigation (default: `False`)
         :param navigation: whether to show navigation dots for manual slide navigation (default: `False`)
         """
-        super().__init__(tag='q-carousel', value=self._value_to_model_value(value), on_value_change=on_value_change)
+        super().__init__(tag='q-carousel', value=value, on_value_change=on_value_change)
         self._props['animated'] = animated
         self._props['arrows'] = arrows
         self._props['navigation'] = navigation
-
-    def set_value(self, value: str | CarouselSlide | None) -> None:
-        """Set the value of this element.
-
-        :param value: slide name or `CarouselSlide` element
-        """
-        super().set_value(self._value_to_model_value(value))
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, CarouselSlide) else value
@@ -59,21 +49,3 @@ class Carousel(ValueElement[str | None]):
     def previous(self) -> None:
         """Show the previous slide."""
         self.run_method('previous')
-
-
-class CarouselSlide(DisableableElement, default_classes='nicegui-carousel-slide'):
-
-    def __init__(self, name: str | None = None) -> None:
-        """Carousel Slide
-
-        This element represents `Quasar's QCarouselSlide <https://quasar.dev/vue-components/carousel#qcarouselslide-api>`_ component.
-        It is a child of a `ui.carousel` element.
-
-        :param name: name of the slide (will be the value of the `ui.carousel` element, auto-generated if `None`)
-        """
-        super().__init__(tag='q-carousel-slide')
-        self.carousel = cast(ValueElement, context.slot.parent)
-        name = name or f'slide_{len(self.carousel.default_slot.children)}'
-        self._props['name'] = name
-        if self.carousel.value is None:
-            self.carousel.value = name
