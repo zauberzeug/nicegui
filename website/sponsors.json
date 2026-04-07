@@ -3,7 +3,9 @@
     "lechler-gmbh": "https://www.lechler.com/",
     "testmu-ai": "https://www.testmuai.com/?utm_medium=sponsor&utm_source=nicegui"
   },
-  "top": [],
-  "total": 25,
-  "contributors": 198
+  "top": [
+    "LambdaTest-Inc"
+  ],
+  "total": 24,
+  "contributors": 199
 }
