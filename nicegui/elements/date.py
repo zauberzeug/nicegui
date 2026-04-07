@@ -10,7 +10,9 @@ class Date(ValueElement[Any], DisableableElement):
 
     @resolve_defaults
     def __init__(self,
-                 value: Any = DEFAULT_PROPS['model-value'] | None,
+                 value: (
+                     str | dict[str, str] | list[str] | list[str | dict[str, str]] | None
+                 ) = DEFAULT_PROPS['model-value'] | None,
                  *,
                  mask: str = DEFAULT_PROP | 'YYYY-MM-DD',
                  on_change: Handler[ValueChangeEventArguments[Any]] | None = None) -> None:
