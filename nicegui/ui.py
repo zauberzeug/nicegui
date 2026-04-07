@@ -240,10 +240,10 @@ from .elements.stepper import Stepper as stepper
 from .elements.stepper_navigation import StepperNavigation as stepper_navigation
 from .elements.sub_pages import SubPages as sub_pages
 from .elements.switch import Switch as switch
-from .elements.tab import Tab as tab
-from .elements.tab_panel import TabPanel as tab_panel
-from .elements.tab_panels import TabPanels as tab_panels
 from .elements.table import Table as table
+from .elements.tabs import Tab as tab
+from .elements.tabs import TabPanel as tab_panel
+from .elements.tabs import TabPanels as tab_panels
 from .elements.tabs import Tabs as tabs
 from .elements.teleport import Teleport as teleport
 from .elements.textarea import Textarea as textarea
