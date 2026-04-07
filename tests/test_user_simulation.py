@@ -893,10 +893,15 @@ async def test_clearing_container_with_button_inside(user: User) -> None:
 
         def rebuild():
             with container.clear():
-                ui.button('click me', on_click=rebuild)
+                ui.button('click me') \
+                    .on('click', lambda: ui.notify('First handler')) \
+                    .on('click', rebuild) \
+                    .on('click', lambda: ui.notify('Last handler'))
 
         rebuild()
 
     await user.open('/')
     user.find('click me').click()
+    await user.should_see('First handler')
     await user.should_see('click me')
+    await user.should_not_see('Last handler')
