@@ -884,3 +884,19 @@ async def test_switching_tabs_wrapped_in_row(user: User) -> None:
     await user.open('/')
     user.find('A').click()
     await user.should_see('Switching to A')
+
+
+async def test_clearing_container_with_button_inside(user: User) -> None:
+    @ui.page('/')
+    def page():
+        container = ui.row()
+
+        def rebuild():
+            with container.clear():
+                ui.button('click me', on_click=rebuild)
+
+        rebuild()
+
+    await user.open('/')
+    user.find('click me').click()
+    await user.should_see('click me')
