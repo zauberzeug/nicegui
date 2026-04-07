@@ -30,8 +30,7 @@ class Carousel(ValueElement[str | None]):
         :param arrows: whether to show arrows for manual slide navigation (default: `False`)
         :param navigation: whether to show navigation dots for manual slide navigation (default: `False`)
         """
-        _value = value.props['name'] if isinstance(value, CarouselSlide) else value
-        super().__init__(tag='q-carousel', value=_value, on_value_change=on_value_change)
+        super().__init__(tag='q-carousel', value=self._value_to_model_value(value), on_value_change=on_value_change)
         self._props['animated'] = animated
         self._props['arrows'] = arrows
         self._props['navigation'] = navigation
@@ -41,7 +40,7 @@ class Carousel(ValueElement[str | None]):
 
         :param value: slide name or `CarouselSlide` element
         """
-        super().set_value(value.props['name'] if isinstance(value, CarouselSlide) else value)
+        super().set_value(self._value_to_model_value(value))
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, CarouselSlide) else value
