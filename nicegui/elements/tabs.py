@@ -64,10 +64,10 @@ class Tabs(ValueElement[str | Tab | TabPanel | None]):
         """
         super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
 
-    def _value_to_model_value(self, value: Any) -> str | None:
+    def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
-    def _value_to_event_value(self, value: Any) -> str | None:
+    def _value_to_event_value(self, value: Any) -> Any:
         return self._value_to_model_value(value)
 
 
@@ -102,8 +102,8 @@ class TabPanels(ValueElement[str | Tab | TabPanel | None]):
         self._props.set_bool('animated', animated)
         self._props.set_bool('keep-alive', keep_alive)
 
-    def _value_to_model_value(self, value: Any) -> str | None:
+    def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
 
-    def _value_to_event_value(self, value: Any) -> str | None:
+    def _value_to_event_value(self, value: Any) -> Any:
         return self._value_to_model_value(value)
