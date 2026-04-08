@@ -43,13 +43,21 @@ class SortableElement(Element):
         from ..sortable import Sortable  # pylint: disable=import-outside-toplevel
         if self._sortable is not None:
             raise RuntimeError('This element is already sortable.')
-        self._sortable = Sortable(
-            self,
-            options,
-            on_end=on_end,
-            animation=animation,
-            handle=handle,
-            group=group,
-            ghost_class=ghost_class,
-        )
+        with self.client.layout:
+            self._sortable = Sortable(
+                self,
+                options,
+                on_end=on_end,
+                animation=animation,
+                handle=handle,
+                group=group,
+                ghost_class=ghost_class,
+            )
         return self._sortable
+
+    def _handle_delete(self) -> None:
+        super()._handle_delete()
+        if self._sortable is not None:
+            if self._sortable.parent_slot is not None and self._sortable in self._sortable.parent_slot.children:
+                self._sortable.delete()
+            self._sortable = None
