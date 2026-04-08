@@ -3,6 +3,7 @@ from __future__ import annotations
 import _thread
 import multiprocessing as mp
 import queue
+import re
 import socket
 import sys
 import time
@@ -30,6 +31,17 @@ with suppress(ImportError):
     optional_features.register('webview')
 
 
+WINDOWS_APP_ID_PREFIX = 'nicegui.'
+WINDOWS_APP_ID_MAX_LENGTH = 128
+
+
+def _create_windows_app_id(title: str) -> str:
+    normalized_title = re.sub(r'[^0-9A-Za-z]+', '_', title).strip('_')
+    suffix = normalized_title or 'app'
+    max_suffix_length = WINDOWS_APP_ID_MAX_LENGTH - len(WINDOWS_APP_ID_PREFIX)
+    return f'{WINDOWS_APP_ID_PREFIX}{suffix[:max_suffix_length]}'
+
+
 def _open_window(
     protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue, event_sender: Connection,
@@ -54,20 +66,18 @@ def _open_window(
     window.events.closed += closed.set
     _bind_pywebview_events(window, event_sender)
 
-    if sys.platform == 'win32' and favicon is not None and helpers.is_file(favicon):
-        favicon_path = Path(favicon)
-
+    if sys.platform == 'win32' and favicon is not None:
         def on_window_shown() -> None:
             hwnd = window_icon.find_window_by_title(title)
             if not hwnd:
                 log.warning('Could not find native window by title to set icon')
                 return
-            icon_path = str(favicon_path.resolve())
+            icon_path = str(favicon)
             # Set window icon for title bar and Alt+Tab
             if not window_icon.set_window_icon_windows(hwnd, icon_path):
                 log.warning('Could not set native window icon (unsupported format?)')
             # Set property store for taskbar icon
-            app_id = f'nicegui.{title.replace(" ", "_")}'
+            app_id = _create_windows_app_id(title)
             window_icon.set_window_property_store(hwnd, app_id, icon_path)
         window.events.shown += on_window_shown
 

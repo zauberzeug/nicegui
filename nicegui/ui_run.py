@@ -91,7 +91,8 @@ def run(root: Callable | None = None, *,
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
+    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers).
+        On Windows native mode, only local file paths are used for the native window icon, and Win32 icon loading expects `.ico`.
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
@@ -240,7 +241,7 @@ def run(root: Callable | None = None, *,
         native_host = '127.0.0.1' if host == '0.0.0.0' else host
         if reload:
             shutdown_event = multiprocessing.Event()
-        native_favicon = str(Path(favicon).resolve()) if favicon and helpers.is_file(favicon) else favicon
+        native_favicon = str(Path(favicon).resolve()) if favicon and helpers.is_file(favicon) else None
         native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless,
                                shutdown_event, native_favicon)
     else:

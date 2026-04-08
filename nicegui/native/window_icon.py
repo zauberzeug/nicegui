@@ -3,7 +3,8 @@ from __future__ import annotations
 import ctypes
 import sys
 from ctypes import wintypes
-from pathlib import Path
+
+from ..logging import log
 
 user32 = ctypes.windll.user32 if sys.platform == 'win32' else None  # type: ignore[attr-defined]
 shell32 = ctypes.windll.shell32 if sys.platform == 'win32' else None  # type: ignore[attr-defined]
@@ -12,12 +13,12 @@ IMAGE_ICON, LR_LOADFROMFILE = 1, 0x00000010
 
 # COM GUIDs for IPropertyStore (defined unconditionally for mypy on non-Windows)
 class GUID(ctypes.Structure):
-    _fields_ = [('Data1', ctypes.c_ulong), ('Data2', ctypes.c_ushort),  # noqa: RUF012
+    _fields_ = [('Data1', ctypes.c_ulong), ('Data2', ctypes.c_ushort),
                 ('Data3', ctypes.c_ushort), ('Data4', ctypes.c_ubyte * 8)]
 
 
 class PROPERTYKEY(ctypes.Structure):
-    _fields_ = [('fmtid', GUID), ('pid', ctypes.c_ulong)]  # noqa: RUF012
+    _fields_ = [('fmtid', GUID), ('pid', ctypes.c_ulong)]
 
 
 # PKEY_AppUserModel_ID = {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5
@@ -31,7 +32,7 @@ PKEY_AppUserModel_RelaunchIconResource = PROPERTYKEY(
 
 def find_window_by_title(title: str) -> int | None:
     """Find HWND by exact title. None on non-Windows or not found."""
-    if sys.platform != 'win32' or user32 is None:
+    if user32 is None:
         return None
     result: list[int] = []
 
@@ -51,79 +52,83 @@ def find_window_by_title(title: str) -> int | None:
 
 def set_window_icon_windows(hwnd: int, icon_path: str) -> bool:
     """Set window icon via LoadImageW/WM_SETICON for title bar and Alt+Tab."""
-    if sys.platform != 'win32' or user32 is None or not Path(icon_path).is_file():
+    if user32 is None:
         return False
-    path = str(Path(icon_path).resolve())
-    hicon = user32.LoadImageW(None, path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+    hicon = user32.LoadImageW(None, icon_path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
     if not hicon:
         return False
-    user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon)
-    user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon)
+    old_small = user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon)
+    old_big = user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon)
+    # Keep the new icon handle alive while the window exists.
+    # Destroying it too early can cause Alt+Tab/taskbar to fall back to defaults.
+    for old_icon in (old_small, old_big):
+        if old_icon and old_icon != hicon:
+            user32.DestroyIcon(old_icon)
     return True
 
 
 def set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
     """Set window properties via IPropertyStore for proper taskbar icon on Windows 7+."""
-    if sys.platform != 'win32' or shell32 is None:
+    if shell32 is None:
         return False
 
+    class PROPVARIANT(ctypes.Structure):
+        _fields_ = [
+            ('vt', ctypes.c_ushort),
+            ('wReserved1', ctypes.c_ushort),
+            ('wReserved2', ctypes.c_ushort),
+            ('wReserved3', ctypes.c_ushort),
+            ('pwszVal', ctypes.c_wchar_p),
+            ('padding', ctypes.c_ulonglong),
+        ]
+
+    VT_LPWSTR = 31
+    pps = ctypes.c_void_p()
+    release_fn = None
+
     try:
-        # Define PROPVARIANT structure
-        class PROPVARIANT(ctypes.Structure):
-            _fields_ = [  # noqa: RUF012
-                ('vt', ctypes.c_ushort),
-                ('wReserved1', ctypes.c_ushort),
-                ('wReserved2', ctypes.c_ushort),
-                ('wReserved3', ctypes.c_ushort),
-                ('pwszVal', ctypes.c_wchar_p),
-                ('padding', ctypes.c_ulonglong),
-            ]
-
-        VT_LPWSTR = 31
-
         # Get IPropertyStore interface
         IID_IPropertyStore = GUID(0x886D8EEB, 0x8CF2, 0x4446,
                                   (0x8D, 0x02, 0xCD, 0xBA, 0x1D, 0xBD, 0xCF, 0x99))
 
-        # SHGetPropertyStoreForWindow
         SHGetPropertyStoreForWindow = shell32.SHGetPropertyStoreForWindow
         SHGetPropertyStoreForWindow.argtypes = [wintypes.HWND, ctypes.POINTER(GUID), ctypes.POINTER(ctypes.c_void_p)]
         SHGetPropertyStoreForWindow.restype = ctypes.HRESULT
 
-        pps = ctypes.c_void_p()
         hr = SHGetPropertyStoreForWindow(hwnd, ctypes.byref(IID_IPropertyStore), ctypes.byref(pps))
         if hr != 0 or not pps:
+            log.warning('Could not get IPropertyStore for window (HRESULT=%s)', hr)
             return False
 
-        # Get vtable
         vtable = ctypes.cast(ctypes.cast(pps, ctypes.POINTER(ctypes.c_void_p))[0],
                              ctypes.POINTER(ctypes.c_void_p * 10))[0]
+        set_value = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p,
+                                       ctypes.POINTER(PROPERTYKEY), ctypes.POINTER(PROPVARIANT))(vtable[6])
+        commit = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p)(vtable[7])
+        release_fn = ctypes.WINFUNCTYPE(ctypes.c_ulong, ctypes.c_void_p)(vtable[2])
 
-        # SetValue is at index 6 in IPropertyStore vtable
-        SetValue = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p,
-                                      ctypes.POINTER(PROPERTYKEY), ctypes.POINTER(PROPVARIANT))(vtable[6])
-
-        # Commit is at index 7
-        Commit = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p)(vtable[7])
-
-        # Release is at index 2
-        Release = ctypes.WINFUNCTYPE(ctypes.c_ulong, ctypes.c_void_p)(vtable[2])
-
-        # Set AppUserModelID (vt=VT_LPWSTR, reserved=0, pwszVal=app_id)
         pv_id = PROPVARIANT(VT_LPWSTR, 0, 0, 0, app_id, 0)
-        SetValue(pps, ctypes.byref(PKEY_AppUserModel_ID), ctypes.byref(pv_id))
+        hr = set_value(pps, ctypes.byref(PKEY_AppUserModel_ID), ctypes.byref(pv_id))
+        if hr != 0:
+            log.warning('Could not set AppUserModelID property (HRESULT=%s)', hr)
+            return False
 
-        # Set RelaunchIconResource (format: "path,index")
         icon_resource = f'{icon_path},0'
         pv_icon = PROPVARIANT(VT_LPWSTR, 0, 0, 0, icon_resource, 0)
-        SetValue(pps, ctypes.byref(PKEY_AppUserModel_RelaunchIconResource), ctypes.byref(pv_icon))
+        hr = set_value(pps, ctypes.byref(PKEY_AppUserModel_RelaunchIconResource), ctypes.byref(pv_icon))
+        if hr != 0:
+            log.warning('Could not set RelaunchIconResource property (HRESULT=%s)', hr)
+            return False
 
-        # Commit changes
-        Commit(pps)
-
-        # Release
-        Release(pps)
+        hr = commit(pps)
+        if hr != 0:
+            log.warning('Could not commit property store changes (HRESULT=%s)', hr)
+            return False
 
         return True
-    except Exception:
+    except (ctypes.ArgumentError, OSError, TypeError, ValueError):
+        log.exception('Error while setting native window property store values')
         return False
+    finally:
+        if pps and release_fn is not None:
+            release_fn(pps)
