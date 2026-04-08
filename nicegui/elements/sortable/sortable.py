@@ -17,13 +17,13 @@ class Sortable(Element, component='sortable.js', esm={'nicegui-sortable': 'dist'
     def __init__(
         self,
         element: SortableElement,
-        options: dict[str, Any] | None = None,
+        options: dict[str, Any] | None,
         *,
-        on_end: Handler[SortableEventArguments] | None = None,
-        animation: float = 0.15,
-        handle: str | None = None,
-        group: str | dict[str, Any] | None = None,
-        ghost_class: str = 'opacity-50',
+        on_end: Handler[SortableEventArguments] | None,
+        animation: float,
+        handle: str | None,
+        group: str | dict[str, Any] | None,
+        ghost_class: str,
     ) -> None:
         super().__init__()
         self._element = element
