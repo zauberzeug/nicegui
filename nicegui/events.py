@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
 
 from . import background_tasks, core, helpers
 from .slot import Slot
@@ -142,10 +142,13 @@ class MultiUploadEventArguments(UiEventArguments):
     files: list[FileUpload]
 
 
+ValueT = TypeVar('ValueT')
+
+
 @dataclass(kw_only=True, slots=True)
-class ValueChangeEventArguments(UiEventArguments):
-    value: Any
-    previous_value: Any = ...
+class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
+    value: ValueT
+    previous_value: ValueT = ...  # type: ignore[assignment]
 
     def __post_init__(self):
         # DEPRECATED: previous_value will be required in NiceGUI 4.0

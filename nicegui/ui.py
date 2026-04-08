@@ -155,7 +155,7 @@ from .elements.card import Card as card
 from .elements.card import CardActions as card_actions
 from .elements.card import CardSection as card_section
 from .elements.carousel import Carousel as carousel
-from .elements.carousel import CarouselSlide as carousel_slide
+from .elements.carousel_slide import CarouselSlide as carousel_slide
 from .elements.chat_message import ChatMessage as chat_message
 from .elements.checkbox import Checkbox as checkbox
 from .elements.chip import Chip as chip
@@ -235,9 +235,9 @@ from .elements.slider import Slider as slider
 from .elements.space import Space as space
 from .elements.spinner import Spinner as spinner
 from .elements.splitter import Splitter as splitter
-from .elements.stepper import Step as step
+from .elements.step import Step as step
 from .elements.stepper import Stepper as stepper
-from .elements.stepper import StepperNavigation as stepper_navigation
+from .elements.stepper_navigation import StepperNavigation as stepper_navigation
 from .elements.sub_pages import SubPages as sub_pages
 from .elements.switch import Switch as switch
 from .elements.table import Table as table

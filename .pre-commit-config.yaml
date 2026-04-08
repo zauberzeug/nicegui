@@ -9,6 +9,11 @@ repos:
     hooks:
       - id: ruff-check
         args: [--fix]
+  - repo: https://github.com/hhatto/autopep8
+    rev: v2.3.2
+    hooks:
+      - id: autopep8
+        args: [--max-line-length=120, --in-place]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:

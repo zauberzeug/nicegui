@@ -51,6 +51,8 @@ class UserInteraction(Generic[T]):
                         continue
                     event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)
+                    if element.is_deleted:
+                        break
         return self
 
     def type(self, text: str) -> Self:
@@ -145,6 +147,8 @@ class UserInteraction(Generic[T]):
                     args = not element.value if isinstance(element, (ui.checkbox, ui.switch)) else None
                     event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)
+                    if element.is_deleted:
+                        break
         return self
 
     def clear(self) -> Self:
