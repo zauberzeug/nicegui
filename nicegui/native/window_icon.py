@@ -134,7 +134,7 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
 
         hr = SHGetPropertyStoreForWindow(hwnd, ctypes.byref(IID_IPropertyStore), ctypes.byref(pps))
         if hr != 0 or not pps:
-            log.warning('Could not get IPropertyStore for window (HRESULT=%s)', hr)
+            log.warning('Could not get IPropertyStore for window (HRESULT=0x%08X)', hr & 0xFFFFFFFF)
             return False
 
         vtable = ctypes.cast(
@@ -149,19 +149,19 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
         pv_id = PROPVARIANT(VT_LPWSTR, 0, 0, 0, app_id, 0)
         hr = set_value(pps, ctypes.byref(PKEY_AppUserModel_ID), ctypes.byref(pv_id))
         if hr != 0:
-            log.warning('Could not set AppUserModelID property (HRESULT=%s)', hr)
+            log.warning('Could not set AppUserModelID property (HRESULT=0x%08X)', hr & 0xFFFFFFFF)
             return False
 
         icon_resource = f'{icon_path},0'
         pv_icon = PROPVARIANT(VT_LPWSTR, 0, 0, 0, icon_resource, 0)
         hr = set_value(pps, ctypes.byref(PKEY_AppUserModel_RelaunchIconResource), ctypes.byref(pv_icon))
         if hr != 0:
-            log.warning('Could not set RelaunchIconResource property (HRESULT=%s)', hr)
+            log.warning('Could not set RelaunchIconResource property (HRESULT=0x%08X)', hr & 0xFFFFFFFF)
             return False
 
         hr = commit(pps)
         if hr != 0:
-            log.warning('Could not commit property store changes (HRESULT=%s)', hr)
+            log.warning('Could not commit property store changes (HRESULT=0x%08X)', hr & 0xFFFFFFFF)
             return False
 
         return True
