@@ -125,8 +125,7 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
 
     try:
         # Get IPropertyStore interface
-        IID_IPropertyStore = GUID(0x886D8EEB, 0x8CF2, 0x4446,
-                                  (0x8D, 0x02, 0xCD, 0xBA, 0x1D, 0xBD, 0xCF, 0x99))
+        IID_IPropertyStore = GUID(0x886D8EEB, 0x8CF2, 0x4446, (0x8D, 0x02, 0xCD, 0xBA, 0x1D, 0xBD, 0xCF, 0x99))
 
         SHGetPropertyStoreForWindow = shell32.SHGetPropertyStoreForWindow
         SHGetPropertyStoreForWindow.argtypes = [wintypes.HWND, ctypes.POINTER(GUID), ctypes.POINTER(ctypes.c_void_p)]
@@ -137,8 +136,10 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
             log.warning('Could not get IPropertyStore for window (HRESULT=%s)', hr)
             return False
 
-        vtable = ctypes.cast(ctypes.cast(pps, ctypes.POINTER(ctypes.c_void_p))[0],
-                             ctypes.POINTER(ctypes.c_void_p * 10))[0]
+        vtable = ctypes.cast(
+            ctypes.cast(pps, ctypes.POINTER(ctypes.c_void_p))[0],
+            ctypes.POINTER(ctypes.c_void_p * 10),
+        )[0]
         set_value = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p,
                                        ctypes.POINTER(PROPERTYKEY), ctypes.POINTER(PROPVARIANT))(vtable[6])
         commit = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p)(vtable[7])
