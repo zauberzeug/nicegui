@@ -11,6 +11,7 @@ class Item(Protocol):
 
 
 dragged: card | None = None
+target: card | None = None
 
 
 class column(ui.column):
@@ -32,13 +33,14 @@ class column(ui.column):
         self.classes(remove='bg-blue-grey-3', add='bg-blue-grey-2')
 
     def move_card(self) -> None:
-        global dragged  # pylint: disable=global-statement # noqa: PLW0603
+        global dragged, target  # pylint: disable=global-statement # noqa: PLW0603
+        assert dragged is not None
         self.unhighlight()
-        dragged.parent_slot.parent.remove(dragged)
-        with self:
-            card(dragged.item)
-        self.on_drop(dragged.item, self.name)
+        dragged.move(self, self.default_slot.children.index(target) if target and target in self else -1)
+        if self.on_drop:
+            self.on_drop(dragged.item, self.name)
         dragged = None
+        target = None
 
 
 class card(ui.card):
@@ -49,7 +51,12 @@ class card(ui.card):
         with self.props('draggable').classes('w-full cursor-pointer bg-grey-1'):
             ui.label(item.title)
         self.on('dragstart', self.handle_dragstart)
+        self.on('dragover.prevent', self.handle_dragover)
 
     def handle_dragstart(self) -> None:
         global dragged  # pylint: disable=global-statement # noqa: PLW0603
         dragged = self
+
+    def handle_dragover(self) -> None:
+        global target  # pylint: disable=global-statement # noqa: PLW0603
+        target = self
