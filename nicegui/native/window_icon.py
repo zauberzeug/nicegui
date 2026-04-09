@@ -64,6 +64,20 @@ PKEY_AppUserModel_RelaunchIconResource = \
     PROPERTYKEY(GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 2)
 
 
+class PROPVARIANT(ctypes.Structure):
+    _fields_: ClassVar = [
+        ('vt', ctypes.c_ushort),
+        ('wReserved1', ctypes.c_ushort),
+        ('wReserved2', ctypes.c_ushort),
+        ('wReserved3', ctypes.c_ushort),
+        ('pwszVal', ctypes.c_wchar_p),
+        ('padding', ctypes.c_ulonglong),
+    ]
+
+
+VT_LPWSTR = 31
+
+
 def _find_window_by_title(title: str) -> int | None:
     """Find HWND by exact title. None on non-Windows or not found."""
     if user32 is None:
@@ -106,17 +120,6 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
     if shell32 is None:
         return False
 
-    class PROPVARIANT(ctypes.Structure):
-        _fields_: ClassVar = [
-            ('vt', ctypes.c_ushort),
-            ('wReserved1', ctypes.c_ushort),
-            ('wReserved2', ctypes.c_ushort),
-            ('wReserved3', ctypes.c_ushort),
-            ('pwszVal', ctypes.c_wchar_p),
-            ('padding', ctypes.c_ulonglong),
-        ]
-
-    VT_LPWSTR = 31
     pps = ctypes.c_void_p()
     release_fn = None
 
