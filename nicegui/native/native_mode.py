@@ -56,7 +56,7 @@ def _open_window(
 
     if sys.platform == 'win32' and favicon is not None:
         def on_shown() -> None:
-            window_icon.apply_icon(title, str(favicon))
+            window_icon.apply_icon(window.native.Handle.ToInt32(), title, str(favicon))
             window.events.shown -= on_shown
         window.events.shown += on_shown
 

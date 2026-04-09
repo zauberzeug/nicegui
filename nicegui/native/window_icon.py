@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import ctypes
 import re
 import sys
@@ -12,12 +10,8 @@ _WINDOWS_APP_ID_PREFIX = 'nicegui.'
 _WINDOWS_APP_ID_MAX_LENGTH = 128
 
 
-def apply_icon(title: str, icon_path: str) -> None:
-    """Find the native window by title and set its icon (title bar, Alt+Tab, taskbar)."""
-    hwnd = _find_window_by_title(title)
-    if not hwnd:
-        log.warning('Could not find native window by title to set icon')
-        return
+def apply_icon(hwnd: int, title: str, icon_path: str) -> None:
+    """Set the native window icon (title bar, Alt+Tab, taskbar)."""
     if not _set_window_icon_windows(hwnd, icon_path):
         log.warning('Could not set native window icon (unsupported format?)')
     app_id = _create_windows_app_id(title)
@@ -77,26 +71,6 @@ class PROPVARIANT(ctypes.Structure):
 
 
 VT_LPWSTR = 31
-
-
-def _find_window_by_title(title: str) -> int | None:
-    """Find HWND by exact title. None on non-Windows or not found."""
-    if user32 is None:
-        return None
-    result: list[int] = []
-
-    def enum_cb(hwnd: int, _: int) -> bool:
-        length = user32.GetWindowTextLengthW(hwnd)
-        if length > 0:
-            buf = ctypes.create_unicode_buffer(length + 1)
-            user32.GetWindowTextW(hwnd, buf, len(buf))
-            if buf.value == title:
-                result.append(hwnd)
-                return False
-        return True
-
-    user32.EnumWindows(ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)(enum_cb), 0)
-    return result[0] if result else None
 
 
 def _set_window_icon_windows(hwnd: int, icon_path: str) -> bool:
