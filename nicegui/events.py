@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Awaitable, Callable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
@@ -459,6 +459,15 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
             else:
                 result = cast(Callable[[], Any], handler)()
         if helpers.should_await(result):
-            background_tasks.create_or_defer(helpers.await_with_context(result, parent_slot), name=str(handler))
+            background_tasks.create_or_defer(_await_and_handle_in_context(result, parent_slot), name=str(handler))
     except Exception as e:
         core.app.handle_exception(e)
+
+
+async def _await_and_handle_in_context(awaitable: Awaitable, context: Slot | nullcontext) -> None:
+    """Await an event handler result within its slot context, handling exceptions in-context."""
+    with context:
+        try:
+            await awaitable
+        except Exception as e:
+            core.app.handle_exception(e)
