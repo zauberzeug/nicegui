@@ -11,7 +11,7 @@ class Item(Protocol):
 
 
 dragged: card | None = None
-drop_target: card | None = None
+target: card | None = None
 
 
 class column(ui.column):
@@ -33,20 +33,18 @@ class column(ui.column):
         self.classes(remove='bg-blue-grey-3', add='bg-blue-grey-2')
 
     def move_card(self) -> None:
-        global dragged, drop_target  # pylint: disable=global-statement # noqa: PLW0603
+        global dragged, target  # pylint: disable=global-statement # noqa: PLW0603
         self.unhighlight()
         if dragged is None:
             return
-        # Determine insertion index based on the card being hovered over
         target_index = -1
-        if drop_target is not None and drop_target.parent_slot is not None:
-            if drop_target.parent_slot.parent is self:
-                target_index = self.default_slot.children.index(drop_target)
+        if target is not None and target.parent_slot is not None and target.parent_slot.parent is self:
+            target_index = self.default_slot.children.index(target)
         dragged.move(target_container=self, target_index=target_index)
         if self.on_drop:
             self.on_drop(dragged.item, self.name)
         dragged = None
-        drop_target = None
+        target = None
 
 
 class card(ui.card):
@@ -64,5 +62,5 @@ class card(ui.card):
         dragged = self
 
     def handle_dragover(self) -> None:
-        global drop_target  # pylint: disable=global-statement # noqa: PLW0603
-        drop_target = self
+        global target  # pylint: disable=global-statement # noqa: PLW0603
+        target = self
