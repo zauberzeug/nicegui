@@ -34,13 +34,9 @@ class column(ui.column):
 
     def move_card(self) -> None:
         global dragged, target  # pylint: disable=global-statement # noqa: PLW0603
+        assert dragged is not None
         self.unhighlight()
-        if dragged is None:
-            return
-        target_index = -1
-        if target is not None and target.parent_slot is not None and target.parent_slot.parent is self:
-            target_index = self.default_slot.children.index(target)
-        dragged.move(target_container=self, target_index=target_index)
+        dragged.move(self, self.default_slot.children.index(target) if target and target in self else -1)
         if self.on_drop:
             self.on_drop(dragged.item, self.name)
         dragged = None
