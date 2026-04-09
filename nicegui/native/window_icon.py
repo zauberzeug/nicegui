@@ -1,36 +1,70 @@
 from __future__ import annotations
 
 import ctypes
+import re
 import sys
 from ctypes import wintypes
+from typing import ClassVar
 
 from ..logging import log
+
+_WINDOWS_APP_ID_PREFIX = 'nicegui.'
+_WINDOWS_APP_ID_MAX_LENGTH = 128
+
+
+def apply_icon(title: str, icon_path: str) -> None:
+    """Find the native window by title and set its icon (title bar, Alt+Tab, taskbar)."""
+    hwnd = _find_window_by_title(title)
+    if not hwnd:
+        log.warning('Could not find native window by title to set icon')
+        return
+    if not _set_window_icon_windows(hwnd, icon_path):
+        log.warning('Could not set native window icon (unsupported format?)')
+    app_id = _create_windows_app_id(title)
+    _set_window_property_store(hwnd, app_id, icon_path)
+
+
+def _create_windows_app_id(title: str) -> str:
+    """Create a sanitized Windows AppUserModelID from the window title."""
+    normalized_title = re.sub(r'[^0-9A-Za-z]+', '_', title).strip('_')
+    suffix = normalized_title or 'app'
+    max_suffix_length = _WINDOWS_APP_ID_MAX_LENGTH - len(_WINDOWS_APP_ID_PREFIX)
+    return f'{_WINDOWS_APP_ID_PREFIX}{suffix[:max_suffix_length]}'
+
 
 user32 = ctypes.windll.user32 if sys.platform == 'win32' else None  # type: ignore[attr-defined]
 shell32 = ctypes.windll.shell32 if sys.platform == 'win32' else None  # type: ignore[attr-defined]
 WM_SETICON, ICON_BIG, ICON_SMALL = 0x0080, 1, 0
 IMAGE_ICON, LR_LOADFROMFILE = 1, 0x00000010
 
-# COM GUIDs for IPropertyStore (defined unconditionally for mypy on non-Windows)
+
 class GUID(ctypes.Structure):
-    _fields_ = [('Data1', ctypes.c_ulong), ('Data2', ctypes.c_ushort),
-                ('Data3', ctypes.c_ushort), ('Data4', ctypes.c_ubyte * 8)]
+    """COM GUIDs for IPropertyStore (defined unconditionally for mypy on non-Windows)"""
+    _fields_: ClassVar = [
+        ('Data1', ctypes.c_ulong),
+        ('Data2', ctypes.c_ushort),
+        ('Data3', ctypes.c_ushort),
+        ('Data4', ctypes.c_ubyte * 8),
+    ]
 
 
 class PROPERTYKEY(ctypes.Structure):
-    _fields_ = [('fmtid', GUID), ('pid', ctypes.c_ulong)]
+    _fields_: ClassVar = [
+        ('fmtid', GUID),
+        ('pid', ctypes.c_ulong),
+    ]
 
 
 # PKEY_AppUserModel_ID = {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5
-PKEY_AppUserModel_ID = PROPERTYKEY(
-    GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 5)
+PKEY_AppUserModel_ID = \
+    PROPERTYKEY(GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 5)
 
 # PKEY_AppUserModel_RelaunchIconResource = {9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 2
-PKEY_AppUserModel_RelaunchIconResource = PROPERTYKEY(
-    GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 2)
+PKEY_AppUserModel_RelaunchIconResource = \
+    PROPERTYKEY(GUID(0x9F4C2855, 0x9F79, 0x4B39, (0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)), 2)
 
 
-def find_window_by_title(title: str) -> int | None:
+def _find_window_by_title(title: str) -> int | None:
     """Find HWND by exact title. None on non-Windows or not found."""
     if user32 is None:
         return None
@@ -50,7 +84,7 @@ def find_window_by_title(title: str) -> int | None:
     return result[0] if result else None
 
 
-def set_window_icon_windows(hwnd: int, icon_path: str) -> bool:
+def _set_window_icon_windows(hwnd: int, icon_path: str) -> bool:
     """Set window icon via LoadImageW/WM_SETICON for title bar and Alt+Tab."""
     if user32 is None:
         return False
@@ -67,13 +101,13 @@ def set_window_icon_windows(hwnd: int, icon_path: str) -> bool:
     return True
 
 
-def set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
+def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
     """Set window properties via IPropertyStore for proper taskbar icon on Windows 7+."""
     if shell32 is None:
         return False
 
     class PROPVARIANT(ctypes.Structure):
-        _fields_ = [
+        _fields_: ClassVar = [
             ('vt', ctypes.c_ushort),
             ('wReserved1', ctypes.c_ushort),
             ('wReserved2', ctypes.c_ushort),
