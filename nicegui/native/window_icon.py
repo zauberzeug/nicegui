@@ -21,7 +21,8 @@ def apply_icon(title: str, icon_path: str) -> None:
     if not _set_window_icon_windows(hwnd, icon_path):
         log.warning('Could not set native window icon (unsupported format?)')
     app_id = _create_windows_app_id(title)
-    _set_window_property_store(hwnd, app_id, icon_path)
+    if not _set_window_property_store(hwnd, app_id, icon_path):
+        log.warning('Could not set native taskbar icon')
 
 
 def _create_windows_app_id(title: str) -> str:
