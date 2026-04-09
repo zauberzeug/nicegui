@@ -92,7 +92,7 @@ def run(root: Callable | None = None, *,
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers).
-        On Windows native mode, only local file paths are used for the native window icon, and Win32 icon loading expects `.ico`.
+        In Windows native mode, a local `.ico` file path is also applied as the native window icon.
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements (default: `'en-US'`)
     :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)

@@ -47,7 +47,7 @@ doc.intro(run_documentation)
     but may be missing on minimal or freshly installed systems.
 
     On Windows, a file-path `favicon` is also used as the native window icon (taskbar, title bar).
-    Native icon loading uses Win32 `LoadImageW(..., IMAGE_ICON, ...)`, so `.ico` is required (`.cur`/`.ani` are also supported by Win32 icon loading; `.png` is not).
+    The `.ico` format is required.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
