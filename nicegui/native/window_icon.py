@@ -72,7 +72,7 @@ class PROPVARIANT(ctypes.Structure):
         ('wReserved2', ctypes.c_ushort),
         ('wReserved3', ctypes.c_ushort),
         ('pwszVal', ctypes.c_wchar_p),
-        ('padding', ctypes.c_ulonglong),
+        ('padding', ctypes.c_void_p),
     ]
 
 
