@@ -104,7 +104,7 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
 
         SHGetPropertyStoreForWindow = shell32.SHGetPropertyStoreForWindow
         SHGetPropertyStoreForWindow.argtypes = [wintypes.HWND, ctypes.POINTER(GUID), ctypes.POINTER(ctypes.c_void_p)]
-        SHGetPropertyStoreForWindow.restype = ctypes.HRESULT
+        SHGetPropertyStoreForWindow.restype = ctypes.HRESULT  # type: ignore[attr-defined]
 
         hr = SHGetPropertyStoreForWindow(hwnd, ctypes.byref(IID_IPropertyStore), ctypes.byref(pps))
         if hr != 0 or not pps:
@@ -115,10 +115,10 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
             ctypes.cast(pps, ctypes.POINTER(ctypes.c_void_p))[0],
             ctypes.POINTER(ctypes.c_void_p * 10),
         )[0]
-        set_value = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p,
+        set_value = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p,  # type: ignore[attr-defined]
                                        ctypes.POINTER(PROPERTYKEY), ctypes.POINTER(PROPVARIANT))(vtable[6])
-        commit = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p)(vtable[7])
-        release_fn = ctypes.WINFUNCTYPE(ctypes.c_ulong, ctypes.c_void_p)(vtable[2])
+        commit = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p)(vtable[7])  # type: ignore[attr-defined]
+        release_fn = ctypes.WINFUNCTYPE(ctypes.c_ulong, ctypes.c_void_p)(vtable[2])  # type: ignore[attr-defined]
 
         pv_id = PROPVARIANT(VT_LPWSTR, 0, 0, 0, app_id, 0)
         hr = set_value(pps, ctypes.byref(PKEY_AppUserModel_ID), ctypes.byref(pv_id))
