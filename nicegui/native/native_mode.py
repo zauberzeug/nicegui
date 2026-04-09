@@ -55,7 +55,10 @@ def _open_window(
     _bind_pywebview_events(window, event_sender)
 
     if sys.platform == 'win32' and favicon is not None:
-        window.events.shown += lambda: window_icon.apply_icon(title, str(favicon))
+        def on_shown() -> None:
+            window_icon.apply_icon(title, str(favicon))
+            window.events.shown -= on_shown
+        window.events.shown += on_shown
 
     _start_window_method_executor(window, method_queue, response_queue, closed)
     _warn_if_esm_unsupported(window)
