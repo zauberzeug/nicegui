@@ -21,7 +21,7 @@ _LAZY_IMPORTS = {
     'card_actions': ('.elements.card', 'CardActions'),
     'card_section': ('.elements.card', 'CardSection'),
     'carousel': ('.elements.carousel', 'Carousel'),
-    'carousel_slide': ('.elements.carousel', 'CarouselSlide'),
+    'carousel_slide': ('.elements.carousel_slide', 'CarouselSlide'),
     'chat_message': ('.elements.chat_message', 'ChatMessage'),
     'checkbox': ('.elements.checkbox', 'Checkbox'),
     'chip': ('.elements.chip', 'Chip'),
@@ -101,9 +101,9 @@ _LAZY_IMPORTS = {
     'space': ('.elements.space', 'Space'),
     'spinner': ('.elements.spinner', 'Spinner'),
     'splitter': ('.elements.splitter', 'Splitter'),
-    'step': ('.elements.stepper', 'Step'),
+    'step': ('.elements.step', 'Step'),
     'stepper': ('.elements.stepper', 'Stepper'),
-    'stepper_navigation': ('.elements.stepper', 'StepperNavigation'),
+    'stepper_navigation': ('.elements.stepper_navigation', 'StepperNavigation'),
     'sub_pages': ('.elements.sub_pages', 'SubPages'),
     'switch': ('.elements.switch', 'Switch'),
     'table': ('.elements.table', 'Table'),
@@ -307,7 +307,7 @@ if TYPE_CHECKING:
     from .elements.card import CardActions as card_actions
     from .elements.card import CardSection as card_section
     from .elements.carousel import Carousel as carousel
-    from .elements.carousel import CarouselSlide as carousel_slide
+    from .elements.carousel_slide import CarouselSlide as carousel_slide
     from .elements.chat_message import ChatMessage as chat_message
     from .elements.checkbox import Checkbox as checkbox
     from .elements.chip import Chip as chip
@@ -387,9 +387,9 @@ if TYPE_CHECKING:
     from .elements.space import Space as space
     from .elements.spinner import Spinner as spinner
     from .elements.splitter import Splitter as splitter
-    from .elements.stepper import Step as step
+    from .elements.step import Step as step
     from .elements.stepper import Stepper as stepper
-    from .elements.stepper import StepperNavigation as stepper_navigation
+    from .elements.stepper_navigation import StepperNavigation as stepper_navigation
     from .elements.sub_pages import SubPages as sub_pages
     from .elements.switch import Switch as switch
     from .elements.table import Table as table

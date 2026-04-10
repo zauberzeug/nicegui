@@ -3,13 +3,13 @@ from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class DarkMode(ValueElement, component='dark_mode.js'):
+class DarkMode(ValueElement[bool | None], component='dark_mode.js'):
     VALUE_PROP = 'value'
 
     @resolve_defaults
     def __init__(self,
                  value: bool | None = DEFAULT_PROP | False, *,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[bool | None]] | None = None,
                  ) -> None:
         """Dark mode
 
