@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
+from starlette.background import BackgroundTask
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
@@ -157,7 +158,7 @@ class Client:
         # It works for the real use case: agents sending exactly `Accept: text/markdown`.
         if 'text/markdown' in accept and 'text/html' not in accept:
             response = build_markdown_response(self, status_code)
-            background_tasks.create(self._deferred_delete(), name=f'delete markdown client {self.id}')
+            response.background = BackgroundTask(self.delete)
             return response
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
@@ -406,11 +407,6 @@ class Client:
             if helpers.should_await(result):
                 background_tasks.create(helpers.await_with_context(result, self.content),
                                         name=f'UI exception {handler.__name__}')
-
-    async def _deferred_delete(self) -> None:
-        """Yield control once, then delete this client."""
-        await asyncio.sleep(0)
-        self.delete()
 
     def delete(self) -> None:
         """Delete a client and all its elements.
