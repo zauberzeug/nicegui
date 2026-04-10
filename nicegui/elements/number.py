@@ -7,7 +7,7 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Number(LabelElement, ValidationElement, DisableableElement):
+class Number(LabelElement, ValidationElement[float | None], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
@@ -22,7 +22,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
                  prefix: str | None = DEFAULT_PROP | None,
                  suffix: str | None = DEFAULT_PROP | None,
                  format: str | None = None,  # pylint: disable=redefined-builtin
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
                  validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Number Input
@@ -142,7 +142,7 @@ class Number(LabelElement, ValidationElement, DisableableElement):
         self.value = float(self.format % value) if self.format else value
         self.update()
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> float | None:
         if not e.args:
             return None
         return float(e.args)

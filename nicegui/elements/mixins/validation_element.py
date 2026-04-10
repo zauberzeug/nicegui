@@ -4,13 +4,14 @@ from typing import Any, TypeAlias, cast
 from typing_extensions import Self
 
 from ... import background_tasks, helpers
+from ...events import ValueT
 from .value_element import ValueElement
 
 ValidationFunction: TypeAlias = Callable[[Any], str | None | Awaitable[str | None]]
 ValidationDict = dict[str, Callable[[Any], bool]]
 
 
-class ValidationElement(ValueElement):
+class ValidationElement(ValueElement[ValueT]):
 
     def __init__(self, validation: ValidationFunction | ValidationDict | None, **kwargs: Any) -> None:
         self._validation = validation

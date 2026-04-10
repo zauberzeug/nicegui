@@ -221,6 +221,7 @@ uv run pre-commit run --all-files
 
 These checks will also run automatically before every commit:
 
+- Run autopep8 with 120 character line length.
 - Run `uv run ruff check . --fix` to check the code and sort imports.
 - Remove trailing whitespace.
 - Fix end of files.

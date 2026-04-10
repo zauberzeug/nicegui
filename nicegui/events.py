@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Awaitable, Callable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
 
 from . import background_tasks, core, helpers
 from .slot import Slot
@@ -142,10 +142,13 @@ class MultiUploadEventArguments(UiEventArguments):
     files: list[FileUpload]
 
 
+ValueT = TypeVar('ValueT')
+
+
 @dataclass(kw_only=True, slots=True)
-class ValueChangeEventArguments(UiEventArguments):
-    value: Any
-    previous_value: Any = ...
+class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
+    value: ValueT
+    previous_value: ValueT = ...  # type: ignore[assignment]
 
     def __post_init__(self):
         # DEPRECATED: previous_value will be required in NiceGUI 4.0
@@ -420,6 +423,12 @@ class XtermDataEventArguments(UiEventArguments):
     data: str
 
 
+@dataclass(kw_only=True, slots=True)
+class XtermResizeEventArguments(UiEventArguments):
+    cols: int
+    rows: int
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 
@@ -450,6 +459,15 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
             else:
                 result = cast(Callable[[], Any], handler)()
         if helpers.should_await(result):
-            background_tasks.create_or_defer(helpers.await_with_context(result, parent_slot), name=str(handler))
+            background_tasks.create_or_defer(_await_and_handle_in_context(result, parent_slot), name=str(handler))
     except Exception as e:
         core.app.handle_exception(e)
+
+
+async def _await_and_handle_in_context(awaitable: Awaitable, context: Slot | nullcontext) -> None:
+    """Await an event handler result within its slot context, handling exceptions in-context."""
+    with context:
+        try:
+            await awaitable
+        except Exception as e:
+            core.app.handle_exception(e)

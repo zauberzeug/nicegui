@@ -6,7 +6,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Knob(ValueElement, DisableableElement, TextColorElement):
+class Knob(ValueElement[float], DisableableElement, TextColorElement):
     MARKDOWN_SKIP = True
 
     @resolve_defaults
@@ -21,7 +21,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  track_color: str | None = DEFAULT_PROP | None,
                  size: str | None = DEFAULT_PROP | None,
                  show_value: bool = False,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[float]] | None = None,
                  ) -> None:
         """Knob
 
