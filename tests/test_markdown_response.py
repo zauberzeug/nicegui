@@ -268,7 +268,6 @@ async def test_invisible_elements_excluded(user: User):
     assert 'Hidden' not in response.text
 
 
-
 async def test_select_with_label(user: User):
     @ui.page('/')
     def page():
