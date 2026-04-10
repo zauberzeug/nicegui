@@ -77,6 +77,7 @@ async def test_table(user: User):
             rows=[
                 {'name': 'Alice', 'age': 30},
                 {'name': 'Bob', 'age': 25},
+                {'name': 'a | b', 'age': 99},
             ],
         )
 
@@ -84,6 +85,7 @@ async def test_table(user: User):
     assert '| Name | Age |' in response.text
     assert '| Alice | 30 |' in response.text
     assert '| Bob | 25 |' in response.text
+    assert r'| a \| b | 99 |' in response.text
 
 
 async def test_checkbox(user: User):

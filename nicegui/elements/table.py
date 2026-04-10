@@ -134,11 +134,11 @@ class Table(FilterElement, component='table.js'):
             lines.append(f'**{title}**')
             lines.append('')
         if columns:
-            headers = [col.get('label', col.get('name', '')) for col in columns]
+            headers = [col.get('label', col.get('name', '')).replace('|', '\\|') for col in columns]
             lines.append('| ' + ' | '.join(headers) + ' |')
             lines.append('| ' + ' | '.join('---' for _ in columns) + ' |')
             for row in rows:
-                cells = [str(row.get(col.get('field', col.get('name', '')), '')) for col in columns]
+                cells = [str(row.get(col.get('field', col.get('name', '')), '')).replace('|', '\\|') for col in columns]
                 lines.append('| ' + ' | '.join(cells) + ' |')
         return '\n'.join(lines)
 
