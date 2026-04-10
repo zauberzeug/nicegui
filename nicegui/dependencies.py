@@ -157,16 +157,15 @@ def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     if key in esm_modules:
         if esm_modules[key].name == name:
             return
-        raise ValueError(f'Conflicting ESM registration for key "{key}": '
-                         f'"{esm_modules[key].name}" vs "{name}"')
+        raise ValueError(f'Conflicting ESM registration for key "{key}": "{esm_modules[key].name}" vs "{name}"')
     esm_modules[key] = EsmModule(name=name, path=path)
 
 
-def setup_esm_package(package_file: str, package_name: str, esm_name: str,
-                      exports: dict[str, str]) -> tuple[Callable[[str], object], Callable[[], list[str]]]:
+def setup_esm_package(package_file: str, package_name: str, esm_name: str, exports: dict[str, str]) \
+        -> tuple[Callable[[str], object], Callable[[], list[str]]]:
     """Register an ESM module and return ``__getattr__`` and ``__dir__`` for lazy class loading.
 
-    Each ESM element package can use this in its ``__init__.py``::
+    Each ESM element package can use this in its ``__init__.py``:
 
         from ...dependencies import setup_esm_package
         __getattr__, __dir__ = setup_esm_package(__file__, __name__, 'nicegui-aggrid', {'AgGrid': '.aggrid'})
@@ -176,16 +175,16 @@ def setup_esm_package(package_file: str, package_name: str, esm_name: str,
     register_esm(esm_name, dist, max_time=dist.stat().st_mtime)
 
     by_submodule: dict[str, list[str]] = {}
-    for attr, submod in exports.items():
-        by_submodule.setdefault(submod, []).append(attr)
+    for attr, submodule in exports.items():
+        by_submodule.setdefault(submodule, []).append(attr)
 
     def __getattr__(name: str) -> object:
         if name not in exports:
-            raise AttributeError(name)
-        submod = exports[name]
-        module = importlib.import_module(submod, package=package_name)
+            raise AttributeError(f'module {package_name!r} has no attribute {name!r}')
+        submodule = exports[name]
+        module = importlib.import_module(submodule, package=package_name)
         pkg = sys.modules[package_name]
-        for attr in by_submodule[submod]:
+        for attr in by_submodule[submodule]:
             setattr(pkg, attr, getattr(module, attr))
         return getattr(module, name)
 

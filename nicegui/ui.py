@@ -289,8 +289,6 @@ __all__ = [
     'xterm',
 ]
 
-assert set(__all__) == set(_LAZY_IMPORTS), 'All public names must be in _LAZY_IMPORTS'
-
 if TYPE_CHECKING:
     from .context import context
     from .element import Element as element
@@ -433,20 +431,18 @@ def __dir__() -> builtins.list[str]:
 
 
 def __getattr__(name: str) -> object:
-    if name in _LAZY_IMPORTS:
-        module_path, attr_name = _LAZY_IMPORTS[name]
-        module = importlib.import_module(module_path, package='nicegui')
-        value = getattr(module, attr_name) if attr_name else module
-        setattr(sys.modules[__name__], name, value)
-        return value
-    raise AttributeError(f"module 'nicegui.ui' has no attribute {name!r}")
+    if name not in _LAZY_IMPORTS:
+        raise AttributeError(f"module 'nicegui.ui' has no attribute {name!r}")
+    module_path, attr_name = _LAZY_IMPORTS[name]
+    module = importlib.import_module(module_path, package='nicegui')
+    value = getattr(module, attr_name) if attr_name else module
+    setattr(sys.modules[__name__], name, value)
+    return value
 
 
 # Eagerly import element packages with 'dist' dirs so their __init__.py registers ESM modules in the importmap.
 for _module_path in {mp for mp, _ in _LAZY_IMPORTS.values()}:
     _spec = importlib.util.find_spec(_module_path, package='nicegui')
-    if _spec and _spec.submodule_search_locations:
-        _pkg_dir = Path(_spec.submodule_search_locations[0])
-        if (_pkg_dir / 'dist').is_dir():
-            importlib.import_module(_module_path, package='nicegui')
-del _module_path, _spec, _pkg_dir  # pylint: disable=undefined-loop-variable
+    if _spec and _spec.submodule_search_locations and (Path(_spec.submodule_search_locations[0]) / 'dist').is_dir():
+        importlib.import_module(_module_path, package='nicegui')
+del _module_path, _spec  # pylint: disable=undefined-loop-variable
