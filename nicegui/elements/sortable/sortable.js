@@ -7,6 +7,7 @@ export default {
       onEnd: (evt) => {
         const fromId = parseInt(evt.from.id.substring(1));
         const toId = parseInt(evt.to.id.substring(1));
+        if (isNaN(fromId) || isNaN(toId)) return;
         const fromSlot = window.mounted_app?.elements?.[fromId]?.slots?.default;
         const toSlot = window.mounted_app?.elements?.[toId]?.slots?.default;
         if (fromSlot && fromSlot.ids) {
