@@ -23,7 +23,7 @@ jobs:
         run: |
           uv build
           uv publish --token ${{ secrets.PYPI_API_TOKEN }}
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           draft: true
           prerelease: ${{ contains(inputs.version, 'rc') }}
