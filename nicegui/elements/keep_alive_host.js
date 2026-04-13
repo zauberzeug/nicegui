@@ -17,6 +17,7 @@ export default {
       const cache = document.createElement("div");
       cache.id = CACHE_ID;
       cache.style.display = "none";
+      cache.setAttribute("aria-hidden", "true");
       document.body.appendChild(cache);
     }
   },
