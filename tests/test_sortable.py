@@ -64,6 +64,60 @@ def test_cross_container(screen: Screen):
     screen.should_not_contain('Card2: something moved')  # because the event only fires on the source container
 
 
+def test_disable_and_enable(screen: Screen):
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            ui.label('A')
+            ui.label('B')
+            ui.label('C')
+        order = ui.label()
+        sortable = card.make_sortable(
+            on_end=lambda e: order.set_text(  # pylint: disable=protected-access
+                f'order: {", ".join(child._text or "" for child in card)}'
+            ),
+        )
+        ui.button('Disable', on_click=sortable.disable)
+        ui.button('Enable', on_click=sortable.enable)
+
+    screen.open('/')
+    _drag(screen, screen.find('A'), screen.find('B'), dy=5)
+    screen.should_contain('order: B, A, C')
+
+    screen.click('Disable')
+    _drag(screen, screen.find('B'), screen.find('A'), dy=5)
+    screen.should_contain('order: B, A, C')
+
+    screen.click('Enable')
+    _drag(screen, screen.find('B'), screen.find('A'), dy=5)
+    screen.should_contain('order: A, B, C')
+
+
+def test_handle_property(screen: Screen):
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            ui.label('A')
+            ui.label('B')
+            ui.label('C')
+        order = ui.label()
+        sortable = card.make_sortable(
+            handle='.handle',
+            on_end=lambda e: order.set_text(  # pylint: disable=protected-access
+                f'order: {", ".join(child._text or "" for child in card)}'
+            ),
+        )
+        ui.button('Remove handle', on_click=lambda: setattr(sortable, 'handle', None))
+
+    screen.open('/')
+    _drag(screen, screen.find('A'), screen.find('B'), dy=5)
+    screen.should_not_contain('order:')
+
+    screen.click('Remove handle')
+    _drag(screen, screen.find('A'), screen.find('B'), dy=5)
+    screen.should_contain('order: B, A, C')
+
+
 def test_make_sortable_twice_raises(screen: Screen):
     @ui.page('/')
     def page():
