@@ -190,6 +190,7 @@ def map_of_nicegui():
                 - [`.mark()`](/documentation/element_filter#markers): mark an element for querying with an [ElementFilter](/documentation/element_filter)
             - interaction:
                 - [`.on()`](/documentation/generic_events): add Python and JavaScript event handlers
+                - [`.make_sortable()`](/documentation/sortable): enable drag-and-drop sorting on container elements
                 - `.update()`: send an update to the client (mostly done automatically)
                 - `.run_method()`: run a method on the client side
                 - `.get_computed_prop()`: get the value of a property that is computed on the client side

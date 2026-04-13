@@ -1,7 +1,7 @@
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class List(Element):
+class List(SortableElement):
 
     def __init__(self) -> None:
         """List
