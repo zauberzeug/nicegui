@@ -23,16 +23,18 @@ def main_demo() -> None:
 ''')
 def cross_container() -> None:
     with ui.row():
-        with ui.card() as card1:
+        with ui.card():
             ui.label('Card 1').classes('font-bold')
-            for name in ['Alice', 'Bob', 'Carol']:
-                ui.label(name).classes('cursor-grab active:cursor-grabbing')
-        with ui.card() as card2:
+            with ui.column() as col1:
+                for name in ['Alice', 'Bob', 'Carol']:
+                    ui.label(name).classes('cursor-grab active:cursor-grabbing')
+        with ui.card():
             ui.label('Card 2').classes('font-bold')
-            for name in ['Dave', 'Eve', 'Frank']:
-                ui.label(name).classes('cursor-grab active:cursor-grabbing')
-    card1.make_sortable(group='shared')
-    card2.make_sortable(group='shared')
+            with ui.column() as col2:
+                for name in ['Dave', 'Eve', 'Frank']:
+                    ui.label(name).classes('cursor-grab active:cursor-grabbing')
+    col1.make_sortable(group='shared')
+    col2.make_sortable(group='shared')
 
 
 @doc.demo('Drag Handle', '''
