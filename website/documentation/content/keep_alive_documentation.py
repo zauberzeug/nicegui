@@ -13,21 +13,22 @@ def main_demo() -> None:
             ui.label('Open the second tab to see the buffered output.')
         with ui.tab_panel('Terminal'):
             with ui.keep_alive():
-                terminal = ui.xterm()
+                terminal = ui.xterm({'cols': 28, 'rows': 9})
 
     ui.button('Write hello', on_click=lambda: terminal.writeln('Hello, NiceGUI!'))
 
 
 @doc.demo('Reading data from a hidden AG Grid', '''
-    Without `ui.keep_alive`, calling `get_client_data` on a `ui.aggrid` inside an unopened tab or closed dialog
+    An editable `ui.aggrid` lets users modify cells client-side, and `get_client_data` reads those changes back.
+    Without `ui.keep_alive`, calling it on a grid inside an unopened tab or closed dialog
     would silently return an empty list because the grid has not been mounted yet.
     Wrapping the grid in `ui.keep_alive` mounts it eagerly, so its API is reachable immediately.
 ''')
 def aggrid_demo() -> None:
-    with ui.dialog() as dialog:
+    with ui.dialog() as dialog, ui.card().classes('min-w-96'):
         with ui.keep_alive():
             grid = ui.aggrid({
-                'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+                'columnDefs': [{'field': 'name', 'editable': True}, {'field': 'age'}],
                 'rowData': [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}],
             })
         ui.button('Close', on_click=dialog.close)
