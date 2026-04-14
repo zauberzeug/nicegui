@@ -63,6 +63,7 @@ _LAZY_IMPORTS = {
     'keyboard': ('.elements.keyboard', 'Keyboard'),
     'knob': ('.elements.knob', 'Knob'),
     'label': ('.elements.label', 'Label'),
+    'lazy': ('.elements.lazy', 'Lazy'),
     'leaflet': ('.elements.leaflet', 'Leaflet'),
     'line_plot': ('.elements.line_plot', 'LinePlot'),
     'link': ('.elements.link', 'Link'),
@@ -211,6 +212,7 @@ __all__ = [
     'keyboard',
     'knob',
     'label',
+    'lazy',
     'leaflet',
     'left_drawer',
     'line_plot',
@@ -347,6 +349,7 @@ if TYPE_CHECKING:
     from .elements.keyboard import Keyboard as keyboard
     from .elements.knob import Knob as knob
     from .elements.label import Label as label
+    from .elements.lazy import Lazy as lazy
     from .elements.leaflet import Leaflet as leaflet
     from .elements.line_plot import LinePlot as line_plot
     from .elements.link import Link as link
