@@ -1,8 +1,16 @@
+import os
+import shutil
+import tempfile
 from pathlib import Path
 
 import pytest
 
-from . import general
+# Set up session-unique storage directory BEFORE importing nicegui modules.
+# This ensures Storage.path reads the correct env var during class definition.
+_nicegui_storage_dir = tempfile.mkdtemp(prefix='nicegui-test-storage-')
+os.environ['NICEGUI_STORAGE_PATH'] = _nicegui_storage_dir
+
+from . import general  # noqa: E402  # must be after env var setup
 
 # pylint: disable=redefined-outer-name
 
@@ -13,8 +21,19 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Register the "nicegui_main_file" marker."""
+    """Register the "nicegui_main_file" marker and set up session-unique storage path."""
     config.addinivalue_line('markers', 'nicegui_main_file: specify the main file for the test')
+
+    # Also update Storage.path directly in case the class was already imported
+    # before the env var was set (nicegui/__init__.py imports storage early).
+    from ..storage import Storage  # pylint: disable=import-outside-toplevel
+    Storage.path = Path(_nicegui_storage_dir).resolve()
+
+
+def pytest_unconfigure(config: pytest.Config) -> None:
+    """Clean up session-unique storage directory."""
+    if _nicegui_storage_dir:
+        shutil.rmtree(_nicegui_storage_dir, ignore_errors=True)
 
 
 def get_path_to_main_file(request: pytest.FixtureRequest) -> Path | None:
