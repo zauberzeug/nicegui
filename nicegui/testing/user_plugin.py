@@ -12,6 +12,7 @@ from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     get_path_to_main_file,
     pytest_addoption,
     pytest_configure,
+    pytest_unconfigure,
 )
 from .user import User
 from .user_simulation import prepare_simulation, user_simulation

@@ -1,5 +1,7 @@
 import os
 import shutil
+import socket
+import tempfile
 from collections.abc import Generator
 from pathlib import Path
 
@@ -11,12 +13,23 @@ from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
     pytest_addoption,
     pytest_configure,
+    pytest_unconfigure,
 )
 from .screen import Screen
 
 # pylint: disable=redefined-outer-name
 
-DOWNLOAD_DIR = Path(__file__).parent / 'download'
+
+def _find_free_port() -> int:
+    """Find a free port usable by ui.run (which binds to all interfaces by default)."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('0.0.0.0', 0))
+        return s.getsockname()[1]
+
+
+Screen.PORT = _find_free_port()
+Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
+DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
