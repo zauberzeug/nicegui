@@ -13,7 +13,10 @@ from ...events import (
     Handler,
     SceneClickEventArguments,
     SceneClickHit,
+    SceneClipPlane,
     SceneDragEventArguments,
+    SceneGroundPoint,
+    SceneTransformEventArguments,
     handle_event,
 )
 from .scene_object3d import Object3D
@@ -41,6 +44,7 @@ class SceneObject:
 
 class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
+    from .scene_objects import ArrowHelper as arrow_helper
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
@@ -48,8 +52,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     from .scene_objects import Extrusion as extrusion
     from .scene_objects import Gltf as gltf
     from .scene_objects import Group as group
+    from .scene_objects import Lathe as lathe
     from .scene_objects import Line as line
     from .scene_objects import PointCloud as point_cloud
+    from .scene_objects import PolarGridHelper as polar_grid_helper
+    from .scene_objects import Polyline as polyline
     from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
     from .scene_objects import Ring as ring
     from .scene_objects import Sphere as sphere
@@ -65,16 +72,21 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  height: int = DEFAULT_PROP | 300,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
                  grid: bool | tuple[int, int] = DEFAULT_PROP | True,
+                 polar_grid: tuple[float, int, int] | None = None,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
                  click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
                  on_drag_start: Handler[SceneDragEventArguments] | None = None,
                  on_drag_end: Handler[SceneDragEventArguments] | None = None,
+                 on_transform: Handler[SceneTransformEventArguments] | None = None,
+                 on_transform_start: Handler[SceneTransformEventArguments] | None = None,
+                 on_transform_end: Handler[SceneTransformEventArguments] | None = None,
                  drag_constraints: str = DEFAULT_PROP | '',
                  background_color: str = DEFAULT_PROP | '#eee',
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
+                 raycaster_threshold: float = DEFAULT_PROP | 1.0,
                  ) -> None:
         """3D Scene
 
@@ -86,16 +98,22 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
+        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` for `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ (default: ``None``)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
+        :param on_transform: callback executed continuously while an object is being transformed via TransformControls
+        :param on_transform_start: callback executed when TransformControls gizmo interaction starts
+        :param on_transform_end: callback executed when TransformControls gizmo interaction ends
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
+        :param raycaster_threshold: hit-test threshold for thin objects like ``line`` and point clouds (default: 1.0).
+            Lower values reduce the number of hits from dense thin objects, preventing large WebSocket payloads on click events.
         """
         super().__init__()
         self._props['width'] = width
@@ -103,6 +121,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['fps'] = fps
         self._props['show-stats'] = show_stats
         self._props['grid'] = grid
+        self._props['polar-grid'] = polar_grid
         self._props['background-color'] = background_color
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
@@ -114,18 +133,29 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
+        self._transform_handlers: list[Handler[SceneTransformEventArguments]] = \
+            [on_transform] if on_transform else []
+        self._transform_start_handlers: list[Handler[SceneTransformEventArguments]] = \
+            [on_transform_start] if on_transform_start else []
+        self._transform_end_handlers: list[Handler[SceneTransformEventArguments]] = \
+            [on_transform_end] if on_transform_end else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
+        self.on('transform', self._handle_transform)
+        self.on('transform_start', self._handle_transform)
+        self.on('transform_end', self._handle_transform)
         self._props['drag-constraints'] = drag_constraints
         self._props['control-type'] = control_type
+        self._props['raycaster-threshold'] = raycaster_threshold
 
         self._props.add_rename('background_color', 'background-color')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('polar_grid', 'polar-grid')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
@@ -141,6 +171,21 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     def on_drag_end(self, callback: Handler[SceneDragEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is dropped."""
         self._drag_end_handlers.append(callback)
+        return self
+
+    def on_transform(self, callback: Handler[SceneTransformEventArguments]) -> Self:
+        """Add a callback to be invoked continuously while a 3D object is being transformed."""
+        self._transform_handlers.append(callback)
+        return self
+
+    def on_transform_start(self, callback: Handler[SceneTransformEventArguments]) -> Self:
+        """Add a callback to be invoked when transform gizmo interaction starts."""
+        self._transform_start_handlers.append(callback)
+        return self
+
+    def on_transform_end(self, callback: Handler[SceneTransformEventArguments]) -> Self:
+        """Add a callback to be invoked when transform gizmo interaction ends."""
+        self._transform_end_handlers.append(callback)
         return self
 
     @staticmethod
@@ -188,6 +233,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
+        gp = e.args.get('ground_point')
+        ground_point = SceneGroundPoint(x=gp['x'], y=gp['y'], z=gp['z']) if gp else None
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
@@ -204,6 +251,13 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                 y=hit['point']['y'],
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
+            ground_point=ground_point,
+            screen_x=e.args.get('screen_x'),
+            screen_y=e.args.get('screen_y'),
+            client_x=e.args.get('client_x'),
+            client_y=e.args.get('client_y'),
+            offset_x=e.args.get('offset_x'),
+            offset_y=e.args.get('offset_y'),
         )
         for handler in self._click_handlers:
             handle_event(handler, arguments)
@@ -224,6 +278,168 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
 
         for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
             handle_event(handler, arguments)
+
+    def _handle_transform(self, e: GenericEventArguments) -> None:
+        arguments = SceneTransformEventArguments(
+            sender=self,
+            client=self.client,
+            type=e.args['type'],
+            object_id=e.args['object_id'],
+            object_name=e.args.get('object_name', ''),
+            x=e.args['x'],
+            y=e.args['y'],
+            z=e.args['z'],
+            rx=e.args['rx'],
+            ry=e.args['ry'],
+            rz=e.args['rz'],
+            mode=e.args['mode'],
+            wx=e.args.get('wx'),
+            wy=e.args.get('wy'),
+            wz=e.args.get('wz'),
+        )
+        if arguments.type == 'transform':
+            handlers = self._transform_handlers
+        elif arguments.type == 'transform_start':
+            handlers = self._transform_start_handlers
+        else:
+            handlers = self._transform_end_handlers
+        for handler in handlers:
+            handle_event(handler, arguments)
+
+    def enable_transform_controls(self,
+                                  object_id: str,
+                                  mode: Literal['translate', 'rotate', 'scale'] = 'translate',
+                                  size: float | None = None,
+                                  visible_axes: list[Literal['X', 'Y', 'Z']] | None = None,
+                                  ) -> None:
+        """Enable TransformControls gizmo on an object.
+
+        :param object_id: ID of the object to attach transform controls to
+        :param mode: transform mode - ``'translate'``, ``'rotate'``, or ``'scale'``
+        :param size: optional gizmo size multiplier
+        :param visible_axes: list of axes to show (e.g. ``['X']`` for X-only). If ``None``, shows all axes.
+        """
+        self.run_method('enable_transform_controls', object_id, mode, size, visible_axes)
+
+    def disable_transform_controls(self, object_id: str) -> None:
+        """Disable TransformControls gizmo on an object.
+
+        :param object_id: ID of the object to detach transform controls from
+        """
+        self.run_method('disable_transform_controls', object_id)
+
+    def set_transform_mode(self, object_id: str, mode: Literal['translate', 'rotate', 'scale']) -> None:
+        """Change the transform mode of an object's gizmo.
+
+        :param object_id: ID of the object with transform controls
+        :param mode: transform mode - ``'translate'``, ``'rotate'``, or ``'scale'``
+        """
+        self.run_method('set_transform_mode', object_id, mode)
+
+    def set_transform_size(self, object_id: str, size: float) -> None:
+        """Change the size of an object's transform gizmo.
+
+        :param object_id: ID of the object with transform controls
+        :param size: gizmo size multiplier
+        """
+        self.run_method('set_transform_size', object_id, size)
+
+    def set_transform_space(self, object_id: str, space: Literal['local', 'world']) -> None:
+        """Set the transform space of an object's gizmo.
+
+        :param object_id: ID of the object with transform controls
+        :param space: ``'local'`` or ``'world'``
+        """
+        self.run_method('set_transform_space', object_id, space)
+
+    def set_transform_rotation_snap(self, object_id: str, radians: float) -> None:
+        """Set rotation snapping for an object's transform gizmo.
+
+        :param object_id: ID of the object with transform controls
+        :param radians: snap angle in radians (e.g. ``0.0873`` for 5 degrees)
+        """
+        self.run_method('set_transform_rotation_snap', object_id, radians)
+
+    async def has_transform_controls(self, object_id: str) -> bool:
+        """Check whether an object currently has TransformControls attached.
+
+        :param object_id: ID of the object to check
+        :return: ``True`` if TransformControls are attached, ``False`` otherwise
+        """
+        return await self.run_method('has_transform_controls', object_id)
+
+    def set_transform_axis_colors(self,
+                                  object_id: str,
+                                  x: int | None = None,
+                                  y: int | None = None,
+                                  z: int | None = None,
+                                  ) -> None:
+        """Update TransformControls axis colors.
+
+        :param object_id: ID of the object with transform controls
+        :param x: hex color for the X axis (e.g. ``0xff0000`` for red)
+        :param y: hex color for the Y axis (e.g. ``0x00ff00`` for green)
+        :param z: hex color for the Z axis (e.g. ``0x0000ff`` for blue)
+        """
+        color_map: dict[str, int] = {}
+        if x is not None:
+            color_map['x'] = x
+        if y is not None:
+            color_map['y'] = y
+        if z is not None:
+            color_map['z'] = z
+        self.run_method('set_transform_axis_colors', object_id, color_map)
+
+    def set_orbit_enabled(self, flag: bool) -> None:
+        """Enable or disable OrbitControls interaction.
+
+        :param flag: ``True`` to enable orbit controls, ``False`` to disable
+        """
+        self.run_method('set_orbit_enabled', flag)
+
+    def set_axes_inset(self, opts: dict[str, Any]) -> None:
+        """Configure the orientation inset overlay.
+
+        ``opts`` keys:
+          - ``enabled``: bool (default ``False``)
+          - ``size``: int (pixels)
+          - ``margin``: int (pixels, used if ``marginX`` / ``marginY`` omitted)
+          - ``marginX``: int (pixels)
+          - ``marginY``: int (pixels)
+          - ``anchor``: ``'bottom-left'`` | ``'bottom-right'`` | ``'top-left'`` | ``'top-right'``
+        """
+        self.run_method('set_axes_inset', opts)
+
+    def set_axes_labels(self, opts: dict[str, Any]) -> None:
+        """Configure axis labels for the orientation inset.
+
+        ``opts`` keys:
+          - ``enabled``: bool (default ``False``)
+          - ``font``: CSS font string (e.g. ``'bold 32px sans-serif'``)
+          - ``colorX``, ``colorY``, ``colorZ``: CSS colors
+          - ``size``: sprite scale (default ``0.35``)
+        """
+        self.run_method('set_axes_labels', opts)
+
+    def set_clipping_planes(self, object_id: str, planes: list[SceneClipPlane]) -> None:
+        """Set clipping planes for an object (for proximity-based visibility).
+
+        :param object_id: ID of the object to apply clipping to
+        :param planes: list of :class:`SceneClipPlane` instances defining the clipping planes
+
+        Example: to clip everything below Z=0.1::
+
+            scene.set_clipping_planes('my_sphere', [SceneClipPlane(nx=0, ny=0, nz=1, d=-0.1)])
+        """
+        plane_dicts = [{'nx': p.nx, 'ny': p.ny, 'nz': p.nz, 'd': p.d} for p in planes]
+        self.run_method('set_clipping_planes', object_id, plane_dicts)
+
+    def clear_clipping_planes(self, object_id: str) -> None:
+        """Clear clipping planes from an object.
+
+        :param object_id: ID of the object to remove clipping from
+        """
+        self.run_method('clear_clipping_planes', object_id)
 
     def __len__(self) -> int:
         return len(self.objects)

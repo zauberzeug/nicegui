@@ -339,4 +339,110 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo(
+    'Polar Grid',
+    '''
+    Instead of a rectangular grid, you can display a polar grid using the `polar_grid` parameter.
+    It accepts a tuple of `(radius, sectors, rings)` to configure the grid.
+    When using `polar_grid`, the `grid` parameter is ignored.
+''',
+)
+def polar_grid() -> None:
+    with ui.scene(grid=False, polar_grid=(1.5, 12, 6)).classes('w-full h-64') as scene:
+        scene.sphere(0.1).move(1, 0, 0).material('#ff0000')
+        scene.sphere(0.1).move(0, 1, 0).material('#00ff00')
+        scene.sphere(0.1).move(-1, 0, 0).material('#0000ff')
+
+
+@doc.demo(
+    'Transform Controls',
+    '''
+    You can enable interactive transform gizmos on objects using `enable_transform_controls()`.
+    This allows users to translate, rotate, or scale objects directly in the 3D view.
+    The `on_transform`, `on_transform_start`, and `on_transform_end` callbacks receive
+    `SceneTransformEventArguments` with position, rotation, and mode information.
+''',
+)
+def transform_controls() -> None:
+    from nicegui import events
+
+    def handle_transform_end(e: events.SceneTransformEventArguments):
+        ui.notify(f'{e.object_name}: ({e.x:.2f}, {e.y:.2f}, {e.z:.2f})')
+
+    with ui.scene(width=285, height=220, on_transform_end=handle_transform_end) as scene:
+        box = scene.box().move(z=0.5).with_name('box')
+        scene.enable_transform_controls(box.id, mode='translate')
+
+    def set_mode(mode: str):
+        scene.set_transform_mode(box.id, mode)
+
+    with ui.button_group():
+        ui.button('Translate', on_click=lambda: set_mode('translate'))
+        ui.button('Rotate', on_click=lambda: set_mode('rotate'))
+        ui.button('Scale', on_click=lambda: set_mode('scale'))
+
+
+@doc.demo(
+    'Ground Point Click',
+    '''
+    Click events now include a `ground_point` attribute that contains the intersection
+    of the click ray with the Z=0 ground plane. This is useful for placing objects
+    in the scene even when clicking on empty space.
+''',
+)
+def ground_point_click() -> None:
+    from nicegui import events
+
+    def handle_click(e: events.SceneClickEventArguments):
+        if e.ground_point:
+            scene.sphere(0.1).move(e.ground_point.x, e.ground_point.y, 0).material('#ff8800')
+
+    with ui.scene(width=285, height=220, on_click=handle_click) as scene:
+        scene.sphere(0.2).move(0, 0, 0.2).material('#4488ff')
+
+    ui.label('Click anywhere to place orange spheres on the ground')
+
+
+@doc.demo(
+    'Axes Orientation Inset',
+    '''
+    You can display a camera orientation indicator overlay using `set_axes_inset()`.
+    This small widget shows the current X, Y, Z axes orientation in a corner of the scene,
+    similar to 3D CAD applications. Labels can be added with `set_axes_labels()`.
+''',
+)
+def axes_inset() -> None:
+    with ui.scene().classes('w-full h-64') as scene:
+        scene.box()
+
+    def toggle_inset(enabled: bool):
+        scene.set_axes_inset({'enabled': enabled, 'size': 80, 'anchor': 'bottom-left'})
+        scene.set_axes_labels({'enabled': enabled})
+
+    ui.switch('Show orientation inset', on_change=lambda e: toggle_inset(e.value))
+
+
+@doc.demo(
+    'Clipping Planes',
+    '''
+    You can clip objects using `set_clipping_planes()` to hide parts of geometry.
+    Each clipping plane is defined by a normal vector (nx, ny, nz) and distance (d).
+    Use `SceneClipPlane` from `nicegui.events` to create plane definitions.
+    Call `clear_clipping_planes()` to remove clipping.
+''',
+)
+def clipping_planes() -> None:
+    from nicegui.events import SceneClipPlane
+
+    with ui.scene(width=285, height=220) as scene:
+        sphere = scene.sphere(0.5).move(z=0.5).with_name('sphere')
+
+    def set_clip(height: float):
+        # Clip below the specified Z height
+        scene.set_clipping_planes(sphere.id, [SceneClipPlane(nx=0, ny=0, nz=1, d=-height)])
+
+    ui.slider(min=0, max=1, step=0.1, value=0.5).on_value_change(lambda e: set_clip(e.value))
+    ui.button('Clear clipping', on_click=lambda: scene.clear_clipping_planes(sphere.id))
+
+
 doc.reference(ui.scene)

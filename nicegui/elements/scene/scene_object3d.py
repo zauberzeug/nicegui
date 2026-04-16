@@ -27,6 +27,7 @@ class Object3D:
         self.side_: str = 'front'
         self.visible_: bool = True
         self.draggable_: bool = False
+        self.hoverable_: bool = False
         self.x: float = 0
         self.y: float = 0
         self.z: float = 0
@@ -54,6 +55,7 @@ class Object3D:
             self.sx, self.sy, self.sz,
             self.visible_,
             self.draggable_,
+            self.hoverable_,
         ]
 
     def __enter__(self) -> Self:
@@ -86,6 +88,9 @@ class Object3D:
 
     def _draggable(self) -> None:
         self.scene.run_method('draggable', self.id, self.draggable_)
+
+    def _hoverable(self) -> None:
+        self.scene.run_method('hoverable', self.id, self.hoverable_)
 
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
@@ -148,6 +153,20 @@ class Object3D:
         """
         return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
 
+    def rotate_euler(self, r_x: float, r_y: float, r_z: float, order: str = 'XYZ') -> Self:
+        """Rotate the object using Euler angles directly.
+
+        This method sets Euler angles directly without matrix conversion,
+        avoiding potential rotation order mismatches.
+
+        :param r_x: rotation around the x axis in radians
+        :param r_y: rotation around the y axis in radians
+        :param r_z: rotation around the z axis in radians
+        :param order: Euler rotation order (default 'XYZ')
+        """
+        self.scene.run_method('rotate_euler', self.id, r_x, r_y, r_z, order)
+        return self
+
     def rotate_R(self, R: list[list[float]]) -> Self:
         """Rotate the object.
 
@@ -194,6 +213,18 @@ class Object3D:
         if self.draggable_ != value:
             self.draggable_ = value
             self._draggable()
+        return self
+
+    def hoverable(self, value: bool = True) -> Self:
+        """Set whether the object should show hover feedback.
+
+        When enabled, the object scales up slightly and shows a pointer cursor on mouse hover.
+
+        :param value: whether the object should be hoverable (default: `True`)
+        """
+        if self.hoverable_ != value:
+            self.hoverable_ = value
+            self._hoverable()
         return self
 
     def attach(self, parent: Object3D) -> None:

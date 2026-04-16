@@ -87,6 +87,27 @@ class SceneClickHit:
 
 
 @dataclass(kw_only=True, slots=True)
+class SceneGroundPoint:
+    """Ground plane intersection point from ray casting."""
+    x: float
+    y: float
+    z: float
+
+
+@dataclass(kw_only=True, slots=True)
+class SceneClipPlane:
+    """Clipping plane definition for proximity-based visibility.
+
+    The plane is defined by its normal vector (nx, ny, nz) and distance (d).
+    Points on the positive side of the plane (where dot(normal, point) + d > 0) are visible.
+    """
+    nx: float
+    ny: float
+    nz: float
+    d: float
+
+
+@dataclass(kw_only=True, slots=True)
 class SceneClickEventArguments(ClickEventArguments):
     click_type: str
     button: int
@@ -95,6 +116,13 @@ class SceneClickEventArguments(ClickEventArguments):
     meta: bool
     shift: bool
     hits: list[SceneClickHit]
+    ground_point: SceneGroundPoint | None = None
+    screen_x: float | None = None
+    screen_y: float | None = None
+    client_x: float | None = None
+    client_y: float | None = None
+    offset_x: float | None = None
+    offset_y: float | None = None
 
 
 @dataclass(kw_only=True, slots=True)
@@ -105,6 +133,23 @@ class SceneDragEventArguments(ClickEventArguments):
     x: float
     y: float
     z: float
+
+
+@dataclass(kw_only=True, slots=True)
+class SceneTransformEventArguments(UiEventArguments):
+    type: Literal['transform', 'transform_start', 'transform_end']
+    object_id: str
+    object_name: str
+    x: float
+    y: float
+    z: float
+    rx: float
+    ry: float
+    rz: float
+    mode: Literal['translate', 'rotate', 'scale']
+    wx: float | None = None
+    wy: float | None = None
+    wz: float | None = None
 
 
 @dataclass(kw_only=True, slots=True)

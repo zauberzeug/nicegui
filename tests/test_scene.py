@@ -238,3 +238,323 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_polar_grid(screen: Screen):
+    """Test that polar grid creates a scene with PolarGridHelper."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene(grid=False, polar_grid=(1.0, 8, 5)) as scene:
+            scene.sphere(0.1).move(0.5, 0, 0)
+
+    screen.open('/')
+    screen.wait(0.5)
+    # Scene should have: ambient light, directional light, ground (circle), polar grid, sphere = 5 children
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+
+
+def test_transform_controls_enable_disable(screen: Screen):
+    """Test enabling and disabling TransformControls on an object."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('box')
+
+        def enable():
+            scene.enable_transform_controls('box', mode='translate')
+
+        def disable():
+            scene.disable_transform_controls('box')
+
+        ui.button('Enable', on_click=enable)
+        ui.button('Disable', on_click=disable)
+
+    screen.open('/')
+    screen.wait(0.5)
+    # Initially no transform controls
+    initial_children = screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length')
+
+    screen.click('Enable')
+    screen.wait(0.3)
+    # TransformControls adds a helper to the scene
+    after_enable = screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length')
+    assert after_enable > initial_children
+
+    screen.click('Disable')
+    screen.wait(0.3)
+    # Helper should be removed
+    after_disable = screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length')
+    assert after_disable == initial_children
+
+
+def test_transform_controls_mode_change(screen: Screen):
+    """Test changing TransformControls mode."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('box')
+        scene.enable_transform_controls('box', mode='translate')
+
+        def set_rotate():
+            scene.set_transform_mode('box', 'rotate')
+
+        def set_scale():
+            scene.set_transform_mode('box', 'scale')
+
+        ui.button('Rotate', on_click=set_rotate)
+        ui.button('Scale', on_click=set_scale)
+
+    screen.open('/')
+    screen.wait(0.5)
+    # Just verify no errors are thrown when changing modes
+    screen.click('Rotate')
+    screen.wait(0.2)
+    screen.click('Scale')
+    screen.wait(0.2)
+    # If we got here without errors, the test passes
+
+
+def test_axes_inset(screen: Screen):
+    """Test enabling and configuring the axes inset overlay."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.sphere(0.5)
+
+        def enable_inset():
+            scene.set_axes_inset({'enabled': True, 'size': 80, 'anchor': 'bottom-left'})
+            scene.set_axes_labels({'enabled': True})
+
+        def disable_inset():
+            scene.set_axes_inset({'enabled': False})
+
+        ui.button('Enable Inset', on_click=enable_inset)
+        ui.button('Disable Inset', on_click=disable_inset)
+
+    screen.open('/')
+    screen.wait(0.5)
+    # Just verify no errors when toggling inset
+    screen.click('Enable Inset')
+    screen.wait(0.3)
+    screen.click('Disable Inset')
+    screen.wait(0.2)
+
+
+def test_clipping_planes(screen: Screen):
+    """Test setting and clearing clipping planes."""
+    from nicegui.events import SceneClipPlane
+
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.sphere(0.5).with_name('sphere')
+
+        def set_clip():
+            # Clip below Z=0.1
+            scene.set_clipping_planes('sphere', [SceneClipPlane(nx=0, ny=0, nz=1, d=-0.1)])
+
+        def clear_clip():
+            scene.clear_clipping_planes('sphere')
+
+        ui.button('Set Clip', on_click=set_clip)
+        ui.button('Clear Clip', on_click=clear_clip)
+
+    screen.open('/')
+    screen.wait(0.5)
+    # Verify no errors when setting/clearing clipping planes
+    screen.click('Set Clip')
+    screen.wait(0.2)
+    screen.click('Clear Clip')
+    screen.wait(0.2)
+
+
+def test_transform_controls_visible_axes(screen: Screen):
+    """Test TransformControls with restricted visible axes."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('box')
+
+        def enable_z_only():
+            scene.enable_transform_controls('box', mode='translate', visible_axes=['Z'])
+
+        def enable_xy():
+            scene.enable_transform_controls('box', mode='translate', visible_axes=['X', 'Y'])
+
+        ui.button('Z Only', on_click=enable_z_only)
+        ui.button('XY', on_click=enable_xy)
+
+    screen.open('/')
+    screen.wait(0.5)
+    screen.click('Z Only')
+    screen.wait(0.3)
+    screen.click('XY')
+    screen.wait(0.2)
+    # If we got here without errors, axis restriction works
+
+
+def test_ground_point_in_click_event(screen: Screen):
+    """Test that click events include ground_point."""
+    from nicegui import events
+
+    ground_points: list = []
+
+    @ui.page('/')
+    def page():
+        def on_click(e: events.SceneClickEventArguments):
+            if e.ground_point:
+                ground_points.append((e.ground_point.x, e.ground_point.y, e.ground_point.z))
+
+        with ui.scene(on_click=on_click) as scene:
+            scene.sphere(0.5).move(0, 0, 0.5)
+
+    screen.open('/')
+    screen.wait(0.5)
+    # Click on the scene canvas
+    canvas = screen.find_by_tag('canvas')
+    canvas.click()
+    screen.wait(0.3)
+    # Ground point should be captured (Z should be 0 since it's ground plane intersection)
+    assert len(ground_points) >= 1
+    assert ground_points[0][2] == 0.0  # Z coordinate should be 0 for ground plane
+
+
+def test_polyline(screen: Screen):
+    """Test that polyline creates Line objects with the expected vertex count."""
+    scene = None
+    poly = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, poly
+        with ui.scene(grid=False) as scene:
+            poly = scene.polyline([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]])
+            scene.polyline([[0, 0, 1], [1, 0, 1]], colors=[[1, 0, 0], [0, 1, 0]], dashed=True)
+
+    screen.open('/')
+    screen.wait(0.5)
+    line_count = screen.selenium.execute_script(f'''
+        let count = 0;
+        scene_{scene.html_id}.traverse(o => {{ if (o.isLine) count++; }});
+        return count;
+    ''')
+    assert line_count == 2
+    vertex_count = screen.selenium.execute_script(
+        f'return getElement({scene.id}).objects.get("{poly.id}").geometry.attributes.position.count'
+    )
+    assert vertex_count == 4
+
+
+def test_lathe(screen: Screen):
+    """Test that lathe creates a Mesh with LatheGeometry."""
+    scene = None
+    vase = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, vase
+        with ui.scene(grid=False) as scene:
+            vase = scene.lathe([[0, 0], [0.5, 0.2], [0.3, 0.5], [0, 0.8]], segments=8)
+
+    screen.open('/')
+    screen.wait(0.5)
+    geometry_type = screen.selenium.execute_script(
+        f'return getElement({scene.id}).objects.get("{vase.id}").geometry.type'
+    )
+    assert geometry_type == 'LatheGeometry'
+
+
+def test_arrow_helper(screen: Screen):
+    """Test that arrow_helper creates a Three.js ArrowHelper."""
+    scene = None
+    arrow = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, arrow
+        with ui.scene(grid=False) as scene:
+            arrow = scene.arrow_helper([0, 0, 1], origin=[0, 0, 0], length=1.5, color=0xff0000)
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_arrow = screen.selenium.execute_script(
+        f'return getElement({scene.id}).objects.get("{arrow.id}").isArrowHelper === true'
+    )
+    assert is_arrow
+
+
+def test_raycaster_threshold(screen: Screen):
+    """Test that raycaster_threshold is forwarded to the Three.js raycaster."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(raycaster_threshold=0.05)
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+    screen.wait(0.3)
+    threshold = screen.selenium.execute_script(
+        f'return getElement({scene.id}).$props.raycasterThreshold'
+    )
+    assert threshold == 0.05
+
+
+def test_hoverable(screen: Screen):
+    """Test that marking an object as hoverable enables the glow overlay."""
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box().hoverable()
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_hoverable = screen.selenium.execute_script(
+        f'return getElement({scene.id}).objects.get("{box.id}")._hoverable === true'
+    )
+    assert is_hoverable
+
+
+def test_set_orbit_enabled(screen: Screen):
+    """Test that set_orbit_enabled toggles the OrbitControls `enabled` flag."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box()
+        ui.button('Disable orbit', on_click=lambda: scene.set_orbit_enabled(False))
+        ui.button('Enable orbit', on_click=lambda: scene.set_orbit_enabled(True))
+
+    screen.open('/')
+    screen.wait(0.5)
+    screen.click('Disable orbit')
+    screen.wait(0.2)
+    assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.enabled') is False
+    screen.click('Enable orbit')
+    screen.wait(0.2)
+    assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.enabled') is True
