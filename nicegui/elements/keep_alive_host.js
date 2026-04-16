@@ -1,5 +1,3 @@
-const CACHE_ID = "nicegui-keep-alive-cache";
-
 export default {
   template: `
     <Teleport :to="target">
@@ -10,20 +8,11 @@ export default {
     anchorSelector: String,
   },
   data() {
-    return { target: `#${CACHE_ID}` };
-  },
-  beforeMount() {
-    if (!document.getElementById(CACHE_ID)) {
-      const cache = document.createElement("div");
-      cache.id = CACHE_ID;
-      cache.style.display = "none";
-      cache.setAttribute("aria-hidden", "true");
-      document.body.appendChild(cache);
-    }
+    return { target: "#nicegui-keep-alive-cache" };
   },
   methods: {
     setAnchorReady(ready) {
-      this.target = ready ? this.anchorSelector : `#${CACHE_ID}`;
+      this.target = ready ? this.anchorSelector : "#nicegui-keep-alive-cache";
     },
   },
 };
