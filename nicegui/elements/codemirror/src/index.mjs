@@ -4,5 +4,7 @@ export * from "@codemirror/state";
 export * from "@codemirror/commands";
 export * from "@codemirror/language";
 export * from "@codemirror/language-data";
+export * from "@codemirror/autocomplete";
+export * from "@codemirror/lint";
 export * from "@codemirror/theme-one-dark";
 export * as themes from "@uiw/codemirror-themes-all";
