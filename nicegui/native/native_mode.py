@@ -64,8 +64,11 @@ def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> 
             pass
 
     def bind_drop() -> None:
-        window.dom.document.events.dragover += \
-            webview.dom.DOMEventHandler(lambda _: 0, True, False)  # type: ignore[arg-type]
+        window.evaluate_js('''
+            document.addEventListener("dragover", function(e) {
+              if (e.dataTransfer && e.dataTransfer.types.indexOf("Files") >= 0) e.preventDefault();
+            });
+        ''')
         window.dom.document.events.drop += \
             webview.dom.DOMEventHandler(lambda e: send('drop', files=[  # type: ignore[arg-type]
                 file_.get('pywebviewFullPath', '') for file_ in e.get('dataTransfer', {}).get('files', [])
