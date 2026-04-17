@@ -63,6 +63,12 @@ def run_with(
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     """
+    if app is core.app:
+        raise ValueError(
+            'ui.run_with() must be called with your own FastAPI app, not nicegui.app. '
+            'Mounting nicegui.app into itself causes infinite recursion on unmatched paths. '
+            'If you do not have your own FastAPI app, use ui.run() instead.'
+        )
     if core.script_mode:
         log.warning(
             'NiceGUI elements were created outside of a page context before ui.run_with() was called.\n'
