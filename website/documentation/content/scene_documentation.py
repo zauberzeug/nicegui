@@ -385,9 +385,9 @@ def transform_controls() -> None:
 @doc.demo(
     'Ground Point Click',
     '''
-    Click events now include a `ground_point` attribute that contains the intersection
-    of the click ray with the Z=0 ground plane. This is useful for placing objects
-    in the scene even when clicking on empty space.
+    Click events include a `ground_point` attribute that contains the intersection of the click ray with the ground plane.
+    This is useful for placing objects in the scene even when clicking on empty space.
+    The plane defaults to Z=0 but can be shifted along any axis with the `ground_axis` and `ground_offset` arguments of `ui.scene`.
 ''',
 )
 def ground_point_click() -> None:
@@ -395,12 +395,28 @@ def ground_point_click() -> None:
 
     def handle_click(e: events.SceneClickEventArguments):
         if e.ground_point:
-            scene.sphere(0.1).move(e.ground_point.x, e.ground_point.y, 0).material('#ff8800')
+            scene.sphere(0.1).move(e.ground_point.x, e.ground_point.y, e.ground_point.z).material('#ff8800')
 
-    with ui.scene(width=285, height=220, on_click=handle_click) as scene:
-        scene.sphere(0.2).move(0, 0, 0.2).material('#4488ff')
+    with ui.scene(width=285, height=220, on_click=handle_click, ground_offset=0.3) as scene:
+        scene.sphere(0.2).move(0, 0, 0.5).material('#4488ff')
 
-    ui.label('Click anywhere to place orange spheres on the ground')
+    ui.label('Click to place orange spheres on the ground plane at z=0.3')
+
+
+@doc.demo(
+    'Hover Feedback',
+    '''
+    Call `.hoverable()` on an object to highlight it on mouse-over.
+    A back-face glow clone tracks each mesh descendant of the hovered object, and the cursor becomes a pointer.
+    The glow runs entirely in the browser with no Python roundtrip.
+    Its color, opacity, and expansion factor are configurable via the `hover_color`, `hover_opacity`, and `hover_scale` arguments of `ui.scene`.
+''',
+)
+def hover_feedback() -> None:
+    with ui.scene(width=285, height=220, hover_color=0x4488ff, hover_opacity=0.35, hover_scale=1.08):
+        ui.scene.box(0.6, 0.6, 1.2).move(-0.7, 0, 0.6).hoverable()
+        ui.scene.cylinder(0.3, 0.3, 1.0).move(0.7, 0, 0.5).hoverable()
+        ui.scene.sphere(0.3).move(0, 0, 0.3).hoverable()
 
 
 @doc.demo(

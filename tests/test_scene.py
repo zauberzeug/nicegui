@@ -544,7 +544,7 @@ def test_raycaster_threshold(screen: Screen):
 
 
 def test_hoverable(screen: Screen):
-    """Test that marking an object as hoverable propagates the flag to the scene object."""
+    """Test that hoverable flag propagates and the glow group spawns clones on hover."""
     scene = None
     box = None
 
@@ -562,6 +562,20 @@ def test_hoverable(screen: Screen):
         f'return getElement({scene.id}).objects.get("{box.id}")._hoverable === true'
     )
     assert is_hoverable
+
+    screen.selenium.execute_script(f'''
+        const scene = getElement({scene.id});
+        const canvas = scene.renderer.domElement;
+        const rect = canvas.getBoundingClientRect();
+        canvas.dispatchEvent(new PointerEvent('pointermove', {{
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2,
+            bubbles: true,
+        }}));
+    ''')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).hoverGlowGroup.children.length > 0'
+    ))
 
 
 def test_set_orbit_enabled(screen: Screen):

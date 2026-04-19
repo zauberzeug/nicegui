@@ -89,7 +89,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  raycaster_threshold: float = DEFAULT_PROP | 1.0,
                  hover_color: int = DEFAULT_PROP | 0xFFFFFF,
                  hover_opacity: float = DEFAULT_PROP | 0.2,
-                 hover_scale: float = DEFAULT_PROP | 2.0,
+                 hover_scale: float = DEFAULT_PROP | 1.05,
                  ground_axis: Literal['x', 'y', 'z'] = DEFAULT_PROP | 'z',
                  ground_offset: float = DEFAULT_PROP | 0.0,
                  ) -> None:
@@ -121,7 +121,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             Lower values reduce the number of hits from dense thin objects, preventing large WebSocket payloads on click events.
         :param hover_color: hex color of the hover glow overlay applied to ``hoverable`` objects (default: ``0xFFFFFF``)
         :param hover_opacity: opacity of the hover glow overlay (default: ``0.2``)
-        :param hover_scale: multiplier applied to the hovered object's bounding-sphere radius when sizing the glow (default: ``2.0``)
+        :param hover_scale: scale multiplier applied to the hover glow relative to the source mesh (default: ``1.05``, i.e. 5% larger than the mesh)
         :param ground_axis: axis normal to the ground plane used for :class:`SceneGroundPoint` ray intersection, one of ``'x'``, ``'y'``, ``'z'`` (default: ``'z'``)
         :param ground_offset: signed offset of the ground plane along ``ground_axis`` (default: ``0.0``)
         """

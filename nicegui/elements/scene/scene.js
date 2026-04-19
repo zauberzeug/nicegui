@@ -338,27 +338,62 @@ export default {
     }));
 
     // Hover detection for hoverable objects (JS-side only, no Python roundtrip).
-    // Shows a semi-transparent sphere scaled to the hovered object's bounding sphere.
-    // Color, opacity and scale-multiplier are configurable via the `hover_*` props on Scene;
-    // defaults produce a subtle white glow at 2× the object's bounding-sphere radius.
+    // On hover, each mesh descendant of the hovered object is mirrored by a back-face
+    // glow clone that shares its geometry and is drawn slightly expanded via `hoverScale`.
+    // Color, opacity and expansion factor are configurable via the `hover_*` props on Scene.
     this.hoveredObject = null;
-    this.hoverGlow = (() => {
-      const geo = new THREE.SphereGeometry(1, 16, 16);
-      const mat = new THREE.MeshBasicMaterial({
-        color: this.hoverColor ?? 0xffffff,
-        transparent: true,
-        opacity: this.hoverOpacity ?? 0.2,
-        depthTest: false,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.renderOrder = 999;
-      mesh.visible = false;
-      this.scene.add(mesh);
-      return mesh;
-    })();
+    // The glow group is attached to the scene lazily on first hover so it
+    // doesn't pollute scene.children when no hover is active.
+    this.hoverGlowGroup = new THREE.Group();
     const _hoverWorldPos = new THREE.Vector3();
-    const _hoverBBox = new THREE.Box3();
+    const _hoverWorldQuat = new THREE.Quaternion();
+    const _hoverWorldScale = new THREE.Vector3();
     this._transformWP = new THREE.Vector3();
+
+    this._clearHoverGlow = () => {
+      while (this.hoverGlowGroup.children.length) {
+        const child = this.hoverGlowGroup.children.pop();
+        if (child.material) child.material.dispose();
+      }
+      if (this.hoverGlowGroup.parent) {
+        this.hoverGlowGroup.parent.remove(this.hoverGlowGroup);
+      }
+    };
+
+    this._buildHoverGlow = (rootObject) => {
+      if (!this.hoverGlowGroup.parent) {
+        this.scene.add(this.hoverGlowGroup);
+      }
+      rootObject.traverse((descendant) => {
+        if (!descendant.isMesh || !descendant.geometry) return;
+        const material = new THREE.MeshBasicMaterial({
+          color: this.hoverColor ?? 0xffffff,
+          transparent: true,
+          opacity: this.hoverOpacity ?? 0.2,
+          side: THREE.BackSide,
+          depthWrite: false,
+        });
+        const glow = new THREE.Mesh(descendant.geometry, material);
+        glow.renderOrder = 999;
+        glow.userData.hoverSource = descendant;
+        this.hoverGlowGroup.add(glow);
+      });
+      this._syncHoverGlow();
+    };
+
+    this._syncHoverGlow = () => {
+      const expansion = this.hoverScale ?? 1.05;
+      for (const glow of this.hoverGlowGroup.children) {
+        const src = glow.userData.hoverSource;
+        if (!src) continue;
+        src.getWorldPosition(_hoverWorldPos);
+        src.getWorldQuaternion(_hoverWorldQuat);
+        src.getWorldScale(_hoverWorldScale);
+        glow.position.copy(_hoverWorldPos);
+        glow.quaternion.copy(_hoverWorldQuat);
+        glow.scale.copy(_hoverWorldScale).multiplyScalar(expansion);
+      }
+    };
 
     this.renderer.domElement.addEventListener("pointermove", (e) => {
       const rect = this.renderer.domElement.getBoundingClientRect();
@@ -384,26 +419,18 @@ export default {
       }
 
       if (newHover !== this.hoveredObject) {
+        this._clearHoverGlow();
         if (this.hoveredObject) {
-          this.hoverGlow.visible = false;
           this.renderer.domElement.style.cursor = "";
         }
         if (newHover) {
-          _hoverBBox.setFromObject(newHover);
-          const bSize = _hoverBBox.getSize(new THREE.Vector3());
-          const radius = Math.max(bSize.x, bSize.y, bSize.z) * 0.5;
-          const scaleMultiplier = this.hoverScale ?? 2;
-          const glowScale = Math.max(radius * scaleMultiplier, 0.01);
-          this.hoverGlow.scale.setScalar(glowScale);
-          newHover.getWorldPosition(_hoverWorldPos);
-          this.hoverGlow.position.copy(_hoverWorldPos);
-          this.hoverGlow.visible = true;
+          this._buildHoverGlow(newHover);
           this.renderer.domElement.style.cursor = "pointer";
         }
         this.hoveredObject = newHover;
       } else if (this.hoveredObject) {
-        this.hoveredObject.getWorldPosition(_hoverWorldPos);
-        this.hoverGlow.position.copy(_hoverWorldPos);
+        // Re-sync glow transforms so they follow the hovered object if it moves.
+        this._syncHoverGlow();
       }
     });
 
@@ -724,7 +751,7 @@ export default {
       const object = this.objects.get(object_id);
       // Clear hover state if this object was hovered
       if (this.hoveredObject === object) {
-        this.hoverGlow.visible = false;
+        this._clearHoverGlow();
         this.renderer.domElement.style.cursor = "";
         this.hoveredObject = null;
       }
