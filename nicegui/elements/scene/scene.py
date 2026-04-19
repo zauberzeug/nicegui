@@ -87,6 +87,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
                  raycaster_threshold: float = DEFAULT_PROP | 1.0,
+                 hover_color: int = DEFAULT_PROP | 0xFFFFFF,
+                 hover_opacity: float = DEFAULT_PROP | 0.2,
+                 hover_scale: float = DEFAULT_PROP | 2.0,
+                 ground_axis: Literal['x', 'y', 'z'] = DEFAULT_PROP | 'z',
+                 ground_offset: float = DEFAULT_PROP | 0.0,
                  ) -> None:
         """3D Scene
 
@@ -114,6 +119,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
         :param raycaster_threshold: hit-test threshold for thin objects like ``line`` and point clouds (default: 1.0).
             Lower values reduce the number of hits from dense thin objects, preventing large WebSocket payloads on click events.
+        :param hover_color: hex color of the hover glow overlay applied to ``hoverable`` objects (default: ``0xFFFFFF``)
+        :param hover_opacity: opacity of the hover glow overlay (default: ``0.2``)
+        :param hover_scale: multiplier applied to the hovered object's bounding-sphere radius when sizing the glow (default: ``2.0``)
+        :param ground_axis: axis normal to the ground plane used for :class:`SceneGroundPoint` ray intersection, one of ``'x'``, ``'y'``, ``'z'`` (default: ``'z'``)
+        :param ground_offset: signed offset of the ground plane along ``ground_axis`` (default: ``0.0``)
         """
         super().__init__()
         self._props['width'] = width
@@ -149,6 +159,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['drag-constraints'] = drag_constraints
         self._props['control-type'] = control_type
         self._props['raycaster-threshold'] = raycaster_threshold
+        self._props['hover-color'] = hover_color
+        self._props['hover-opacity'] = hover_opacity
+        self._props['hover-scale'] = hover_scale
+        self._props['ground-axis'] = ground_axis
+        self._props['ground-offset'] = ground_offset
 
         self._props.add_rename('background_color', 'background-color')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0

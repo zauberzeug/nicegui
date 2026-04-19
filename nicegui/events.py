@@ -88,7 +88,15 @@ class SceneClickHit:
 
 @dataclass(kw_only=True, slots=True)
 class SceneGroundPoint:
-    """Ground plane intersection point from ray casting."""
+    """Ray-plane intersection for a scene click on the configured ground plane.
+
+    Present on :class:`SceneClickEventArguments` whenever the click ray intersects the scene's
+    ground plane, regardless of whether an object was hit. Useful for placing or positioning
+    objects in the scene. The plane is axis-aligned — its normal direction is selected by the
+    scene's ``ground_axis`` argument (default ``'z'``) and offset by ``ground_offset`` (default
+    ``0.0``), so the default behavior is the world Z=0 XY-plane. Non-axis-aligned (tilted)
+    planes are not currently supported.
+    """
     x: float
     y: float
     z: float

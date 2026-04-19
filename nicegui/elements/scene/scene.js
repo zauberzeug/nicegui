@@ -281,16 +281,23 @@ export default {
     raycaster.params.Line.threshold = hitThreshold;
     raycaster.params.Points.threshold = hitThreshold;
 
-    // Ground plane for ray-plane intersection (Z=0)
-    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    // Ground plane for ray-plane intersection. Axis selects the plane's normal direction;
+    // offset shifts the plane along that axis. Defaults to the world Z=0 XY-plane.
+    const groundNormals = {
+      x: new THREE.Vector3(1, 0, 0),
+      y: new THREE.Vector3(0, 1, 0),
+      z: new THREE.Vector3(0, 0, 1),
+    };
+    const groundNormal = groundNormals[this.groundAxis] ?? groundNormals.z;
+    const groundPlane = new THREE.Plane(groundNormal, -(this.groundOffset ?? 0));
 
     const click_handler = (mouseEvent) => {
       let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
       raycaster.setFromCamera({ x: x, y: y }, this.camera);
 
-      // Compute ray-plane intersection with Z=0 ground plane
-      // This gives consistent coordinates even when clicking on "empty space"
+      // Ray-plane intersection on the configured ground plane — gives consistent
+      // coordinates even when the click lands on empty space.
       const groundIntersection = new THREE.Vector3();
       const hasGroundIntersection = raycaster.ray.intersectPlane(groundPlane, groundIntersection);
 
@@ -330,13 +337,18 @@ export default {
       click_handler(mouseEvent);
     }));
 
-    // Hover detection for hoverable objects (JS-side only, no Python roundtrip)
-    // Shows a semi-transparent sphere scaled to the hovered object's bounding sphere
+    // Hover detection for hoverable objects (JS-side only, no Python roundtrip).
+    // Shows a semi-transparent sphere scaled to the hovered object's bounding sphere.
+    // Color, opacity and scale-multiplier are configurable via the `hover_*` props on Scene;
+    // defaults produce a subtle white glow at 2× the object's bounding-sphere radius.
     this.hoveredObject = null;
     this.hoverGlow = (() => {
       const geo = new THREE.SphereGeometry(1, 16, 16);
       const mat = new THREE.MeshBasicMaterial({
-        color: 0xffffff, transparent: true, opacity: 0.2, depthTest: false,
+        color: this.hoverColor ?? 0xffffff,
+        transparent: true,
+        opacity: this.hoverOpacity ?? 0.2,
+        depthTest: false,
       });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.renderOrder = 999;
@@ -377,11 +389,11 @@ export default {
           this.renderer.domElement.style.cursor = "";
         }
         if (newHover) {
-          // Size glow sphere to 2x the object's bounding sphere radius
           _hoverBBox.setFromObject(newHover);
           const bSize = _hoverBBox.getSize(new THREE.Vector3());
           const radius = Math.max(bSize.x, bSize.y, bSize.z) * 0.5;
-          const glowScale = Math.max(radius * 2, 0.01);
+          const scaleMultiplier = this.hoverScale ?? 2;
+          const glowScale = Math.max(radius * scaleMultiplier, 0.01);
           this.hoverGlow.scale.setScalar(glowScale);
           newHover.getWorldPosition(_hoverWorldPos);
           this.hoverGlow.position.copy(_hoverWorldPos);
@@ -1186,5 +1198,10 @@ export default {
     showStats: Boolean,
     controlType: String,
     raycasterThreshold: Number,
+    hoverColor: Number,
+    hoverOpacity: Number,
+    hoverScale: Number,
+    groundAxis: String,
+    groundOffset: Number,
   },
 };

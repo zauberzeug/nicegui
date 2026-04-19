@@ -437,6 +437,30 @@ def test_ground_point_in_click_event(screen: Screen):
     assert ground_points[0][2] == 0.0  # Z coordinate should be 0 for ground plane
 
 
+def test_ground_plane_configurable(screen: Screen):
+    """Test that ground_axis and ground_offset shift the ground-point intersection plane."""
+    from nicegui import events
+
+    ground_points: list = []
+
+    @ui.page('/')
+    def page():
+        def on_click(e: events.SceneClickEventArguments):
+            if e.ground_point:
+                ground_points.append((e.ground_point.x, e.ground_point.y, e.ground_point.z))
+
+        with ui.scene(on_click=on_click, ground_axis='z', ground_offset=0.5) as scene:
+            scene.sphere(0.5).move(0, 0, 0.5)
+
+    screen.open('/')
+    screen.wait(0.5)
+    canvas = screen.find_by_tag('canvas')
+    canvas.click()
+    screen.wait(0.3)
+    assert len(ground_points) >= 1
+    assert abs(ground_points[0][2] - 0.5) < 1e-6  # Z should land on the offset plane
+
+
 def test_polyline(screen: Screen):
     """Test that polyline creates Line objects with the expected vertex count."""
     scene = None
@@ -520,7 +544,7 @@ def test_raycaster_threshold(screen: Screen):
 
 
 def test_hoverable(screen: Screen):
-    """Test that marking an object as hoverable enables the glow overlay."""
+    """Test that marking an object as hoverable propagates the flag to the scene object."""
     scene = None
     box = None
 
@@ -531,7 +555,9 @@ def test_hoverable(screen: Screen):
             box = scene.box().hoverable()
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!(getElement({scene.id}) && getElement({scene.id}).objects && getElement({scene.id}).objects.get("{box.id}"))'
+    ))
     is_hoverable = screen.selenium.execute_script(
         f'return getElement({scene.id}).objects.get("{box.id}")._hoverable === true'
     )
