@@ -52,6 +52,10 @@ async def _page():
         core.loop.remove_reader(pty_fd)  # unregister before closing so a reused FD can't trip the stale callback
         os.close(pty_fd)
         os.kill(pty_pid, signal.SIGKILL)
+        try:
+            os.waitpid(pty_pid, 0)  # reap the child so it does not linger as a zombie
+        except ChildProcessError:
+            pass
         print('Terminal closed')
 
     await ui.context.client.connected()
