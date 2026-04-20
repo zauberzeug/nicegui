@@ -26,4 +26,4 @@ class Badge(TextElement, BackgroundColorElement, TextColorElement):
         self._props['outline'] = outline
 
     def _render_markdown(self) -> str | None:
-        return self._text or None
+        return self._text

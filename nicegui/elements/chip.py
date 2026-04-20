@@ -59,4 +59,4 @@ class Chip(IconElement, ValueElement[bool], TextElement, BackgroundColorElement,
         return self
 
     def _render_markdown(self) -> str | None:
-        return self._text or None
+        return self._text

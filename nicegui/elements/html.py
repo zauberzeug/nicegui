@@ -31,4 +31,4 @@ class Html(ContentElement, component='html.js'):
         super()._handle_content_change(content)
 
     def _render_markdown(self) -> str | None:
-        return self.content or None
+        return self.content
