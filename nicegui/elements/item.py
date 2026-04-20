@@ -49,9 +49,12 @@ class ItemSection(TextElement):
         super().__init__(tag='q-item-section', text=text)
 
     def _render_markdown(self) -> str | None:
+        parts = []
         if self._text:
-            return self._text
-        return self._children_to_markdown()
+            parts.append(self._text)
+        if children := self._children_to_markdown():
+            parts.append(children)
+        return '\n\n'.join(parts)
 
 
 class ItemLabel(TextElement):
@@ -66,4 +69,4 @@ class ItemLabel(TextElement):
         super().__init__(tag='q-item-label', text=text)
 
     def _render_markdown(self) -> str | None:
-        return self._text or None
+        return self._text

@@ -212,16 +212,6 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_markdown(self) -> str | None:
-        """Convert this element to a markdown representation.
-
-        Returns ``None`` to indicate this element contributes nothing to markdown output.
-        Subclasses should override ``_render_markdown`` instead of this method.
-        """
-        if not self.visible:
-            return None
-        return self._render_markdown()
-
     def _render_markdown(self) -> str | None:
         """Return the markdown body for this element, or ``None`` to skip it.
 
@@ -236,9 +226,9 @@ class Element(Visibility):
         parts = []
         for slot in self.slots.values():
             for child in slot.children:
-                md = child._to_markdown()  # pylint: disable=protected-access
-                if md:
-                    parts.append(md)
+                markdown = child._render_markdown() if child.visible else None  # pylint: disable=protected-access
+                if markdown:
+                    parts.append(markdown)
         return '\n\n'.join(parts) if parts else None
 
     def _to_dict(self) -> dict[str, Any]:

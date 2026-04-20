@@ -119,4 +119,4 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
         value = '' if self.value is None else str(self.value)
         if self.label:
             return f'{self.label}: {value}'
-        return value or None
+        return value

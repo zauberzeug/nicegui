@@ -14,7 +14,7 @@ def build_markdown_response(client: Client, status_code: int = 200) -> Response:
     title = client.resolve_title()
     if title:
         parts.append(f'# {title}')
-    md = client.layout._to_markdown()  # pylint: disable=protected-access
+    md = client.layout._render_markdown()  # pylint: disable=protected-access
     if md:
         parts.append(md)
     content = '\n\n'.join(parts)

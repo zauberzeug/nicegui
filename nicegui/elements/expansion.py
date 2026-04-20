@@ -43,13 +43,11 @@ class Expansion(IconElement, TextElement, ValueElement[bool], DisableableElement
 
     def _render_markdown(self) -> str | None:
         parts = []
-        label = self._props.get('label', '')
-        if label:
+        if label := self._props.get('label', ''):
             parts.append(f'**{label}**')
-        children_md = self._children_to_markdown()
-        if children_md:
+        if children_md := self._children_to_markdown():
             parts.append(children_md)
-        return '\n\n'.join(parts) if parts else None
+        return '\n\n'.join(parts)
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
