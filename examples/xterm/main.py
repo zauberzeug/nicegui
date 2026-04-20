@@ -47,11 +47,12 @@ async def _page():
 
     @ui.context.client.on_delete
     def kill_process():
-        if pty_fd >= 0:
-            core.loop.remove_reader(pty_fd)  # unregister before closing so a reused FD can't trip the stale callback
-            os.close(pty_fd)
-            os.kill(pty_pid, signal.SIGKILL)
-            print('Terminal closed')
+        if pty_fd < 0:
+            return
+        core.loop.remove_reader(pty_fd)  # unregister before closing so a reused FD can't trip the stale callback
+        os.close(pty_fd)
+        os.kill(pty_pid, signal.SIGKILL)
+        print('Terminal closed')
 
     await ui.context.client.connected()
     pty_pid, pty_fd = pty.fork()  # create a new pseudo-terminal (pty) fork of the process
