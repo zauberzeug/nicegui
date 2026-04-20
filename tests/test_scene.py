@@ -259,18 +259,19 @@ def test_polar_grid(screen: Screen):
 def test_transform_controls_enable_disable(screen: Screen):
     """Test enabling and disabling TransformControls on an object."""
     scene = None
+    box = None
 
     @ui.page('/')
     def page():
-        nonlocal scene
+        nonlocal scene, box
         with ui.scene() as scene:
-            scene.box().with_name('box')
+            box = scene.box()
 
         def enable():
-            scene.enable_transform_controls('box', mode='translate')
+            scene.enable_transform_controls(box.id, mode='translate')
 
         def disable():
-            scene.disable_transform_controls('box')
+            scene.disable_transform_controls(box.id)
 
         ui.button('Enable', on_click=enable)
         ui.button('Disable', on_click=disable)
@@ -520,7 +521,7 @@ def test_arrow_helper(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     is_arrow = screen.selenium.execute_script(
-        f'return getElement({scene.id}).objects.get("{arrow.id}").isArrowHelper === true'
+        f'return getElement({scene.id}).objects.get("{arrow.id}").type === "ArrowHelper"'
     )
     assert is_arrow
 
