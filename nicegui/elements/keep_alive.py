@@ -12,11 +12,18 @@ class KeepAlive(Element, component='keep_alive_anchor.js'):
         Wraps its children so they stay mounted in the DOM even when the surrounding container is currently not visible
         (e.g. an inactive ``ui.tab_panel``, a closed ``ui.dialog`` or ``ui.menu``, or a sub-page that is not currently routed to).
 
-        Method calls and events on the inner elements (such as writing to a not-yet-visible ``ui.xterm``
-        or reading data from an ``ui.aggrid`` whose tab has never been opened) are dispatched as usual.
+        This is useful for elements whose client-side state would otherwise be lost or unreachable before first display:
+        writing to a ``ui.xterm`` inside a never-opened tab, reading ``ui.aggrid.get_client_data()`` from a closed dialog,
+        or preserving edit history in a ``ui.codemirror`` across navigation.
+        Method calls and events on the inner elements are executed immediately on the live component instance —
+        they are never buffered or replayed.
 
         Internally the children are rendered into a hidden host at the page root
         and teleported to the wrapper's location whenever it becomes visible.
+        As a consequence, the server-side element tree parents the children to this host, not to the surrounding container:
+        ``descendants()`` on the apparent parent and scoped ``ui.element_filter`` will not traverse into the subtree.
+        Keep a direct reference to the inner elements if you need to reach them programmatically.
+
         Note that this keeps the children alive for the full lifetime of the client, which costs memory.
         Only use it where eager mounting is actually required.
 
