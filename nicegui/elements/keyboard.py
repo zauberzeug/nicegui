@@ -17,7 +17,6 @@ from ..events import (
 
 
 class Keyboard(Element, component='keyboard.js'):
-    MARKDOWN_SKIP = True
     active = BindableProperty()
 
     @resolve_defaults

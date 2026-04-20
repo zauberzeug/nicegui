@@ -2,7 +2,6 @@ from .mixins.text_element import TextElement
 
 
 class Tooltip(TextElement):
-    MARKDOWN_SKIP = True
 
     def __init__(self, text: str = '') -> None:
         """Tooltip

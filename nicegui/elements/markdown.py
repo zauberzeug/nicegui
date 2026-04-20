@@ -66,6 +66,9 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
 
+    def _render_markdown(self) -> str | None:
+        return self.content or None
+
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:

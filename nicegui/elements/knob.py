@@ -7,7 +7,6 @@ from .mixins.value_element import ValueElement
 
 
 class Knob(ValueElement[float], DisableableElement, TextColorElement):
-    MARKDOWN_SKIP = True
 
     @resolve_defaults
     def __init__(self,

@@ -114,3 +114,9 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')
+
+    def _render_markdown(self) -> str | None:
+        value = '' if self.value is None else str(self.value)
+        if self.label:
+            return f'{self.label}: {value}'
+        return value or None

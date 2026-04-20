@@ -77,9 +77,6 @@ class Drawer(ValueElement[bool | None], default_classes='nicegui-drawer'):
         """Hide the drawer"""
         self.value = False
 
-    def _render_markdown(self) -> str:
-        return self._children_to_markdown()
-
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         self._props['show-if-above'] = value is None

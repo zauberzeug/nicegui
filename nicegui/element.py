@@ -45,8 +45,6 @@ class Element(Visibility):
     _default_props: ClassVar[dict[str, Any]] = {}
     _default_classes: ClassVar[list[str]] = []
     _default_style: ClassVar[dict[str, str]] = {}
-    MARKDOWN_SKIP: bool = False
-    '''Set to True on non-visual elements (timers, keyboard handlers, etc.) to exclude from markdown output.'''
 
     def __init__(self, tag: str | None = None, *, _client: Client | None = None) -> None:
         """Generic Element
@@ -214,41 +212,26 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_markdown(self) -> str:
+    def _to_markdown(self) -> str | None:
         """Convert this element to a markdown representation.
 
+        Returns ``None`` to indicate this element contributes nothing to markdown output.
         Subclasses should override ``_render_markdown`` instead of this method.
         """
-        if not self.visible or self.MARKDOWN_SKIP:
-            return ''
+        if not self.visible:
+            return None
         return self._render_markdown()
 
-    def _render_markdown(self) -> str:
-        """Return the markdown body for this element.
+    def _render_markdown(self) -> str | None:
+        """Return the markdown body for this element, or ``None`` to skip it.
 
-        Override in subclasses to customise the markdown output.
-        The visibility / MARKDOWN_SKIP guard is already handled by ``_to_markdown``.
+        The default implementation recurses into children, which is the natural behavior
+        for container elements. Override to render specific content (e.g. text, value)
+        or to actively skip children (return ``None``).
         """
-        # Content elements (Markdown, Html, Mermaid)
-        if hasattr(self, 'content') and isinstance(self.content, str):  # pylint: disable=no-member
-            return self.content or ''  # pylint: disable=no-member
-        # Text elements (Label, Badge, Chip)
-        if self._text is not None:
-            return self._text
-        # Label+Value form elements (Input, Select, Number, Textarea, ...)
-        # Only match when the value is a simple displayable type to avoid misleading output
-        # from layout/value elements like Drawer, Carousel, etc. (whose value is not text).
-        if hasattr(self, 'label') and hasattr(self, 'value'):
-            value = self.value  # pylint: disable=no-member
-            if isinstance(value, (str, int, float)) or (isinstance(value, list) and all(isinstance(v, (str, int, float)) for v in value)):
-                label = self.label or ''  # pylint: disable=no-member
-                if isinstance(value, list):
-                    value = ', '.join(str(v) for v in value)
-                return f'{label}: {value}' if label else str(value if value != '' else '')
-        # Recurse into children
         return self._children_to_markdown()
 
-    def _children_to_markdown(self) -> str:
+    def _children_to_markdown(self) -> str | None:
         """Collect markdown from all child elements across all slots."""
         parts = []
         for slot in self.slots.values():
@@ -256,7 +239,7 @@ class Element(Visibility):
                 md = child._to_markdown()  # pylint: disable=protected-access
                 if md:
                     parts.append(md)
-        return '\n\n'.join(parts)
+        return '\n\n'.join(parts) if parts else None
 
     def _to_dict(self) -> dict[str, Any]:
         return {

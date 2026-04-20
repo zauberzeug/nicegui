@@ -39,6 +39,3 @@ class Splitter(ValueElement[float | None], DisableableElement, default_classes='
         self.before = self.add_slot('before')
         self.after = self.add_slot('after')
         self.separator = self.add_slot('separator')
-
-    def _render_markdown(self) -> str:
-        return self._children_to_markdown()

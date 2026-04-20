@@ -48,6 +48,11 @@ class ItemSection(TextElement):
         """
         super().__init__(tag='q-item-section', text=text)
 
+    def _render_markdown(self) -> str | None:
+        if self._text:
+            return self._text
+        return self._children_to_markdown()
+
 
 class ItemLabel(TextElement):
 
@@ -59,3 +64,6 @@ class ItemLabel(TextElement):
         :param text: text to be displayed (default: "")
         """
         super().__init__(tag='q-item-label', text=text)
+
+    def _render_markdown(self) -> str | None:
+        return self._text or None

@@ -245,8 +245,8 @@ async def test_context_menu_skipped(user: User):
     assert 'Option 1' not in response.text
 
 
-async def test_markdown_skip_attribute(user: User):
-    """Elements with MARKDOWN_SKIP = True produce no output."""
+async def test_non_visual_elements_skipped(user: User):
+    """Non-visual elements (dark_mode, colors, etc.) produce no output by default."""
     @ui.page('/')
     def page():
         ui.dark_mode(False)
@@ -299,7 +299,7 @@ async def test_radio(user: User):
 
 
 async def test_slider_skipped(user: User):
-    """Slider should be skipped (MARKDOWN_SKIP)."""
+    """Slider has no markdown representation."""
     @ui.page('/')
     def page():
         ui.slider(min=0, max=100, value=50)

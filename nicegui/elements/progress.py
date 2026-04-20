@@ -5,7 +5,6 @@ from .mixins.value_element import ValueElement
 
 
 class LinearProgress(ValueElement[float], TextColorElement):
-    MARKDOWN_SKIP = True
     VALUE_PROP = 'value'
 
     @resolve_defaults
@@ -34,7 +33,6 @@ class LinearProgress(ValueElement[float], TextColorElement):
 
 
 class CircularProgress(ValueElement[float], TextColorElement):
-    MARKDOWN_SKIP = True
     VALUE_PROP = 'value'
 
     @resolve_defaults

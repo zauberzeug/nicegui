@@ -6,7 +6,6 @@ from .mixins.value_element import ValueElement
 
 
 class Fullscreen(ValueElement[bool], component='fullscreen.js'):
-    MARKDOWN_SKIP = True
     LOOPBACK = None
 
     @resolve_defaults

@@ -5,7 +5,6 @@ from .mixins.value_element import ValueElement
 
 
 class Slider(ValueElement[float | None], DisableableElement):
-    MARKDOWN_SKIP = True
 
     @resolve_defaults
     def __init__(self, *,

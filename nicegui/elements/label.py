@@ -11,3 +11,6 @@ class Label(TextElement):
         :param text: the content of the label
         """
         super().__init__(tag='div', text=text)
+
+    def _render_markdown(self) -> str | None:
+        return self._text or None
