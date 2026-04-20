@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Example for connecting a `Xterm` element with a process running in a pty.
 
-Pass a command (and its arguments) to run something other than bash, e.g.::
+Pass a command (and any arguments, which are forwarded verbatim) to run something other than bash, e.g.::
 
     python main.py htop
     python main.py ipython
