@@ -1,51 +1,10 @@
-// Polyfill for Object.is
-if (!Object.is) {
-    Object.defineProperty(Object, "is", {
-        value: function(x, y) {
-            return (x === y && (x !== 0 || 1 / x === 1 / y)) || (x !== x && y !== y);
-        },
-        configurable: true,
-        enumerable: false,
-        writable: true
-    });
-}
 
-// Compares uPlot options for update/create/keep
-function optionsUpdateState(_lhs, _rhs) {
-    const {width: lhsWidth, height: lhsHeight, ...lhs} = _lhs;
-    const {width: rhsWidth, height: rhsHeight, ...rhs} = _rhs;
 
-    let state = 'keep';
-    if (lhsHeight !== rhsHeight || lhsWidth !== rhsWidth) {
-        state = 'update';
-    }
-    if (Object.keys(lhs).length !== Object.keys(rhs).length) {
-        return 'create';
-    }
-    for (const k of Object.keys(lhs)) {
-        if (!Object.is(lhs[k], rhs[k])) {
-            state = 'create';
-            break;
-        }
-    }
-    return state;
-}
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+import { uPlot, resolvePlugin, optionsUpdateState, dataMatch } from "nicegui-uplot";
 
-// Compares uPlot data arrays
-function dataMatch(lhs, rhs) {
-    if (lhs.length !== rhs.length) {
-        return false;
-    }
-    return lhs.every(function(lhsOneSeries, seriesIdx) {
-        const rhsOneSeries = rhs[seriesIdx];
-        if (lhsOneSeries.length !== rhsOneSeries.length) {
-            return false;
-        }
-        return lhsOneSeries.every(function(value, valueIdx) {
-            return value === rhsOneSeries[valueIdx];
-        });
-    });
-}
+// Plugin cache to avoid redundant loading on refresh
+const pluginCache = new Map();
 
 // Based on uplot-vue by @skalinichev (https://github.com/skalinichev/uplot-wrappers)
 export default {
@@ -54,15 +13,17 @@ export default {
         options: { type: Object, required: true },
         data: { type: Array, required: true },
         resetScales: { type: Boolean, required: false, default: true },
-        class: { type: String, required: false },
     },
     data() {
-        return { _chart: null, _uPlot: null };
+        return {
+            _chart: null,
+            _uPlot: null,
+            lastPluginNames: [],
+        };
     },
     async mounted() {
-        const { uPlot } = await import('nicegui-uplot');
         this._uPlot = uPlot;
-        this._create();
+        await this._create();
     },
     unmounted() {
         this._destroy();
@@ -70,45 +31,116 @@ export default {
     watch: {
         options: {
             handler(options, prevOptions) {
-                const optionsState = optionsUpdateState(prevOptions, options);
-                if (!this._chart || optionsState === 'create') {
-                    this._destroy();
-                    this._create();
-                } else if (optionsState === 'update') {
-                    this._chart.setSize({ width: options.width, height: options.height });
-                }
+                (async () => {
+                    let next = { ...options };
+                    let prev = { ...prevOptions };
+                    convertDynamicProperties(next, true);
+                    convertDynamicProperties(prev, true);
+                    prev.plugins = this.lastPluginNames ? this.lastPluginNames : prev.plugins;
+                    const optionsState = optionsUpdateState(prev, next);
+                    if (!this._chart || optionsState === 'create') {
+                        this._destroy();
+                        await this._create();
+                    } else if (optionsState === 'update') {
+                        this._chart.setSize({ width: options.width, height: options.height });
+                    }
+                })();
             },
             deep: true
         },
         data: {
             handler(data, prevData) {
-                if (!this._chart) {
-                    this._create();
-                } else if (!dataMatch(prevData, data)) {
-                    if (this.$props.resetScales) {
-                        this._chart.setData(data);
-                    } else {
-                        this._chart.setData(data, false);
-                        this._chart.redraw();
+                (async () => {
+                    if (!this._chart) {
+                        await this._create();
+                    } else if (!dataMatch(prevData, data)) {
+                        if (this.$props.resetScales) {
+                            this._chart.setData(data);
+                            var min = Math.min(...prevData[0]);
+                            var max = Math.max(...prevData[0]);
+                            if (this._chart.scales.x.max != max || this._chart.scales.x.min != min) {
+                                this._restoreZoomState();
+                            }
+                        } else {
+                            this._chart.setData(data, false);
+                            this._chart.redraw();
+                        }
                     }
-                }
+                })();
             },
             deep: true
         }
     },
     methods: {
+        _restoreZoomState() {
+            if (this._chart) {
+                const zoom = {};
+                for (const [key, scale] of Object.entries(this._chart.scales)) {
+                    if (scale && typeof scale.min === 'number' && typeof scale.max === 'number') {
+                        zoom[key] = { min: scale.min, max: scale.max };
+                    }
+                }
+                if (zoom) {
+                    for (const [key, state] of Object.entries(zoom)) {
+                        if (this._chart.scales && this._chart.scales[key] && typeof state.min === 'number' && typeof state.max === 'number') {
+                            this._chart.setScale(key, { min: state.min, max: state.max });
+                        }
+                    }
+                }
+            }
+        },
         _destroy() {
             if (this._chart) {
                 this._chart.destroy();
                 this._chart = null;
             }
         },
-        _create() {
+        async _create() {
             if (!this._uPlot) return;
             if (this._chart) {
                 this._destroy();
             }
-            this._chart = new this._uPlot(this.$props.options, this.$props.data, this.$el);
+            let options = { ...this.$props.options };
+            convertDynamicProperties(options, true);
+            if (options.plugins && Array.isArray(options.plugins)) {
+                const lastPluginNames = [];
+                options.plugins = (await Promise.all(options.plugins.map(async plugin => {
+                    let name = null;
+                    if (typeof plugin === 'string') name = plugin;
+                    if (typeof plugin === 'object' && plugin && plugin.name) name = plugin.name;
+                    if (name) lastPluginNames.push(name);
+                    if (name && pluginCache.has(name)) {
+                        return pluginCache.get(name);
+                    }
+                    if (typeof plugin === 'string') {
+                        const loaded = await resolvePlugin(plugin);
+                        if (loaded) {
+                            pluginCache.set(plugin, loaded);
+                            return loaded;
+                        }
+                        if (typeof window !== 'undefined' && typeof window[plugin] === 'function') {
+                            const winLoaded = window[plugin]();
+                            pluginCache.set(plugin, winLoaded);
+                            return winLoaded;
+                        }
+                    }
+                    if (typeof plugin === 'object' && plugin.name) {
+                        const loaded = await resolvePlugin(plugin.name, plugin.options || {});
+                        if (loaded) {
+                            pluginCache.set(plugin.name, loaded);
+                            return loaded;
+                        }
+                        if (typeof window !== 'undefined' && typeof window[plugin.name] === 'function') {
+                            const winLoaded = window[plugin.name](plugin.options || {});
+                            pluginCache.set(plugin.name, winLoaded);
+                            return winLoaded;
+                        }
+                    }
+                    return plugin;
+                }))).filter(Boolean);
+                this.lastPluginNames = lastPluginNames;
+            }
+            this._chart = new this._uPlot(options, this.$props.data, this.$el);
         },
     },
 };
