@@ -25,7 +25,7 @@ command = sys.argv[1:] if len(sys.argv) > 1 else ['/bin/bash']
 
 @ui.page('/')
 async def _page():
-    ui.query('.nicegui-content').classes('p-0')  # remove padding so the terminal can fill the viewport
+    ui.context.client.content.classes('p-0')  # remove padding so the terminal can fill the viewport
     terminal = ui.xterm().classes('w-screen h-screen')
     ui.element('q-resize-observer').on('resize', terminal.fit)
 
