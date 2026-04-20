@@ -27,7 +27,7 @@ class KeepAlive(Element, component='keep_alive_anchor.js'):
         Note that this keeps the children alive for the full lifetime of the client, which costs memory.
         Only use it where eager mounting is actually required.
 
-        *Added in version 3.x.0*
+        *Added in version 3.11.0*
         """
         super().__init__()
         with context.client.layout:
