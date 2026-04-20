@@ -59,7 +59,11 @@ async def _page():
     if pty_pid == pty.CHILD:
         os.environ['TERM'] = 'xterm-256color'
         os.environ['COLORTERM'] = 'truecolor'
-        os.execvp(command[0], command)  # replace the child process with the requested command
+        try:
+            os.execvp(command[0], command)  # replace the child process with the requested command
+        except OSError as e:
+            print(f'Failed to exec {command}: {e}', flush=True)
+            os._exit(1)  # abort the child so it does not fall through into the parent's code path
     print('Terminal opened')
 
     @partial(core.loop.add_reader, pty_fd)
