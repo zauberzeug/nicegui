@@ -44,11 +44,11 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         return self
 
     def _render_markdown(self) -> str:
-        label = self._props.get('label', '')
-        if label:
+        if label := self._props.get('label'):
             return f'[Button: {label}]'
-        icon = self._props.get('icon', '')
-        return f'[Button: icon:{icon}]' if icon else ''
+        if icon := self._props.get('icon'):
+            return f'[Button: icon:{icon}]'
+        return '[Button]'
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
