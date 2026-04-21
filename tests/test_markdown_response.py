@@ -145,8 +145,14 @@ async def test_invisible_elements(user: User):
 
 
 async def test_select(user: User):
-    await _assert_markdown(user, lambda: ui.select(['A', 'B', 'C'], value='B'), 'B')
-    await _assert_markdown(user, lambda: ui.select(['A', 'B', 'C'], value='B', label='Choice'), 'Choice: B')
+    abc = ['A', 'B', 'C']
+    xyz = {'X': 'x', 'Y': 'y', 'Z': 'z'}
+    await _assert_markdown(user, lambda: ui.select(abc, value='B'), 'B')
+    await _assert_markdown(user, lambda: ui.select(abc, value='B', label='Choice'), 'Choice: B')
+    await _assert_markdown(user, lambda: ui.select(abc, value=['A', 'B', 'C'], multiple=True), 'A, B, C')
+    await _assert_markdown(user, lambda: ui.select(xyz, value='Y'), 'y')
+    await _assert_markdown(user, lambda: ui.select(xyz, value='Y', label='Letter'), 'Letter: y')
+    await _assert_markdown(user, lambda: ui.select(xyz, value=['X', 'Y', 'Z'], multiple=True), 'x, y, z')
 
 
 async def test_radio(user: User):
