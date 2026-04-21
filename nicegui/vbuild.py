@@ -81,19 +81,23 @@ class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assume
 
 def add_css_prefix(css: str, prefix: str) -> str:
     """Add the prefix (CSS selector) to all rules in ``css``."""
-    media_queries: list[tuple[str, str]] = []
-    while '@media' in css:
-        p1 = css.find('@media', 0)
-        p2 = css.find('{', p1) + 1
-        level = 1
-        while level > 0:
-            level += 1 if css[p2] == '{' else -1 if css[p2] == '}' else 0
-            p2 += 1
-        block = css[p1:p2]
-        media_def = block[:block.find('{')].strip()
-        media_css = block[block.find('{') + 1:block.rfind('}')].strip()
-        css = css.replace(block, '')
-        media_queries.append((media_def, add_css_prefix(media_css, prefix)))
+    # extract at-rules whose bodies are descriptors, keyframe keywords or other non-selector syntax; emitted verbatim
+    css, verbatim_blocks = _extract_at_rules(css, (
+        r'@(?:(?:-\w+-)?keyframes|'
+        r'font-face|font-feature-values|font-palette-values|page|property|counter-style|color-profile)\b'
+    ))
+    verbatim = [re.sub(r'\s+', ' ', b).strip() for b in verbatim_blocks]
+
+    # extract at-rules whose bodies contain regular CSS rules with DOM selectors; inner rules receive the scope prefix
+    css, conditional_blocks = _extract_at_rules(css, r'@(?:media|supports|container|layer|scope)\b')
+    conditional: list[str] = []
+    for block in conditional_blocks:
+        if block.endswith(';'):  # statement form, e.g. `@layer reset, theme;`
+            conditional.append(re.sub(r'\s+', ' ', block).strip())
+        else:
+            header = block[:block.find('{')].strip()
+            body = block[block.find('{') + 1:block.rfind('}')].strip()
+            conditional.append(f'{header} {{ {add_css_prefix(body, prefix)} }}')
 
     lines: list[str] = []
     css = re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', css)
@@ -105,5 +109,34 @@ def add_css_prefix(css: str, prefix: str) -> str:
         else:
             line = [i.strip() for i in selectors.split(',')]
         lines.append(', '.join(line) + ' {' + declarations.strip())
-    lines.extend(f'{d} {{ {c} }}' for d, c in media_queries)
+    lines.extend(conditional)
+    lines.extend(verbatim)
     return '\n'.join(lines).strip()
+
+
+def _extract_at_rules(css: str, pattern: str) -> tuple[str, list[str]]:
+    """Extract at-rules matching ``pattern`` from ``css``.
+
+    Returns the CSS with matches removed and a list of the extracted rules in source order.
+    Block-form rules are returned with balanced braces; statement-form rules include the trailing ``;``.
+    """
+    rules: list[str] = []
+    while True:
+        match = re.search(pattern, css)
+        if not match:
+            return css, rules
+        p1 = match.start()
+        brace = css.find('{', p1)
+        semi = css.find(';', p1)
+        if brace == -1 and semi == -1:
+            return css, rules
+        if semi != -1 and (brace == -1 or semi < brace):
+            p2 = semi + 1
+        else:
+            p2 = brace + 1
+            level = 1
+            while level > 0:
+                level += 1 if css[p2] == '{' else -1 if css[p2] == '}' else 0
+                p2 += 1
+        rules.append(css[p1:p2])
+        css = css[:p1] + css[p2:]

@@ -98,6 +98,51 @@ def test_template_with_script():
     ''')
 
 
+def test_template_with_at_rules():
+    check('''
+        <template>
+            <h1>Hello, World!</h1>
+        </template>
+        <style scoped>
+            h1 {
+                animation: fade 1s;
+                font-family: 'MyFont';
+            }
+            @keyframes fade {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @-webkit-keyframes slide {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(100px); }
+            }
+            @font-face {
+                font-family: 'MyFont';
+                src: url('/fonts/my.woff2') format('woff2');
+            }
+            @supports (display: grid) {
+                h1 { display: grid; }
+            }
+            @layer reset, theme;
+            @layer theme {
+                h1:hover { color: red; }
+            }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <h1 data-TEST>Hello, World!</h1>
+        </script>
+    ''', css='''
+        *[data-TEST] h1 {animation: fade 1s; font-family: 'MyFont'; }
+        @supports (display: grid) { *[data-TEST] h1 {display: grid; } }
+        @layer reset, theme;
+        @layer theme { *[data-TEST] h1:hover {color: red; } }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        @-webkit-keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }
+        @font-face { font-family: 'MyFont'; src: url('/fonts/my.woff2') format('woff2'); }
+    ''', js='')
+
+
 def test_multiple_templates():
     with pytest.raises(ValueError, match='File contains more than one template'):
         check('''
