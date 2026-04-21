@@ -22,22 +22,16 @@ class ChoiceElement(ValueElement[Any]):
         self._update_options()
 
     def _render_markdown(self) -> str:
-        value = self.value
-        if value is None:
+        if self.value is None:
             return ''
-        if isinstance(value, list):
-            display_labels = []
-            for v in value:
-                try:
-                    display_labels.append(str(self._labels[self._values.index(v)]))
-                except (ValueError, IndexError):
-                    display_labels.append(str(v))
-            display = ', '.join(display_labels)
-        else:
+        values = self.value if isinstance(self.value, list) else [self.value]
+        labels = []
+        for value in values:
             try:
-                display = str(self._labels[self._values.index(value)])
+                labels.append(str(self._labels[self._values.index(value)]))
             except (ValueError, IndexError):
-                display = str(value)
+                labels.append(str(value))
+        display = ', '.join(labels)
         form_label = getattr(self, 'label', None) or ''
         return f'{form_label}: {display}' if form_label else display
 
