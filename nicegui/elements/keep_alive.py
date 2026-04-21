@@ -14,9 +14,9 @@ class KeepAlive(Element, component='keep_alive_anchor.js'):
 
         This is useful for elements whose client-side state would otherwise be lost or unreachable before first display:
         writing to a ``ui.xterm`` inside a never-opened tab, reading ``ui.aggrid.get_client_data()`` from a closed dialog,
-        or preserving edit history in a ``ui.codemirror`` across navigation.
-        Method calls and events on the inner elements are executed immediately on the live component instance —
-        they are never buffered or replayed.
+        or preserving edit history in a ``ui.codemirror`` when switching between tabs.
+        Method calls and events on the inner elements are executed immediately on the live component instance.
+        They are never buffered or replayed.
 
         Internally the children are rendered into a hidden host at the page root
         and teleported to the wrapper's location whenever it becomes visible.
@@ -26,6 +26,9 @@ class KeepAlive(Element, component='keep_alive_anchor.js'):
 
         Note that this keeps the children alive for the full lifetime of the client, which costs memory.
         Only use it where eager mounting is actually required.
+        Because state is tied to the client, ``ui.keep_alive`` cannot preserve anything across ``@ui.page`` navigation,
+        which creates a fresh client every time;
+        it only helps within a single page (inactive tabs, closed dialogs, unrouted sub-pages).
 
         *Added in version 3.11.0*
         """
