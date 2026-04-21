@@ -22,7 +22,6 @@ from .element import Element
 from .favicon import get_favicon_url
 from .javascript_request import JavaScriptRequest
 from .logging import log
-from .markdown_response import build_markdown_response
 from .observables import ObservableDict
 from .outbox import Outbox
 from .sub_pages_router import SubPagesRouter
@@ -157,9 +156,18 @@ class Client:
         # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
         # It works for the real use case: agents sending exactly `Accept: text/markdown`.
         if 'text/markdown' in accept and 'text/html' not in accept:
-            response = build_markdown_response(self, status_code)
-            response.background = BackgroundTask(self.delete)
-            return response
+            parts = []
+            if title := self.resolve_title():
+                parts.append(f'# {title}')
+            if markdown := self.layout._render_markdown():  # pylint: disable=protected-access
+                parts.append(markdown)
+            return Response(
+                content='\n\n'.join(parts),
+                status_code=status_code,
+                headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
+                media_type='text/markdown; charset=utf-8',
+                background=BackgroundTask(self.delete),
+            )
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
         elements = json.dumps({
