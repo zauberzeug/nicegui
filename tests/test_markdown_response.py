@@ -1,18 +1,7 @@
+from collections.abc import Callable
+
 from nicegui import ui
 from nicegui.testing import User
-
-MARKDOWN_ACCEPT = {'Accept': 'text/markdown'}
-
-
-async def test_label(user: User):
-    @ui.page('/')
-    def page():
-        ui.label('Hello World')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert response.status_code == 200
-    assert 'text/markdown' in response.headers['content-type']
-    assert 'Hello World' in response.text
 
 
 async def test_page_title(user: User):
@@ -20,145 +9,88 @@ async def test_page_title(user: User):
     def page():
         ui.label('Content')
 
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert response.text.startswith('# My Page')
-    assert 'Content' in response.text
+    response = await user.http_client.get('/', headers={'Accept': 'text/markdown'})
+    assert response.text.strip() == '# My Page\n\nContent'
 
 
-async def test_markdown_element_passthrough(user: User):
-    @ui.page('/')
-    def page():
-        ui.markdown('## Hello\n\nThis is **bold** text.')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '## Hello' in response.text
-    assert '**bold**' in response.text
-
-
-async def test_link(user: User):
-    @ui.page('/')
-    def page():
-        ui.link('NiceGUI', 'https://nicegui.io')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '[NiceGUI](https://nicegui.io)' in response.text
-
-
-async def test_image(user: User):
-    @ui.page('/')
-    def page():
-        ui.image('https://example.com/image.png')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '![](https://example.com/image.png)' in response.text
-
-
-async def test_separator(user: User):
-    @ui.page('/')
-    def page():
-        ui.label('Above')
-        ui.separator()
-        ui.label('Below')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '---' in response.text
-    assert 'Above' in response.text
-    assert 'Below' in response.text
-
-
-async def test_table(user: User):
-    @ui.page('/')
-    def page():
-        ui.table(
-            columns=[
-                {'name': 'name', 'label': 'Name', 'field': 'name'},
-                {'name': 'age', 'label': 'Age', 'field': 'age'},
-            ],
-            rows=[
-                {'name': 'Alice', 'age': 30},
-                {'name': 'Bob', 'age': 25},
-                {'name': 'a | b', 'age': 99},
-            ],
-        )
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '| Name | Age |' in response.text
-    assert '| Alice | 30 |' in response.text
-    assert '| Bob | 25 |' in response.text
-    assert r'| a \| b | 99 |' in response.text
-
-
-async def test_checkbox(user: User):
-    @ui.page('/')
-    def page():
-        ui.checkbox('Accept terms', value=True)
-        ui.checkbox('Subscribe', value=False)
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '- [x] Accept terms' in response.text
-    assert '- [ ] Subscribe' in response.text
-
-
-async def test_button(user: User):
-    @ui.page('/')
-    def page():
-        ui.button('Click me')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '[Button: Click me]' in response.text
-
-
-async def test_code_element(user: User):
-    @ui.page('/')
-    def page():
-        ui.code('print("hello")', language='python')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '```python' in response.text
-    assert 'print("hello")' in response.text
-    assert '```' in response.text
-
-
-async def test_input(user: User):
-    @ui.page('/')
-    def page():
-        ui.input('Username', value='alice')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Username: alice' in response.text
-
-
-async def test_expansion(user: User):
-    @ui.page('/')
-    def page():
-        with ui.expansion('Details'):
-            ui.label('Hidden content')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '**Details**' in response.text
-    assert 'Hidden content' in response.text
-
-
-async def test_nested_containers(user: User):
-    @ui.page('/')
-    def page():
-        with ui.card():
-            with ui.row():
-                ui.label('First')
-                ui.label('Second')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'First' in response.text
-    assert 'Second' in response.text
-
-
-async def test_html_accept_returns_html(user: User):
+async def test_html_response(user: User):
     @ui.page('/')
     def page():
         ui.label('Hello')
 
     response = await user.http_client.get('/', headers={'Accept': 'text/html'})
     assert 'text/html' in response.headers['content-type']
+
+
+async def test_label(user: User):
+    await _assert_markdown(user, lambda: ui.label('Hello World'), 'Hello World')
+
+
+async def test_markdown_element_passthrough(user: User):
+    await _assert_markdown(user, lambda: ui.markdown('## Heading\n\n**Bold!**'), '## Heading\n\n**Bold!**')
+
+
+async def test_link(user: User):
+    await _assert_markdown(user, lambda: ui.link('NiceGUI', 'https://nicegui.io'), '[NiceGUI](https://nicegui.io)')
+
+
+async def test_image(user: User):
+    await _assert_markdown(user, lambda: ui.image('https://example.com/img.png'), '![](https://example.com/img.png)')
+
+
+async def test_separator(user: User):
+    await _assert_markdown(user, lambda: (ui.label('Above'), ui.separator(), ui.label('Below')), 'Above\n\n---\n\nBelow')
+
+
+async def test_table(user: User):
+    await _assert_markdown(user, lambda: ui.table(
+        columns=[
+            {'name': 'name', 'label': 'Name', 'field': 'name'},
+            {'name': 'age', 'label': 'Age', 'field': 'age'},
+        ],
+        rows=[
+            {'name': 'Alice', 'age': 30},
+            {'name': 'Bob', 'age': 25},
+            {'name': 'a | b', 'age': 99},
+        ],
+    ), '| Name | Age |\n| --- | --- |\n| Alice | 30 |\n| Bob | 25 |\n| a \\| b | 99 |')
+
+
+async def test_checkbox(user: User):
+    await _assert_markdown(user, lambda: ui.checkbox('Accept terms', value=True), '- [x] Accept terms')
+    await _assert_markdown(user, lambda: ui.checkbox('Subscribe', value=False), '- [ ] Subscribe')
+
+
+async def test_button(user: User):
+    await _assert_markdown(user, lambda: ui.button('Click me'), '[Button: Click me]')
+    await _assert_markdown(user, lambda: ui.button('Click me', icon='thumb_up'), '[Button: Click me]')
+    await _assert_markdown(user, lambda: ui.button(icon='face'), '[Button: icon:face]')
+    await _assert_markdown(user, ui.button, '[Button]')
+
+
+async def test_code_element(user: User):
+    await _assert_markdown(user, lambda: ui.code('print("hello")', language='python'), '```python\nprint("hello")\n```')
+
+
+async def test_input(user: User):
+    await _assert_markdown(user, lambda: ui.input('Username', value='alice'), 'Username: alice')
+
+
+async def test_expansion(user: User):
+    def build(value: bool) -> None:
+        with ui.expansion('Details', value=value):
+            ui.label('Nested content')
+    await _assert_markdown(user, lambda: build(True), '**Details**\n\nNested content')
+    await _assert_markdown(user, lambda: build(False), '**Details**')
+
+
+async def test_nested_containers(user: User):
+    def build():
+        with ui.card():
+            with ui.row():
+                ui.label('First')
+                ui.label('Second')
+    await _assert_markdown(user, build, 'First\n\nSecond')
 
 
 async def test_no_accept_returns_html(user: User):
@@ -171,234 +103,90 @@ async def test_no_accept_returns_html(user: User):
 
 
 async def test_switch(user: User):
-    @ui.page('/')
-    def page():
-        ui.switch('Dark mode', value=True)
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '- [x] Dark mode' in response.text
+    await _assert_markdown(user, lambda: ui.switch('Dark mode', value=False), '- [ ] Dark mode')
+    await _assert_markdown(user, lambda: ui.switch('Light mode', value=True), '- [x] Light mode')
 
 
 async def test_number_input(user: User):
-    @ui.page('/')
-    def page():
-        ui.number('Age', value=25)
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Age: 25' in response.text
+    await _assert_markdown(user, lambda: ui.number(value=30, label='Age'), 'Age: 30')
+    await _assert_markdown(user, lambda: ui.number(value=42), '42')
 
 
 async def test_textarea(user: User):
-    @ui.page('/')
-    def page():
-        ui.textarea('Notes', value='some text')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Notes: some text' in response.text
+    await _assert_markdown(user, lambda: ui.textarea('Notes', value='some text'), 'Notes: some text')
 
 
 async def test_chat_message(user: User):
-    @ui.page('/')
-    def page():
-        ui.chat_message('Hello there!', name='Alice')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '**Alice**' in response.text
-    assert 'Hello there!' in response.text
+    await _assert_markdown(user, lambda: ui.chat_message('Hello there!', name='Alice'), '**Alice**: Hello there!')
 
 
-async def test_dialog_closed(user: User):
-    """Closed dialog should not render children."""
-    @ui.page('/')
-    def page():
-        with ui.dialog():
-            ui.label('Secret content')
+async def test_dialog(user: User):
+    def build(value: bool) -> None:
         ui.label('Visible')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Visible' in response.text
-    assert 'Secret' not in response.text
-
-
-async def test_dialog_open(user: User):
-    """Open dialog should render children."""
-    @ui.page('/')
-    def page():
-        with ui.dialog(value=True):
-            ui.label('Dialog content')
-        ui.label('Visible')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Dialog content' in response.text
-    assert 'Visible' in response.text
+        with ui.dialog(value=value):
+            ui.label('Nested content')
+    await _assert_markdown(user, lambda: build(value=False), 'Visible')
+    await _assert_markdown(user, lambda: build(value=True), 'Visible\n\nNested content')
 
 
-async def test_context_menu_skipped(user: User):
-    @ui.page('/')
-    def page():
+async def test_context_menu(user: User):
+    def build() -> None:
         with ui.label('Right-click me'):
             with ui.context_menu():
-                ui.menu_item('Option 1')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Right-click me' in response.text
-    assert 'Option 1' not in response.text
+                ui.label('Nested content')
+    await _assert_markdown(user, build, 'Right-click me')
 
 
-async def test_non_visual_elements_skipped(user: User):
-    """Non-visual elements (dark_mode, colors, etc.) produce no output by default."""
-    @ui.page('/')
-    def page():
-        ui.dark_mode(False)
-        ui.colors(primary='red')
-        ui.label('Content')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Content' in response.text
-    assert 'red' not in response.text
+async def test_invisible_elements(user: User):
+    await _assert_markdown(user, ui.dark_mode, '')
+    await _assert_markdown(user, ui.colors, '')
+    await _assert_markdown(user, lambda: ui.slider(min=0, max=100, value=50), '')
+    await _assert_markdown(user, lambda: ui.label('Hidden').set_visibility(False), '')
 
 
-async def test_invisible_elements_excluded(user: User):
-    """Elements with visible=False produce no markdown output."""
-    @ui.page('/')
-    def page():
-        ui.label('Visible')
-        ui.label('Hidden').set_visibility(False)
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Visible' in response.text
-    assert 'Hidden' not in response.text
-
-
-async def test_select_with_label(user: User):
-    @ui.page('/')
-    def page():
-        ui.select(['A', 'B', 'C'], label='Choice', value='B')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Choice' in response.text
-    assert 'B' in response.text
-
-
-async def test_select_without_label(user: User):
-    @ui.page('/')
-    def page():
-        ui.select(['A', 'B', 'C'], value='B')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'B' in response.text
+async def test_select(user: User):
+    await _assert_markdown(user, lambda: ui.select(['A', 'B', 'C'], value='B'), 'B')
+    await _assert_markdown(user, lambda: ui.select(['A', 'B', 'C'], value='B', label='Choice'), 'Choice: B')
 
 
 async def test_radio(user: User):
-    @ui.page('/')
-    def page():
-        ui.radio(['X', 'Y', 'Z'], value='Y')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Y' in response.text
-
-
-async def test_slider_skipped(user: User):
-    """Slider has no markdown representation."""
-    @ui.page('/')
-    def page():
-        ui.slider(min=0, max=100, value=50)
-        ui.label('After slider')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'After slider' in response.text
-    assert '50' not in response.text
-
-
-async def test_number_without_label(user: User):
-    @ui.page('/')
-    def page():
-        ui.number(value=42)
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '42' in response.text
+    await _assert_markdown(user, lambda: ui.radio(['X', 'Y', 'Z'], value='Y'), 'Y')
 
 
 async def test_badge(user: User):
-    @ui.page('/')
-    def page():
-        ui.badge('NEW')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'NEW' in response.text
+    await _assert_markdown(user, lambda: ui.badge('NEW'), 'NEW')
 
 
 async def test_chip(user: User):
-    @ui.page('/')
-    def page():
-        ui.chip('Tag')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Tag' in response.text
+    await _assert_markdown(user, lambda: ui.chip('Tag'), 'Tag')
 
 
-async def test_html_element(user: User):
-    @ui.page('/')
-    def page():
-        ui.html('<b>Bold text</b>')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '<b>Bold text</b>' in response.text
+async def test_html(user: User):
+    await _assert_markdown(user, lambda: ui.html('<b>Bold text</b>'), '<b>Bold text</b>')
 
 
-async def test_menu_closed(user: User):
-    """Closed menu should not render children."""
-    @ui.page('/')
-    def page():
-        with ui.button('Menu button'):
-            with ui.menu():
-                ui.menu_item('Item 1')
-        ui.label('Visible')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Visible' in response.text
-    assert 'Item 1' not in response.text
-
-
-async def test_menu_open(user: User):
-    """Open menu should render children."""
-    @ui.page('/')
-    def page():
-        with ui.column():
-            with ui.menu(value=True):
-                ui.menu_item('Item 1')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Item 1' in response.text
+async def test_menu(user: User):
+    def build(value: bool) -> None:
+        with ui.menu(value=value):
+            ui.menu_item('Item 1')
+            ui.menu_item('Item 2')
+    await _assert_markdown(user, lambda: build(value=False), '')
+    await _assert_markdown(user, lambda: build(value=True), 'Item 1\n\nItem 2')
 
 
 async def test_notification(user: User):
-    """Notification should render its message."""
-    @ui.page('/')
-    def page():
+    def build() -> None:
         ui.notification('Hello notification!')
         ui.label('Page content')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert 'Hello notification!' in response.text
-    assert 'Page content' in response.text
+    await _assert_markdown(user, build, 'Page content\n\nHello notification!')
 
 
-async def test_button_icon_only(user: User):
-    """Icon-only button should show icon name."""
+async def _assert_markdown(user: User, build: Callable, expected: str) -> None:
     @ui.page('/')
-    def page():
-        ui.button(icon='thumb_up')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
-    assert '[Button: icon:thumb_up]' in response.text
-
-
-async def test_x_nicegui_content_header(user: User):
-    """Markdown response should include X-NiceGUI-Content header."""
-    @ui.page('/')
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers=MARKDOWN_ACCEPT)
+    def _():
+        build()
+    response = await user.http_client.get('/', headers={'Accept': 'text/markdown'})
     assert response.headers.get('X-NiceGUI-Content') == 'page'
+    assert response.status_code == 200
+    assert 'text/markdown' in response.headers['content-type']
+    assert response.text.strip() == f'# NiceGUI\n\n{expected}'.strip()

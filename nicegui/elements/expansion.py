@@ -45,7 +45,7 @@ class Expansion(IconElement, TextElement, ValueElement[bool], DisableableElement
         parts = []
         if label := self._props.get('label', ''):
             parts.append(f'**{label}**')
-        if children_md := self._children_to_markdown():
+        if self.value and (children_md := self._children_to_markdown()):
             parts.append(children_md)
         return '\n\n'.join(parts)
 
