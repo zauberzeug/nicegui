@@ -55,5 +55,5 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         self._props[self.CONTENT_PROP] = content.strip()
         self.run_method('update', content.strip())
 
-    def _render_markdown(self) -> str | None:
-        return f'```mermaid\n{self.content}\n```' if self.content else None
+    def _render_markdown(self) -> str:
+        return f'```mermaid\n{self.content}\n```' if self.content else ''

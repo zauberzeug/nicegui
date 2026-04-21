@@ -12,5 +12,5 @@ class Label(TextElement):
         """
         super().__init__(tag='div', text=text)
 
-    def _render_markdown(self) -> str | None:
-        return self._text
+    def _render_markdown(self) -> str:
+        return self._text or ''

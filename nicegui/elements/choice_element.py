@@ -21,10 +21,10 @@ class ChoiceElement(ValueElement[Any]):
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
-    def _render_markdown(self) -> str | None:
+    def _render_markdown(self) -> str:
         value = self.value
         if value is None:
-            return None
+            return ''
         if isinstance(value, list):
             display_labels = []
             for v in value:

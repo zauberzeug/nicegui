@@ -26,8 +26,8 @@ class Menu(ValueElement[bool]):
                                 'The prop "touch-position" is not supported by `ui.menu`. '
                                 'Use "ui.context_menu()" instead.')
 
-    def _render_markdown(self) -> str | None:
-        return self._children_to_markdown() if self.value else None
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown() if self.value else ''
 
     def open(self) -> None:
         """Open the menu."""

@@ -202,6 +202,22 @@ class Element(Visibility):
         for slot in self.slots.values():
             yield from slot
 
+    def _render_markdown(self) -> str:
+        """Render the Markdown body for this element.
+
+        The default implementation recurses into children, which is the natural behavior for container elements.
+        Override to render specific content (e.g. text, value) or to actively skip children (return an empty string).
+        """
+        return self._children_to_markdown()
+
+    def _children_to_markdown(self) -> str:
+        """Collect Markdown from all child elements across all slots."""
+        return '\n\n'.join(
+            markdown
+            for child in self
+            if child.visible and (markdown := child._render_markdown())  # pylint: disable=protected-access
+        )
+
     def _collect_slot_dict(self) -> dict[str, Any]:
         return {
             name: {
@@ -211,25 +227,6 @@ class Element(Visibility):
             for name, slot in self.slots.items()
             if slot != self.default_slot
         }
-
-    def _render_markdown(self) -> str | None:
-        """Return the markdown body for this element, or ``None`` to skip it.
-
-        The default implementation recurses into children, which is the natural behavior
-        for container elements. Override to render specific content (e.g. text, value)
-        or to actively skip children (return ``None``).
-        """
-        return self._children_to_markdown()
-
-    def _children_to_markdown(self) -> str | None:
-        """Collect markdown from all child elements across all slots."""
-        parts = []
-        for slot in self.slots.values():
-            for child in slot.children:
-                markdown = child._render_markdown() if child.visible else None  # pylint: disable=protected-access
-                if markdown:
-                    parts.append(markdown)
-        return '\n\n'.join(parts) if parts else None
 
     def _to_dict(self) -> dict[str, Any]:
         return {

@@ -66,7 +66,7 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
 
-    def _render_markdown(self) -> str | None:
+    def _render_markdown(self) -> str:
         return self.content
 
 
