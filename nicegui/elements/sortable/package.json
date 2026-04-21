@@ -1,7 +1,7 @@
 {
-  "name": "nicegui-plotly-bundle",
+  "name": "nicegui-sortable-bundle",
   "version": "1.0.0",
-  "description": "Plotly bundling for NiceGUI",
+  "description": "SortableJS bundling for NiceGUI",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,15 +9,11 @@
     "clean": "rimraf ./dist/*"
   },
   "dependencies": {
-    "plotly.js": "^3.1.1"
-  },
-  "overrides": {
-    "protocol-buffers-schema": "^3.6.1"
+    "sortablejs": "^1.15.6"
   },
   "devDependencies": {
     "rollup": "^4.59.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-terser": "^1.0.0",
     "rimraf": "^6.1.3"
   }

@@ -94,6 +94,7 @@ class Air:
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
             data['params']['nicegui_chunk_size'] = 1024
             request = httpx.Request(data['method'], url, params=data['params'], headers=headers)
+            self.streaming_client.cookies.clear()  # avoid unbounded memory growth from accumulated Set-Cookie entries
             response = await self.streaming_client.send(request, stream=True)
             stream_id = str(uuid4())
             self.streams[stream_id] = Stream(data=response.aiter_bytes(), response=response)

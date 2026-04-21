@@ -2,11 +2,12 @@ from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
+from .mixins.sortable_element import SortableElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Expansion(IconElement, TextElement, ValueElement[bool], DisableableElement,
+class Expansion(SortableElement, IconElement, TextElement, ValueElement[bool], DisableableElement,
                 component='expansion.js', default_classes='nicegui-expansion'):
 
     @resolve_defaults
