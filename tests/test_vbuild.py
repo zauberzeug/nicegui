@@ -198,3 +198,150 @@ def test_multiple_top_level_tags():
                 <h1>Hello, NiceGUI!</h1>
             </template>
         ''', html='', css='', js='')
+
+
+def test_scoped_style_with_media_query():
+    check('''
+        <template>
+            <div class="container">Content</div>
+        </template>
+        <style scoped>
+            .container { width: 100%; }
+            @media (min-width: 768px) {
+                .container { width: 750px; }
+            }
+            @media screen and (prefers-reduced-motion: reduce) {
+                .container { animation: none; }
+            }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <div data-TEST class="container">Content</div>
+        </script>
+    ''', css='''
+        .container[data-TEST], *[data-TEST] .container {width: 100%; }
+        @media (min-width: 768px) { .container[data-TEST], *[data-TEST] .container {width: 750px; } }
+        @media screen and (prefers-reduced-motion: reduce) { .container[data-TEST], *[data-TEST] .container {animation: none; } }
+    ''', js='')
+
+
+def test_scoped_style_with_container_query():
+    check('''
+        <template>
+            <div class="card">Card</div>
+        </template>
+        <style scoped>
+            @container (min-width: 400px) {
+                .card { flex-direction: row; }
+            }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <div data-TEST class="card">Card</div>
+        </script>
+    ''', css='''
+        @container (min-width: 400px) { .card[data-TEST], *[data-TEST] .card {flex-direction: row; } }
+    ''', js='')
+
+
+def test_scoped_style_with_starting_style():
+    check('''
+        <template>
+            <dialog class="modal">Modal</dialog>
+        </template>
+        <style scoped>
+            .modal { opacity: 1; transition: opacity 0.3s; }
+            @starting-style {
+                .modal { opacity: 0; }
+            }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <dialog data-TEST class="modal">Modal</dialog>
+        </script>
+    ''', css='''
+        .modal[data-TEST], *[data-TEST] .modal {opacity: 1; transition: opacity 0.3s; }
+        @starting-style { .modal[data-TEST], *[data-TEST] .modal {opacity: 0; } }
+    ''', js='')
+
+
+def test_scoped_style_with_nested_at_rules():
+    check('''
+        <template>
+            <div class="box">Box</div>
+        </template>
+        <style scoped>
+            @media screen {
+                @keyframes slide { from { left: 0; } to { left: 100px; } }
+                .box { animation: slide 1s; }
+            }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <div data-TEST class="box">Box</div>
+        </script>
+    ''', css='''
+        @media screen { @keyframes slide { from { left: 0; } to { left: 100px; } }
+        .box[data-TEST], *[data-TEST] .box {animation: slide 1s; } }
+    ''', js='')
+
+
+def test_scoped_style_with_pseudo_elements():
+    check('''
+        <template>
+            <button class="btn">Click</button>
+        </template>
+        <style scoped>
+            .btn::before { content: ""; display: block; }
+            .btn::after { content: ""; }
+            .btn:hover::before { opacity: 1; }
+            .btn:focus:active::after { transform: scale(1.1); }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <button data-TEST class="btn">Click</button>
+        </script>
+    ''', css='''
+        .btn[data-TEST]::before, *[data-TEST] .btn::before {content: ""; display: block; }
+        .btn[data-TEST]::after, *[data-TEST] .btn::after {content: ""; }
+        .btn[data-TEST]:hover::before, *[data-TEST] .btn:hover::before {opacity: 1; }
+        .btn[data-TEST]:focus:active::after, *[data-TEST] .btn:focus:active::after {transform: scale(1.1); }
+    ''', js='')
+
+
+def test_scoped_style_with_braces_in_content():
+    check('''
+        <template>
+            <div class="box">Box</div>
+        </template>
+        <style scoped>
+            .box::before { content: "{ }"; }
+            .box::after { content: '[ ]'; }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <div data-TEST class="box">Box</div>
+        </script>
+    ''', css='''
+        .box[data-TEST]::before, *[data-TEST] .box::before {content: "{ }"; }
+        .box[data-TEST]::after, *[data-TEST] .box::after {content: "[ ]"; }
+    ''', js='')
+
+
+def test_scoped_style_ignores_comments():
+    check('''
+        <template>
+            <div class="box">Box</div>
+        </template>
+        <style scoped>
+            /* This is a comment */
+            .box { color: red; }
+            /* @keyframes ignored { from { x: 0; } } */
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <div data-TEST class="box">Box</div>
+        </script>
+    ''', css='''
+        .box[data-TEST], *[data-TEST] .box {color: red; }
+    ''', js='')
