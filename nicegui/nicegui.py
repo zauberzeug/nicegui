@@ -163,7 +163,6 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
-    log.warning(f'{request.url} not found')
     if 'endpoint' in request.scope and not request.scope.get('nicegui_page_path') and isinstance(exception, StarletteHTTPException):
         # non-page endpoints raising 404 should get JSON, not our HTML error page
         # NOTE: match Starlette's HTTPException (the base class) so e.g. auth dependencies that raise it directly are covered
@@ -179,6 +178,7 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
             if name in request.query_params and name != 'request'
         }
         return await page('')._wrap(root)(request=request, **kwargs)  # pylint: disable=protected-access
+    log.warning(f'{request.url} not found')
     with Client(page(''), request=request) as client:
         error_content(404, exception)
     return client.build_response(request, 404)
