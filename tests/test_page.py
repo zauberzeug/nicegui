@@ -7,6 +7,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
 from selenium.webdriver.common.by import By
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from nicegui import app, background_tasks, ui
 from nicegui.testing import Screen, User
@@ -187,6 +188,19 @@ def test_api_http_exception_404_returns_json(screen: Screen):
     assert response.status_code == 404, 'status code should be forwarded'
     assert response.headers['content-type'].startswith('application/json'), \
         "endpoints raising HTTPException(404) should get FastAPI's default JSON response, not NiceGUI's HTML error page"
+    assert response.json() == {'detail': 'item not found'}
+
+
+def test_api_starlette_http_exception_404_returns_json(screen: Screen):
+    @app.get('/api/missing-starlette')
+    def api_missing_starlette():
+        raise StarletteHTTPException(404, 'item not found')  # NOTE: e.g. raised by FastAPI security dependencies
+
+    screen.start_server()
+    response = httpx.get(f'http://localhost:{Screen.PORT}/api/missing-starlette')
+    assert response.status_code == 404, 'status code should be forwarded'
+    assert response.headers['content-type'].startswith('application/json'), \
+        "endpoints raising starlette.exceptions.HTTPException(404) should also get JSON, not NiceGUI's HTML error page"
     assert response.json() == {'detail': 'item not found'}
 
 
