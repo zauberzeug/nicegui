@@ -36,6 +36,8 @@ dependencies = [
     "certifi>=2024.07.04",
     "pydantic-core>=2.35.0",
     "lxml-html-clean>=0.4.4",  # https://github.com/zauberzeug/nicegui/security/dependabot/167
+    "lxml>=6.1.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/251, for lxml-html-clean
+    "python-dotenv>=1.2.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/250, for uvicorn[standard]
 ]
 
 [project.optional-dependencies]
