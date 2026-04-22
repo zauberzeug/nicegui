@@ -1,6 +1,5 @@
 import os
 import shutil
-import socket
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
@@ -8,6 +7,8 @@ from pathlib import Path
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+
+from nicegui import helpers
 
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
@@ -19,15 +20,7 @@ from .screen import Screen
 
 # pylint: disable=redefined-outer-name
 
-
-def _find_free_port() -> int:
-    """Find a free port usable by ui.run (which binds to all interfaces by default)."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('0.0.0.0', 0))
-        return s.getsockname()[1]
-
-
-Screen.PORT = _find_free_port()
+Screen.PORT = helpers.find_free_port()
 Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
 DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
 
