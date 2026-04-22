@@ -114,7 +114,7 @@ def _render_rule(rule: Node, attr: str) -> str:
             head += f' {prelude}'
         if rule.content is None:  # statement form, e.g. `@layer reset, theme;`
             return f'{head};'
-        if rule.lower_at_keyword in {'media', 'supports', 'container', 'layer', 'scope'}:
+        if rule.lower_at_keyword in {'container', 'document', 'layer', 'media', 'scope', 'starting-style', 'supports'}:
             inner_rules = tinycss2.parse_rule_list(rule.content, skip_comments=True, skip_whitespace=True)
             inner = '\n'.join(line for line in (_render_rule(r, attr) for r in inner_rules) if line)
         else:
