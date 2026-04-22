@@ -38,6 +38,7 @@ dependencies = [
     "lxml-html-clean>=0.4.4",  # https://github.com/zauberzeug/nicegui/security/dependabot/167
     "lxml>=6.1.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/251, for lxml-html-clean
     "python-dotenv>=1.2.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/250, for uvicorn[standard]
+    "tinycss2>=1.4.0,<2",
 ]
 
 [project.optional-dependencies]
@@ -87,7 +88,6 @@ dev = [
     "pylint>=3.3.1",
     "cssbeautifier>=1.15.4,<2",
     "rcssmin>=1.2.1,<2",
-    "tinycss2>=1.4.0,<2",
     "poetry-dynamic-versioning>=1.8.0,<2",
 ]
 types = [

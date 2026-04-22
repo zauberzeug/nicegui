@@ -64,7 +64,87 @@ def test_template_with_scoped_style():
             <h1 data-TEST>Hello, World!</h1>
         </script>
     ''', css='''
-        *[data-TEST] h1 {color: red; }
+        h1[data-TEST], *[data-TEST] h1 {color: red; }
+    ''', js='')
+
+
+def test_scoped_style_applies_to_root_element():
+    check('''
+        <template>
+            <div class="root">
+                <div class="title">Title</div>
+            </div>
+        </template>
+        <style scoped>
+            .root {
+                background-color: green;
+            }
+            .root .title {
+                color: yellow;
+            }
+            .title {
+                font-weight: bold;
+            }
+            .root, .title {
+                padding: 4px;
+            }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <div data-TEST class="root">
+                <div class="title">Title</div>
+            </div>
+        </script>
+    ''', css='''
+        .root[data-TEST], *[data-TEST] .root {background-color: green; }
+        .root[data-TEST] .title, *[data-TEST] .root .title {color: yellow; }
+        .title[data-TEST], *[data-TEST] .title {font-weight: bold; }
+        .root[data-TEST], *[data-TEST] .root, .title[data-TEST], *[data-TEST] .title {padding: 4px; }
+    ''', js='')
+
+
+def test_scoped_style_with_at_rules():
+    check('''
+        <template>
+            <h1>Hello, World!</h1>
+        </template>
+        <style scoped>
+            h1 {
+                animation: fade 1s;
+                font-family: 'MyFont';
+            }
+            @keyframes fade {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @-webkit-keyframes slide {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(100px); }
+            }
+            @font-face {
+                font-family: 'MyFont';
+                src: url('/fonts/my.woff2') format('woff2');
+            }
+            @supports (display: grid) {
+                h1 { display: grid; }
+            }
+            @layer reset, theme;
+            @layer theme {
+                h1:hover { color: red; }
+            }
+        </style>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <h1 data-TEST>Hello, World!</h1>
+        </script>
+    ''', css='''
+        h1[data-TEST], *[data-TEST] h1 {animation: fade 1s; font-family: "MyFont"; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        @-webkit-keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }
+        @font-face { font-family: "MyFont"; src: url("/fonts/my.woff2") format("woff2"); }
+        @supports (display: grid) { h1[data-TEST], *[data-TEST] h1 {display: grid; } }
+        @layer reset, theme;
+        @layer theme { h1[data-TEST]:hover, *[data-TEST] h1:hover {color: red; } }
     ''', js='')
 
 

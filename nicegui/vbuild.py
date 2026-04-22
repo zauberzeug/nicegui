@@ -2,6 +2,9 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
+import tinycss2  # type: ignore[import-untyped]
+from tinycss2.ast import AtRule, LiteralToken, Node, QualifiedRule  # type: ignore[import-untyped]
+
 VOID_TAGS = 'area base br col embed hr img input link meta param source track wbr'.split()
 
 
@@ -15,8 +18,8 @@ class VBuild:
         name = filepath.stem.replace('/', '-').replace('\\', '-').replace(':', '-').replace('.', '-')
         html = re.sub(r'^<([\w-]+)', rf'<\1 data-{name}', parser.html)
         self.html = f'<script type="text/x-template" id="tpl-{name}">\n    {html}\n</script>'
-        self.style = '\n'.join(add_css_prefix(style, '') for style in parser.styles) + '\n'
-        self.style += '\n'.join(add_css_prefix(style, f'*[data-{name}]') for style in parser.scopedStyles)
+        self.style = '\n'.join(_add_css_prefix(style, '') for style in parser.styles) + '\n'
+        self.style += '\n'.join(_add_css_prefix(style, f'[data-{name}]') for style in parser.scopedStyles)
         self.script = parser.script or ''
 
 
@@ -79,31 +82,124 @@ class VueParser(HTMLParser):  # pylint: disable=abstract-method  # pylint assume
         return text
 
 
-def add_css_prefix(css: str, prefix: str) -> str:
-    """Add the prefix (CSS selector) to all rules in ``css``."""
-    media_queries: list[tuple[str, str]] = []
-    while '@media' in css:
-        p1 = css.find('@media', 0)
-        p2 = css.find('{', p1) + 1
-        level = 1
-        while level > 0:
-            level += 1 if css[p2] == '{' else -1 if css[p2] == '}' else 0
-            p2 += 1
-        block = css[p1:p2]
-        media_def = block[:block.find('{')].strip()
-        media_css = block[block.find('{') + 1:block.rfind('}')].strip()
-        css = css.replace(block, '')
-        media_queries.append((media_def, add_css_prefix(media_css, prefix)))
+def _add_css_prefix(css: str, attr: str) -> str:
+    """Parse ``css`` and apply Vue-style scoped rewriting using the attribute selector ``attr``.
 
-    lines: list[str] = []
-    css = re.sub(re.compile(r'/\*.*?\*/', re.DOTALL), '', css)
-    css = re.sub(re.compile(r'[ \t\n]+', re.DOTALL), ' ', css)
-    for rule in re.findall(r'[^}]+{[^}]+}', css):
-        selectors, declarations = rule.split('{', 1)
-        if prefix:
-            line = [(prefix + ' ' + i.replace(':scope', '').strip()).strip() for i in selectors.split(',')]
+    ``attr`` is expected in the form ``[data-NAME]`` (or empty for non-scoped styles).
+    Under scoped mode, each selector is emitted in two forms — with the attribute appended to the first compound
+    (so it matches the component's root element, which carries ``data-NAME``)
+    and with the classic descendant form (so it matches descendants of the root).
+    At-rules are kept intact: conditional wrappers (``@media``, ``@supports``, ``@container``, ``@layer``, ``@scope``)
+    have their inner rules recursed, while descriptor/keyframe blocks
+    (``@keyframes``, ``@font-face``, ``@page``, ``@property``, ``@counter-style``, ``@font-feature-values``,
+    ``@font-palette-values``, ``@color-profile``) are emitted verbatim.
+    """
+    rules = tinycss2.parse_stylesheet(css, skip_comments=True, skip_whitespace=True)
+    return '\n'.join(line for line in (_render_rule(r, attr) for r in rules) if line).strip()
+
+
+def _render_rule(rule: Node, attr: str) -> str:
+    if isinstance(rule, QualifiedRule):
+        selectors = _split_at_top_level_comma(rule.prelude)
+        if attr:
+            parts: list[str] = []
+            for sel in selectors:
+                parts.extend(_scoped_selector_variants(_strip_scope_pseudo(sel), attr))
         else:
-            line = [i.strip() for i in selectors.split(',')]
-        lines.append(', '.join(line) + ' {' + declarations.strip())
-    lines.extend(f'{d} {{ {c} }}' for d, c in media_queries)
-    return '\n'.join(lines).strip()
+            parts = [_serialize_condensed(sel) for sel in selectors]
+        return f'{", ".join(parts)} {{{_serialize_condensed(rule.content)} }}'
+    if isinstance(rule, AtRule):
+        head = f'@{rule.at_keyword}'
+        if prelude := _serialize_condensed(rule.prelude):
+            head += f' {prelude}'
+        if rule.content is None:  # statement form, e.g. `@layer reset, theme;`
+            return f'{head};'
+        if rule.lower_at_keyword in {'media', 'supports', 'container', 'layer', 'scope'}:
+            inner_rules = tinycss2.parse_rule_list(rule.content, skip_comments=True, skip_whitespace=True)
+            inner = '\n'.join(line for line in (_render_rule(r, attr) for r in inner_rules) if line)
+        else:
+            inner = _serialize_condensed(rule.content)  # verbatim (@keyframes, @font-face, ...)
+        return f'{head} {{ {inner} }}'
+    return ''  # ParseError or unexpected top-level token — skip
+
+
+def _serialize_condensed(tokens: list[Node]) -> str:
+    """Serialize ``tokens`` and collapse whitespace/comments to a single space."""
+    text = tinycss2.serialize(tokens)
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def _split_at_top_level_comma(tokens: list[Node]) -> list[list[Node]]:
+    """Split a prelude token list at top-level commas into individual selectors."""
+    groups: list[list[Node]] = [[]]
+    for token in tokens:
+        if isinstance(token, LiteralToken) and token.value == ',':
+            groups.append([])
+        else:
+            groups[-1].append(token)
+    return [group for group in (_trim_edge_whitespace(group) for group in groups) if group]
+
+
+def _trim_edge_whitespace(tokens: list[Node]) -> list[Node]:
+    start, end = 0, len(tokens)
+    while start < end and tokens[start].type == 'whitespace':
+        start += 1
+    while end > start and tokens[end - 1].type == 'whitespace':
+        end -= 1
+    return tokens[start:end]
+
+
+def _strip_scope_pseudo(tokens: list[Node]) -> list[Node]:
+    """Remove ``:scope`` (and any whitespace right after it) so Vue's scope-root semantics apply."""
+    out: list[Node] = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        next_token = tokens[index + 1] if index + 1 < len(tokens) else None
+        if (
+            isinstance(token, LiteralToken) and
+            token.value == ':' and
+            next_token is not None and
+            next_token.type == 'ident' and
+            next_token.value == 'scope'
+        ):
+            index += 2
+            if index < len(tokens) and tokens[index].type == 'whitespace':
+                index += 1
+            continue
+        out.append(token)
+        index += 1
+    return _trim_edge_whitespace(out)
+
+
+def _scoped_selector_variants(tokens: list[Node], attr: str) -> list[str]:
+    """Return both rewrites for a scoped selector: ``<first-compound><attr> <rest>`` and ``*<attr> <full>``.
+
+    The first variant covers the case where the first compound refers to the scoped root element
+    itself (which carries ``data-NAME``); the second covers descendants. Within the first compound,
+    the attribute is inserted before any ``::pseudo-element`` so the resulting selector stays valid.
+    """
+    if not tokens:
+        return [attr]  # ``:scope`` alone → just the attribute selector (matches the root)
+
+    # end of first compound: top-level whitespace or combinator
+    compound_end = len(tokens)
+    for index, token in enumerate(tokens):
+        if token.type == 'whitespace' or (isinstance(token, LiteralToken) and token.value in {'>', '+', '~'}):
+            compound_end = index
+            break
+
+    # inside the first compound, attach the attribute before any pseudo (``:hover``, ``::before``, ...)
+    insert_at = compound_end
+    for index in range(compound_end):
+        if isinstance(tokens[index], LiteralToken) and tokens[index].value == ':':
+            insert_at = index
+            break
+
+    lead_before = _serialize_condensed(tokens[:insert_at])
+    lead_after = _serialize_condensed(tokens[insert_at:compound_end])
+    rest = _serialize_condensed(tokens[compound_end:])
+    root_form = f'{lead_before}{attr}{lead_after}' + (f' {rest}' if rest else '')
+    descendant_form = f'*{attr} {_serialize_condensed(tokens)}'
+    return [root_form, descendant_form]
