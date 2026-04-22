@@ -178,29 +178,17 @@ def test_api_exception(screen: Screen):
     screen.should_contain('Internal Server Error')
 
 
-def test_api_http_exception_404_returns_json(screen: Screen):
+@pytest.mark.parametrize('exception_class', [HTTPException, StarletteHTTPException])
+def test_api_http_exception_404_returns_json(screen: Screen, exception_class: type) -> None:
     @app.get('/api/missing')
     def api_missing():
-        raise HTTPException(404, 'item not found')
+        raise exception_class(404, 'item not found')
 
     screen.start_server()
     response = httpx.get(f'http://localhost:{Screen.PORT}/api/missing')
     assert response.status_code == 404, 'status code should be forwarded'
     assert response.headers['content-type'].startswith('application/json'), \
         "endpoints raising HTTPException(404) should get FastAPI's default JSON response, not NiceGUI's HTML error page"
-    assert response.json() == {'detail': 'item not found'}
-
-
-def test_api_starlette_http_exception_404_returns_json(screen: Screen):
-    @app.get('/api/missing-starlette')
-    def api_missing_starlette():
-        raise StarletteHTTPException(404, 'item not found')  # NOTE: e.g. raised by FastAPI security dependencies
-
-    screen.start_server()
-    response = httpx.get(f'http://localhost:{Screen.PORT}/api/missing-starlette')
-    assert response.status_code == 404, 'status code should be forwarded'
-    assert response.headers['content-type'].startswith('application/json'), \
-        "endpoints raising starlette.exceptions.HTTPException(404) should also get JSON, not NiceGUI's HTML error page"
     assert response.json() == {'detail': 'item not found'}
 
 
