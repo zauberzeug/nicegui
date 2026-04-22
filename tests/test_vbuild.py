@@ -125,8 +125,17 @@ def test_scoped_style_with_at_rules():
                 font-family: 'MyFont';
                 src: url('/fonts/my.woff2') format('woff2');
             }
+            @media (min-width: 768px) {
+                h1 { font-size: 2em; }
+            }
             @supports (display: grid) {
                 h1 { display: grid; }
+            }
+            @container (min-width: 400px) {
+                h1 { padding: 1em; }
+            }
+            @starting-style {
+                h1 { opacity: 0; }
             }
             @layer reset, theme;
             @layer theme {
@@ -142,126 +151,12 @@ def test_scoped_style_with_at_rules():
         @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
         @-webkit-keyframes slide { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }
         @font-face { font-family: "MyFont"; src: url("/fonts/my.woff2") format("woff2"); }
+        @media (min-width: 768px) { h1[data-TEST], *[data-TEST] h1 {font-size: 2em; } }
         @supports (display: grid) { h1[data-TEST], *[data-TEST] h1 {display: grid; } }
+        @container (min-width: 400px) { h1[data-TEST], *[data-TEST] h1 {padding: 1em; } }
+        @starting-style { h1[data-TEST], *[data-TEST] h1 {opacity: 0; } }
         @layer reset, theme;
         @layer theme { h1[data-TEST]:hover, *[data-TEST] h1:hover {color: red; } }
-    ''', js='')
-
-
-def test_template_with_script():
-    check('''
-        <template>
-            <h1>Hello, World!</h1>
-        </template>
-        <script>
-            export default {
-                methods: {
-                    hello() {
-                        alert('Hello, World!');
-                    }
-                }
-            }
-        </script>
-    ''', html='''
-        <script type="text/x-template" id="tpl-TEST">
-            <h1 data-TEST>Hello, World!</h1>
-        </script>
-    ''', css='''
-    ''', js='''
-        export default {
-            methods: {
-                hello() {
-                    alert('Hello, World!');
-                }
-            }
-        }
-    ''')
-
-
-def test_multiple_templates():
-    with pytest.raises(ValueError, match='File contains more than one template'):
-        check('''
-            <template>
-                <h1>Hello, World!</h1>
-            </template>
-            <template>
-                <h1>Hello, NiceGUI!</h1>
-            </template>
-        ''', html='', css='', js='')
-
-
-def test_multiple_top_level_tags():
-    with pytest.raises(ValueError, match='File has more than one top level tag'):
-        check('''
-            <template>
-                <h1>Hello, World!</h1>
-                <h1>Hello, NiceGUI!</h1>
-            </template>
-        ''', html='', css='', js='')
-
-
-def test_scoped_style_with_media_query():
-    check('''
-        <template>
-            <div class="container">Content</div>
-        </template>
-        <style scoped>
-            .container { width: 100%; }
-            @media (min-width: 768px) {
-                .container { width: 750px; }
-            }
-            @media screen and (prefers-reduced-motion: reduce) {
-                .container { animation: none; }
-            }
-        </style>
-    ''', html='''
-        <script type="text/x-template" id="tpl-TEST">
-            <div data-TEST class="container">Content</div>
-        </script>
-    ''', css='''
-        .container[data-TEST], *[data-TEST] .container {width: 100%; }
-        @media (min-width: 768px) { .container[data-TEST], *[data-TEST] .container {width: 750px; } }
-        @media screen and (prefers-reduced-motion: reduce) { .container[data-TEST], *[data-TEST] .container {animation: none; } }
-    ''', js='')
-
-
-def test_scoped_style_with_container_query():
-    check('''
-        <template>
-            <div class="card">Card</div>
-        </template>
-        <style scoped>
-            @container (min-width: 400px) {
-                .card { flex-direction: row; }
-            }
-        </style>
-    ''', html='''
-        <script type="text/x-template" id="tpl-TEST">
-            <div data-TEST class="card">Card</div>
-        </script>
-    ''', css='''
-        @container (min-width: 400px) { .card[data-TEST], *[data-TEST] .card {flex-direction: row; } }
-    ''', js='')
-
-
-def test_scoped_style_with_starting_style():
-    check('''
-        <template>
-            <dialog class="modal">Modal</dialog>
-        </template>
-        <style scoped>
-            .modal { opacity: 1; transition: opacity 0.3s; }
-            @starting-style {
-                .modal { opacity: 0; }
-            }
-        </style>
-    ''', html='''
-        <script type="text/x-template" id="tpl-TEST">
-            <dialog data-TEST class="modal">Modal</dialog>
-        </script>
-    ''', css='''
-        .modal[data-TEST], *[data-TEST] .modal {opacity: 1; transition: opacity 0.3s; }
-        @starting-style { .modal[data-TEST], *[data-TEST] .modal {opacity: 0; } }
     ''', js='')
 
 
@@ -345,3 +240,55 @@ def test_scoped_style_ignores_comments():
     ''', css='''
         .box[data-TEST], *[data-TEST] .box {color: red; }
     ''', js='')
+
+
+def test_template_with_script():
+    check('''
+        <template>
+            <h1>Hello, World!</h1>
+        </template>
+        <script>
+            export default {
+                methods: {
+                    hello() {
+                        alert('Hello, World!');
+                    }
+                }
+            }
+        </script>
+    ''', html='''
+        <script type="text/x-template" id="tpl-TEST">
+            <h1 data-TEST>Hello, World!</h1>
+        </script>
+    ''', css='''
+    ''', js='''
+        export default {
+            methods: {
+                hello() {
+                    alert('Hello, World!');
+                }
+            }
+        }
+    ''')
+
+
+def test_multiple_templates():
+    with pytest.raises(ValueError, match='File contains more than one template'):
+        check('''
+            <template>
+                <h1>Hello, World!</h1>
+            </template>
+            <template>
+                <h1>Hello, NiceGUI!</h1>
+            </template>
+        ''', html='', css='', js='')
+
+
+def test_multiple_top_level_tags():
+    with pytest.raises(ValueError, match='File has more than one top level tag'):
+        check('''
+            <template>
+                <h1>Hello, World!</h1>
+                <h1>Hello, NiceGUI!</h1>
+            </template>
+        ''', html='', css='', js='')
