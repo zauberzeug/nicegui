@@ -9,6 +9,7 @@ from typing import Any
 
 import socketio
 from fastapi import HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import FileResponse, Response
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
@@ -161,6 +162,9 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
+    if 'endpoint' in request.scope and not request.scope.get('nicegui_page_path') and isinstance(exception, HTTPException):
+        # non-page endpoints raising 404 should get JSON, not our HTML error page
+        return await http_exception_handler(request, exception)
     root = core.root
     if root is not None:
         kwargs = {
