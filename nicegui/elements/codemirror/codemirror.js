@@ -12,6 +12,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    saveShortcutEnabled: Boolean,
     id: String,
   },
   watch: {
@@ -42,6 +43,7 @@ export default {
       const element = mounted_app.elements[this.$props.id.slice(1)];
       if (element) element.props.value = this.editor.state.doc.toString();
     }
+    clearTimeout(this._cursorTimer);
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -131,6 +133,15 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    revealLine(lineNumber) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const lineNum = Math.max(1, Math.min(lineNumber, doc.lines));
+      const line = doc.line(lineNum);
+      this.editor.dispatch({
+        effects: CM.EditorView.scrollIntoView(line.from, { y: "center" }),
+      });
+    },
     setupExtensions() {
       const self = this;
 
@@ -149,11 +160,44 @@ export default {
         },
       );
 
+      // Emits the 1-indexed line number on cursor movement (debounced).
+      // NOTE: 30 ms debounce — short enough to feel immediate when arrow-keying,
+      // long enough to coalesce bursts during multi-line selection drags.
+      const cursorTracker = CM.ViewPlugin.fromClass(
+        class {
+          constructor() { this._lastLine = 0; }
+          update(update) {
+            if (!update.selectionSet && !update.docChanged) return;
+            const line = update.state.doc.lineAt(update.state.selection.main.head).number;
+            if (line === this._lastLine) return;
+            this._lastLine = line;
+            if (self._cursorTimer) clearTimeout(self._cursorTimer);
+            self._cursorTimer = setTimeout(() => self.$emit("cursor-line", { line }), 30);
+          }
+        },
+      );
+
+      // Tab is always bound to indent; Mod-s (Ctrl/Cmd+S) is only bound when
+      // the host opts in via the `save-shortcut-enabled` prop, in which case
+      // it emits a `save` event and suppresses the browser default.
+      const customKeymap = [CM.indentWithTab];
+      if (this.saveShortcutEnabled) {
+        customKeymap.push({
+          key: "Mod-s",
+          preventDefault: true,
+          run: () => {
+            self.$emit("save");
+            return true;
+          },
+        });
+      }
+
       const extensions = [
         CM.basicSetup,
         changeSender,
+        cursorTracker,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
-        CM.keymap.of([CM.indentWithTab]),
+        CM.keymap.of(customKeymap),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
         CM.indentUnit.of(this.indent),
         // We will set these Compartments later and dynamically through props

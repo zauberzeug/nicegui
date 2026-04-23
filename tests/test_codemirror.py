@@ -94,3 +94,57 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
     assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+
+
+def test_cursor_line_event(screen: Screen):
+    lines: list[int] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Line 1\nLine 2\nLine 3', on_cursor_line=lambda e: lines.append(e.line))
+
+    screen.open('/')
+    # Move the cursor to line 2 and line 3 by dispatching selection transactions directly,
+    # bypassing focus/keystroke timing fragility in Selenium.
+    screen.wait(0.3)  # let the editor mount
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
+    )
+    screen.wait_for(lambda: 2 in lines)
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(3).from}});'
+    )
+    screen.wait_for(lambda: 3 in lines)
+
+
+def test_save_event(screen: Screen):
+    saved: list[bool] = []
+
+    @ui.page('/')
+    def page():
+        ui.codemirror('Hello', on_save=lambda _: saved.append(True))
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys(Keys.CONTROL, 's')
+    screen.wait_for(lambda: bool(saved))
+
+
+def test_reveal_line(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('\n'.join(f'Line {i}' for i in range(1, 201)))
+
+    screen.open('/')
+    scroller = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-scroller")]')
+    initial_top = screen.selenium.execute_script('return arguments[0].scrollTop', scroller)
+    editor.reveal_line(150)
+    screen.wait_for(lambda: screen.selenium.execute_script('return arguments[0].scrollTop', scroller) > initial_top)

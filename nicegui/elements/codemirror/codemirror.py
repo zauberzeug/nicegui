@@ -1,10 +1,19 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, get_args
 
+from typing_extensions import Self
+
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
-from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ...events import (
+    CodeMirrorCursorLineEventArguments,
+    CodeMirrorSaveEventArguments,
+    GenericEventArguments,
+    Handler,
+    ValueChangeEventArguments,
+    handle_event,
+)
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -259,6 +268,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         value: str = '',
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
+        on_cursor_line: Handler[CodeMirrorCursorLineEventArguments] | None = None,
+        on_save: Handler[CodeMirrorSaveEventArguments] | None = None,
         language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,
@@ -279,6 +290,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
+        :param on_cursor_line: callback when the cursor moves to a different line (debounced 30 ms)
+        :param on_save: callback fired when the user presses Ctrl/Cmd+S inside the editor.
+            When set, the binding is installed and the browser's default save behavior is suppressed.
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -290,16 +304,50 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._update_codepoints()
         if on_change is not None:
             super().on_value_change(on_change)
+        if on_cursor_line is not None:
+            self.on_cursor_line(on_cursor_line)
+        if on_save is not None:
+            self.on_save(on_save)
 
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['save-shortcut-enabled'] = on_save is not None
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('saveShortcutEnabled', 'save-shortcut-enabled')
+
+    def on_cursor_line(self, callback: Handler[CodeMirrorCursorLineEventArguments]) -> Self:
+        """Add a callback to be invoked when the cursor moves to a different line."""
+        self.on('cursor-line', lambda e: handle_event(callback, CodeMirrorCursorLineEventArguments(
+            sender=self,
+            client=self.client,
+            line=int(e.args['line']),
+        )))
+        return self
+
+    def on_save(self, callback: Handler[CodeMirrorSaveEventArguments]) -> Self:
+        """Add a callback to be invoked when the user presses Ctrl/Cmd+S inside the editor.
+
+        When set, the binding is installed and the browser's default save behavior is suppressed.
+        """
+        self.on('save', lambda _: handle_event(callback, CodeMirrorSaveEventArguments(
+            sender=self,
+            client=self.client,
+        )))
+        self._props['save-shortcut-enabled'] = True
+        return self
+
+    def reveal_line(self, line_number: int) -> None:
+        """Scroll the editor so the given 1-indexed line is visible.
+
+        :param line_number: 1-indexed line number to scroll into view
+        """
+        self.run_method('revealLine', line_number)
 
     @property
     def theme(self) -> str:

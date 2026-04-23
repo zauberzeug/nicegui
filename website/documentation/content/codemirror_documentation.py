@@ -27,4 +27,19 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Cursor Tracking, Save Shortcut, and Reveal Line', '''
+    ``on_cursor_line`` reports the 1-indexed line number whenever the cursor moves to a different line.
+    ``on_save`` fires when the user presses Ctrl/Cmd+S inside the editor and suppresses the browser's default save dialog.
+    ``reveal_line`` scrolls a given line into view.
+''')
+def cursor_save_reveal_demo() -> None:
+    status = ui.label('Cursor: line 1')
+    editor = ui.codemirror(
+        '\n'.join(f'Line {i}' for i in range(1, 31)),
+        on_cursor_line=lambda e: status.set_text(f'Cursor: line {e.line}'),
+        on_save=lambda _: ui.notify('Saved!'),
+    ).classes('h-32')
+    ui.button('Reveal line 20', on_click=lambda: editor.reveal_line(20))
+
+
 doc.reference(ui.codemirror)

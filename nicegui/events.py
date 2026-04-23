@@ -163,6 +163,16 @@ class TableSelectionEventArguments(UiEventArguments):
 
 
 @dataclass(kw_only=True, slots=True)
+class CodeMirrorCursorLineEventArguments(UiEventArguments):
+    line: int
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorSaveEventArguments(UiEventArguments):
+    pass
+
+
+@dataclass(kw_only=True, slots=True)
 class KeyboardAction:
     keydown: bool
     keyup: bool
