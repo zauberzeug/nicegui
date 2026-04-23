@@ -94,3 +94,50 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
     assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+
+
+def test_custom_completions(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('', custom_completions=[
+            {'label': 'foo_bar', 'detail': 'a function', 'type': 'function'},
+            {'label': 'foo_baz', 'detail': 'another function', 'type': 'function'},
+            {'label': 'qux', 'type': 'variable'},
+        ])
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys('foo')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
+    ) == 2)
+    # `qux` does not start with `foo`, so it must not appear
+    rendered = screen.selenium.execute_script(
+        'return Array.from(document.querySelectorAll(".cm-tooltip-autocomplete .cm-completionLabel"))'
+        '.map(e => e.textContent);'
+    )
+    assert 'qux' not in rendered
+
+
+def test_set_custom_completions_replaces_initial(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('', custom_completions=[{'label': 'foo'}])
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_custom_completions([{'label': 'bar'}, {'label': 'baz'}])
+    screen.wait(0.3)
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys('ba')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
+    ) == 2)

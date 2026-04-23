@@ -27,4 +27,17 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Custom Completions', '''
+    ``custom_completions`` (and the ``set_custom_completions`` setter) installs an autocomplete source.
+    Each entry is a dict with at least ``label``;
+    ``apply``, ``detail``, ``info``, and ``type`` (``'function'``, ``'variable'``, ``'class'``, ``'keyword'``, etc.) are optional.
+''')
+def custom_completions_demo() -> None:
+    ui.codemirror('', language='Python', custom_completions=[
+        {'label': 'np.array', 'apply': 'np.array(', 'detail': 'numpy.array(...)', 'type': 'function'},
+        {'label': 'np.zeros', 'apply': 'np.zeros(', 'detail': 'numpy.zeros(shape, dtype=...)', 'type': 'function'},
+        {'label': 'np.pi', 'detail': 'numpy constant', 'type': 'variable'},
+    ]).classes('h-32')
+
+
 doc.reference(ui.codemirror)

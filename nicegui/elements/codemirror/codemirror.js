@@ -12,6 +12,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    customCompletions: Array,
     id: String,
   },
   watch: {
@@ -26,6 +27,9 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    customCompletions(newCompletions) {
+      this.setCustomCompletions(newCompletions);
     },
   },
   data() {
@@ -131,6 +135,40 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setCustomCompletions(completions) {
+      if (!this.editor || !this.completionsConfig) return;
+      if (!completions || completions.length === 0) {
+        this.editor.dispatch({
+          effects: this.completionsConfig.reconfigure([]),
+        });
+        return;
+      }
+      const customCompletionSource = (context) => {
+        const word = context.matchBefore(/[\w.]+/);
+        if (!word && !context.explicit) return null;
+        const from = word ? word.from : context.pos;
+        const text = word ? word.text : "";
+        const matching = completions.filter((c) => {
+          const label = c.label || "";
+          return label.toLowerCase().startsWith(text.toLowerCase());
+        }).map((c) => ({
+          label: c.label,
+          detail: c.detail || "",
+          info: c.info || "",
+          apply: c.apply || c.label,
+          type: c.type || "function",
+        }));
+        if (matching.length === 0) return null;
+        return { from, options: matching, validFor: /^[\w.]*$/ };
+      };
+      const completionExtension = CM.autocompletion({
+        override: [customCompletionSource],
+        activateOnTyping: true,
+      });
+      this.editor.dispatch({
+        effects: this.completionsConfig.reconfigure([completionExtension]),
+      });
+    },
     setupExtensions() {
       const self = this;
 
@@ -161,6 +199,7 @@ export default {
         this.languageConfig.of([]),
         this.editableConfig.of([]),
         this.lineWrappingConfig.of([]),
+        this.completionsConfig.of([]),
         CM.EditorView.theme({
           "&": { height: "100%" },
           ".cm-scroller": { overflow: "auto" },
@@ -184,6 +223,7 @@ export default {
     this.editableConfig = new CM.Compartment();
     this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
     this.lineWrappingConfig = new CM.Compartment();
+    this.completionsConfig = new CM.Compartment();
 
     const extensions = this.setupExtensions();
 
@@ -199,5 +239,8 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.customCompletions && this.customCompletions.length > 0) {
+      this.setCustomCompletions(this.customCompletions);
+    }
   },
 };

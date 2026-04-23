@@ -1,10 +1,25 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import Literal, TypedDict, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+
+
+class CompletionItem(TypedDict, total=False):
+    """Single autocomplete entry for ``ui.codemirror.set_custom_completions``.
+
+    Only ``label`` is required.
+    ``apply`` defaults to ``label`` if omitted; ``type`` controls the icon shown next to the entry
+    (e.g. ``'function'``, ``'variable'``, ``'class'``, ``'keyword'``).
+    """
+    label: str
+    detail: str
+    info: str
+    apply: str
+    type: str
+
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -264,6 +279,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        custom_completions: list[CompletionItem] | None = DEFAULT_PROP | None,
     ) -> None:
         """CodeMirror
 
@@ -284,6 +300,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param custom_completions: list of custom completion items shown in the autocomplete dropdown.
+            Each item is a :class:`CompletionItem` dict with at least ``label`` and optional
+            ``detail``, ``info``, ``apply``, and ``type`` (``'function'``, ``'variable'``, ``'class'``,
+            ``'keyword'``, etc.).
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -296,10 +316,12 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['custom-completions'] = custom_completions or []
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('customCompletions', 'custom-completions')
 
     @property
     def theme(self) -> str:
@@ -355,6 +377,24 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+
+    @property
+    def custom_completions(self) -> list[CompletionItem]:
+        """The current custom completions for the editor."""
+        return self._props.get('custom-completions', [])
+
+    @custom_completions.setter
+    def custom_completions(self, completions: list[CompletionItem] | None) -> None:
+        self._props['custom-completions'] = completions or []
+
+    def set_custom_completions(self, completions: list[CompletionItem] | None) -> None:
+        """Sets the custom completion items shown in the autocomplete dropdown.
+
+        Each item is a :class:`CompletionItem` dict with at least ``label`` and optional
+        ``detail``, ``info``, ``apply``, and ``type``.
+        Pass ``None`` or an empty list to remove the custom completions.
+        """
+        self._props['custom-completions'] = completions or []
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
