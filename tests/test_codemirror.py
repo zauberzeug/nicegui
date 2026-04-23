@@ -94,3 +94,26 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
     assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+
+
+def _diagnostic_count(screen: Screen) -> int:
+    return screen.selenium.execute_script('return document.querySelectorAll(".cm-lintRange").length;')
+
+
+def test_set_and_clear_diagnostics(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Line 1\nLine 2\nLine 3')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_diagnostics([
+        {'line': 1, 'message': 'oops', 'severity': 'error'},
+        {'line': 3, 'message': 'note', 'severity': 'info'},
+    ])
+    screen.wait_for(lambda: _diagnostic_count(screen) == 2)
+    editor.clear_diagnostics()
+    screen.wait_for(lambda: _diagnostic_count(screen) == 0)

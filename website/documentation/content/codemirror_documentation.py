@@ -27,4 +27,17 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Linting Diagnostics', '''
+    ``set_diagnostics`` renders inline error/warning marks with hover tooltips.
+    Each diagnostic targets a 1-indexed line and carries a message; ``severity`` and ``source`` are optional.
+    ``clear_diagnostics`` removes all of them.
+''')
+def diagnostics_demo() -> None:
+    editor = ui.codemirror('def add(a, b):\n    return a + c\n', language='Python').classes('h-32')
+    ui.button('Lint', on_click=lambda: editor.set_diagnostics([
+        {'line': 2, 'message': "undefined name 'c'", 'severity': 'error', 'source': 'pyflakes'},
+    ]))
+    ui.button('Clear', on_click=editor.clear_diagnostics)
+
+
 doc.reference(ui.codemirror)

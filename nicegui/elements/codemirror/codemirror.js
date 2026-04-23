@@ -131,6 +131,22 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setDiagnostics(diagnostics) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const cmDiagnostics = diagnostics.map((d) => {
+        const lineNum = Math.max(1, Math.min(d.line, doc.lines));
+        const line = doc.line(lineNum);
+        return {
+          from: line.from,
+          to: line.to,
+          severity: d.severity || "error",
+          message: d.message || "",
+          source: d.source || undefined,
+        };
+      });
+      this.editor.dispatch(CM.setDiagnostics(this.editor.state, cmDiagnostics));
+    },
     setupExtensions() {
       const self = this;
 
@@ -152,6 +168,15 @@ export default {
       const extensions = [
         CM.basicSetup,
         changeSender,
+        // NOTE: do NOT use CM.lintGutter() here — it pulls in lintGutterTooltip,
+        // a StateField that registers itself via showTooltip.from(field) and
+        // returns null on most transactions. That null provider sits in the
+        // showTooltip facet and silently suppresses the autocomplete popup
+        // outside of paren contexts. CM.linter() installs lintState (so the
+        // setDiagnostics() API still works and inline error marks render),
+        // and its only tooltip is a hoverTooltip that fires on mouseover,
+        // not on every keystroke. The empty source disables auto-linting.
+        CM.linter(() => []),
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit

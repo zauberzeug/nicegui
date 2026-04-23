@@ -1,10 +1,23 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import Literal, TypedDict, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+
+
+class Diagnostic(TypedDict, total=False):
+    """Single linting diagnostic for ``ui.codemirror.set_diagnostics``.
+
+    ``line`` and ``message`` are required.
+    ``severity`` defaults to ``'error'`` if omitted; ``source`` is shown next to the message.
+    """
+    line: int
+    message: str
+    severity: Literal['info', 'warning', 'error', 'hint']
+    source: str
+
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -355,6 +368,21 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+
+    def set_diagnostics(self, diagnostics: list[Diagnostic]) -> None:
+        """Set linting diagnostics with inline messages and gutter underlines.
+
+        Diagnostics render as inline marks underlining the affected line and a hover tooltip
+        carrying the diagnostic message.
+        Each entry is a :class:`Diagnostic` dict with at least ``line`` (1-indexed) and ``message``;
+        ``severity`` (``'error'`` | ``'warning'`` | ``'info'`` | ``'hint'``, default ``'error'``)
+        and ``source`` (label shown next to the message) are optional.
+        """
+        self.run_method('setDiagnostics', diagnostics)
+
+    def clear_diagnostics(self) -> None:
+        """Clear all linting diagnostics."""
+        self.run_method('setDiagnostics', [])
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
