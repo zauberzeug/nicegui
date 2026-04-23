@@ -385,7 +385,7 @@ export default {
       if (!material) return;
       const vertexColors = color === null;
       material.color.set(vertexColors ? "#ffffff" : color);
-      material.needsUpdate = material.vertexColors != vertexColors;
+      material.needsUpdate = true;
       material.vertexColors = vertexColors;
       material.opacity = opacity;
       if (side == "front") material.side = THREE.FrontSide;
