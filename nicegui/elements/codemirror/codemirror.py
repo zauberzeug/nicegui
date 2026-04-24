@@ -1,10 +1,46 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import Literal, TypedDict, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+
+# Mark decoration spec for `ui.codemirror.set_decorations`. Styles a character range using
+# CodeMirror's `Decoration.mark`. Required keys: `kind: 'mark'`, `from`, `to`. Optional:
+# `class` (CSS class to apply), `attributes` (HTML attribute dict), `inclusiveStart` /
+# `inclusiveEnd` (whether the decoration grows when text is inserted at the boundary).
+# Functional `TypedDict` syntax because `from` and `class` are Python keywords.
+MarkDecorationSpec = TypedDict(
+    'MarkDecorationSpec',
+    {
+        'kind': Literal['mark'],
+        'from': int,
+        'to': int,
+        'class': str,
+        'attributes': dict[str, str],
+        'inclusiveStart': bool,
+        'inclusiveEnd': bool,
+    },
+    total=False,
+)
+
+# Line decoration spec for `ui.codemirror.set_decorations`. Styles an entire line using
+# CodeMirror's `Decoration.line`. Required: `kind: 'line'`, `line` (1-indexed). Optional:
+# `class`, `attributes`.
+LineDecorationSpec = TypedDict(
+    'LineDecorationSpec',
+    {
+        'kind': Literal['line'],
+        'line': int,
+        'class': str,
+        'attributes': dict[str, str],
+    },
+    total=False,
+)
+
+DecorationSpec = MarkDecorationSpec | LineDecorationSpec
+
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -296,6 +332,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['decorations'] = {}
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -355,6 +392,60 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+
+    def set_decorations(self, decorations: list[DecorationSpec], set_name: str = 'default') -> None:
+        """Set decorations for a named decoration set.
+
+        Decorations style character ranges (`kind: 'mark'`) or entire lines (`kind: 'line'`) and
+        survive document edits unlike DOM manipulation.
+        Each entry is a :class:`MarkDecorationSpec` or :class:`LineDecorationSpec` dict — the
+        ``class`` field is the only thing that produces visible styling, so the host application
+        is responsible for shipping CSS for whatever class names it passes here.
+
+        Multiple named sets can be managed independently.
+        Calling ``set_decorations`` for the same ``set_name`` replaces that set's decorations;
+        decorations in other sets are left untouched.
+        """
+        current = dict(self._props.get('decorations', {}))
+        current[set_name] = decorations
+        self._props['decorations'] = current
+
+    def clear_decorations(self, set_name: str | None = None) -> None:
+        """Clear decorations.
+
+        :param set_name: clear only this named set, or all sets if ``None``
+        """
+        if set_name is None:
+            self._props['decorations'] = {}
+        else:
+            current = dict(self._props.get('decorations', {}))
+            current.pop(set_name, None)
+            self._props['decorations'] = current
+
+    def highlight_lines(self,
+                        line_numbers: list[int],
+                        *,
+                        css_class: str,
+                        duration_ms: int = 1500,
+                        ) -> None:
+        """Apply a CSS class to specific lines for a fixed duration, then auto-clear.
+
+        The auto-clear timer runs on the client so the class is removed without a server
+        round-trip, which lets a CSS keyframe animation tied to ``css_class`` be re-triggered
+        cleanly on subsequent calls.
+        Use this for short visual cues (e.g. "these lines just changed, draw the user's eye");
+        for persistent line styling, use :meth:`set_decorations` with a line decoration.
+
+        ``css_class`` is required — there are no shipped default highlight styles, so the host
+        application must define CSS for whatever class name it passes here.
+
+        :param line_numbers: list of 1-indexed line numbers to highlight
+        :param css_class: CSS class to apply to the lines (caller-supplied, no shipped default)
+        :param duration_ms: time in ms before removing the highlight; ``0`` for permanent (default: 1500)
+        """
+        line_indices = [n - 1 for n in line_numbers if n > 0]
+        if line_indices:
+            self.run_method('highlightLines', line_indices, css_class, duration_ms)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

@@ -94,3 +94,69 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
     assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+
+
+def _line_decoration_count(screen: Screen, css_class: str) -> int:
+    return screen.selenium.execute_script(
+        f'return document.querySelectorAll(".cm-line.{css_class}").length;'
+    )
+
+
+def test_set_and_clear_line_decorations(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma\ndelta')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_decorations([
+        {'kind': 'line', 'line': 1, 'class': 'my-line-class'},
+        {'kind': 'line', 'line': 3, 'class': 'my-line-class'},
+    ])
+    screen.wait_for(lambda: _line_decoration_count(screen, 'my-line-class') == 2)
+    editor.clear_decorations()
+    screen.wait_for(lambda: _line_decoration_count(screen, 'my-line-class') == 0)
+
+
+def test_named_decoration_sets_independent(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('one\ntwo\nthree')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_decorations([{'kind': 'line', 'line': 1, 'class': 'set-a'}], set_name='a')
+    editor.set_decorations([{'kind': 'line', 'line': 2, 'class': 'set-b'}], set_name='b')
+    screen.wait_for(lambda: _line_decoration_count(screen, 'set-a') == 1
+                    and _line_decoration_count(screen, 'set-b') == 1)
+    editor.clear_decorations('a')
+    screen.wait_for(lambda: _line_decoration_count(screen, 'set-a') == 0
+                    and _line_decoration_count(screen, 'set-b') == 1)
+
+
+def test_highlight_lines_auto_clears(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('aa\nbb\ncc\ndd')
+
+    screen.open('/')
+    screen.wait(0.3)
+    # Use a short duration to keep the test snappy.
+    editor.highlight_lines([2, 4], css_class='cm-test-flash', duration_ms=200)
+    screen.wait_for(lambda: _line_decoration_count(screen, 'cm-test-flash') == 2)
+    screen.wait_for(lambda: _line_decoration_count(screen, 'cm-test-flash') == 0)
+
+
+def test_highlight_lines_requires_css_class():
+    import pytest as _pytest
+    with _pytest.raises(TypeError):
+        ui.codemirror.highlight_lines(ui.codemirror.__new__(ui.codemirror), [1])  # type: ignore[call-arg]

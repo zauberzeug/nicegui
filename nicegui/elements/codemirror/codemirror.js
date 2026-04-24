@@ -12,6 +12,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    decorations: Object,
     id: String,
   },
   watch: {
@@ -26,6 +27,11 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    // NOTE: identity-watch is sufficient — Python `set_decorations` always assigns a fresh dict
+    // to `self._props['decorations']`, never mutates the existing one in place.
+    decorations(newDecorations) {
+      this.setDecorations(newDecorations);
     },
   },
   data() {
@@ -42,6 +48,7 @@ export default {
       const element = mounted_app.elements[this.$props.id.slice(1)];
       if (element) element.props.value = this.editor.state.doc.toString();
     }
+    clearTimeout(this._highlightTimer);
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -131,6 +138,76 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setDecorations(decorationSets) {
+      // Prop-driven path. `_jsHighlight` (from `highlightLines`) merges in via `_applyAllDecorations`.
+      this._propDecorations = decorationSets;
+      this._applyAllDecorations();
+    },
+    _applyAllDecorations() {
+      if (!this.editor || !this.decorationsConfig) return;
+      const merged = { ...(this._propDecorations || {}) };
+      if (this._jsHighlight) merged._highlight = this._jsHighlight;
+      if (Object.keys(merged).length === 0) {
+        this.editor.dispatch({ effects: this.decorationsConfig.reconfigure([]) });
+        return;
+      }
+      const all = [];
+      for (const specs of Object.values(merged)) {
+        for (const spec of specs) {
+          const dec = this._createDecoration(spec);
+          if (dec) all.push(dec);
+        }
+      }
+      const decorationSet = CM.Decoration.set(all, true);
+      this.editor.dispatch({
+        effects: this.decorationsConfig.reconfigure([CM.EditorView.decorations.of(decorationSet)]),
+      });
+    },
+    _createDecoration(spec) {
+      const doc = this.editor.state.doc;
+      if (spec.kind === "mark") {
+        const from = Math.max(0, Math.min(spec.from, doc.length));
+        const to = Math.max(from, Math.min(spec.to, doc.length));
+        const markSpec = {};
+        if (spec.class) markSpec.class = spec.class;
+        if (spec.attributes) markSpec.attributes = spec.attributes;
+        if (spec.inclusiveStart !== undefined) markSpec.inclusiveStart = spec.inclusiveStart;
+        if (spec.inclusiveEnd !== undefined) markSpec.inclusiveEnd = spec.inclusiveEnd;
+        return CM.Decoration.mark(markSpec).range(from, to);
+      }
+      if (spec.kind === "line") {
+        const lineNum = Math.max(1, Math.min(spec.line, doc.lines));
+        const line = doc.line(lineNum);
+        const lineSpec = {};
+        if (spec.class) lineSpec.class = spec.class;
+        if (spec.attributes) lineSpec.attributes = spec.attributes;
+        return CM.Decoration.line(lineSpec).range(line.from);
+      }
+      return null;
+    },
+    highlightLines(lineIndices, cssClass, durationMs) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const lineDecorations = lineIndices
+        .filter((idx) => idx >= 0 && idx < doc.lines)
+        .map((idx) => ({ kind: "line", line: idx + 1, class: cssClass }));
+      if (lineDecorations.length === 0) return;
+      this._jsHighlight = lineDecorations;
+      this._applyAllDecorations();
+      const firstLineNum = Math.min(...lineIndices) + 1;
+      const safeLineNum = Math.max(1, Math.min(firstLineNum, doc.lines));
+      const line = doc.line(safeLineNum);
+      this.editor.dispatch({
+        effects: CM.EditorView.scrollIntoView(line.from, { y: "center" }),
+      });
+      if (durationMs > 0) {
+        clearTimeout(this._highlightTimer);
+        this._highlightTimer = setTimeout(() => {
+          this._jsHighlight = null;
+          this._applyAllDecorations();
+        }, durationMs);
+      }
+    },
     setupExtensions() {
       const self = this;
 
@@ -161,6 +238,7 @@ export default {
         this.languageConfig.of([]),
         this.editableConfig.of([]),
         this.lineWrappingConfig.of([]),
+        this.decorationsConfig.of([]),
         CM.EditorView.theme({
           "&": { height: "100%" },
           ".cm-scroller": { overflow: "auto" },
@@ -184,6 +262,7 @@ export default {
     this.editableConfig = new CM.Compartment();
     this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
     this.lineWrappingConfig = new CM.Compartment();
+    this.decorationsConfig = new CM.Compartment();
 
     const extensions = this.setupExtensions();
 
@@ -199,5 +278,8 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.decorations && Object.keys(this.decorations).length > 0) {
+      this.setDecorations(this.decorations);
+    }
   },
 };
