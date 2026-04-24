@@ -1,4 +1,5 @@
 import gc
+import weakref
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -113,16 +114,15 @@ def run_with(
     async def lifespan_wrapper(app):
         def _get_server_instance() -> uvicorn.Server | None:
             for obj in gc.get_objects():
-                try:
-                    if isinstance(obj, uvicorn.Server):
-                        wrapped = obj.config.loaded_app
-                        while wrapped is not None:
-                            if wrapped is app:
-                                return obj
-                            wrapped = getattr(wrapped, 'app', None)
-                except ReferenceError:
-                    pass
-
+                if type(obj) in weakref.ProxyTypes:
+                    continue  # skip weakref proxies: isinstance() would raise ReferenceError if the referent is dead
+                if not isinstance(obj, uvicorn.Server):
+                    continue
+                wrapped = obj.config.loaded_app
+                while wrapped is not None:
+                    if wrapped is app:
+                        return obj
+                    wrapped = getattr(wrapped, 'app', None)
             return None
         if (instance := _get_server_instance()) is not None:
             Server.instance = instance
