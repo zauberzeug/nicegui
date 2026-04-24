@@ -321,10 +321,8 @@ export default {
             mesh.add(gltf.scene);
             if (mesh.pendingMaterialInfo) {
               const { color, opacity, side } = mesh.pendingMaterialInfo;
-              mesh.traverse((child) => {
-                if (child.isMesh && child.material) this.applyMaterialSettings(child.material, color, opacity, side);
-              });
               delete mesh.pendingMaterialInfo;
+              this.material(mesh.object_id, color, opacity, side);
             }
           },
           undefined,
@@ -384,30 +382,29 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).name = name;
     },
-    applyMaterialSettings(material, color, opacity, side) {
-      if (!material) return;
-      const vertexColors = color === null;
-      material.color.set(vertexColors ? "#ffffff" : color);
-      material.needsUpdate = material.vertexColors != vertexColors;
-      material.vertexColors = vertexColors;
-      material.opacity = opacity;
-      if (side == "front") material.side = THREE.FrontSide;
-      else if (side == "back") material.side = THREE.BackSide;
-      else material.side = THREE.DoubleSide;
-    },
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
       if (!object) return;
+      if (object.isGltf && object.children.length === 0) {
+        object.pendingMaterialInfo = { color, opacity, side };
+        return;
+      }
+      const vertexColors = color === null;
+      const apply = (material) => {
+        material.color.set(vertexColors ? "#ffffff" : color);
+        material.needsUpdate = material.vertexColors != vertexColors;
+        material.vertexColors = vertexColors;
+        material.opacity = opacity;
+        if (side == "front") material.side = THREE.FrontSide;
+        else if (side == "back") material.side = THREE.BackSide;
+        else material.side = THREE.DoubleSide;
+      };
       if (object.isGltf) {
-        if (object.children.length > 0) {
-          object.traverse((child) => {
-            if (child.isMesh && child.material) this.applyMaterialSettings(child.material, color, opacity, side);
-          });
-        } else {
-          object.pendingMaterialInfo = { color, opacity, side };
-        }
+        object.traverse((child) => {
+          if (child.isMesh && child.material) apply(child.material);
+        });
       } else if (object.material) {
-        this.applyMaterialSettings(object.material, color, opacity, side);
+        apply(object.material);
       }
     },
     move(object_id, x, y, z) {
