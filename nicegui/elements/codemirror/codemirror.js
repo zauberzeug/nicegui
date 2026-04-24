@@ -1,5 +1,55 @@
 import * as CM from "nicegui-codemirror";
 
+// Line anchors: named sets of {id, line} pairs that CM6 RangeSet auto-remaps
+// through document edits. Each AnchorValue carries its id + setName so a single
+// shared StateField can hold multiple independently-managed sets.
+
+class AnchorValue extends CM.RangeValue {
+  constructor(id, setName) {
+    super();
+    this.id = id;
+    this.setName = setName;
+  }
+  eq(other) { return this.id === other.id && this.setName === other.setName; }
+}
+
+const setAnchorsEffect = CM.StateEffect.define();    // value: {setName, ranges}
+const clearAnchorsEffect = CM.StateEffect.define();  // value: setName | null
+
+const anchorField = CM.StateField.define({
+  create() { return CM.RangeSet.empty; },
+  update(set, tr) {
+    set = set.map(tr.changes);
+    for (const effect of tr.effects) {
+      if (effect.is(clearAnchorsEffect)) {
+        if (effect.value === null) return CM.RangeSet.empty;
+        const keep = [];
+        const cursor = set.iter();
+        while (cursor.value) {
+          if (cursor.value.setName !== effect.value) {
+            keep.push(cursor.value.range(cursor.from, cursor.to));
+          }
+          cursor.next();
+        }
+        return CM.RangeSet.of(keep, true);
+      }
+      if (effect.is(setAnchorsEffect)) {
+        const { setName, ranges } = effect.value;
+        const keep = [];
+        const cursor = set.iter();
+        while (cursor.value) {
+          if (cursor.value.setName !== setName) {
+            keep.push(cursor.value.range(cursor.from, cursor.to));
+          }
+          cursor.next();
+        }
+        return CM.RangeSet.of([...keep, ...ranges], true);
+      }
+    }
+    return set;
+  },
+});
+
 export default {
   template: `
     <div></div>
@@ -42,6 +92,7 @@ export default {
       const element = mounted_app.elements[this.$props.id.slice(1)];
       if (element) element.props.value = this.editor.state.doc.toString();
     }
+    clearTimeout(this._anchorTimer);
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -131,6 +182,21 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setLineAnchors(anchors, setName) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const ranges = [];
+      for (const a of anchors) {
+        const lineNum = Math.max(1, Math.min(a.line, doc.lines));
+        const pos = doc.line(lineNum).from;
+        ranges.push(new AnchorValue(a.id, setName).range(pos, pos));
+      }
+      this.editor.dispatch({ effects: setAnchorsEffect.of({ setName, ranges }) });
+    },
+    clearLineAnchors(setName) {
+      if (!this.editor) return;
+      this.editor.dispatch({ effects: clearAnchorsEffect.of(setName ?? null) });
+    },
     setupExtensions() {
       const self = this;
 
@@ -149,9 +215,39 @@ export default {
         },
       );
 
+      // Re-emit anchor positions only when the document changes and at least one anchor exists.
+      // NOTE: 50 ms debounce coalesces bursts (paste, multi-cursor insert) so high-latency
+      // connections do not see one event per keystroke.
+      const anchorTracker = CM.ViewPlugin.fromClass(
+        class {
+          update(update) {
+            if (!update.docChanged) return;
+            const field = update.state.field(anchorField);
+            if (field.size === 0) return;
+            if (self._anchorTimer) clearTimeout(self._anchorTimer);
+            self._anchorTimer = setTimeout(() => {
+              const doc = update.state.doc;
+              const sets = {};
+              const cursor = field.iter();
+              while (cursor.value) {
+                const sn = cursor.value.setName;
+                if (!sets[sn]) sets[sn] = {};
+                sets[sn][cursor.value.id] = doc.lineAt(cursor.from).number;
+                cursor.next();
+              }
+              for (const [setName, anchors] of Object.entries(sets)) {
+                self.$emit("anchor-positions", { set_name: setName, anchors });
+              }
+            }, 50);
+          }
+        },
+      );
+
       const extensions = [
         CM.basicSetup,
         changeSender,
+        anchorTracker,
+        anchorField,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit

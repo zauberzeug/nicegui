@@ -27,4 +27,22 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Line Anchors', '''
+    ``set_line_anchors`` pins caller-chosen IDs to specific lines.
+    CodeMirror remaps the underlying positions through edits, and ``line_anchor_positions``
+    mirrors the current line for each anchor on the Python side.
+    Use this to track stable references to "where the user put a target" without storing line numbers
+    that go stale as the document changes.
+''')
+def line_anchors_demo() -> None:
+    editor = ui.codemirror('hello\nworld\nthird\nfourth').classes('h-32')
+    label = ui.label()
+    editor.set_line_anchors([{'id': 'a', 'line': 2}, {'id': 'b', 'line': 4}])
+
+    def refresh():
+        label.set_text(str(editor.line_anchor_positions))
+    refresh()
+    ui.button('Refresh', on_click=refresh)
+
+
 doc.reference(ui.codemirror)

@@ -94,3 +94,80 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
     assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+
+
+def test_set_line_anchors_initial_mirror(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc\nd\ne')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_line_anchors([{'id': 'a1', 'line': 2}, {'id': 'a2', 'line': 4}])
+    # Mirror is updated synchronously before any JS round-trip
+    assert editor.line_anchor_positions == {'default': {'a1': 2, 'a2': 4}}
+
+
+def test_clear_line_anchors_named_and_all(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_line_anchors([{'id': 'x', 'line': 1}], set_name='breakpoints')
+    editor.set_line_anchors([{'id': 'y', 'line': 2}], set_name='targets')
+    assert set(editor.line_anchor_positions.keys()) == {'breakpoints', 'targets'}
+    editor.clear_line_anchors('breakpoints')
+    assert set(editor.line_anchor_positions.keys()) == {'targets'}
+    editor.clear_line_anchors()
+    assert editor.line_anchor_positions == {}
+
+
+def test_anchor_remap_on_edit(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc\nd\ne')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_line_anchors([{'id': 'mid', 'line': 3}])
+    screen.wait(0.3)  # let setLineAnchors round-trip and populate the anchorField
+    # Insert a new line at the very start; line 3 should remap to line 4.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
+    )
+    screen.wait_for(lambda: editor.line_anchor_positions.get('default', {}).get('mid') == 4)
+
+
+def test_anchor_emissions_bounded_during_typing(screen: Screen):
+    editor = None
+    emissions: list[dict] = []
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('hello\nworld\n!')
+        editor.on('anchor-positions', lambda e: emissions.append(e.args))
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_line_anchors([{'id': 'a', 'line': 1}, {'id': 'b', 'line': 3}])
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys(Keys.END)
+    for ch in 'abcdefghij':  # ten keystrokes
+        cm.send_keys(ch)
+    screen.wait(0.2)  # let the 50 ms debounce settle
+    # 10 keystrokes coalesced through a 50 ms debounce should emit at most a few times.
+    assert len(emissions) <= 4, f'expected ≤4 anchor emissions, got {len(emissions)}'
