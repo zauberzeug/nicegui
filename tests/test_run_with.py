@@ -12,7 +12,7 @@ def test_run_with_rejects_self_mount():
         ui.run_with(app)
 
 
-async def test_run_with_tolerates_dangling_weakref_proxy():
+async def test_run_with_tolerates_dangling_weakref_proxy(nicegui_reset_globals):
     """A dangling weakref.proxy in gc.get_objects() must not crash ui.run_with() startup."""
     _ = weakref.proxy(set())  # referent is unreferenced, proxy is dangling immediately
     fastapi_app = FastAPI()
