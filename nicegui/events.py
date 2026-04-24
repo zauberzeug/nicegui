@@ -108,6 +108,23 @@ class SceneDragEventArguments(ClickEventArguments):
 
 
 @dataclass(kw_only=True, slots=True)
+class SceneTransformEventArguments(UiEventArguments):
+    type: Literal['transform', 'transform_start', 'transform_end']
+    mode: Literal['translate', 'rotate', 'scale']
+    object_id: str
+    object_name: str
+    x: float
+    y: float
+    z: float
+    rx: float
+    ry: float
+    rz: float
+    wx: float
+    wy: float
+    wz: float
+
+
+@dataclass(kw_only=True, slots=True)
 class ColorPickEventArguments(UiEventArguments):
     color: str
 

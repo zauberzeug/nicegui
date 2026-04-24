@@ -238,3 +238,120 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_transform_controls_enable_disable(screen: Screen):
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+        ui.button('Enable', on_click=lambda: box.enable_transform_controls(mode='translate'))
+        ui.button('Disable', on_click=box.disable_transform_controls)
+
+    screen.open('/')
+    screen.wait(0.5)
+    screen.click('Enable')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).has_transform_controls("{box.id}")'
+    ))
+    screen.click('Disable')
+    screen.wait_for(lambda: not screen.selenium.execute_script(
+        f'return getElement({scene.id}).has_transform_controls("{box.id}")'
+    ))
+
+
+def test_transform_controls_mode_change(screen: Screen):
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+        ui.button('Translate', on_click=lambda: box.enable_transform_controls(mode='translate'))
+        ui.button('Rotate', on_click=lambda: box.set_transform_mode('rotate'))
+        ui.button('Scale', on_click=lambda: box.set_transform_mode('scale'))
+
+    screen.open('/')
+    screen.wait(0.5)
+    screen.click('Translate')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).transform_controls.get("{box.id}").mode === "translate"'
+    ))
+    screen.click('Rotate')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).transform_controls.get("{box.id}").mode === "rotate"'
+    ))
+    screen.click('Scale')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).transform_controls.get("{box.id}").mode === "scale"'
+    ))
+
+
+def test_set_orbit_enabled_survives_transform_drag(screen: Screen):
+    """Locks in the regression for the orbit drag-counter race: a TransformControls drag-end must
+    not silently re-enable OrbitControls if the user has explicitly disabled them."""
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        scene = ui.scene()
+        with scene:
+            box = scene.box()
+        ui.button('Disable orbit', on_click=lambda: scene.set_orbit_enabled(False))
+        ui.button('Enable transform', on_click=lambda: box.enable_transform_controls(mode='translate'))
+        ui.button('Simulate drag',
+                  on_click=lambda: scene.run_method(
+                      'eval',
+                      f'const el = getElement({scene.id});'
+                      f'const tc = el.transform_controls.get("{box.id}");'
+                      'tc.dispatchEvent({type: "dragging-changed", value: true});'
+                      'tc.dispatchEvent({type: "dragging-changed", value: false});',
+                  ))
+
+    screen.open('/')
+    screen.wait(0.5)
+    screen.click('Disable orbit')
+    screen.wait_for(lambda: not screen.selenium.execute_script(
+        f'return getElement({scene.id}).controls.enabled'
+    ))
+    screen.click('Enable transform')
+    screen.wait(0.3)
+    # Simulate a TransformControls drag start + end via JS, mimicking what the gizmo does on
+    # mouse-down + mouse-up. The fix under test ensures controls.enabled stays false afterward.
+    screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        f'const tc = el.transform_controls.get("{box.id}");'
+        'tc.dispatchEvent({type: "dragging-changed", value: true});'
+        'tc.dispatchEvent({type: "dragging-changed", value: false});'
+    )
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id}).controls.enabled'
+    ) is False
+
+
+def test_hoverable_serialization_only_when_truthy(screen: Screen):
+    scene = None
+    plain = None
+    hot = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, plain, hot
+        with ui.scene() as scene:
+            plain = scene.box()
+            hot = scene.box().hoverable()
+
+    screen.open('/')
+    # Plain box's data list ends at draggable (length 17); the hoverable box appends a trailing
+    # truthy field (length 18). This protects upstream payload-format expectations.
+    assert len(plain.data) == 17
+    assert len(hot.data) == 18
+    assert hot.data[-1] is True

@@ -10,10 +10,15 @@ const {
   OrbitControls,
   TrackballControls,
   STLLoader,
+  TransformControls,
   THREE,
   TWEEN,
   Stats,
 } = SceneLib;
+
+// Per-TransformControls axis-lock state. WeakMap keeps the entry alive only as long as the
+// controls instance exists, and avoids polluting `tc.userData` (which user code may also use).
+const transformAxisLocks = new WeakMap();
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
@@ -82,6 +87,9 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
+    this.transform_controls = new Map(); // object_id -> TransformControls instance
+    this.dragging_count = 0;             // # of TransformControls currently being dragged
+    this.userOrbitEnabled = true;        // user-intended orbit state; restored on drag end
     this.is_initialized = false;
 
     if (this.showStats) {
@@ -213,10 +221,68 @@ export default {
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
+    // Hover glow: each hovered mesh descendant is mirrored by a back-face glow clone.
+    // The glow group lives in the scene only while a hover is active; the per-frame sync
+    // skips work when the hovered root's matrixWorld hasn't changed since the last frame.
+    this.hoveredObject = null;
+    this.hoverGlowGroup = new THREE.Group();
+    this._hoverWorldPos = new THREE.Vector3();
+    this._hoverWorldQuat = new THREE.Quaternion();
+    this._hoverWorldScale = new THREE.Vector3();
+    this._lastHoverHash = null;
+    this._transformWP = new THREE.Vector3();
+    this._clearHoverGlow = () => {
+      while (this.hoverGlowGroup.children.length) {
+        const child = this.hoverGlowGroup.children.pop();
+        if (child.material) child.material.dispose();
+      }
+      if (this.hoverGlowGroup.parent) this.hoverGlowGroup.parent.remove(this.hoverGlowGroup);
+      this._lastHoverHash = null;
+    };
+    this._buildHoverGlow = (rootObject) => {
+      if (!this.hoverGlowGroup.parent) this.scene.add(this.hoverGlowGroup);
+      rootObject.traverse((descendant) => {
+        if (!descendant.isMesh || !descendant.geometry) return;
+        const material = new THREE.MeshBasicMaterial({
+          color: this.hoverColor ?? 0xffffff,
+          transparent: true,
+          opacity: this.hoverOpacity ?? 0.2,
+          side: THREE.BackSide,
+          depthWrite: false,
+        });
+        const glow = new THREE.Mesh(descendant.geometry, material);
+        glow.renderOrder = 999;
+        glow.userData.hoverSource = descendant;
+        this.hoverGlowGroup.add(glow);
+      });
+      this._lastHoverHash = null; // force a sync on the next frame
+    };
+    this._syncHoverGlowIfDirty = () => {
+      if (!this.hoveredObject || this.hoverGlowGroup.children.length === 0) return;
+      // Hash on the hovered root's world matrix — if it hasn't moved, no mesh descendant has either.
+      this.hoveredObject.updateMatrixWorld();
+      const elements = this.hoveredObject.matrixWorld.elements;
+      const hash = elements.join(",");
+      if (hash === this._lastHoverHash) return;
+      this._lastHoverHash = hash;
+      const expansion = this.hoverScale ?? 1.05;
+      for (const glow of this.hoverGlowGroup.children) {
+        const src = glow.userData.hoverSource;
+        if (!src) continue;
+        src.getWorldPosition(this._hoverWorldPos);
+        src.getWorldQuaternion(this._hoverWorldQuat);
+        src.getWorldScale(this._hoverWorldScale);
+        glow.position.copy(this._hoverWorldPos);
+        glow.quaternion.copy(this._hoverWorldQuat);
+        glow.scale.copy(this._hoverWorldScale).multiplyScalar(expansion);
+      }
+    };
+
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.controls.update(this.clock.getDelta());
+      this._syncHoverGlowIfDirty();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -225,6 +291,44 @@ export default {
     render();
 
     const raycaster = new THREE.Raycaster();
+
+    this.renderer.domElement.addEventListener("pointermove", (e) => {
+      if (!this.objects) return;
+      // Cheap early-out: scan the object map for any hoverable. If none, skip raycasting.
+      let anyHoverable = false;
+      for (const obj of this.objects.values()) {
+        if (obj && obj._hoverable) { anyHoverable = true; break; }
+      }
+      if (!anyHoverable && !this.hoveredObject) return;
+      const rect = this.renderer.domElement.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera({ x, y }, this.camera);
+      const hits = raycaster
+        .intersectObjects(this.scene.children, true)
+        .filter((o) => o.object.object_id);
+      let newHover = null;
+      for (const hit of hits) {
+        let obj = hit.object;
+        while (obj) {
+          if (obj.object_id && this.objects.has(obj.object_id)) {
+            const mapped = this.objects.get(obj.object_id);
+            if (mapped._hoverable) { newHover = mapped; break; }
+          }
+          obj = obj.parent;
+        }
+        if (newHover) break;
+      }
+      if (newHover === this.hoveredObject) return;
+      this._clearHoverGlow();
+      if (this.hoveredObject) this.renderer.domElement.style.cursor = "";
+      if (newHover) {
+        this._buildHoverGlow(newHover);
+        this.renderer.domElement.style.cursor = "pointer";
+      }
+      this.hoveredObject = newHover;
+    });
+
     const click_handler = (mouseEvent) => {
       let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
@@ -422,9 +526,145 @@ export default {
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
+    hoverable(object_id, value) {
+      if (!this.objects.has(object_id)) return;
+      this.objects.get(object_id)._hoverable = !!value;
+    },
+    set_orbit_enabled(value) {
+      this.userOrbitEnabled = !!value;
+      // Only push to OrbitControls when no TransformControls drag is in progress.
+      // Otherwise the dragging-changed handler will restore the latch when the drag ends.
+      if (this.dragging_count === 0) this.controls.enabled = this.userOrbitEnabled;
+    },
+    enable_transform_controls(object_id, mode, size, visible_axes) {
+      if (!this.objects.has(object_id)) return false;
+      // Reuse existing controls if already attached: just update mode / size / axes.
+      const existing = this.transform_controls.get(object_id);
+      if (existing) {
+        existing.setMode(mode);
+        if (size !== undefined && size !== null) existing.setSize(size);
+        this._applyTransformAxes(existing, mode, visible_axes);
+        return true;
+      }
+      const object = this.objects.get(object_id);
+      const tc = new TransformControls(this.camera, this.renderer.domElement);
+      tc.attach(object);
+      tc.setMode(mode);
+      if (mode === "translate") tc.setSpace("world");
+      if (size !== undefined && size !== null) tc.setSize(size);
+      this._applyTransformAxes(tc, mode, visible_axes);
+      let isDragging = false;
+      tc.addEventListener("dragging-changed", (event) => {
+        isDragging = event.value;
+        if (event.value) {
+          this.dragging_count++;
+          if (this.dragging_count === 1) this.controls.enabled = false;
+        } else {
+          this.dragging_count = Math.max(0, this.dragging_count - 1);
+          // Restore to the user-intended orbit state, NOT unconditionally `true` —
+          // otherwise a drag re-enables orbit even if the user disabled it via set_orbit_enabled.
+          if (this.dragging_count === 0) this.controls.enabled = this.userOrbitEnabled;
+        }
+      });
+      const emitTransform = (type) => {
+        object.getWorldPosition(this._transformWP);
+        this.$emit(type, {
+          type,
+          mode: tc.mode,
+          object_id,
+          object_name: object.name,
+          x: object.position.x,
+          y: object.position.y,
+          z: object.position.z,
+          rx: object.rotation.x,
+          ry: object.rotation.y,
+          rz: object.rotation.z,
+          wx: this._transformWP.x,
+          wy: this._transformWP.y,
+          wz: this._transformWP.z,
+        });
+      };
+      tc.addEventListener("change", () => {
+        if (!isDragging) return;
+        const lockAxis = transformAxisLocks.get(tc);
+        if (tc.mode === "rotate" && lockAxis && tc.axis !== lockAxis) tc.axis = lockAxis;
+        emitTransform("transform");
+      });
+      tc.addEventListener("mouseDown", () => {
+        const lockAxis = transformAxisLocks.get(tc);
+        if (lockAxis) tc.axis = lockAxis;
+        emitTransform("transform_start");
+      });
+      tc.addEventListener("mouseUp", () => emitTransform("transform_end"));
+      this.scene.add(tc.getHelper());
+      tc.getHelper().traverse((child) => {
+        child.object_id = `transformcontrols:${object_id}`;
+      });
+      this.transform_controls.set(object_id, tc);
+      return true;
+    },
+    _applyTransformAxes(tc, mode, visible_axes) {
+      if (visible_axes === undefined || visible_axes === null) {
+        tc.showX = tc.showY = tc.showZ = true;
+        transformAxisLocks.delete(tc);
+        return;
+      }
+      tc.showX = visible_axes.includes("X");
+      tc.showY = visible_axes.includes("Y");
+      tc.showZ = visible_axes.includes("Z");
+      if (mode === "rotate" && visible_axes.length === 1) {
+        const axis = visible_axes[0];
+        transformAxisLocks.set(tc, axis);
+        tc.axis = axis;
+      } else {
+        transformAxisLocks.delete(tc);
+      }
+    },
+    disable_transform_controls(object_id) {
+      const tc = this.transform_controls.get(object_id);
+      if (!tc) return;
+      if (tc.dragging) {
+        this.dragging_count = Math.max(0, this.dragging_count - 1);
+      }
+      tc.detach();
+      this.scene.remove(tc.getHelper());
+      tc.dispose();
+      transformAxisLocks.delete(tc);
+      this.transform_controls.delete(object_id);
+      if (this.dragging_count === 0) this.controls.enabled = this.userOrbitEnabled;
+    },
+    set_transform_mode(object_id, mode) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setMode(mode);
+    },
+    set_transform_size(object_id, size) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setSize(size);
+    },
+    set_transform_space(object_id, space) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setSpace(space);
+    },
+    set_transform_rotation_snap(object_id, radians) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setRotationSnap(radians);
+    },
+    has_transform_controls(object_id) {
+      return this.transform_controls.has(object_id);
+    },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
+      // Tear down any TransformControls attached to this object so the gizmo doesn't outlive the target.
+      if (this.transform_controls.has(object_id)) {
+        this.disable_transform_controls(object_id);
+      }
+      // If the deleted object was hovered, clear the glow.
+      if (this.hoveredObject === object) {
+        this._clearHoverGlow();
+        this.renderer.domElement.style.cursor = "";
+        this.hoveredObject = null;
+      }
       object.removeFromParent();
       this.objects.delete(object_id);
       const index = this.draggable_objects.indexOf(object);
@@ -563,6 +803,7 @@ export default {
         sz,
         visible,
         draggable,
+        hoverable, // optional trailing field; missing in old payloads, treated as falsy
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
@@ -572,6 +813,7 @@ export default {
         this.scale(id, sx, sy, sz);
         this.visible(id, visible);
         this.draggable(id, draggable);
+        if (hoverable) this.hoverable(id, true);
       }
     },
   },
@@ -588,5 +830,8 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    hoverColor: Number,
+    hoverOpacity: Number,
+    hoverScale: Number,
   },
 };

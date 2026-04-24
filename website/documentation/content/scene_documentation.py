@@ -339,4 +339,31 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo('TransformControls and hover overlay', '''
+    Attach a `TransformControls` gizmo to an `Object3D` to let the user grab and drag it in 3D.
+    `mode='translate'` (default), `'rotate'`, or `'scale'` selects the gizmo type.
+    The host application receives `on_transform`, `on_transform_start`, and `on_transform_end`
+    events with the object's local coordinates, world coordinates (`wx`, `wy`, `wz`), and rotation.
+
+    Calling `.hoverable()` on any object enables a back-face glow overlay that follows the cursor —
+    detection runs entirely on the client.
+    Tune the appearance via the `hover_color`, `hover_opacity`, and `hover_scale` arguments on `ui.scene`.
+''')
+def transform_and_hover() -> None:
+    from nicegui import events
+
+    def show(e: events.SceneTransformEventArguments):
+        ui.notify(f'{e.type} ({e.mode}): ({e.x:.2f}, {e.y:.2f}, {e.z:.2f})')
+
+    with ui.scene(width=320, height=240,
+                  on_transform_end=show,
+                  hover_color=0xffaa33).classes('w-full h-64') as scene:
+        gizmo_box = scene.box().move(-1, 0, 0).material('SteelBlue')
+        scene.box().move(1, 0, 0).material('Coral').hoverable()
+
+    ui.button('Translate', on_click=lambda: gizmo_box.enable_transform_controls(mode='translate'))
+    ui.button('Rotate', on_click=lambda: gizmo_box.enable_transform_controls(mode='rotate'))
+    ui.button('Disable', on_click=gizmo_box.disable_transform_controls)
+
+
 doc.reference(ui.scene)

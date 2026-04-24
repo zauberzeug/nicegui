@@ -14,6 +14,7 @@ from ...events import (
     SceneClickEventArguments,
     SceneClickHit,
     SceneDragEventArguments,
+    SceneTransformEventArguments,
     handle_event,
 )
 from .scene_object3d import Object3D
@@ -70,11 +71,17 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
                  on_drag_start: Handler[SceneDragEventArguments] | None = None,
                  on_drag_end: Handler[SceneDragEventArguments] | None = None,
+                 on_transform: Handler[SceneTransformEventArguments] | None = None,
+                 on_transform_start: Handler[SceneTransformEventArguments] | None = None,
+                 on_transform_end: Handler[SceneTransformEventArguments] | None = None,
                  drag_constraints: str = DEFAULT_PROP | '',
                  background_color: str = DEFAULT_PROP | '#eee',
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
+                 hover_color: int = DEFAULT_PROP | 0xffffff,
+                 hover_opacity: float = DEFAULT_PROP | 0.2,
+                 hover_scale: float = DEFAULT_PROP | 1.05,
                  ) -> None:
         """3D Scene
 
@@ -96,6 +103,12 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
+        :param on_transform: callback fired continuously while the user drags a TransformControls gizmo
+        :param on_transform_start: callback fired when the user grabs a TransformControls gizmo
+        :param on_transform_end: callback fired when the user releases a TransformControls gizmo
+        :param hover_color: 24-bit hex color of the back-face hover glow on hoverable objects (default: ``0xffffff``)
+        :param hover_opacity: opacity of the hover glow material (default: ``0.2``)
+        :param hover_scale: linear scale factor applied to the hover glow relative to the source mesh (default: ``1.05``)
         """
         super().__init__()
         self._props['width'] = width
@@ -104,6 +117,9 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['show-stats'] = show_stats
         self._props['grid'] = grid
         self._props['background-color'] = background_color
+        self._props['hover-color'] = hover_color
+        self._props['hover-opacity'] = hover_opacity
+        self._props['hover-scale'] = hover_scale
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
@@ -114,10 +130,19 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
+        self._transform_handlers: list[Handler[SceneTransformEventArguments]] = \
+            [on_transform] if on_transform else []
+        self._transform_start_handlers: list[Handler[SceneTransformEventArguments]] = \
+            [on_transform_start] if on_transform_start else []
+        self._transform_end_handlers: list[Handler[SceneTransformEventArguments]] = \
+            [on_transform_end] if on_transform_end else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
+        self.on('transform', self._handle_transform)
+        self.on('transform_start', self._handle_transform)
+        self.on('transform_end', self._handle_transform)
         self._props['drag-constraints'] = drag_constraints
         self._props['control-type'] = control_type
 
@@ -127,6 +152,9 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('hoverColor', 'hover-color')
+        self._props.add_rename('hoverOpacity', 'hover-opacity')
+        self._props.add_rename('hoverScale', 'hover-scale')
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -142,6 +170,29 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         """Add a callback to be invoked when a 3D object is dropped."""
         self._drag_end_handlers.append(callback)
         return self
+
+    def on_transform(self, callback: Handler[SceneTransformEventArguments]) -> Self:
+        """Add a callback fired continuously while a TransformControls gizmo is being dragged."""
+        self._transform_handlers.append(callback)
+        return self
+
+    def on_transform_start(self, callback: Handler[SceneTransformEventArguments]) -> Self:
+        """Add a callback fired when the user grabs a TransformControls gizmo."""
+        self._transform_start_handlers.append(callback)
+        return self
+
+    def on_transform_end(self, callback: Handler[SceneTransformEventArguments]) -> Self:
+        """Add a callback fired when the user releases a TransformControls gizmo."""
+        self._transform_end_handlers.append(callback)
+        return self
+
+    def set_orbit_enabled(self, value: bool) -> None:
+        """Enable or disable the OrbitControls camera interaction.
+
+        Setting this to ``False`` records that the user wants orbit disabled, so a TransformControls
+        drag that ends while orbit is disabled does not silently re-enable it.
+        """
+        self.run_method('set_orbit_enabled', value)
 
     @staticmethod
     def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:
@@ -223,6 +274,33 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
         for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
+            handle_event(handler, arguments)
+
+    def _handle_transform(self, e: GenericEventArguments) -> None:
+        arguments = SceneTransformEventArguments(
+            sender=self,
+            client=self.client,
+            type=e.args['type'],
+            mode=e.args['mode'],
+            object_id=e.args['object_id'],
+            object_name=e.args.get('object_name', '') or '',
+            x=e.args['x'],
+            y=e.args['y'],
+            z=e.args['z'],
+            rx=e.args['rx'],
+            ry=e.args['ry'],
+            rz=e.args['rz'],
+            wx=e.args['wx'],
+            wy=e.args['wy'],
+            wz=e.args['wz'],
+        )
+        if arguments.type == 'transform':
+            handlers = self._transform_handlers
+        elif arguments.type == 'transform_start':
+            handlers = self._transform_start_handlers
+        else:
+            handlers = self._transform_end_handlers
+        for handler in handlers:
             handle_event(handler, arguments)
 
     def __len__(self) -> int:

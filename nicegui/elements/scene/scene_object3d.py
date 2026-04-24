@@ -27,6 +27,7 @@ class Object3D:
         self.side_: str = 'front'
         self.visible_: bool = True
         self.draggable_: bool = False
+        self.hoverable_: bool = False
         self.x: float = 0
         self.y: float = 0
         self.z: float = 0
@@ -45,7 +46,7 @@ class Object3D:
     @property
     def data(self) -> list[Any]:
         """Data to be sent to the frontend."""
-        return [
+        result: list[Any] = [
             self.type, self.id, self.parent.id, self.args,
             self.name,
             self.color, self.opacity, self.side_,
@@ -55,6 +56,11 @@ class Object3D:
             self.visible_,
             self.draggable_,
         ]
+        # Append `hoverable_` only when truthy. The JS unpacker uses array destructuring
+        # and treats a missing trailing field as `undefined` (falsy), so older payloads stay readable.
+        if self.hoverable_:
+            result.append(True)
+        return result
 
     def __enter__(self) -> Self:
         self.scene.stack.append(self)
@@ -86,6 +92,9 @@ class Object3D:
 
     def _draggable(self) -> None:
         self.scene.run_method('draggable', self.id, self.draggable_)
+
+    def _hoverable(self) -> None:
+        self.scene.run_method('hoverable', self.id, self.hoverable_)
 
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
@@ -194,6 +203,69 @@ class Object3D:
         if self.draggable_ != value:
             self.draggable_ = value
             self._draggable()
+        return self
+
+    def hoverable(self, value: bool = True) -> Self:
+        """Mark the object as hoverable, enabling a back-face glow overlay on cursor hover.
+
+        Hover detection runs entirely on the client and never round-trips to Python.
+        Tune the glow appearance via the ``hover_color``, ``hover_opacity``, and ``hover_scale``
+        constructor arguments on :class:`ui.scene`.
+        """
+        if self.hoverable_ != value:
+            self.hoverable_ = value
+            self._hoverable()
+        return self
+
+    def enable_transform_controls(self,
+                                  *,
+                                  mode: Literal['translate', 'rotate', 'scale'] = 'translate',
+                                  size: float | None = None,
+                                  visible_axes: list[Literal['X', 'Y', 'Z']] | None = None,
+                                  space: Literal['local', 'world'] | None = None,
+                                  rotation_snap: float | None = None,
+                                  ) -> Self:
+        """Attach a TransformControls gizmo so the user can drag this object in 3D.
+
+        Drag events are emitted on the parent :class:`ui.scene` via the ``on_transform``,
+        ``on_transform_start``, and ``on_transform_end`` callbacks.
+
+        :param mode: gizmo mode (``'translate'``, ``'rotate'``, or ``'scale'``, default: ``'translate'``)
+        :param size: optional gizmo size multiplier
+        :param visible_axes: list of axes to show (e.g. ``['X']`` for X-only); shows all axes if ``None``
+        :param space: ``'local'`` or ``'world'``; defaults to ``'world'`` for ``'translate'`` mode
+        :param rotation_snap: optional snap angle in radians (e.g. ``math.radians(5)``)
+        """
+        self.scene.run_method('enable_transform_controls', self.id, mode, size, visible_axes)
+        if space is not None:
+            self.scene.run_method('set_transform_space', self.id, space)
+        if rotation_snap is not None:
+            self.scene.run_method('set_transform_rotation_snap', self.id, rotation_snap)
+        return self
+
+    def disable_transform_controls(self) -> Self:
+        """Detach the TransformControls gizmo from this object."""
+        self.scene.run_method('disable_transform_controls', self.id)
+        return self
+
+    def set_transform_mode(self, mode: Literal['translate', 'rotate', 'scale']) -> Self:
+        """Change this object's TransformControls mode."""
+        self.scene.run_method('set_transform_mode', self.id, mode)
+        return self
+
+    def set_transform_size(self, size: float) -> Self:
+        """Change this object's TransformControls gizmo size."""
+        self.scene.run_method('set_transform_size', self.id, size)
+        return self
+
+    def set_transform_space(self, space: Literal['local', 'world']) -> Self:
+        """Change this object's TransformControls coordinate space."""
+        self.scene.run_method('set_transform_space', self.id, space)
+        return self
+
+    def set_transform_rotation_snap(self, radians: float) -> Self:
+        """Change this object's TransformControls rotation snap angle in radians."""
+        self.scene.run_method('set_transform_rotation_snap', self.id, radians)
         return self
 
     def attach(self, parent: Object3D) -> None:
