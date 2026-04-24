@@ -1,4 +1,3 @@
-import gc
 import weakref
 
 import pytest
@@ -13,25 +12,10 @@ def test_run_with_rejects_self_mount():
         ui.run_with(app)
 
 
-class _Weak:
-    pass
-
-
-@pytest.mark.asyncio
-async def test_get_server_instance_handles_dead_weakref():
-    """Iterating gc.get_objects() with isinstance() should handle dead weakref proxies."""
-    original = gc.get_objects
-
-    def patched():
-        obj = _Weak()
-        proxy = weakref.proxy(obj)
-        del obj
-        return [proxy, *original()]
-
-    gc.get_objects = patched
+async def test_run_with_tolerates_dangling_weakref_proxy():
+    """A dangling weakref.proxy in gc.get_objects() must not crash ui.run_with() startup."""
+    _ = weakref.proxy(set())  # referent is unreferenced, proxy is dangling immediately
     fastapi_app = FastAPI()
-    ui.run_with(app=fastapi_app)
-
-    # should not fail
-    async with fastapi_app.router.lifespan_context(fastapi_app) as _ct:
+    ui.run_with(fastapi_app)
+    async with fastapi_app.router.lifespan_context(fastapi_app):
         pass
