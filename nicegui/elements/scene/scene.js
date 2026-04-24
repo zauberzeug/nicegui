@@ -314,6 +314,7 @@ export default {
       } else if (type == "gltf") {
         const url = args[0];
         mesh = new THREE.Group();
+        mesh.isGltf = true;
         this.gltf_loader.load(
           url,
           (gltf) => {
@@ -397,8 +398,14 @@ export default {
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
       if (!object) return;
-      if (object.isGroup) {
-        object.pendingMaterialInfo = { color, opacity, side };
+      if (object.isGltf) {
+        if (object.children.length > 0) {
+          object.traverse((child) => {
+            if (child.isMesh && child.material) this.applyMaterialSettings(child.material, color, opacity, side);
+          });
+        } else {
+          object.pendingMaterialInfo = { color, opacity, side };
+        }
       } else if (object.material) {
         this.applyMaterialSettings(object.material, color, opacity, side);
       }
