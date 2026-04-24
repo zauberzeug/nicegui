@@ -339,4 +339,34 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo('New primitives', '''
+    ``polyline`` connects a sequence of points with optional per-vertex colors and dashing,
+    ``lathe`` revolves a 2D profile to make a vase or bowl,
+    ``arrow_helper`` wraps Three.js' ArrowHelper for force/velocity-style indicators,
+    and ``polar_grid_helper`` draws a circular reference grid.
+''')
+def new_primitives() -> None:
+    with ui.scene().classes('w-full h-64') as scene:
+        scene.polyline(
+            points=[[-2, 0, 0], [-1, 0, 1], [0, 0, 0], [1, 0, 1], [2, 0, 0]],
+            colors=[[1, 0, 0], [1, 0.5, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]],
+        )
+        scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]]).move(2, 0, 0)
+        scene.arrow_helper(direction=[1, 0, 0], origin=[0, 0, 1.5], length=1.0, color=0xff00ff)
+        scene.polar_grid_helper(radius=2.0, sectors=8, rings=4).move(-2, 2, 0)
+
+
+@doc.demo('Rotate with a different Euler order', '''
+    ``rotate`` accepts an optional intrinsic Euler ``order``
+    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``)
+    matching the ``THREE.Euler(rx, ry, rz, order)`` convention.
+    The default ``'XYZ'`` keeps the same behavior as before.
+''')
+def rotate_with_order() -> None:
+    import math
+    with ui.scene().classes('w-full h-64') as scene:
+        scene.box().move(-1).rotate(math.pi / 4, math.pi / 4, 0, order='XYZ')
+        scene.box().move(1).rotate(math.pi / 4, math.pi / 4, 0, order='ZYX')
+
+
 doc.reference(ui.scene)

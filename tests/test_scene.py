@@ -145,6 +145,25 @@ def test_rotation_matrix_from_euler():
     assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)
 
 
+def test_rotation_matrix_from_euler_all_orders():
+    rx, ry, rz = 0.4, -0.3, 0.5
+    Rx = np.array([[1, 0, 0], [0, np.cos(rx), -np.sin(rx)], [0, np.sin(rx), np.cos(rx)]])
+    Ry = np.array([[np.cos(ry), 0, np.sin(ry)], [0, 1, 0], [-np.sin(ry), 0, np.cos(ry)]])
+    Rz = np.array([[np.cos(rz), -np.sin(rz), 0], [np.sin(rz), np.cos(rz), 0], [0, 0, 1]])
+    axis = {'X': Rx, 'Y': Ry, 'Z': Rz}
+    for order in Object3D.EULER_ORDERS:
+        # Intrinsic order: rightmost axis is applied first to the body, so order='YXZ' → Rz @ Rx @ Ry.
+        expected = axis[order[2]] @ axis[order[1]] @ axis[order[0]]
+        actual = Object3D.rotation_matrix_from_euler(rx, ry, rz, order)
+        assert np.allclose(actual, expected), f'{order} mismatch:\n{actual}\nvs\n{expected}'
+
+
+def test_rotation_matrix_from_euler_rejects_bad_order():
+    import pytest as _pytest
+    with _pytest.raises(ValueError, match='Unsupported Euler order'):
+        Object3D.rotation_matrix_from_euler(0, 0, 0, 'XYY')  # type: ignore[arg-type]
+
+
 def test_object_creation_via_context(screen: Screen):
     scene = None
 
@@ -238,3 +257,110 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_polyline(screen: Screen):
+    scene = None
+    line_obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, line_obj
+        with ui.scene() as scene:
+            line_obj = scene.polyline(
+                points=[[0, 0, 0], [1, 0, 0], [1, 1, 0]],
+                colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                dashed=True,
+                dash_size=0.1,
+                gap_size=0.05,
+            )
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_line = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{line_obj.id}");'
+        'return o.isLine === true && o.material.type === "LineDashedMaterial" && o.material.vertexColors === true;'
+    )
+    assert is_line
+
+
+def test_lathe(screen: Screen):
+    scene = None
+    obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, obj
+        with ui.scene() as scene:
+            obj = scene.lathe(points=[[0, 0], [0.5, 0.5], [0, 1]], segments=8)
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_lathe = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{obj.id}");'
+        'return o.isMesh === true && o.geometry.type === "LatheGeometry";'
+    )
+    assert is_lathe
+
+
+def test_arrow_helper(screen: Screen):
+    scene = None
+    arrow = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, arrow
+        with ui.scene() as scene:
+            arrow = scene.arrow_helper(direction=[0, 0, 1], origin=[0, 0, 0], length=1.0,
+                                       color=0xff0000, radial_segments=24)
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_arrow = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{arrow.id}");'
+        'return o.type === "ArrowHelper" && o.cone.geometry.parameters.radialSegments === 24;'
+    )
+    assert is_arrow
+
+
+def test_polar_grid_helper(screen: Screen):
+    scene = None
+    grid = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, grid
+        with ui.scene() as scene:
+            grid = scene.polar_grid_helper(radius=5.0, sectors=8, rings=4)
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_grid = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{grid.id}");'
+        'return o.type === "PolarGridHelper";'
+    )
+    assert is_grid
+
+
+def test_rotate_with_order(screen: Screen):
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box().rotate(0.4, -0.3, 0.5, order='ZYX')
+
+    screen.open('/')
+    screen.wait(0.5)
+    expected = Object3D.rotation_matrix_from_euler(0.4, -0.3, 0.5, 'ZYX')
+    assert np.allclose(box.R, expected)
+    # Verify the rotation persists through a re-send to the client.
+    server_R = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{box.id}");'
+        'const m = o.matrixWorld.elements;'
+        # Three.js stores column-major; pull out the upper-left 3x3.
+        'return [[m[0], m[4], m[8]], [m[1], m[5], m[9]], [m[2], m[6], m[10]]];'
+    )
+    assert np.allclose(server_R, expected, atol=1e-6)

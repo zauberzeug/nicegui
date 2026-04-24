@@ -328,6 +328,55 @@ export default {
       } else if (type == "axes_helper") {
         mesh = new THREE.AxesHelper(args[0]);
         mesh.material.transparent = true;
+      } else if (type == "polyline") {
+        const pts = args[0].map((p) => new THREE.Vector3(p[0], p[1], p[2]));
+        const geometry = new THREE.BufferGeometry().setFromPoints(pts);
+        const colors = args[1];
+        const dashed = args[2];
+        const useVertexColors = !!colors;
+        if (useVertexColors) {
+          const flat = new Float32Array(colors.length * 3);
+          for (let i = 0; i < colors.length; i++) {
+            flat[i * 3] = colors[i][0];
+            flat[i * 3 + 1] = colors[i][1];
+            flat[i * 3 + 2] = colors[i][2];
+          }
+          geometry.setAttribute("color", new THREE.BufferAttribute(flat, 3));
+        }
+        if (dashed) {
+          const mat = new THREE.LineDashedMaterial({
+            transparent: true,
+            dashSize: args[3],
+            gapSize: args[4],
+            vertexColors: useVertexColors,
+          });
+          mesh = new THREE.Line(geometry, mat);
+          mesh.computeLineDistances();
+        } else {
+          const mat = new THREE.LineBasicMaterial({
+            transparent: true,
+            vertexColors: useVertexColors,
+          });
+          mesh = new THREE.Line(geometry, mat);
+        }
+      } else if (type == "arrow_helper") {
+        const dir = new THREE.Vector3(...args[0]).normalize();
+        const origin = new THREE.Vector3(...args[1]);
+        mesh = new THREE.ArrowHelper(dir, origin, args[2], args[3], args[4], args[5]);
+        if (args[6] && args[6] !== 1 && mesh.line && mesh.line.material) {
+          mesh.line.material.linewidth = args[6];
+        }
+        const radialSegs = args[7] || 16;
+        if (mesh.cone && radialSegs !== 5) {
+          const p = mesh.cone.geometry.parameters;
+          mesh.cone.geometry.dispose();
+          const newCone = new THREE.ConeGeometry(p.radius, p.height, radialSegs, 1);
+          newCone.translate(0, -0.5, 0);
+          mesh.cone.geometry = newCone;
+        }
+      } else if (type == "polar_grid_helper") {
+        mesh = new THREE.PolarGridHelper(args[0], args[1], args[2], args[3], args[4], args[5]);
+        mesh.material.transparent = true;
       } else {
         let geometry;
         const wireframe = args.pop();
@@ -342,6 +391,10 @@ export default {
             new THREE.Vector3(...args[2]),
           );
           geometry = new THREE.TubeGeometry(curve, ...args.slice(3));
+        }
+        if (type == "lathe") {
+          const pts = args[0].map((p) => new THREE.Vector2(p[0], p[1]));
+          geometry = new THREE.LatheGeometry(pts, ...args.slice(1));
         }
         if (type == "extrusion") {
           const shape = new THREE.Shape();

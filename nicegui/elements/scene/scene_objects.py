@@ -356,3 +356,117 @@ class AxesHelper(Object3D):
         :param length: length of the the axes (default: 1.0)
         """
         super().__init__('axes_helper', length)
+
+
+class Polyline(Object3D):
+
+    def __init__(self,
+                 points: list[list[float]],
+                 colors: list[list[float]] | None = None,
+                 dashed: bool = False,
+                 dash_size: float = 3.0,
+                 gap_size: float = 1.0,
+                 ) -> None:
+        """Polyline
+
+        This element is based on Three.js' `Line <https://threejs.org/docs/#api/en/objects/Line>`_ object.
+        It connects a sequence of 3D points with line segments and optionally dashes them via
+        `LineDashedMaterial <https://threejs.org/docs/#api/en/materials/LineDashedMaterial>`_.
+
+        ``dash_size`` and ``gap_size`` defaults match the Three.js ``LineDashedMaterial`` defaults
+        (``3.0`` and ``1.0``); the units are scene units, so adjust them for your scene scale.
+
+        :param points: list of ``[x, y, z]`` points
+        :param colors: optional list of per-vertex ``[r, g, b]`` colors (each component in ``[0, 1]``).
+            When supplied, the line uses vertex colors instead of the material color.
+        :param dashed: whether to use a dashed material (default: ``False``)
+        :param dash_size: dash length in scene units (default: ``3.0``)
+        :param gap_size: gap length in scene units (default: ``1.0``)
+        """
+        super().__init__('polyline', points, colors, dashed, dash_size, gap_size)
+        if colors is not None:
+            self.material(color=None)
+
+
+class Lathe(Object3D):
+
+    def __init__(self,
+                 points: list[list[float]],
+                 segments: int = 12,
+                 phi_start: float = 0.0,
+                 phi_length: float = 2 * math.pi,
+                 wireframe: bool = False,
+                 ) -> None:
+        """Lathe
+
+        This element is based on Three.js' `LatheGeometry <https://threejs.org/docs/#api/en/geometries/LatheGeometry>`_ object.
+        It creates a surface of revolution by rotating a 2D polyline around the y axis.
+
+        :param points: list of 2D ``[x, y]`` points making up the profile (x ≥ 0)
+        :param segments: number of segments around the circumference (default: 12)
+        :param phi_start: starting angle in radians (default: 0.0)
+        :param phi_length: angular extent in radians (default: ``2π``)
+        :param wireframe: whether to render the mesh as wireframe (default: ``False``)
+        """
+        super().__init__('lathe', points, segments, phi_start, phi_length, wireframe)
+
+
+class ArrowHelper(Object3D):
+
+    def __init__(self,
+                 direction: list[float] = [0.0, 0.0, 1.0],  # noqa: B006
+                 origin: list[float] = [0.0, 0.0, 0.0],  # noqa: B006
+                 length: float = 1.0,
+                 color: int = 0xffff00,
+                 head_length: float | None = None,
+                 head_width: float | None = None,
+                 line_width: float = 1.0,
+                 radial_segments: int = 16,
+                 ) -> None:
+        """Arrow Helper
+
+        This element wraps Three.js' `ArrowHelper <https://threejs.org/docs/#api/en/helpers/ArrowHelper>`_ object.
+        It is convenient for visualizing directions, forces, or velocities.
+
+        ``line_width`` is forwarded to ``LineBasicMaterial.linewidth``, but most WebGL implementations
+        clamp ``LineBasicMaterial.linewidth`` to ``1`` regardless of the value supplied; treat values
+        ``> 1`` as a hint that browsers frequently ignore.
+
+        :param direction: direction vector (will be normalized) (default: ``[0, 0, 1]``)
+        :param origin: origin point (default: ``[0, 0, 0]``)
+        :param length: arrow length (default: ``1.0``)
+        :param color: arrow color as 24-bit hex integer (default: ``0xffff00``)
+        :param head_length: cone head length (default: ``0.2 * length`` per Three.js)
+        :param head_width: cone head base width (default: ``0.2 * head_length`` per Three.js)
+        :param line_width: line thickness hint (default: ``1.0``; commonly ignored by browsers)
+        :param radial_segments: number of segments around the cone head (default: ``16``)
+        """
+        # Mutable default lists are intentional read-only sentinels; ``noqa: B006`` per CONTRIBUTING.
+        super().__init__('arrow_helper', direction, origin, length, color,
+                         head_length, head_width, line_width, radial_segments)
+
+
+class PolarGridHelper(Object3D):
+
+    def __init__(self,
+                 radius: float = 10.0,
+                 sectors: int = 16,
+                 rings: int = 8,
+                 divisions: int = 64,
+                 color1: int = 0x444444,
+                 color2: int = 0x888888,
+                 ) -> None:
+        """Polar Grid Helper
+
+        This element is based on Three.js' `PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ object.
+        It draws a circular reference grid in the XZ plane (Three.js' default) — rotate or attach to
+        a parent to align it with another plane.
+
+        :param radius: outer radius of the grid (default: ``10.0``)
+        :param sectors: number of angular sectors (default: ``16``)
+        :param rings: number of concentric rings (default: ``8``)
+        :param divisions: number of segments used to draw each ring (default: ``64``)
+        :param color1: color of the central crosshair lines as 24-bit hex (default: ``0x444444``)
+        :param color2: color of the rest of the grid as 24-bit hex (default: ``0x888888``)
+        """
+        super().__init__('polar_grid_helper', radius, sectors, rings, divisions, color1, color2)

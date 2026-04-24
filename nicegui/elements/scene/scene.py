@@ -41,6 +41,7 @@ class SceneObject:
 
 class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
+    from .scene_objects import ArrowHelper as arrow_helper
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
     from .scene_objects import Curve as curve
@@ -48,8 +49,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     from .scene_objects import Extrusion as extrusion
     from .scene_objects import Gltf as gltf
     from .scene_objects import Group as group
+    from .scene_objects import Lathe as lathe
     from .scene_objects import Line as line
     from .scene_objects import PointCloud as point_cloud
+    from .scene_objects import PolarGridHelper as polar_grid_helper
+    from .scene_objects import Polyline as polyline
     from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
     from .scene_objects import Ring as ring
     from .scene_objects import Sphere as sphere
