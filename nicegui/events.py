@@ -87,6 +87,39 @@ class SceneClickHit:
 
 
 @dataclass(kw_only=True, slots=True)
+class ScenePoint:
+    x: float
+    y: float
+    z: float
+
+
+@dataclass(kw_only=True, slots=True)
+class SceneIntersectionPlane:
+    """A named plane used to compute click-ray intersections in :class:`ui.scene`.
+
+    The plane is defined by an axis (``'x'``, ``'y'``, or ``'z'``) for the normal direction
+    and an ``offset`` along that axis. ``axis='z', offset=0`` is the world XY-plane (the
+    typical "ground"); ``axis='x', offset=5`` is an X-perpendicular wall five units out.
+    """
+    name: str
+    axis: Literal['x', 'y', 'z'] = 'z'
+    offset: float = 0.0
+
+
+@dataclass(kw_only=True, slots=True)
+class SceneClipPlane:
+    """A clipping plane for :meth:`ui.scene.Object3D.set_clipping_planes`.
+
+    Plane equation ``nx*x + ny*y + nz*z + d = 0``. Geometry on the negative side of the plane
+    is hidden. ``(nx, ny, nz)`` need not be unit-length — it is normalized on the JS side.
+    """
+    nx: float
+    ny: float
+    nz: float
+    d: float = 0.0
+
+
+@dataclass(kw_only=True, slots=True)
 class SceneClickEventArguments(ClickEventArguments):
     click_type: str
     button: int
@@ -95,6 +128,7 @@ class SceneClickEventArguments(ClickEventArguments):
     meta: bool
     shift: bool
     hits: list[SceneClickHit]
+    intersections: dict[str, ScenePoint | None] = field(default_factory=dict)
 
 
 @dataclass(kw_only=True, slots=True)

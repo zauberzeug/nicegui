@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
+from ...events import SceneClipPlane
+
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
 
@@ -194,6 +196,26 @@ class Object3D:
         if self.draggable_ != value:
             self.draggable_ = value
             self._draggable()
+        return self
+
+    def set_clipping_planes(self, planes: list[SceneClipPlane]) -> Self:
+        """Apply clipping planes to this object and all of its mesh descendants.
+
+        Each :class:`~nicegui.events.SceneClipPlane` defines a plane ``nx*x + ny*y + nz*z + d = 0``;
+        geometry on the negative side of any plane is hidden (clipping is the union of all planes).
+        Call :meth:`clear_clipping_planes` to remove them.
+        """
+        self.scene.run_method(
+            'set_clipping_planes',
+            self.id,
+            [{'nx': p.nx, 'ny': p.ny, 'nz': p.nz, 'd': p.d} for p in planes],
+        )
+        return self
+
+    def clear_clipping_planes(self) -> Self:
+        """Remove any clipping planes previously applied to this object via
+        :meth:`set_clipping_planes`."""
+        self.scene.run_method('clear_clipping_planes', self.id)
         return self
 
     def attach(self, parent: Object3D) -> None:

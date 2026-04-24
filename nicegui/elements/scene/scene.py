@@ -14,6 +14,8 @@ from ...events import (
     SceneClickEventArguments,
     SceneClickHit,
     SceneDragEventArguments,
+    SceneIntersectionPlane,
+    ScenePoint,
     handle_event,
 )
 from .scene_object3d import Object3D
@@ -75,6 +77,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
+                 intersection_planes: list[SceneIntersectionPlane] | None = None,
+                 raycaster_threshold: float = DEFAULT_PROP | 1.0,
                  ) -> None:
         """3D Scene
 
@@ -96,6 +100,14 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
+        :param intersection_planes: list of named planes to intersect each click ray with.
+            The intersection points are surfaced on click events as ``e.intersections[name]``,
+            so the host application can read where the ray hit each configured plane even when
+            the click lands on empty space. Default: no planes (``e.intersections`` is empty).
+        :param raycaster_threshold: hit-test distance threshold (in scene units) for thin objects
+            like lines and point clouds. The default value (1.0) matches three.js, which is too
+            coarse for scenes with many thin objects (raycasts can return thousands of hits and
+            blow past the WebSocket payload limit); lower the threshold for dense scenes.
         """
         super().__init__()
         self._props['width'] = width
@@ -104,6 +116,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['show-stats'] = show_stats
         self._props['grid'] = grid
         self._props['background-color'] = background_color
+        self._props['raycaster-threshold'] = raycaster_threshold
+        self._props['intersection-planes'] = [
+            {'name': p.name, 'axis': p.axis, 'offset': p.offset}
+            for p in (intersection_planes or [])
+        ]
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
@@ -127,6 +144,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('raycasterThreshold', 'raycaster-threshold')
+        self._props.add_rename('intersectionPlanes', 'intersection-planes')
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -142,6 +161,44 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         """Add a callback to be invoked when a 3D object is dropped."""
         self._drag_end_handlers.append(callback)
         return self
+
+    def set_axes_inset(self,
+                       *,
+                       enabled: bool = True,
+                       size: int = 128,
+                       margin: int = 0,
+                       margin_x: int | None = None,
+                       margin_y: int | None = None,
+                       anchor: Literal['bottom-left', 'bottom-right', 'top-left', 'top-right'] = 'bottom-right',
+                       ) -> None:
+        """Toggle and position the orientation axes inset overlay (a small XYZ gizmo).
+
+        :param enabled: whether to show the inset (default: ``True``)
+        :param size: size of the inset in CSS pixels (default: ``128``)
+        :param margin: shorthand for ``margin_x`` and ``margin_y`` (default: ``0``)
+        :param margin_x: horizontal margin in pixels from the anchored edge (defaults to ``margin``)
+        :param margin_y: vertical margin in pixels from the anchored edge (defaults to ``margin``)
+        :param anchor: which corner to pin the inset to (default: ``'bottom-right'``)
+        """
+        self.run_method('set_axes_inset', {
+            'enabled': enabled,
+            'size': size,
+            'marginX': margin_x if margin_x is not None else margin,
+            'marginY': margin_y if margin_y is not None else margin,
+            'anchor': anchor,
+        })
+
+    def set_axes_labels(self,
+                        *,
+                        enabled: bool = True,
+                        labels: tuple[str, str, str] = ('X', 'Y', 'Z'),
+                        ) -> None:
+        """Toggle and customize the labels on the orientation axes inset.
+
+        :param enabled: whether to show labels on the inset (default: ``True``)
+        :param labels: three label strings for the X, Y, and Z axes (default: ``('X', 'Y', 'Z')``)
+        """
+        self.run_method('set_axes_labels', {'enabled': enabled, 'labels': list(labels)})
 
     @staticmethod
     def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:
@@ -188,6 +245,13 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
+        # Each configured intersection plane appears in the dict whether the ray hit it or not;
+        # the value is `None` for misses so callers can distinguish "plane not configured" from
+        # "plane didn't intersect" without `.get()` ambiguity.
+        intersections: dict[str, ScenePoint | None] = {
+            name: ScenePoint(x=pt['x'], y=pt['y'], z=pt['z']) if pt is not None else None
+            for name, pt in (e.args.get('intersections') or {}).items()
+        }
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
@@ -204,6 +268,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                 y=hit['point']['y'],
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
+            intersections=intersections,
         )
         for handler in self._click_handlers:
             handle_event(handler, arguments)

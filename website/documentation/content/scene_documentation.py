@@ -339,4 +339,53 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo('Clipping planes', '''
+    `Object3D.set_clipping_planes` lets you hide part of an object's geometry by clipping
+    it against arbitrary plane equations `nx*x + ny*y + nz*z + d = 0`.
+    The plane normal points toward the *kept* side; geometry on the negative side is hidden.
+    Useful for "see inside" views in articulated meshes.
+''')
+def clipping_planes() -> None:
+    from nicegui import events
+    with ui.scene().classes('w-full h-64') as scene:
+        sphere = scene.sphere(1.0).material('SteelBlue')
+    ui.button('Clip top half', on_click=lambda: sphere.set_clipping_planes(
+        [events.SceneClipPlane(nx=0, ny=0, nz=-1, d=0)]))
+    ui.button('Show whole', on_click=sphere.clear_clipping_planes)
+
+
+@doc.demo('Orientation axes inset', '''
+    `set_axes_inset` overlays a small XYZ orientation gizmo in the corner of the scene
+    (using Three.js' `ViewHelper`). `set_axes_labels` lets you replace the default
+    `X`/`Y`/`Z` labels with custom strings.
+''')
+def axes_inset() -> None:
+    scene = ui.scene().classes('w-full h-64')
+    scene.set_axes_inset(enabled=True, anchor='top-right', size=96)
+    scene.set_axes_labels(labels=('X', 'Y', 'Z'))
+
+
+@doc.demo('Click intersections with named planes', '''
+    Configure named planes via `intersection_planes` and read the ray's intersection
+    with each plane on every click via `e.intersections[name]`. Each entry is a
+    `ScenePoint` (with `.x/.y/.z`) when the ray hits the plane, or `None` when it doesn't.
+''')
+def click_intersections() -> None:
+    from nicegui import events
+
+    label = ui.label('click somewhere in the scene')
+
+    def show(e: events.SceneClickEventArguments):
+        ground = e.intersections.get('ground')
+        if ground is None:
+            label.set_text('ray missed the ground plane')
+        else:
+            label.set_text(f'ground hit at ({ground.x:.2f}, {ground.y:.2f}, {ground.z:.2f})')
+
+    ui.scene(
+        on_click=show,
+        intersection_planes=[events.SceneIntersectionPlane(name='ground', axis='z', offset=0)],
+    ).classes('w-full h-64')
+
+
 doc.reference(ui.scene)

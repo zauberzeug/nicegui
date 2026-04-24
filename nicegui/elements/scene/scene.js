@@ -10,10 +10,17 @@ const {
   OrbitControls,
   TrackballControls,
   STLLoader,
+  ViewHelper,
   THREE,
   TWEEN,
   Stats,
 } = SceneLib;
+
+const INTERSECTION_AXIS_NORMALS = {
+  x: new THREE.Vector3(1, 0, 0),
+  y: new THREE.Vector3(0, 1, 0),
+  z: new THREE.Vector3(0, 0, 1),
+};
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
@@ -213,22 +220,70 @@ export default {
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
+    // Pre-compute THREE.Plane objects for the configured intersection planes (rebuilt by setter).
+    this._buildIntersectionPlanes = () => {
+      const specs = this.intersectionPlanes || [];
+      this._intersectionPlanes = specs.map((spec) => {
+        const normal = INTERSECTION_AXIS_NORMALS[spec.axis] || INTERSECTION_AXIS_NORMALS.z;
+        return { name: spec.name, plane: new THREE.Plane(normal, -(spec.offset || 0)) };
+      });
+    };
+    this._buildIntersectionPlanes();
+
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
-      this.controls.update(this.clock.getDelta());
+      const delta = this.clock.getDelta();
+      this.controls.update(delta);
+      // Render the main scene at full canvas viewport / no scissor (the inset path may have
+      // narrowed them on the previous frame).
+      const canvas = this.renderer.domElement;
+      this.renderer.setViewport(0, 0, canvas.width, canvas.height);
+      this.renderer.setScissorTest(false);
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
+      // Orientation inset: composite the ViewHelper into the configured corner using manual
+      // viewport + scissor math (works on three.js < r184 which lacks `viewHelper.location`).
+      if (this.viewHelper) {
+        const opts = this._axes || {};
+        const dpr = this.renderer.getPixelRatio();
+        const sizePx = (opts.size ?? 128) * dpr;
+        const mx = ((opts.marginX ?? opts.margin) ?? 0) * dpr;
+        const my = ((opts.marginY ?? opts.margin) ?? 0) * dpr;
+        const anchor = opts.anchor || "bottom-right";
+        const x = anchor.includes("left") ? mx : canvas.width - sizePx - mx;
+        // WebGL's viewport origin is bottom-left, so "top" anchors compute y from the top edge.
+        const y = anchor.includes("top") ? canvas.height - sizePx - my : my;
+        this.renderer.setViewport(x, y, sizePx, sizePx);
+        this.renderer.setScissor(x, y, sizePx, sizePx);
+        this.renderer.setScissorTest(true);
+        const autoClear = this.renderer.autoClear;
+        this.renderer.autoClear = false;
+        this.viewHelper.render(this.renderer);
+        this.renderer.autoClear = autoClear;
+        this.renderer.setScissorTest(false);
+        this.renderer.setViewport(0, 0, canvas.width, canvas.height);
+        if (this.viewHelper.animating) this.viewHelper.update(delta);
+      }
       if (this.stats) this.stats.update();
     };
     render();
 
     const raycaster = new THREE.Raycaster();
+    raycaster.params.Line.threshold = this.raycasterThreshold ?? 1.0;
+    raycaster.params.Points.threshold = this.raycasterThreshold ?? 1.0;
+    this._raycaster = raycaster;
+    const _intersection = new THREE.Vector3();
     const click_handler = (mouseEvent) => {
-      let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
-      let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
-      raycaster.setFromCamera({ x: x, y: y }, this.camera);
+      const x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
+      const y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
+      raycaster.setFromCamera({ x, y }, this.camera);
+      const intersections = {};
+      for (const { name, plane } of this._intersectionPlanes) {
+        const hit = raycaster.ray.intersectPlane(plane, _intersection);
+        intersections[name] = hit ? { x: _intersection.x, y: _intersection.y, z: _intersection.z } : null;
+      }
       this.$emit("click3d", {
         hits: raycaster
           .intersectObjects(this.scene.children, true)
@@ -238,6 +293,7 @@ export default {
             object_name: o.object.name,
             point: o.point,
           })),
+        intersections,
         click_type: mouseEvent.type,
         button: mouseEvent.button,
         alt_key: mouseEvent.altKey,
@@ -422,6 +478,52 @@ export default {
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
+    set_clipping_planes(object_id, planes) {
+      if (!this.objects.has(object_id)) return;
+      const clipPlanes = planes.map((p) =>
+        new THREE.Plane(new THREE.Vector3(p.nx, p.ny, p.nz).normalize(), p.d));
+      this.objects.get(object_id).traverse((child) => {
+        if (!child.material) return;
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach((mat) => {
+          mat.clippingPlanes = clipPlanes;
+          mat.clipIntersection = false; // union: clip where ANY plane clips
+          mat.needsUpdate = true;
+        });
+      });
+      // Local clipping is opt-in on the renderer; flip it the first time anyone sets clipping planes.
+      this.renderer.localClippingEnabled = true;
+    },
+    clear_clipping_planes(object_id) {
+      if (!this.objects.has(object_id)) return;
+      this.objects.get(object_id).traverse((child) => {
+        if (!child.material) return;
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach((mat) => {
+          mat.clippingPlanes = null;
+          mat.needsUpdate = true;
+        });
+      });
+    },
+    set_axes_inset(opts) {
+      this._axes = Object.assign({}, this._axes || {}, opts || {});
+      if (this._axes.enabled) {
+        if (!this.viewHelper) {
+          this.viewHelper = new ViewHelper(this.camera, this.renderer.domElement);
+          if (this.controls && this.controls.target) this.viewHelper.center = this.controls.target;
+        }
+      } else if (this.viewHelper) {
+        if (this.viewHelper.dispose) this.viewHelper.dispose();
+        this.viewHelper = null;
+      }
+    },
+    set_axes_labels(opts) {
+      if (!this.viewHelper || !opts || !opts.enabled) return;
+      const labels = Array.isArray(opts.labels) && opts.labels.length === 3
+        ? opts.labels
+        : ["X", "Y", "Z"];
+      this.viewHelper.setLabels(labels[0], labels[1], labels[2]);
+    },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
@@ -588,5 +690,18 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    raycasterThreshold: Number,
+    intersectionPlanes: Array,
+  },
+  watch: {
+    raycasterThreshold(value) {
+      if (!this._raycaster) return;
+      const t = value ?? 1.0;
+      this._raycaster.params.Line.threshold = t;
+      this._raycaster.params.Points.threshold = t;
+    },
+    intersectionPlanes() {
+      if (this._buildIntersectionPlanes) this._buildIntersectionPlanes();
+    },
   },
 };

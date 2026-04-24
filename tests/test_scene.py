@@ -238,3 +238,96 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_set_clipping_planes(screen: Screen):
+    from nicegui import events
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+
+    screen.open('/')
+    screen.wait(0.5)
+    box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=0)])
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{box.id}");'
+        'return o.material.clippingPlanes && o.material.clippingPlanes.length === 1;'
+    ))
+    box.clear_clipping_planes()
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{box.id}");'
+        'return !o.material.clippingPlanes;'
+    ))
+
+
+def test_set_axes_inset_and_labels(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    screen.wait(0.5)
+    scene.set_axes_inset(enabled=True, size=64, anchor='top-left', margin=8)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene.id}).viewHelper'
+    ))
+    # Labels honored when supplied; default labels remain when not.
+    scene.set_axes_labels(enabled=True, labels=('Forward', 'Left', 'Up'))
+    screen.wait(0.3)
+    scene.set_axes_inset(enabled=False)
+    screen.wait_for(lambda: not screen.selenium.execute_script(
+        f'return !!getElement({scene.id}).viewHelper'
+    ))
+
+
+def test_intersection_planes_in_click_event(screen: Screen):
+    from nicegui import events
+    intersections: list = []
+
+    @ui.page('/')
+    def page():
+        def handle(e: events.SceneClickEventArguments):
+            intersections.append(e.intersections)
+        ui.scene(
+            on_click=handle,
+            intersection_planes=[
+                events.SceneIntersectionPlane(name='ground', axis='z', offset=0),
+                events.SceneIntersectionPlane(name='wall', axis='x', offset=2),
+            ],
+        )
+
+    screen.open('/')
+    screen.wait(0.5)
+    canvas = screen.find_by_tag('canvas')
+    canvas.click()
+    screen.wait_for(lambda: bool(intersections))
+    keys = set(intersections[0].keys())
+    assert keys == {'ground', 'wall'}
+
+
+def test_raycaster_threshold_runtime_change(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(raycaster_threshold=0.05)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id})._raycaster.params.Line.threshold'
+    ) == 0.05
+    scene._props['raycaster-threshold'] = 0.5
+    scene.update()
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id})._raycaster.params.Line.threshold'
+    ) == 0.5)
