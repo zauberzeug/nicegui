@@ -125,6 +125,20 @@ class Table(FilterElement, component='table.js'):
 
         return super()._to_dict()
 
+    def _render_markdown(self) -> str:
+        lines = []
+        if title := self._props.get('title'):
+            lines.append(f'**{title}**')
+            lines.append('')
+        if columns := self._props.get('columns', []):
+            headers = [col.get('label', col.get('name', '')).replace('|', '\\|') for col in columns]
+            lines.append('| ' + ' | '.join(headers) + ' |')
+            lines.append('| ' + ' | '.join('---' for _ in columns) + ' |')
+            for row in self._props.get('rows', []):
+                cells = [str(row.get(col.get('field', col.get('name', '')), '')).replace('|', '\\|') for col in columns]
+                lines.append('| ' + ' | '.join(cells) + ' |')
+        return '\n'.join(lines)
+
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
         self._selection_handlers.append(callback)

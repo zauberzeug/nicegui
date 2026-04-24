@@ -79,6 +79,7 @@ def run(root: Callable | None = None, *,
         storage_secret: str | None = None,
         session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
+        markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
         **kwargs: Any,
         ) -> None:
     """ui.run
@@ -119,6 +120,8 @@ def run(root: Callable | None = None, *,
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.user and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
+        (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
@@ -171,6 +174,7 @@ def run(root: Callable | None = None, *,
         unocss=unocss,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
+        markdown=markdown,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
