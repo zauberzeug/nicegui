@@ -155,7 +155,7 @@ class Client:
         accept = request.headers.get('accept', '')
         # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
         # It works for the real use case: agents sending exactly `Accept: text/markdown`.
-        if 'text/markdown' in accept and 'text/html' not in accept:
+        if self.page.resolve_markdown() and 'text/markdown' in accept and 'text/html' not in accept:
             parts = []
             if title := self.resolve_title():
                 parts.append(f'# {title}')

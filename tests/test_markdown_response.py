@@ -1,25 +1,58 @@
 from collections.abc import Callable
 
-from nicegui import ui
+import pytest
+
+from nicegui import core, ui
 from nicegui.testing import User
 
 
-async def test_page_title(user: User):
-    @ui.page('/', title='My Page')
-    def page():
-        ui.label('Content')
-
-    response = await user.http_client.get('/', headers={'Accept': 'text/markdown'})
-    assert response.text.strip() == '# My Page\n\nContent'
-
-
 async def test_html_response(user: User):
-    @ui.page('/')
+    @ui.page('/', markdown=True)
     def page():
         ui.label('Hello')
 
     response = await user.http_client.get('/', headers={'Accept': 'text/html'})
     assert 'text/html' in response.headers['content-type']
+
+
+async def test_opt_in_required(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'Accept': 'text/markdown'})
+    assert 'text/html' in response.headers['content-type'], 'should fall back to HTML without opt-in'
+
+
+async def test_global_opt_in(user: User, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(core.app.config, 'markdown', True)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'Accept': 'text/markdown'})
+    assert 'text/markdown' in response.headers['content-type']
+
+
+async def test_per_page_overrides_global(user: User, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(core.app.config, 'markdown', True)
+
+    @ui.page('/off', markdown=False)
+    def off_page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/off', headers={'Accept': 'text/markdown'})
+    assert 'text/html' in response.headers['content-type'], 'per-page False should override global True'
+
+
+async def test_page_title(user: User):
+    @ui.page('/', title='My Page', markdown=True)
+    def page():
+        ui.label('Content')
+
+    response = await user.http_client.get('/', headers={'Accept': 'text/markdown'})
+    assert response.text.strip() == '# My Page\n\nContent'
 
 
 async def test_label(user: User):
@@ -188,7 +221,7 @@ async def test_notification(user: User):
 
 
 async def _assert_markdown(user: User, build: Callable, expected: str) -> None:
-    @ui.page('/')
+    @ui.page('/', markdown=True)
     def _():
         build()
     response = await user.http_client.get('/', headers={'Accept': 'text/markdown'})
