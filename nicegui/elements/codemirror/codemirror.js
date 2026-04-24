@@ -1,5 +1,53 @@
 import * as CM from "nicegui-codemirror";
 
+// Line tooltips: per-line hover metadata. Each tooltip is a zero-width range pinned to the
+// start of its line, so CM6's RangeSet.map() handles all position remapping through edits.
+
+class TooltipValue extends CM.RangeValue {
+  constructor(setName, meta) {
+    super();
+    this.setName = setName;
+    this.meta = meta;
+  }
+}
+
+const setTooltipsEffect = CM.StateEffect.define();    // value: {setName, ranges}
+const clearTooltipsEffect = CM.StateEffect.define();  // value: setName | null
+
+const tooltipField = CM.StateField.define({
+  create() { return CM.RangeSet.empty; },
+  update(set, tr) {
+    set = set.map(tr.changes);
+    for (const effect of tr.effects) {
+      if (effect.is(clearTooltipsEffect)) {
+        if (effect.value === null) return CM.RangeSet.empty;
+        const keep = [];
+        const cursor = set.iter();
+        while (cursor.value) {
+          if (cursor.value.setName !== effect.value) {
+            keep.push(cursor.value.range(cursor.from, cursor.to));
+          }
+          cursor.next();
+        }
+        return CM.RangeSet.of(keep, true);
+      }
+      if (effect.is(setTooltipsEffect)) {
+        const { setName, ranges } = effect.value;
+        const keep = [];
+        const cursor = set.iter();
+        while (cursor.value) {
+          if (cursor.value.setName !== setName) {
+            keep.push(cursor.value.range(cursor.from, cursor.to));
+          }
+          cursor.next();
+        }
+        return CM.RangeSet.of([...keep, ...ranges], true);
+      }
+    }
+    return set;
+  },
+});
+
 export default {
   template: `
     <div></div>
@@ -131,6 +179,23 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setLineTooltips(tooltips, setName) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const ranges = [];
+      for (const [line, data] of Object.entries(tooltips)) {
+        const lineNum = parseInt(line);
+        if (lineNum >= 1 && lineNum <= doc.lines) {
+          const pos = doc.line(lineNum).from;
+          ranges.push(new TooltipValue(setName, data).range(pos, pos));
+        }
+      }
+      this.editor.dispatch({ effects: setTooltipsEffect.of({ setName, ranges }) });
+    },
+    clearLineTooltips(setName) {
+      if (!this.editor) return;
+      this.editor.dispatch({ effects: clearTooltipsEffect.of(setName ?? null) });
+    },
     setupExtensions() {
       const self = this;
 
@@ -149,9 +214,47 @@ export default {
         },
       );
 
+      // Hover tooltip for any line in the tooltipField. Merges metadata from all named sets that
+      // pin a tooltip to the same line, then renders either an `_html` field via the global
+      // DOMPurify-backed `Element.prototype.setHTML` polyfill, or the remaining key-value pairs.
+      const lineTooltip = CM.hoverTooltip((view, pos) => {
+        const set = view.state.field(tooltipField);
+        if (set.size === 0) return null;
+        const line = view.state.doc.lineAt(pos);
+        const merged = {};
+        set.between(line.from, line.to, (_from, _to, value) => Object.assign(merged, value.meta));
+        if (Object.keys(merged).length === 0) return null;
+        return {
+          pos: line.from,
+          above: true,
+          create() {
+            const dom = document.createElement("div");
+            dom.className = "cm-line-tooltip";
+            if (merged._html) {
+              dom.setHTML(merged._html);
+            } else {
+              const parts = [];
+              for (const [key, val] of Object.entries(merged)) {
+                if (key.startsWith("_")) continue;
+                if (Array.isArray(val)) {
+                  for (const item of val) parts.push(`${key}: ${item}`);
+                } else {
+                  parts.push(`${key}: ${val}`);
+                }
+              }
+              dom.textContent = parts.join("\n");
+              dom.style.whiteSpace = "pre";
+            }
+            return { dom };
+          },
+        };
+      });
+
       const extensions = [
         CM.basicSetup,
         changeSender,
+        tooltipField,
+        lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit

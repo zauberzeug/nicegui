@@ -94,3 +94,64 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
     assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+
+
+def _trigger_hover(screen: Screen, editor, line_number: int) -> None:
+    """Mimic a mouseover at the start of the given 1-indexed line so CM6's hoverTooltip fires."""
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        f'const pos = el.editor.state.doc.line({line_number}).from;'
+        'const coords = el.editor.coordsAtPos(pos);'
+        # CM6's hoverTooltip listens on the editor DOM. Dispatching synthetic mouseover/mousemove
+        # events with the right clientX/clientY makes the underlying provider fire.
+        'const target = el.editor.contentDOM;'
+        'const init = {bubbles: true, clientX: coords.left + 2, clientY: (coords.top + coords.bottom) / 2};'
+        'target.dispatchEvent(new MouseEvent("mouseover", init));'
+        'target.dispatchEvent(new MouseEvent("mousemove", init));'
+    )
+
+
+def test_set_and_clear_line_tooltips_text(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_line_tooltips({2: {'severity': 'warning', 'message': 'maybe wrong'}})
+    screen.wait(0.3)
+    _trigger_hover(screen, editor, 2)
+    screen.wait_for(lambda: 'maybe wrong' in (
+        screen.selenium.execute_script('return document.querySelector(".cm-line-tooltip")?.textContent || ""') or ''))
+    editor.clear_line_tooltips()
+    screen.wait(0.3)
+
+
+def test_line_tooltip_html_sanitized(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('hello\nworld')
+
+    screen.open('/')
+    screen.wait(0.3)
+    # The `_html` value contains a <script> tag that DOMPurify must strip.
+    editor.set_line_tooltips({1: {'_html': '<b>safe</b><script>window.__hijack=1</script>'}})
+    screen.wait(0.3)
+    _trigger_hover(screen, editor, 1)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'const t = document.querySelector(".cm-line-tooltip");'
+        'return !!(t && t.querySelector("b"));'
+    ))
+    has_script = screen.selenium.execute_script(
+        'const t = document.querySelector(".cm-line-tooltip");'
+        'return !!(t && t.querySelector("script"));'
+    )
+    hijacked = screen.selenium.execute_script('return window.__hijack === 1')
+    assert not has_script, 'DOMPurify should have stripped <script>'
+    assert not hijacked, 'inline script must not have executed'
