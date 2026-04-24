@@ -68,9 +68,8 @@ export default {
         return;
       }
 
-      const lang_description = this.findLanguage(language, this.languages);
+      const lang_description = this.findLanguage(language);
       if (!lang_description) {
-        console.error("Language not found:", language);
         return;
       }
 
