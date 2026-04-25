@@ -188,6 +188,8 @@ export default {
         if (lineNum >= 1 && lineNum <= doc.lines) {
           const pos = doc.line(lineNum).from;
           ranges.push(new TooltipValue(setName, data).range(pos, pos));
+        } else {
+          console.warn(`set_line_tooltips: line ${lineNum} out of range [1, ${doc.lines}]`);
         }
       }
       this.editor.dispatch({ effects: setTooltipsEffect.of({ setName, ranges }) });

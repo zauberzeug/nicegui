@@ -111,6 +111,19 @@ def _trigger_hover(screen: Screen, editor, line_number: int) -> None:
     )
 
 
+def _tooltip_text(screen: Screen) -> str:
+    return screen.selenium.execute_script(
+        'return document.querySelector(".cm-line-tooltip")?.textContent || ""') or ''
+
+
+def _dismiss_hover(screen: Screen, editor) -> None:
+    """Fire a mouseleave on the editor's contentDOM to dismiss any visible hover tooltip."""
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.contentDOM.dispatchEvent(new MouseEvent("mouseleave", {bubbles: true}));'
+    )
+
+
 def test_set_and_clear_line_tooltips_text(screen: Screen):
     editor = None
 
@@ -120,14 +133,26 @@ def test_set_and_clear_line_tooltips_text(screen: Screen):
         editor = ui.codemirror('alpha\nbeta\ngamma')
 
     screen.open('/')
-    screen.wait(0.3)
-    editor.set_line_tooltips({2: {'severity': 'warning', 'message': 'maybe wrong'}})
-    screen.wait(0.3)
+    # Two named sets pinned to the same line — must merge on hover.
+    editor.set_line_tooltips({2: {'severity': 'warning'}}, set_name='lint')
+    editor.set_line_tooltips({2: {'origin': 'row-3'}}, set_name='source')
     _trigger_hover(screen, editor, 2)
-    screen.wait_for(lambda: 'maybe wrong' in (
-        screen.selenium.execute_script('return document.querySelector(".cm-line-tooltip")?.textContent || ""') or ''))
+    screen.wait_for(lambda: all(s in _tooltip_text(screen) for s in ['severity: warning', 'origin: row-3']))
+
+    # Insert a line at the top via CM6 dispatch — 'beta' moves from line 2 to line 3,
+    # and CM6's RangeSet.map() should carry the tooltip with it.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({changes: {from: 0, insert: "zero\\n"}});'
+    )
+    _trigger_hover(screen, editor, 3)
+    screen.wait_for(lambda: 'severity: warning' in _tooltip_text(screen))
+
     editor.clear_line_tooltips()
-    screen.wait(0.3)
+    _dismiss_hover(screen, editor)
+    _trigger_hover(screen, editor, 3)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelector(".cm-line-tooltip") === null'))
 
 
 def test_line_tooltip_html_sanitized(screen: Screen):
@@ -139,10 +164,12 @@ def test_line_tooltip_html_sanitized(screen: Screen):
         editor = ui.codemirror('hello\nworld')
 
     screen.open('/')
-    screen.wait(0.3)
-    # The `_html` value contains a <script> tag that DOMPurify must strip.
-    editor.set_line_tooltips({1: {'_html': '<b>safe</b><script>window.__hijack=1</script>'}})
-    screen.wait(0.3)
+    # The `_html` value contains a <script> tag and an inline event handler. DOMPurify must
+    # strip both. The <b> tag should survive. SVG onload is used (rather than img onerror) so
+    # the test does not trigger a stray network fetch — that would surface as a console error
+    # during teardown even though the handler itself was successfully stripped.
+    editor.set_line_tooltips({1: {'_html': '<b>safe</b><script>window.__hijack=1</script>'
+                                           '<svg onload="window.__hijack2=1"></svg>'}})
     _trigger_hover(screen, editor, 1)
     screen.wait_for(lambda: screen.selenium.execute_script(
         'const t = document.querySelector(".cm-line-tooltip");'
@@ -153,5 +180,7 @@ def test_line_tooltip_html_sanitized(screen: Screen):
         'return !!(t && t.querySelector("script"));'
     )
     hijacked = screen.selenium.execute_script('return window.__hijack === 1')
+    onload_hijacked = screen.selenium.execute_script('return window.__hijack2 === 1')
     assert not has_script, 'DOMPurify should have stripped <script>'
     assert not hijacked, 'inline script must not have executed'
+    assert not onload_hijacked, 'inline event handler must be stripped'

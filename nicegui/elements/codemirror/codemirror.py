@@ -1,5 +1,5 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import Any, Literal, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
@@ -356,7 +356,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
 
-    def set_line_tooltips(self, tooltips: dict[int, dict[str, str]], set_name: str = 'default') -> None:
+    def set_line_tooltips(self, tooltips: dict[int, dict[str, Any]], set_name: str = 'default') -> None:
         """Set hover tooltip metadata for lines.
 
         When the user hovers a line, the merged metadata for that line renders as a tooltip
@@ -371,9 +371,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param tooltips: dict mapping 1-indexed line numbers to metadata dicts
         :param set_name: named set for independent management
         """
-        # Stringify line keys for the JS RangeSet lookup which iterates with `parseInt(line)`.
-        str_tooltips = {str(line): meta for line, meta in tooltips.items()}
-        self.run_method('setLineTooltips', str_tooltips, set_name)
+        self.run_method('setLineTooltips', tooltips, set_name)
 
     def clear_line_tooltips(self, set_name: str | None = None) -> None:
         """Clear line tooltip metadata.
