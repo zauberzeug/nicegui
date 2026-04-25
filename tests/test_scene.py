@@ -240,6 +240,12 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
 
 
+def _wait_for_scene_ready(screen: Screen, scene_id: int) -> None:
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene_id}) && !!getElement({scene_id}).renderer'
+    ))
+
+
 def test_set_clipping_planes(screen: Screen):
     from nicegui import events
     scene = None
@@ -252,7 +258,7 @@ def test_set_clipping_planes(screen: Screen):
             box = scene.box()
 
     screen.open('/')
-    screen.wait(0.5)
+    _wait_for_scene_ready(screen, scene.id)
     box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=0)])
     screen.wait_for(lambda: screen.selenium.execute_script(
         f'const o = getElement({scene.id}).objects.get("{box.id}");'
@@ -274,29 +280,88 @@ def test_set_axes_inset_and_labels(screen: Screen):
         scene = ui.scene()
 
     screen.open('/')
-    screen.wait(0.5)
+    _wait_for_scene_ready(screen, scene.id)
+
     scene.set_axes_inset(enabled=True, size=64, anchor='top-left', margin=8)
     screen.wait_for(lambda: screen.selenium.execute_script(
         f'return !!getElement({scene.id}).viewHelper'
     ))
-    # Labels honored when supplied; default labels remain when not.
-    scene.set_axes_labels(enabled=True, labels=('Forward', 'Left', 'Up'))
-    screen.wait(0.3)
+
+    # Labels and style are forwarded to viewHelper.setLabels / setLabelStyle. The cached opts
+    # on the JS side are the most stable observable across three.js versions; deeper checks
+    # against sprite material uuids are brittle.
+    scene.set_axes_labels(enabled=True, labels=('Forward', 'Left', 'Up'),
+                          font='20px sans-serif', color='#ff0000', radius=18)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'return el.viewHelper && el._axesLabels && el._axesLabels.color === "#ff0000"'
+    ))
+
+    # Toggling enabled=False rebuilds a fresh ViewHelper on re-enable; the cached labels/style
+    # must be reapplied so users don't lose their configuration.
     scene.set_axes_inset(enabled=False)
     screen.wait_for(lambda: not screen.selenium.execute_script(
         f'return !!getElement({scene.id}).viewHelper'
+    ))
+    scene.set_axes_inset(enabled=True, size=64, anchor='top-left', margin=8)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'return !!el.viewHelper && el._axesLabels && el._axesLabels.color === "#ff0000"'
+    ))
+
+
+def test_axes_inset_handle_click_snaps_camera(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    scene.set_axes_inset(enabled=True)  # default anchor='bottom-right', size=128
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene.id}).viewHelper'
+    ))
+
+    # +X axis sprite is at world (1, 0, 0), which projects to inset NDC (0.5, 0) in the
+    # orthoCamera's [-2, 2, -2, 2] frustum. Dispatch a pointerdown at that pixel and verify
+    # viewHelper.animating flips on (then off when the snap-animation completes).
+    animating = screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'const canvas = el.renderer.domElement;'
+        'const size = (el._axes && el._axes.size) || 128;'
+        'const localX = (0.5 + 1) / 2 * size;'
+        'const localY = (1 - 0) / 2 * size;'
+        'const insetLeft = canvas.clientWidth - size;'
+        'const insetTop = canvas.clientHeight - size;'
+        'const rect = canvas.getBoundingClientRect();'
+        'canvas.dispatchEvent(new PointerEvent("pointerdown", {'
+        '  clientX: rect.left + insetLeft + localX,'
+        '  clientY: rect.top + insetTop + localY,'
+        '  bubbles: true, cancelable: true'
+        '}));'
+        'return el.viewHelper.animating;'
+    )
+    assert animating, 'Clicking the +X axis sprite should set viewHelper.animating = true'
+    screen.wait_for(lambda: not screen.selenium.execute_script(
+        f'return getElement({scene.id}).viewHelper.animating'
     ))
 
 
 def test_intersection_planes_in_click_event(screen: Screen):
     from nicegui import events
+    scene = None
     intersections: list = []
 
     @ui.page('/')
     def page():
+        nonlocal scene
+
         def handle(e: events.SceneClickEventArguments):
             intersections.append(e.intersections)
-        ui.scene(
+        scene = ui.scene(
             on_click=handle,
             intersection_planes=[
                 events.SceneIntersectionPlane(name='ground', axis='z', offset=0),
@@ -305,7 +370,7 @@ def test_intersection_planes_in_click_event(screen: Screen):
         )
 
     screen.open('/')
-    screen.wait(0.5)
+    _wait_for_scene_ready(screen, scene.id)
     canvas = screen.find_by_tag('canvas')
     canvas.click()
     screen.wait_for(lambda: bool(intersections))
@@ -322,7 +387,7 @@ def test_raycaster_threshold_runtime_change(screen: Screen):
         scene = ui.scene(raycaster_threshold=0.05)
 
     screen.open('/')
-    screen.wait(0.5)
+    _wait_for_scene_ready(screen, scene.id)
     assert screen.selenium.execute_script(
         f'return getElement({scene.id})._raycaster.params.Line.threshold'
     ) == 0.05

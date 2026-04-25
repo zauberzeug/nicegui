@@ -221,10 +221,12 @@ export default {
     this.drag_controls.addEventListener("dragend", handleDrag);
 
     // Pre-compute THREE.Plane objects for the configured intersection planes (rebuilt by setter).
+    // Clone the normal so the per-axis singleton in INTERSECTION_AXIS_NORMALS is never mutated
+    // (intersectPlane doesn't mutate today, but normalize/applyMatrix4 in a future caller would).
     this._buildIntersectionPlanes = () => {
       const specs = this.intersectionPlanes || [];
       this._intersectionPlanes = specs.map((spec) => {
-        const normal = INTERSECTION_AXIS_NORMALS[spec.axis] || INTERSECTION_AXIS_NORMALS.z;
+        const normal = (INTERSECTION_AXIS_NORMALS[spec.axis] || INTERSECTION_AXIS_NORMALS.z).clone();
         return { name: spec.name, plane: new THREE.Plane(normal, -(spec.offset || 0)) };
       });
     };
@@ -235,17 +237,15 @@ export default {
       this.camera_tween?.update();
       const delta = this.clock.getDelta();
       this.controls.update(delta);
-      // Render the main scene at full canvas viewport / no scissor (the inset path may have
-      // narrowed them on the previous frame).
-      const canvas = this.renderer.domElement;
-      this.renderer.setViewport(0, 0, canvas.width, canvas.height);
-      this.renderer.setScissorTest(false);
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
       // Orientation inset: composite the ViewHelper into the configured corner using manual
       // viewport + scissor math (works on three.js < r184 which lacks `viewHelper.location`).
+      // Only the inset path narrows the viewport, so the post-render reset below is sufficient
+      // — no per-frame work when the inset isn't enabled.
       if (this.viewHelper) {
+        const canvas = this.renderer.domElement;
         const opts = this._axes || {};
         const dpr = this.renderer.getPixelRatio();
         const sizePx = (opts.size ?? 128) * dpr;
@@ -275,7 +275,53 @@ export default {
     raycaster.params.Points.threshold = this.raycasterThreshold ?? 1.0;
     this._raycaster = raycaster;
     const _intersection = new THREE.Vector3();
+    // Forward pointerdown to viewHelper.handleClick so clicking an X/Y/Z axis sprite snap-animates
+    // the camera. r180's handleClick has hardcoded `dim = 128` and assumes the inset is at the
+    // canvas's bottom-right corner; we render the inset wherever the user configured (manual
+    // scissor math), so we synthesize event coordinates that make handleClick's hardcoded math
+    // compute the NDC of the click within OUR actual inset rect.
+    //
+    // _consumeNextClick is cleared on every pointerdown so a stale flag from an aborted gesture
+    // (drag-out before pointerup) can't suppress an unrelated later click.
+    const HANDLE_CLICK_DIM = 128;
+    const dispatchInsetClick = (event) => {
+      if (!this.viewHelper) return false;
+      const canvas = this.renderer.domElement;
+      const opts = this._axes || {};
+      const insetSize = opts.size ?? 128;
+      const marginX = (opts.marginX ?? opts.margin) ?? 0;
+      const marginY = (opts.marginY ?? opts.margin) ?? 0;
+      const anchor = opts.anchor || "bottom-right";
+      const insetLeft = anchor.includes("left") ? marginX : canvas.clientWidth - insetSize - marginX;
+      const insetTop = anchor.includes("top") ? marginY : canvas.clientHeight - insetSize - marginY;
+      const localX = event.offsetX - insetLeft;
+      const localY = event.offsetY - insetTop;
+      if (localX < 0 || localX >= insetSize || localY < 0 || localY >= insetSize) return false;
+      // NDC of the click within the inset rect, then back-project into the (clientX, clientY) that
+      // r180's bottom-right/dim=128 handleClick math would have to read to derive that same NDC.
+      const nx = (localX / insetSize) * 2 - 1;
+      const ny = -((localY / insetSize) * 2 - 1);
+      const rect = canvas.getBoundingClientRect();
+      const fakeClientX = rect.left + (canvas.offsetWidth - HANDLE_CLICK_DIM) + ((nx + 1) / 2) * HANDLE_CLICK_DIM;
+      const fakeClientY = rect.top + (canvas.offsetHeight - HANDLE_CLICK_DIM) + ((1 - ny) / 2) * HANDLE_CLICK_DIM;
+      return this.viewHelper.handleClick({ clientX: fakeClientX, clientY: fakeClientY });
+    };
+    let _consumeNextClick = false;
+    // Capture-phase + stopImmediatePropagation so we beat OrbitControls'/DragControls'
+    // pointerdown listeners (registered earlier on the same element) and they don't try to
+    // setPointerCapture / start a drag-rotate on what was meant to be an inset axis click.
+    this.renderer.domElement.addEventListener("pointerdown", (event) => {
+      _consumeNextClick = false;
+      if (dispatchInsetClick(event)) {
+        event.stopImmediatePropagation();
+        _consumeNextClick = true;
+      }
+    }, true);
     const click_handler = (mouseEvent) => {
+      if (_consumeNextClick) {
+        _consumeNextClick = false;
+        return;
+      }
       const x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
       const y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
       raycaster.setFromCamera({ x, y }, this.camera);
@@ -506,11 +552,14 @@ export default {
       });
     },
     set_axes_inset(opts) {
-      this._axes = Object.assign({}, this._axes || {}, opts || {});
+      this._axes = opts || {};
       if (this._axes.enabled) {
         if (!this.viewHelper) {
           this.viewHelper = new ViewHelper(this.camera, this.renderer.domElement);
           if (this.controls && this.controls.target) this.viewHelper.center = this.controls.target;
+          // Re-apply previously configured labels/style — toggling enabled=False then True
+          // disposes the helper, so labels would otherwise reset to the unlabeled default.
+          if (this._axesLabels && this._axesLabels.enabled) this.set_axes_labels(this._axesLabels);
         }
       } else if (this.viewHelper) {
         if (this.viewHelper.dispose) this.viewHelper.dispose();
@@ -518,10 +567,14 @@ export default {
       }
     },
     set_axes_labels(opts) {
+      this._axesLabels = opts;
       if (!this.viewHelper || !opts || !opts.enabled) return;
       const labels = Array.isArray(opts.labels) && opts.labels.length === 3
         ? opts.labels
         : ["X", "Y", "Z"];
+      // Style first, then labels — both call updateLabels() internally and the label canvas
+      // reads font/color/radius at paint time (see r180 ViewHelper.js getSpriteMaterial).
+      this.viewHelper.setLabelStyle(opts.font ?? "24px Arial", opts.color ?? "#000000", opts.radius ?? 14);
       this.viewHelper.setLabels(labels[0], labels[1], labels[2]);
     },
     delete(object_id) {

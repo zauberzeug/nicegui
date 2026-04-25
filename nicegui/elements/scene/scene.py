@@ -144,8 +144,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('raycasterThreshold', 'raycaster-threshold')
-        self._props.add_rename('intersectionPlanes', 'intersection-planes')
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -170,8 +168,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                        margin_x: int | None = None,
                        margin_y: int | None = None,
                        anchor: Literal['bottom-left', 'bottom-right', 'top-left', 'top-right'] = 'bottom-right',
-                       ) -> None:
+                       ) -> Self:
         """Toggle and position the orientation axes inset overlay (a small XYZ gizmo).
+
+        Clicking an X/Y/Z axis on the inset snap-animates the camera to look down that axis
+        (forwarded to ``viewHelper.handleClick``).
 
         :param enabled: whether to show the inset (default: ``True``)
         :param size: size of the inset in CSS pixels (default: ``128``)
@@ -187,18 +188,32 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             'marginY': margin_y if margin_y is not None else margin,
             'anchor': anchor,
         })
+        return self
 
     def set_axes_labels(self,
                         *,
                         enabled: bool = True,
                         labels: tuple[str, str, str] = ('X', 'Y', 'Z'),
-                        ) -> None:
+                        font: str = '24px Arial',
+                        color: str = '#000000',
+                        radius: float = 14,
+                        ) -> Self:
         """Toggle and customize the labels on the orientation axes inset.
 
         :param enabled: whether to show labels on the inset (default: ``True``)
         :param labels: three label strings for the X, Y, and Z axes (default: ``('X', 'Y', 'Z')``)
+        :param font: CSS font shorthand for the label text (default: ``'24px Arial'``)
+        :param color: CSS color for the label text (default: ``'#000000'``)
+        :param radius: radius of the colored disc behind each label, in canvas pixels (default: ``14``)
         """
-        self.run_method('set_axes_labels', {'enabled': enabled, 'labels': list(labels)})
+        self.run_method('set_axes_labels', {
+            'enabled': enabled,
+            'labels': list(labels),
+            'font': font,
+            'color': color,
+            'radius': radius,
+        })
+        return self
 
     @staticmethod
     def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:
@@ -250,7 +265,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         # "plane didn't intersect" without `.get()` ambiguity.
         intersections: dict[str, ScenePoint | None] = {
             name: ScenePoint(x=pt['x'], y=pt['y'], z=pt['z']) if pt is not None else None
-            for name, pt in (e.args.get('intersections') or {}).items()
+            for name, pt in e.args['intersections'].items()
         }
         arguments = SceneClickEventArguments(
             sender=self,

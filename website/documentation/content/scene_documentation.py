@@ -356,13 +356,14 @@ def clipping_planes() -> None:
 
 @doc.demo('Orientation axes inset', '''
     `set_axes_inset` overlays a small XYZ orientation gizmo in the corner of the scene
-    (using Three.js' `ViewHelper`). `set_axes_labels` lets you replace the default
-    `X`/`Y`/`Z` labels with custom strings.
+    (using Three.js' `ViewHelper`). Click an axis on the inset to snap-animate the camera
+    so it looks down that axis. `set_axes_labels` replaces the default `X`/`Y`/`Z` labels
+    and customizes their font, color, and disc radius.
 ''')
 def axes_inset() -> None:
     scene = ui.scene().classes('w-full h-64')
     scene.set_axes_inset(enabled=True, anchor='top-right', size=96)
-    scene.set_axes_labels(labels=('X', 'Y', 'Z'))
+    scene.set_axes_labels(labels=('Forward', 'Left', 'Up'), color='#ffffff', radius=18)
 
 
 @doc.demo('Click intersections with named planes', '''
