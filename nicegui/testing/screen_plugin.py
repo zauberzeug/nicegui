@@ -1,5 +1,6 @@
 import os
 import shutil
+import tempfile
 from collections.abc import Generator
 from pathlib import Path
 
@@ -7,16 +8,21 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
+from nicegui import helpers
+
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
     pytest_addoption,
     pytest_configure,
+    pytest_unconfigure,
 )
 from .screen import Screen
 
 # pylint: disable=redefined-outer-name
 
-DOWNLOAD_DIR = Path(__file__).parent / 'download'
+Screen.PORT = helpers.find_free_port()
+Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
+DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

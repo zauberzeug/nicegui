@@ -19,6 +19,13 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
+def find_free_port() -> int:
+    """Find a free port usable by ui.run (which binds to all interfaces by default)."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(('0.0.0.0', 0))
+        return sock.getsockname()[1]
+
+
 def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 

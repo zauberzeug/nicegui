@@ -7,6 +7,7 @@ from starlette.routing import Route
 
 from .. import app, binding, core, dependencies, event, run, ui
 from ..client import Client
+from ..storage import Storage
 
 
 def prepare_simulation() -> None:
@@ -57,6 +58,7 @@ def nicegui_reset_globals():
     Client.shared_head_html = ''
     Client.shared_body_html = ''
     app.reset()
+    app.storage = Storage()
     binding.reset()
 
     gc.collect()
@@ -67,6 +69,7 @@ def nicegui_reset_globals():
         gc.collect()
 
         app.reset()
+        app.storage = Storage()
         event.reset()
         run.reset()
 
