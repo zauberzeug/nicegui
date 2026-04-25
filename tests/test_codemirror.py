@@ -96,43 +96,150 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
 
 
-def test_cursor_line_event(screen: Screen):
-    lines: list[int] = []
+def test_selection_change_event(screen: Screen):
+    events: list[tuple[int, int]] = []
     editor = None
 
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('Line 1\nLine 2\nLine 3', on_cursor_line=lambda e: lines.append(e.line))
+        editor = ui.codemirror(
+            'Line 1\nLine 2\nLine 3',
+            on_selection_change=lambda e: events.append((e.line, e.column)),
+        )
 
     screen.open('/')
-    # Move the cursor to line 2 and line 3 by dispatching selection transactions directly,
-    # bypassing focus/keystroke timing fragility in Selenium.
     screen.wait(0.3)  # let the editor mount
+    # Move the cursor to line 2, column 4 (3 chars past line.from) via a CM6 selection transaction.
+    # This bypasses focus/keystroke timing fragility in Selenium.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from + 3}});'
+    )
+    screen.wait_for(lambda: (2, 4) in events)
+
+
+def test_focus_change_event(screen: Screen):
+    events: list[bool] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Hello', on_focus_change=lambda e: events.append(e.focused))
+
+    screen.open('/')
+    screen.wait(0.3)
+    # Focus then blur the editor via JS to avoid Selenium focus-stealing flakiness.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.focus();'
+    )
+    screen.wait_for(lambda: True in events)
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.contentDOM.blur();'
+    )
+    screen.wait_for(lambda: False in events)
+
+
+def test_viewport_change_event(screen: Screen):
+    events: list[tuple[int, int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(
+            '\n'.join(f'Line {i}' for i in range(1, 201)),
+            on_viewport_change=lambda e: events.append((e.from_line, e.to_line)),
+        )
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.reveal_line(150)
+    # After reveal_line, the viewport should report a range containing line 150.
+    screen.wait_for(lambda: any(from_line <= 150 <= to_line for from_line, to_line in events))
+
+
+def test_geometry_change_event(screen: Screen):
+    events: list[tuple[int, int, int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Hello').classes('h-32')
+        editor.on_geometry_change(lambda e: events.append((e.width, e.height, e.content_height)))
+
+    screen.open('/')
+    screen.wait(0.3)
+    # Resize the editor's container to trigger a geometry change.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.$el.style.height = "400px";'
+    )
+    # Force CM to notice the size change.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.requestMeasure();'
+    )
+    screen.wait_for(lambda: any(height >= 200 for _, height, _ in events))
+
+
+def test_no_handler_no_traffic(screen: Screen):
+    """Verify that dispatching a selection change emits NO event when no handler is registered.
+
+    Subscribes to the raw 'selection-change' channel to detect any traffic; if the JS-side
+    subscription gating works, the channel stays silent because the dispatcher bails before $emit.
+    """
+    events: list = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Line 1\nLine 2\nLine 3')
+        # Tap the raw event channel without going through on_selection_change so we
+        # don't flip selection-tracking-enabled.
+        editor.on('selection-change', lambda e: events.append(e.args))
+
+    screen.open('/')
+    screen.wait(0.3)
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
     )
-    screen.wait_for(lambda: 2 in lines)
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(3).from}});'
-    )
-    screen.wait_for(lambda: 3 in lines)
+    screen.wait(0.5)  # give any (incorrect) emit time to arrive
+    assert events == [], f'expected no traffic without an on_selection_change handler, got {events}'
 
 
-def test_save_event(screen: Screen):
-    saved: list[bool] = []
+def test_debounce_override(screen: Screen):
+    """Verify the debounce_ms override on the handler factory is honored by the JS dispatcher."""
+    events: list[tuple[int, int]] = []
+    editor = None
 
     @ui.page('/')
     def page():
-        ui.codemirror('Hello', on_save=lambda _: saved.append(True))
+        nonlocal editor
+        editor = ui.codemirror(
+            'Line 1\nLine 2\nLine 3\nLine 4\nLine 5',
+            on_selection_change=ui.codemirror.handler(
+                lambda e: events.append((e.line, e.column)),
+                debounce_ms=200,
+            ),
+        )
 
     screen.open('/')
-    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
-    cm.click()
-    cm.send_keys(Keys.CONTROL, 's')
-    screen.wait_for(lambda: bool(saved))
+    screen.wait(0.3)
+    # Fire 5 rapid selection moves well inside the 200 ms debounce window.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'for (let i = 1; i <= 5; i++) {'
+        '  el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(i).from}});'
+        '}'
+    )
+    # Wait long enough for the trailing debounce to fire and any further frames to settle.
+    screen.wait_for(lambda: len(events) >= 1)
+    screen.wait(0.4)
+    assert len(events) == 1, f'expected exactly one debounced event, got {events}'
+    assert events[0][0] == 5, f'expected the trailing event on line 5, got {events[0]}'
 
 
 def test_reveal_line(screen: Screen):

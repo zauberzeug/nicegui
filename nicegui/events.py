@@ -163,13 +163,27 @@ class TableSelectionEventArguments(UiEventArguments):
 
 
 @dataclass(kw_only=True, slots=True)
-class CodeMirrorCursorLineEventArguments(UiEventArguments):
+class CodeMirrorSelectionChangeEventArguments(UiEventArguments):
     line: int
+    column: int
 
 
 @dataclass(kw_only=True, slots=True)
-class CodeMirrorSaveEventArguments(UiEventArguments):
-    pass
+class CodeMirrorFocusChangeEventArguments(UiEventArguments):
+    focused: bool
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorViewportChangeEventArguments(UiEventArguments):
+    from_line: int
+    to_line: int
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorGeometryChangeEventArguments(UiEventArguments):
+    width: int
+    height: int
+    content_height: int
 
 
 @dataclass(kw_only=True, slots=True)
@@ -450,6 +464,17 @@ class SortableEventArguments(UiEventArguments):
 
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CodeMirrorHandlerSpec(Generic[EventT]):
+    """Wraps a CodeMirror handler with per-registration config overrides.
+
+    Construct via :meth:`nicegui.elements.codemirror.CodeMirror.handler` rather
+    than instantiating directly.
+    """
+    callback: Handler[EventT]
+    debounce_ms: int | None = None
 
 
 def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:

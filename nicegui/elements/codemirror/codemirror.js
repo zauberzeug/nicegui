@@ -12,7 +12,14 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
-    saveShortcutEnabled: Boolean,
+    selectionTrackingEnabled: Boolean,
+    focusTrackingEnabled: Boolean,
+    viewportTrackingEnabled: Boolean,
+    geometryTrackingEnabled: Boolean,
+    selectionDebounceMs: Number,
+    focusDebounceMs: Number,
+    viewportDebounceMs: Number,
+    geometryDebounceMs: Number,
     id: String,
   },
   watch: {
@@ -43,7 +50,6 @@ export default {
       const element = mounted_app.elements[this.$props.id.slice(1)];
       if (element) element.props.value = this.editor.state.doc.toString();
     }
-    clearTimeout(this._cursorTimer);
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -160,44 +166,67 @@ export default {
         },
       );
 
-      // Emits the 1-indexed line number on cursor movement (debounced).
-      // NOTE: 30 ms debounce — short enough to feel immediate when arrow-keying,
-      // long enough to coalesce bursts during multi-line selection drags.
-      const cursorTracker = CM.ViewPlugin.fromClass(
+      // Dispatches per-signal events for ViewUpdate flags the host has opted into via
+      // <signal>-tracking-enabled props. Each signal is independently debounced (read fresh
+      // from <signal>DebounceMs every emit) and deduped against its last payload.
+      // NOTE: timers live on the plugin instance — `destroy()` clears them on plugin teardown,
+      // so no Vue beforeUnmount cleanup is needed.
+      const updateDispatcher = CM.ViewPlugin.fromClass(
         class {
-          constructor() { this._lastLine = 0; }
-          update(update) {
-            if (!update.selectionSet && !update.docChanged) return;
-            const line = update.state.doc.lineAt(update.state.selection.main.head).number;
-            if (line === this._lastLine) return;
-            this._lastLine = line;
-            if (self._cursorTimer) clearTimeout(self._cursorTimer);
-            self._cursorTimer = setTimeout(() => self.$emit("cursor-line", { line }), 30);
+          constructor() {
+            this._timers = {};
+            this._last = {};
+          }
+          destroy() {
+            for (const t of Object.values(this._timers)) clearTimeout(t);
+          }
+          update(u) {
+            if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
+              const head = u.state.selection.main.head;
+              const line = u.state.doc.lineAt(head);
+              this._maybeEmit("selection-change", self.selectionDebounceMs, {
+                line: line.number,
+                column: head - line.from + 1,
+              });
+            }
+            if (self.focusTrackingEnabled && u.focusChanged) {
+              this._maybeEmit("focus-change", self.focusDebounceMs, { focused: u.view.hasFocus });
+            }
+            if (self.viewportTrackingEnabled && u.viewportChanged) {
+              const vp = u.view.viewport;
+              this._maybeEmit("viewport-change", self.viewportDebounceMs, {
+                from_line: u.state.doc.lineAt(vp.from).number,
+                to_line: u.state.doc.lineAt(vp.to).number,
+              });
+            }
+            if (self.geometryTrackingEnabled && u.geometryChanged) {
+              this._maybeEmit("geometry-change", self.geometryDebounceMs, {
+                width: u.view.dom.clientWidth,
+                height: u.view.dom.clientHeight,
+                content_height: u.view.contentHeight,
+              });
+            }
+          }
+          _maybeEmit(name, debounceMs, payload) {
+            const last = this._last[name];
+            if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
+            this._last[name] = payload;
+            if (this._timers[name]) clearTimeout(this._timers[name]);
+            if (debounceMs > 0) {
+              this._timers[name] = setTimeout(() => self.$emit(name, payload), debounceMs);
+            } else {
+              self.$emit(name, payload);
+            }
           }
         },
       );
 
-      // Tab is always bound to indent; Mod-s (Ctrl/Cmd+S) is only bound when
-      // the host opts in via the `save-shortcut-enabled` prop, in which case
-      // it emits a `save` event and suppresses the browser default.
-      const customKeymap = [CM.indentWithTab];
-      if (this.saveShortcutEnabled) {
-        customKeymap.push({
-          key: "Mod-s",
-          preventDefault: true,
-          run: () => {
-            self.$emit("save");
-            return true;
-          },
-        });
-      }
-
       const extensions = [
         CM.basicSetup,
         changeSender,
-        cursorTracker,
+        updateDispatcher,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
-        CM.keymap.of(customKeymap),
+        CM.keymap.of([CM.indentWithTab]),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
         CM.indentUnit.of(this.indent),
         // We will set these Compartments later and dynamically through props

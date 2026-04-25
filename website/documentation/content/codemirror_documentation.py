@@ -27,19 +27,22 @@ def preserve_cursor_demo() -> None:
     ))
 
 
-@doc.demo('Cursor Tracking, Save Shortcut, and Reveal Line', '''
-    ``on_cursor_line`` reports the 1-indexed line number whenever the cursor moves to a different line.
-    ``on_save`` fires when the user presses Ctrl/Cmd+S inside the editor and suppresses the browser's default save dialog.
-    ``reveal_line`` scrolls a given line into view.
+@doc.demo('Editor Signals and Reveal Line', '''
+    ``on_selection_change`` reports the 1-indexed line and column whenever the cursor moves.
+    ``on_viewport_change`` reports the visible line range — useful for confirming that
+    ``reveal_line`` actually scrolled the requested line into view.
+    Other signal hooks include ``on_focus_change`` and ``on_geometry_change``.
+    Per-signal debounce can be tuned via ``ui.codemirror.handler(callback, debounce_ms=...)``.
 ''')
-def cursor_save_reveal_demo() -> None:
-    status = ui.label('Cursor: line 1')
+def signals_and_reveal_demo() -> None:
+    cursor_status = ui.label('Cursor: line 1, col 1')
+    viewport_status = ui.label('Viewport: ?')
     editor = ui.codemirror(
-        '\n'.join(f'Line {i}' for i in range(1, 31)),
-        on_cursor_line=lambda e: status.set_text(f'Cursor: line {e.line}'),
-        on_save=lambda _: ui.notify('Saved!'),
+        '\n'.join(f'Line {i}' for i in range(1, 51)),
+        on_selection_change=lambda e: cursor_status.set_text(f'Cursor: line {e.line}, col {e.column}'),
+        on_viewport_change=lambda e: viewport_status.set_text(f'Viewport: lines {e.from_line}–{e.to_line}'),
     ).classes('h-32')
-    ui.button('Reveal line 20', on_click=lambda: editor.reveal_line(20))
+    ui.button('Reveal line 40', on_click=lambda: editor.reveal_line(40))
 
 
 doc.reference(ui.codemirror)
