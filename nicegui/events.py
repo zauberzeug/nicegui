@@ -438,8 +438,27 @@ class SortableEventArguments(UiEventArguments):
     new_index: int
 
 
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorKeybindingEventArguments(UiEventArguments):
+    key: str
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CodeMirrorKeybindingSpec:
+    """Wraps a CodeMirror keybinding with per-binding configuration overrides.
+
+    Construct via :meth:`nicegui.elements.codemirror.CodeMirror.binding`
+    rather than instantiating directly.
+    """
+    callback: Handler[CodeMirrorKeybindingEventArguments]
+    prevent_default: bool = True
+    mac: str | None = None
+    linux: str | None = None
+    win: str | None = None
 
 
 def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:

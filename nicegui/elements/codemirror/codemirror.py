@@ -1,10 +1,19 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, get_args
 
+from typing_extensions import Self
+
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
-from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ...events import (
+    CodeMirrorKeybindingEventArguments,
+    CodeMirrorKeybindingSpec,
+    GenericEventArguments,
+    Handler,
+    ValueChangeEventArguments,
+    handle_event,
+)
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -259,6 +268,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         value: str = '',
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
+        keybindings: dict[str, Handler[CodeMirrorKeybindingEventArguments] | CodeMirrorKeybindingSpec] | None = None,
         language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,
@@ -277,8 +287,14 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
 
+        Keybindings map keystrokes to Python callbacks via CodeMirror's keymap.
+        Pass a bare callable for the default config (prevents the browser default, no per-OS override).
+        Wrap with :meth:`binding` for per-binding overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
+        Use :meth:`on_keybinding` to add bindings at runtime and :meth:`remove_keybinding` to drop them.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
+        :param keybindings: mapping of CodeMirror key strings (e.g. ``'Mod-s'``, ``'F5'``) to handlers, optionally wrapped with :meth:`binding` (default: `None`)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -296,10 +312,16 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['keybindings'] = []
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
+
+        self._keybinding_specs: dict[str, CodeMirrorKeybindingSpec] = {}
+        self.on('keybinding', self._dispatch_keybinding)
+        for key, handler in (keybindings or {}).items():
+            self.on_keybinding(key, handler)
 
     @property
     def theme(self) -> str:
@@ -355,6 +377,93 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+
+    @staticmethod
+    def binding(
+        callback: Handler[CodeMirrorKeybindingEventArguments],
+        *,
+        prevent_default: bool = True,
+        mac: str | None = None,
+        linux: str | None = None,
+        win: str | None = None,
+    ) -> CodeMirrorKeybindingSpec:
+        """Wrap a keybinding callback with per-binding configuration overrides.
+
+        Use this when you need to opt out of preventing the browser default action
+        (e.g. ``Mod-c`` that notifies Python while still letting the browser copy normally),
+        or to provide per-platform shortcut overrides::
+
+            ui.codemirror(keybindings={
+                'Mod-c': ui.codemirror.binding(log_copy, prevent_default=False),
+                'Alt-Down': ui.codemirror.binding(move_down, mac='Cmd-Down'),
+            })
+
+        :param callback: the handler callable
+        :param prevent_default: whether to suppress the browser default action (default: `True`)
+        :param mac: alternate key string used only on macOS, overriding ``key`` (default: `None`)
+        :param linux: alternate key string used only on Linux, overriding ``key`` (default: `None`)
+        :param win: alternate key string used only on Windows, overriding ``key`` (default: `None`)
+        """
+        return CodeMirrorKeybindingSpec(
+            callback=callback,
+            prevent_default=prevent_default,
+            mac=mac,
+            linux=linux,
+            win=win,
+        )
+
+    def on_keybinding(
+        self,
+        key: str,
+        handler: Handler[CodeMirrorKeybindingEventArguments] | CodeMirrorKeybindingSpec,
+    ) -> Self:
+        """Bind a keystroke to a callback.
+
+        The ``key`` follows CodeMirror 6's keybinding syntax (e.g. ``'Mod-s'``, ``'F5'``, ``'Mod-Shift-d'``).
+        ``Mod`` resolves to ``Cmd`` on macOS and ``Ctrl`` elsewhere.
+
+        Pass a bare callable for the default config (prevents the browser default, no per-OS override),
+        or wrap with :meth:`binding` for per-binding overrides.
+
+        Re-registering the same key replaces the prior handler.
+        """
+        spec = handler if isinstance(handler, CodeMirrorKeybindingSpec) \
+            else CodeMirrorKeybindingSpec(callback=handler)
+        self._keybinding_specs[key] = spec
+        self._sync_keybindings_prop()
+        return self
+
+    def remove_keybinding(self, key: str) -> Self:
+        """Remove a previously bound keybinding.
+
+        No-op if the key is not currently bound.
+        """
+        if self._keybinding_specs.pop(key, None) is not None:
+            self._sync_keybindings_prop()
+        return self
+
+    def _sync_keybindings_prop(self) -> None:
+        self._props['keybindings'] = [
+            {
+                'key': key,
+                'preventDefault': spec.prevent_default,
+                **({'mac': spec.mac} if spec.mac is not None else {}),
+                **({'linux': spec.linux} if spec.linux is not None else {}),
+                **({'win': spec.win} if spec.win is not None else {}),
+            }
+            for key, spec in self._keybinding_specs.items()
+        ]
+
+    def _dispatch_keybinding(self, e: GenericEventArguments) -> None:
+        key = e.args['key']
+        spec = self._keybinding_specs.get(key)
+        if spec is None:
+            return
+        handle_event(spec.callback, CodeMirrorKeybindingEventArguments(
+            sender=self,
+            client=self.client,
+            key=key,
+        ))
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

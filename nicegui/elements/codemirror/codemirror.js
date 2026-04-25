@@ -12,6 +12,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    keybindings: Array,
     id: String,
   },
   watch: {
@@ -26,6 +27,12 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    keybindings: {
+      handler() {
+        this.setKeybindings();
+      },
+      deep: true,
     },
   },
   data() {
@@ -131,6 +138,31 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    buildUserKeymap() {
+      return (this.keybindings || []).map(({ key, mac, linux, win, preventDefault }) => {
+        const entry = {
+          key,
+          run: () => {
+            this.$emit("keybinding", { key });
+            // Returning true marks the binding as handled, which both stops keymap traversal
+            // and prevents the browser default. Returning false does neither — letting the
+            // event continue to lower-precedence bindings and the browser's native handling.
+            return preventDefault;
+          },
+        };
+        // CM6 picks the per-OS field on the matching platform, falling back to `key` elsewhere.
+        if (mac) entry.mac = mac;
+        if (linux) entry.linux = linux;
+        if (win) entry.win = win;
+        return entry;
+      });
+    },
+    setKeybindings() {
+      if (!this.editor) return;
+      this.editor.dispatch({
+        effects: this.userKeymapConfig.reconfigure(CM.keymap.of(this.buildUserKeymap())),
+      });
+    },
     setupExtensions() {
       const self = this;
 
@@ -154,6 +186,8 @@ export default {
         changeSender,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
+        // User keybindings: Prec.high so they win over basicSetup defaults like Mod-z.
+        CM.Prec.high(this.userKeymapConfig.of(CM.keymap.of(this.buildUserKeymap()))),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
         CM.indentUnit.of(this.indent),
         // We will set these Compartments later and dynamically through props
@@ -184,6 +218,7 @@ export default {
     this.editableConfig = new CM.Compartment();
     this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
     this.lineWrappingConfig = new CM.Compartment();
+    this.userKeymapConfig = new CM.Compartment();
 
     const extensions = this.setupExtensions();
 
