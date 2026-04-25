@@ -19,6 +19,19 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
+def make_url(protocol: str, host: str, port: str | int) -> str:
+    """Make a URL from the given protocol, host and port."""
+    if ':' in host and host[0] != '[':
+        host = f'[{host}]'
+
+    url = f'{protocol}://{host}'
+
+    if (protocol, port) not in (('http', 80), ('http', '80'), ('https', 443), ('https', '443')):
+        url += f':{port}'
+
+    return url
+
+
 def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[threading.Thread, threading.Event]:
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
@@ -40,7 +53,7 @@ def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[th
             if cancel.is_set():
                 return
             time.sleep(0.1)
-        webbrowser.open(f'{protocol}://{host}:{port}/{path.lstrip("/")}')
+        webbrowser.open(f'{make_url(protocol, host, port)}/{path.lstrip("/")}')
 
     host = host if host != '0.0.0.0' else '127.0.0.1'
     thread = threading.Thread(target=in_thread, args=(protocol, host, port, path), daemon=True)

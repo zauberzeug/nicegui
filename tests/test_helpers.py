@@ -26,6 +26,21 @@ def test_is_port_open_on_bad_ip():
     assert not helpers.is_port_open('1.2', 0), 'should not be able to connect to a bad IP'
 
 
+def test_make_url():
+    assert helpers.make_url('http', 'localhost', 80) == 'http://localhost'
+    assert helpers.make_url('http', 'localhost', 8080) == 'http://localhost:8080'
+    assert helpers.make_url('http', 'localhost', '80') == 'http://localhost'
+    assert helpers.make_url('http', 'localhost', '8080') == 'http://localhost:8080'
+    assert helpers.make_url('https', 'example.com', 443) == 'https://example.com'
+    assert helpers.make_url('https', 'example.com', 8443) == 'https://example.com:8443'
+    assert helpers.make_url('https', 'example.com', '443') == 'https://example.com'
+    assert helpers.make_url('https', 'example.com', '8443') == 'https://example.com:8443'
+    assert helpers.make_url('http', '::', 80) == 'http://[::]'
+    assert helpers.make_url('http', '::', 8080) == 'http://[::]:8080'
+    assert helpers.make_url('http', '[::]', 80) == 'http://[::]'
+    assert helpers.make_url('http', '[::]', 8080) == 'http://[::]:8080'
+
+
 def test_schedule_browser(monkeypatch):
     called_with_url = None
 
@@ -48,7 +63,11 @@ def test_schedule_browser(monkeypatch):
             sock.listen()
             # port opened
             time.sleep(1)
-            assert called_with_url == f'http://{host}:{port}/my-path'
+            if port == 80:
+                assert called_with_url == f'http://{host}/my-path'
+            else:
+                assert called_with_url == f'http://{host}:{port}/my-path'
+
         finally:
             cancel_event.set()
 
