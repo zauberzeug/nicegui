@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class Object3D:
     current_scene: Scene | None = None
+    EULER_ORDERS = ('XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX')
 
     def __init__(self, type_: str, *args: Any) -> None:
         self.type = type_
@@ -121,8 +122,6 @@ class Object3D:
             self.z = z
             self._move()
         return self
-
-    EULER_ORDERS = ('XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX')
 
     @staticmethod
     def rotation_matrix_from_euler(

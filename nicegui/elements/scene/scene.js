@@ -170,9 +170,25 @@ export default {
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
 
-    const gridSize = this.grid[0] || 100;
-    const gridDivisions = this.grid[1] || 100;
-    if (this.grid) {
+    if (this.polarGrid) {
+      const radius = this.polarGrid[0] || 1.0;
+      const sectors = this.polarGrid[1] || 10;
+      const rings = this.polarGrid[2] || 10;
+      const ground = new THREE.Mesh(
+        new THREE.CircleGeometry(radius, 64),
+        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
+      );
+      ground.translateZ(-0.01);
+      ground.object_id = "ground";
+      this.scene.add(ground);
+      const polarGrid = new THREE.PolarGridHelper(radius, sectors, rings, 64);
+      polarGrid.material.transparent = true;
+      polarGrid.material.opacity = 0.3;
+      polarGrid.rotateX(Math.PI / 2);
+      this.scene.add(polarGrid);
+    } else if (this.grid) {
+      const gridSize = this.grid[0] || 100;
+      const gridDivisions = this.grid[1] || 100;
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(gridSize, gridSize),
         new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
@@ -359,31 +375,17 @@ export default {
           });
           mesh = new THREE.Line(geometry, mat);
         }
-      } else if (type == "arrow_helper") {
-        const dir = new THREE.Vector3(...args[0]).normalize();
-        const origin = new THREE.Vector3(...args[1]);
-        mesh = new THREE.ArrowHelper(dir, origin, args[2], args[3], args[4], args[5]);
-        if (args[6] && args[6] !== 1 && mesh.line && mesh.line.material) {
-          mesh.line.material.linewidth = args[6];
-        }
-        const radialSegs = args[7] || 16;
-        if (mesh.cone && radialSegs !== 5) {
-          const p = mesh.cone.geometry.parameters;
-          mesh.cone.geometry.dispose();
-          const newCone = new THREE.ConeGeometry(p.radius, p.height, radialSegs, 1);
-          newCone.translate(0, -0.5, 0);
-          mesh.cone.geometry = newCone;
-        }
-      } else if (type == "polar_grid_helper") {
-        mesh = new THREE.PolarGridHelper(args[0], args[1], args[2], args[3], args[4], args[5]);
-        mesh.material.transparent = true;
       } else {
         let geometry;
         const wireframe = args.pop();
         if (type == "box") geometry = new THREE.BoxGeometry(...args);
         if (type == "sphere") geometry = new THREE.SphereGeometry(...args);
         if (type == "cylinder") geometry = new THREE.CylinderGeometry(...args);
+        if (type == "cone") geometry = new THREE.ConeGeometry(...args);
         if (type == "ring") geometry = new THREE.RingGeometry(...args);
+        if (type == "plane") geometry = new THREE.PlaneGeometry(...args);
+        if (type == "torus") geometry = new THREE.TorusGeometry(...args);
+        if (type == "capsule") geometry = new THREE.CapsuleGeometry(...args);
         if (type == "quadratic_bezier_tube") {
           const curve = new THREE.QuadraticBezierCurve3(
             new THREE.Vector3(...args[0]),
@@ -633,6 +635,7 @@ export default {
     width: Number,
     height: Number,
     grid: Object,
+    polarGrid: Array,
     cameraType: String,
     cameraParams: Object,
     clickEvents: Array,

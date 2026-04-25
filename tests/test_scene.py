@@ -159,8 +159,7 @@ def test_rotation_matrix_from_euler_all_orders():
 
 
 def test_rotation_matrix_from_euler_rejects_bad_order():
-    import pytest as _pytest
-    with _pytest.raises(ValueError, match='Unsupported Euler order'):
+    with pytest.raises(ValueError, match='Unsupported Euler order'):
         Object3D.rotation_matrix_from_euler(0, 0, 0, 'XYY')  # type: ignore[arg-type]
 
 
@@ -303,43 +302,54 @@ def test_lathe(screen: Screen):
     assert is_lathe
 
 
-def test_arrow_helper(screen: Screen):
+def test_polyline_rejects_mismatched_colors():
+    from nicegui.elements.scene.scene_objects import Polyline
+    with pytest.raises(ValueError, match='colors length'):
+        Polyline(points=[[0, 0, 0], [1, 0, 0]], colors=[[1, 0, 0]])
+
+
+def test_polar_grid(screen: Screen):
     scene = None
-    arrow = None
 
     @ui.page('/')
     def page():
-        nonlocal scene, arrow
-        with ui.scene() as scene:
-            arrow = scene.arrow_helper(direction=[0, 0, 1], origin=[0, 0, 0], length=1.0,
-                                       color=0xff0000, radial_segments=24)
+        nonlocal scene
+        with ui.scene(grid=False, polar_grid=(1.0, 8, 5)) as scene:
+            scene.sphere(0.1).move(0.5, 0, 0)
 
     screen.open('/')
     screen.wait(0.5)
-    is_arrow = screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{arrow.id}");'
-        'return o.type === "ArrowHelper" && o.cone.geometry.parameters.radialSegments === 24;'
-    )
-    assert is_arrow
+    # ambient light + directional light + circular ground + polar grid + sphere = 5 children
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
 
 
-def test_polar_grid_helper(screen: Screen):
+@pytest.mark.parametrize('factory_name,three_geometry', [
+    ('plane', 'PlaneGeometry'),
+    ('cone', 'ConeGeometry'),
+    ('torus', 'TorusGeometry'),
+    ('capsule', 'CapsuleGeometry'),
+])
+def test_geometry_primitive(screen: Screen, factory_name: str, three_geometry: str):
+    """Smoke test that each primitive dispatches to the expected Three.js geometry class.
+
+    Catches silent removals or renames in future Three.js upgrades.
+    """
     scene = None
-    grid = None
+    obj = None
 
     @ui.page('/')
     def page():
-        nonlocal scene, grid
+        nonlocal scene, obj
         with ui.scene() as scene:
-            grid = scene.polar_grid_helper(radius=5.0, sectors=8, rings=4)
+            obj = getattr(scene, factory_name)()
 
     screen.open('/')
     screen.wait(0.5)
-    is_grid = screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{grid.id}");'
-        'return o.type === "PolarGridHelper";'
+    is_expected = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{obj.id}");'
+        f'return o.isMesh === true && o.geometry.type === "{three_geometry}";'
     )
-    assert is_grid
+    assert is_expected
 
 
 def test_rotate_with_order(screen: Screen):

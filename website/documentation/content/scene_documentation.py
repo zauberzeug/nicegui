@@ -339,21 +339,35 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
-@doc.demo('New primitives', '''
+@doc.demo('New geometry primitives', '''
     ``polyline`` connects a sequence of points with optional per-vertex colors and dashing,
     ``lathe`` revolves a 2D profile to make a vase or bowl,
-    ``arrow_helper`` wraps Three.js' ArrowHelper for force/velocity-style indicators,
-    and ``polar_grid_helper`` draws a circular reference grid.
+    and ``plane`` / ``cone`` / ``torus`` / ``capsule`` wrap the corresponding Three.js geometries.
 ''')
 def new_primitives() -> None:
+    import math
     with ui.scene().classes('w-full h-64') as scene:
         scene.polyline(
-            points=[[-2, 0, 0], [-1, 0, 1], [0, 0, 0], [1, 0, 1], [2, 0, 0]],
+            points=[[-2, 0, 1.5], [-1, 0, 2.5], [0, 0, 1.5], [1, 0, 2.5], [2, 0, 1.5]],
             colors=[[1, 0, 0], [1, 0.5, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]],
         )
-        scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]]).move(2, 0, 0)
-        scene.arrow_helper(direction=[1, 0, 0], origin=[0, 0, 1.5], length=1.0, color=0xff00ff)
-        scene.polar_grid_helper(radius=2.0, sectors=8, rings=4).move(-2, 2, 0)
+        scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]]).move(-2, 0, 0)
+        scene.plane(width=1.0, height=1.0).move(2, 0, 0).rotate(math.pi / 2, 0, 0)
+        scene.cone(radius=0.5, height=1.0).move(-1, -2, 0)
+        scene.torus(radius=0.5, tube=0.15).move(1, -2, 0)
+        scene.capsule(radius=0.3, length=0.8).move(3, -2, 0)
+
+
+@doc.demo('Polar Grid', '''
+    Instead of a rectangular grid, you can display a polar grid using the ``polar_grid`` parameter.
+    It accepts a tuple of ``(radius, sectors, rings)`` to configure the grid.
+    When using ``polar_grid``, the ``grid`` parameter is ignored.
+''')
+def polar_grid() -> None:
+    with ui.scene(grid=False, polar_grid=(1.5, 12, 6)).classes('w-full h-64') as scene:
+        scene.sphere(0.1).move(1, 0, 0).material('#ff0000')
+        scene.sphere(0.1).move(0, 1, 0).material('#00ff00')
+        scene.sphere(0.1).move(-1, 0, 0).material('#0000ff')
 
 
 @doc.demo('Rotate with a different Euler order', '''

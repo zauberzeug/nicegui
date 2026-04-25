@@ -41,9 +41,10 @@ class SceneObject:
 
 class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
-    from .scene_objects import ArrowHelper as arrow_helper
     from .scene_objects import AxesHelper as axes_helper
     from .scene_objects import Box as box
+    from .scene_objects import Capsule as capsule
+    from .scene_objects import Cone as cone
     from .scene_objects import Curve as curve
     from .scene_objects import Cylinder as cylinder
     from .scene_objects import Extrusion as extrusion
@@ -51,8 +52,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     from .scene_objects import Group as group
     from .scene_objects import Lathe as lathe
     from .scene_objects import Line as line
+    from .scene_objects import Plane as plane
     from .scene_objects import PointCloud as point_cloud
-    from .scene_objects import PolarGridHelper as polar_grid_helper
     from .scene_objects import Polyline as polyline
     from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
     from .scene_objects import Ring as ring
@@ -62,6 +63,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     from .scene_objects import Text as text
     from .scene_objects import Text3d as text3d
     from .scene_objects import Texture as texture
+    from .scene_objects import Torus as torus
 
     @resolve_defaults
     def __init__(self,
@@ -69,6 +71,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  height: int = DEFAULT_PROP | 300,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
                  grid: bool | tuple[int, int] = DEFAULT_PROP | True,
+                 polar_grid: tuple[float, int, int] | None = None,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
                  click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
@@ -90,6 +93,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
+        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; takes precedence over ``grid`` (default: ``None``)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
@@ -107,6 +111,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['fps'] = fps
         self._props['show-stats'] = show_stats
         self._props['grid'] = grid
+        self._props['polar-grid'] = polar_grid
         self._props['background-color'] = background_color
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
@@ -130,6 +135,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('polar_grid', 'polar-grid')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
