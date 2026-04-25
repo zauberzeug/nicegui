@@ -166,6 +166,10 @@ export default {
     _createDecoration(spec) {
       const doc = this.editor.state.doc;
       if (spec.kind === "mark") {
+        if (spec.from > spec.to) {
+          console.error("codemirror: mark decoration has from > to", spec);
+          return null;
+        }
         const from = Math.max(0, Math.min(spec.from, doc.length));
         const to = Math.max(from, Math.min(spec.to, doc.length));
         const markSpec = {};
@@ -183,6 +187,7 @@ export default {
         if (spec.attributes) lineSpec.attributes = spec.attributes;
         return CM.Decoration.line(lineSpec).range(line.from);
       }
+      console.error("codemirror: unknown decoration kind", spec);
       return null;
     },
     highlightLines(lineIndices, cssClass, durationMs) {

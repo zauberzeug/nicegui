@@ -1,13 +1,15 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, TypedDict, get_args
 
+from typing_extensions import NotRequired
+
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
 # Mark decoration spec for `ui.codemirror.set_decorations`. Styles a character range using
-# CodeMirror's `Decoration.mark`. Required keys: `kind: 'mark'`, `from`, `to`. Optional:
+# CodeMirror's `Decoration.mark`. Required: `kind: 'mark'`, `from`, `to`. Optional:
 # `class` (CSS class to apply), `attributes` (HTML attribute dict), `inclusiveStart` /
 # `inclusiveEnd` (whether the decoration grows when text is inserted at the boundary).
 # Functional `TypedDict` syntax because `from` and `class` are Python keywords.
@@ -17,12 +19,11 @@ MarkDecorationSpec = TypedDict(
         'kind': Literal['mark'],
         'from': int,
         'to': int,
-        'class': str,
-        'attributes': dict[str, str],
-        'inclusiveStart': bool,
-        'inclusiveEnd': bool,
+        'class': NotRequired[str],
+        'attributes': NotRequired[dict[str, str]],
+        'inclusiveStart': NotRequired[bool],
+        'inclusiveEnd': NotRequired[bool],
     },
-    total=False,
 )
 
 # Line decoration spec for `ui.codemirror.set_decorations`. Styles an entire line using
@@ -33,10 +34,9 @@ LineDecorationSpec = TypedDict(
     {
         'kind': Literal['line'],
         'line': int,
-        'class': str,
-        'attributes': dict[str, str],
+        'class': NotRequired[str],
+        'attributes': NotRequired[dict[str, str]],
     },
-    total=False,
 )
 
 DecorationSpec = MarkDecorationSpec | LineDecorationSpec

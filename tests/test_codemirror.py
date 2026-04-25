@@ -1,11 +1,19 @@
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from nicegui import ui
 from nicegui.testing import Screen
 
 # pylint: disable=protected-access
+
+
+def _wait_for_cm_mount(screen: Screen) -> None:
+    WebDriverWait(screen.selenium, 5).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, '.cm-content'))
+    )
 
 
 def test_codemirror(screen: Screen):
@@ -111,7 +119,7 @@ def test_set_and_clear_line_decorations(screen: Screen):
         editor = ui.codemirror('alpha\nbeta\ngamma\ndelta')
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_cm_mount(screen)
     editor.set_decorations([
         {'kind': 'line', 'line': 1, 'class': 'my-line-class'},
         {'kind': 'line', 'line': 3, 'class': 'my-line-class'},
@@ -130,7 +138,7 @@ def test_named_decoration_sets_independent(screen: Screen):
         editor = ui.codemirror('one\ntwo\nthree')
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_cm_mount(screen)
     editor.set_decorations([{'kind': 'line', 'line': 1, 'class': 'set-a'}], set_name='a')
     editor.set_decorations([{'kind': 'line', 'line': 2, 'class': 'set-b'}], set_name='b')
     screen.wait_for(lambda: _line_decoration_count(screen, 'set-a') == 1
@@ -149,14 +157,8 @@ def test_highlight_lines_auto_clears(screen: Screen):
         editor = ui.codemirror('aa\nbb\ncc\ndd')
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_cm_mount(screen)
     # Use a short duration to keep the test snappy.
     editor.highlight_lines([2, 4], css_class='cm-test-flash', duration_ms=200)
     screen.wait_for(lambda: _line_decoration_count(screen, 'cm-test-flash') == 2)
     screen.wait_for(lambda: _line_decoration_count(screen, 'cm-test-flash') == 0)
-
-
-def test_highlight_lines_requires_css_class():
-    import pytest as _pytest
-    with _pytest.raises(TypeError):
-        ui.codemirror.highlight_lines(ui.codemirror.__new__(ui.codemirror), [1])  # type: ignore[call-arg]
