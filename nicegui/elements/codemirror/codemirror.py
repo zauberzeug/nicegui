@@ -1,24 +1,53 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, TypedDict, get_args
 
+from typing_extensions import NotRequired
+
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
+COMPLETION_ICON_TYPE = Literal[
+    'class',
+    'constant',
+    'enum',
+    'function',
+    'interface',
+    'keyword',
+    'method',
+    'namespace',
+    'property',
+    'text',
+    'type',
+    'variable',
+]
 
-class CompletionItem(TypedDict, total=False):
+
+class CompletionItem(TypedDict):
     """Single autocomplete entry for ``ui.codemirror.set_custom_completions``.
 
-    Only ``label`` is required.
-    ``apply`` defaults to ``label`` if omitted; ``type`` controls the icon shown next to the entry
-    (e.g. ``'function'``, ``'variable'``, ``'class'``, ``'keyword'``).
+    Only ``label`` is required. CM6 ``Completion`` field names are kept verbatim (camelCase).
+
+    - ``label``: matched against the user's input and shown in the dropdown.
+    - ``displayLabel``: shown in the dropdown instead of ``label``; ``label`` is still used for matching.
+    - ``apply``: text inserted on accept (defaults to ``label``).
+    - ``detail``: short text shown next to the label (e.g. a type signature).
+    - ``info``: longer description shown when the entry is highlighted.
+    - ``type``: icon shown next to the entry; one of the 12 built-in CM6 types.
+    - ``boost``: sort weight from -99 to 99 (higher floats to the top).
+    - ``commitCharacters``: extra characters that, when typed, accept this completion (e.g. ``['.', '(']``).
+    - ``section``: group heading; entries with the same section are visually grouped.
     """
     label: str
-    detail: str
-    info: str
-    apply: str
-    type: str
+    displayLabel: NotRequired[str]
+    detail: NotRequired[str]
+    info: NotRequired[str]
+    apply: NotRequired[str]
+    type: NotRequired[COMPLETION_ICON_TYPE]
+    boost: NotRequired[float]
+    commitCharacters: NotRequired[list[str]]
+    section: NotRequired[str]
 
 
 SUPPORTED_LANGUAGES = Literal[
@@ -301,9 +330,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         :param custom_completions: list of custom completion items shown in the autocomplete dropdown.
-            Each item is a :class:`CompletionItem` dict with at least ``label`` and optional
-            ``detail``, ``info``, ``apply``, and ``type`` (``'function'``, ``'variable'``, ``'class'``,
-            ``'keyword'``, etc.).
+            Each item is a :class:`CompletionItem` dict; only ``label`` is required.
+            See :class:`CompletionItem` for the full set of optional fields.
+            *(Added in version 3.4.0)*
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -321,7 +350,6 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('customCompletions', 'custom-completions')
 
     @property
     def theme(self) -> str:
@@ -380,8 +408,11 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
     @property
     def custom_completions(self) -> list[CompletionItem]:
-        """The current custom completions for the editor."""
-        return self._props.get('custom-completions', [])
+        """The current custom completions for the editor.
+
+        *Added in version 3.4.0*
+        """
+        return self._props['custom-completions']
 
     @custom_completions.setter
     def custom_completions(self, completions: list[CompletionItem] | None) -> None:
@@ -390,9 +421,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def set_custom_completions(self, completions: list[CompletionItem] | None) -> None:
         """Sets the custom completion items shown in the autocomplete dropdown.
 
-        Each item is a :class:`CompletionItem` dict with at least ``label`` and optional
-        ``detail``, ``info``, ``apply``, and ``type``.
+        Each item is a :class:`CompletionItem` dict; only ``label`` is required.
         Pass ``None`` or an empty list to remove the custom completions.
+
+        *Added in version 3.4.0*
         """
         self._props['custom-completions'] = completions or []
 

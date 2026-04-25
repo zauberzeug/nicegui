@@ -151,13 +151,17 @@ export default {
         const matching = completions.filter((c) => {
           const label = c.label || "";
           return label.toLowerCase().startsWith(text.toLowerCase());
-        }).map((c) => ({
-          label: c.label,
-          detail: c.detail || "",
-          info: c.info || "",
-          apply: c.apply || c.label,
-          type: c.type || "function",
-        }));
+        }).map((c) => {
+          const opt = { label: c.label, apply: c.apply || c.label };
+          if (c.displayLabel) opt.displayLabel = c.displayLabel;
+          if (c.detail) opt.detail = c.detail;
+          if (c.info) opt.info = c.info;
+          if (c.type) opt.type = c.type;
+          if (typeof c.boost === "number") opt.boost = c.boost;
+          if (c.commitCharacters) opt.commitCharacters = c.commitCharacters;
+          if (c.section) opt.section = c.section;
+          return opt;
+        });
         if (matching.length === 0) return null;
         return { from, options: matching, validFor: /^[\w.]*$/ };
       };

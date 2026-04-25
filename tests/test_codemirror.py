@@ -97,14 +97,11 @@ def test_encode_codepoints():
 
 
 def test_custom_completions(screen: Screen):
-    editor = None
-
     @ui.page('/')
     def page():
-        nonlocal editor
-        editor = ui.codemirror('', custom_completions=[
-            {'label': 'foo_bar', 'detail': 'a function', 'type': 'function'},
-            {'label': 'foo_baz', 'detail': 'another function', 'type': 'function'},
+        ui.codemirror('', custom_completions=[
+            {'label': 'foo_bar', 'detail': 'a function', 'type': 'function', 'boost': 1},
+            {'label': 'foo_baz', 'displayLabel': 'foo_baz (preferred)', 'type': 'function', 'boost': 99},
             {'label': 'qux', 'type': 'variable'},
         ])
 
@@ -115,12 +112,15 @@ def test_custom_completions(screen: Screen):
     screen.wait_for(lambda: screen.selenium.execute_script(
         'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
     ) == 2)
-    # `qux` does not start with `foo`, so it must not appear
     rendered = screen.selenium.execute_script(
         'return Array.from(document.querySelectorAll(".cm-tooltip-autocomplete .cm-completionLabel"))'
         '.map(e => e.textContent);'
     )
+    # `qux` does not start with `foo`, so it must not appear
     assert 'qux' not in rendered
+    # higher boost ranks first, and displayLabel overrides the visible text
+    assert rendered[0] == 'foo_baz (preferred)'
+    assert rendered[1] == 'foo_bar'
 
 
 def test_set_custom_completions_replaces_initial(screen: Screen):
@@ -132,10 +132,8 @@ def test_set_custom_completions_replaces_initial(screen: Screen):
         editor = ui.codemirror('', custom_completions=[{'label': 'foo'}])
 
     screen.open('/')
-    screen.wait(0.3)
-    editor.set_custom_completions([{'label': 'bar'}, {'label': 'baz'}])
-    screen.wait(0.3)
     cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    editor.set_custom_completions([{'label': 'bar'}, {'label': 'baz'}])
     cm.click()
     cm.send_keys('ba')
     screen.wait_for(lambda: screen.selenium.execute_script(
