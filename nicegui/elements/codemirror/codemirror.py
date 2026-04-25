@@ -381,7 +381,16 @@ class CodeMirror(ValueElement[str], DisableableElement,
         Multiple named sets can be managed independently (e.g. ``'breakpoints'``, ``'targets'``).
         Calling ``set_line_anchors`` for the same ``set_name`` replaces that set's anchors;
         anchors in other sets are left untouched.
+
+        :raises ValueError: if any anchor has ``line < 1`` or if two anchors share the same ``id``
         """
+        seen_ids: set[str] = set()
+        for a in anchors:
+            if a['line'] < 1:
+                raise ValueError(f'line must be >= 1, got {a["line"]} for anchor {a["id"]!r}')
+            if a['id'] in seen_ids:
+                raise ValueError(f'duplicate anchor id {a["id"]!r} in set {set_name!r}')
+            seen_ids.add(a['id'])
         self._anchor_positions[set_name] = {a['id']: a['line'] for a in anchors}
         self.run_method('setLineAnchors', anchors, set_name)
 
@@ -407,9 +416,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
         return {name: dict(positions) for name, positions in self._anchor_positions.items()}
 
     def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
-        set_name = e.args['set_name']
-        anchors = e.args['anchors']
-        self._anchor_positions[set_name] = anchors
+        set_name = e.args.get('set_name')
+        anchors = e.args.get('anchors')
+        if isinstance(set_name, str) and isinstance(anchors, dict):
+            self._anchor_positions[set_name] = anchors
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

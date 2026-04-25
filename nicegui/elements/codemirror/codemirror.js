@@ -10,6 +10,7 @@ class AnchorValue extends CM.RangeValue {
     this.id = id;
     this.setName = setName;
   }
+  // Required by RangeValue for RangeSet diffing.
   eq(other) { return this.id === other.id && this.setName === other.setName; }
 }
 
@@ -182,8 +183,8 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
-    setLineAnchors(anchors, setName) {
-      if (!this.editor) return;
+    async setLineAnchors(anchors, setName) {
+      if (!this.editor) await this.editorPromise;
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const a of anchors) {
@@ -193,8 +194,8 @@ export default {
       }
       this.editor.dispatch({ effects: setAnchorsEffect.of({ setName, ranges }) });
     },
-    clearLineAnchors(setName) {
-      if (!this.editor) return;
+    async clearLineAnchors(setName) {
+      if (!this.editor) await this.editorPromise;
       this.editor.dispatch({ effects: clearAnchorsEffect.of(setName ?? null) });
     },
     setupExtensions() {
@@ -226,6 +227,7 @@ export default {
             if (field.size === 0) return;
             if (self._anchorTimer) clearTimeout(self._anchorTimer);
             self._anchorTimer = setTimeout(() => {
+              self._anchorTimer = null;
               const doc = update.state.doc;
               const sets = {};
               const cursor = field.iter();

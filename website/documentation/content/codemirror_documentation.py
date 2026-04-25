@@ -39,10 +39,10 @@ def line_anchors_demo() -> None:
     label = ui.label()
     editor.set_line_anchors([{'id': 'a', 'line': 2}, {'id': 'b', 'line': 4}])
 
-    def refresh():
+    def refresh() -> None:
         label.set_text(str(editor.line_anchor_positions))
     refresh()
-    ui.button('Refresh', on_click=refresh)
+    editor.on('anchor-positions', lambda _: refresh())
 
 
 doc.reference(ui.codemirror)
