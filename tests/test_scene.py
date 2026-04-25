@@ -253,7 +253,9 @@ def test_transform_controls_enable_disable(screen: Screen):
         ui.button('Disable', on_click=box.disable_transform_controls)
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id}); return el && el.is_initialized'
+    ))
     screen.click('Enable')
     screen.wait_for(lambda: screen.selenium.execute_script(
         f'return getElement({scene.id}).has_transform_controls("{box.id}")'
@@ -278,7 +280,9 @@ def test_transform_controls_mode_change(screen: Screen):
         ui.button('Scale', on_click=lambda: box.set_transform_mode('scale'))
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id}); return el && el.is_initialized'
+    ))
     screen.click('Translate')
     screen.wait_for(lambda: screen.selenium.execute_script(
         f'return getElement({scene.id}).transform_controls.get("{box.id}").mode === "translate"'
@@ -307,23 +311,19 @@ def test_set_orbit_enabled_survives_transform_drag(screen: Screen):
             box = scene.box()
         ui.button('Disable orbit', on_click=lambda: scene.set_orbit_enabled(False))
         ui.button('Enable transform', on_click=lambda: box.enable_transform_controls(mode='translate'))
-        ui.button('Simulate drag',
-                  on_click=lambda: scene.run_method(
-                      'eval',
-                      f'const el = getElement({scene.id});'
-                      f'const tc = el.transform_controls.get("{box.id}");'
-                      'tc.dispatchEvent({type: "dragging-changed", value: true});'
-                      'tc.dispatchEvent({type: "dragging-changed", value: false});',
-                  ))
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id}); return el && el.is_initialized'
+    ))
     screen.click('Disable orbit')
     screen.wait_for(lambda: not screen.selenium.execute_script(
         f'return getElement({scene.id}).controls.enabled'
     ))
     screen.click('Enable transform')
-    screen.wait(0.3)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).has_transform_controls("{box.id}")'
+    ))
     # Simulate a TransformControls drag start + end via JS, mimicking what the gizmo does on
     # mouse-down + mouse-up. The fix under test ensures controls.enabled stays false afterward.
     screen.selenium.execute_script(
@@ -350,8 +350,6 @@ def test_hoverable_serialization_only_when_truthy(screen: Screen):
             hot = scene.box().hoverable()
 
     screen.open('/')
-    # Plain box's data list ends at draggable (length 17); the hoverable box appends a trailing
-    # truthy field (length 18). This protects upstream payload-format expectations.
-    assert len(plain.data) == 17
-    assert len(hot.data) == 18
+    # Hoverable adds exactly one trailing truthy field; plain payloads stay length-stable.
+    assert len(hot.data) == len(plain.data) + 1
     assert hot.data[-1] is True

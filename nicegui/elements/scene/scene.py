@@ -79,7 +79,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
-                 hover_color: int = DEFAULT_PROP | 0xffffff,
+                 hover_color: str = DEFAULT_PROP | '#ffffff',
                  hover_opacity: float = DEFAULT_PROP | 0.2,
                  hover_scale: float = DEFAULT_PROP | 1.05,
                  ) -> None:
@@ -106,7 +106,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param on_transform: callback fired continuously while the user drags a TransformControls gizmo
         :param on_transform_start: callback fired when the user grabs a TransformControls gizmo
         :param on_transform_end: callback fired when the user releases a TransformControls gizmo
-        :param hover_color: 24-bit hex color of the back-face hover glow on hoverable objects (default: ``0xffffff``)
+        :param hover_color: color of the back-face hover glow on hoverable objects (default: ``'#ffffff'``)
         :param hover_opacity: opacity of the hover glow material (default: ``0.2``)
         :param hover_scale: linear scale factor applied to the hover glow relative to the source mesh (default: ``1.05``)
         """
@@ -152,9 +152,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('hoverColor', 'hover-color')
-        self._props.add_rename('hoverOpacity', 'hover-opacity')
-        self._props.add_rename('hoverScale', 'hover-scale')
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -186,13 +183,14 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._transform_end_handlers.append(callback)
         return self
 
-    def set_orbit_enabled(self, value: bool) -> None:
+    def set_orbit_enabled(self, value: bool) -> Self:
         """Enable or disable the OrbitControls camera interaction.
 
         Setting this to ``False`` records that the user wants orbit disabled, so a TransformControls
         drag that ends while orbit is disabled does not silently re-enable it.
         """
         self.run_method('set_orbit_enabled', value)
+        return self
 
     @staticmethod
     def perspective_camera(*, fov: float = 75, near: float = 0.1, far: float = 1000) -> SceneCamera:

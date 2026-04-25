@@ -357,7 +357,7 @@ def transform_and_hover() -> None:
 
     with ui.scene(width=320, height=240,
                   on_transform_end=show,
-                  hover_color=0xffaa33).classes('w-full h-64') as scene:
+                  hover_color='#ffaa33').classes('w-full h-64') as scene:
         gizmo_box = scene.box().move(-1, 0, 0).material('SteelBlue')
         scene.box().move(1, 0, 0).material('Coral').hoverable()
 

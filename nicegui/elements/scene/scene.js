@@ -244,7 +244,7 @@ export default {
       rootObject.traverse((descendant) => {
         if (!descendant.isMesh || !descendant.geometry) return;
         const material = new THREE.MeshBasicMaterial({
-          color: this.hoverColor ?? 0xffffff,
+          color: this.hoverColor ?? "#ffffff",
           transparent: true,
           opacity: this.hoverOpacity ?? 0.2,
           side: THREE.BackSide,
@@ -536,13 +536,15 @@ export default {
       // Otherwise the dragging-changed handler will restore the latch when the drag ends.
       if (this.dragging_count === 0) this.controls.enabled = this.userOrbitEnabled;
     },
-    enable_transform_controls(object_id, mode, size, visible_axes) {
+    enable_transform_controls(object_id, mode, size, visible_axes, space, rotation_snap) {
       if (!this.objects.has(object_id)) return false;
-      // Reuse existing controls if already attached: just update mode / size / axes.
+      // Reuse existing controls if already attached: just update mode / size / axes / space / snap.
       const existing = this.transform_controls.get(object_id);
       if (existing) {
         existing.setMode(mode);
         if (size !== undefined && size !== null) existing.setSize(size);
+        if (space !== undefined && space !== null) existing.setSpace(space);
+        if (rotation_snap !== undefined && rotation_snap !== null) existing.setRotationSnap(rotation_snap);
         this._applyTransformAxes(existing, mode, visible_axes);
         return true;
       }
@@ -550,8 +552,9 @@ export default {
       const tc = new TransformControls(this.camera, this.renderer.domElement);
       tc.attach(object);
       tc.setMode(mode);
-      if (mode === "translate") tc.setSpace("world");
       if (size !== undefined && size !== null) tc.setSize(size);
+      if (space !== undefined && space !== null) tc.setSpace(space);
+      if (rotation_snap !== undefined && rotation_snap !== null) tc.setRotationSnap(rotation_snap);
       this._applyTransformAxes(tc, mode, visible_axes);
       let isDragging = false;
       tc.addEventListener("dragging-changed", (event) => {
@@ -830,7 +833,7 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
-    hoverColor: Number,
+    hoverColor: String,
     hoverOpacity: Number,
     hoverScale: Number,
   },

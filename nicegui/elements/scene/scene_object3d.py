@@ -233,14 +233,10 @@ class Object3D:
         :param mode: gizmo mode (``'translate'``, ``'rotate'``, or ``'scale'``, default: ``'translate'``)
         :param size: optional gizmo size multiplier
         :param visible_axes: list of axes to show (e.g. ``['X']`` for X-only); shows all axes if ``None``
-        :param space: ``'local'`` or ``'world'``; defaults to ``'world'`` for ``'translate'`` mode
+        :param space: ``'local'`` or ``'world'`` (defaults to three.js' ``'world'``)
         :param rotation_snap: optional snap angle in radians (e.g. ``math.radians(5)``)
         """
-        self.scene.run_method('enable_transform_controls', self.id, mode, size, visible_axes)
-        if space is not None:
-            self.scene.run_method('set_transform_space', self.id, space)
-        if rotation_snap is not None:
-            self.scene.run_method('set_transform_rotation_snap', self.id, rotation_snap)
+        self.scene.run_method('enable_transform_controls', self.id, mode, size, visible_axes, space, rotation_snap)
         return self
 
     def disable_transform_controls(self) -> Self:
