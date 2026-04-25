@@ -1,22 +1,23 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, TypedDict, get_args
 
+from typing_extensions import NotRequired
+
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
 
-class Diagnostic(TypedDict, total=False):
+class Diagnostic(TypedDict):
     """Single linting diagnostic for ``ui.codemirror.set_diagnostics``.
 
-    ``line`` and ``message`` are required.
     ``severity`` defaults to ``'error'`` if omitted; ``source`` is shown next to the message.
     """
     line: int
     message: str
-    severity: Literal['info', 'warning', 'error', 'hint']
-    source: str
+    severity: NotRequired[Literal['info', 'warning', 'error', 'hint']]
+    source: NotRequired[str]
 
 
 SUPPORTED_LANGUAGES = Literal[
@@ -370,13 +371,12 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['line-wrapping'] = value
 
     def set_diagnostics(self, diagnostics: list[Diagnostic]) -> None:
-        """Set linting diagnostics with inline messages and gutter underlines.
+        """Set linting diagnostics as inline marks with hover tooltips on the affected lines.
 
-        Diagnostics render as inline marks underlining the affected line and a hover tooltip
-        carrying the diagnostic message.
-        Each entry is a :class:`Diagnostic` dict with at least ``line`` (1-indexed) and ``message``;
+        Each entry is a :class:`Diagnostic` dict with required ``line`` (1-indexed) and ``message``;
         ``severity`` (``'error'`` | ``'warning'`` | ``'info'`` | ``'hint'``, default ``'error'``)
         and ``source`` (label shown next to the message) are optional.
+        Out-of-range or non-integer ``line`` values are skipped with a console warning.
         """
         self.run_method('setDiagnostics', diagnostics)
 

@@ -134,17 +134,21 @@ export default {
     setDiagnostics(diagnostics) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
-      const cmDiagnostics = diagnostics.map((d) => {
-        const lineNum = Math.max(1, Math.min(d.line, doc.lines));
-        const line = doc.line(lineNum);
-        return {
+      const cmDiagnostics = [];
+      for (const d of diagnostics) {
+        if (!Number.isInteger(d.line) || d.line < 1 || d.line > doc.lines) {
+          console.warn(`Diagnostic line out of range: ${d.line} (doc has ${doc.lines} lines)`);
+          continue;
+        }
+        const line = doc.line(d.line);
+        cmDiagnostics.push({
           from: line.from,
           to: line.to,
           severity: d.severity || "error",
-          message: d.message || "",
+          message: d.message,
           source: d.source || undefined,
-        };
-      });
+        });
+      }
       this.editor.dispatch(CM.setDiagnostics(this.editor.state, cmDiagnostics));
     },
     setupExtensions() {

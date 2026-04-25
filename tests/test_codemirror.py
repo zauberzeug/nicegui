@@ -96,8 +96,9 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
 
 
-def _diagnostic_count(screen: Screen) -> int:
-    return screen.selenium.execute_script('return document.querySelectorAll(".cm-lintRange").length;')
+def _diagnostic_count(screen: Screen, suffix: str = '') -> int:
+    selector = f'.cm-lintRange{suffix}'
+    return screen.selenium.execute_script(f'return document.querySelectorAll({selector!r}).length;')
 
 
 def test_set_and_clear_diagnostics(screen: Screen):
@@ -109,11 +110,16 @@ def test_set_and_clear_diagnostics(screen: Screen):
         editor = ui.codemirror('Line 1\nLine 2\nLine 3')
 
     screen.open('/')
-    screen.wait(0.3)
     editor.set_diagnostics([
         {'line': 1, 'message': 'oops', 'severity': 'error'},
         {'line': 3, 'message': 'note', 'severity': 'info'},
     ])
     screen.wait_for(lambda: _diagnostic_count(screen) == 2)
+    assert _diagnostic_count(screen, '-error') >= 1
+    assert _diagnostic_count(screen, '-info') >= 1
+
     editor.clear_diagnostics()
     screen.wait_for(lambda: _diagnostic_count(screen) == 0)
+
+    editor.set_diagnostics([{'line': 2, 'message': 'no severity'}])
+    screen.wait_for(lambda: _diagnostic_count(screen, '-error') == 1)
