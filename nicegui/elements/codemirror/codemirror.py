@@ -13,6 +13,8 @@ class LineAnchor(TypedDict):
     ``id`` is a caller-chosen stable identifier used to look up the current line in
     :attr:`ui.codemirror.line_anchor_positions` after document edits remap the anchor.
     ``line`` is the 1-indexed initial line number.
+
+    *Added in version X.Y.Z*
     """
     id: str
     line: int
@@ -376,50 +378,56 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         Each anchor is a :class:`LineAnchor` dict with a caller-chosen ``id`` and an initial ``line``.
         CodeMirror remaps the underlying position when the document changes;
-        the current line for each anchor is mirrored on the Python side via :attr:`line_anchor_positions`.
+        the current line for each anchor is exposed on the Python side via :attr:`line_anchor_positions`.
 
         Multiple named sets can be managed independently (e.g. ``'breakpoints'``, ``'targets'``).
         Calling ``set_line_anchors`` for the same ``set_name`` replaces that set's anchors;
         anchors in other sets are left untouched.
 
+        The browser is the source of truth: :attr:`line_anchor_positions` is populated by the
+        next ``anchor-positions`` event and briefly lags this call until the JS round-trip lands.
+        Lines exceeding the current document length are silently clamped on the JS side.
+
         :raises ValueError: if any anchor has ``line < 1`` or if two anchors share the same ``id``
+
+        *Added in version X.Y.Z*
         """
-        seen_ids: set[str] = set()
+        seen: dict[str, int] = {}
         for a in anchors:
             if a['line'] < 1:
                 raise ValueError(f'line must be >= 1, got {a["line"]} for anchor {a["id"]!r}')
-            if a['id'] in seen_ids:
+            if a['id'] in seen:
                 raise ValueError(f'duplicate anchor id {a["id"]!r} in set {set_name!r}')
-            seen_ids.add(a['id'])
-        self._anchor_positions[set_name] = {a['id']: a['line'] for a in anchors}
+            seen[a['id']] = a['line']
         self.run_method('setLineAnchors', anchors, set_name)
 
     def clear_line_anchors(self, set_name: str | None = None) -> None:
         """Clear anchors.
 
         :param set_name: clear only this named set, or all sets if ``None``
+
+        *Added in version X.Y.Z*
         """
-        if set_name is None:
-            self._anchor_positions.clear()
-        else:
-            self._anchor_positions.pop(set_name, None)
         self.run_method('clearLineAnchors', set_name)
 
     @property
     def line_anchor_positions(self) -> dict[str, dict[str, int]]:
-        """Current anchor positions mirrored from the browser.
+        """Current anchor positions, as last reported by the browser.
 
         Returns a nested dict ``{set_name: {anchor_id: 1-indexed line}}``.
-        Updated synchronously when :meth:`set_line_anchors` / :meth:`clear_line_anchors` are called,
-        and asynchronously when document edits remap anchor positions.
+        The browser is the source of truth, so this property briefly lags
+        :meth:`set_line_anchors` and :meth:`clear_line_anchors` calls until the
+        JS round-trip completes, and updates asynchronously when document edits
+        remap anchor positions.
+
+        *Added in version X.Y.Z*
         """
         return {name: dict(positions) for name, positions in self._anchor_positions.items()}
 
     def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
-        set_name = e.args.get('set_name')
         anchors = e.args.get('anchors')
-        if isinstance(set_name, str) and isinstance(anchors, dict):
-            self._anchor_positions[set_name] = anchors
+        if isinstance(anchors, dict):
+            self._anchor_positions = anchors
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

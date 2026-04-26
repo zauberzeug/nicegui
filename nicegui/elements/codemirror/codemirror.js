@@ -193,10 +193,31 @@ export default {
         ranges.push(new AnchorValue(a.id, setName).range(pos, pos));
       }
       this.editor.dispatch({ effects: setAnchorsEffect.of({ setName, ranges }) });
+      this.emitAnchorPositions();
     },
     async clearLineAnchors(setName) {
       if (!this.editor) await this.editorPromise;
+      clearTimeout(this._anchorTimer);
+      this._anchorTimer = null;
       this.editor.dispatch({ effects: clearAnchorsEffect.of(setName ?? null) });
+      this.emitAnchorPositions();
+    },
+    // Snapshot the current anchor field and emit a full {set_name: {id: line}} mirror.
+    // Reads live editor state so callers don't need to capture anything.
+    emitAnchorPositions() {
+      if (!this.editor) return;
+      const state = this.editor.state;
+      const field = state.field(anchorField);
+      const doc = state.doc;
+      const sets = {};
+      const cursor = field.iter();
+      while (cursor.value) {
+        const sn = cursor.value.setName;
+        if (!sets[sn]) sets[sn] = {};
+        sets[sn][cursor.value.id] = doc.lineAt(cursor.from).number;
+        cursor.next();
+      }
+      this.$emit("anchor-positions", { anchors: sets });
     },
     setupExtensions() {
       const self = this;
@@ -216,30 +237,20 @@ export default {
         },
       );
 
-      // Re-emit anchor positions only when the document changes and at least one anchor exists.
-      // NOTE: 50 ms debounce coalesces bursts (paste, multi-cursor insert) so high-latency
-      // connections do not see one event per keystroke.
+      // Re-emit anchor positions when the document changes and at least one anchor exists.
+      // The 50 ms debounce coalesces bursts (paste, multi-cursor insert) so high-latency
+      // connections do not see one event per keystroke. The fire-time callback reads live
+      // editor state via emitAnchorPositions(), so a stale timer that survives a clear or
+      // re-set transaction will see the up-to-date field rather than its scheduling-time snapshot.
       const anchorTracker = CM.ViewPlugin.fromClass(
         class {
           update(update) {
             if (!update.docChanged) return;
-            const field = update.state.field(anchorField);
-            if (field.size === 0) return;
+            if (update.state.field(anchorField).size === 0) return;
             if (self._anchorTimer) clearTimeout(self._anchorTimer);
             self._anchorTimer = setTimeout(() => {
               self._anchorTimer = null;
-              const doc = update.state.doc;
-              const sets = {};
-              const cursor = field.iter();
-              while (cursor.value) {
-                const sn = cursor.value.setName;
-                if (!sets[sn]) sets[sn] = {};
-                sets[sn][cursor.value.id] = doc.lineAt(cursor.from).number;
-                cursor.next();
-              }
-              for (const [setName, anchors] of Object.entries(sets)) {
-                self.$emit("anchor-positions", { set_name: setName, anchors });
-              }
+              self.emitAnchorPositions();
             }, 50);
           }
         },

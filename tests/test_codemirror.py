@@ -96,7 +96,7 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
 
 
-def test_set_line_anchors_initial_mirror(screen: Screen):
+def test_set_line_anchors_populates_mirror(screen: Screen):
     editor = None
 
     @ui.page('/')
@@ -107,8 +107,7 @@ def test_set_line_anchors_initial_mirror(screen: Screen):
     screen.open('/')
     screen.wait(0.3)
     editor.set_line_anchors([{'id': 'a1', 'line': 2}, {'id': 'a2', 'line': 4}])
-    # Mirror is updated synchronously before any JS round-trip
-    assert editor.line_anchor_positions == {'default': {'a1': 2, 'a2': 4}}
+    screen.wait_for(lambda: editor.line_anchor_positions == {'default': {'a1': 2, 'a2': 4}})
 
 
 def test_clear_line_anchors_named_and_all(screen: Screen):
@@ -123,10 +122,35 @@ def test_clear_line_anchors_named_and_all(screen: Screen):
     screen.wait(0.3)
     editor.set_line_anchors([{'id': 'x', 'line': 1}], set_name='breakpoints')
     editor.set_line_anchors([{'id': 'y', 'line': 2}], set_name='targets')
-    assert set(editor.line_anchor_positions.keys()) == {'breakpoints', 'targets'}
+    screen.wait_for(lambda: set(editor.line_anchor_positions.keys()) == {'breakpoints', 'targets'})
     editor.clear_line_anchors('breakpoints')
-    assert set(editor.line_anchor_positions.keys()) == {'targets'}
+    screen.wait_for(lambda: set(editor.line_anchor_positions.keys()) == {'targets'})
     editor.clear_line_anchors()
+    screen.wait_for(lambda: editor.line_anchor_positions == {})
+
+
+def test_clear_after_typing_does_not_resurrect_anchors(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc\nd\ne')
+
+    screen.open('/')
+    screen.wait(0.3)
+    editor.set_line_anchors([{'id': 'mid', 'line': 3}])
+    screen.wait_for(lambda: editor.line_anchor_positions.get('default', {}).get('mid') == 3)
+    # Schedule a debounced anchor-positions emit by editing the document via JS,
+    # then clear from Python. The pending JS timer plus the explicit clear emit
+    # must converge to an empty mirror — never resurrect the cleared anchor.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
+    )
+    editor.clear_line_anchors()
+    screen.wait_for(lambda: editor.line_anchor_positions == {})
+    screen.wait(0.2)  # past the 50 ms debounce window — confirm no late emit resurrects state
     assert editor.line_anchor_positions == {}
 
 

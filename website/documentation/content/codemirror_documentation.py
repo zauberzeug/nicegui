@@ -37,12 +37,8 @@ def preserve_cursor_demo() -> None:
 def line_anchors_demo() -> None:
     editor = ui.codemirror('hello\nworld\nthird\nfourth').classes('h-32')
     label = ui.label()
+    editor.on('anchor-positions', lambda _: label.set_text(str(editor.line_anchor_positions)))
     editor.set_line_anchors([{'id': 'a', 'line': 2}, {'id': 'b', 'line': 4}])
-
-    def refresh() -> None:
-        label.set_text(str(editor.line_anchor_positions))
-    refresh()
-    editor.on('anchor-positions', lambda _: refresh())
 
 
 doc.reference(ui.codemirror)
