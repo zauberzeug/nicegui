@@ -71,7 +71,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  height: int = DEFAULT_PROP | 300,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
                  grid: bool | tuple[int, int] = DEFAULT_PROP | True,
-                 polar_grid: tuple[float, int, int] | None = None,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
                  click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
@@ -82,6 +81,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
+                 polar_grid: tuple[float, int, int] | None = None,
                  ) -> None:
         """3D Scene
 
@@ -93,7 +93,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
-        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; takes precedence over ``grid`` (default: ``None``)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
@@ -104,6 +103,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
+        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; takes precedence over ``grid`` (default: ``None``)
         """
         super().__init__()
         self._props['width'] = width
