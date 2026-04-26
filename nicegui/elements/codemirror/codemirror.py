@@ -370,6 +370,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         :param tooltips: dict mapping 1-indexed line numbers to metadata dicts
         :param set_name: named set for independent management
+
+        *Added in version X.Y.Z*
         """
         self.run_method('setLineTooltips', tooltips, set_name)
 
@@ -377,6 +379,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """Clear line tooltip metadata.
 
         :param set_name: clear only this named set, or all sets if ``None``
+
+        *Added in version X.Y.Z*
         """
         self.run_method('clearLineTooltips', set_name)
 

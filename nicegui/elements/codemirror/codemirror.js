@@ -14,34 +14,28 @@ class TooltipValue extends CM.RangeValue {
 const setTooltipsEffect = CM.StateEffect.define();    // value: {setName, ranges}
 const clearTooltipsEffect = CM.StateEffect.define();  // value: setName | null
 
+function rangesExcludingSet(set, setName) {
+  const keep = [];
+  const cursor = set.iter();
+  while (cursor.value) {
+    if (cursor.value.setName !== setName) {
+      keep.push(cursor.value.range(cursor.from, cursor.to));
+    }
+    cursor.next();
+  }
+  return keep;
+}
+
 const tooltipField = CM.StateField.define({
   create() { return CM.RangeSet.empty; },
   update(set, tr) {
     set = set.map(tr.changes);
     for (const effect of tr.effects) {
       if (effect.is(clearTooltipsEffect)) {
-        if (effect.value === null) return CM.RangeSet.empty;
-        const keep = [];
-        const cursor = set.iter();
-        while (cursor.value) {
-          if (cursor.value.setName !== effect.value) {
-            keep.push(cursor.value.range(cursor.from, cursor.to));
-          }
-          cursor.next();
-        }
-        return CM.RangeSet.of(keep, true);
-      }
-      if (effect.is(setTooltipsEffect)) {
+        set = effect.value === null ? CM.RangeSet.empty : CM.RangeSet.of(rangesExcludingSet(set, effect.value), true);
+      } else if (effect.is(setTooltipsEffect)) {
         const { setName, ranges } = effect.value;
-        const keep = [];
-        const cursor = set.iter();
-        while (cursor.value) {
-          if (cursor.value.setName !== setName) {
-            keep.push(cursor.value.range(cursor.from, cursor.to));
-          }
-          cursor.next();
-        }
-        return CM.RangeSet.of([...keep, ...ranges], true);
+        set = CM.RangeSet.of([...rangesExcludingSet(set, setName), ...ranges], true);
       }
     }
     return set;
@@ -231,7 +225,6 @@ export default {
           above: true,
           create() {
             const dom = document.createElement("div");
-            dom.className = "cm-line-tooltip";
             if (merged._html) {
               dom.setHTML(merged._html);
             } else {

@@ -113,7 +113,7 @@ def _trigger_hover(screen: Screen, editor, line_number: int) -> None:
 
 def _tooltip_text(screen: Screen) -> str:
     return screen.selenium.execute_script(
-        'return document.querySelector(".cm-line-tooltip")?.textContent || ""') or ''
+        'return document.querySelector(".cm-tooltip-hover")?.textContent || ""') or ''
 
 
 def _dismiss_hover(screen: Screen, editor) -> None:
@@ -152,7 +152,7 @@ def test_set_and_clear_line_tooltips_text(screen: Screen):
     _dismiss_hover(screen, editor)
     _trigger_hover(screen, editor, 3)
     screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelector(".cm-line-tooltip") === null'))
+        'return document.querySelector(".cm-tooltip-hover") === null'))
 
 
 def test_line_tooltip_html_sanitized(screen: Screen):
@@ -172,11 +172,11 @@ def test_line_tooltip_html_sanitized(screen: Screen):
                                            '<svg onload="window.__hijack2=1"></svg>'}})
     _trigger_hover(screen, editor, 1)
     screen.wait_for(lambda: screen.selenium.execute_script(
-        'const t = document.querySelector(".cm-line-tooltip");'
+        'const t = document.querySelector(".cm-tooltip-hover");'
         'return !!(t && t.querySelector("b"));'
     ))
     has_script = screen.selenium.execute_script(
-        'const t = document.querySelector(".cm-line-tooltip");'
+        'const t = document.querySelector(".cm-tooltip-hover");'
         'return !!(t && t.querySelector("script"));'
     )
     hijacked = screen.selenium.execute_script('return window.__hijack === 1')
