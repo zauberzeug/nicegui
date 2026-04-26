@@ -27,27 +27,40 @@ def preserve_cursor_demo() -> None:
     ))
 
 
-@doc.demo('Custom Completions', '''
-    ``custom_completions`` (and the ``set_custom_completions`` setter) installs an autocomplete source.
-    Each entry is a dict; only ``label`` is required.
+@doc.demo('Autocomplete', '''
+    Pass ``completions`` to surface your own entries in the autocomplete dropdown.
+    Each item is a dict; only ``label`` is required.
     ``apply`` controls the inserted text, ``detail``/``info`` add helper text,
-    ``type`` picks an icon (one of ``'class'``, ``'constant'``, ``'enum'``, ``'function'``, ``'interface'``,
-    ``'keyword'``, ``'method'``, ``'namespace'``, ``'property'``, ``'text'``, ``'type'``, ``'variable'``),
-    ``boost`` biases sort order (higher floats to the top, range -99 to 99),
-    ``displayLabel`` overrides the visible text while ``label`` is still used for matching,
-    ``section`` groups entries under a heading, and ``commitCharacters`` are extra characters
-    that accept the completion when typed.
+    ``type`` picks an icon, ``boost`` biases sort order (-99..99),
+    ``display_label`` overrides the visible text, ``section`` groups entries under a heading,
+    ``commit_characters`` are extra accept-keys, and ``class_name`` adds a CSS class to that entry.
+
+    Set ``snippet=True`` and use ``${1:foo}`` markers in ``apply`` for templated insertions —
+    Tab cycles between fields. By default your entries merge with the active language pack's
+    completions; pass ``replace_language_completions=True`` to suppress them. Set
+    ``complete_words_in_document=True`` to also surface identifiers already typed elsewhere.
+    Call ``editor.trigger_completion()`` to open the popup programmatically.
 ''')
 def custom_completions_demo() -> None:
-    ui.codemirror('', language='Python', custom_completions=[
+    editor = ui.codemirror('', language='Python', completions=[
         {'label': 'np.array', 'apply': 'np.array(', 'detail': 'numpy.array(...)',
-         'type': 'function', 'section': 'numpy', 'commitCharacters': ['(']},
+         'type': 'function', 'section': 'numpy', 'commit_characters': ['(']},
         {'label': 'np.zeros', 'apply': 'np.zeros(', 'detail': 'numpy.zeros(shape, dtype=...)',
          'type': 'function', 'section': 'numpy', 'boost': 99},
-        {'label': 'np.pi', 'displayLabel': 'np.pi (constant)',
+        {'label': 'np.pi', 'display_label': 'np.pi (constant)',
          'detail': 'numpy constant', 'type': 'variable', 'section': 'numpy'},
-        {'label': 'TODO'},  # no type → no icon, no section → ungrouped
-    ]).classes('h-32')
+        {'label': 'forloop', 'display_label': 'for', 'snippet': True,
+         'apply': 'for ${1:item} in ${2:iterable}:\n    ${3:pass}',
+         'type': 'keyword', 'detail': 'for-loop snippet'},
+        {'label': 'old_func', 'class_name': 'cm-deprecated',
+         'detail': 'use new_func instead'},
+        {'label': 'TODO'},
+    ], tooltip_class='cm-popup-wide').classes('h-40')
+
+    ui.add_css('.cm-deprecated { text-decoration: line-through; opacity: 0.6; }'
+               '.cm-popup-wide { min-width: 320px; }')
+
+    ui.button('Suggest', on_click=editor.trigger_completion)
 
 
 doc.reference(ui.codemirror)

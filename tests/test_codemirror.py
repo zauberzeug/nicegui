@@ -96,12 +96,26 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
 
 
-def test_custom_completions(screen: Screen):
+def _rendered_labels(screen: Screen) -> list[str]:
+    return screen.selenium.execute_script(
+        'return Array.from(document.querySelectorAll(".cm-tooltip-autocomplete .cm-completionLabel"))'
+        '.map(e => e.textContent);'
+    )
+
+
+def _open_count(screen: Screen) -> int:
+    return screen.selenium.execute_script(
+        'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
+    )
+
+
+def test_completions_basic(screen: Screen):
     @ui.page('/')
     def page():
-        ui.codemirror('', custom_completions=[
-            {'label': 'foo_bar', 'detail': 'a function', 'type': 'function', 'boost': 1},
-            {'label': 'foo_baz', 'displayLabel': 'foo_baz (preferred)', 'type': 'function', 'boost': 99},
+        ui.codemirror('', completions=[
+            {'label': 'foo_bar', 'detail': 'a function', 'type': 'function', 'boost': 1,
+             'class_name': 'cm-foo'},
+            {'label': 'foo_baz', 'display_label': 'foo_baz (preferred)', 'type': 'function', 'boost': 99},
             {'label': 'qux', 'type': 'variable'},
         ])
 
@@ -109,33 +123,112 @@ def test_custom_completions(screen: Screen):
     cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
     cm.click()
     cm.send_keys('foo')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
-    ) == 2)
-    rendered = screen.selenium.execute_script(
-        'return Array.from(document.querySelectorAll(".cm-tooltip-autocomplete .cm-completionLabel"))'
-        '.map(e => e.textContent);'
-    )
-    # `qux` does not start with `foo`, so it must not appear
+    screen.wait_for(lambda: _open_count(screen) == 2)
+    rendered = _rendered_labels(screen)
     assert 'qux' not in rendered
-    # higher boost ranks first, and displayLabel overrides the visible text
     assert rendered[0] == 'foo_baz (preferred)'
     assert rendered[1] == 'foo_bar'
+    has_class = screen.selenium.execute_script(
+        'return Array.from(document.querySelectorAll(".cm-tooltip-autocomplete li"))'
+        '.some(li => li.classList.contains("cm-foo"));'
+    )
+    assert has_class
 
 
-def test_set_custom_completions_replaces_initial(screen: Screen):
+def test_set_completions_replaces(screen: Screen):
     editor = None
 
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('', custom_completions=[{'label': 'foo'}])
+        editor = ui.codemirror('', completions=[{'label': 'banana'}])
 
     screen.open('/')
     cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
-    editor.set_custom_completions([{'label': 'bar'}, {'label': 'baz'}])
+    editor.set_completions([{'label': 'bar'}, {'label': 'baz'}])
     cm.click()
     cm.send_keys('ba')
+    screen.wait_for(lambda: _open_count(screen) == 2)
+    rendered = _rendered_labels(screen)
+    assert sorted(rendered) == ['bar', 'baz']  # banana is gone
+
+
+@pytest.mark.parametrize('replace, expect_print', [(False, True), (True, False)])
+def test_replace_language_completions(screen: Screen, replace: bool, expect_print: bool):
+    @ui.page('/')
+    def page():
+        ui.codemirror('', language='Python',
+                      completions=[{'label': 'rbt.move', 'type': 'function'}],
+                      replace_language_completions=replace)
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys('print')
+    screen.wait_for(lambda: _open_count(screen) >= 0)  # let popup settle
+    screen.wait(0.3)
+    rendered = _rendered_labels(screen)
+    assert ('print' in rendered) is expect_print
+
+
+def test_complete_words_in_document(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.codemirror('apple banana cherry\n', complete_words_in_document=True)
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys(Keys.END)
+    cm.send_keys('app')
+    screen.wait_for(lambda: 'apple' in _rendered_labels(screen))
+
+
+def test_snippet_completion(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('', completions=[
+            {'label': 'mysnippet', 'snippet': True,
+             'apply': 'for ${1:item} in ${2:iterable}:\n    ${3:pass}'},
+        ])
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    editor.trigger_completion()
+    screen.wait_for(lambda: 'mysnippet' in _rendered_labels(screen))
+    cm.send_keys(Keys.ENTER)
+    screen.wait_for(lambda: 'for item in iterable:' in (editor.value or ''))
+    assert 'pass' in editor.value
+
+
+def test_tooltip_class(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.codemirror('', completions=[{'label': 'foo'}], tooltip_class='cm-popup-wide')
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys('f')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
-    ) == 2)
+        'return !!document.querySelector(".cm-tooltip-autocomplete.cm-popup-wide");'
+    ))
+
+
+def test_trigger_completion(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('', completions=[{'label': 'hello'}])
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    editor.trigger_completion()
+    screen.wait_for(lambda: 'hello' in _rendered_labels(screen))

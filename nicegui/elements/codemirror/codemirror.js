@@ -12,7 +12,10 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
-    customCompletions: Array,
+    completions: Array,
+    replaceLanguageCompletions: Boolean,
+    completeWordsInDocument: Boolean,
+    tooltipClass: String,
     id: String,
   },
   watch: {
@@ -28,8 +31,17 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    customCompletions(newCompletions) {
-      this.setCustomCompletions(newCompletions);
+    completions() {
+      this.rebuildCompletions();
+    },
+    replaceLanguageCompletions() {
+      this.rebuildCompletions();
+    },
+    completeWordsInDocument() {
+      this.rebuildCompletions();
+    },
+    tooltipClass() {
+      this.rebuildCompletions();
     },
   },
   data() {
@@ -135,43 +147,83 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
-    setCustomCompletions(completions) {
-      if (!this.editor || !this.completionsConfig) return;
-      if (!completions || completions.length === 0) {
-        this.editor.dispatch({
-          effects: this.completionsConfig.reconfigure([]),
-        });
-        return;
-      }
-      const customCompletionSource = (context) => {
+    buildCompletionSource(completions) {
+      return (context) => {
         const word = context.matchBefore(/[\w.]+/);
         if (!word && !context.explicit) return null;
         const from = word ? word.from : context.pos;
-        const text = word ? word.text : "";
-        const matching = completions.filter((c) => {
-          const label = c.label || "";
-          return label.toLowerCase().startsWith(text.toLowerCase());
-        }).map((c) => {
+        const options = completions.map((c) => {
+          if (c.snippet && c.apply) {
+            return CM.snippetCompletion(c.apply, {
+              label: c.label,
+              displayLabel: c.display_label,
+              detail: c.detail,
+              info: c.info,
+              type: c.type,
+              boost: typeof c.boost === "number" ? c.boost : undefined,
+              commitCharacters: c.commit_characters,
+              section: c.section,
+              className: c.class_name,
+            });
+          }
           const opt = { label: c.label, apply: c.apply || c.label };
-          if (c.displayLabel) opt.displayLabel = c.displayLabel;
+          if (c.display_label) opt.displayLabel = c.display_label;
           if (c.detail) opt.detail = c.detail;
           if (c.info) opt.info = c.info;
           if (c.type) opt.type = c.type;
           if (typeof c.boost === "number") opt.boost = c.boost;
-          if (c.commitCharacters) opt.commitCharacters = c.commitCharacters;
+          if (c.commit_characters) opt.commitCharacters = c.commit_characters;
           if (c.section) opt.section = c.section;
+          if (c.class_name) opt.className = c.class_name;
           return opt;
         });
-        if (matching.length === 0) return null;
-        return { from, options: matching, validFor: /^[\w.]*$/ };
+        return { from, options, validFor: /^[\w.]*$/ };
       };
-      const completionExtension = CM.autocompletion({
-        override: [customCompletionSource],
-        activateOnTyping: true,
-      });
+    },
+    rebuildCompletions() {
+      if (!this.editor || !this.completionsConfig) return;
+      const sources = [];
+      if (this.completions && this.completions.length > 0) {
+        sources.push(this.buildCompletionSource(this.completions));
+      }
+      if (this.completeWordsInDocument) {
+        sources.push(CM.completeAnyWord);
+      }
+      const exts = [];
+      const tooltipClass = this.tooltipClass || "";
+      const optionClass = (c) => c.className || "";
+      if (this.replaceLanguageCompletions && sources.length > 0) {
+        // Override mode: replaces language-pack completion sources entirely.
+        exts.push(CM.autocompletion({
+          override: sources,
+          tooltipClass: tooltipClass ? () => tooltipClass : undefined,
+          optionClass,
+        }));
+      } else {
+        // Merge mode: register sources via languageData so they compose with the
+        // active language pack's autocompletion (which basicSetup already enables).
+        sources.forEach((src) => {
+          exts.push(CM.EditorState.languageData.of(() => [{ autocomplete: src }]));
+        });
+      }
+      // Styling config (tooltipClass / optionClass) is layered separately via
+      // Prec.highest so it wins over basicSetup's autocompletion config without
+      // stacking duplicate state fields.
+      if (tooltipClass || (sources.length > 0 && this.completions && this.completions.some((c) => c.class_name))) {
+        exts.push(CM.Prec.highest(CM.autocompletion({
+          tooltipClass: tooltipClass ? () => tooltipClass : undefined,
+          optionClass,
+        })));
+      }
+      // basicSetup's autocompletion() already registers the snippet keymap, so
+      // Tab / Shift-Tab cycles snippet placeholders without extra wiring here.
       this.editor.dispatch({
-        effects: this.completionsConfig.reconfigure([completionExtension]),
+        effects: this.completionsConfig.reconfigure(exts),
       });
+    },
+    triggerCompletion() {
+      if (!this.editor) return;
+      CM.startCompletion(this.editor);
     },
     setupExtensions() {
       const self = this;
@@ -243,8 +295,6 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
-    if (this.customCompletions && this.customCompletions.length > 0) {
-      this.setCustomCompletions(this.customCompletions);
-    }
+    this.rebuildCompletions();
   },
 };
