@@ -106,7 +106,7 @@ def test_encode_codepoints():
 
 
 def test_keybinding_constructor(screen: Screen):
-    """Bindings supplied via constructor fire on matching keystrokes."""
+    """Bindings supplied via constructor fire on matching keystrokes and override basicSetup defaults."""
     events: list[str] = []
     editor = None
 
@@ -118,6 +118,7 @@ def test_keybinding_constructor(screen: Screen):
             keybindings={
                 'Mod-s': lambda e: events.append(f'save:{e.key}'),
                 'F5': lambda: events.append('refresh'),
+                'Mod-z': lambda e: events.append(f'override:{e.key}'),
             },
         )
 
@@ -138,11 +139,31 @@ def test_keybinding_constructor(screen: Screen):
     )
     screen.wait_for(lambda: 'refresh' in events)
 
+    # Mod-z is a basicSetup default (undo) — verify the user binding wins via Prec.high
+    # in setupExtensions(). Pre-seed undo history so a regression would actually undo something.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({changes: {from: el.editor.state.doc.length, insert: "after"}});'
+    )
+    screen.wait_for(lambda: editor.value == 'helloafter')
+
+    doc_after_z = screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
+        'key: "z", code: "KeyZ", ctrlKey: true, bubbles: true, cancelable: true,'
+        '}));'
+        'return el.editor.state.doc.toString();'
+    )
+    screen.wait_for(lambda: 'override:Mod-z' in events)
+    assert doc_after_z == 'helloafter', \
+        f'basicSetup undo should have been overridden, doc is {doc_after_z!r}'
+
 
 def test_keybinding_method(screen: Screen):
-    """Bindings added via on_keybinding after construction fire correctly.
+    """Bindings added via on_keybinding after mount fire correctly and win over basicSetup defaults.
 
-    Doubles as a runtime-reconfigure test (exercises the Vue watch + Compartment.reconfigure path).
+    Exercises the Vue watch + Compartment.reconfigure path AND verifies Prec.high persists
+    across reconfigure (Mod-z is basicSetup's undo).
     """
     events: list[str] = []
     editor = None
@@ -151,17 +172,36 @@ def test_keybinding_method(screen: Screen):
     def page():
         nonlocal editor
         editor = ui.codemirror('hello')
-        editor.on_keybinding('Mod-r', lambda e: events.append(e.key))
 
     screen.open('/')
     _wait_for_cm_mount(screen)
+
+    # Pre-seed undo history so a Prec.high regression would actually undo something.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
-        'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
-        'key: "r", code: "KeyR", ctrlKey: true, bubbles: true, cancelable: true,'
-        '}));'
+        'el.editor.dispatch({changes: {from: el.editor.state.doc.length, insert: "after"}});'
     )
-    screen.wait_for(lambda: 'Mod-r' in events)
+    screen.wait_for(lambda: editor.value == 'helloafter')
+
+    # Bind AFTER mount — exercises the watcher + Compartment.reconfigure path.
+    editor.on_keybinding('Mod-z', lambda e: events.append(e.key))
+    WebDriverWait(screen.selenium, 5).until(
+        lambda d: d.execute_script(
+            f'const el = getElement({editor.id});'
+            'return (el.$props.keybindings || []).some(b => b.key === "Mod-z");'
+        )
+    )
+
+    doc_after_z = screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
+        'key: "z", code: "KeyZ", ctrlKey: true, bubbles: true, cancelable: true,'
+        '}));'
+        'return el.editor.state.doc.toString();'
+    )
+    screen.wait_for(lambda: 'Mod-z' in events)
+    assert doc_after_z == 'helloafter', \
+        f'basicSetup undo should have been overridden after reconfigure, doc is {doc_after_z!r}'
 
 
 def test_keybinding_replaces_existing(screen: Screen):

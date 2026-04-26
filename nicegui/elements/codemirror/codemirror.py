@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from itertools import accumulate, chain, repeat
 from typing import Literal, get_args
 
@@ -8,7 +9,6 @@ from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import (
     CodeMirrorKeybindingEventArguments,
-    CodeMirrorKeybindingSpec,
     GenericEventArguments,
     Handler,
     ValueChangeEventArguments,
@@ -255,6 +255,19 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CodeMirrorKeybindingSpec:
+    """Wraps a CodeMirror keybinding with per-binding configuration overrides.
+
+    Construct via :meth:`CodeMirror.binding` rather than instantiating directly.
+    """
+    callback: Handler[CodeMirrorKeybindingEventArguments]
+    prevent_default: bool = True
+    mac: str | None = None
+    linux: str | None = None
+    win: str | None = None
+
+
 class CodeMirror(ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
@@ -398,8 +411,17 @@ class CodeMirror(ValueElement[str], DisableableElement,
                 'Alt-Down': ui.codemirror.binding(move_down, mac='Cmd-Down'),
             })
 
+        Note:
+            The ``key`` field on the event passed to your callback is always the
+            dict key (e.g. ``'Alt-Down'``) — never the resolved per-OS variant.
+
         :param callback: the handler callable
-        :param prevent_default: whether to suppress the browser default action (default: `True`)
+        :param prevent_default: whether to mark the binding as handled (default: `True`).
+            When ``True``, the browser default action is suppressed and CodeMirror stops
+            keymap traversal at this binding. When ``False``, the event continues to
+            lower-precedence CodeMirror bindings (e.g. ``basicSetup``'s ``Mod-z`` undo)
+            *and* the browser's native handler. Use ``False`` when you want a Python
+            notification without overriding either layer.
         :param mac: alternate key string used only on macOS, overriding ``key`` (default: `None`)
         :param linux: alternate key string used only on Linux, overriding ``key`` (default: `None`)
         :param win: alternate key string used only on Windows, overriding ``key`` (default: `None`)

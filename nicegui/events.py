@@ -440,25 +440,17 @@ class SortableEventArguments(UiEventArguments):
 
 @dataclass(kw_only=True, slots=True)
 class CodeMirrorKeybindingEventArguments(UiEventArguments):
+    """Arguments emitted when a CodeMirror keybinding fires.
+
+    The ``key`` is always the dict key under which the handler was registered
+    (e.g. ``'Mod-s'`` or ``'Alt-Down'``), even when ``mac=``/``linux=``/``win=``
+    overrides resolved to a different keystroke on the user's platform.
+    """
     key: str
 
 
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class CodeMirrorKeybindingSpec:
-    """Wraps a CodeMirror keybinding with per-binding configuration overrides.
-
-    Construct via :meth:`nicegui.elements.codemirror.CodeMirror.binding`
-    rather than instantiating directly.
-    """
-    callback: Handler[CodeMirrorKeybindingEventArguments]
-    prevent_default: bool = True
-    mac: str | None = None
-    linux: str | None = None
-    win: str | None = None
 
 
 def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
