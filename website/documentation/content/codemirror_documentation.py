@@ -29,15 +29,26 @@ def preserve_cursor_demo() -> None:
 
 @doc.demo('Linting Diagnostics', '''
     ``set_diagnostics`` renders inline error/warning marks with hover tooltips.
-    Each diagnostic targets a 1-indexed line and carries a message; ``severity`` and ``source`` are optional.
-    ``clear_diagnostics`` removes all of them.
+    Each diagnostic targets a 1-indexed line and carries a message; ``severity``, ``source``,
+    and the column range (``column`` and ``end_column``, 1-indexed; ``end_column`` is exclusive) are optional.
+    ``clear_diagnostics`` removes all of them. ``open_lint_panel``, ``close_lint_panel``, and
+    ``toggle_lint_panel`` show or hide CodeMirror's built-in panel listing the diagnostics, and
+    ``get_diagnostic_count`` returns the count by severity.
 ''')
 def diagnostics_demo() -> None:
     editor = ui.codemirror('def add(a, b):\n    return a + c\n', language='Python').classes('h-32')
-    ui.button('Lint', on_click=lambda: editor.set_diagnostics([
-        {'line': 2, 'message': "undefined name 'c'", 'severity': 'error', 'source': 'pyflakes'},
-    ]))
+    count_label = ui.label()
+
+    async def lint() -> None:
+        editor.set_diagnostics([
+            {'line': 2, 'message': "undefined name 'c'", 'severity': 'error',
+             'source': 'pyflakes', 'column': 16, 'end_column': 17},
+        ])
+        count_label.text = str(await editor.get_diagnostic_count())
+
+    ui.button('Lint', on_click=lint)
     ui.button('Clear', on_click=editor.clear_diagnostics)
+    ui.button('Toggle Panel', on_click=editor.toggle_lint_panel)
 
 
 doc.reference(ui.codemirror)

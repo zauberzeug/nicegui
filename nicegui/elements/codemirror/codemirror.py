@@ -13,11 +13,15 @@ class Diagnostic(TypedDict):
     """Single linting diagnostic for ``ui.codemirror.set_diagnostics``.
 
     ``severity`` defaults to ``'error'`` if omitted; ``source`` is shown next to the message.
+    ``column`` and ``end_column`` (1-indexed; ``end_column`` is exclusive) narrow the mark
+    to a sub-line range; if both are omitted the mark spans the whole line.
     """
     line: int
     message: str
     severity: NotRequired[Literal['info', 'warning', 'error', 'hint']]
     source: NotRequired[str]
+    column: NotRequired[int]
+    end_column: NotRequired[int]
 
 
 SUPPORTED_LANGUAGES = Literal[
@@ -373,16 +377,54 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def set_diagnostics(self, diagnostics: list[Diagnostic]) -> None:
         """Set linting diagnostics as inline marks with hover tooltips on the affected lines.
 
-        Each entry is a :class:`Diagnostic` dict with required ``line`` (1-indexed) and ``message``;
-        ``severity`` (``'error'`` | ``'warning'`` | ``'info'`` | ``'hint'``, default ``'error'``)
-        and ``source`` (label shown next to the message) are optional.
-        Out-of-range or non-integer ``line`` values are skipped with a console warning.
+        Each entry is a ``Diagnostic`` dict with required ``line`` (1-indexed) and ``message``;
+        ``severity`` (``'error'`` | ``'warning'`` | ``'info'`` | ``'hint'``, default ``'error'``),
+        ``source`` (label shown next to the message), and the column range
+        (``column`` and ``end_column``, 1-indexed; ``end_column`` is exclusive) are optional.
+        Out-of-range or non-integer ``line`` values are skipped with a console warning;
+        out-of-range column values are clamped to line bounds.
+
+        *Added in version X.Y.0*
         """
         self.run_method('setDiagnostics', diagnostics)
 
     def clear_diagnostics(self) -> None:
-        """Clear all linting diagnostics."""
+        """Clear all linting diagnostics.
+
+        *Added in version X.Y.0*
+        """
         self.run_method('setDiagnostics', [])
+
+    def open_lint_panel(self) -> None:
+        """Show CodeMirror's lint panel listing all current diagnostics.
+
+        *Added in version X.Y.0*
+        """
+        self.run_method('openLintPanel')
+
+    def close_lint_panel(self) -> None:
+        """Hide CodeMirror's lint panel.
+
+        *Added in version X.Y.0*
+        """
+        self.run_method('closeLintPanel')
+
+    def toggle_lint_panel(self) -> None:
+        """Toggle CodeMirror's lint panel.
+
+        *Added in version X.Y.0*
+        """
+        self.run_method('toggleLintPanel')
+
+    async def get_diagnostic_count(self) -> dict[str, int]:
+        """Return a count of currently-set diagnostics by severity.
+
+        The returned dict has keys ``'error'``, ``'warning'``, ``'info'``, ``'hint'``,
+        plus ``'total'`` for the sum.
+
+        *Added in version X.Y.0*
+        """
+        return await self.run_method('getDiagnosticCount')
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
