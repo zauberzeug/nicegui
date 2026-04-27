@@ -466,17 +466,6 @@ EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class CodeMirrorHandlerSpec(Generic[EventT]):
-    """Wraps a CodeMirror handler with per-registration config overrides.
-
-    Construct via :meth:`nicegui.elements.codemirror.CodeMirror.handler` rather
-    than instantiating directly.
-    """
-    callback: Handler[EventT]
-    debounce_ms: int | None = None
-
-
 def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
     """Call the given event handler.
 

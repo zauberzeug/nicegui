@@ -109,7 +109,7 @@ def test_selection_change_event(screen: Screen):
         )
 
     screen.open('/')
-    screen.wait(0.3)  # let the editor mount
+    screen.should_contain('Line 2')
     # Move the cursor to line 2, column 4 (3 chars past line.from) via a CM6 selection transaction.
     # This bypasses focus/keystroke timing fragility in Selenium.
     screen.selenium.execute_script(
@@ -129,7 +129,7 @@ def test_focus_change_event(screen: Screen):
         editor = ui.codemirror('Hello', on_focus_change=lambda e: events.append(e.focused))
 
     screen.open('/')
-    screen.wait(0.3)
+    screen.should_contain('Hello')
     # Focus then blur the editor via JS to avoid Selenium focus-stealing flakiness.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id}); el.editor.focus();'
@@ -154,7 +154,7 @@ def test_viewport_change_event(screen: Screen):
         )
 
     screen.open('/')
-    screen.wait(0.3)
+    screen.should_contain('Line 1')
     editor.reveal_line(150)
     # After reveal_line, the viewport should report a range containing line 150.
     screen.wait_for(lambda: any(from_line <= 150 <= to_line for from_line, to_line in events))
@@ -171,7 +171,7 @@ def test_geometry_change_event(screen: Screen):
         editor.on_geometry_change(lambda e: events.append((e.width, e.height, e.content_height)))
 
     screen.open('/')
-    screen.wait(0.3)
+    screen.should_contain('Hello')
     # Resize the editor's container to trigger a geometry change.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id}); el.$el.style.height = "400px";'
@@ -201,7 +201,7 @@ def test_no_handler_no_traffic(screen: Screen):
         editor.on('selection-change', lambda e: events.append(e.args))
 
     screen.open('/')
-    screen.wait(0.3)
+    screen.should_contain('Line 1')
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
@@ -227,7 +227,7 @@ def test_debounce_override(screen: Screen):
         )
 
     screen.open('/')
-    screen.wait(0.3)
+    screen.should_contain('Line 1')
     # Fire 5 rapid selection moves well inside the 200 ms debounce window.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'

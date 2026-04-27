@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from itertools import accumulate, chain, repeat
-from typing import Any, Literal, get_args
+from typing import Any, Generic, Literal, get_args
 
 from typing_extensions import Self
 
@@ -9,9 +10,9 @@ from ...elements.mixins.value_element import ValueElement
 from ...events import (
     CodeMirrorFocusChangeEventArguments,
     CodeMirrorGeometryChangeEventArguments,
-    CodeMirrorHandlerSpec,
     CodeMirrorSelectionChangeEventArguments,
     CodeMirrorViewportChangeEventArguments,
+    EventT,
     GenericEventArguments,
     Handler,
     ValueChangeEventArguments,
@@ -258,6 +259,16 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class CodeMirrorHandlerSpec(Generic[EventT]):
+    """Wraps a CodeMirror handler with per-registration config overrides.
+
+    Construct via :meth:`CodeMirror.handler` rather than instantiating directly.
+    """
+    callback: Handler[EventT]
+    debounce_ms: int | None = None
+
+
 class CodeMirror(ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
@@ -336,14 +347,6 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('selectionTrackingEnabled', 'selection-tracking-enabled')
-        self._props.add_rename('focusTrackingEnabled', 'focus-tracking-enabled')
-        self._props.add_rename('viewportTrackingEnabled', 'viewport-tracking-enabled')
-        self._props.add_rename('geometryTrackingEnabled', 'geometry-tracking-enabled')
-        self._props.add_rename('selectionDebounceMs', 'selection-debounce-ms')
-        self._props.add_rename('focusDebounceMs', 'focus-debounce-ms')
-        self._props.add_rename('viewportDebounceMs', 'viewport-debounce-ms')
-        self._props.add_rename('geometryDebounceMs', 'geometry-debounce-ms')
 
         if on_selection_change is not None:
             self.on_selection_change(on_selection_change)
@@ -356,10 +359,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
     @staticmethod
     def handler(
-        callback: Handler[Any],
+        callback: Handler[EventT],
         *,
         debounce_ms: int | None = None,
-    ) -> CodeMirrorHandlerSpec[Any]:
+    ) -> CodeMirrorHandlerSpec[EventT]:
         """Wrap a CodeMirror signal handler with per-registration config overrides.
 
         Use this to override the default debounce for a single signal registration::
