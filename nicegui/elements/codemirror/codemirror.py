@@ -24,6 +24,15 @@ class Diagnostic(TypedDict):
     end_column: NotRequired[int]
 
 
+class DiagnosticCount(TypedDict):
+    """Per-severity counts returned by ``ui.codemirror.get_diagnostic_count``."""
+    error: int
+    warning: int
+    info: int
+    hint: int
+    total: int
+
+
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
     'APL',
@@ -416,7 +425,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self.run_method('toggleLintPanel')
 
-    async def get_diagnostic_count(self) -> dict[str, int]:
+    async def get_diagnostic_count(self) -> DiagnosticCount:
         """Return a count of currently-set diagnostics by severity.
 
         The returned dict has keys ``'error'``, ``'warning'``, ``'info'``, ``'hint'``,
