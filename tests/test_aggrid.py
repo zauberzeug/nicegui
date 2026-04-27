@@ -1,6 +1,7 @@
 import inspect
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import polars as pl
@@ -358,74 +359,24 @@ def test_version_matches_js(screen: Screen):
     screen.should_contain(ui.aggrid.VERSION)
 
 
-def test_pandas_named_index_included(screen: Screen):
-    """Test that DataFrames with named indices have their index included as a column."""
+@pytest.mark.parametrize('index,expected,unexpected', [
+    (pd.Index([100, 200], name='id'), ['Id', '100', '200'], []),
+    (pd.RangeIndex(start=100, stop=102), ['Index', '100', '101'], []),
+    (pd.Index(['x', 'y']), ['Index', 'x', 'y'], []),
+    (pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['char', 'num']), ['Char', 'Num', 'A', 'B', '1', '2'], []),
+    (pd.RangeIndex(start=0, stop=2), [], ['Index']),
+])
+def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unexpected: list[str]):
     @ui.page('/')
     def page():
-        df = pd.DataFrame({'value': [10, 20]}, index=pd.Index([100, 200], name='id'))
+        df = pd.DataFrame({'value': [42, 43]}, index=index)
         ui.aggrid.from_pandas(df)
 
     screen.open('/')
-    screen.should_contain('100')
-    screen.should_contain('200')
-    screen.should_contain('10')
-    screen.should_contain('20')
-
-
-def test_pandas_custom_rangeindex_included(screen: Screen):
-    """Test that DataFrames with custom RangeIndex (start != 0) have their index included."""
-    @ui.page('/')
-    def page():
-        df = pd.DataFrame({'value': [10, 20]}, index=pd.RangeIndex(start=5, stop=7))
-        ui.aggrid.from_pandas(df)
-
-    screen.open('/')
-    screen.should_contain('5')
-    screen.should_contain('6')
-    screen.should_contain('10')
-    screen.should_contain('20')
-
-
-def test_pandas_string_index_included(screen: Screen):
-    """Test that DataFrames with string indices have their index included."""
-    @ui.page('/')
-    def page():
-        df = pd.DataFrame({'value': [10, 20]}, index=['a', 'b'])
-        ui.aggrid.from_pandas(df)
-
-    screen.open('/')
-    screen.should_contain('a')
-    screen.should_contain('b')
-    screen.should_contain('10')
-    screen.should_contain('20')
-
-
-def test_pandas_multiindex_included(screen: Screen):
-    """Test that DataFrames with MultiIndex have their index levels included as columns."""
-    @ui.page('/')
-    def page():
-        df = pd.DataFrame(
-            {'value': [10, 20]},
-            index=pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['letter', 'number'])
-        )
-        ui.aggrid.from_pandas(df)
-
-    screen.open('/')
-    screen.should_contain('A')
-    screen.should_contain('B')
-    screen.should_contain('1')
-    screen.should_contain('2')
-    screen.should_contain('10')
-    screen.should_contain('20')
-
-
-def test_pandas_default_rangeindex_excluded(screen: Screen):
-    """Test that DataFrames with default RangeIndex (unnamed, start=0) continue to exclude the index."""
-    @ui.page('/')
-    def page():
-        df = pd.DataFrame({'value': [10, 20]})
-        ui.aggrid.from_pandas(df)
-
-    screen.open('/')
-    screen.should_contain('10')
-    screen.should_contain('20')
+    screen.should_contain('Value')
+    screen.should_contain('42')
+    screen.should_contain('43')
+    for item in expected:
+        screen.should_contain(item)
+    for item in unexpected:
+        screen.should_not_contain(item)
