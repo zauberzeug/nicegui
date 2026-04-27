@@ -106,6 +106,18 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
+        # Detect if index is informative and should be included as column(s)
+        has_informative_index = (
+            df.index.name is not None or
+            not isinstance(df.index, pd.RangeIndex) or
+            (isinstance(df.index, pd.RangeIndex) and (df.index.start != 0 or df.index.step != 1)) or
+            isinstance(df.index, pd.MultiIndex)
+        )
+
+        # Reset index if informative to include it as column(s)
+        if has_informative_index:
+            df = df.reset_index()
+
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or

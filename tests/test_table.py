@@ -437,3 +437,87 @@ def test_fullscreen_scroll_behavior(screen: Screen):
     screen.click('Toggle fullscreen')
     screen.wait(0.5)
     assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+def test_pandas_named_index_included(screen: Screen):
+    """Test that DataFrames with named indices have their index included as a column."""
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [10, 20]}, index=pd.Index([100, 200], name='id'))
+        ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('id')
+    screen.should_contain('100')
+    screen.should_contain('200')
+    screen.should_contain('value')
+    screen.should_contain('10')
+    screen.should_contain('20')
+
+
+def test_pandas_custom_rangeindex_included(screen: Screen):
+    """Test that DataFrames with custom RangeIndex (start != 0) have their index included."""
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [10, 20]}, index=pd.RangeIndex(start=5, stop=7))
+        ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('index')
+    screen.should_contain('5')
+    screen.should_contain('6')
+    screen.should_contain('value')
+    screen.should_contain('10')
+    screen.should_contain('20')
+
+
+def test_pandas_string_index_included(screen: Screen):
+    """Test that DataFrames with string indices have their index included."""
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [10, 20]}, index=['a', 'b'])
+        ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('index')
+    screen.should_contain('a')
+    screen.should_contain('b')
+    screen.should_contain('value')
+    screen.should_contain('10')
+    screen.should_contain('20')
+
+
+def test_pandas_multiindex_included(screen: Screen):
+    """Test that DataFrames with MultiIndex have their index levels included as columns."""
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame(
+            {'value': [10, 20]},
+            index=pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['letter', 'number'])
+        )
+        ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('letter')
+    screen.should_contain('number')
+    screen.should_contain('A')
+    screen.should_contain('B')
+    screen.should_contain('1')
+    screen.should_contain('2')
+    screen.should_contain('value')
+    screen.should_contain('10')
+    screen.should_contain('20')
+
+
+def test_pandas_default_rangeindex_excluded(screen: Screen):
+    """Test that DataFrames with default RangeIndex (unnamed, start=0) continue to exclude the index."""
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [10, 20]})
+        ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_not_contain('index')
+    screen.should_contain('value')
+    screen.should_contain('10')
+    screen.should_contain('20')
