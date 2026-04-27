@@ -333,8 +333,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         self._keybinding_specs: dict[str, CodeMirrorKeybindingSpec] = {}
         self.on('keybinding', self._dispatch_keybinding)
-        for key, handler in (keybindings or {}).items():
-            self.on_keybinding(key, handler)
+        if keybindings:
+            with self._props.suspend_updates():
+                for key, handler in keybindings.items():
+                    self.on_keybinding(key, handler)
 
     @property
     def theme(self) -> str:

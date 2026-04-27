@@ -28,11 +28,8 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    keybindings: {
-      handler() {
-        this.setKeybindings();
-      },
-      deep: true,
+    keybindings() {
+      this.setKeybindings();
     },
   },
   data() {
