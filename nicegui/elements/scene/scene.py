@@ -77,7 +77,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
-                 intersection_planes: list[SceneIntersectionPlane] | None = None,
+                 intersection_planes: list[SceneIntersectionPlane] | None = DEFAULT_PROP | None,
                  raycaster_threshold: float = DEFAULT_PROP | 1.0,
                  ) -> None:
         """3D Scene
