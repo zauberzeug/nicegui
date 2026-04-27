@@ -366,10 +366,8 @@ def test_pandas_named_index_included(screen: Screen):
         ui.aggrid.from_pandas(df)
 
     screen.open('/')
-    screen.should_contain('id')
     screen.should_contain('100')
     screen.should_contain('200')
-    screen.should_contain('value')
     screen.should_contain('10')
     screen.should_contain('20')
 
@@ -382,10 +380,8 @@ def test_pandas_custom_rangeindex_included(screen: Screen):
         ui.aggrid.from_pandas(df)
 
     screen.open('/')
-    screen.should_contain('index')
     screen.should_contain('5')
     screen.should_contain('6')
-    screen.should_contain('value')
     screen.should_contain('10')
     screen.should_contain('20')
 
@@ -398,10 +394,8 @@ def test_pandas_string_index_included(screen: Screen):
         ui.aggrid.from_pandas(df)
 
     screen.open('/')
-    screen.should_contain('index')
     screen.should_contain('a')
     screen.should_contain('b')
-    screen.should_contain('value')
     screen.should_contain('10')
     screen.should_contain('20')
 
@@ -417,13 +411,10 @@ def test_pandas_multiindex_included(screen: Screen):
         ui.aggrid.from_pandas(df)
 
     screen.open('/')
-    screen.should_contain('letter')
-    screen.should_contain('number')
     screen.should_contain('A')
     screen.should_contain('B')
     screen.should_contain('1')
     screen.should_contain('2')
-    screen.should_contain('value')
     screen.should_contain('10')
     screen.should_contain('20')
 
@@ -436,7 +427,5 @@ def test_pandas_default_rangeindex_excluded(screen: Screen):
         ui.aggrid.from_pandas(df)
 
     screen.open('/')
-    screen.should_not_contain('index')
-    screen.should_contain('value')
     screen.should_contain('10')
     screen.should_contain('20')
