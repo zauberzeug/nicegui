@@ -163,8 +163,22 @@ doc.text('', '''
 
 doc.text('Client-Side Secrets', '''
     NiceGUI assigns each client session a unique `client_id` (a random UUID).
-    This ID is used to route Socket.IO messages between the browser and the server.
-    A client session is considered **compromised** if either the `client_id` or client-side cookies are exposed to an attacker.
+
+    **Where `client_id` comes from: Pages are the only issuer.**
+    Rendering a page mints a fresh `client_id` and embeds it in the response HTML,
+    whose elements define what capabilities the `client_id` has.
+
+    - Gate important pages with authentication (middleware redirect, login check, etc.),
+    such that unauthenticated visitors never receive a `client_id` that grants access to protected functionality.
+    - Besides authentication, guard against side-channel leaks of an authenticated user's HTML (XSS, browser cache exposure).
+
+    **Where `client_id` is consumed: NiceGUI internals under `/_nicegui/`**
+
+    - All internal routes include a `client_id` in their path or query string, and consider it as the session token.
+    This includes the Socket.IO transport, the `ui.upload()` POST endpoint, and any other dynamically registered per-client route.
+    - There is no separate authentication layer on these routes. Protecting the page that mints the `client_id` is what protects them.
+
+    Hence, a client session is considered **compromised** if either the `client_id` or client-side cookies are exposed to an attacker.
 
     **To protect client sessions:**
 
@@ -173,6 +187,32 @@ doc.text('Client-Side Secrets', '''
       (e.g. serving user-uploaded HTML files could leak secrets via JavaScript).
     - **Do not expose `client_id`** in logs, URLs, or API responses visible to other users.
     - **Treat `client_id` like a session token**: anyone who knows it can send events on behalf of that client.
+    - **Secure pages, not `/_nicegui/`**, as the source of the credential is the asset to protect, not the consumer.
+''')
+
+
+doc.text('Examples Are Starting Points', '''
+    NiceGUI ships a number of [examples](/examples).
+    They demonstrate one specific mechanism (authentication, file upload, terminal, etc.) in the smallest runnable form.
+    They are **not** production templates and may intentionally omit hardening that your deployment requires.
+
+    Before using an example as the basis for a real application:
+
+    - **Read every line and understand why it is there.**
+      A pattern that is safe in a local demo may be unsafe behind a public URL.
+    - **Re-evaluate every threat model assumption.**
+      The `xterm` example, for instance, wires a browser to a Bash PTY by design — its purpose is to demo the integration, not to be exposed on the open internet.
+    - **Adapt the authentication example to your needs.**
+      It illustrates session-based auth at the page level, which is the recommended pattern,
+      but production apps typically need rate limiting, CSRF protections beyond the framework's defaults, password hashing, and audit logging — none of which the example provides.
+    - **Validate uploaded content server-side.**
+      The `ui.upload()` element enforces `max_file_size`, `max_total_size`, and `max_files` in the browser only.
+      If your `on_upload` handler writes to disk or processes the file, also validate size and type on the server.
+    - **Treat reload mode (`reload=True`) as developer-only.**
+      Auto-reload watches the working directory and re-imports changed files. This is convenient locally but unsafe in any environment where untrusted writes can reach that directory.
+
+    Examples are starting points, not finished products.
+    Every line of code in your production app is your responsibility.
 ''')
 
 
