@@ -39,7 +39,41 @@ LineDecorationSpec = TypedDict(
     },
 )
 
-DecorationSpec = MarkDecorationSpec | LineDecorationSpec
+# Replace decoration spec for `ui.codemirror.set_decorations`. Hides or visually substitutes
+# a character range without modifying the underlying document. Required: `kind: 'replace'`,
+# `from`, `to`. Optional: `text` (when present, the range renders as this text via an
+# internal text-only widget; when absent, the range is collapsed and hidden), `class`,
+# `inclusive`, `block` (render as a block-level widget for whole-line / multi-line folding —
+# when block is true the range must cover full lines).
+ReplaceDecorationSpec = TypedDict(
+    'ReplaceDecorationSpec',
+    {
+        'kind': Literal['replace'],
+        'from': int,
+        'to': int,
+        'text': NotRequired[str],
+        'class': NotRequired[str],
+        'inclusive': NotRequired[bool],
+        'block': NotRequired[bool],
+    },
+)
+
+# Widget decoration spec for `ui.codemirror.set_decorations`. Inserts a text widget at a
+# single position without modifying the document. Required: `kind: 'widget'`, `position`,
+# `text`. Optional: `class`, `side` (-1 to render before the position, 1 to render after,
+# default 1).
+WidgetDecorationSpec = TypedDict(
+    'WidgetDecorationSpec',
+    {
+        'kind': Literal['widget'],
+        'position': int,
+        'text': str,
+        'class': NotRequired[str],
+        'side': NotRequired[Literal[-1, 1]],
+    },
+)
+
+DecorationSpec = MarkDecorationSpec | LineDecorationSpec | ReplaceDecorationSpec | WidgetDecorationSpec
 
 
 SUPPORTED_LANGUAGES = Literal[
@@ -396,15 +430,19 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def set_decorations(self, decorations: list[DecorationSpec], set_name: str = 'default') -> None:
         """Set decorations for a named decoration set.
 
-        Decorations style character ranges (`kind: 'mark'`) or entire lines (`kind: 'line'`) and
-        survive document edits unlike DOM manipulation.
-        Each entry is a :class:`MarkDecorationSpec` or :class:`LineDecorationSpec` dict — the
-        ``class`` field is the only thing that produces visible styling, so the host application
-        is responsible for shipping CSS for whatever class names it passes here.
+        Decorations style or modify the editor's rendering without changing the underlying document.
+        Each entry is a :class:`MarkDecorationSpec`, :class:`LineDecorationSpec`,
+        :class:`ReplaceDecorationSpec`, or :class:`WidgetDecorationSpec` dict.
+        For mark and line decorations, the ``class`` field produces the visible styling, so the host
+        application is responsible for shipping CSS for whatever class names it passes here.
+        Replace decorations hide a range or visually swap it for text; widget decorations insert a
+        text annotation at a position.
 
         Multiple named sets can be managed independently.
         Calling ``set_decorations`` for the same ``set_name`` replaces that set's decorations;
         decorations in other sets are left untouched.
+
+        *Added in version X.Y.Z*
         """
         current = dict(self._props.get('decorations', {}))
         current[set_name] = decorations
@@ -414,6 +452,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """Clear decorations.
 
         :param set_name: clear only this named set, or all sets if ``None``
+
+        *Added in version X.Y.Z*
         """
         if set_name is None:
             self._props['decorations'] = {}
@@ -421,31 +461,6 @@ class CodeMirror(ValueElement[str], DisableableElement,
             current = dict(self._props.get('decorations', {}))
             current.pop(set_name, None)
             self._props['decorations'] = current
-
-    def highlight_lines(self,
-                        line_numbers: list[int],
-                        *,
-                        css_class: str,
-                        duration_ms: int = 1500,
-                        ) -> None:
-        """Apply a CSS class to specific lines for a fixed duration, then auto-clear.
-
-        The auto-clear timer runs on the client so the class is removed without a server
-        round-trip, which lets a CSS keyframe animation tied to ``css_class`` be re-triggered
-        cleanly on subsequent calls.
-        Use this for short visual cues (e.g. "these lines just changed, draw the user's eye");
-        for persistent line styling, use :meth:`set_decorations` with a line decoration.
-
-        ``css_class`` is required — there are no shipped default highlight styles, so the host
-        application must define CSS for whatever class name it passes here.
-
-        :param line_numbers: list of 1-indexed line numbers to highlight
-        :param css_class: CSS class to apply to the lines (caller-supplied, no shipped default)
-        :param duration_ms: time in ms before removing the highlight; ``0`` for permanent (default: 1500)
-        """
-        line_indices = [n - 1 for n in line_numbers if n > 0]
-        if line_indices:
-            self.run_method('highlightLines', line_indices, css_class, duration_ms)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

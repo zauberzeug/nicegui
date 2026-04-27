@@ -27,30 +27,41 @@ def preserve_cursor_demo() -> None:
     ))
 
 
-@doc.demo('Decorations and line flash', '''
-    `set_decorations` lets you add styled mark or line decorations on top of any text.
+@doc.demo('Decorations', '''
+    `set_decorations` adds styled overlays on top of the editor's text without modifying the
+    document. There are four kinds:
+
+    - **mark** — style a character range
+    - **line** — style an entire line
+    - **replace** — hide a range (no `text`) or replace it visually with text
+    - **widget** — insert a text annotation at a position
+
     The host application supplies its own CSS for whatever class names it passes.
-    `highlight_lines` is a convenience for transient line emphasis: it applies a class to
-    the given lines for `duration_ms` and then clears it on the client without a server
-    round-trip — useful for CSS keyframe animations that pulse a "look here" effect.
 ''')
 def decorations_demo() -> None:
     ui.add_head_html('''
         <style>
-            .my-error  { background-color: rgba(255, 0,   0, 0.2); }
-            .my-flash  { animation: my-flash 1s ease-out forwards; }
-            @keyframes my-flash {
-                0%   { background-color: rgba(255, 200, 0, 0.5); }
-                100% { background-color: transparent; }
-            }
+            .my-error  { background-color: rgba(255, 0, 0, 0.2); }
+            .my-fold   { color: #888; font-style: italic; padding: 0 4px; }
+            .my-hint   { color: #888; font-size: 0.8em; padding: 0 4px; }
         </style>
     ''')
     editor = ui.codemirror('alpha\nbeta\ngamma\ndelta\nepsilon').classes('h-32')
-    ui.button('Mark line 2 red', on_click=lambda: editor.set_decorations(
-        [{'kind': 'line', 'line': 2, 'class': 'my-error'}],
+    ui.button('Mark "beta" range', on_click=lambda: editor.set_decorations(
+        [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'my-error'}],
     ))
-    ui.button('Flash lines 4 and 5', on_click=lambda: editor.highlight_lines(
-        [4, 5], css_class='my-flash', duration_ms=1000,
+    ui.button('Highlight line 3', on_click=lambda: editor.set_decorations(
+        [{'kind': 'line', 'line': 3, 'class': 'my-error'}],
+    ))
+    ui.button('Hide line 2', on_click=lambda: editor.set_decorations(
+        [{'kind': 'replace', 'from': 6, 'to': 11}],
+    ))
+    ui.button('Fold lines 2-4', on_click=lambda: editor.set_decorations(
+        [{'kind': 'replace', 'from': 6, 'to': 22,
+          'text': '{ ... 3 lines ... }', 'class': 'my-fold', 'block': True}],
+    ))
+    ui.button('Annotate end of line 1', on_click=lambda: editor.set_decorations(
+        [{'kind': 'widget', 'position': 5, 'text': '  // first line', 'class': 'my-hint'}],
     ))
     ui.button('Clear', on_click=editor.clear_decorations)
 

@@ -1,5 +1,25 @@
 import * as CM from "nicegui-codemirror";
 
+class TextWidget extends CM.WidgetType {
+  constructor(text, cls) {
+    super();
+    this.text = text;
+    this.cls = cls || "";
+  }
+  eq(other) {
+    return other.text === this.text && other.cls === this.cls;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    if (this.cls) span.className = this.cls;
+    span.textContent = this.text;
+    return span;
+  }
+  ignoreEvent() {
+    return false;
+  }
+}
+
 export default {
   template: `
     <div></div>
@@ -48,7 +68,6 @@ export default {
       const element = mounted_app.elements[this.$props.id.slice(1)];
       if (element) element.props.value = this.editor.state.doc.toString();
     }
-    clearTimeout(this._highlightTimer);
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -139,20 +158,9 @@ export default {
       });
     },
     setDecorations(decorationSets) {
-      // Prop-driven path. `_jsHighlight` (from `highlightLines`) merges in via `_applyAllDecorations`.
-      this._propDecorations = decorationSets;
-      this._applyAllDecorations();
-    },
-    _applyAllDecorations() {
       if (!this.editor || !this.decorationsConfig) return;
-      const merged = { ...(this._propDecorations || {}) };
-      if (this._jsHighlight) merged._highlight = this._jsHighlight;
-      if (Object.keys(merged).length === 0) {
-        this.editor.dispatch({ effects: this.decorationsConfig.reconfigure([]) });
-        return;
-      }
       const all = [];
-      for (const specs of Object.values(merged)) {
+      for (const specs of Object.values(decorationSets || {})) {
         for (const spec of specs) {
           const dec = this._createDecoration(spec);
           if (dec) all.push(dec);
@@ -187,31 +195,29 @@ export default {
         if (spec.attributes) lineSpec.attributes = spec.attributes;
         return CM.Decoration.line(lineSpec).range(line.from);
       }
+      if (spec.kind === "replace") {
+        if (spec.from > spec.to) {
+          console.error("codemirror: replace decoration has from > to", spec);
+          return null;
+        }
+        const from = Math.max(0, Math.min(spec.from, doc.length));
+        const to = Math.max(from, Math.min(spec.to, doc.length));
+        const replaceSpec = {};
+        if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
+        if (spec.block) replaceSpec.block = true;
+        if (spec.text !== undefined) replaceSpec.widget = new TextWidget(spec.text, spec.class);
+        else if (spec.class) replaceSpec.class = spec.class;
+        return CM.Decoration.replace(replaceSpec).range(from, to);
+      }
+      if (spec.kind === "widget") {
+        const pos = Math.max(0, Math.min(spec.position, doc.length));
+        return CM.Decoration.widget({
+          widget: new TextWidget(spec.text, spec.class),
+          side: spec.side ?? 1,
+        }).range(pos);
+      }
       console.error("codemirror: unknown decoration kind", spec);
       return null;
-    },
-    highlightLines(lineIndices, cssClass, durationMs) {
-      if (!this.editor) return;
-      const doc = this.editor.state.doc;
-      const lineDecorations = lineIndices
-        .filter((idx) => idx >= 0 && idx < doc.lines)
-        .map((idx) => ({ kind: "line", line: idx + 1, class: cssClass }));
-      if (lineDecorations.length === 0) return;
-      this._jsHighlight = lineDecorations;
-      this._applyAllDecorations();
-      const firstLineNum = Math.min(...lineIndices) + 1;
-      const safeLineNum = Math.max(1, Math.min(firstLineNum, doc.lines));
-      const line = doc.line(safeLineNum);
-      this.editor.dispatch({
-        effects: CM.EditorView.scrollIntoView(line.from, { y: "center" }),
-      });
-      if (durationMs > 0) {
-        clearTimeout(this._highlightTimer);
-        this._highlightTimer = setTimeout(() => {
-          this._jsHighlight = null;
-          this._applyAllDecorations();
-        }, durationMs);
-      }
     },
     setupExtensions() {
       const self = this;

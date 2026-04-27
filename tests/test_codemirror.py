@@ -148,17 +148,100 @@ def test_named_decoration_sets_independent(screen: Screen):
                     and _line_decoration_count(screen, 'set-b') == 1)
 
 
-def test_highlight_lines_auto_clears(screen: Screen):
+def _visible_text_length(screen: Screen) -> int:
+    return screen.selenium.execute_script(
+        'return document.querySelector(".cm-content").innerText.length;'
+    )
+
+
+def _replacement_widget_count(screen: Screen, css_class: str) -> int:
+    return screen.selenium.execute_script(
+        f'return document.querySelectorAll(".cm-content span.{css_class}").length;'
+    )
+
+
+def test_replace_decoration_collapses_range(screen: Screen):
     editor = None
 
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('aa\nbb\ncc\ndd')
+        editor = ui.codemirror('alpha\nbeta\ngamma')
 
     screen.open('/')
     _wait_for_cm_mount(screen)
-    # Use a short duration to keep the test snappy.
-    editor.highlight_lines([2, 4], css_class='cm-test-flash', duration_ms=200)
-    screen.wait_for(lambda: _line_decoration_count(screen, 'cm-test-flash') == 2)
-    screen.wait_for(lambda: _line_decoration_count(screen, 'cm-test-flash') == 0)
+    baseline = _visible_text_length(screen)
+    # 'beta\n' spans offsets 6..11 (5 chars + newline) — collapse hides those characters.
+    editor.set_decorations([{'kind': 'replace', 'from': 6, 'to': 11}])
+    screen.wait_for(lambda: _visible_text_length(screen) < baseline)
+    editor.clear_decorations()
+    screen.wait_for(lambda: _visible_text_length(screen) == baseline)
+
+
+def test_replace_decoration_with_text(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    editor.set_decorations([
+        {'kind': 'replace', 'from': 6, 'to': 10, 'text': 'BETA-NEW', 'class': 'cm-test-suggest'},
+    ])
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-suggest') == 1)
+    widget_text = screen.selenium.execute_script(
+        'return document.querySelector(".cm-content span.cm-test-suggest").textContent;'
+    )
+    assert widget_text == 'BETA-NEW'
+    # Document is unchanged — the editor's value must still contain the original text.
+    assert 'beta' in editor.value
+    assert 'BETA-NEW' not in editor.value
+
+
+def test_replace_decoration_block_mode(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma\ndelta')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    # Lines 2-3 ('beta\ngamma') span offsets 6..16 — must cover full lines for block mode.
+    editor.set_decorations([{
+        'kind': 'replace', 'from': 6, 'to': 16,
+        'text': '{ ... folded ... }', 'class': 'cm-test-fold', 'block': True,
+    }])
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-fold') == 1)
+    visible = screen.selenium.execute_script(
+        'return document.querySelector(".cm-content").innerText;'
+    )
+    assert 'beta' not in visible
+    assert 'gamma' not in visible
+    assert '{ ... folded ... }' in visible
+
+
+def test_widget_decoration_inserts_text(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    editor.set_decorations([
+        {'kind': 'widget', 'position': 5, 'text': '<-- end of alpha', 'class': 'cm-test-hint'},
+    ])
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-hint') == 1)
+    widget_text = screen.selenium.execute_script(
+        'return document.querySelector(".cm-content span.cm-test-hint").textContent;'
+    )
+    assert widget_text == '<-- end of alpha'
+    # Document is unchanged — widgets are presentation only.
+    assert editor.value == 'alpha\nbeta\ngamma'
