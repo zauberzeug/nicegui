@@ -91,6 +91,18 @@ export default {
     this.dragging_count = 0;             // # of TransformControls currently being dragged
     this.userOrbitEnabled = true;        // user-intended orbit state; restored on drag end
     this.is_initialized = false;
+    // Per-object pointer event substrate.
+    // - interactiveObjects: three.js Object3D refs we raycast against on pointer events.
+    //   Always exactly the set of objects with at least one handler registered or a hover effect set.
+    // - objectHandlers: object_id -> Set<event_type> of event names the Python side is listening to.
+    // - objectEffects: object_id -> {effect: 'glow'|'outline'|'tint', color: string|null} hover-effect spec.
+    // - effectArtifacts: object_id -> internal three.js state used to render & tear down the effect.
+    this.interactiveObjects = [];
+    this.objectHandlers = new Map();
+    this.objectEffects = new Map();
+    this.effectArtifacts = new Map();
+    this.hoveredObjectId = null;
+    this._lastPointerMoveEmit = 0;
 
     if (this.showStats) {
       this.stats = new Stats();
@@ -221,60 +233,106 @@ export default {
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
-    // Hover glow: each hovered mesh descendant is mirrored by a back-face glow clone.
-    // The glow group lives in the scene only while a hover is active; the per-frame sync
-    // skips work when the hovered root's matrixWorld hasn't changed since the last frame.
-    this.hoveredObject = null;
-    this.hoverGlowGroup = new THREE.Group();
+    // Hover-effect substrate. An effect-artifact entry holds the three.js objects that render the
+    // effect, plus a snapshot of the source root's matrixWorld so we can skip per-frame syncs when
+    // the source hasn't moved. Built when the source becomes hovered, torn down when un-hovered.
     this._hoverWorldPos = new THREE.Vector3();
     this._hoverWorldQuat = new THREE.Quaternion();
     this._hoverWorldScale = new THREE.Vector3();
-    this._lastHoverHash = null;
     this._transformWP = new THREE.Vector3();
-    this._clearHoverGlow = () => {
-      while (this.hoverGlowGroup.children.length) {
-        const child = this.hoverGlowGroup.children.pop();
-        if (child.material) child.material.dispose();
-      }
-      if (this.hoverGlowGroup.parent) this.hoverGlowGroup.parent.remove(this.hoverGlowGroup);
-      this._lastHoverHash = null;
-    };
-    this._buildHoverGlow = (rootObject) => {
-      if (!this.hoverGlowGroup.parent) this.scene.add(this.hoverGlowGroup);
-      rootObject.traverse((descendant) => {
-        if (!descendant.isMesh || !descendant.geometry) return;
-        const material = new THREE.MeshBasicMaterial({
-          color: this.hoverColor ?? "#ffffff",
-          transparent: true,
-          opacity: this.hoverOpacity ?? 0.2,
-          side: THREE.BackSide,
-          depthWrite: false,
+
+    this._buildEffectArtifact = (object_id, rootObject, spec) => {
+      const color = spec.color ?? this.hoverColor ?? "#ffffff";
+      if (spec.effect === "glow") {
+        const group = new THREE.Group();
+        rootObject.traverse((descendant) => {
+          if (!descendant.isMesh || !descendant.geometry) return;
+          const material = new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: this.hoverOpacity ?? 0.2,
+            side: THREE.BackSide,
+            depthWrite: false,
+          });
+          const glow = new THREE.Mesh(descendant.geometry, material);
+          glow.renderOrder = 999;
+          glow.userData.effectSource = descendant;
+          group.add(glow);
         });
-        const glow = new THREE.Mesh(descendant.geometry, material);
-        glow.renderOrder = 999;
-        glow.userData.hoverSource = descendant;
-        this.hoverGlowGroup.add(glow);
-      });
-      this._lastHoverHash = null; // force a sync on the next frame
+        this.scene.add(group);
+        return { effect: "glow", group, source: rootObject, lastMatrix: new THREE.Matrix4() };
+      }
+      if (spec.effect === "outline") {
+        const group = new THREE.Group();
+        rootObject.traverse((descendant) => {
+          if (!descendant.isMesh || !descendant.geometry) return;
+          const edges = new THREE.EdgesGeometry(descendant.geometry);
+          const material = new THREE.LineBasicMaterial({ color, transparent: true });
+          const line = new THREE.LineSegments(edges, material);
+          line.renderOrder = 999;
+          line.userData.effectSource = descendant;
+          group.add(line);
+        });
+        this.scene.add(group);
+        return { effect: "outline", group, source: rootObject, lastMatrix: new THREE.Matrix4() };
+      }
+      if (spec.effect === "tint") {
+        // Per-instance material clone so shared materials aren't mutated.
+        // Save the original material and the cloned-with-emissive material so we can restore on clear.
+        const tinted = [];
+        rootObject.traverse((descendant) => {
+          if (!descendant.isMesh || !descendant.material || !descendant.material.emissive) return;
+          const original = descendant.material;
+          const clone = original.clone();
+          clone.emissive = new THREE.Color(color);
+          descendant.material = clone;
+          tinted.push({ mesh: descendant, original, clone });
+        });
+        return { effect: "tint", tinted, source: rootObject, lastMatrix: null };
+      }
+      return null;
     };
-    this._syncHoverGlowIfDirty = () => {
-      if (!this.hoveredObject || this.hoverGlowGroup.children.length === 0) return;
-      // Hash on the hovered root's world matrix — if it hasn't moved, no mesh descendant has either.
-      this.hoveredObject.updateMatrixWorld();
-      const elements = this.hoveredObject.matrixWorld.elements;
-      const hash = elements.join(",");
-      if (hash === this._lastHoverHash) return;
-      this._lastHoverHash = hash;
+
+    this._clearEffectArtifact = (object_id) => {
+      const artifact = this.effectArtifacts.get(object_id);
+      if (!artifact) return;
+      if (artifact.effect === "glow" || artifact.effect === "outline") {
+        for (const child of artifact.group.children) {
+          if (child.material) child.material.dispose();
+          if (child.geometry && artifact.effect === "outline") child.geometry.dispose();
+        }
+        if (artifact.group.parent) artifact.group.parent.remove(artifact.group);
+      } else if (artifact.effect === "tint") {
+        for (const { mesh, original, clone } of artifact.tinted) {
+          if (mesh.material === clone) mesh.material = original;
+          clone.dispose();
+        }
+      }
+      this.effectArtifacts.delete(object_id);
+    };
+
+    this._syncEffectsIfDirty = () => {
+      // Per-frame matrix-driven sync for glow/outline. Tint requires no sync (lives on the original mesh).
       const expansion = this.hoverScale ?? 1.05;
-      for (const glow of this.hoverGlowGroup.children) {
-        const src = glow.userData.hoverSource;
-        if (!src) continue;
-        src.getWorldPosition(this._hoverWorldPos);
-        src.getWorldQuaternion(this._hoverWorldQuat);
-        src.getWorldScale(this._hoverWorldScale);
-        glow.position.copy(this._hoverWorldPos);
-        glow.quaternion.copy(this._hoverWorldQuat);
-        glow.scale.copy(this._hoverWorldScale).multiplyScalar(expansion);
+      for (const [object_id, artifact] of this.effectArtifacts) {
+        if (artifact.effect !== "glow" && artifact.effect !== "outline") continue;
+        artifact.source.updateMatrixWorld();
+        if (artifact.lastMatrix.equals(artifact.source.matrixWorld)) continue;
+        artifact.lastMatrix.copy(artifact.source.matrixWorld);
+        for (const child of artifact.group.children) {
+          const src = child.userData.effectSource;
+          if (!src) continue;
+          src.getWorldPosition(this._hoverWorldPos);
+          src.getWorldQuaternion(this._hoverWorldQuat);
+          src.getWorldScale(this._hoverWorldScale);
+          child.position.copy(this._hoverWorldPos);
+          child.quaternion.copy(this._hoverWorldQuat);
+          if (artifact.effect === "glow") {
+            child.scale.copy(this._hoverWorldScale).multiplyScalar(expansion);
+          } else {
+            child.scale.copy(this._hoverWorldScale);
+          }
+        }
       }
     };
 
@@ -282,7 +340,7 @@ export default {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.controls.update(this.clock.getDelta());
-      this._syncHoverGlowIfDirty();
+      this._syncEffectsIfDirty();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -292,42 +350,124 @@ export default {
 
     const raycaster = new THREE.Raycaster();
 
-    this.renderer.domElement.addEventListener("pointermove", (e) => {
-      if (!this.objects) return;
-      // Cheap early-out: scan the object map for any hoverable. If none, skip raycasting.
-      let anyHoverable = false;
-      for (const obj of this.objects.values()) {
-        if (obj && obj._hoverable) { anyHoverable = true; break; }
-      }
-      if (!anyHoverable && !this.hoveredObject) return;
-      const rect = this.renderer.domElement.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera({ x, y }, this.camera);
-      const hits = raycaster
-        .intersectObjects(this.scene.children, true)
-        .filter((o) => o.object.object_id);
-      let newHover = null;
-      for (const hit of hits) {
-        let obj = hit.object;
-        while (obj) {
-          if (obj.object_id && this.objects.has(obj.object_id)) {
-            const mapped = this.objects.get(obj.object_id);
-            if (mapped._hoverable) { newHover = mapped; break; }
-          }
-          obj = obj.parent;
+    // Walk parent chain to find the closest interactive ancestor (one we have handler/effect state for).
+    const findInteractiveAncestor = (object) => {
+      let obj = object;
+      while (obj) {
+        if (obj.object_id &&
+            this.objects.has(obj.object_id) &&
+            (this.objectHandlers.has(obj.object_id) || this.objectEffects.has(obj.object_id))) {
+          return obj.object_id;
         }
-        if (newHover) break;
+        obj = obj.parent;
       }
-      if (newHover === this.hoveredObject) return;
-      this._clearHoverGlow();
-      if (this.hoveredObject) this.renderer.domElement.style.cursor = "";
-      if (newHover) {
-        this._buildHoverGlow(newHover);
-        this.renderer.domElement.style.cursor = "pointer";
+      return null;
+    };
+
+    const raycastInteractive = (clientX, clientY) => {
+      if (this.interactiveObjects.length === 0) return [];
+      const rect = this.renderer.domElement.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera({ x, y }, this.camera);
+      return raycaster.intersectObjects(this.interactiveObjects, true);
+    };
+
+    // Find the topmost interactive object_id under the cursor. Returns {id, point, localPoint} or nulls.
+    const findHit = (clientX, clientY) => {
+      const hits = raycastInteractive(clientX, clientY);
+      for (const hit of hits) {
+        const id = findInteractiveAncestor(hit.object);
+        if (id) {
+          const root = this.objects.get(id);
+          // Local hit point: world → root local space
+          const localPoint = root.worldToLocal(hit.point.clone());
+          return { id, point: hit.point, localPoint };
+        }
       }
-      this.hoveredObject = newHover;
+      return { id: null, point: null, localPoint: null };
+    };
+
+    const buildPayload = (type, id, point, localPoint, mouseEvent) => ({
+      type,
+      object_id: id,
+      object_name: this.objects.get(id)?.name ?? "",
+      button: mouseEvent?.button ?? 0,
+      alt_key: !!mouseEvent?.altKey,
+      ctrl_key: !!mouseEvent?.ctrlKey,
+      meta_key: !!mouseEvent?.metaKey,
+      shift_key: !!mouseEvent?.shiftKey,
+      x: localPoint?.x ?? 0,
+      y: localPoint?.y ?? 0,
+      z: localPoint?.z ?? 0,
+      wx: point?.x ?? 0,
+      wy: point?.y ?? 0,
+      wz: point?.z ?? 0,
     });
+
+    const emitPointerEvent = (type, id, point, localPoint, mouseEvent) => {
+      if (!this.objectHandlers.get(id)?.has(type)) return;
+      this.$emit("pointerevent", buildPayload(type, id, point, localPoint, mouseEvent));
+    };
+
+    this.renderer.domElement.addEventListener("pointermove", (e) => {
+      if (this.interactiveObjects.length === 0 && !this.hoveredObjectId) return;
+      const { id: newHoveredId, point, localPoint } = findHit(e.clientX, e.clientY);
+
+      if (newHoveredId !== this.hoveredObjectId) {
+        // Tear down effect on previously hovered object, then emit pointerout.
+        if (this.hoveredObjectId) {
+          this._clearEffectArtifact(this.hoveredObjectId);
+          // Use empty point for pointerout — cursor has already left the object.
+          emitPointerEvent("pointerout", this.hoveredObjectId, null, null, e);
+        }
+        // Build effect on newly hovered object, then emit pointerover.
+        if (newHoveredId) {
+          const spec = this.objectEffects.get(newHoveredId);
+          if (spec) {
+            const root = this.objects.get(newHoveredId);
+            const artifact = this._buildEffectArtifact(newHoveredId, root, spec);
+            if (artifact) this.effectArtifacts.set(newHoveredId, artifact);
+          }
+          emitPointerEvent("pointerover", newHoveredId, point, localPoint, e);
+        }
+        this.renderer.domElement.style.cursor = newHoveredId ? "pointer" : "";
+        this.hoveredObjectId = newHoveredId;
+      }
+
+      // Continuous pointermove emission — throttled to ~60Hz to avoid websocket flooding.
+      if (newHoveredId && this.objectHandlers.get(newHoveredId)?.has("pointermove")) {
+        const now = performance.now();
+        if (now - this._lastPointerMoveEmit > 16) {
+          this._lastPointerMoveEmit = now;
+          emitPointerEvent("pointermove", newHoveredId, point, localPoint, e);
+        }
+      }
+    });
+
+    const handlePerObjectMouseEvent = (eventType) => (e) => {
+      const { id, point, localPoint } = findHit(e.clientX, e.clientY);
+      if (id) {
+        emitPointerEvent(eventType, id, point, localPoint, e);
+      } else if (eventType === "click" || eventType === "dblclick" ||
+                 eventType === "contextmenu" || eventType === "pointerdown") {
+        // Scene-level pointer-missed for clicks that don't hit any interactive object.
+        this.$emit("pointermissed", {
+          type: eventType,
+          button: e.button ?? 0,
+          alt_key: !!e.altKey,
+          ctrl_key: !!e.ctrlKey,
+          meta_key: !!e.metaKey,
+          shift_key: !!e.shiftKey,
+        });
+      }
+    };
+
+    this.renderer.domElement.addEventListener("pointerdown", handlePerObjectMouseEvent("pointerdown"));
+    this.renderer.domElement.addEventListener("pointerup", handlePerObjectMouseEvent("pointerup"));
+    this.renderer.domElement.addEventListener("click", handlePerObjectMouseEvent("click"));
+    this.renderer.domElement.addEventListener("dblclick", handlePerObjectMouseEvent("dblclick"));
+    this.renderer.domElement.addEventListener("contextmenu", handlePerObjectMouseEvent("contextmenu"));
 
     const click_handler = (mouseEvent) => {
       let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
@@ -526,9 +666,65 @@ export default {
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
-    hoverable(object_id, value) {
+    set_handler_types(object_id, types) {
       if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id)._hoverable = !!value;
+      const obj = this.objects.get(object_id);
+      const next = Array.isArray(types) && types.length > 0 ? new Set(types) : null;
+      const wasInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (next) {
+        this.objectHandlers.set(object_id, next);
+      } else {
+        this.objectHandlers.delete(object_id);
+      }
+      const isInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (isInteractive && !wasInteractive) this.interactiveObjects.push(obj);
+      else if (!isInteractive && wasInteractive) {
+        const i = this.interactiveObjects.indexOf(obj);
+        if (i !== -1) this.interactiveObjects.splice(i, 1);
+        if (this.hoveredObjectId === object_id) {
+          this._clearEffectArtifact(object_id);
+          this.renderer.domElement.style.cursor = "";
+          this.hoveredObjectId = null;
+        }
+      }
+    },
+    set_effect(object_id, effect, color) {
+      if (!this.objects.has(object_id)) return;
+      const obj = this.objects.get(object_id);
+      const wasInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (effect === null || effect === undefined || effect === "none" || effect === false) {
+        this.objectEffects.delete(object_id);
+      } else {
+        this.objectEffects.set(object_id, { effect, color: color ?? null });
+      }
+      const isInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (isInteractive && !wasInteractive) this.interactiveObjects.push(obj);
+      else if (!isInteractive && wasInteractive) {
+        const i = this.interactiveObjects.indexOf(obj);
+        if (i !== -1) this.interactiveObjects.splice(i, 1);
+      }
+      // If currently hovered, rebuild artifact for the new spec (or clear if removed).
+      if (this.hoveredObjectId === object_id) {
+        this._clearEffectArtifact(object_id);
+        const spec = this.objectEffects.get(object_id);
+        if (spec) {
+          const artifact = this._buildEffectArtifact(object_id, obj, spec);
+          if (artifact) this.effectArtifacts.set(object_id, artifact);
+        }
+        if (!isInteractive) {
+          this.renderer.domElement.style.cursor = "";
+          this.hoveredObjectId = null;
+        }
+      }
+    },
+    has_handler(object_id, type) {
+      return this.objectHandlers.get(object_id)?.has(type) ?? false;
+    },
+    has_effect(object_id) {
+      return this.objectEffects.has(object_id);
+    },
+    is_interactive(object_id) {
+      return this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
     },
     set_orbit_enabled(value) {
       this.userOrbitEnabled = !!value;
@@ -662,12 +858,17 @@ export default {
       if (this.transform_controls.has(object_id)) {
         this.disable_transform_controls(object_id);
       }
-      // If the deleted object was hovered, clear the glow.
-      if (this.hoveredObject === object) {
-        this._clearHoverGlow();
+      // If the deleted object was hovered, tear down its effect and reset cursor.
+      if (this.hoveredObjectId === object_id) {
+        this._clearEffectArtifact(object_id);
         this.renderer.domElement.style.cursor = "";
-        this.hoveredObject = null;
+        this.hoveredObjectId = null;
       }
+      // Drop interactive state for this object.
+      this.objectHandlers.delete(object_id);
+      this.objectEffects.delete(object_id);
+      const interactiveIndex = this.interactiveObjects.indexOf(object);
+      if (interactiveIndex !== -1) this.interactiveObjects.splice(interactiveIndex, 1);
       object.removeFromParent();
       this.objects.delete(object_id);
       const index = this.draggable_objects.indexOf(object);
@@ -806,7 +1007,7 @@ export default {
         sz,
         visible,
         draggable,
-        hoverable, // optional trailing field; missing in old payloads, treated as falsy
+        interactive, // optional trailing field: {handlers?: string[], effect?: {effect, color}}
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
@@ -816,7 +1017,10 @@ export default {
         this.scale(id, sx, sy, sz);
         this.visible(id, visible);
         this.draggable(id, draggable);
-        if (hoverable) this.hoverable(id, true);
+        if (interactive) {
+          if (interactive.handlers) this.set_handler_types(id, interactive.handlers);
+          if (interactive.effect) this.set_effect(id, interactive.effect.effect, interactive.effect.color);
+        }
       }
     },
   },

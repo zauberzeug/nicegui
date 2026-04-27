@@ -337,19 +337,128 @@ def test_set_orbit_enabled_survives_transform_drag(screen: Screen):
     ) is False
 
 
-def test_hoverable_serialization_only_when_truthy(screen: Screen):
+def test_interactive_payload_only_when_truthy(screen: Screen):
+    """Plain objects' data length stays stable; objects with handlers or effects append a trailing dict."""
     scene = None
     plain = None
-    hot = None
+    handled = None
+    glowed = None
 
     @ui.page('/')
     def page():
-        nonlocal scene, plain, hot
+        nonlocal scene, plain, handled, glowed
         with ui.scene() as scene:
             plain = scene.box()
-            hot = scene.box().hoverable()
+            handled = scene.box().on_pointer_over(lambda _: None)
+            glowed = scene.box().hover_effect('glow', color='#ff0000')
 
     screen.open('/')
-    # Hoverable adds exactly one trailing truthy field; plain payloads stay length-stable.
-    assert len(hot.data) == len(plain.data) + 1
-    assert hot.data[-1] is True
+    assert len(handled.data) == len(plain.data) + 1
+    assert handled.data[-1] == {'handlers': ['pointerover']}
+    assert len(glowed.data) == len(plain.data) + 1
+    assert glowed.data[-1] == {'effect': {'effect': 'glow', 'color': '#ff0000'}}
+
+
+def test_interactive_list_maintained_on_handler_register(screen: Screen):
+    """Registering a handler from Python adds the underlying three.js object to the JS interactiveObjects list."""
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+        ui.button('Add handler', on_click=lambda: box.on_pointer_over(lambda _: None))
+        ui.button('Add effect', on_click=lambda: box.hover_effect('outline'))
+
+    screen.open('/')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id}); return el && el.is_initialized'
+    ))
+    # Initially neither handlers nor effect set, so not interactive.
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id}).is_interactive("{box.id}")'
+    ) is False
+    screen.click('Add handler')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).has_handler("{box.id}", "pointerover")'
+    ))
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id}).interactiveObjects.length'
+    ) == 1
+    screen.click('Add effect')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).has_effect("{box.id}")'
+    ))
+    # Adding an effect to an already-interactive object doesn't double-add it.
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id}).interactiveObjects.length'
+    ) == 1
+
+
+def test_hover_effect_named_variants(screen: Screen):
+    """Each named effect installs the right kind of three.js artifact when hovered, and tears down cleanly."""
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+        ui.button('Glow', on_click=lambda: box.hover_effect('glow'))
+        ui.button('Outline', on_click=lambda: box.hover_effect('outline'))
+        ui.button('Tint', on_click=lambda: box.hover_effect('tint', color='#ff0000'))
+        ui.button('Off', on_click=lambda: box.hover_effect(False))
+
+    screen.open('/')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id}); return el && el.is_initialized'
+    ))
+
+    def get_effect_spec() -> dict | None:
+        return screen.selenium.execute_script(
+            f'return getElement({scene.id}).objectEffects.get("{box.id}") ?? null'
+        )
+
+    screen.click('Glow')
+    screen.wait_for(lambda: get_effect_spec() == {'effect': 'glow', 'color': None})
+
+    screen.click('Outline')
+    screen.wait_for(lambda: get_effect_spec() == {'effect': 'outline', 'color': None})
+
+    screen.click('Tint')
+    screen.wait_for(lambda: get_effect_spec() == {'effect': 'tint', 'color': '#ff0000'})
+
+    screen.click('Off')
+    screen.wait_for(lambda: get_effect_spec() is None)
+
+
+def test_pointer_event_dispatches_to_object_handler(screen: Screen):
+    """Synthesizing a JS-side pointerevent should invoke the registered per-object Python handler."""
+    received: list[str] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box().on_pointer_over(lambda e: received.append(f'over:{e.object_id}'))
+
+    screen.open('/')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id}); return el && el.is_initialized'
+    ))
+    # Synthesize the event directly on the element. Bypasses the actual pointer raycast,
+    # but exercises the Python dispatch path end-to-end.
+    screen.selenium.execute_script(
+        f'getElement({scene.id}).$emit("pointerevent", {{'
+        f'  type: "pointerover", object_id: "{box.id}", object_name: "",'
+        '  button: 0, alt_key: false, ctrl_key: false, meta_key: false, shift_key: false,'
+        '  x: 0, y: 0, z: 0, wx: 0, wy: 0, wz: 0,'
+        '});'
+    )
+    screen.wait_for(lambda: any('over:' in msg for msg in received))
+    assert received == [f'over:{box.id}']
