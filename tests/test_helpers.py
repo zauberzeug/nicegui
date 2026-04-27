@@ -58,7 +58,6 @@ def test_schedule_browser(monkeypatch):
             # port opened
             time.sleep(1)
             assert called_with_url == f'http://{host}:{port}/my-path'
-
         finally:
             cancel_event.set()
 
