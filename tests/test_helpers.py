@@ -26,13 +26,13 @@ def test_is_port_open_on_bad_ip():
     assert not helpers.is_port_open('1.2', 0), 'should not be able to connect to a bad IP'
 
 
-def test_make_url():
-    assert helpers.make_url('http', 'localhost', 80) == 'http://localhost'  # default port 80 should be omitted
-    assert helpers.make_url('http', 'localhost', 8080) == 'http://localhost:8080'  # non-default port should be included
-    assert helpers.make_url('https', 'xyz.com', 443) == 'https://xyz.com'  # default port 443 should be omitted
-    assert helpers.make_url('https', 'xyz.com', 8443) == 'https://xyz.com:8443'  # non-default port should be included
-    assert helpers.make_url('http', '::', 80) == 'http://[::]'  # IPv6 address should be enclosed in brackets
-    assert helpers.make_url('http', '[::]', 80) == 'http://[::]'  # already bracketed IPv6 address remains unchanged
+def test_format_url():
+    assert helpers.format_url('http', 'localhost', 80) == 'http://localhost'  # default port 80 is omitted
+    assert helpers.format_url('http', 'localhost', 8080) == 'http://localhost:8080'  # non-default port is included
+    assert helpers.format_url('https', 'xyz.com', 443) == 'https://xyz.com'  # default port 443 is omitted
+    assert helpers.format_url('https', 'xyz.com', 8443) == 'https://xyz.com:8443'  # non-default port is included
+    assert helpers.format_url('http', '::', 80) == 'http://[::]'  # IPv6 address is enclosed in brackets
+    assert helpers.format_url('http', '[::]', 80) == 'http://[::]'  # already bracketed IPv6 address remains unchanged
 
 
 def test_schedule_browser(monkeypatch):

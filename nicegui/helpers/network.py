@@ -19,8 +19,8 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def make_url(protocol: str, host: str, port: int) -> str:
-    """Make a URL, bracketing IPv6 hosts and omitting the port for http:80 / https:443."""
+def format_url(protocol: str, host: str, port: int) -> str:
+    """Format a URL, bracketing IPv6 hosts and omitting the port for http:80 / https:443."""
     if ':' in host and not host.startswith('['):
         host = f'[{host}]'
     if (protocol, port) in (('http', 80), ('https', 443)):
@@ -49,7 +49,7 @@ def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[th
             if cancel.is_set():
                 return
             time.sleep(0.1)
-        webbrowser.open(f'{make_url(protocol, host, port)}/{path.lstrip("/")}')
+        webbrowser.open(f'{format_url(protocol, host, port)}/{path.lstrip("/")}')
 
     host = host if host != '0.0.0.0' else '127.0.0.1'
     thread = threading.Thread(target=in_thread, args=(protocol, host, port, path), daemon=True)

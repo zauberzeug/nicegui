@@ -39,7 +39,7 @@ def _open_window(
         time.sleep(0.1)
 
     window_kwargs = {
-        'url': helpers.make_url(protocol, host, port),
+        'url': helpers.format_url(protocol, host, port),
         'title': title,
         'width': width,
         'height': height,
