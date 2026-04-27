@@ -104,10 +104,12 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             The intersection points are surfaced on click events as ``e.intersections[name]``,
             so the host application can read where the ray hit each configured plane even when
             the click lands on empty space. Default: no planes (``e.intersections`` is empty).
+            (*added in version TBD*)
         :param raycaster_threshold: hit-test distance threshold (in scene units) for thin objects
             like lines and point clouds. The default value (1.0) matches three.js, which is too
             coarse for scenes with many thin objects (raycasts can return thousands of hits and
             blow past the WebSocket payload limit); lower the threshold for dense scenes.
+            (*added in version TBD*)
         """
         super().__init__()
         self._props['width'] = width
@@ -121,6 +123,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             {'name': p.name, 'axis': p.axis, 'offset': p.offset}
             for p in (intersection_planes or [])
         ]
+        self._axes_inset_opts: dict[str, Any] | None = None
+        self._axes_labels_opts: dict[str, Any] | None = None
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
@@ -180,14 +184,17 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param margin_x: horizontal margin in pixels from the anchored edge (defaults to ``margin``)
         :param margin_y: vertical margin in pixels from the anchored edge (defaults to ``margin``)
         :param anchor: which corner to pin the inset to (default: ``'bottom-right'``)
+
+        *Added in version TBD*
         """
-        self.run_method('set_axes_inset', {
+        self._axes_inset_opts = {
             'enabled': enabled,
             'size': size,
             'marginX': margin_x if margin_x is not None else margin,
             'marginY': margin_y if margin_y is not None else margin,
             'anchor': anchor,
-        })
+        }
+        self.run_method('set_axes_inset', self._axes_inset_opts)
         return self
 
     def set_axes_labels(self,
@@ -205,14 +212,17 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param font: CSS font shorthand for the label text (default: ``'24px Arial'``)
         :param color: CSS color for the label text (default: ``'#000000'``)
         :param radius: radius of the colored disc behind each label, in canvas pixels (default: ``14``)
+
+        *Added in version TBD*
         """
-        self.run_method('set_axes_labels', {
+        self._axes_labels_opts = {
             'enabled': enabled,
             'labels': list(labels),
             'font': font,
             'color': color,
             'radius': radius,
-        })
+        }
+        self.run_method('set_axes_labels', self._axes_labels_opts)
         return self
 
     @staticmethod
@@ -253,6 +263,10 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._initialized_event.set()
         self.move_camera(duration=0)
         self.run_method('init_objects', [obj.data for obj in self.objects.values()])
+        if self._axes_inset_opts is not None:
+            self.run_method('set_axes_inset', self._axes_inset_opts)
+        if self._axes_labels_opts is not None:
+            self.run_method('set_axes_labels', self._axes_labels_opts)
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

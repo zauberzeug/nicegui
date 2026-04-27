@@ -7,7 +7,7 @@ from selenium.common.exceptions import JavascriptException
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
 
@@ -246,6 +246,19 @@ def _wait_for_scene_ready(screen: Screen, scene_id: int) -> None:
     ))
 
 
+def _count_clipping_planes(screen: Screen, scene_id: int, object_id: str) -> int:
+    return screen.selenium.execute_script(
+        f'const o = getElement({scene_id}).objects.get("{object_id}");'
+        'let n = 0;'
+        'o.traverse((c) => {'
+        '  if (!c.material) return;'
+        '  const mats = Array.isArray(c.material) ? c.material : [c.material];'
+        '  for (const m of mats) if (m.clippingPlanes) n += m.clippingPlanes.length;'
+        '});'
+        'return n;'
+    )
+
+
 def test_set_clipping_planes(screen: Screen):
     from nicegui import events
     scene = None
@@ -260,15 +273,53 @@ def test_set_clipping_planes(screen: Screen):
     screen.open('/')
     _wait_for_scene_ready(screen, scene.id)
     box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=0)])
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{box.id}");'
-        'return o.material.clippingPlanes && o.material.clippingPlanes.length === 1;'
-    ))
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) >= 1)
     box.clear_clipping_planes()
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{box.id}");'
-        'return !o.material.clippingPlanes;'
-    ))
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) == 0)
+
+
+async def test_clipping_planes_persisted_on_object_data(user: User):
+    from nicegui import events
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal box
+        with ui.scene() as scene:
+            box = scene.box()
+
+    await user.open('/')
+    # The reload-survival contract: state set via set_clipping_planes lives on Object3D and is
+    # part of its `data` tuple, which scene.js init_objects replays on every fresh connect.
+    assert box.data[-1] == []
+    box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=2)])
+    assert box.data[-1] == [{'nx': 0, 'ny': 0, 'nz': 1, 'd': 2}]
+    box.clear_clipping_planes()
+    assert box.data[-1] == []
+
+
+async def test_axes_inset_opts_cached_for_replay_on_init(user: User):
+    # The reload-survival contract: state set via set_axes_inset/set_axes_labels is cached on
+    # Scene and replayed in _handle_init, so a fresh client connect re-applies the inset.
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    await user.open('/')
+    assert scene._axes_inset_opts is None
+    assert scene._axes_labels_opts is None
+    scene.set_axes_inset(enabled=True, anchor='top-left', size=64, margin=8)
+    assert scene._axes_inset_opts == {
+        'enabled': True, 'size': 64, 'marginX': 8, 'marginY': 8, 'anchor': 'top-left',
+    }
+    scene.set_axes_labels(enabled=True, labels=('A', 'B', 'C'), color='#ff0000')
+    assert scene._axes_labels_opts == {
+        'enabled': True, 'labels': ['A', 'B', 'C'],
+        'font': '24px Arial', 'color': '#ff0000', 'radius': 14,
+    }
 
 
 def test_set_axes_inset_and_labels(screen: Screen):
@@ -332,14 +383,14 @@ def test_axes_inset_handle_click_snaps_camera(screen: Screen):
         f'const el = getElement({scene.id});'
         'const canvas = el.renderer.domElement;'
         'const size = (el._axes && el._axes.size) || 128;'
-        'const localX = (0.5 + 1) / 2 * size;'
-        'const localY = (1 - 0) / 2 * size;'
+        'const relX = (0.5 + 1) / 2 * size;'
+        'const relY = (1 - 0) / 2 * size;'
         'const insetLeft = canvas.clientWidth - size;'
         'const insetTop = canvas.clientHeight - size;'
         'const rect = canvas.getBoundingClientRect();'
         'canvas.dispatchEvent(new PointerEvent("pointerdown", {'
-        '  clientX: rect.left + insetLeft + localX,'
-        '  clientY: rect.top + insetTop + localY,'
+        '  clientX: rect.left + insetLeft + relX,'
+        '  clientY: rect.top + insetTop + relY,'
         '  bubbles: true, cancelable: true'
         '}));'
         'return el.viewHelper.animating;'

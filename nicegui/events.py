@@ -88,6 +88,10 @@ class SceneClickHit:
 
 @dataclass(kw_only=True, slots=True)
 class ScenePoint:
+    """A 3D point surfaced by :class:`ui.scene` click events (e.g. ``e.intersections[name]``).
+
+    *Added in version TBD*
+    """
     x: float
     y: float
     z: float
@@ -100,6 +104,8 @@ class SceneIntersectionPlane:
     The plane is defined by an axis (``'x'``, ``'y'``, or ``'z'``) for the normal direction
     and an ``offset`` along that axis. ``axis='z', offset=0`` is the world XY-plane (the
     typical "ground"); ``axis='x', offset=5`` is an X-perpendicular wall five units out.
+
+    *Added in version TBD*
     """
     name: str
     axis: Literal['x', 'y', 'z'] = 'z'
@@ -112,6 +118,8 @@ class SceneClipPlane:
 
     Plane equation ``nx*x + ny*y + nz*z + d = 0``. Geometry on the negative side of the plane
     is hidden. ``(nx, ny, nz)`` need not be unit-length — it is normalized on the JS side.
+
+    *Added in version TBD*
     """
     nx: float
     ny: float

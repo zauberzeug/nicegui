@@ -244,6 +244,8 @@ export default {
       // viewport + scissor math (works on three.js < r184 which lacks `viewHelper.location`).
       // Only the inset path narrows the viewport, so the post-render reset below is sufficient
       // — no per-frame work when the inset isn't enabled.
+      // TODO: replace this block with `viewHelper.location = {...}; viewHelper.render(renderer)`
+      // once three.js is bumped to a version that exposes ViewHelper.location (added post-r180).
       if (this.viewHelper) {
         const canvas = this.renderer.domElement;
         const opts = this._axes || {};
@@ -281,11 +283,18 @@ export default {
     // scissor math), so we synthesize event coordinates that make handleClick's hardcoded math
     // compute the NDC of the click within OUR actual inset rect.
     //
+    // TODO: replace this whole block with `this.viewHelper.handleClick(event)` once three.js is
+    // bumped to a version that exposes ViewHelper.location (added post-r180).
+    //
+    // We always stop propagation when the pointer is inside the inset rect — even if it doesn't
+    // hit an axis sprite — so a click in a dead corner of the inset doesn't fall through and
+    // trigger an OrbitControls drag-rotate of the main scene.
+    //
     // _consumeNextClick is cleared on every pointerdown so a stale flag from an aborted gesture
     // (drag-out before pointerup) can't suppress an unrelated later click.
     const HANDLE_CLICK_DIM = 128;
     const dispatchInsetClick = (event) => {
-      if (!this.viewHelper) return false;
+      if (!this.viewHelper) return { inside: false, hit: false };
       const canvas = this.renderer.domElement;
       const opts = this._axes || {};
       const insetSize = opts.size ?? 128;
@@ -294,17 +303,20 @@ export default {
       const anchor = opts.anchor || "bottom-right";
       const insetLeft = anchor.includes("left") ? marginX : canvas.clientWidth - insetSize - marginX;
       const insetTop = anchor.includes("top") ? marginY : canvas.clientHeight - insetSize - marginY;
-      const localX = event.offsetX - insetLeft;
-      const localY = event.offsetY - insetTop;
-      if (localX < 0 || localX >= insetSize || localY < 0 || localY >= insetSize) return false;
+      const relX = event.offsetX - insetLeft;
+      const relY = event.offsetY - insetTop;
+      if (relX < 0 || relX >= insetSize || relY < 0 || relY >= insetSize) {
+        return { inside: false, hit: false };
+      }
       // NDC of the click within the inset rect, then back-project into the (clientX, clientY) that
       // r180's bottom-right/dim=128 handleClick math would have to read to derive that same NDC.
-      const nx = (localX / insetSize) * 2 - 1;
-      const ny = -((localY / insetSize) * 2 - 1);
+      const nx = (relX / insetSize) * 2 - 1;
+      const ny = -((relY / insetSize) * 2 - 1);
       const rect = canvas.getBoundingClientRect();
       const fakeClientX = rect.left + (canvas.offsetWidth - HANDLE_CLICK_DIM) + ((nx + 1) / 2) * HANDLE_CLICK_DIM;
       const fakeClientY = rect.top + (canvas.offsetHeight - HANDLE_CLICK_DIM) + ((1 - ny) / 2) * HANDLE_CLICK_DIM;
-      return this.viewHelper.handleClick({ clientX: fakeClientX, clientY: fakeClientY });
+      const hit = this.viewHelper.handleClick({ clientX: fakeClientX, clientY: fakeClientY });
+      return { inside: true, hit };
     };
     let _consumeNextClick = false;
     // Capture-phase + stopImmediatePropagation so we beat OrbitControls'/DragControls'
@@ -312,7 +324,8 @@ export default {
     // setPointerCapture / start a drag-rotate on what was meant to be an inset axis click.
     this.renderer.domElement.addEventListener("pointerdown", (event) => {
       _consumeNextClick = false;
-      if (dispatchInsetClick(event)) {
+      const { inside } = dispatchInsetClick(event);
+      if (inside) {
         event.stopImmediatePropagation();
         _consumeNextClick = true;
       }
@@ -526,6 +539,9 @@ export default {
     },
     set_clipping_planes(object_id, planes) {
       if (!this.objects.has(object_id)) return;
+      // An empty `planes` array (Object3D.clear_clipping_planes / fresh Object3D in init_objects)
+      // disables clipping for this subtree — three.js treats `mat.clippingPlanes = []` the same
+      // as `null` on the shader side.
       const clipPlanes = planes.map((p) =>
         new THREE.Plane(new THREE.Vector3(p.nx, p.ny, p.nz).normalize(), p.d));
       this.objects.get(object_id).traverse((child) => {
@@ -538,18 +554,7 @@ export default {
         });
       });
       // Local clipping is opt-in on the renderer; flip it the first time anyone sets clipping planes.
-      this.renderer.localClippingEnabled = true;
-    },
-    clear_clipping_planes(object_id) {
-      if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id).traverse((child) => {
-        if (!child.material) return;
-        const mats = Array.isArray(child.material) ? child.material : [child.material];
-        mats.forEach((mat) => {
-          mat.clippingPlanes = null;
-          mat.needsUpdate = true;
-        });
-      });
+      if (clipPlanes.length) this.renderer.localClippingEnabled = true;
     },
     set_axes_inset(opts) {
       this._axes = opts || {};
@@ -718,6 +723,7 @@ export default {
         sz,
         visible,
         draggable,
+        clipping_planes,
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
@@ -727,6 +733,7 @@ export default {
         this.scale(id, sx, sy, sz);
         this.visible(id, visible);
         this.draggable(id, draggable);
+        if (clipping_planes && clipping_planes.length) this.set_clipping_planes(id, clipping_planes);
       }
     },
   },

@@ -36,6 +36,7 @@ class Object3D:
         self.sx: float = 1
         self.sy: float = 1
         self.sz: float = 1
+        self.clipping_planes_: list[SceneClipPlane] = []
         self._create()
 
     def with_name(self, name: str) -> Self:
@@ -56,6 +57,7 @@ class Object3D:
             self.sx, self.sy, self.sz,
             self.visible_,
             self.draggable_,
+            [{'nx': p.nx, 'ny': p.ny, 'nz': p.nz, 'd': p.d} for p in self.clipping_planes_],
         ]
 
     def __enter__(self) -> Self:
@@ -88,6 +90,13 @@ class Object3D:
 
     def _draggable(self) -> None:
         self.scene.run_method('draggable', self.id, self.draggable_)
+
+    def _clipping_planes(self) -> None:
+        self.scene.run_method(
+            'set_clipping_planes',
+            self.id,
+            [{'nx': p.nx, 'ny': p.ny, 'nz': p.nz, 'd': p.d} for p in self.clipping_planes_],
+        )
 
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
@@ -204,18 +213,25 @@ class Object3D:
         Each :class:`~nicegui.events.SceneClipPlane` defines a plane ``nx*x + ny*y + nz*z + d = 0``;
         geometry on the negative side of any plane is hidden (clipping is the union of all planes).
         Call :meth:`clear_clipping_planes` to remove them.
+
+        The planes are applied to every material under this object's subtree, so descendants
+        that share a material instance with another object (typical for ``gltf`` imports) will
+        clip together.
+
+        *Added in version TBD*
         """
-        self.scene.run_method(
-            'set_clipping_planes',
-            self.id,
-            [{'nx': p.nx, 'ny': p.ny, 'nz': p.nz, 'd': p.d} for p in planes],
-        )
+        self.clipping_planes_ = list(planes)
+        self._clipping_planes()
         return self
 
     def clear_clipping_planes(self) -> Self:
         """Remove any clipping planes previously applied to this object via
-        :meth:`set_clipping_planes`."""
-        self.scene.run_method('clear_clipping_planes', self.id)
+        :meth:`set_clipping_planes`.
+
+        *Added in version TBD*
+        """
+        self.clipping_planes_ = []
+        self._clipping_planes()
         return self
 
     def attach(self, parent: Object3D) -> None:
