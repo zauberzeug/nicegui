@@ -1,5 +1,6 @@
 import os
 
+from .data import is_default_range_index
 from .elements import require_top_level_layout
 from .files import hash_file_path, is_file
 from .functions import (
@@ -19,6 +20,7 @@ __all__ = [
     'expects_arguments',
     'hash_file_path',
     'is_coroutine_function',
+    'is_default_range_index',
     'is_file',
     'is_port_open',
     'is_pytest',

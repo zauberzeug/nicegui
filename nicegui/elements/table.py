@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
@@ -292,13 +292,7 @@ class Table(FilterElement, component='table.js'):
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
-        is_default_range_index = (
-            isinstance(df.index, pd.RangeIndex)
-            and df.index.name is None
-            and df.index.start == 0
-            and df.index.step == 1
-        )
-        if not is_default_range_index:
+        if not helpers.is_default_range_index(df):
             df = df.reset_index()
 
         def is_special_dtype(dtype):
