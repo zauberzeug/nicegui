@@ -63,10 +63,7 @@ def test_schedule_browser(monkeypatch):
             sock.listen()
             # port opened
             time.sleep(1)
-            if port == 80:
-                assert called_with_url == f'http://{host}/my-path'
-            else:
-                assert called_with_url == f'http://{host}:{port}/my-path'
+            assert called_with_url == f'http://{host}:{port}/my-path'
 
         finally:
             cancel_event.set()
