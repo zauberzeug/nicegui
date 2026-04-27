@@ -314,14 +314,16 @@ export default {
       } else if (type == "gltf") {
         const url = args[0];
         mesh = new THREE.Group();
-        mesh.isGltf = true;
+        mesh.userData.isGltf = true;
+        mesh.userData.loaded = false;
         this.gltf_loader.load(
           url,
           (gltf) => {
             mesh.add(gltf.scene);
-            if (mesh.pendingMaterialInfo) {
-              const { color, opacity, side } = mesh.pendingMaterialInfo;
-              delete mesh.pendingMaterialInfo;
+            mesh.userData.loaded = true;
+            if (mesh.userData.pendingMaterialInfo) {
+              const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
+              delete mesh.userData.pendingMaterialInfo;
               this.material(mesh.object_id, color, opacity, side);
             }
           },
@@ -385,8 +387,8 @@ export default {
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
       if (!object) return;
-      if (object.isGltf && object.children.length === 0) {
-        object.pendingMaterialInfo = { color, opacity, side };
+      if (object.userData.isGltf && !object.userData.loaded) {
+        object.userData.pendingMaterialInfo = { color, opacity, side };
         return;
       }
       const vertexColors = color === null;
@@ -399,12 +401,16 @@ export default {
         else if (side == "back") material.side = THREE.BackSide;
         else material.side = THREE.DoubleSide;
       };
-      if (object.isGltf) {
+      const applyTo = (material) => {
+        if (Array.isArray(material)) material.forEach(apply);
+        else apply(material);
+      };
+      if (object.userData.isGltf) {
         object.traverse((child) => {
-          if (child.isMesh && child.material) apply(child.material);
+          if (child.isMesh && child.material) applyTo(child.material);
         });
       } else if (object.material) {
-        apply(object.material);
+        applyTo(object.material);
       }
     },
     move(object_id, x, y, z) {
