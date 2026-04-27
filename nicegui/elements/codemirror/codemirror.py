@@ -5,6 +5,7 @@ from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ...logging import log
 
 
 class LineAnchor(TypedDict):
@@ -386,7 +387,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         The browser is the source of truth: :attr:`line_anchor_positions` is populated by the
         next ``anchor-positions`` event and briefly lags this call until the JS round-trip lands.
-        Lines exceeding the current document length are silently clamped on the JS side.
+        Lines exceeding the current document length are clamped to the last line on the JS side
+        (a ``console.warn`` is logged in the browser); read :attr:`line_anchor_positions` after
+        the round-trip to see where each anchor actually landed.
 
         :raises ValueError: if any anchor has ``line < 1`` or if two anchors share the same ``id``
 
@@ -428,6 +431,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         anchors = e.args.get('anchors')
         if isinstance(anchors, dict):
             self._anchor_positions = anchors
+        else:
+            log.warning('codemirror: ignoring malformed anchor-positions payload: %r', anchors)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

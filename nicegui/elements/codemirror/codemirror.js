@@ -185,9 +185,17 @@ export default {
     },
     async setLineAnchors(anchors, setName) {
       if (!this.editor) await this.editorPromise;
+      clearTimeout(this._anchorTimer);
+      this._anchorTimer = null;
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const a of anchors) {
+        if (a.line > doc.lines) {
+          console.warn(
+            `Line anchor ${JSON.stringify(a.id)} requested line ${a.line} ` +
+              `but document only has ${doc.lines} line(s); clamping to last line.`,
+          );
+        }
         const lineNum = Math.max(1, Math.min(a.line, doc.lines));
         const pos = doc.line(lineNum).from;
         ranges.push(new AnchorValue(a.id, setName).range(pos, pos));
@@ -247,7 +255,7 @@ export default {
           update(update) {
             if (!update.docChanged) return;
             if (update.state.field(anchorField).size === 0) return;
-            if (self._anchorTimer) clearTimeout(self._anchorTimer);
+            clearTimeout(self._anchorTimer);
             self._anchorTimer = setTimeout(() => {
               self._anchorTimer = null;
               self.emitAnchorPositions();

@@ -96,6 +96,10 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
 
 
+def _wait_for_editor(screen: Screen) -> None:
+    screen.wait_for(lambda: screen.selenium.find_elements(By.CSS_SELECTOR, '.cm-content'))
+
+
 def test_set_line_anchors_populates_mirror(screen: Screen):
     editor = None
 
@@ -105,7 +109,7 @@ def test_set_line_anchors_populates_mirror(screen: Screen):
         editor = ui.codemirror('a\nb\nc\nd\ne')
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_editor(screen)
     editor.set_line_anchors([{'id': 'a1', 'line': 2}, {'id': 'a2', 'line': 4}])
     screen.wait_for(lambda: editor.line_anchor_positions == {'default': {'a1': 2, 'a2': 4}})
 
@@ -119,7 +123,7 @@ def test_clear_line_anchors_named_and_all(screen: Screen):
         editor = ui.codemirror('a\nb\nc')
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_editor(screen)
     editor.set_line_anchors([{'id': 'x', 'line': 1}], set_name='breakpoints')
     editor.set_line_anchors([{'id': 'y', 'line': 2}], set_name='targets')
     screen.wait_for(lambda: set(editor.line_anchor_positions.keys()) == {'breakpoints', 'targets'})
@@ -138,7 +142,7 @@ def test_clear_after_typing_does_not_resurrect_anchors(screen: Screen):
         editor = ui.codemirror('a\nb\nc\nd\ne')
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_editor(screen)
     editor.set_line_anchors([{'id': 'mid', 'line': 3}])
     screen.wait_for(lambda: editor.line_anchor_positions.get('default', {}).get('mid') == 3)
     # Schedule a debounced anchor-positions emit by editing the document via JS,
@@ -163,9 +167,9 @@ def test_anchor_remap_on_edit(screen: Screen):
         editor = ui.codemirror('a\nb\nc\nd\ne')
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_editor(screen)
     editor.set_line_anchors([{'id': 'mid', 'line': 3}])
-    screen.wait(0.3)  # let setLineAnchors round-trip and populate the anchorField
+    screen.wait_for(lambda: editor.line_anchor_positions.get('default', {}).get('mid') == 3)
     # Insert a new line at the very start; line 3 should remap to line 4.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
@@ -202,15 +206,15 @@ def test_anchor_emissions_bounded_during_typing(screen: Screen):
         editor.on('anchor-positions', lambda e: emissions.append(e.args))
 
     screen.open('/')
-    screen.wait(0.3)
+    _wait_for_editor(screen)
     editor.set_line_anchors([{'id': 'a', 'line': 1}, {'id': 'b', 'line': 3}])
-    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
-    cm.click()
-    cm.send_keys(Keys.END)
-    for ch in 'abcdefghij':  # ten keystrokes
-        cm.send_keys(ch)
-    screen.wait(0.2)  # let the 50 ms debounce settle
-    # 10 keystrokes through a 50 ms debounce should not produce one event per keystroke.
-    # The threshold is loose so the test stays green on slower CI (where send_keys cadence
-    # exceeds the debounce window); the point is coalescing happens, not the exact count.
-    assert len(emissions) < 10, f'expected coalescing (<10 emissions for 10 keystrokes), got {len(emissions)}'
+    screen.wait_for(lambda: editor.line_anchor_positions == {'default': {'a': 1, 'b': 3}})
+    emissions.clear()  # drop the setup emission so we measure only doc-change-induced events
+    # Dispatch 10 doc changes synchronously from JS so they all land within the 50ms debounce
+    # window, regardless of Selenium IPC speed. With coalescing we expect a single emission.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'for (let i = 0; i < 10; i++) el.editor.dispatch({changes: {from: 0, insert: "x"}});'
+    )
+    screen.wait(0.2)  # past the 50 ms debounce window
+    assert len(emissions) == 1, f'expected one coalesced emission for 10 synchronous edits, got {len(emissions)}'
