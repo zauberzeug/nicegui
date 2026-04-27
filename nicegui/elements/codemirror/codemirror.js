@@ -166,7 +166,7 @@ export default {
               className: c.class_name,
             });
           }
-          const opt = { label: c.label, apply: c.apply || c.label };
+          const opt = { label: c.label, apply: c.apply ?? c.label };
           if (c.display_label) opt.displayLabel = c.display_label;
           if (c.detail) opt.detail = c.detail;
           if (c.info) opt.info = c.info;
@@ -192,11 +192,15 @@ export default {
       const exts = [];
       const tooltipClass = this.tooltipClass || "";
       const optionClass = (c) => c.className || "";
-      if (this.replaceLanguageCompletions && sources.length > 0) {
+      const tooltipClassFn = tooltipClass ? () => tooltipClass : undefined;
+      if (this.replaceLanguageCompletions) {
         // Override mode: replaces language-pack completion sources entirely.
+        // Register a single autocompletion() carrying both sources and styling so
+        // the second autocompletion() call below is skipped (it would stack a
+        // duplicate state field).
         exts.push(CM.autocompletion({
           override: sources,
-          tooltipClass: tooltipClass ? () => tooltipClass : undefined,
+          tooltipClass: tooltipClassFn,
           optionClass,
         }));
       } else {
@@ -205,15 +209,15 @@ export default {
         sources.forEach((src) => {
           exts.push(CM.EditorState.languageData.of(() => [{ autocomplete: src }]));
         });
-      }
-      // Styling config (tooltipClass / optionClass) is layered separately via
-      // Prec.highest so it wins over basicSetup's autocompletion config without
-      // stacking duplicate state fields.
-      if (tooltipClass || (sources.length > 0 && this.completions && this.completions.some((c) => c.class_name))) {
-        exts.push(CM.Prec.highest(CM.autocompletion({
-          tooltipClass: tooltipClass ? () => tooltipClass : undefined,
-          optionClass,
-        })));
+        // Layer styling via Prec.highest only when needed, so it wins over
+        // basicSetup's autocompletion config without re-registering the source.
+        const hasClassName = this.completions && this.completions.some((c) => c.class_name);
+        if (tooltipClass || hasClassName) {
+          exts.push(CM.Prec.highest(CM.autocompletion({
+            tooltipClass: tooltipClassFn,
+            optionClass,
+          })));
+        }
       }
       // basicSetup's autocompletion() already registers the snippet keymap, so
       // Tab / Shift-Tab cycles snippet placeholders without extra wiring here.

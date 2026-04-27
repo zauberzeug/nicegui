@@ -165,10 +165,13 @@ def test_replace_language_completions(screen: Screen, replace: bool, expect_prin
     cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
     cm.click()
     cm.send_keys('print')
-    screen.wait_for(lambda: _open_count(screen) >= 0)  # let popup settle
-    screen.wait(0.3)
-    rendered = _rendered_labels(screen)
-    assert ('print' in rendered) is expect_print
+    if expect_print:
+        screen.wait_for(lambda: 'print' in _rendered_labels(screen))
+    else:
+        # Replace-mode + a non-matching prefix produces no popup, so the success
+        # signal is wait_for timing out. Mirrors screen.should_not_contain's pattern.
+        with pytest.raises(AssertionError):
+            screen.wait_for(lambda: 'print' in _rendered_labels(screen))
 
 
 def test_complete_words_in_document(screen: Screen):

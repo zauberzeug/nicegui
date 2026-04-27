@@ -431,12 +431,11 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def completions(self) -> list[CompletionItem]:
         """The current autocomplete entries shown in the dropdown.
 
-        Mutating the returned list in place will not update the editor —
-        reassign the property or call :meth:`set_completions` instead.
+        Returns a copy; reassign the property or call :meth:`set_completions` to update the editor.
 
         *Added in version X.Y.Z*
         """
-        return self._props['completions']
+        return list(self._props['completions'])
 
     @completions.setter
     def completions(self, completions: list[CompletionItem] | None) -> None:
