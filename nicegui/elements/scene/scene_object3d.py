@@ -149,7 +149,7 @@ class Object3D:
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
         sz, cz = math.sin(r_z), math.cos(r_z)
-        single_axis = {
+        single_axis: dict[str, list[list[float]]] = {
             'X': [[1, 0, 0], [0, cx, -sx], [0, sx, cx]],
             'Y': [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]],
             'Z': [[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]],
