@@ -23,7 +23,7 @@ async def collect_urls() -> None:
     ips = set((await run.io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
     sorted_ips = ['localhost' if host == '0.0.0.0' else host, *sorted(ips)]
-    urls = [make_url(protocol, ip, port) for ip in sorted_ips]
+    urls = [make_url(protocol, ip, int(port)) for ip in sorted_ips]
     core.app.urls.update(urls)
     if len(urls) >= 2:
         urls[-1] = 'and ' + urls[-1]

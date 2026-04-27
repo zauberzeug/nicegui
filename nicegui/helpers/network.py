@@ -19,17 +19,13 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
-def make_url(protocol: str, host: str, port: str | int) -> str:
-    """Make a URL from the given protocol, host and port."""
-    if ':' in host and host[0] != '[':
+def make_url(protocol: str, host: str, port: int) -> str:
+    """Make a URL, bracketing IPv6 hosts and omitting the port for http:80 / https:443."""
+    if ':' in host and not host.startswith('['):
         host = f'[{host}]'
-
-    url = f'{protocol}://{host}'
-
-    if (protocol, port) not in (('http', 80), ('http', '80'), ('https', 443), ('https', '443')):
-        url += f':{port}'
-
-    return url
+    if (protocol, port) in (('http', 80), ('https', 443)):
+        return f'{protocol}://{host}'
+    return f'{protocol}://{host}:{port}'
 
 
 def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[threading.Thread, threading.Event]:

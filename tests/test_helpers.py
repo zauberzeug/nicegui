@@ -29,12 +29,8 @@ def test_is_port_open_on_bad_ip():
 def test_make_url():
     assert helpers.make_url('http', 'localhost', 80) == 'http://localhost'
     assert helpers.make_url('http', 'localhost', 8080) == 'http://localhost:8080'
-    assert helpers.make_url('http', 'localhost', '80') == 'http://localhost'
-    assert helpers.make_url('http', 'localhost', '8080') == 'http://localhost:8080'
     assert helpers.make_url('https', 'example.com', 443) == 'https://example.com'
     assert helpers.make_url('https', 'example.com', 8443) == 'https://example.com:8443'
-    assert helpers.make_url('https', 'example.com', '443') == 'https://example.com'
-    assert helpers.make_url('https', 'example.com', '8443') == 'https://example.com:8443'
     assert helpers.make_url('http', '::', 80) == 'http://[::]'
     assert helpers.make_url('http', '::', 8080) == 'http://[::]:8080'
     assert helpers.make_url('http', '[::]', 80) == 'http://[::]'
