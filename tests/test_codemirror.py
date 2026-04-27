@@ -124,6 +124,30 @@ def _dismiss_hover(screen: Screen, editor) -> None:
     )
 
 
+def _wait_for_tooltip_count(screen: Screen, editor, expected: int) -> None:
+    """Wait until the codemirror tooltipField holds exactly `expected` TooltipValue ranges.
+
+    Gates `_trigger_hover` on the server-dispatched `setLineTooltips` round-trip having landed.
+    Without this, the synthetic mouseover/mousemove can fire before the field is populated;
+    CM6's hoverTooltip provider then runs once with an empty field and the tooltip never appears.
+    Identifies the right RangeSet by the custom `setName` property on TooltipValue.
+    """
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'let count = 0;'
+        'for (const v of el.editor.state.values) {'
+        '  if (v && typeof v.iter === "function") {'
+        '    const it = v.iter();'
+        '    while (it.value) {'
+        '      if (it.value.setName !== undefined) count++;'
+        '      it.next();'
+        '    }'
+        '  }'
+        '}'
+        'return count;'
+    ) == expected)
+
+
 def test_set_and_clear_line_tooltips_text(screen: Screen):
     editor = None
 
@@ -136,6 +160,7 @@ def test_set_and_clear_line_tooltips_text(screen: Screen):
     # Two named sets pinned to the same line — must merge on hover.
     editor.set_line_tooltips({2: {'severity': 'warning'}}, set_name='lint')
     editor.set_line_tooltips({2: {'origin': 'row-3'}}, set_name='source')
+    _wait_for_tooltip_count(screen, editor, 2)
     _trigger_hover(screen, editor, 2)
     screen.wait_for(lambda: all(s in _tooltip_text(screen) for s in ['severity: warning', 'origin: row-3']))
 
@@ -149,6 +174,7 @@ def test_set_and_clear_line_tooltips_text(screen: Screen):
     screen.wait_for(lambda: 'severity: warning' in _tooltip_text(screen))
 
     editor.clear_line_tooltips()
+    _wait_for_tooltip_count(screen, editor, 0)
     _dismiss_hover(screen, editor)
     _trigger_hover(screen, editor, 3)
     screen.wait_for(lambda: screen.selenium.execute_script(
@@ -170,6 +196,7 @@ def test_line_tooltip_html_sanitized(screen: Screen):
     # during teardown even though the handler itself was successfully stripped.
     editor.set_line_tooltips({1: {'_html': '<b>safe</b><script>window.__hijack=1</script>'
                                            '<svg onload="window.__hijack2=1"></svg>'}})
+    _wait_for_tooltip_count(screen, editor, 1)
     _trigger_hover(screen, editor, 1)
     screen.wait_for(lambda: screen.selenium.execute_script(
         'const t = document.querySelector(".cm-tooltip-hover");'

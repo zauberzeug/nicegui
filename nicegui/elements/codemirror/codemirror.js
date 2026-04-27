@@ -219,7 +219,9 @@ export default {
         const line = view.state.doc.lineAt(pos);
         const merged = {};
         set.between(line.from, line.to, (_from, _to, value) => Object.assign(merged, value.meta));
-        if (Object.keys(merged).length === 0) return null;
+        const hasHtml = typeof merged._html === "string" && merged._html.length > 0;
+        const hasVisibleKey = Object.keys(merged).some((k) => !k.startsWith("_"));
+        if (!hasHtml && !hasVisibleKey) return null;
         return {
           pos: line.from,
           above: true,
