@@ -31,8 +31,8 @@ def test_format_url():
     assert helpers.format_url('http', 'localhost', 8080) == 'http://localhost:8080'  # non-default port is included
     assert helpers.format_url('https', 'xyz.com', 443) == 'https://xyz.com'  # default port 443 is omitted
     assert helpers.format_url('https', 'xyz.com', 8443) == 'https://xyz.com:8443'  # non-default port is included
-    assert helpers.format_url('http', '::', 80) == 'http://[::]'  # IPv6 address is enclosed in brackets
-    assert helpers.format_url('http', '[::]', 80) == 'http://[::]'  # already bracketed IPv6 address remains unchanged
+    assert helpers.format_url('http', '::', 8080) == 'http://[::]:8080'  # IPv6 address is enclosed in brackets
+    assert helpers.format_url('http', '[::]', 8080) == 'http://[::]:8080'  # already bracketed IPv6 address is unchanged
 
 
 def test_schedule_browser(monkeypatch):
