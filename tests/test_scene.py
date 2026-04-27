@@ -151,11 +151,21 @@ def test_rotation_matrix_from_euler_all_orders():
     Ry = np.array([[np.cos(ry), 0, np.sin(ry)], [0, 1, 0], [-np.sin(ry), 0, np.cos(ry)]])
     Rz = np.array([[np.cos(rz), -np.sin(rz), 0], [np.sin(rz), np.cos(rz), 0], [0, 0, 1]])
     axis = {'X': Rx, 'Y': Ry, 'Z': Rz}
-    for order in Object3D.EULER_ORDERS:
-        # Intrinsic order: rightmost axis is applied first to the body, so order='YXZ' → Rz @ Rx @ Ry.
-        expected = axis[order[2]] @ axis[order[1]] @ axis[order[0]]
+    # Leftmost letter rotates first about the world frame, so the leftmost axis sits as the
+    # rightmost matrix in the product (column-vector convention M @ v).
+    expected_per_order = {
+        'XYZ': Rz @ Ry @ Rx,
+        'XZY': Ry @ Rz @ Rx,
+        'YXZ': Rz @ Rx @ Ry,
+        'YZX': Rx @ Rz @ Ry,
+        'ZXY': Ry @ Rx @ Rz,
+        'ZYX': Rx @ Ry @ Rz,
+    }
+    assert set(expected_per_order) == set(Object3D.EULER_ORDERS)
+    for order, expected in expected_per_order.items():
         actual = Object3D.rotation_matrix_from_euler(rx, ry, rz, order)
         assert np.allclose(actual, expected), f'{order} mismatch:\n{actual}\nvs\n{expected}'
+        assert np.allclose(actual, axis[order[2]] @ axis[order[1]] @ axis[order[0]])
 
 
 def test_rotation_matrix_from_euler_rejects_bad_order():
@@ -308,19 +318,34 @@ def test_polyline_rejects_mismatched_colors():
         Polyline(points=[[0, 0, 0], [1, 0, 0]], colors=[[1, 0, 0]])
 
 
-def test_polar_grid(screen: Screen):
+def test_polyline_rejects_too_few_points():
+    from nicegui.elements.scene.scene_objects import Polyline
+    with pytest.raises(ValueError, match='at least 2'):
+        Polyline(points=[[0, 0, 0]])
+
+
+@pytest.mark.parametrize('polar_grid,expected_vertex_count', [
+    # PolarGridHelper(radius, sectors, rings, divisions) vertex count = sectors*2 + rings*divisions*2.
+    ((1.0, 8, 5), 8 * 2 + 5 * 64 * 2),       # default divisions=64
+    ((1.0, 8, 5, 128), 8 * 2 + 5 * 128 * 2),  # explicit divisions=128
+])
+def test_polar_grid_smoothness(screen: Screen, polar_grid: tuple, expected_vertex_count: int):
     scene = None
 
     @ui.page('/')
     def page():
         nonlocal scene
-        with ui.scene(grid=False, polar_grid=(1.0, 8, 5)) as scene:
+        with ui.scene(grid=False, polar_grid=polar_grid) as scene:
             scene.sphere(0.1).move(0.5, 0, 0)
 
     screen.open('/')
     screen.wait(0.5)
-    # ambient light + directional light + circular ground + polar grid + sphere = 5 children
+    # children: ambient light, directional light, circular ground, polar grid helper, sphere
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+    helper_vertex_count = screen.selenium.execute_script(
+        f'return scene_{scene.html_id}.children[3].geometry.attributes.position.count'
+    )
+    assert helper_vertex_count == expected_vertex_count
 
 
 @pytest.mark.parametrize('factory_name,three_geometry', [

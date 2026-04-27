@@ -174,14 +174,15 @@ export default {
       const radius = this.polarGrid[0] || 1.0;
       const sectors = this.polarGrid[1] || 10;
       const rings = this.polarGrid[2] || 10;
+      const divisions = this.polarGrid[3] || 64;
       const ground = new THREE.Mesh(
-        new THREE.CircleGeometry(radius, 64),
+        new THREE.CircleGeometry(radius, divisions),
         new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
       );
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
-      const polarGrid = new THREE.PolarGridHelper(radius, sectors, rings, 64);
+      const polarGrid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
       polarGrid.material.transparent = true;
       polarGrid.material.opacity = 0.3;
       polarGrid.rotateX(Math.PI / 2);

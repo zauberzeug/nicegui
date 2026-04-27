@@ -383,6 +383,8 @@ class Polyline(Object3D):
         :param dash_size: dash length in scene units (default: ``3.0``)
         :param gap_size: gap length in scene units (default: ``1.0``)
         """
+        if len(points) < 2:
+            raise ValueError(f'points must have at least 2 entries (got {len(points)})')
         if colors is not None and len(colors) != len(points):
             raise ValueError(f'colors length ({len(colors)}) must match points length ({len(points)})')
         super().__init__('polyline', points, colors, dashed, dash_size, gap_size)
