@@ -202,6 +202,16 @@ export default {
         }
         const from = Math.max(0, Math.min(spec.from, doc.length));
         const to = Math.max(from, Math.min(spec.to, doc.length));
+        if (spec.block) {
+          // CodeMirror requires block-replace ranges to span full lines; otherwise it throws
+          // out of editor.dispatch and breaks the editor for the rest of the page.
+          const fromLine = doc.lineAt(from);
+          const toLine = doc.lineAt(to);
+          if (from !== fromLine.from || to !== toLine.to) {
+            console.error("codemirror: block replace decoration must cover full lines", spec);
+            return null;
+          }
+        }
         const replaceSpec = {};
         if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
         if (spec.block) replaceSpec.block = true;

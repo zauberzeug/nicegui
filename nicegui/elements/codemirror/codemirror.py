@@ -435,6 +435,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :class:`ReplaceDecorationSpec`, or :class:`WidgetDecorationSpec` dict.
         For mark and line decorations, the ``class`` field produces the visible styling, so the host
         application is responsible for shipping CSS for whatever class names it passes here.
+        The ``attributes`` field is applied as raw DOM attributes (including event handlers like
+        ``onclick``) and is not sanitized; do not pass untrusted input through it.
         Replace decorations hide a range or visually swap it for text; widget decorations insert a
         text annotation at a position.
 

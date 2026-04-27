@@ -225,6 +225,30 @@ def test_replace_decoration_block_mode(screen: Screen):
     assert '{ ... folded ... }' in visible
 
 
+def test_mark_decoration_styles_range(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    editor.set_decorations([{
+        'kind': 'mark', 'from': 6, 'to': 10,
+        'class': 'cm-test-mark', 'attributes': {'data-marker': 'beta'},
+    }])
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-mark') == 1)
+    marker_attr = screen.selenium.execute_script(
+        'return document.querySelector(".cm-content span.cm-test-mark").getAttribute("data-marker");'
+    )
+    assert marker_attr == 'beta'
+    assert editor.value == 'alpha\nbeta\ngamma'
+    editor.clear_decorations()
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-mark') == 0)
+
+
 def test_widget_decoration_inserts_text(screen: Screen):
     editor = None
 
