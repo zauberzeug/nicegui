@@ -172,6 +172,10 @@ class Table(FilterElement, component='table.js'):
 
         *Added in version 2.0.0*
 
+        *Since version 3.12.0:
+        Informative DataFrame indexes (named, non-default ``RangeIndex``, or ``MultiIndex``) are auto-included as column(s).
+        Pass ``df.reset_index(drop=True)`` to drop the index instead.
+
         :param df: Pandas DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)
         :param column_defaults: optional default column properties
