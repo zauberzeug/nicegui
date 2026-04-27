@@ -440,6 +440,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
     @completions.setter
     def completions(self, completions: list[CompletionItem] | None) -> None:
         self._props['completions'] = completions or []
+        self.update()
 
     def set_completions(self, completions: list[CompletionItem] | None) -> None:
         """Sets the autocomplete entries shown in the dropdown.
@@ -450,6 +451,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version X.Y.Z*
         """
         self._props['completions'] = completions or []
+        self.update()
 
     def trigger_completion(self) -> None:
         """Open the autocomplete popup programmatically (equivalent to Ctrl-Space).
