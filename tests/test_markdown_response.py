@@ -98,7 +98,16 @@ async def test_button(user: User):
     await _assert_markdown(user, lambda: ui.button('Click me'), '[Button: Click me]')
     await _assert_markdown(user, lambda: ui.button('Click me', icon='thumb_up'), '[Button: Click me]')
     await _assert_markdown(user, lambda: ui.button(icon='face'), '[Button: icon:face]')
-    await _assert_markdown(user, ui.button, '[Button]')
+    await _assert_markdown(user, ui.button, '')
+
+    def aria_button():
+        ui.button().props('aria-label="Save"')
+    await _assert_markdown(user, aria_button, '[Button: Save]')
+
+    def child_button():
+        with ui.button():
+            ui.label('Custom content')
+    await _assert_markdown(user, child_button, '[Button: Custom content]')
 
 
 async def test_code_element(user: User):
