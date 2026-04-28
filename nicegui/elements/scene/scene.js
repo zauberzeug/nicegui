@@ -393,24 +393,20 @@ export default {
       }
       const vertexColors = color === null;
       const apply = (material) => {
-        material.color.set(vertexColors ? "#ffffff" : color);
-        material.needsUpdate = material.vertexColors != vertexColors;
-        material.vertexColors = vertexColors;
-        material.opacity = opacity;
-        if (side == "front") material.side = THREE.FrontSide;
-        else if (side == "back") material.side = THREE.BackSide;
-        else material.side = THREE.DoubleSide;
-      };
-      const applyTo = (material) => {
-        if (Array.isArray(material)) material.forEach(apply);
-        else apply(material);
+        (Array.isArray(material) ? material : [material]).forEach((m) => {
+          m.color.set(vertexColors ? "#ffffff" : color);
+          m.needsUpdate = m.vertexColors != vertexColors;
+          m.vertexColors = vertexColors;
+          m.opacity = opacity;
+          if (side == "front") m.side = THREE.FrontSide;
+          else if (side == "back") m.side = THREE.BackSide;
+          else m.side = THREE.DoubleSide;
+        });
       };
       if (object.userData.isGltf) {
-        object.traverse((child) => {
-          if (child.isMesh && child.material) applyTo(child.material);
-        });
+        object.traverse((child) => child.isMesh && child.material && apply(child.material));
       } else if (object.material) {
-        applyTo(object.material);
+        apply(object.material);
       }
     },
     move(object_id, x, y, z) {
