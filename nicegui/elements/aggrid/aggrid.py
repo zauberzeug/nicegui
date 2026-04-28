@@ -96,6 +96,10 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
+        *Since version 3.12.0:
+        Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
+        Pass ``df.reset_index(drop=True)`` to drop the index instead.
+
         :param df: Pandas DataFrame
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
@@ -105,6 +109,9 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :return: AG Grid element
         """
         import pandas as pd  # pylint: disable=import-outside-toplevel
+
+        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
+            df = df.reset_index()
 
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or

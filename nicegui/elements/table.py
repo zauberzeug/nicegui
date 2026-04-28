@@ -172,6 +172,10 @@ class Table(FilterElement, component='table.js'):
 
         *Added in version 2.0.0*
 
+        *Since version 3.12.0:
+        Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
+        Pass ``df.reset_index(drop=True)`` to drop the index instead.
+
         :param df: Pandas DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)
         :param column_defaults: optional default column properties
@@ -291,6 +295,9 @@ class Table(FilterElement, component='table.js'):
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
+
+        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
+            df = df.reset_index()
 
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
