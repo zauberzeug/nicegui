@@ -46,6 +46,52 @@ async def test_per_page_overrides_global(user: User, monkeypatch: pytest.MonkeyP
     assert 'text/html' in response.headers['content-type'], 'per-page False should override global True'
 
 
+async def test_ua_fallback_serves_markdown_for_known_agent_with_wildcard_accept(user: User):
+    """claude.ai's WebFetch sends `Accept: */*` despite being an agent — UA-sniff fixes it."""
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    claude_user_ua = ('Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; '
+                      'Claude-User/1.0; +claude-user@anthropic.com)')
+    response = await user.http_client.get('/', headers={'Accept': '*/*', 'User-Agent': claude_user_ua})
+    assert 'text/markdown' in response.headers['content-type']
+
+
+async def test_ua_fallback_respects_explicit_html_preference(user: User):
+    """A known-agent UA asking for `text/html` still gets HTML — explicit Accept always wins."""
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={
+        'Accept': 'text/html',
+        'User-Agent': 'GPTBot/1.1',
+    })
+    assert 'text/html' in response.headers['content-type']
+
+
+async def test_ua_fallback_does_nothing_for_browser(user: User):
+    """A regular browser hitting a markdown-enabled page still gets HTML."""
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    chrome_ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36'
+    response = await user.http_client.get('/', headers={'Accept': '*/*', 'User-Agent': chrome_ua})
+    assert 'text/html' in response.headers['content-type']
+
+
+async def test_ua_fallback_requires_opt_in(user: User):
+    """Without `markdown=True`, a known-agent UA still gets HTML."""
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'Accept': '*/*', 'User-Agent': 'ChatGPT-User/2.0'})
+    assert 'text/html' in response.headers['content-type']
+
+
 async def test_page_title(user: User):
     @ui.page('/', title='My Page', markdown=True)
     def page():
