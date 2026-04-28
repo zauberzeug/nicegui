@@ -442,7 +442,7 @@ def test_fullscreen_scroll_behavior(screen: Screen):
 
 @pytest.mark.parametrize('index,expected,unexpected', [
     (pd.Index([100, 200], name='id'), ['id', '100', '200'], []),
-    (pd.RangeIndex(start=100, stop=102), ['index', '100', '101'], []),
+    (pd.RangeIndex(start=100, stop=102, name='index'), ['index', '100', '101'], []),
     (pd.Index(['x', 'y']), ['index', 'x', 'y'], []),
     (pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['char', 'num']), ['char', 'num', 'A', 'B', '1', '2'], []),
     (pd.RangeIndex(start=0, stop=2), [], ['index']),

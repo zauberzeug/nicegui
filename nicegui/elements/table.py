@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
-from .. import helpers, optional_features
+from .. import optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
@@ -173,7 +173,7 @@ class Table(FilterElement, component='table.js'):
         *Added in version 2.0.0*
 
         *Since version 3.12.0:
-        Informative DataFrame indexes (named, non-default ``RangeIndex``, or ``MultiIndex``) are auto-included as column(s).
+        Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
         Pass ``df.reset_index(drop=True)`` to drop the index instead.
 
         :param df: Pandas DataFrame
@@ -296,7 +296,7 @@ class Table(FilterElement, component='table.js'):
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
-        if not helpers.is_default_range_index(df):
+        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
             df = df.reset_index()
 
         def is_special_dtype(dtype):

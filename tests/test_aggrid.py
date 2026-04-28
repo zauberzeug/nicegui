@@ -361,7 +361,7 @@ def test_version_matches_js(screen: Screen):
 
 @pytest.mark.parametrize('index,expected,unexpected', [
     (pd.Index([100, 200], name='id'), ['Id', '100', '200'], []),
-    (pd.RangeIndex(start=100, stop=102), ['Index', '100', '101'], []),
+    (pd.RangeIndex(start=100, stop=102, name='index'), ['Index', '100', '101'], []),
     (pd.Index(['x', 'y']), ['Index', 'x', 'y'], []),
     (pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['char', 'num']), ['Char', 'Num', 'A', 'B', '1', '2'], []),
     (pd.RangeIndex(start=0, stop=2), [], ['Index']),

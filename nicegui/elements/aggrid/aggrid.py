@@ -97,7 +97,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         *Since version 3.12.0:
-        Informative DataFrame indexes (named, non-default ``RangeIndex``, or ``MultiIndex``) are auto-included as column(s).
+        Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
         Pass ``df.reset_index(drop=True)`` to drop the index instead.
 
         :param df: Pandas DataFrame
@@ -110,7 +110,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         """
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
-        if not helpers.is_default_range_index(df):
+        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
             df = df.reset_index()
 
         def is_special_dtype(dtype):
