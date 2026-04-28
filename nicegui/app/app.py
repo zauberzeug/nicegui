@@ -104,6 +104,8 @@ class App(FastAPI):
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_connect()'))
 
     def on_disconnect(self, handler: Callable) -> None:
@@ -113,6 +115,8 @@ class App(FastAPI):
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_disconnect()'))
 
     def on_delete(self, handler: Callable) -> None:
@@ -122,6 +126,8 @@ class App(FastAPI):
 
         *Added in version 3.0.0*
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_delete()'))
 
     def on_startup(self, handler: Callable) -> None:
@@ -143,6 +149,8 @@ class App(FastAPI):
         The callback can be synchronous or asynchronous.
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._shutdown_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_shutdown()'))
 
     def on_exception(self, handler: Callable) -> None:
@@ -150,6 +158,8 @@ class App(FastAPI):
 
         The callback has an optional parameter of `Exception`.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._exception_handlers.append(handler)
 
     def handle_exception(self, exception: Exception) -> None:

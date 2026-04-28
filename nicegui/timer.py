@@ -40,12 +40,16 @@ class Timer:
         self._current_invocation: asyncio.Task | None = None
 
         coroutine = self._run_once if once else self._run_in_loop
-        if core.is_script_mode_preflight():
+        if self._skip_registration():
             return
         background_tasks.create_or_defer(coroutine(), name=str(callback))
 
     def _get_context(self) -> AbstractContextManager:
         return nullcontext()
+
+    def _skip_registration(self) -> bool:
+        # Global app.timer: skip on per-client re-execution; was registered on the first run.
+        return core.is_script_mode_re_execution()
 
     def activate(self) -> None:
         """Activate the timer."""
