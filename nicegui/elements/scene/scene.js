@@ -324,7 +324,7 @@ export default {
             if (mesh.userData.pendingMaterialInfo) {
               const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
               delete mesh.userData.pendingMaterialInfo;
-              this.material(mesh.object_id, color, opacity, side);
+              this.material(id, color, opacity, side);
             }
           },
           undefined,
