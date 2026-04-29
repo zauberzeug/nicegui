@@ -101,12 +101,13 @@ class Visibility:
              self_strict=False, other_strict=strict)
         return self
 
-    def set_visibility(self, visible: bool) -> None:
+    def set_visibility(self, visible: bool) -> Self:
         """Set the visibility of this element.
 
         :param visible: Whether the element should be visible.
         """
         self.visible = visible
+        return self
 
     def _handle_visibility_change(self, visible: str) -> None:
         """Called when the visibility of this element changes.
