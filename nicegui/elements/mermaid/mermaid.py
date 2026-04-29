@@ -2,7 +2,7 @@ from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...events import Handler, MermaidNodeClickEventArguments, handle_event
-from ..markdown import remove_indentation
+from ...helpers import remove_indentation
 from ..mixins.content_element import ContentElement
 
 
