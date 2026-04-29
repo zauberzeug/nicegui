@@ -49,27 +49,22 @@ def decorations_demo() -> None:
         </style>
     ''')
     editor = ui.codemirror('alpha\nbeta\ngamma\ndelta\nepsilon').classes('h-32')
-    ui.button('Mark "beta" range', on_click=lambda: editor.set_decorations(
-        [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'my-error'}],
-    ))
-    ui.button('Highlight line 3', on_click=lambda: editor.set_decorations(
-        [{'kind': 'line', 'line': 3, 'class': 'my-error'}],
-    ))
-    ui.button('Hide line 2', on_click=lambda: editor.set_decorations(
-        [{'kind': 'replace', 'from': 6, 'to': 11}],
-    ))
-    ui.button('Fold lines 2-4', on_click=lambda: editor.set_decorations(
-        [{'kind': 'replace', 'from': 6, 'to': 22,
-          'text': '{ ... 3 lines ... }', 'class': 'my-fold', 'block': True}],
-    ))
-    ui.button('Annotate end of line 1', on_click=lambda: editor.set_decorations(
-        [{'kind': 'widget', 'position': 5, 'text': '  // first line', 'class': 'my-hint'}],
-    ))
-    ui.button('Annotate with HTML', on_click=lambda: editor.set_decorations(
-        [{'kind': 'widget', 'position': 5,
-          'text': '<b style="color: #c00">⚠ first</b>'}],
-    ))
-    ui.button('Clear', on_click=editor.clear_decorations)
+    with ui.row():
+        ui.button('Mark range', on_click=lambda: editor.set_decorations(
+            [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'my-error'}],
+        ))
+        ui.button('Highlight line', on_click=lambda: editor.set_decorations(
+            [{'kind': 'line', 'line': 3, 'class': 'my-error'}],
+        ))
+        ui.button('Fold lines', on_click=lambda: editor.set_decorations(
+            [{'kind': 'replace', 'from': 6, 'to': 22,
+              'text': '{ ... 3 lines ... }', 'class': 'my-fold', 'block': True}],
+        ))
+        ui.button('Annotate (HTML)', on_click=lambda: editor.set_decorations(
+            [{'kind': 'widget', 'position': 5,
+              'text': '<b style="color: #c00">⚠ first</b>'}],
+        ))
+        ui.button('Clear', on_click=editor.clear_decorations)
 
 
 doc.reference(ui.codemirror)
