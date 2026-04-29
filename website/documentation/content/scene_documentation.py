@@ -393,7 +393,7 @@ def transform_controls_demo() -> None:
         ui.notify(f'{e.type} ({e.mode}): ({e.x:.2f}, {e.y:.2f}, {e.z:.2f})')
 
     with ui.scene(width=320, height=240, on_transform_end=show).classes('w-full h-64') as scene:
-        gizmo_box = scene.box().material('SteelBlue').hover_effect('glow', color='#ffaa33')
+        gizmo_box = scene.box(2, 2, 2).material('SteelBlue').hover_effect('glow', color='#ffaa33')
 
     ui.button('Translate', on_click=lambda: gizmo_box.enable_transform_controls(mode='translate'))
     ui.button('Rotate', on_click=lambda: gizmo_box.enable_transform_controls(mode='rotate'))
