@@ -1,5 +1,5 @@
 from itertools import accumulate, chain, repeat
-from typing import Any, Literal, get_args
+from typing import Literal, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
@@ -356,19 +356,14 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
 
-    def set_line_tooltips(self, tooltips: dict[int, dict[str, Any]], set_name: str = 'default') -> None:
-        """Set hover tooltip metadata for lines.
+    def set_line_tooltips(self, tooltips: dict[int, str], set_name: str = 'default') -> None:
+        """Set hover tooltip content for lines.
 
-        When the user hovers a line, the merged metadata for that line renders as a tooltip
-        showing each key-value pair on its own line.
-        Multiple named sets can be managed independently and are merged when hovering the same line.
+        Values are rendered via NiceGUI's global ``Element.prototype.setHTML`` polyfill
+        (DOMPurify-backed), so plain text and sanitized HTML both work.
+        Multiple named sets can be managed independently and are concatenated when hovering the same line.
 
-        Keys starting with an underscore are reserved for control fields:
-            - ``_html``: raw HTML string. Replaces the key-value rendering and is sanitized
-              on the client via the global DOMPurify polyfill installed by NiceGUI's index template
-              (so the host application does not need to import DOMPurify itself).
-
-        :param tooltips: dict mapping 1-indexed line numbers to metadata dicts
+        :param tooltips: dict mapping 1-indexed line numbers to tooltip content strings
         :param set_name: named set for independent management
 
         *Added in version X.Y.Z*

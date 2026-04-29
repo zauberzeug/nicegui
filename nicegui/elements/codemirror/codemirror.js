@@ -1,18 +1,16 @@
 import * as CM from "nicegui-codemirror";
 
-// Line tooltips: per-line hover metadata. Each tooltip is a zero-width range pinned to the
-// start of its line, so CM6's RangeSet.map() handles all position remapping through edits.
-
+// Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
 class TooltipValue extends CM.RangeValue {
-  constructor(setName, meta) {
+  constructor(setName, content) {
     super();
     this.setName = setName;
-    this.meta = meta;
+    this.content = content;
   }
 }
 
-const setTooltipsEffect = CM.StateEffect.define();    // value: {setName, ranges}
-const clearTooltipsEffect = CM.StateEffect.define();  // value: setName | null
+const setTooltipsEffect = CM.StateEffect.define();
+const clearTooltipsEffect = CM.StateEffect.define();
 
 function rangesExcludingSet(set, setName) {
   const keep = [];
@@ -177,11 +175,11 @@ export default {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
       const ranges = [];
-      for (const [line, data] of Object.entries(tooltips)) {
+      for (const [line, content] of Object.entries(tooltips)) {
         const lineNum = parseInt(line);
         if (lineNum >= 1 && lineNum <= doc.lines) {
           const pos = doc.line(lineNum).from;
-          ranges.push(new TooltipValue(setName, data).range(pos, pos));
+          ranges.push(new TooltipValue(setName, content).range(pos, pos));
         } else {
           console.warn(`set_line_tooltips: line ${lineNum} out of range [1, ${doc.lines}]`);
         }
@@ -210,38 +208,24 @@ export default {
         },
       );
 
-      // Hover tooltip for any line in the tooltipField. Merges metadata from all named sets that
-      // pin a tooltip to the same line, then renders either an `_html` field via the global
-      // DOMPurify-backed `Element.prototype.setHTML` polyfill, or the remaining key-value pairs.
+      // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render.
       const lineTooltip = CM.hoverTooltip((view, pos) => {
         const set = view.state.field(tooltipField);
         if (set.size === 0) return null;
         const line = view.state.doc.lineAt(pos);
-        const merged = {};
-        set.between(line.from, line.to, (_from, _to, value) => Object.assign(merged, value.meta));
-        const hasHtml = typeof merged._html === "string" && merged._html.length > 0;
-        const hasVisibleKey = Object.keys(merged).some((k) => !k.startsWith("_"));
-        if (!hasHtml && !hasVisibleKey) return null;
+        const parts = [];
+        set.between(line.from, line.to, (_from, _to, value) => {
+          if (typeof value.content === "string" && value.content.length > 0) {
+            parts.push(value.content);
+          }
+        });
+        if (parts.length === 0) return null;
         return {
           pos: line.from,
           above: true,
           create() {
             const dom = document.createElement("div");
-            if (merged._html) {
-              dom.setHTML(merged._html);
-            } else {
-              const parts = [];
-              for (const [key, val] of Object.entries(merged)) {
-                if (key.startsWith("_")) continue;
-                if (Array.isArray(val)) {
-                  for (const item of val) parts.push(`${key}: ${item}`);
-                } else {
-                  parts.push(`${key}: ${val}`);
-                }
-              }
-              dom.textContent = parts.join("\n");
-              dom.style.whiteSpace = "pre";
-            }
+            dom.setHTML(parts.join("<br>"));
             return { dom };
           },
         };

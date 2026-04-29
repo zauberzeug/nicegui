@@ -157,9 +157,9 @@ def test_set_and_clear_line_tooltips_text(screen: Screen):
         editor = ui.codemirror('alpha\nbeta\ngamma')
 
     screen.open('/')
-    # Two named sets pinned to the same line — must merge on hover.
-    editor.set_line_tooltips({2: {'severity': 'warning'}}, set_name='lint')
-    editor.set_line_tooltips({2: {'origin': 'row-3'}}, set_name='source')
+    # Two named sets pinned to the same line — must concatenate on hover.
+    editor.set_line_tooltips({2: 'severity: warning'}, set_name='lint')
+    editor.set_line_tooltips({2: 'origin: row-3'}, set_name='source')
     _wait_for_tooltip_count(screen, editor, 2)
     _trigger_hover(screen, editor, 2)
     screen.wait_for(lambda: all(s in _tooltip_text(screen) for s in ['severity: warning', 'origin: row-3']))
@@ -190,12 +190,12 @@ def test_line_tooltip_html_sanitized(screen: Screen):
         editor = ui.codemirror('hello\nworld')
 
     screen.open('/')
-    # The `_html` value contains a <script> tag and an inline event handler. DOMPurify must
+    # The content contains a <script> tag and an inline event handler. DOMPurify must
     # strip both. The <b> tag should survive. SVG onload is used (rather than img onerror) so
     # the test does not trigger a stray network fetch — that would surface as a console error
     # during teardown even though the handler itself was successfully stripped.
-    editor.set_line_tooltips({1: {'_html': '<b>safe</b><script>window.__hijack=1</script>'
-                                           '<svg onload="window.__hijack2=1"></svg>'}})
+    editor.set_line_tooltips({1: '<b>safe</b><script>window.__hijack=1</script>'
+                                 '<svg onload="window.__hijack2=1"></svg>'})
     _wait_for_tooltip_count(screen, editor, 1)
     _trigger_hover(screen, editor, 1)
     screen.wait_for(lambda: screen.selenium.execute_script(
