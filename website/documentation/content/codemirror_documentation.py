@@ -37,6 +37,8 @@ def preserve_cursor_demo() -> None:
     - **widget** — insert a text annotation at a position
 
     The host application supplies its own CSS for whatever class names it passes.
+    Widget and replace `text` values render via NiceGUI's global `setHTML` polyfill,
+    so plain text and sanitized HTML both work.
 ''')
 def decorations_demo() -> None:
     ui.add_head_html('''
@@ -62,6 +64,10 @@ def decorations_demo() -> None:
     ))
     ui.button('Annotate end of line 1', on_click=lambda: editor.set_decorations(
         [{'kind': 'widget', 'position': 5, 'text': '  // first line', 'class': 'my-hint'}],
+    ))
+    ui.button('Annotate with HTML', on_click=lambda: editor.set_decorations(
+        [{'kind': 'widget', 'position': 5,
+          'text': '<b style="color: #c00">⚠ first</b>'}],
     ))
     ui.button('Clear', on_click=editor.clear_decorations)
 

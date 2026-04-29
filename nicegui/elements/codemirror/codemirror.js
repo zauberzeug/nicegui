@@ -10,9 +10,10 @@ class TextWidget extends CM.WidgetType {
     return other.text === this.text && other.cls === this.cls;
   }
   toDOM() {
+    // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render.
     const span = document.createElement("span");
     if (this.cls) span.className = this.cls;
-    span.textContent = this.text;
+    span.setHTML(this.text);
     return span;
   }
   ignoreEvent() {

@@ -201,6 +201,34 @@ def test_replace_decoration_with_text(screen: Screen):
     assert 'BETA-NEW' not in editor.value
 
 
+def test_widget_text_renders_html_sanitized(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    editor.set_decorations([
+        {'kind': 'widget', 'position': 5,
+         'text': '<b>safe</b><script>window.__deco_hijack=1</script>',
+         'class': 'cm-test-html-widget'},
+    ])
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'const w = document.querySelector(".cm-content span.cm-test-html-widget");'
+        'return !!(w && w.querySelector("b"));'
+    ))
+    has_script = screen.selenium.execute_script(
+        'const w = document.querySelector(".cm-content span.cm-test-html-widget");'
+        'return !!(w && w.querySelector("script"));'
+    )
+    hijacked = screen.selenium.execute_script('return window.__deco_hijack === 1')
+    assert not has_script, 'DOMPurify should have stripped <script>'
+    assert not hijacked, 'inline script must not have executed'
+
+
 def test_replace_decoration_block_mode(screen: Screen):
     editor = None
 
