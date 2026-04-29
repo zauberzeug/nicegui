@@ -326,3 +326,80 @@ async def test_typing(user: User):
         _ = ElementFilter()  # ElementFilter[Element]
 
     await user.open('/')
+
+
+async def test_default_local_scope_true(user: User):
+    """Test that setting ElementFilter.DEFAULT_LOCAL_SCOPE = True works at runtime."""
+    @ui.page('/')
+    def page():
+        ui.button('button A')
+        ui.label('label A')
+        with ui.row():
+            ui.button('button B')
+            ui.label('label B')
+
+            # Set DEFAULT_LOCAL_SCOPE to True
+            original_value = ElementFilter.DEFAULT_LOCAL_SCOPE
+            try:
+                ElementFilter.DEFAULT_LOCAL_SCOPE = True
+                # Without explicit local_scope parameter, should use DEFAULT_LOCAL_SCOPE = True
+                assert texts(ElementFilter()) == ['button B', 'label B']
+            finally:
+                # Restore original value
+                ElementFilter.DEFAULT_LOCAL_SCOPE = original_value
+
+    await user.open('/')
+
+
+async def test_default_local_scope_false(user: User):
+    """Test that setting ElementFilter.DEFAULT_LOCAL_SCOPE = False works at runtime."""
+    @ui.page('/')
+    def page():
+        ui.button('button A')
+        ui.label('label A')
+        with ui.row():
+            ui.button('button B')
+            ui.label('label B')
+
+            # Set DEFAULT_LOCAL_SCOPE to False (should be default, but test explicitly)
+            original_value = ElementFilter.DEFAULT_LOCAL_SCOPE
+            try:
+                ElementFilter.DEFAULT_LOCAL_SCOPE = False
+                # Without explicit local_scope parameter, should use DEFAULT_LOCAL_SCOPE = False
+                # This should find all elements on the page, not just in local scope
+                result = texts(ElementFilter(kind=ui.button))
+                assert 'button A' in result
+                assert 'button B' in result
+            finally:
+                # Restore original value
+                ElementFilter.DEFAULT_LOCAL_SCOPE = original_value
+
+    await user.open('/')
+
+
+async def test_explicit_local_scope_overrides_default(user: User):
+    """Test that passing local_scope=True explicitly still works and overrides DEFAULT_LOCAL_SCOPE."""
+    @ui.page('/')
+    def page():
+        ui.button('button A')
+        ui.label('label A')
+        with ui.row():
+            ui.button('button B')
+            ui.label('label B')
+
+            # Set DEFAULT_LOCAL_SCOPE to False
+            original_value = ElementFilter.DEFAULT_LOCAL_SCOPE
+            try:
+                ElementFilter.DEFAULT_LOCAL_SCOPE = False
+                # Explicitly pass local_scope=True, should override the default
+                assert texts(ElementFilter(local_scope=True)) == ['button B', 'label B']
+
+                # Explicitly pass local_scope=False, should search whole page
+                result = texts(ElementFilter(kind=ui.button, local_scope=False))
+                assert 'button A' in result
+                assert 'button B' in result
+            finally:
+                # Restore original value
+                ElementFilter.DEFAULT_LOCAL_SCOPE = original_value
+
+    await user.open('/')
