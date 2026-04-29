@@ -235,3 +235,30 @@ def test_trigger_completion(screen: Screen):
     cm.click()
     editor.trigger_completion()
     screen.wait_for(lambda: 'hello' in _rendered_labels(screen))
+
+
+def test_completion_info_renders_html_sanitized(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.codemirror('', completions=[
+            {'label': 'foo',
+             'info': '<b>safe</b><script>window.__info_hijack=1</script>'},
+        ])
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys('foo')
+    screen.wait_for(lambda: _open_count(screen) == 1)
+    # Trigger info-tooltip rendering by selecting the option (default selection on a single match).
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'const tip = document.querySelector(".cm-completionInfo");'
+        'return !!(tip && tip.querySelector("b"));'
+    ))
+    has_script = screen.selenium.execute_script(
+        'const tip = document.querySelector(".cm-completionInfo");'
+        'return !!(tip && tip.querySelector("script"));'
+    )
+    hijacked = screen.selenium.execute_script('return window.__info_hijack === 1')
+    assert not has_script, 'DOMPurify should have stripped <script>'
+    assert not hijacked, 'inline script must not have executed'

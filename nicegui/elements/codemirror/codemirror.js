@@ -148,6 +148,12 @@ export default {
       });
     },
     buildCompletionSource(completions) {
+      // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render in the side panel.
+      const renderInfo = (info) => () => {
+        const div = document.createElement("div");
+        div.setHTML(info);
+        return div;
+      };
       return (context) => {
         const word = context.matchBefore(/[\w.]+/);
         if (!word && !context.explicit) return null;
@@ -158,7 +164,7 @@ export default {
               label: c.label,
               displayLabel: c.display_label,
               detail: c.detail,
-              info: c.info,
+              info: c.info ? renderInfo(c.info) : undefined,
               type: c.type,
               boost: typeof c.boost === "number" ? c.boost : undefined,
               commitCharacters: c.commit_characters,
@@ -169,7 +175,7 @@ export default {
           const opt = { label: c.label, apply: c.apply ?? c.label };
           if (c.display_label) opt.displayLabel = c.display_label;
           if (c.detail) opt.detail = c.detail;
-          if (c.info) opt.info = c.info;
+          if (c.info) opt.info = renderInfo(c.info);
           if (c.type) opt.type = c.type;
           if (typeof c.boost === "number") opt.boost = c.boost;
           if (c.commit_characters) opt.commitCharacters = c.commit_characters;
