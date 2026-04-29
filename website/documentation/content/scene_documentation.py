@@ -339,35 +339,31 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
-@doc.demo('New geometry primitives', '''
+@doc.demo('New geometry primitives and polar grid', '''
     ``polyline`` connects a sequence of points with optional per-vertex colors and dashing,
     ``lathe`` revolves a 2D profile to make a vase or bowl,
     and ``plane`` / ``cone`` / ``torus`` / ``capsule`` wrap the corresponding Three.js geometries.
+    The ``polar_grid=(radius, sectors, rings)`` scene argument replaces the rectangular grid
+    with a circular one (and overrides ``grid``).
 ''')
-def new_primitives() -> None:
+def new_primitives_and_polar_grid() -> None:
     import math
-    with ui.scene().classes('w-full h-64') as scene:
+    with ui.scene(grid=False, polar_grid=(4, 12, 6)).classes('w-full h-64') as scene:
+        radius = 2.5
+        for angle, color, builder in [
+            (0, '#cc6633', lambda: scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]])),
+            (60, '#ff3333', lambda: scene.cone(radius=0.5, height=1.0)),
+            (120, '#ffcc33', lambda: scene.torus(radius=0.4, tube=0.15)),
+            (180, '#33ccff', lambda: scene.plane(width=1.0, height=1.0).rotate(math.pi / 2, 0, 0)),
+            (240, '#cc66ff', lambda: scene.capsule(radius=0.3, length=0.8)),
+        ]:
+            x = radius * math.cos(math.radians(angle))
+            y = radius * math.sin(math.radians(angle))
+            builder().material(color).move(x, y, 0.5)
         scene.polyline(
-            points=[[-2, 0, 1.5], [-1, 0, 2.5], [0, 0, 1.5], [1, 0, 2.5], [2, 0, 1.5]],
+            points=[[-2, 0, 2.5], [-1, 0, 3.0], [0, 0, 2.5], [1, 0, 3.0], [2, 0, 2.5]],
             colors=[[1, 0, 0], [1, 0.5, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]],
         )
-        scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]]).move(-2, 0, 0)
-        scene.plane(width=1.0, height=1.0).move(2, 0, 0).rotate(math.pi / 2, 0, 0)
-        scene.cone(radius=0.5, height=1.0).move(-1, -2, 0)
-        scene.torus(radius=0.5, tube=0.15).move(1, -2, 0)
-        scene.capsule(radius=0.3, length=0.8).move(3, -2, 0)
-
-
-@doc.demo('Polar Grid', '''
-    Instead of a rectangular grid, you can display a polar grid using the ``polar_grid`` parameter.
-    It accepts a tuple of ``(radius, sectors, rings)`` to configure the grid.
-    When using ``polar_grid``, the ``grid`` parameter is ignored.
-''')
-def polar_grid() -> None:
-    with ui.scene(grid=False, polar_grid=(1.5, 12, 6)).classes('w-full h-64') as scene:
-        scene.sphere(0.1).move(1, 0, 0).material('#ff0000')
-        scene.sphere(0.1).move(0, 1, 0).material('#00ff00')
-        scene.sphere(0.1).move(-1, 0, 0).material('#0000ff')
 
 
 @doc.demo('Rotate with a different Euler order', '''
