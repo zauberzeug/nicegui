@@ -28,17 +28,34 @@ def preserve_cursor_demo() -> None:
 
 
 @doc.demo('Line Anchors', '''
-    ``set_line_anchors`` pins caller-chosen IDs to specific lines.
-    CodeMirror remaps the underlying positions through edits, and ``line_anchor_positions``
-    mirrors the current line for each anchor on the Python side.
-    Use this to track stable references to "where the user put a target" without storing line numbers
-    that go stale as the document changes.
+    Anchors give you a stable handle to a specific line that survives edits.
+    Use them to detect "did anything that matters change?" — pure whitespace edits leave
+    anchor positions intact, so you can skip expensive re-analysis.
 ''')
 def line_anchors_demo() -> None:
-    editor = ui.codemirror('hello\nworld\nthird\nfourth').classes('h-32')
-    label = ui.label()
-    editor.on('anchor-positions', lambda _: label.set_text(str(editor.line_anchor_positions)))
-    editor.set_line_anchors([{'id': 'a', 'line': 2}, {'id': 'b', 'line': 4}])
+    code = (
+        'def add(a, b):\n'
+        '    return a + b\n'
+        '\n'
+        'def mul(a, b):\n'
+        '    return a * b\n'
+    )
+    editor = ui.codemirror(code, language='Python').classes('h-40')
+    editor.set_line_anchors([{'id': 'add', 'line': 1}, {'id': 'mul', 'line': 4}])
+
+    status = ui.label('Code structure unchanged — skip re-analysis').classes('text-positive')
+    initial = {'add': 1, 'mul': 4}
+
+    def check(_) -> None:
+        positions = editor.line_anchor_positions.get('default', {})
+        if positions == initial:
+            status.set_text('Code structure unchanged — skip re-analysis')
+            status.classes(replace='text-positive')
+        else:
+            status.set_text(f'Anchors moved: {positions} — re-analyze')
+            status.classes(replace='text-negative')
+
+    editor.on('anchor-positions', check)
 
 
 doc.reference(ui.codemirror)
