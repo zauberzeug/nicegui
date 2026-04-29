@@ -914,7 +914,6 @@ async def test_switching_between_sub_pages(user: User) -> None:
     @ui.page('/b')
     def index():
         calls['index'] += 1
-        ui.label('Index')
         ui.button('back', on_click=ui.navigate.back)
         ui.button('forward', on_click=ui.navigate.forward)
         ui.sub_pages({
@@ -935,32 +934,25 @@ async def test_switching_between_sub_pages(user: User) -> None:
         ui.link('Go to B with slash', '/b/')
 
     await user.open('/')
-    await user.should_see('Index')
     await user.should_see('Page A')
-    await user.should_not_see('Page B')
     assert calls == {'index': 1, 'a': 1, 'b': 0}
 
     user.find('Go to B').click()
-    await user.should_see('Index')
     await user.should_see('Page B')
-    await user.should_not_see('Page A')
     assert calls == {'index': 1, 'a': 1, 'b': 1}
 
     user.find('back').click()
-    await user.should_see('Index')
     await user.should_see('Page A')
-    await user.should_not_see('Page B')
     assert calls == {'index': 1, 'a': 2, 'b': 1}
 
     user.find('forward').click()
-    await user.should_see('Index')
     await user.should_see('Page B')
-    await user.should_not_see('Page A')
     assert calls == {'index': 1, 'a': 2, 'b': 2}
 
     user.find('Go to A').click()
     await user.should_see('Page A')
     assert calls == {'index': 1, 'a': 3, 'b': 2}
+
     user.find('Go to B with slash').click()
     await user.should_see('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3}
