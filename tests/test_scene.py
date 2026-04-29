@@ -285,15 +285,15 @@ def test_transform_controls_mode_change(screen: Screen):
     ))
     screen.click('Translate')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).transform_controls.get("{box.id}").mode === "translate"'
+        f'return getElement({scene.id}).transform_controls.get("{box.id}")?.mode === "translate"'
     ))
     screen.click('Rotate')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).transform_controls.get("{box.id}").mode === "rotate"'
+        f'return getElement({scene.id}).transform_controls.get("{box.id}")?.mode === "rotate"'
     ))
     screen.click('Scale')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).transform_controls.get("{box.id}").mode === "scale"'
+        f'return getElement({scene.id}).transform_controls.get("{box.id}")?.mode === "scale"'
     ))
 
 
