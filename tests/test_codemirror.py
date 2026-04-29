@@ -165,3 +165,31 @@ def test_set_and_clear_diagnostics(screen: Screen):
     screen.wait_for(lambda: _lint_panel_present(screen))
     editor.toggle_lint_panel()
     screen.wait_for(lambda: not _lint_panel_present(screen))
+
+
+def test_diagnostic_message_renders_html_sanitized(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    editor.set_diagnostics([
+        {'line': 2, 'message': '<b>safe</b><script>window.__diag_hijack=1</script>'},
+    ])
+    screen.wait_for(lambda: _diagnostic_count(screen) == 1)
+    editor.open_lint_panel()
+    screen.wait_for(lambda: _lint_panel_present(screen))
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'const p = document.querySelector(".cm-panel-lint");'
+        'return !!(p && p.querySelector("b"));'
+    ))
+    has_script = screen.selenium.execute_script(
+        'const p = document.querySelector(".cm-panel-lint");'
+        'return !!(p && p.querySelector("script"));'
+    )
+    hijacked = screen.selenium.execute_script('return window.__diag_hijack === 1')
+    assert not has_script, 'DOMPurify should have stripped <script>'
+    assert not hijacked, 'inline script must not have executed'

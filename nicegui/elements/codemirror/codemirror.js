@@ -146,12 +146,19 @@ export default {
         const endOffset = Number.isInteger(d.end_column) ? Math.max(1, d.end_column) - 1 : line.length;
         const from = Math.min(line.from + startOffset, line.to);
         const to = Math.min(line.from + endOffset, line.to);
+        const message = d.message;
         cmDiagnostics.push({
           from,
           to: Math.max(from, to),
           severity: d.severity || "error",
-          message: d.message,
+          message,
           source: d.source ?? undefined,
+          // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render.
+          renderMessage: () => {
+            const span = document.createElement("span");
+            span.setHTML(message);
+            return span;
+          },
         });
       }
       this.editor.dispatch(CM.setDiagnostics(this.editor.state, cmDiagnostics));

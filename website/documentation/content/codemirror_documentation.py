@@ -34,6 +34,9 @@ def preserve_cursor_demo() -> None:
     ``clear_diagnostics`` removes all of them. ``open_lint_panel``, ``close_lint_panel``, and
     ``toggle_lint_panel`` show or hide CodeMirror's built-in panel listing the diagnostics, and
     ``get_diagnostic_count`` returns the count by severity.
+
+    Messages render via NiceGUI's global ``setHTML`` polyfill, so plain text and sanitized HTML
+    both work — ``<script>`` tags and other unsafe markup are stripped.
 ''')
 def diagnostics_demo() -> None:
     editor = ui.codemirror('def add(a, b):\n    return a + c\n', language='Python').classes('h-32')
@@ -41,7 +44,7 @@ def diagnostics_demo() -> None:
 
     async def lint() -> None:
         editor.set_diagnostics([
-            {'line': 2, 'message': "undefined name 'c'", 'severity': 'error',
+            {'line': 2, 'message': "undefined name <code>'c'</code>", 'severity': 'error',
              'source': 'pyflakes', 'column': 16, 'end_column': 17},
         ])
         count_label.text = str(await editor.get_diagnostic_count())
