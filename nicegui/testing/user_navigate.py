@@ -29,21 +29,18 @@ class UserNavigate(Navigate):
         current = self.user.back_history.pop()
         self.user.forward_history.append(current)
         target = self.user.back_history.pop()
-        background_tasks.create(self._open(target, clear_forward_history=False),
-                                name=f'navigate back to {target}')
+        background_tasks.create(self._open(target, clear_forward_history=False), name=f'navigate back to {target}')
 
     def forward(self) -> None:
         if not self.user.forward_history:
             return
         target = self.user.forward_history[0]
         del self.user.forward_history[0]
-        background_tasks.create(self._open(target, clear_forward_history=False),
-                                name=f'navigate forward to {target}')
+        background_tasks.create(self._open(target, clear_forward_history=False), name=f'navigate forward to {target}')
 
     def reload(self) -> None:
         target = self.user.back_history.pop()
-        background_tasks.create(self._open(target, clear_forward_history=False),
-                                name=f'navigate reload to {target}')
+        background_tasks.create(self._open(target, clear_forward_history=False), name=f'navigate reload to {target}')
 
     async def _open(self, path: str, *, clear_forward_history: bool = True) -> None:
         if self.user.client is not None:
