@@ -372,8 +372,7 @@ def polar_grid() -> None:
 
 @doc.demo('Rotate with a different Euler order', '''
     ``rotate`` accepts an optional intrinsic Euler ``order``
-    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``)
-    matching the ``THREE.Euler(rx, ry, rz, order)`` convention.
+    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``).
     The default ``'XYZ'`` keeps the same behavior as before.
 ''')
 def rotate_with_order() -> None:
