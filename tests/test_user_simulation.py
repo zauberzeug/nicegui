@@ -905,3 +905,33 @@ async def test_clearing_container_with_button_inside(user: User) -> None:
     await user.should_see('First handler')
     await user.should_see('click me')
     await user.should_not_see('Last handler')
+
+
+async def test_scoped_search_for_elements(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('scope-card left'):
+            ui.label('Scope').mark('scope-title left')
+            ui.button('Shared Action Left').mark('duplicate-button')
+            ui.input('duplicated').mark('duplicated-marker')
+
+        with ui.card().mark('scope-card right'):
+            ui.label('Scope').mark('scope-title right')
+            ui.button('Shared Action Right').mark('duplicate-button')
+            ui.input('duplicated').mark('duplicated-marker')
+
+    await user.open('/')
+    await user.should_see(marker='duplicate-button', content='Shared Action Left')
+    await user.should_see(marker='duplicate-button', content='Shared Action Right')
+    with user:
+        left_card = next(iter(ElementFilter(marker='scope-card left', kind=ui.card, local_scope=True)))
+
+    with left_card:
+        await user.should_see(marker='duplicate-button', content='Shared Action Left')
+        await user.should_see(marker='scope-title left')
+        await user.should_not_see(marker='duplicate-button', content='Shared Action Right')
+        await user.should_not_see(marker='scope-title right')
+        expected_count = 1
+        actual_count = len(user.find(marker='duplicated-marker').elements)
+        assert actual_count == expected_count, f'Expected to find {expected_count} duplicated marker in left card, but found {actual_count}.'
+
