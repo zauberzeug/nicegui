@@ -418,6 +418,9 @@ function createApp(elements, options) {
             ? ["polling", ...options.transports]
             : options.transports,
       });
+      window.socket.io.on("reconnect_attempt", () => {
+        options.query.next_message_id = window.nextMessageId;
+      });
       window.did_handshake = false;
       const messageHandlers = {
         connect: () => {

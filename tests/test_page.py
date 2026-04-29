@@ -330,6 +330,63 @@ def test_reconnecting_without_page_reload(screen: Screen):
     assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
 
 
+def test_reconnecting_after_ack_does_not_reload(screen: Screen):
+    @ui.page('/', reconnect_timeout=3.0)
+    def page():
+        state = {'n': 0}
+        label = ui.label('0')
+
+        def tick():
+            state['n'] += 1
+            label.set_text(str(state['n']))
+        ui.timer(0.2, tick)
+
+        ui.input('Input').props('autofocus')
+        ui.button('drop connection', on_click=lambda: ui.run_javascript(
+            'socket.io.engine.transport.onClose("transport close")'
+        ))
+
+    screen.open('/')
+    screen.type('hello')
+    screen.wait(4.0)
+    initial_document_id = screen.selenium.execute_script('return window.documentId;')
+    assert screen.selenium.execute_script('return Number(window.nextMessageId);') > 0
+    screen.click('drop connection')
+    screen.wait(4.0)
+    assert screen.selenium.execute_script('return window.socket.connected;')
+    document_id_after = screen.selenium.execute_script('return window.documentId;')
+    assert document_id_after == initial_document_id, \
+        'window.documentId must persist (no hard reload) after auto-reconnect that follows an ack'
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
+    assert element.get_attribute('value') == 'hello', 'input value should be preserved across the reconnect'
+
+
+def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
+    @ui.page('/', reconnect_timeout=3.0)
+    def page():
+        state = {'n': 0}
+        label = ui.label('0')
+
+        def tick():
+            state['n'] += 1
+            label.set_text(str(state['n']))
+        ui.timer(0.2, tick)
+
+    screen.open('/')
+    screen.wait(1.5)
+
+    initial_query = screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);')
+    assert initial_query == 0
+    assert screen.selenium.execute_script('return Number(window.nextMessageId);') > 0
+
+    screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
+    screen.wait(2.0)
+
+    updated_query = screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);')
+    assert updated_query > 0, \
+        f'options.query.next_message_id should be refreshed on reconnect (got {updated_query})'
+
+
 def test_ip(screen: Screen):
     @ui.page('/')
     def page():
