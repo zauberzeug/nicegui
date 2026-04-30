@@ -42,5 +42,13 @@ class Expansion(SortableElement, IconElement, TextElement, ValueElement[bool], D
         """Close the expansion."""
         self.value = False
 
+    def _render_markdown(self) -> str:
+        parts = []
+        if label := self._props.get('label', ''):
+            parts.append(f'**{label}**')
+        if self.value and (children_md := self._children_to_markdown()):
+            parts.append(children_md)
+        return '\n\n'.join(parts)
+
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text

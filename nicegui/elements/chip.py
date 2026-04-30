@@ -57,3 +57,6 @@ class Chip(IconElement, ValueElement[bool], TextElement, BackgroundColorElement,
         self._props['clickable'] = True
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
+
+    def _render_markdown(self) -> str:
+        return self._text or ''

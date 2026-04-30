@@ -125,6 +125,20 @@ class Table(FilterElement, component='table.js'):
 
         return super()._to_dict()
 
+    def _render_markdown(self) -> str:
+        lines = []
+        if title := self._props.get('title'):
+            lines.append(f'**{title}**')
+            lines.append('')
+        if columns := self._props.get('columns', []):
+            headers = [col.get('label', col.get('name', '')).replace('|', '\\|') for col in columns]
+            lines.append('| ' + ' | '.join(headers) + ' |')
+            lines.append('| ' + ' | '.join('---' for _ in columns) + ' |')
+            for row in self._props.get('rows', []):
+                cells = [str(row.get(col.get('field', col.get('name', '')), '')).replace('|', '\\|') for col in columns]
+                lines.append('| ' + ' | '.join(cells) + ' |')
+        return '\n'.join(lines)
+
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
         self._selection_handlers.append(callback)
@@ -157,6 +171,10 @@ class Table(FilterElement, component='table.js'):
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         *Added in version 2.0.0*
+
+        *Since version 3.12.0:
+        Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
+        Pass ``df.reset_index(drop=True)`` to drop the index instead.
 
         :param df: Pandas DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)
@@ -277,6 +295,9 @@ class Table(FilterElement, component='table.js'):
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
+
+        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
+            df = df.reset_index()
 
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
