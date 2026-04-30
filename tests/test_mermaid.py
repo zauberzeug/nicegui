@@ -49,6 +49,26 @@ def test_mermaid_with_line_breaks(screen: Screen):
     screen.should_contain('Verification: Test')
 
 
+def test_mermaid_with_yaml_frontmatter(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            ---
+            displayMode: compact
+            ---
+            gantt
+                title A Gantt Diagram
+                dateFormat YYYY-MM-DD
+                section Section
+                    A task          :a1, 2014-01-01, 30d
+                    Another task    :after a1, 20d
+        ''')
+
+    screen.open('/')
+    screen.should_contain('A Gantt Diagram')
+    screen.should_not_contain('Syntax error in text')
+
+
 def test_replace_mermaid(screen: Screen):
     @ui.page('/')
     def page():

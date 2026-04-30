@@ -201,11 +201,14 @@ def test_gltf(screen: Screen):
         nonlocal scene
         app.add_static_file(local_file=TEST_DIR / 'media' / 'box.glb', url_path='/box.glb')
         with ui.scene() as scene:
-            scene.gltf('/box.glb')
+            scene.gltf('/box.glb').material('#ff0000')
 
     screen.open('/')
     screen.wait(1.0)
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+    assert screen.selenium.execute_script(
+        f'return scene_{scene.html_id}.children[4].getObjectByProperty("isMesh", true).material.color.getHexString()'
+    ) == 'ff0000'
 
 
 def test_no_cyclic_references(screen: Screen):
