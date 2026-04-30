@@ -419,6 +419,7 @@ function createApp(elements, options) {
             : options.transports,
       });
       window.socket.io.on("reconnect_attempt", () => {
+        // keep the otherwise-frozen reconnect query in sync to avoid triggering a reload (see #6019)
         options.query.next_message_id = window.nextMessageId;
       });
       window.did_handshake = false;
