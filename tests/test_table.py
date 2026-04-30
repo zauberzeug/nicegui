@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import pandas as pd
 import polars as pl
@@ -437,3 +438,26 @@ def test_fullscreen_scroll_behavior(screen: Screen):
     screen.click('Toggle fullscreen')
     screen.wait(0.5)
     assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+@pytest.mark.parametrize('index,expected,unexpected', [
+    (pd.Index([100, 200], name='id'), ['id', '100', '200'], []),
+    (pd.RangeIndex(start=100, stop=102, name='index'), ['index', '100', '101'], []),
+    (pd.Index(['x', 'y']), ['index', 'x', 'y'], []),
+    (pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['char', 'num']), ['char', 'num', 'A', 'B', '1', '2'], []),
+    (pd.RangeIndex(start=0, stop=2), [], ['index']),
+])
+def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unexpected: list[str]):
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [42, 43]}, index=index)
+        ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('value')
+    screen.should_contain('42')
+    screen.should_contain('43')
+    for item in expected:
+        screen.should_contain(item)
+    for item in unexpected:
+        screen.should_not_contain(item)

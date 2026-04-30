@@ -13,7 +13,7 @@ from nicegui import app as nicegui_app
 from nicegui import Client
 from nicegui import ui as nicegui_ui
 from nicegui.functions.navigate import Navigate
-from nicegui.elements.markdown import remove_indentation
+from nicegui.helpers import remove_indentation
 
 from .page import DocumentationPage
 from .part import Demo, DocumentationPart
