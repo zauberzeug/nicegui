@@ -932,3 +932,69 @@ async def test_scoped_search_for_elements(user: User) -> None:
         await user.should_not_see(marker='duplicate-button', content='Shared Action Right')
         await user.should_not_see(marker='scope-title right')
         assert len(user.find(marker='duplicated-marker').elements) == 1
+        
+        
+async def test_switching_between_sub_pages(user: User) -> None:
+    calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
+
+    @ui.page('/')
+    @ui.page('/b')
+    def index():
+        calls['index'] += 1
+        ui.label(f'Index render {calls["index"]}')
+        ui.button('back', on_click=ui.navigate.back)
+        ui.button('forward', on_click=ui.navigate.forward)
+        ui.button('reload', on_click=ui.navigate.reload)
+        ui.link('Go to "/"', '/')
+        ui.link('Go to "/b"', '/b')
+        ui.link('Go to "/b/"', '/b/')
+        ui.link('Go to "/other"', '/other')
+        ui.sub_pages({
+            '/': lambda: (ui.label('Page A'), calls.update(a=calls['a'] + 1)),
+            '/b': lambda: (ui.label('Page B'), calls.update(b=calls['b'] + 1)),
+        })
+
+    @ui.page('/other')
+    def other_page():
+        calls['other'] += 1
+        ui.label('Other page')
+
+    await user.open('/')
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 1, 'b': 0, 'other': 0}
+
+    user.find('Go to "/b"').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 1, 'b': 1, 'other': 0}
+
+    user.find('back').click()
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 2, 'b': 1, 'other': 0}
+
+    user.find('forward').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 2, 'b': 2, 'other': 0}
+
+    user.find('Go to "/"').click()
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 3, 'b': 2, 'other': 0}
+
+    user.find('Go to "/b/"').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 3, 'b': 3, 'other': 0}
+
+    user.find('Go to "/b/"').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 3, 'b': 3, 'other': 0}, 'no rebuilding if path stays the same'
+
+    user.find('Go to "/"').click()
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 4, 'b': 3, 'other': 0}
+
+    user.find('reload').click()
+    await user.should_see('Index render 2')
+    assert calls == {'index': 2, 'a': 5, 'b': 3, 'other': 0}, 'reload triggers a full page reload'
+
+    user.find('Go to "/other"').click()
+    await user.should_see('Other page')
+    assert calls == {'index': 2, 'a': 5, 'b': 3, 'other': 1}, 'navigating to sibling page falls back to full page open'
