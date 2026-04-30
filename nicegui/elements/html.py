@@ -29,3 +29,6 @@ class Html(ContentElement, component='html.js'):
         if callable(self._sanitize):
             content = self._sanitize(content)
         super()._handle_content_change(content)
+
+    def _render_markdown(self) -> str:
+        return self.content

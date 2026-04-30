@@ -163,9 +163,10 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
-    if 'endpoint' in request.scope and not request.scope.get('nicegui_page_path') and isinstance(exception, StarletteHTTPException):
+    if (endpoint := request.scope.get('endpoint')) is not None and endpoint is not app and not request.scope.get('nicegui_page_path') and isinstance(exception, StarletteHTTPException):
         # non-page endpoints raising 404 should get JSON, not our HTML error page
         # NOTE: match Starlette's HTTPException (the base class) so e.g. auth dependencies that raise it directly are covered
+        # NOTE: when mounted via ui.run_with(), the parent's Mount sets endpoint=app even if no inner route matched — exclude that case
         return await http_exception_handler(request, exception)
     root = core.root
     if root is not None:
