@@ -23,13 +23,15 @@ class DisableableElement(Element):
             return True
         return not self.enabled and self.ignores_events_when_disabled
 
-    def enable(self) -> None:
+    def enable(self) -> Self:
         """Enable the element."""
         self.enabled = True
+        return self
 
-    def disable(self) -> None:
+    def disable(self) -> Self:
         """Disable the element."""
         self.enabled = False
+        return self
 
     def bind_enabled_to(self,
                         target_object: Any,
@@ -99,9 +101,10 @@ class DisableableElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_enabled(self, value: bool) -> None:
+    def set_enabled(self, value: bool) -> Self:
         """Set the enabled state of the element."""
         self.enabled = value
+        return self
 
     def _handle_enabled_change(self, enabled: bool) -> None:
         """Called when the element is enabled or disabled.
