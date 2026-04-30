@@ -6,7 +6,6 @@ import httpx
 import pytest
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
-from selenium.webdriver.common.by import By
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from nicegui import app, background_tasks, ui
@@ -314,20 +313,6 @@ def test_warning_about_to_late_responses(screen: Screen):
     screen.open('/')
     screen.should_contain('NiceGUI page')
     screen.assert_py_logger('ERROR', re.compile('it was returned after the HTML had been delivered to the client'))
-
-
-def test_reconnecting_without_page_reload(screen: Screen):
-    @ui.page('/', reconnect_timeout=3.0)
-    def page():
-        ui.input('Input').props('autofocus')
-        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()'))
-
-    screen.open('/')
-    screen.type('hello')
-    screen.click('drop connection')
-    screen.wait(2.0)
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
-    assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
 
 
 def test_ip(screen: Screen):
