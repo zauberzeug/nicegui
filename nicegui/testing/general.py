@@ -25,6 +25,7 @@ def prepare_simulation() -> None:
         unocss=None,
         prod_js=True,
         show_welcome_message=False,
+        markdown=False,
     )
 
 

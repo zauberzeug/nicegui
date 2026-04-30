@@ -3,7 +3,8 @@ from functools import lru_cache
 
 from docutils.core import publish_parts
 
-from .markdown import Markdown, remove_indentation
+from ..helpers import remove_indentation
+from .markdown import Markdown
 
 
 class ReStructuredText(Markdown):

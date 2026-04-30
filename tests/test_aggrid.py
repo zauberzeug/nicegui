@@ -1,6 +1,7 @@
 import inspect
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import polars as pl
@@ -356,3 +357,26 @@ def test_version_matches_js(screen: Screen):
 
     screen.open('/')
     screen.should_contain(ui.aggrid.VERSION)
+
+
+@pytest.mark.parametrize('index,expected,unexpected', [
+    (pd.Index([100, 200], name='id'), ['Id', '100', '200'], []),
+    (pd.RangeIndex(start=100, stop=102, name='index'), ['Index', '100', '101'], []),
+    (pd.Index(['x', 'y']), ['Index', 'x', 'y'], []),
+    (pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['char', 'num']), ['Char', 'Num', 'A', 'B', '1', '2'], []),
+    (pd.RangeIndex(start=0, stop=2), [], ['Index']),
+])
+def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unexpected: list[str]):
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [42, 43]}, index=index)
+        ui.aggrid.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Value')
+    screen.should_contain('42')
+    screen.should_contain('43')
+    for item in expected:
+        screen.should_contain(item)
+    for item in unexpected:
+        screen.should_not_contain(item)
