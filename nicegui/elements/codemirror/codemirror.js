@@ -210,7 +210,6 @@ export default {
       this.editor.dispatch({ effects: clearAnchorsEffect.of(setName ?? null) });
       this.emitAnchorPositions();
     },
-    // Snapshot the current anchor field and emit a full {set_name: {id: line}} mirror.
     // Reads live editor state so callers don't need to capture anything.
     emitAnchorPositions() {
       if (!this.editor) return;
@@ -245,7 +244,6 @@ export default {
         },
       );
 
-      // Re-emit anchor positions when the document changes and at least one anchor exists.
       // The 50 ms debounce coalesces bursts (paste, multi-cursor insert) so high-latency
       // connections do not see one event per keystroke. The fire-time callback reads live
       // editor state via emitAnchorPositions(), so a stale timer that survives a clear or
