@@ -26,6 +26,8 @@ class Fab(ValueElement[bool], LabelElement, IconElement, BackgroundColorElement,
         A floating action button that can be used to trigger an action.
         This element is based on Quasar's `QFab <https://quasar.dev/vue-components/floating-action-button#qfab-api>`_ component.
 
+        *Added in version 2.22.0*
+
         :param icon: icon to be displayed on the FAB
         :param value: whether the FAB is already opened (default: ``False``)
         :param label: optional label for the FAB

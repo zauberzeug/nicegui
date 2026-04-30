@@ -1,9 +1,9 @@
 import asyncio
 import time
 
+from ..helpers import remove_indentation
 from .button import Button as button
 from .markdown import Markdown as markdown
-from .markdown import remove_indentation
 from .mixins.content_element import ContentElement
 from .timer import Timer as timer
 
@@ -20,6 +20,7 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
         :param content: code to display
         :param language: language of the code (default: "python")
         """
+        self._language = language
         super().__init__(content=remove_indentation(content))
 
         with self:
@@ -46,6 +47,9 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
 
     def _update_copy_button(self) -> None:
         self.copy_button.set_visibility(time.time() > self._last_scroll + 1.0)
+
+    def _render_markdown(self) -> str:
+        return f'```{self._language or ""}\n{self.content}\n```'
 
     def _handle_content_change(self, content: str) -> None:
         self._props['content'] = content
