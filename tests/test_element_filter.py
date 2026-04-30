@@ -343,3 +343,13 @@ async def test_always_get_q_layout_without_element_context(user: User, local_sco
         e = ElementFilter(kind=ui.label, local_scope=local_scope)
         assert e._scope.tag == 'q-layout'
         assert len(list(e)) == 1
+
+async def test_local_scope_false_searches_entire_page_inside_element_context(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('outside')
+        with ui.row():
+            ui.label('inside')
+            assert sorted(texts(ElementFilter(kind=ui.label, local_scope=False))) == ['inside', 'outside']
+
+    await user.open('/')
