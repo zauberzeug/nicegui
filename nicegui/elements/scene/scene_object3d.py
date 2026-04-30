@@ -12,8 +12,7 @@ if TYPE_CHECKING:
     from .scene import Scene, SceneObject
 
 
-# JS-side event type names (the strings the JS emits in the "pointerevent" payload's `type` field).
-# Each Python chain method maps to exactly one of these.
+# Wire-format strings the JS emits in the "pointerevent" payload's `type` field.
 _POINTER_EVENT_TYPES = (
     'pointerover', 'pointerout', 'pointerdown', 'pointerup',
     'pointermove', 'click', 'dblclick', 'contextmenu',

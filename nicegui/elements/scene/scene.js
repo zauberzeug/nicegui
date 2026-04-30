@@ -91,12 +91,7 @@ export default {
     this.dragging_count = 0;             // # of TransformControls currently being dragged
     this.userOrbitEnabled = true;        // user-intended orbit state; restored on drag end
     this.is_initialized = false;
-    // Per-object pointer event substrate.
-    // - interactiveObjects: three.js Object3D refs we raycast against on pointer events.
-    //   Always exactly the set of objects with at least one handler registered or a hover effect set.
-    // - objectHandlers: object_id -> Set<event_type> of event names the Python side is listening to.
-    // - objectEffects: object_id -> {effect: 'glow'|'outline'|'tint', color: string|null} hover-effect spec.
-    // - effectArtifacts: object_id -> internal three.js state used to render & tear down the effect.
+    // An object joins interactiveObjects iff objectHandlers or objectEffects has an entry for it.
     this.interactiveObjects = [];
     this.objectHandlers = new Map();
     this.objectEffects = new Map();
@@ -233,9 +228,7 @@ export default {
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
-    // Hover-effect substrate. An effect-artifact entry holds the three.js objects that render the
-    // effect, plus a snapshot of the source root's matrixWorld so we can skip per-frame syncs when
-    // the source hasn't moved. Built when the source becomes hovered, torn down when un-hovered.
+    // Each effect-artifact snapshots the source's matrixWorld so per-frame sync skips when unchanged.
     this._hoverWorldPos = new THREE.Vector3();
     this._hoverWorldQuat = new THREE.Quaternion();
     this._hoverWorldScale = new THREE.Vector3();
@@ -350,7 +343,6 @@ export default {
 
     const raycaster = new THREE.Raycaster();
 
-    // Walk parent chain to find the closest interactive ancestor (one we have handler/effect state for).
     const findInteractiveAncestor = (object) => {
       let obj = object;
       while (obj) {
@@ -373,14 +365,12 @@ export default {
       return raycaster.intersectObjects(this.interactiveObjects, true);
     };
 
-    // Find the topmost interactive object_id under the cursor. Returns {id, point, localPoint} or nulls.
     const findHit = (clientX, clientY) => {
       const hits = raycastInteractive(clientX, clientY);
       for (const hit of hits) {
         const id = findInteractiveAncestor(hit.object);
         if (id) {
           const root = this.objects.get(id);
-          // Local hit point: world → root local space
           const localPoint = root.worldToLocal(hit.point.clone());
           return { id, point: hit.point, localPoint };
         }
@@ -415,13 +405,11 @@ export default {
       const { id: newHoveredId, point, localPoint } = findHit(e.clientX, e.clientY);
 
       if (newHoveredId !== this.hoveredObjectId) {
-        // Tear down effect on previously hovered object, then emit pointerout.
         if (this.hoveredObjectId) {
           this._clearEffectArtifact(this.hoveredObjectId);
           // Use empty point for pointerout — cursor has already left the object.
           emitPointerEvent("pointerout", this.hoveredObjectId, null, null, e);
         }
-        // Build effect on newly hovered object, then emit pointerover.
         if (newHoveredId) {
           const spec = this.objectEffects.get(newHoveredId);
           if (spec) {
@@ -451,7 +439,6 @@ export default {
         emitPointerEvent(eventType, id, point, localPoint, e);
       } else if (eventType === "click" || eventType === "dblclick" ||
                  eventType === "contextmenu" || eventType === "pointerdown") {
-        // Scene-level pointer-missed for clicks that don't hit any interactive object.
         this.$emit("pointermissed", {
           type: eventType,
           button: e.button ?? 0,
@@ -725,7 +712,6 @@ export default {
         const i = this.interactiveObjects.indexOf(obj);
         if (i !== -1) this.interactiveObjects.splice(i, 1);
       }
-      // If currently hovered, rebuild artifact for the new spec (or clear if removed).
       if (this.hoveredObjectId === object_id) {
         this._clearEffectArtifact(object_id);
         const spec = this.objectEffects.get(object_id);
@@ -756,7 +742,6 @@ export default {
     },
     enable_transform_controls(object_id, mode, size, visible_axes, space, rotation_snap) {
       if (!this.objects.has(object_id)) return false;
-      // Reuse existing controls if already attached: just update mode / size / axes / space / snap.
       const existing = this.transform_controls.get(object_id);
       if (existing) {
         existing.setMode(mode);
@@ -880,13 +865,11 @@ export default {
       if (this.transform_controls.has(object_id)) {
         this.disable_transform_controls(object_id);
       }
-      // If the deleted object was hovered, tear down its effect and reset cursor.
       if (this.hoveredObjectId === object_id) {
         this._clearEffectArtifact(object_id);
         this.renderer.domElement.style.cursor = "";
         this.hoveredObjectId = null;
       }
-      // Drop interactive state for this object.
       this.objectHandlers.delete(object_id);
       this.objectEffects.delete(object_id);
       const interactiveIndex = this.interactiveObjects.indexOf(object);
