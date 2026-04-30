@@ -932,8 +932,8 @@ async def test_scoped_search_for_elements(user: User) -> None:
         await user.should_not_see(marker='duplicate-button', content='Shared Action Right')
         await user.should_not_see(marker='scope-title right')
         assert len(user.find(marker='duplicated-marker').elements) == 1
-        
-        
+
+
 async def test_switching_between_sub_pages(user: User) -> None:
     calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
 
