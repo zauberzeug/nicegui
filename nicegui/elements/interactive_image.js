@@ -1,6 +1,6 @@
 export default {
   template: `
-    <div :style="{ position: 'relative', aspectRatio: size ? size[0] / size[1] : undefined }">
+    <div :style="{ position: 'relative', aspectRatio: aspectRatio }">
       <img
         ref="img"
         :src="computed_src"
@@ -147,6 +147,13 @@ export default {
     },
   },
   computed: {
+    aspectRatio() {
+      if (this.size) return this.size[0] / this.size[1];
+      if (this.loaded_image_width && this.loaded_image_height) {
+        return this.loaded_image_width / this.loaded_image_height;
+      }
+      return undefined;
+    },
     onCrossEvents() {
       if (!this.cross && !this.$slots.cross) return {};
       return {
