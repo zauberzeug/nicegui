@@ -348,7 +348,7 @@ def test_reconnecting_after_ack_does_not_reload(screen: Screen):
 
     screen.open('/')
     screen.type('hello')
-    screen.wait(4.0)
+    screen.wait(5.0)  # > 3s for the periodic ack to fire and prune message 0 server-side
     initial_document_id = screen.selenium.execute_script('return window.documentId;')
     assert screen.selenium.execute_script('return Number(window.nextMessageId);') > 0
     screen.click('drop connection')
