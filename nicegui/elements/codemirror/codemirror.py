@@ -8,11 +8,7 @@ from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
-# Mark decoration spec for `ui.codemirror.set_decorations`. Styles a character range using
-# CodeMirror's `Decoration.mark`. Required: `kind: 'mark'`, `from`, `to`. Optional:
-# `class` (CSS class to apply), `attributes` (HTML attribute dict), `inclusiveStart` /
-# `inclusiveEnd` (whether the decoration grows when text is inserted at the boundary).
-# Functional `TypedDict` syntax because `from` and `class` are Python keywords.
+# Functional TypedDict syntax because `from` and `class` are Python keywords.
 MarkDecorationSpec = TypedDict(
     'MarkDecorationSpec',
     {
@@ -26,9 +22,6 @@ MarkDecorationSpec = TypedDict(
     },
 )
 
-# Line decoration spec for `ui.codemirror.set_decorations`. Styles an entire line using
-# CodeMirror's `Decoration.line`. Required: `kind: 'line'`, `line` (1-indexed). Optional:
-# `class`, `attributes`.
 LineDecorationSpec = TypedDict(
     'LineDecorationSpec',
     {
@@ -39,12 +32,6 @@ LineDecorationSpec = TypedDict(
     },
 )
 
-# Replace decoration spec for `ui.codemirror.set_decorations`. Hides or visually substitutes
-# a character range without modifying the underlying document. Required: `kind: 'replace'`,
-# `from`, `to`. Optional: `text` (when present, the range renders as this text via an
-# internal text-only widget; when absent, the range is collapsed and hidden), `class`,
-# `inclusive`, `block` (render as a block-level widget for whole-line / multi-line folding —
-# when block is true the range must cover full lines).
 ReplaceDecorationSpec = TypedDict(
     'ReplaceDecorationSpec',
     {
@@ -58,10 +45,6 @@ ReplaceDecorationSpec = TypedDict(
     },
 )
 
-# Widget decoration spec for `ui.codemirror.set_decorations`. Inserts a text widget at a
-# single position without modifying the document. Required: `kind: 'widget'`, `position`,
-# `text`. Optional: `class`, `side` (-1 to render before the position, 1 to render after,
-# default 1).
 WidgetDecorationSpec = TypedDict(
     'WidgetDecorationSpec',
     {
