@@ -274,9 +274,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
-        # Each configured intersection plane appears in the dict whether the ray hit it or not;
-        # the value is `None` for misses so callers can distinguish "plane not configured" from
-        # "plane didn't intersect" without `.get()` ambiguity.
         intersections: dict[str, ScenePoint | None] = {
             name: ScenePoint(x=pt['x'], y=pt['y'], z=pt['z']) if pt is not None else None
             for name, pt in e.args['intersections'].items()
