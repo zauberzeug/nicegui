@@ -563,9 +563,19 @@ export default {
       } else if (type == "gltf") {
         const url = args[0];
         mesh = new THREE.Group();
+        mesh.userData.isGltf = true;
+        mesh.userData.loaded = false;
         this.gltf_loader.load(
           url,
-          (gltf) => mesh.add(gltf.scene),
+          (gltf) => {
+            mesh.add(gltf.scene);
+            mesh.userData.loaded = true;
+            if (mesh.userData.pendingMaterialInfo) {
+              const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
+              delete mesh.userData.pendingMaterialInfo;
+              this.material(id, color, opacity, side);
+            }
+          },
           undefined,
           (error) => console.error(error),
         );
@@ -624,17 +634,29 @@ export default {
       this.objects.get(object_id).name = name;
     },
     material(object_id, color, opacity, side) {
-      if (!this.objects.has(object_id)) return;
-      const material = this.objects.get(object_id).material;
-      if (!material) return;
+      const object = this.objects.get(object_id);
+      if (!object) return;
+      if (object.userData.isGltf && !object.userData.loaded) {
+        object.userData.pendingMaterialInfo = { color, opacity, side };
+        return;
+      }
       const vertexColors = color === null;
-      material.color.set(vertexColors ? "#ffffff" : color);
-      material.needsUpdate = material.vertexColors != vertexColors;
-      material.vertexColors = vertexColors;
-      material.opacity = opacity;
-      if (side == "front") material.side = THREE.FrontSide;
-      else if (side == "back") material.side = THREE.BackSide;
-      else material.side = THREE.DoubleSide;
+      const apply = (material) => {
+        (Array.isArray(material) ? material : [material]).forEach((m) => {
+          m.color.set(vertexColors ? "#ffffff" : color);
+          m.needsUpdate = m.vertexColors != vertexColors;
+          m.vertexColors = vertexColors;
+          m.opacity = opacity;
+          if (side == "front") m.side = THREE.FrontSide;
+          else if (side == "back") m.side = THREE.BackSide;
+          else m.side = THREE.DoubleSide;
+        });
+      };
+      if (object.userData.isGltf) {
+        object.traverse((child) => child.isMesh && child.material && apply(child.material));
+      } else if (object.material) {
+        apply(object.material);
+      }
     },
     move(object_id, x, y, z) {
       if (!this.objects.has(object_id)) return;
