@@ -918,10 +918,10 @@ async def test_switching_between_sub_pages(user: User) -> None:
         ui.button('back', on_click=ui.navigate.back)
         ui.button('forward', on_click=ui.navigate.forward)
         ui.button('reload', on_click=ui.navigate.reload)
-        ui.link('Go to /', '/')
-        ui.link('Go to /b', '/b')
-        ui.link('Go to /b/', '/b/')
-        ui.link('Go to /other', '/other')
+        ui.link('Go to "/"', '/')
+        ui.link('Go to "/b"', '/b')
+        ui.link('Go to "/b/"', '/b/')
+        ui.link('Go to "/other"', '/other')
         ui.sub_pages({
             '/': lambda: (ui.label('Page A'), calls.update(a=calls['a'] + 1)),
             '/b': lambda: (ui.label('Page B'), calls.update(b=calls['b'] + 1)),
@@ -936,7 +936,7 @@ async def test_switching_between_sub_pages(user: User) -> None:
     await user.should_see('Page A')
     assert calls == {'index': 1, 'a': 1, 'b': 0, 'other': 0}
 
-    user.find('Go to /b').click()
+    user.find('Go to "/b"').click()
     await user.should_see('Page B')
     assert calls == {'index': 1, 'a': 1, 'b': 1, 'other': 0}
 
@@ -948,19 +948,19 @@ async def test_switching_between_sub_pages(user: User) -> None:
     await user.should_see('Page B')
     assert calls == {'index': 1, 'a': 2, 'b': 2, 'other': 0}
 
-    user.find('Go to /').click()
+    user.find('Go to "/"').click()
     await user.should_see('Page A')
     assert calls == {'index': 1, 'a': 3, 'b': 2, 'other': 0}
 
-    user.find('Go to /b/').click()
+    user.find('Go to "/b/"').click()
     await user.should_see('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3, 'other': 0}
 
-    user.find('Go to /b/').click()
+    user.find('Go to "/b/"').click()
     await user.should_see('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3, 'other': 0}, 'no rebuilding if path stays the same'
 
-    user.find('Go to /').click()
+    user.find('Go to "/"').click()
     await user.should_see('Page A')
     assert calls == {'index': 1, 'a': 4, 'b': 3, 'other': 0}
 
@@ -968,6 +968,6 @@ async def test_switching_between_sub_pages(user: User) -> None:
     await user.should_see('Index render 2')
     assert calls == {'index': 2, 'a': 5, 'b': 3, 'other': 0}, 'reload triggers a full page reload'
 
-    user.find('Go to /other').click()
+    user.find('Go to "/other"').click()
     await user.should_see('Other page')
     assert calls == {'index': 2, 'a': 5, 'b': 3, 'other': 1}, 'navigating to sibling page falls back to full page open'
