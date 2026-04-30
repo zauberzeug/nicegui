@@ -43,14 +43,12 @@ class User:
 
     @property
     def _scope(self) -> ui.element | Client:
-        slot_stack = context.slot_stack
-        if not slot_stack:
+        if not context.slot_stack:
             return self._client
-        current_parent = slot_stack[-1].parent
-        if current_parent.client is not self._client:
+        if context.client is not self._client:
             # fall back to the bound client if the slot stack belongs to a different page
             return self._client
-        return current_parent
+        return context.slot.parent
 
     @property
     def _client(self) -> Client:

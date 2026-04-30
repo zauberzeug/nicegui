@@ -334,6 +334,9 @@ async def test_always_get_q_layout_without_element_context(user: User, local_sco
     def test_page():
         with ui.left_drawer():
             ui.label('Hello')
+        e = ElementFilter(kind=ui.label, local_scope=local_scope)
+        assert e._scope.tag == 'q-layout'
+        assert len(list(e)) == 1
 
     await user.open('/')
     with user:
