@@ -43,6 +43,13 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
 
+    def _render_markdown(self) -> str:
+        if label := self._props.get('label'):
+            return f'[Button: {label}]'
+        if icon := self._props.get('icon'):
+            return f'[Button: icon:{icon}]'
+        return '[Button]'
+
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 

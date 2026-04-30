@@ -366,6 +366,61 @@ doc.text('', '''
     See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
 ''')
 
+doc.text('Packaging with Nuitka', '''
+    NiceGUI apps can also be bundled with [Nuitka](https://nuitka.net/), which compiles Python to C.
+    Compared to PyInstaller, builds take longer but the resulting binaries are harder to decompile.
+
+    Two flags are required because NiceGUI uses [PEP 562](https://peps.python.org/pep-0562/) lazy imports
+    that Nuitka's static analyzer cannot follow on its own:
+
+    - `--include-package=nicegui` bundles every submodule reachable through `from nicegui import ui`.
+    - `--include-package-data=nicegui` bundles data files (templates, libraries, ESM bundles for elements).
+
+    The same `ui.run` rules as for PyInstaller apply:
+    call it with `reload=False` and provide a `root` page or at least one `@page` function.
+''')
+
+
+@doc.ui
+def nuitka():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
+
+            def root():
+                ui.label('Hello from Nuitka')
+
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            python -m nuitka \\
+                --onefile \\
+                --include-package=nicegui \\
+                --include-package-data=nicegui \\
+                main.py
+        ''')
+
+
+doc.text('', '''
+    **Tips:**
+
+    - Use `--standalone` for a `main.dist/` directory that starts faster than `--onefile`,
+    which unpacks itself into a temporary directory on every launch.
+
+    - For optional packages your app uses (e.g. `pyecharts` for `ui.echart.from_pyecharts`,
+    or any other third-party package shipping templates or data files),
+    add matching `--include-package=<name>` and `--include-package-data=<name>` flags.
+
+    - Native mode (`ui.run(reload=False, native=True)`) works the same as with PyInstaller.
+    Platform-specific flags include
+    `--macos-create-app-bundle` (Mac),
+    `--windows-disable-console` (Windows), and
+    `--linux-onefile-icon=<path>` (Linux).
+
+    - First builds are slow because Nuitka compiles the entire dependency graph; subsequent builds reuse Nuitka's cache.
+    Add `--show-progress` to monitor long builds.
+''')
+
 doc.text('', '''
     **Packaging with Native Mode**
 
