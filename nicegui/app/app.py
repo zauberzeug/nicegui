@@ -137,9 +137,9 @@ class App(FastAPI):
 
         Needs to be called before `ui.run()`.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         if self.is_started:
-            if core.script_mode:
-                raise RuntimeError('Unable to register a startup in script mode. Use a `@ui.page` function instead.')
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_startup()'))
 
