@@ -34,6 +34,7 @@ class ValueElement(Element, Generic[ValueT]):
                  ) -> None:
         super().__init__(**kwargs)
         self._send_update_on_value_change = True
+        self._value_from_client: bool = False
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
@@ -45,6 +46,7 @@ class ValueElement(Element, Generic[ValueT]):
         def handle_change(e: GenericEventArguments) -> None:
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
+            self._value_from_client = self.LOOPBACK is True
             self._send_update_on_value_change = True
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
@@ -133,6 +135,7 @@ class ValueElement(Element, Generic[ValueT]):
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
+            self._value_from_client = False
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client,
                                          value=self._value_to_event_value(value),
