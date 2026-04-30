@@ -931,7 +931,4 @@ async def test_scoped_search_for_elements(user: User) -> None:
         await user.should_see(marker='scope-title left')
         await user.should_not_see(marker='duplicate-button', content='Shared Action Right')
         await user.should_not_see(marker='scope-title right')
-        expected_count = 1
-        actual_count = len(user.find(marker='duplicated-marker').elements)
-        assert actual_count == expected_count, f'Expected to find {expected_count} duplicated marker in left card, but found {actual_count}.'
-
+        assert len(user.find(marker='duplicated-marker').elements) == 1

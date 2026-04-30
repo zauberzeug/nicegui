@@ -326,3 +326,17 @@ async def test_typing(user: User):
         _ = ElementFilter()  # ElementFilter[Element]
 
     await user.open('/')
+
+
+@pytest.mark.parametrize('local_scope', [True, False])
+async def test_always_get_q_layout_without_element_context(user: User, local_scope: bool) -> None:
+    @ui.page('/')
+    def test_page():
+        with ui.left_drawer():
+            ui.label('Hello')
+
+    await user.open('/')
+    with user:
+        e = ElementFilter(kind=ui.label, local_scope=local_scope)
+        assert e._scope.tag == 'q-layout'
+        assert len(list(e)) == 1

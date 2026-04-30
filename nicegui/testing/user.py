@@ -10,7 +10,6 @@ import httpx
 import socketio
 
 from nicegui import Client, ElementFilter, context, ui
-from nicegui.element import Element
 from nicegui.nicegui import _on_handshake
 from nicegui.outbox import Message
 
@@ -41,19 +40,18 @@ class User:
         self.javascript_rules: dict[re.Pattern, Callable[[re.Match], Any]] = {
             re.compile('.*__IS_DRAWER_OPEN__'): lambda _: True,  # see https://github.com/zauberzeug/nicegui/issues/4508
         }
+
     @property
-    def scope(self) -> Element | Client:
+    def _scope(self) -> ui.element | Client:
         slot_stack = context.slot_stack
         if not slot_stack:
             return self._client
         current_parent = slot_stack[-1].parent
-        #################################################
-        # client mismatch can happen during User testing#
-        # so always use supplied client if mismatches   #
-        #################################################
         if current_parent.client is not self._client:
+            # fall back to the bound client if the slot stack belongs to a different page
             return self._client
         return current_parent
+
     @property
     def _client(self) -> Client:
         if self.client is None:
@@ -148,7 +146,7 @@ class User:
         This can be adjusted with the `retries` parameter.
         """
         for _ in range(retries):
-            with self.scope:
+            with self._scope:
                 if self.notify.contains(target) or self._gather_elements(target, kind, marker, content):
                     return
                 await asyncio.sleep(0.1)
@@ -182,7 +180,7 @@ class User:
                              ) -> None:
         """Assert that the page does not contain an input with the given value."""
         for _ in range(retries):
-            with self.scope:
+            with self._scope:
                 if not self.notify.contains(target) and not self._gather_elements(target, kind, marker, content):
                     return
                 await asyncio.sleep(0.05)
@@ -225,7 +223,7 @@ class User:
              content: str | list[str] | None = None,
              ) -> UserInteraction[T]:
         """Select elements for interaction."""
-        with self.scope:
+        with self._scope:
             elements = self._gather_elements(target, kind, marker, content)
             if not elements:
                 raise AssertionError('expected to find at least one ' +
@@ -248,7 +246,8 @@ class User:
             if kind is None:
                 elements = set(ElementFilter(marker=marker, content=content, only_visible=True, local_scope=True))
             else:
-                elements = set(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True, local_scope=True))
+                elements = set(ElementFilter(kind=kind, marker=marker,
+                               content=content, only_visible=True, local_scope=True))
         elif isinstance(target, str):
             elements = set(ElementFilter(marker=target, only_visible=True, local_scope=True)) \
                 .union(ElementFilter(content=target, only_visible=True, local_scope=True))
