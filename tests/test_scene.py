@@ -394,7 +394,6 @@ def test_rotate_with_order(screen: Screen):
     screen.wait(0.5)
     expected = Object3D.rotation_matrix_from_euler(0.4, -0.3, 0.5, 'ZYX')
     assert np.allclose(box.R, expected)
-    # Verify the rotation persists through a re-send to the client.
     server_R = screen.selenium.execute_script(
         f'const o = getElement({scene.id}).objects.get("{box.id}");'
         'const m = o.matrixWorld.elements;'
