@@ -41,7 +41,8 @@ class UserNavigate(Navigate):
 
     def reload(self) -> None:
         target = self.user.back_history.pop()
-        background_tasks.create(self._open(target, clear_forward_history=False), name=f'navigate reload to {target}')
+        background_tasks.create(self.user.open(target, clear_forward_history=False),
+                                name=f'navigate reload to {target}')
 
     async def _open(self, path: str, *, clear_forward_history: bool) -> None:
         client = self.user.client
