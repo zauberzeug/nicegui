@@ -344,6 +344,7 @@ async def test_always_get_q_layout_without_element_context(user: User, local_sco
         assert e._scope.tag == 'q-layout'
         assert len(list(e)) == 1
 
+
 async def test_local_scope_false_searches_entire_page_inside_element_context(user: User) -> None:
     @ui.page('/')
     def page():
