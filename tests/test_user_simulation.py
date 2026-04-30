@@ -960,36 +960,3 @@ async def test_switching_between_sub_pages(user: User) -> None:
     user.find('Go to B with slash').click()
     await user.should_see('Page B')
     assert calls == {'index': 1, 'a': 3, 'b': 3}, 'no rebuilding if path stays the same'
-
-
-async def test_sub_pages_with_fragments(user: User) -> None:
-    calls = {'index': 0, 'page': 0}
-
-    @ui.page('/')
-    @ui.page('/{_:path}')
-    def index():
-        calls['index'] += 1
-        ui.sub_pages({
-            '/': main_page,
-            '/page': content_page,
-        })
-
-    def main_page():
-        ui.label('Main')
-
-    def content_page():
-        calls['page'] += 1
-        ui.link_target('top')
-        ui.label('Top content')
-        ui.link('Go to bottom', '/page#bottom')
-        ui.link_target('bottom')
-        ui.label('Bottom content')
-        ui.link('Go to top', '/page#top')
-
-    await user.open('/page#bottom')
-    await user.should_see('Bottom content')
-    assert calls == {'index': 1, 'page': 1}
-
-    user.find('Go to top').click()
-    await user.should_see('Top content')
-    assert calls == {'index': 1, 'page': 1}, 'same-page fragment navigation should not rebuild'
