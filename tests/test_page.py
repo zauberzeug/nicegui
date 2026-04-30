@@ -333,13 +333,8 @@ def test_reconnecting_without_page_reload(screen: Screen):
 def test_reconnecting_after_ack_does_not_reload(screen: Screen):
     @ui.page('/', reconnect_timeout=3.0)
     def page():
-        state = {'n': 0}
         label = ui.label('0')
-
-        def tick():
-            state['n'] += 1
-            label.set_text(str(state['n']))
-        ui.timer(0.2, tick)
+        ui.timer(0.2, lambda: label.set_text(str(int(label.text) + 1)))
 
         ui.input('Input').props('autofocus')
         ui.button('drop connection', on_click=lambda: ui.run_javascript(
@@ -364,13 +359,8 @@ def test_reconnecting_after_ack_does_not_reload(screen: Screen):
 def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
     @ui.page('/', reconnect_timeout=3.0)
     def page():
-        state = {'n': 0}
         label = ui.label('0')
-
-        def tick():
-            state['n'] += 1
-            label.set_text(str(state['n']))
-        ui.timer(0.2, tick)
+        ui.timer(0.2, lambda: label.set_text(str(int(label.text) + 1)))
 
     screen.open('/')
     screen.wait(1.5)
@@ -383,8 +373,7 @@ def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
     screen.wait(2.0)
 
     updated_query = screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);')
-    assert updated_query > 0, \
-        f'options.query.next_message_id should be refreshed on reconnect (got {updated_query})'
+    assert updated_query > 0, f'options.query.next_message_id should be refreshed on reconnect (got {updated_query})'
 
 
 def test_ip(screen: Screen):
