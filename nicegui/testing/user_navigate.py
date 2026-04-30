@@ -24,7 +24,7 @@ class UserNavigate(Navigate):
             # NOTE navigation to an element does not do anything in the user simulation (the whole content is always visible)
             return
         path = Client.page_routes[target] if callable(target) else target
-        background_tasks.create(self._open(path), name=f'navigate to {path}')
+        background_tasks.create(self._open(path, clear_forward_history=True), name=f'navigate to {path}')
 
     def back(self) -> None:
         current = self.user.back_history.pop()
@@ -43,21 +43,24 @@ class UserNavigate(Navigate):
         target = self.user.back_history.pop()
         background_tasks.create(self._open(target, clear_forward_history=False), name=f'navigate reload to {target}')
 
-    async def _open(self, path: str, *, clear_forward_history: bool = True) -> None:
+    async def _open(self, path: str, *, clear_forward_history: bool) -> None:
         client = self.user.client
-        if client is not None:
-            parsed = urlparse(path)
-            if not parsed.scheme and not parsed.netloc and \
-                    any(isinstance(el, SubPages) for el in client.layout.descendants()):
-                router = client.sub_pages_router
-                with client:
-                    await router._handle_open(path)  # pylint: disable=protected-access
-                if (
-                    not has_any_unresolved_path(client) or
-                    not router._other_page_builder_matches_path(path, client)  # pylint: disable=protected-access
-                ):
-                    self.user.back_history.append(path)
-                    if clear_forward_history:
-                        self.user.forward_history.clear()
-                    return
-        await self.user.open(path, clear_forward_history=clear_forward_history)
+        parsed_url = urlparse(path)
+        if (
+            client is None or  # user is not yet on any page
+            parsed_url.scheme or parsed_url.netloc or  # path is absolute URL
+            not any(isinstance(el, SubPages) for el in client.layout.descendants())  # no SubPages in the layout
+        ):
+            await self.user.open(path, clear_forward_history=clear_forward_history)  # full page reload
+            return
+
+        router = client.sub_pages_router
+        with client:
+            await router._handle_open(path)  # pylint: disable=protected-access
+        if has_any_unresolved_path(client) and router._other_page_builder_matches_path(path, client):  # pylint: disable=protected-access
+            await self.user.open(path, clear_forward_history=clear_forward_history)  # fallback to full page reload
+            return
+
+        self.user.back_history.append(path)
+        if clear_forward_history:
+            self.user.forward_history.clear()
