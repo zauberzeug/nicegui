@@ -7,7 +7,7 @@ from selenium.common.exceptions import JavascriptException
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
 
@@ -241,3 +241,212 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def _wait_for_scene_ready(screen: Screen, scene_id: int) -> None:
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene_id}) && !!getElement({scene_id}).renderer'
+    ))
+
+
+def _count_clipping_planes(screen: Screen, scene_id: int, object_id: str) -> int:
+    return screen.selenium.execute_script(
+        f'const o = getElement({scene_id}).objects.get("{object_id}");'
+        'let n = 0;'
+        'o.traverse((c) => {'
+        '  if (!c.material) return;'
+        '  const mats = Array.isArray(c.material) ? c.material : [c.material];'
+        '  for (const m of mats) if (m.clippingPlanes) n += m.clippingPlanes.length;'
+        '});'
+        'return n;'
+    )
+
+
+def test_set_clipping_planes(screen: Screen):
+    from nicegui import events
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=0)])
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) >= 1)
+    box.clear_clipping_planes()
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) == 0)
+
+
+async def test_clipping_planes_persisted_on_object_data(user: User):
+    from nicegui import events
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal box
+        with ui.scene() as scene:
+            box = scene.box()
+
+    await user.open('/')
+    # The reload-survival contract: state set via set_clipping_planes lives on Object3D and is
+    # part of its `data` tuple, which scene.js init_objects replays on every fresh connect.
+    assert box.data[-1] == []
+    box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=2)])
+    assert box.data[-1] == [{'nx': 0, 'ny': 0, 'nz': 1, 'd': 2}]
+    box.clear_clipping_planes()
+    assert box.data[-1] == []
+
+
+async def test_axes_inset_opts_cached_for_replay_on_init(user: User):
+    # The reload-survival contract: state set via set_axes_inset/set_axes_labels is cached on
+    # Scene and replayed in _handle_init, so a fresh client connect re-applies the inset.
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    await user.open('/')
+    assert scene._axes_inset_opts is None
+    assert scene._axes_labels_opts is None
+    scene.set_axes_inset(enabled=True, anchor='top-left', size=64, margin=8)
+    assert scene._axes_inset_opts == {
+        'enabled': True, 'size': 64, 'marginX': 8, 'marginY': 8, 'anchor': 'top-left',
+    }
+    scene.set_axes_labels(enabled=True, labels=('A', 'B', 'C'), color='#ff0000')
+    assert scene._axes_labels_opts == {
+        'enabled': True, 'labels': ['A', 'B', 'C'],
+        'font': '24px Arial', 'color': '#ff0000', 'radius': 14,
+    }
+
+
+def test_set_axes_inset_and_labels(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+
+    scene.set_axes_inset(enabled=True, size=64, anchor='top-left', margin=8)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene.id}).viewHelper'
+    ))
+
+    # Labels and style are forwarded to viewHelper.setLabels / setLabelStyle. The cached opts
+    # on the JS side are the most stable observable across three.js versions; deeper checks
+    # against sprite material uuids are brittle.
+    scene.set_axes_labels(enabled=True, labels=('Forward', 'Left', 'Up'),
+                          font='20px sans-serif', color='#ff0000', radius=18)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'return el.viewHelper && el._axesLabels && el._axesLabels.color === "#ff0000"'
+    ))
+
+    # Toggling enabled=False rebuilds a fresh ViewHelper on re-enable; the cached labels/style
+    # must be reapplied so users don't lose their configuration.
+    scene.set_axes_inset(enabled=False)
+    screen.wait_for(lambda: not screen.selenium.execute_script(
+        f'return !!getElement({scene.id}).viewHelper'
+    ))
+    scene.set_axes_inset(enabled=True, size=64, anchor='top-left', margin=8)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'return !!el.viewHelper && el._axesLabels && el._axesLabels.color === "#ff0000"'
+    ))
+
+
+def test_axes_inset_handle_click_snaps_camera(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    scene.set_axes_inset(enabled=True)  # default anchor='bottom-right', size=128
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene.id}).viewHelper'
+    ))
+
+    # +X axis sprite is at world (1, 0, 0), which projects to inset NDC (0.5, 0) in the
+    # orthoCamera's [-2, 2, -2, 2] frustum. Dispatch a pointerdown at that pixel and verify
+    # viewHelper.animating flips on (then off when the snap-animation completes).
+    animating = screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'const canvas = el.renderer.domElement;'
+        'const size = (el._axes && el._axes.size) || 128;'
+        'const relX = (0.5 + 1) / 2 * size;'
+        'const relY = (1 - 0) / 2 * size;'
+        'const insetLeft = canvas.clientWidth - size;'
+        'const insetTop = canvas.clientHeight - size;'
+        'const rect = canvas.getBoundingClientRect();'
+        'canvas.dispatchEvent(new PointerEvent("pointerdown", {'
+        '  clientX: rect.left + insetLeft + relX,'
+        '  clientY: rect.top + insetTop + relY,'
+        '  bubbles: true, cancelable: true'
+        '}));'
+        'return el.viewHelper.animating;'
+    )
+    assert animating, 'Clicking the +X axis sprite should set viewHelper.animating = true'
+    screen.wait_for(lambda: not screen.selenium.execute_script(
+        f'return getElement({scene.id}).viewHelper.animating'
+    ))
+
+
+def test_intersection_planes_in_click_event(screen: Screen):
+    from nicegui import events
+    scene = None
+    intersections: list = []
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+
+        def handle(e: events.SceneClickEventArguments):
+            intersections.append(e.intersections)
+        scene = ui.scene(
+            on_click=handle,
+            intersection_planes=[
+                events.SceneIntersectionPlane(name='ground', axis='z', offset=0),
+                events.SceneIntersectionPlane(name='wall', axis='x', offset=2),
+            ],
+        )
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    canvas = screen.find_by_tag('canvas')
+    canvas.click()
+    screen.wait_for(lambda: bool(intersections))
+    keys = set(intersections[0].keys())
+    assert keys == {'ground', 'wall'}
+
+
+def test_raycaster_threshold_runtime_change(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(raycaster_threshold=0.05)
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id})._raycaster.params.Line.threshold'
+    ) == 0.05
+    scene._props['raycaster-threshold'] = 0.5
+    scene.update()
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id})._raycaster.params.Line.threshold'
+    ) == 0.5)

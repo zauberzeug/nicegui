@@ -14,6 +14,8 @@ from ...events import (
     SceneClickEventArguments,
     SceneClickHit,
     SceneDragEventArguments,
+    SceneIntersectionPlane,
+    ScenePoint,
     handle_event,
 )
 from .scene_object3d import Object3D
@@ -75,6 +77,8 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
+                 intersection_planes: list[SceneIntersectionPlane] | None = DEFAULT_PROP | None,
+                 raycaster_threshold: float = DEFAULT_PROP | 1.0,
                  ) -> None:
         """3D Scene
 
@@ -96,6 +100,16 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
+        :param intersection_planes: list of named planes to intersect each click ray with.
+            The intersection points are surfaced on click events as ``e.intersections[name]``,
+            so the host application can read where the ray hit each configured plane even when
+            the click lands on empty space. Default: no planes (``e.intersections`` is empty).
+            (*added in version TBD*)
+        :param raycaster_threshold: hit-test distance threshold (in scene units) for thin objects
+            like lines and point clouds. The default value (1.0) matches three.js, which is too
+            coarse for scenes with many thin objects (raycasts can return thousands of hits and
+            blow past the WebSocket payload limit); lower the threshold for dense scenes.
+            (*added in version TBD*)
         """
         super().__init__()
         self._props['width'] = width
@@ -104,6 +118,13 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['show-stats'] = show_stats
         self._props['grid'] = grid
         self._props['background-color'] = background_color
+        self._props['raycaster-threshold'] = raycaster_threshold
+        self._props['intersection-planes'] = [
+            {'name': p.name, 'axis': p.axis, 'offset': p.offset}
+            for p in (intersection_planes or [])
+        ]
+        self._axes_inset_opts: dict[str, Any] | None = None
+        self._axes_labels_opts: dict[str, Any] | None = None
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
@@ -141,6 +162,67 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     def on_drag_end(self, callback: Handler[SceneDragEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is dropped."""
         self._drag_end_handlers.append(callback)
+        return self
+
+    def set_axes_inset(self,
+                       *,
+                       enabled: bool = True,
+                       size: int = 128,
+                       margin: int = 0,
+                       margin_x: int | None = None,
+                       margin_y: int | None = None,
+                       anchor: Literal['bottom-left', 'bottom-right', 'top-left', 'top-right'] = 'bottom-right',
+                       ) -> Self:
+        """Toggle and position the orientation axes inset overlay (a small XYZ gizmo).
+
+        Clicking an X/Y/Z axis on the inset snap-animates the camera to look down that axis
+        (forwarded to ``viewHelper.handleClick``).
+
+        :param enabled: whether to show the inset (default: ``True``)
+        :param size: size of the inset in CSS pixels (default: ``128``)
+        :param margin: shorthand for ``margin_x`` and ``margin_y`` (default: ``0``)
+        :param margin_x: horizontal margin in pixels from the anchored edge (defaults to ``margin``)
+        :param margin_y: vertical margin in pixels from the anchored edge (defaults to ``margin``)
+        :param anchor: which corner to pin the inset to (default: ``'bottom-right'``)
+
+        *Added in version TBD*
+        """
+        self._axes_inset_opts = {
+            'enabled': enabled,
+            'size': size,
+            'marginX': margin_x if margin_x is not None else margin,
+            'marginY': margin_y if margin_y is not None else margin,
+            'anchor': anchor,
+        }
+        self.run_method('set_axes_inset', self._axes_inset_opts)
+        return self
+
+    def set_axes_labels(self,
+                        *,
+                        enabled: bool = True,
+                        labels: tuple[str, str, str] = ('X', 'Y', 'Z'),
+                        font: str = '24px Arial',
+                        color: str = '#000000',
+                        radius: float = 14,
+                        ) -> Self:
+        """Toggle and customize the labels on the orientation axes inset.
+
+        :param enabled: whether to show labels on the inset (default: ``True``)
+        :param labels: three label strings for the X, Y, and Z axes (default: ``('X', 'Y', 'Z')``)
+        :param font: CSS font shorthand for the label text (default: ``'24px Arial'``)
+        :param color: CSS color for the label text (default: ``'#000000'``)
+        :param radius: radius of the colored disc behind each label, in canvas pixels (default: ``14``)
+
+        *Added in version TBD*
+        """
+        self._axes_labels_opts = {
+            'enabled': enabled,
+            'labels': list(labels),
+            'font': font,
+            'color': color,
+            'radius': radius,
+        }
+        self.run_method('set_axes_labels', self._axes_labels_opts)
         return self
 
     @staticmethod
@@ -181,6 +263,10 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._initialized_event.set()
         self.move_camera(duration=0)
         self.run_method('init_objects', [obj.data for obj in self.objects.values()])
+        if self._axes_inset_opts is not None:
+            self.run_method('set_axes_inset', self._axes_inset_opts)
+        if self._axes_labels_opts is not None:
+            self.run_method('set_axes_labels', self._axes_labels_opts)
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
@@ -188,6 +274,10 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
+        intersections: dict[str, ScenePoint | None] = {
+            name: ScenePoint(x=pt['x'], y=pt['y'], z=pt['z']) if pt is not None else None
+            for name, pt in e.args['intersections'].items()
+        }
         arguments = SceneClickEventArguments(
             sender=self,
             client=self.client,
@@ -204,6 +294,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                 y=hit['point']['y'],
                 z=hit['point']['z'],
             ) for hit in e.args['hits']],
+            intersections=intersections,
         )
         for handler in self._click_handlers:
             handle_event(handler, arguments)
