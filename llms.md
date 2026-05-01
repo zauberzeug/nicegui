@@ -124,8 +124,8 @@ NiceGUI runs in a single asyncio event loop. Every page, every user, every timer
 | Storage | Scope | Persistence |
 |---|---|---|
 | local variable in `@ui.page` | per page load | until page reload |
-| `app.storage.client` | per browser connection | until tab closes |
-| `app.storage.tab` | per browser tab | until tab closes |
+| `app.storage.client` | per browser connection | lost on page reload |
+| `app.storage.tab` | per browser tab | survives reload, lost when tab closes |
 | `app.storage.user` | per user (session cookie) | until cookie expires |
 | `app.storage.general` | all users | persistent on disk |
 | module-level variable | entire server | server restart |
@@ -170,7 +170,7 @@ async def index():
 | Navigate | `ui.run_javascript('window.location = ...')` | `ui.navigate.to(url)` |
 | Show a message | custom HTML overlay | `ui.notify('message')` |
 | Copy to clipboard | `ui.run_javascript("navigator.clipboard.writeText(...)")` | `await ui.clipboard.write(text)` |
-| Styled download link | `ui.html('<a href=... style=...>')` | `ui.button('Download').props('href=... tag=a')` |
+| Styled download link | `ui.html('<a href=... style=...>')` | `ui.button('Download').props('href=/download tag=a')` |
 | CPU work in thread | `asyncio.get_event_loop().run_in_executor(None, fn)` | `await asyncio.to_thread(fn)` (3.9+; use `run_in_executor` for custom executors) |
 
 ---
@@ -364,7 +364,7 @@ ui.json_editor({'content': {'json': {'key': 'value'}}})
 ## Charts & Visualization
 
 ```python
-# ECharts (recommended for most charts)
+# ECharts (versatile, good default for most chart types)
 ui.echart({
     'xAxis': {'type': 'category', 'data': ['Mon', 'Tue', 'Wed']},
     'yAxis': {'type': 'value'},
@@ -578,8 +578,10 @@ def dashboard():
 def item_page(item_id: int):
     ui.label(f'Item {item_id}')
 
-# Shared page (all users see the same elements — rare, usually not desired)
-# Just put ui.* calls at module level (outside @ui.page)
+# Script mode: ui.* calls at the top level of the entry script (no @ui.page)
+# → NiceGUI re-executes the script once per client connection.
+# Each visitor gets a fresh execution and their own UI instance.
+# State in *imported* modules is still process-wide (shared across users).
 
 # Navigation
 ui.navigate.to('/dashboard')
@@ -793,7 +795,7 @@ async def index():
 | `ui.knob(value)` | Rotary knob |
 | `ui.rating(max)` | Star rating |
 | `ui.color_input(label)` | Color picker input |
-| `ui.color_picker()` | Standalone color picker |
+| `ui.color_picker()` | Popover color picker (attach to a button/icon) |
 | `ui.date(value)` | Date picker |
 | `ui.time(value)` | Time picker |
 | `ui.date_input(label)` | Date input with picker |
@@ -1032,7 +1034,7 @@ await ui.clipboard.write('https://example.com')
 ui.html('<a href="/download" style="color: white; background: green; padding: 8px">Download</a>')
 # GOOD: ui.button with tag=a renders as an <a> element with full Quasar styling
 ui.button('Download', icon='download') \
-    .props('href="/download" tag=a unelevated color=primary')
+    .props('href=/download tag=a unelevated color=primary')
 
 # BAD: blocking I/O in async handler
 async def on_click():
@@ -1102,7 +1104,7 @@ my_app/
 ```
 
 **Key rules for project structure:**
-- Keep files under 200–300 lines; refactor when exceeding this
+- Keep files under 200–300 lines where practical; refactor when a file grows unwieldy (applies to app code, not to NiceGUI library internals)
 - `@ui.page` functions are free functions or static methods (not instance methods)
 - Put high-level/interesting code at the top of files; helper functions below their usage
 - Shared UI that every page uses (header, nav) lives at module level or in a shared `@ui.refreshable`
