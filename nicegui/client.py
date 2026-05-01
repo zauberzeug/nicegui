@@ -71,6 +71,7 @@ class Client:
 
         self.elements: dict[int, Element] = {}
         self.next_element_id: int = 0
+        self.known_hashes: set[str] = set()
         self._waiting_for_connection = asyncio.Event()
         self._waiting_for_disconnect = asyncio.Event()
         self._connected = asyncio.Event()
@@ -170,6 +171,7 @@ class Client:
             )
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
+        self.known_hashes.union(json.loads(request.cookies.get('__nicegui_hash_keys__', '[]')))
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
