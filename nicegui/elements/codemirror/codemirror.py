@@ -1,10 +1,63 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import Literal, TypedDict, get_args
+
+from typing_extensions import NotRequired
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+
+# Functional TypedDict syntax because `from` and `class` are Python keywords.
+MarkDecorationSpec = TypedDict(
+    'MarkDecorationSpec',
+    {
+        'kind': Literal['mark'],
+        'from': int,
+        'to': int,
+        'class': NotRequired[str],
+        'attributes': NotRequired[dict[str, str]],
+        'inclusiveStart': NotRequired[bool],
+        'inclusiveEnd': NotRequired[bool],
+    },
+)
+
+LineDecorationSpec = TypedDict(
+    'LineDecorationSpec',
+    {
+        'kind': Literal['line'],
+        'line': int,
+        'class': NotRequired[str],
+        'attributes': NotRequired[dict[str, str]],
+    },
+)
+
+ReplaceDecorationSpec = TypedDict(
+    'ReplaceDecorationSpec',
+    {
+        'kind': Literal['replace'],
+        'from': int,
+        'to': int,
+        'text': NotRequired[str],
+        'class': NotRequired[str],
+        'inclusive': NotRequired[bool],
+        'block': NotRequired[bool],
+    },
+)
+
+WidgetDecorationSpec = TypedDict(
+    'WidgetDecorationSpec',
+    {
+        'kind': Literal['widget'],
+        'position': int,
+        'text': str,
+        'class': NotRequired[str],
+        'side': NotRequired[Literal[-1, 1]],
+    },
+)
+
+DecorationSpec = MarkDecorationSpec | LineDecorationSpec | ReplaceDecorationSpec | WidgetDecorationSpec
+
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -296,6 +349,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['decorations'] = {}
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -355,6 +409,43 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+
+    def set_decorations(self, decorations: list[DecorationSpec], set_name: str = 'default') -> None:
+        """Set decorations for a named decoration set.
+
+        Decorations style or modify the editor's rendering without changing the underlying document.
+        Each entry is a :class:`MarkDecorationSpec`, :class:`LineDecorationSpec`,
+        :class:`ReplaceDecorationSpec`, or :class:`WidgetDecorationSpec` dict.
+        For mark and line decorations, the ``class`` field produces the visible styling, so the host
+        application is responsible for shipping CSS for whatever class names it passes here.
+        The ``attributes`` field is applied as raw DOM attributes (including event handlers like
+        ``onclick``) and is not sanitized; do not pass untrusted input through it.
+        Replace decorations hide a range or visually swap it for text; widget decorations insert a
+        text annotation at a position.
+
+        Multiple named sets can be managed independently.
+        Calling ``set_decorations`` for the same ``set_name`` replaces that set's decorations;
+        decorations in other sets are left untouched.
+
+        *Added in version X.Y.Z*
+        """
+        current = dict(self._props.get('decorations', {}))
+        current[set_name] = decorations
+        self._props['decorations'] = current
+
+    def clear_decorations(self, set_name: str | None = None) -> None:
+        """Clear decorations.
+
+        :param set_name: clear only this named set, or all sets if ``None``
+
+        *Added in version X.Y.Z*
+        """
+        if set_name is None:
+            self._props['decorations'] = {}
+        else:
+            current = dict(self._props.get('decorations', {}))
+            current.pop(set_name, None)
+            self._props['decorations'] = current
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
