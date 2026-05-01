@@ -94,3 +94,120 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('🙂') == bytes([0, 1])
     assert ui.codemirror._encode_codepoints('Hello 🙂') == bytes([1, 1, 1, 1, 1, 1, 0, 1])
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
+
+
+def _trigger_hover(screen: Screen, editor, line_number: int) -> None:
+    """Mimic a mouseover at the start of the given 1-indexed line so CM6's hoverTooltip fires."""
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        f'const pos = el.editor.state.doc.line({line_number}).from;'
+        'const coords = el.editor.coordsAtPos(pos);'
+        # CM6's hoverTooltip listens on the editor DOM. Dispatching synthetic mouseover/mousemove
+        # events with the right clientX/clientY makes the underlying provider fire.
+        'const target = el.editor.contentDOM;'
+        'const init = {bubbles: true, clientX: coords.left + 2, clientY: (coords.top + coords.bottom) / 2};'
+        'target.dispatchEvent(new MouseEvent("mouseover", init));'
+        'target.dispatchEvent(new MouseEvent("mousemove", init));'
+    )
+
+
+def _tooltip_text(screen: Screen) -> str:
+    return screen.selenium.execute_script(
+        'return document.querySelector(".cm-tooltip-hover")?.textContent || ""') or ''
+
+
+def _dismiss_hover(screen: Screen, editor) -> None:
+    """Fire a mouseleave on the editor's contentDOM to dismiss any visible hover tooltip."""
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.contentDOM.dispatchEvent(new MouseEvent("mouseleave", {bubbles: true}));'
+    )
+
+
+def _wait_for_tooltip_count(screen: Screen, editor, expected: int) -> None:
+    """Wait until the codemirror tooltipField holds exactly `expected` TooltipValue ranges.
+
+    Gates `_trigger_hover` on the server-dispatched `setLineTooltips` round-trip having landed.
+    Without this, the synthetic mouseover/mousemove can fire before the field is populated;
+    CM6's hoverTooltip provider then runs once with an empty field and the tooltip never appears.
+    Identifies the right RangeSet by the custom `setName` property on TooltipValue.
+    """
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'let count = 0;'
+        'for (const v of el.editor.state.values) {'
+        '  if (v && typeof v.iter === "function") {'
+        '    const it = v.iter();'
+        '    while (it.value) {'
+        '      if (it.value.setName !== undefined) count++;'
+        '      it.next();'
+        '    }'
+        '  }'
+        '}'
+        'return count;'
+    ) == expected)
+
+
+def test_set_and_clear_line_tooltips_text(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    # Two named sets pinned to the same line — must concatenate on hover.
+    editor.set_line_tooltips({2: 'severity: warning'}, set_name='lint')
+    editor.set_line_tooltips({2: 'origin: row-3'}, set_name='source')
+    _wait_for_tooltip_count(screen, editor, 2)
+    _trigger_hover(screen, editor, 2)
+    screen.wait_for(lambda: all(s in _tooltip_text(screen) for s in ['severity: warning', 'origin: row-3']))
+
+    # Insert a line at the top via CM6 dispatch — 'beta' moves from line 2 to line 3,
+    # and CM6's RangeSet.map() should carry the tooltip with it.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({changes: {from: 0, insert: "zero\\n"}});'
+    )
+    _trigger_hover(screen, editor, 3)
+    screen.wait_for(lambda: 'severity: warning' in _tooltip_text(screen))
+
+    editor.clear_line_tooltips()
+    _wait_for_tooltip_count(screen, editor, 0)
+    _dismiss_hover(screen, editor)
+    _trigger_hover(screen, editor, 3)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelector(".cm-tooltip-hover") === null'))
+
+
+def test_line_tooltip_html_sanitized(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('hello\nworld')
+
+    screen.open('/')
+    # The content contains a <script> tag and an inline event handler. DOMPurify must
+    # strip both. The <b> tag should survive. SVG onload is used (rather than img onerror) so
+    # the test does not trigger a stray network fetch — that would surface as a console error
+    # during teardown even though the handler itself was successfully stripped.
+    editor.set_line_tooltips({1: '<b>safe</b><script>window.__hijack=1</script>'
+                                 '<svg onload="window.__hijack2=1"></svg>'})
+    _wait_for_tooltip_count(screen, editor, 1)
+    _trigger_hover(screen, editor, 1)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'const t = document.querySelector(".cm-tooltip-hover");'
+        'return !!(t && t.querySelector("b"));'
+    ))
+    has_script = screen.selenium.execute_script(
+        'const t = document.querySelector(".cm-tooltip-hover");'
+        'return !!(t && t.querySelector("script"));'
+    )
+    hijacked = screen.selenium.execute_script('return window.__hijack === 1')
+    onload_hijacked = screen.selenium.execute_script('return window.__hijack2 === 1')
+    assert not has_script, 'DOMPurify should have stripped <script>'
+    assert not hijacked, 'inline script must not have executed'
+    assert not onload_hijacked, 'inline event handler must be stripped'

@@ -356,6 +356,29 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
 
+    def set_line_tooltips(self, tooltips: dict[int, str], set_name: str = 'default') -> None:
+        """Set hover tooltip content for lines.
+
+        Values are rendered via NiceGUI's global ``Element.prototype.setHTML`` polyfill
+        (DOMPurify-backed), so plain text and sanitized HTML both work.
+        Multiple named sets can be managed independently and are concatenated when hovering the same line.
+
+        :param tooltips: dict mapping 1-indexed line numbers to tooltip content strings
+        :param set_name: named set for independent management
+
+        *Added in version X.Y.Z*
+        """
+        self.run_method('setLineTooltips', tooltips, set_name)
+
+    def clear_line_tooltips(self, set_name: str | None = None) -> None:
+        """Clear line tooltip metadata.
+
+        :param set_name: clear only this named set, or all sets if ``None``
+
+        *Added in version X.Y.Z*
+        """
+        self.run_method('clearLineTooltips', set_name)
+
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
         return self._apply_change_set(e.args['sections'], e.args['inserted'])
