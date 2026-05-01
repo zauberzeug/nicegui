@@ -6,8 +6,17 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
+from ...events import Handler, ScenePointerEventArguments
+
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
+
+
+# Wire-format strings the JS emits in the "pointerevent" payload's `type` field.
+_POINTER_EVENT_TYPES = (
+    'pointerover', 'pointerout', 'pointerdown', 'pointerup',
+    'pointermove', 'click', 'dblclick', 'contextmenu',
+)
 
 
 class Object3D:
@@ -34,6 +43,12 @@ class Object3D:
         self.sx: float = 1
         self.sy: float = 1
         self.sz: float = 1
+        # Per-object pointer event handler lists. An object becomes "interactive" on the JS side
+        # (joins the raycast list) iff at least one of these lists is non-empty or _effect_spec is set.
+        self._pointer_handlers: dict[str, list[Handler[ScenePointerEventArguments]]] = {
+            event_type: [] for event_type in _POINTER_EVENT_TYPES
+        }
+        self._effect_spec: dict[str, Any] | None = None
         self._create()
 
     def with_name(self, name: str) -> Self:
@@ -45,7 +60,7 @@ class Object3D:
     @property
     def data(self) -> list[Any]:
         """Data to be sent to the frontend."""
-        return [
+        result: list[Any] = [
             self.type, self.id, self.parent.id, self.args,
             self.name,
             self.color, self.opacity, self.side_,
@@ -55,6 +70,23 @@ class Object3D:
             self.visible_,
             self.draggable_,
         ]
+        # Append the interactive state only when truthy. The JS unpacker uses array destructuring
+        # and treats a missing trailing field as `undefined`, so default objects stay length-stable.
+        interactive = self._build_interactive_payload()
+        if interactive:
+            result.append(interactive)
+        return result
+
+    def _build_interactive_payload(self) -> dict[str, Any] | None:
+        active_handler_types = [event_type for event_type, handlers in self._pointer_handlers.items() if handlers]
+        if not active_handler_types and self._effect_spec is None:
+            return None
+        payload: dict[str, Any] = {}
+        if active_handler_types:
+            payload['handlers'] = active_handler_types
+        if self._effect_spec is not None:
+            payload['effect'] = self._effect_spec
+        return payload
 
     def __enter__(self) -> Self:
         self.scene.stack.append(self)
@@ -86,6 +118,22 @@ class Object3D:
 
     def _draggable(self) -> None:
         self.scene.run_method('draggable', self.id, self.draggable_)
+
+    def _sync_handler_types(self) -> None:
+        """Push the current set of registered handler types to the JS side."""
+        active = [event_type for event_type, handlers in self._pointer_handlers.items() if handlers]
+        self.scene.run_method('set_handler_types', self.id, active)
+
+    def _sync_effect(self) -> None:
+        """Push the current effect spec to the JS side."""
+        if self._effect_spec is None:
+            self.scene.run_method('set_effect', self.id, None, None)
+        else:
+            self.scene.run_method(
+                'set_effect', self.id,
+                self._effect_spec.get('effect'),
+                self._effect_spec.get('color'),
+            )
 
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
@@ -194,6 +242,180 @@ class Object3D:
         if self.draggable_ != value:
             self.draggable_ = value
             self._draggable()
+        return self
+
+    def _add_pointer_handler(self,
+                             event_type: str,
+                             callback: Handler[ScenePointerEventArguments],
+                             ) -> Self:
+        """Append a callback to the per-object handler list for ``event_type`` and sync to JS.
+
+        When this is the first handler for the object (and no effect is set), the JS side
+        adds the underlying three.js object to its raycast list so future pointer events
+        can be detected and dispatched.
+        """
+        was_empty = not any(self._pointer_handlers.values()) and self._effect_spec is None
+        first_for_type = not self._pointer_handlers[event_type]
+        self._pointer_handlers[event_type].append(callback)
+        if was_empty or first_for_type:
+            self._sync_handler_types()
+        return self
+
+    def on_pointer_over(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired when the cursor enters this object's hit volume.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('pointerover', callback)
+
+    def on_pointer_out(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired when the cursor leaves this object's hit volume.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('pointerout', callback)
+
+    def on_pointer_down(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired when a mouse button is pressed while the cursor is over this object.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('pointerdown', callback)
+
+    def on_pointer_up(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired when a mouse button is released while the cursor is over this object.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('pointerup', callback)
+
+    def on_pointer_move(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired while the cursor moves over this object.
+
+        Note: this is a high-frequency event. Emissions are throttled to ~60Hz on the client,
+        but Python handlers should still expect many invocations per second during a drag.
+        Debounce before pushing to expensive sinks.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('pointermove', callback)
+
+    def on_click(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired when this specific object is clicked.
+
+        Per-object click is additive to :meth:`Scene.on_click` (the scene-level any-click handler);
+        both fire on a click that hits this object.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('click', callback)
+
+    def on_double_click(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired when this specific object is double-clicked.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('dblclick', callback)
+
+    def on_context_menu(self, callback: Handler[ScenePointerEventArguments]) -> Self:
+        """Add a callback fired when this specific object is right-clicked.
+
+        *added in version X.Y.Z*
+        """
+        return self._add_pointer_handler('contextmenu', callback)
+
+    def hover_effect(self,
+                     effect: Literal['glow', 'outline', 'tint', 'none'] | bool = 'glow',
+                     *,
+                     color: str | None = None,
+                     ) -> Self:
+        """Apply a client-side visual effect when the cursor hovers over this object.
+
+        The effect runs entirely on the client — no Python round-trip per hover state change
+        for the visual itself. Pass ``False`` or ``'none'`` to disable.
+
+        :param effect: ``'glow'`` (back-face mesh clone), ``'outline'`` (edges geometry),
+            ``'tint'`` (emissive color), or ``'none'`` / ``False`` to disable
+        :param color: optional CSS color string; if omitted, falls back to the scene-level
+            ``hover_color`` constructor argument
+
+        For ``'glow'``, the scene-level ``hover_opacity`` and ``hover_scale`` constructor
+        arguments tune the appearance. ``'outline'`` and ``'tint'`` ignore those parameters.
+
+        *added in version X.Y.Z*
+        """
+        if effect is False or effect == 'none':
+            new_spec: dict[str, Any] | None = None
+        else:
+            new_spec = {'effect': effect, 'color': color}
+        if self._effect_spec == new_spec:
+            return self
+        self._effect_spec = new_spec
+        self._sync_effect()
+        return self
+
+    def enable_transform_controls(self,
+                                  *,
+                                  mode: Literal['translate', 'rotate', 'scale'] = 'translate',
+                                  size: float | None = None,
+                                  visible_axes: list[Literal['X', 'Y', 'Z']] | None = None,
+                                  space: Literal['local', 'world'] | None = None,
+                                  rotation_snap: float | None = None,
+                                  ) -> Self:
+        """Attach a TransformControls gizmo so the user can drag this object in 3D.
+
+        Drag events are emitted on the parent :class:`ui.scene` via the ``on_transform``,
+        ``on_transform_start``, and ``on_transform_end`` callbacks.
+
+        :param mode: gizmo mode (``'translate'``, ``'rotate'``, or ``'scale'``, default: ``'translate'``)
+        :param size: optional gizmo size multiplier
+        :param visible_axes: list of axes to show (e.g. ``['X']`` for X-only); shows all axes if ``None``
+        :param space: ``'local'`` or ``'world'`` (defaults to three.js' ``'world'``)
+        :param rotation_snap: optional snap angle in radians (e.g. ``math.radians(5)``)
+
+        *added in version X.Y.Z*
+        """
+        self.scene.run_method('enable_transform_controls', self.id, mode, size, visible_axes, space, rotation_snap)
+        return self
+
+    def disable_transform_controls(self) -> Self:
+        """Detach the TransformControls gizmo from this object.
+
+        *added in version X.Y.Z*
+        """
+        self.scene.run_method('disable_transform_controls', self.id)
+        return self
+
+    def set_transform_mode(self, mode: Literal['translate', 'rotate', 'scale']) -> Self:
+        """Change this object's TransformControls mode.
+
+        *added in version X.Y.Z*
+        """
+        self.scene.run_method('set_transform_mode', self.id, mode)
+        return self
+
+    def set_transform_size(self, size: float) -> Self:
+        """Change this object's TransformControls gizmo size.
+
+        *added in version X.Y.Z*
+        """
+        self.scene.run_method('set_transform_size', self.id, size)
+        return self
+
+    def set_transform_space(self, space: Literal['local', 'world']) -> Self:
+        """Change this object's TransformControls coordinate space.
+
+        *added in version X.Y.Z*
+        """
+        self.scene.run_method('set_transform_space', self.id, space)
+        return self
+
+    def set_transform_rotation_snap(self, radians: float) -> Self:
+        """Change this object's TransformControls rotation snap angle in radians.
+
+        *added in version X.Y.Z*
+        """
+        self.scene.run_method('set_transform_rotation_snap', self.id, radians)
         return self
 
     def attach(self, parent: Object3D) -> None:

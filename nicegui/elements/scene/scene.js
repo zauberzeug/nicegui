@@ -10,10 +10,15 @@ const {
   OrbitControls,
   TrackballControls,
   STLLoader,
+  TransformControls,
   THREE,
   TWEEN,
   Stats,
 } = SceneLib;
+
+// Per-TransformControls axis-lock state. WeakMap keeps the entry alive only as long as the
+// controls instance exists, and avoids polluting `tc.userData` (which user code may also use).
+const transformAxisLocks = new WeakMap();
 
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
@@ -82,7 +87,17 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
+    this.transform_controls = new Map(); // object_id -> TransformControls instance
+    this.dragging_count = 0;             // # of TransformControls currently being dragged
+    this.userOrbitEnabled = true;        // user-intended orbit state; restored on drag end
     this.is_initialized = false;
+    // An object joins interactiveObjects iff objectHandlers or objectEffects has an entry for it.
+    this.interactiveObjects = [];
+    this.objectHandlers = new Map();
+    this.objectEffects = new Map();
+    this.effectArtifacts = new Map();
+    this.hoveredObjectId = null;
+    this._lastPointerMoveEmit = 0;
 
     if (this.showStats) {
       this.stats = new Stats();
@@ -213,10 +228,112 @@ export default {
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
+    // Each effect-artifact snapshots the source's matrixWorld so per-frame sync skips when unchanged.
+    this._hoverWorldPos = new THREE.Vector3();
+    this._hoverWorldQuat = new THREE.Quaternion();
+    this._hoverWorldScale = new THREE.Vector3();
+    this._transformWP = new THREE.Vector3();
+
+    this._buildEffectArtifact = (object_id, rootObject, spec) => {
+      const color = spec.color ?? this.hoverColor ?? "#ffffff";
+      if (spec.effect === "glow") {
+        const group = new THREE.Group();
+        rootObject.traverse((descendant) => {
+          if (!descendant.isMesh || !descendant.geometry) return;
+          const material = new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: this.hoverOpacity ?? 0.2,
+            side: THREE.BackSide,
+            depthWrite: false,
+          });
+          const glow = new THREE.Mesh(descendant.geometry, material);
+          glow.renderOrder = 999;
+          glow.userData.effectSource = descendant;
+          group.add(glow);
+        });
+        this.scene.add(group);
+        return { effect: "glow", group, source: rootObject, lastMatrix: new THREE.Matrix4() };
+      }
+      if (spec.effect === "outline") {
+        const group = new THREE.Group();
+        rootObject.traverse((descendant) => {
+          if (!descendant.isMesh || !descendant.geometry) return;
+          const edges = new THREE.EdgesGeometry(descendant.geometry);
+          const material = new THREE.LineBasicMaterial({ color, transparent: true });
+          const line = new THREE.LineSegments(edges, material);
+          line.renderOrder = 999;
+          line.userData.effectSource = descendant;
+          group.add(line);
+        });
+        this.scene.add(group);
+        return { effect: "outline", group, source: rootObject, lastMatrix: new THREE.Matrix4() };
+      }
+      if (spec.effect === "tint") {
+        // Per-instance material clone so shared materials aren't mutated.
+        // Save the original material and the cloned-with-emissive material so we can restore on clear.
+        const tinted = [];
+        rootObject.traverse((descendant) => {
+          if (!descendant.isMesh || !descendant.material || !descendant.material.emissive) return;
+          const original = descendant.material;
+          const clone = original.clone();
+          clone.emissive = new THREE.Color(color);
+          descendant.material = clone;
+          tinted.push({ mesh: descendant, original, clone });
+        });
+        return { effect: "tint", tinted, source: rootObject, lastMatrix: null };
+      }
+      return null;
+    };
+
+    this._clearEffectArtifact = (object_id) => {
+      const artifact = this.effectArtifacts.get(object_id);
+      if (!artifact) return;
+      if (artifact.effect === "glow" || artifact.effect === "outline") {
+        for (const child of artifact.group.children) {
+          if (child.material) child.material.dispose();
+          if (child.geometry && artifact.effect === "outline") child.geometry.dispose();
+        }
+        if (artifact.group.parent) artifact.group.parent.remove(artifact.group);
+      } else if (artifact.effect === "tint") {
+        for (const { mesh, original, clone } of artifact.tinted) {
+          if (mesh.material === clone) mesh.material = original;
+          clone.dispose();
+        }
+      }
+      this.effectArtifacts.delete(object_id);
+    };
+
+    this._syncEffectsIfDirty = () => {
+      // Per-frame matrix-driven sync for glow/outline. Tint requires no sync (lives on the original mesh).
+      const expansion = this.hoverScale ?? 1.05;
+      for (const [object_id, artifact] of this.effectArtifacts) {
+        if (artifact.effect !== "glow" && artifact.effect !== "outline") continue;
+        artifact.source.updateMatrixWorld();
+        if (artifact.lastMatrix.equals(artifact.source.matrixWorld)) continue;
+        artifact.lastMatrix.copy(artifact.source.matrixWorld);
+        for (const child of artifact.group.children) {
+          const src = child.userData.effectSource;
+          if (!src) continue;
+          src.getWorldPosition(this._hoverWorldPos);
+          src.getWorldQuaternion(this._hoverWorldQuat);
+          src.getWorldScale(this._hoverWorldScale);
+          child.position.copy(this._hoverWorldPos);
+          child.quaternion.copy(this._hoverWorldQuat);
+          if (artifact.effect === "glow") {
+            child.scale.copy(this._hoverWorldScale).multiplyScalar(expansion);
+          } else {
+            child.scale.copy(this._hoverWorldScale);
+          }
+        }
+      }
+    };
+
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.controls.update(this.clock.getDelta());
+      this._syncEffectsIfDirty();
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -225,6 +342,120 @@ export default {
     render();
 
     const raycaster = new THREE.Raycaster();
+
+    const findInteractiveAncestor = (object) => {
+      let obj = object;
+      while (obj) {
+        if (obj.object_id &&
+            this.objects.has(obj.object_id) &&
+            (this.objectHandlers.has(obj.object_id) || this.objectEffects.has(obj.object_id))) {
+          return obj.object_id;
+        }
+        obj = obj.parent;
+      }
+      return null;
+    };
+
+    const raycastInteractive = (clientX, clientY) => {
+      if (this.interactiveObjects.length === 0) return [];
+      const rect = this.renderer.domElement.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera({ x, y }, this.camera);
+      return raycaster.intersectObjects(this.interactiveObjects, true);
+    };
+
+    const findHit = (clientX, clientY) => {
+      const hits = raycastInteractive(clientX, clientY);
+      for (const hit of hits) {
+        const id = findInteractiveAncestor(hit.object);
+        if (id) {
+          const root = this.objects.get(id);
+          const localPoint = root.worldToLocal(hit.point.clone());
+          return { id, point: hit.point, localPoint };
+        }
+      }
+      return { id: null, point: null, localPoint: null };
+    };
+
+    const buildPayload = (type, id, point, localPoint, mouseEvent) => ({
+      type,
+      object_id: id,
+      object_name: this.objects.get(id)?.name ?? "",
+      button: mouseEvent?.button ?? 0,
+      alt_key: !!mouseEvent?.altKey,
+      ctrl_key: !!mouseEvent?.ctrlKey,
+      meta_key: !!mouseEvent?.metaKey,
+      shift_key: !!mouseEvent?.shiftKey,
+      x: localPoint?.x ?? 0,
+      y: localPoint?.y ?? 0,
+      z: localPoint?.z ?? 0,
+      wx: point?.x ?? 0,
+      wy: point?.y ?? 0,
+      wz: point?.z ?? 0,
+    });
+
+    const emitPointerEvent = (type, id, point, localPoint, mouseEvent) => {
+      if (!this.objectHandlers.get(id)?.has(type)) return;
+      this.$emit("pointerevent", buildPayload(type, id, point, localPoint, mouseEvent));
+    };
+
+    this.renderer.domElement.addEventListener("pointermove", (e) => {
+      if (this.interactiveObjects.length === 0 && !this.hoveredObjectId) return;
+      const { id: newHoveredId, point, localPoint } = findHit(e.clientX, e.clientY);
+
+      if (newHoveredId !== this.hoveredObjectId) {
+        if (this.hoveredObjectId) {
+          this._clearEffectArtifact(this.hoveredObjectId);
+          // Use empty point for pointerout — cursor has already left the object.
+          emitPointerEvent("pointerout", this.hoveredObjectId, null, null, e);
+        }
+        if (newHoveredId) {
+          const spec = this.objectEffects.get(newHoveredId);
+          if (spec) {
+            const root = this.objects.get(newHoveredId);
+            const artifact = this._buildEffectArtifact(newHoveredId, root, spec);
+            if (artifact) this.effectArtifacts.set(newHoveredId, artifact);
+          }
+          emitPointerEvent("pointerover", newHoveredId, point, localPoint, e);
+        }
+        this.renderer.domElement.style.cursor = newHoveredId ? "pointer" : "";
+        this.hoveredObjectId = newHoveredId;
+      }
+
+      // Continuous pointermove emission — throttled to ~60Hz to avoid websocket flooding.
+      if (newHoveredId && this.objectHandlers.get(newHoveredId)?.has("pointermove")) {
+        const now = performance.now();
+        if (now - this._lastPointerMoveEmit > 16) {
+          this._lastPointerMoveEmit = now;
+          emitPointerEvent("pointermove", newHoveredId, point, localPoint, e);
+        }
+      }
+    });
+
+    const handlePerObjectMouseEvent = (eventType) => (e) => {
+      const { id, point, localPoint } = findHit(e.clientX, e.clientY);
+      if (id) {
+        emitPointerEvent(eventType, id, point, localPoint, e);
+      } else if (eventType === "click" || eventType === "dblclick" ||
+                 eventType === "contextmenu" || eventType === "pointerdown") {
+        this.$emit("pointermissed", {
+          type: eventType,
+          button: e.button ?? 0,
+          alt_key: !!e.altKey,
+          ctrl_key: !!e.ctrlKey,
+          meta_key: !!e.metaKey,
+          shift_key: !!e.shiftKey,
+        });
+      }
+    };
+
+    this.renderer.domElement.addEventListener("pointerdown", handlePerObjectMouseEvent("pointerdown"));
+    this.renderer.domElement.addEventListener("pointerup", handlePerObjectMouseEvent("pointerup"));
+    this.renderer.domElement.addEventListener("click", handlePerObjectMouseEvent("click"));
+    this.renderer.domElement.addEventListener("dblclick", handlePerObjectMouseEvent("dblclick"));
+    this.renderer.domElement.addEventListener("contextmenu", handlePerObjectMouseEvent("contextmenu"));
+
     const click_handler = (mouseEvent) => {
       let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
@@ -444,9 +675,205 @@ export default {
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
+    set_handler_types(object_id, types) {
+      if (!this.objects.has(object_id)) return;
+      const obj = this.objects.get(object_id);
+      const next = Array.isArray(types) && types.length > 0 ? new Set(types) : null;
+      const wasInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (next) {
+        this.objectHandlers.set(object_id, next);
+      } else {
+        this.objectHandlers.delete(object_id);
+      }
+      const isInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (isInteractive && !wasInteractive) this.interactiveObjects.push(obj);
+      else if (!isInteractive && wasInteractive) {
+        const i = this.interactiveObjects.indexOf(obj);
+        if (i !== -1) this.interactiveObjects.splice(i, 1);
+        if (this.hoveredObjectId === object_id) {
+          this._clearEffectArtifact(object_id);
+          this.renderer.domElement.style.cursor = "";
+          this.hoveredObjectId = null;
+        }
+      }
+    },
+    set_effect(object_id, effect, color) {
+      if (!this.objects.has(object_id)) return;
+      const obj = this.objects.get(object_id);
+      const wasInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (effect === null || effect === undefined || effect === "none" || effect === false) {
+        this.objectEffects.delete(object_id);
+      } else {
+        this.objectEffects.set(object_id, { effect, color: color ?? null });
+      }
+      const isInteractive = this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+      if (isInteractive && !wasInteractive) this.interactiveObjects.push(obj);
+      else if (!isInteractive && wasInteractive) {
+        const i = this.interactiveObjects.indexOf(obj);
+        if (i !== -1) this.interactiveObjects.splice(i, 1);
+      }
+      if (this.hoveredObjectId === object_id) {
+        this._clearEffectArtifact(object_id);
+        const spec = this.objectEffects.get(object_id);
+        if (spec) {
+          const artifact = this._buildEffectArtifact(object_id, obj, spec);
+          if (artifact) this.effectArtifacts.set(object_id, artifact);
+        }
+        if (!isInteractive) {
+          this.renderer.domElement.style.cursor = "";
+          this.hoveredObjectId = null;
+        }
+      }
+    },
+    has_handler(object_id, type) {
+      return this.objectHandlers.get(object_id)?.has(type) ?? false;
+    },
+    has_effect(object_id) {
+      return this.objectEffects.has(object_id);
+    },
+    is_interactive(object_id) {
+      return this.objectHandlers.has(object_id) || this.objectEffects.has(object_id);
+    },
+    set_orbit_enabled(value) {
+      this.userOrbitEnabled = !!value;
+      // Only push to OrbitControls when no TransformControls drag is in progress.
+      // Otherwise the dragging-changed handler will restore the latch when the drag ends.
+      if (this.dragging_count === 0) this.controls.enabled = this.userOrbitEnabled;
+    },
+    enable_transform_controls(object_id, mode, size, visible_axes, space, rotation_snap) {
+      if (!this.objects.has(object_id)) return false;
+      const existing = this.transform_controls.get(object_id);
+      if (existing) {
+        existing.setMode(mode);
+        if (size !== undefined && size !== null) existing.setSize(size);
+        if (space !== undefined && space !== null) existing.setSpace(space);
+        if (rotation_snap !== undefined && rotation_snap !== null) existing.setRotationSnap(rotation_snap);
+        this._applyTransformAxes(existing, mode, visible_axes);
+        return true;
+      }
+      const object = this.objects.get(object_id);
+      const tc = new TransformControls(this.camera, this.renderer.domElement);
+      tc.attach(object);
+      tc.setMode(mode);
+      if (size !== undefined && size !== null) tc.setSize(size);
+      if (space !== undefined && space !== null) tc.setSpace(space);
+      if (rotation_snap !== undefined && rotation_snap !== null) tc.setRotationSnap(rotation_snap);
+      this._applyTransformAxes(tc, mode, visible_axes);
+      let isDragging = false;
+      tc.addEventListener("dragging-changed", (event) => {
+        isDragging = event.value;
+        if (event.value) {
+          this.dragging_count++;
+          if (this.dragging_count === 1) this.controls.enabled = false;
+        } else {
+          this.dragging_count = Math.max(0, this.dragging_count - 1);
+          // Restore to the user-intended orbit state, NOT unconditionally `true` —
+          // otherwise a drag re-enables orbit even if the user disabled it via set_orbit_enabled.
+          if (this.dragging_count === 0) this.controls.enabled = this.userOrbitEnabled;
+        }
+      });
+      const emitTransform = (type) => {
+        object.getWorldPosition(this._transformWP);
+        this.$emit(type, {
+          type,
+          mode: tc.mode,
+          object_id,
+          object_name: object.name,
+          x: object.position.x,
+          y: object.position.y,
+          z: object.position.z,
+          rx: object.rotation.x,
+          ry: object.rotation.y,
+          rz: object.rotation.z,
+          wx: this._transformWP.x,
+          wy: this._transformWP.y,
+          wz: this._transformWP.z,
+        });
+      };
+      tc.addEventListener("change", () => {
+        if (!isDragging) return;
+        const lockAxis = transformAxisLocks.get(tc);
+        if (tc.mode === "rotate" && lockAxis && tc.axis !== lockAxis) tc.axis = lockAxis;
+        emitTransform("transform");
+      });
+      tc.addEventListener("mouseDown", () => {
+        const lockAxis = transformAxisLocks.get(tc);
+        if (lockAxis) tc.axis = lockAxis;
+        emitTransform("transform_start");
+      });
+      tc.addEventListener("mouseUp", () => emitTransform("transform_end"));
+      this.scene.add(tc.getHelper());
+      tc.getHelper().traverse((child) => {
+        child.object_id = `transformcontrols:${object_id}`;
+      });
+      this.transform_controls.set(object_id, tc);
+      return true;
+    },
+    _applyTransformAxes(tc, mode, visible_axes) {
+      if (visible_axes === undefined || visible_axes === null) {
+        tc.showX = tc.showY = tc.showZ = true;
+        transformAxisLocks.delete(tc);
+        return;
+      }
+      tc.showX = visible_axes.includes("X");
+      tc.showY = visible_axes.includes("Y");
+      tc.showZ = visible_axes.includes("Z");
+      if (mode === "rotate" && visible_axes.length === 1) {
+        const axis = visible_axes[0];
+        transformAxisLocks.set(tc, axis);
+        tc.axis = axis;
+      } else {
+        transformAxisLocks.delete(tc);
+      }
+    },
+    disable_transform_controls(object_id) {
+      const tc = this.transform_controls.get(object_id);
+      if (!tc) return;
+      if (tc.dragging) {
+        this.dragging_count = Math.max(0, this.dragging_count - 1);
+      }
+      tc.detach();
+      this.scene.remove(tc.getHelper());
+      tc.dispose();
+      transformAxisLocks.delete(tc);
+      this.transform_controls.delete(object_id);
+      if (this.dragging_count === 0) this.controls.enabled = this.userOrbitEnabled;
+    },
+    set_transform_mode(object_id, mode) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setMode(mode);
+    },
+    set_transform_size(object_id, size) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setSize(size);
+    },
+    set_transform_space(object_id, space) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setSpace(space);
+    },
+    set_transform_rotation_snap(object_id, radians) {
+      const tc = this.transform_controls.get(object_id);
+      if (tc) tc.setRotationSnap(radians);
+    },
+    has_transform_controls(object_id) {
+      return this.transform_controls.has(object_id);
+    },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
+      // Tear down any TransformControls attached to this object so the gizmo doesn't outlive the target.
+      if (this.transform_controls.has(object_id)) {
+        this.disable_transform_controls(object_id);
+      }
+      if (this.hoveredObjectId === object_id) {
+        this._clearEffectArtifact(object_id);
+        this.renderer.domElement.style.cursor = "";
+        this.hoveredObjectId = null;
+      }
+      this.objectHandlers.delete(object_id);
+      this.objectEffects.delete(object_id);
+      const interactiveIndex = this.interactiveObjects.indexOf(object);
+      if (interactiveIndex !== -1) this.interactiveObjects.splice(interactiveIndex, 1);
       object.removeFromParent();
       this.objects.delete(object_id);
       const index = this.draggable_objects.indexOf(object);
@@ -585,6 +1012,7 @@ export default {
         sz,
         visible,
         draggable,
+        interactive, // optional trailing field: {handlers?: string[], effect?: {effect, color}}
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
@@ -594,6 +1022,10 @@ export default {
         this.scale(id, sx, sy, sz);
         this.visible(id, visible);
         this.draggable(id, draggable);
+        if (interactive) {
+          if (interactive.handlers) this.set_handler_types(id, interactive.handlers);
+          if (interactive.effect) this.set_effect(id, interactive.effect.effect, interactive.effect.color);
+        }
       }
     },
   },
@@ -610,5 +1042,8 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    hoverColor: String,
+    hoverOpacity: Number,
+    hoverScale: Number,
   },
 };

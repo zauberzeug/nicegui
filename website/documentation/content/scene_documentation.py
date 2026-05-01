@@ -339,4 +339,65 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo('Per-object pointer events', '''
+    Attach pointer event handlers directly to scene objects with `on_pointer_over`, `on_pointer_out`,
+    `on_pointer_down`, `on_pointer_up`, `on_pointer_move`, `on_click`, `on_double_click`, and
+    `on_context_menu`. The scene runs raycasting against just the objects with handlers attached,
+    so pointer interactions stay cheap even in large scenes.
+
+    Each callback receives a `ScenePointerEventArguments` with the object id, modifier keys,
+    and the hit point in both local (`x`, `y`, `z`) and world (`wx`, `wy`, `wz`) coordinates.
+''')
+def pointer_events() -> None:
+    from nicegui import events
+
+    def report(e: events.ScenePointerEventArguments):
+        ui.notify(f'{e.type} on {e.object_name or e.object_id[:8]}: ({e.wx:.2f}, {e.wy:.2f}, {e.wz:.2f})')
+
+    with ui.scene(width=320, height=240).classes('w-full h-64') as scene:
+        scene.box().move(-1, 0, 0).material('SteelBlue').with_name('left') \
+            .on_pointer_over(report).on_pointer_out(report)
+        scene.sphere().move(1, 0, 0).material('Coral').with_name('right') \
+            .on_click(report).on_context_menu(report)
+
+
+@doc.demo('Hover effect catalog', '''
+    `hover_effect` adds a client-side visual cue when the cursor is over the object.
+    Three named effects are available without any post-processing setup:
+
+    - `'glow'` — a soft back-face mesh clone (default; tunable via the scene-level
+      `hover_color`, `hover_opacity`, and `hover_scale` arguments)
+    - `'outline'` — a wireframe edge overlay
+    - `'tint'` — an emissive color shift on the object's own material
+
+    Pass `False` (or `'none'`) to disable. The effect runs entirely on the client — no Python
+    round-trip per hover state change.
+''')
+def hover_effect_catalog() -> None:
+    with ui.scene(width=320, height=240, hover_color='#ffaa33').classes('w-full h-64') as scene:
+        scene.box().move(-2, 0, 0).material('SteelBlue').hover_effect('glow')
+        scene.box().move(0, 0, 0).material('SeaGreen').hover_effect('outline', color='#ffffff')
+        scene.box().move(2, 0, 0).material('Coral').hover_effect('tint', color='#ff0000')
+
+
+@doc.demo('TransformControls', '''
+    Attach a `TransformControls` gizmo to an `Object3D` to let the user grab and drag it in 3D.
+    `mode='translate'` (default), `'rotate'`, or `'scale'` selects the gizmo type.
+    The host application receives `on_transform`, `on_transform_start`, and `on_transform_end`
+    events with the object's local coordinates, world coordinates (`wx`, `wy`, `wz`), and rotation.
+''')
+def transform_controls_demo() -> None:
+    from nicegui import events
+
+    def show(e: events.SceneTransformEventArguments):
+        ui.notify(f'{e.type} ({e.mode}): ({e.x:.2f}, {e.y:.2f}, {e.z:.2f})')
+
+    with ui.scene(width=320, height=240, on_transform_end=show).classes('w-full h-64') as scene:
+        gizmo_box = scene.box(2, 2, 2).material('SteelBlue').hover_effect('glow', color='#ffaa33')
+
+    ui.button('Translate', on_click=lambda: gizmo_box.enable_transform_controls(mode='translate'))
+    ui.button('Rotate', on_click=lambda: gizmo_box.enable_transform_controls(mode='rotate'))
+    ui.button('Disable', on_click=gizmo_box.disable_transform_controls)
+
+
 doc.reference(ui.scene)
