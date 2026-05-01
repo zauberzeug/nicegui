@@ -1,10 +1,25 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import Literal, TypedDict, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ...logging import log
+
+
+class LineAnchor(TypedDict):
+    """A single anchor pinned to a line in :meth:`ui.codemirror.set_line_anchors`.
+
+    ``id`` is a caller-chosen stable identifier used to look up the current line in
+    :attr:`ui.codemirror.line_anchor_positions` after document edits remap the anchor.
+    ``line`` is the 1-indexed initial line number.
+
+    *Added in version X.Y.Z*
+    """
+    id: str
+    line: int
+
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -291,6 +306,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
         if on_change is not None:
             super().on_value_change(on_change)
 
+        self._anchor_positions: dict[str, dict[str, int]] = {}
+        self.on('anchor-positions', self._update_anchor_mirror)
+
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
@@ -355,6 +373,66 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+
+    def set_line_anchors(self, anchors: list[LineAnchor], set_name: str = 'default') -> None:
+        """Set named anchors that track document positions through edits.
+
+        Each anchor is a :class:`LineAnchor` dict with a caller-chosen ``id`` and an initial ``line``.
+        CodeMirror remaps the underlying position when the document changes;
+        the current line for each anchor is exposed on the Python side via :attr:`line_anchor_positions`.
+
+        Multiple named sets can be managed independently (e.g. ``'breakpoints'``, ``'targets'``).
+        Calling ``set_line_anchors`` for the same ``set_name`` replaces that set's anchors;
+        anchors in other sets are left untouched.
+
+        The browser is the source of truth: :attr:`line_anchor_positions` is populated by the
+        next ``anchor-positions`` event and briefly lags this call until the JS round-trip lands.
+        Lines exceeding the current document length are clamped to the last line on the JS side
+        (a ``console.warn`` is logged in the browser); read :attr:`line_anchor_positions` after
+        the round-trip to see where each anchor actually landed.
+
+        :raises ValueError: if any anchor has ``line < 1`` or if two anchors share the same ``id``
+
+        *Added in version X.Y.Z*
+        """
+        seen: dict[str, int] = {}
+        for a in anchors:
+            if a['line'] < 1:
+                raise ValueError(f'line must be >= 1, got {a["line"]} for anchor {a["id"]!r}')
+            if a['id'] in seen:
+                raise ValueError(f'duplicate anchor id {a["id"]!r} in set {set_name!r}')
+            seen[a['id']] = a['line']
+        self.run_method('setLineAnchors', anchors, set_name)
+
+    def clear_line_anchors(self, set_name: str | None = None) -> None:
+        """Clear anchors.
+
+        :param set_name: clear only this named set, or all sets if ``None``
+
+        *Added in version X.Y.Z*
+        """
+        self.run_method('clearLineAnchors', set_name)
+
+    @property
+    def line_anchor_positions(self) -> dict[str, dict[str, int]]:
+        """Current anchor positions, as last reported by the browser.
+
+        Returns a nested dict ``{set_name: {anchor_id: 1-indexed line}}``.
+        The browser is the source of truth, so this property briefly lags
+        :meth:`set_line_anchors` and :meth:`clear_line_anchors` calls until the
+        JS round-trip completes, and updates asynchronously when document edits
+        remap anchor positions.
+
+        *Added in version X.Y.Z*
+        """
+        return {name: dict(positions) for name, positions in self._anchor_positions.items()}
+
+    def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
+        anchors = e.args.get('anchors')
+        if isinstance(anchors, dict):
+            self._anchor_positions = anchors
+        else:
+            log.warning('codemirror: ignoring malformed anchor-positions payload: %r', anchors)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
