@@ -339,4 +339,43 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo('New geometry primitives and polar grid', '''
+    ``polyline`` connects a sequence of points with optional per-vertex colors and dashing,
+    ``lathe`` revolves a 2D profile to make a vase or bowl,
+    and ``plane`` / ``cone`` / ``torus`` / ``capsule`` wrap the corresponding Three.js geometries.
+    The ``polar_grid=(radius, sectors, rings)`` scene argument replaces the rectangular grid
+    with a circular one (and overrides ``grid``).
+''')
+def new_primitives_and_polar_grid() -> None:
+    import math
+    with ui.scene(grid=False, polar_grid=(4, 12, 6)).classes('w-full h-64') as scene:
+        radius = 2.5
+        for angle, color, builder in [
+            (0, '#cc6633', lambda: scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]])),
+            (60, '#ff3333', lambda: scene.cone(radius=0.5, height=1.0)),
+            (120, '#ffcc33', lambda: scene.torus(radius=0.4, tube=0.15)),
+            (180, '#33ccff', lambda: scene.plane(width=1.0, height=1.0).rotate(math.pi / 2, 0, 0)),
+            (240, '#cc66ff', lambda: scene.capsule(radius=0.3, length=0.8)),
+        ]:
+            x = radius * math.cos(math.radians(angle))
+            y = radius * math.sin(math.radians(angle))
+            builder().material(color).move(x, y, 0.5)
+        scene.polyline(
+            points=[[-2, 0, 2.5], [-1, 0, 3.0], [0, 0, 2.5], [1, 0, 3.0], [2, 0, 2.5]],
+            colors=[[1, 0, 0], [1, 0.5, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]],
+        )
+
+
+@doc.demo('Rotate with a different Euler order', '''
+    ``rotate`` accepts an optional intrinsic Euler ``order``
+    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``).
+    The default ``'XYZ'`` keeps the same behavior as before.
+''')
+def rotate_with_order() -> None:
+    import math
+    with ui.scene().classes('w-full h-64') as scene:
+        scene.box().move(-1).rotate(math.pi / 4, math.pi / 4, 0, order='XYZ')
+        scene.box().move(1).rotate(math.pi / 4, math.pi / 4, 0, order='ZYX')
+
+
 doc.reference(ui.scene)

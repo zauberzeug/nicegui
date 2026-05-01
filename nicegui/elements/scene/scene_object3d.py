@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class Object3D:
     current_scene: Scene | None = None
+    EULER_ORDERS = ('XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX')
 
     def __init__(self, type_: str, *args: Any) -> None:
         self.type = type_
@@ -123,30 +124,65 @@ class Object3D:
         return self
 
     @staticmethod
-    def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> list[list[float]]:
+    def rotation_matrix_from_euler(
+        r_x: float,
+        r_y: float,
+        r_z: float,
+        order: Literal['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'XYZ',
+    ) -> list[list[float]]:
         """Create a rotation matrix from Euler angles.
+
+        The leftmost letter of ``order`` is the axis that rotates first about the world frame,
+        the rightmost letter rotates last. For ``order='XYZ'`` the result is ``M = Rz @ Ry @ Rx``,
+        which preserves the original three-argument behavior of this function.
+
+        Note: this is the *reverse* of the ``THREE.Euler`` order convention. ``rotate(rx, ry, rz, 'ABC')``
+        is equivalent to ``new THREE.Euler(rx, ry, rz, 'CBA')`` (order string reversed).
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
+        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``)
         """
+        if order not in Object3D.EULER_ORDERS:
+            raise ValueError(f'Unsupported Euler order {order!r}; expected one of {", ".join(Object3D.EULER_ORDERS)}')
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
         sz, cz = math.sin(r_z), math.cos(r_z)
-        return [
-            [cz * cy, -sz * cx + cz * sy * sx, sz * sx + cz * sy * cx],
-            [sz * cy, cz * cx + sz * sy * sx, -cz * sx + sz * sy * cx],
-            [-sy, cy * sx, cy * cx],
-        ]
+        single_axis: dict[str, list[list[float]]] = {
+            'X': [[1, 0, 0], [0, cx, -sx], [0, sx, cx]],
+            'Y': [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]],
+            'Z': [[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]],
+        }
+        # Each letter pre-multiplies on the left, so order='XYZ' yields Rz @ Ry @ Rx (Rx applied first).
+        result = single_axis[order[0]]
+        for letter in order[1:]:
+            result = Object3D._matmul3(single_axis[letter], result)
+        return result
 
-    def rotate(self, r_x: float, r_y: float, r_z: float) -> Self:
+    @staticmethod
+    def _matmul3(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
+        return [[sum(A[i][k] * B[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
+
+    def rotate(
+        self,
+        r_x: float,
+        r_y: float,
+        r_z: float,
+        order: Literal['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'XYZ',
+    ) -> Self:
         """Rotate the object.
+
+        The leftmost letter of ``order`` rotates first about the world frame
+        (default ``'XYZ'`` preserves the original three-argument behavior, ``M = Rz @ Ry @ Rx``).
+        See :meth:`rotation_matrix_from_euler` for the relationship to ``THREE.Euler``.
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
+        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``)
         """
-        return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
+        return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z, order))
 
     def rotate_R(self, R: list[list[float]]) -> Self:
         """Rotate the object.

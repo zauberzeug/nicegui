@@ -356,3 +356,163 @@ class AxesHelper(Object3D):
         :param length: length of the the axes (default: 1.0)
         """
         super().__init__('axes_helper', length)
+
+
+class Polyline(Object3D):
+
+    def __init__(self,
+                 points: list[list[float]],
+                 colors: list[list[float]] | None = None,
+                 dashed: bool = False,
+                 dash_size: float = 3.0,
+                 gap_size: float = 1.0,
+                 ) -> None:
+        """Polyline
+
+        This element is based on Three.js' `Line <https://threejs.org/docs/#api/en/objects/Line>`_ object.
+        It connects a sequence of 3D points with line segments and optionally dashes them via
+        `LineDashedMaterial <https://threejs.org/docs/#api/en/materials/LineDashedMaterial>`_.
+
+        ``dash_size`` and ``gap_size`` defaults match the Three.js ``LineDashedMaterial`` defaults
+        (``3.0`` and ``1.0``); the units are scene units, so adjust them for your scene scale.
+
+        :param points: list of ``[x, y, z]`` points
+        :param colors: optional list of per-vertex ``[r, g, b]`` colors (each component in ``[0, 1]``).
+            When supplied, the line uses vertex colors instead of the material color.
+        :param dashed: whether to use a dashed material (default: ``False``)
+        :param dash_size: dash length in scene units (default: ``3.0``)
+        :param gap_size: gap length in scene units (default: ``1.0``)
+        """
+        if len(points) < 2:
+            raise ValueError(f'points must have at least 2 entries (got {len(points)})')
+        if colors is not None and len(colors) != len(points):
+            raise ValueError(f'colors length ({len(colors)}) must match points length ({len(points)})')
+        super().__init__('polyline', points, colors, dashed, dash_size, gap_size)
+        if colors is not None:
+            self.material(color=None)
+
+
+class Lathe(Object3D):
+
+    def __init__(self,
+                 points: list[list[float]],
+                 segments: int = 12,
+                 phi_start: float = 0.0,
+                 phi_length: float = 2 * math.pi,
+                 wireframe: bool = False,
+                 ) -> None:
+        """Lathe
+
+        This element is based on Three.js' `LatheGeometry <https://threejs.org/docs/#api/en/geometries/LatheGeometry>`_ object.
+        It creates a surface of revolution by rotating a 2D polyline around the y axis.
+
+        :param points: list of 2D ``[x, y]`` points making up the profile (x ≥ 0)
+        :param segments: number of segments around the circumference (default: 12)
+        :param phi_start: starting angle in radians (default: 0.0)
+        :param phi_length: angular extent in radians (default: ``2π``)
+        :param wireframe: whether to render the mesh as wireframe (default: ``False``)
+        """
+        super().__init__('lathe', points, segments, phi_start, phi_length, wireframe)
+
+
+class Plane(Object3D):
+
+    def __init__(self,
+                 width: float = 1.0,
+                 height: float = 1.0,
+                 width_segments: int = 1,
+                 height_segments: int = 1,
+                 wireframe: bool = False,
+                 ) -> None:
+        """Plane
+
+        This element is based on Three.js' `PlaneGeometry <https://threejs.org/docs/index.html#api/en/geometries/PlaneGeometry>`_ object.
+        It is used to create a flat rectangular mesh.
+
+        :param width: width of the plane (default: 1.0)
+        :param height: height of the plane (default: 1.0)
+        :param width_segments: number of segments along the width (default: 1)
+        :param height_segments: number of segments along the height (default: 1)
+        :param wireframe: whether to display the plane as a wireframe (default: `False`)
+        """
+        super().__init__('plane', width, height, width_segments, height_segments, wireframe)
+
+
+class Cone(Object3D):
+
+    def __init__(self,
+                 radius: float = 1.0,
+                 height: float = 1.0,
+                 radial_segments: int = 8,
+                 height_segments: int = 1,
+                 open_ended: bool = False,
+                 theta_start: float = 0,
+                 theta_length: float = 2 * math.pi,
+                 wireframe: bool = False,
+                 ) -> None:
+        """Cone
+
+        This element is based on Three.js' `ConeGeometry <https://threejs.org/docs/index.html#api/en/geometries/ConeGeometry>`_ object.
+        It is used to create a cone-shaped mesh.
+
+        :param radius: radius of the base (default: 1.0)
+        :param height: height of the cone (default: 1.0)
+        :param radial_segments: number of horizontal segments (default: 8)
+        :param height_segments: number of vertical segments (default: 1)
+        :param open_ended: whether the base is open (default: `False`)
+        :param theta_start: start angle in radians (default: 0)
+        :param theta_length: central angle in radians (default: 2π)
+        :param wireframe: whether to display the cone as a wireframe (default: `False`)
+        """
+        super().__init__('cone', radius, height, radial_segments, height_segments,
+                         open_ended, theta_start, theta_length, wireframe)
+
+
+class Torus(Object3D):
+
+    def __init__(self,
+                 radius: float = 1.0,
+                 tube: float = 0.4,
+                 radial_segments: int = 12,
+                 tubular_segments: int = 48,
+                 arc: float = 2 * math.pi,
+                 wireframe: bool = False,
+                 ) -> None:
+        """Torus
+
+        This element is based on Three.js' `TorusGeometry <https://threejs.org/docs/index.html#api/en/geometries/TorusGeometry>`_ object.
+        It is used to create a donut-shaped mesh.
+
+        :param radius: radius from the center of the torus to the center of the tube (default: 1.0)
+        :param tube: radius of the tube (default: 0.4)
+        :param radial_segments: number of segments along the tube cross-section (default: 12)
+        :param tubular_segments: number of segments along the tube length (default: 48)
+        :param arc: central angle of the torus in radians (default: 2π)
+        :param wireframe: whether to display the torus as a wireframe (default: `False`)
+        """
+        super().__init__('torus', radius, tube, radial_segments, tubular_segments, arc, wireframe)
+
+
+class Capsule(Object3D):
+
+    def __init__(self,
+                 radius: float = 1.0,
+                 length: float = 1.0,
+                 cap_segments: int = 4,
+                 radial_segments: int = 8,
+                 height_segments: int = 1,
+                 wireframe: bool = False,
+                 ) -> None:
+        """Capsule
+
+        This element is based on Three.js' `CapsuleGeometry <https://threejs.org/docs/index.html#api/en/geometries/CapsuleGeometry>`_ object.
+        It is used to create a capsule-shaped mesh (a cylinder with hemispherical caps).
+
+        :param radius: radius of the capsule (default: 1.0)
+        :param length: length of the cylindrical middle section (default: 1.0)
+        :param cap_segments: number of segments used to draw each cap (default: 4)
+        :param radial_segments: number of horizontal segments (default: 8)
+        :param height_segments: number of vertical segments along the cylindrical middle (default: 1)
+        :param wireframe: whether to display the capsule as a wireframe (default: `False`)
+        """
+        super().__init__('capsule', radius, length, cap_segments, radial_segments, height_segments, wireframe)

@@ -145,6 +145,34 @@ def test_rotation_matrix_from_euler():
     assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)
 
 
+def test_rotation_matrix_from_euler_all_orders():
+    rx, ry, rz = 0.4, -0.3, 0.5
+    Rx = np.array([[1, 0, 0], [0, np.cos(rx), -np.sin(rx)], [0, np.sin(rx), np.cos(rx)]])
+    Ry = np.array([[np.cos(ry), 0, np.sin(ry)], [0, 1, 0], [-np.sin(ry), 0, np.cos(ry)]])
+    Rz = np.array([[np.cos(rz), -np.sin(rz), 0], [np.sin(rz), np.cos(rz), 0], [0, 0, 1]])
+    axis = {'X': Rx, 'Y': Ry, 'Z': Rz}
+    # Leftmost letter rotates first about the world frame, so the leftmost axis sits as the
+    # rightmost matrix in the product (column-vector convention M @ v).
+    expected_per_order = {
+        'XYZ': Rz @ Ry @ Rx,
+        'XZY': Ry @ Rz @ Rx,
+        'YXZ': Rz @ Rx @ Ry,
+        'YZX': Rx @ Rz @ Ry,
+        'ZXY': Ry @ Rx @ Rz,
+        'ZYX': Rx @ Ry @ Rz,
+    }
+    assert set(expected_per_order) == set(Object3D.EULER_ORDERS)
+    for order, expected in expected_per_order.items():
+        actual = Object3D.rotation_matrix_from_euler(rx, ry, rz, order)
+        assert np.allclose(actual, expected), f'{order} mismatch:\n{actual}\nvs\n{expected}'
+        assert np.allclose(actual, axis[order[2]] @ axis[order[1]] @ axis[order[0]])
+
+
+def test_rotation_matrix_from_euler_rejects_bad_order():
+    with pytest.raises(ValueError, match='Unsupported Euler order'):
+        Object3D.rotation_matrix_from_euler(0, 0, 0, 'XYY')  # type: ignore[arg-type]
+
+
 def test_object_creation_via_context(screen: Screen):
     scene = None
 
@@ -241,3 +269,135 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_polyline(screen: Screen):
+    scene = None
+    line_obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, line_obj
+        with ui.scene() as scene:
+            line_obj = scene.polyline(
+                points=[[0, 0, 0], [1, 0, 0], [1, 1, 0]],
+                colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                dashed=True,
+                dash_size=0.1,
+                gap_size=0.05,
+            )
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_line = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{line_obj.id}");'
+        'return o.isLine === true && o.material.type === "LineDashedMaterial" && o.material.vertexColors === true;'
+    )
+    assert is_line
+
+
+def test_lathe(screen: Screen):
+    scene = None
+    obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, obj
+        with ui.scene() as scene:
+            obj = scene.lathe(points=[[0, 0], [0.5, 0.5], [0, 1]], segments=8)
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_lathe = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{obj.id}");'
+        'return o.isMesh === true && o.geometry.type === "LatheGeometry";'
+    )
+    assert is_lathe
+
+
+def test_polyline_rejects_mismatched_colors():
+    from nicegui.elements.scene.scene_objects import Polyline
+    with pytest.raises(ValueError, match='colors length'):
+        Polyline(points=[[0, 0, 0], [1, 0, 0]], colors=[[1, 0, 0]])
+
+
+def test_polyline_rejects_too_few_points():
+    from nicegui.elements.scene.scene_objects import Polyline
+    with pytest.raises(ValueError, match='at least 2'):
+        Polyline(points=[[0, 0, 0]])
+
+
+@pytest.mark.parametrize('polar_grid,expected_vertex_count', [
+    # PolarGridHelper(radius, sectors, rings, divisions) vertex count = sectors*2 + rings*divisions*2.
+    ((1.0, 8, 5), 8 * 2 + 5 * 64 * 2),       # default divisions=64
+    ((1.0, 8, 5, 128), 8 * 2 + 5 * 128 * 2),  # explicit divisions=128
+])
+def test_polar_grid_smoothness(screen: Screen, polar_grid: tuple, expected_vertex_count: int):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene(grid=False, polar_grid=polar_grid) as scene:
+            scene.sphere(0.1).move(0.5, 0, 0)
+
+    screen.open('/')
+    screen.wait(0.5)
+    # children: ambient light, directional light, circular ground, polar grid helper, sphere
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+    helper_vertex_count = screen.selenium.execute_script(
+        f'return scene_{scene.html_id}.children[3].geometry.attributes.position.count'
+    )
+    assert helper_vertex_count == expected_vertex_count
+
+
+@pytest.mark.parametrize('factory_name,three_geometry', [
+    ('plane', 'PlaneGeometry'),
+    ('cone', 'ConeGeometry'),
+    ('torus', 'TorusGeometry'),
+    ('capsule', 'CapsuleGeometry'),
+])
+def test_geometry_primitive(screen: Screen, factory_name: str, three_geometry: str):
+    """Smoke test that each primitive dispatches to the expected Three.js geometry class.
+
+    Catches silent removals or renames in future Three.js upgrades.
+    """
+    scene = None
+    obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, obj
+        with ui.scene() as scene:
+            obj = getattr(scene, factory_name)()
+
+    screen.open('/')
+    screen.wait(0.5)
+    is_expected = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{obj.id}");'
+        f'return o.isMesh === true && o.geometry.type === "{three_geometry}";'
+    )
+    assert is_expected
+
+
+def test_rotate_with_order(screen: Screen):
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box().rotate(0.4, -0.3, 0.5, order='ZYX')
+
+    screen.open('/')
+    screen.wait(0.5)
+    expected = Object3D.rotation_matrix_from_euler(0.4, -0.3, 0.5, 'ZYX')
+    assert np.allclose(box.R, expected)
+    server_R = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{box.id}");'
+        'const m = o.matrixWorld.elements;'
+        # Three.js stores column-major; pull out the upper-left 3x3.
+        'return [[m[0], m[4], m[8]], [m[1], m[5], m[9]], [m[2], m[6], m[10]]];'
+    )
+    assert np.allclose(server_R, expected, atol=1e-6)
