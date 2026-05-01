@@ -88,14 +88,16 @@ with row:
 
 ### 5. The binding system is pull-based, not push-based
 
-Bindings do **not** use Python property setters or event hooks to immediately propagate. Instead, a background loop runs every ~100ms and checks all active bindings for changes. This means:
+NiceGUI bindings use two complementary mechanisms:
 
-- Binding updates have up to ~100ms latency (usually imperceptible)
+- **Push**: assigning to a `BindableProperty` (the descriptor used on element attributes like `value`, `text`, `visible`) propagates synchronously through all linked bindings immediately.
+- **Pull**: a refresh loop runs every `binding_refresh_interval` (default 0.1s) and re-checks `active_links` — this is what makes bindings work against plain `dict` keys and ordinary object attributes that have no setter to hook into.
+
+In practice:
+- Binding a `ui.input` value to a plain dataclass attribute → the refresh loop picks up changes (~100ms)
+- Binding between two NiceGUI elements (both use `BindableProperty`) → propagation is synchronous
+- You usually don't need to call `.update()` after a bound assignment; either the descriptor or the refresh loop handles it
 - Bindings work on any Python object — no special base class required
-- You do **not** need to call `.update()` after changing a bound value; the loop handles it
-- Setting the same value twice quickly may result in only one propagation
-
-For immediate, guaranteed updates, use element methods directly (`.set_text()`, `.set_value()`).
 
 ### 6. Why Python-first is a hard rule, not just style
 
@@ -111,8 +113,8 @@ Use `ui.run_javascript()` only for things that are truly impossible via the Pyth
 NiceGUI runs in a single asyncio event loop. Every page, every user, every timer shares it. Blocking the loop (with `time.sleep()`, `requests.get()`, heavy CPU work) freezes the **entire application** for all users. Rules:
 
 - All I/O must be async (`httpx`, `aiofiles`, `asyncio.sleep()`)
-- CPU-heavy work must run in a thread: `await asyncio.to_thread(cpu_func)` (Python 3.9+, preferred over the deprecated `run_in_executor`)
-- `background_tasks.create()` for fire-and-forget coroutines (not `asyncio.create_task()` or `asyncio.ensure_future()` — the GC can cancel bare tasks; `ensure_future()` is also deprecated since Python 3.10)
+- CPU-heavy work must run in a thread: `await asyncio.to_thread(cpu_func)` (Python 3.9+, simpler than `run_in_executor`; use `run_in_executor` when you need a custom executor like `ProcessPoolExecutor`)
+- `background_tasks.create()` for fire-and-forget coroutines — wraps `create_task` but keeps a reference (so the GC won't cancel it) and routes exceptions through NiceGUI's exception handler. Avoid bare `asyncio.create_task()` or `asyncio.ensure_future()` for this reason.
 - Timers (`ui.timer()`) are safe: they schedule callbacks without blocking
 
 ### 8. Why `ui.storage.user` and not a global dict
@@ -169,7 +171,7 @@ async def index():
 | Show a message | custom HTML overlay | `ui.notify('message')` |
 | Copy to clipboard | `ui.run_javascript("navigator.clipboard.writeText(...)")` | `await ui.clipboard.write(text)` |
 | Styled download link | `ui.html('<a href=... style=...>')` | `ui.button('Download').props('href=... tag=a')` |
-| CPU work in async | `asyncio.get_event_loop().run_in_executor(None, fn)` | `await asyncio.to_thread(fn)` |
+| CPU work in thread | `asyncio.get_event_loop().run_in_executor(None, fn)` | `await asyncio.to_thread(fn)` (3.9+; use `run_in_executor` for custom executors) |
 
 ---
 
@@ -1014,11 +1016,11 @@ ui.run_javascript("document.querySelector('.my-class').style.color = 'red'")
 # GOOD:
 ui.query('.my-class').style('color: red')
 
-# BAD: asyncio.create_task() or asyncio.ensure_future() — GC may cancel bare tasks;
-#      ensure_future() is also deprecated since Python 3.10
+# BAD: asyncio.create_task() or asyncio.ensure_future() — bare task references
+#      may be GC-cancelled, and exceptions are silently swallowed unless awaited
 asyncio.create_task(my_coro())
 asyncio.ensure_future(my_coro())
-# GOOD:
+# GOOD: keeps a reference + routes exceptions through NiceGUI's exception handler
 background_tasks.create(my_coro())
 
 # BAD: run_javascript for clipboard
@@ -1183,7 +1185,7 @@ ui.button('Click me') \
 
 - **Global mutable state** in shared module scope (use `app.storage` instead)
 - **Blocking I/O** in async handlers or WebSocket paths
-- **`asyncio.create_task()` / `asyncio.ensure_future()`** — use `background_tasks.create()` (`ensure_future` is also deprecated since Python 3.10)
+- **`asyncio.create_task()` / `asyncio.ensure_future()`** — use `background_tasks.create()` (keeps a reference so GC won't cancel it, and routes exceptions through NiceGUI's handler)
 - **Broad `except:`** without re-raise or proper context
 - **Debug `print()`** — use Python `logging` module
 - **Raw CSS/JS** when a NiceGUI Python API exists
