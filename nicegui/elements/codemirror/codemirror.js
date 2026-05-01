@@ -12,6 +12,14 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    selectionTrackingEnabled: Boolean,
+    focusTrackingEnabled: Boolean,
+    viewportTrackingEnabled: Boolean,
+    geometryTrackingEnabled: Boolean,
+    selectionDebounceMs: Number,
+    focusDebounceMs: Number,
+    viewportDebounceMs: Number,
+    geometryDebounceMs: Number,
     id: String,
   },
   watch: {
@@ -130,6 +138,15 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    revealLine(lineNumber) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const lineNum = Math.max(1, Math.min(lineNumber, doc.lines));
+      const line = doc.line(lineNum);
+      this.editor.dispatch({
+        effects: CM.EditorView.scrollIntoView(line.from, { y: "center" }),
+      });
+    },
     setupExtensions() {
       const self = this;
 
@@ -148,9 +165,65 @@ export default {
         },
       );
 
+      // Dispatches per-signal events for ViewUpdate flags the host has opted into via
+      // <signal>-tracking-enabled props. Each signal is independently debounced (read fresh
+      // from <signal>DebounceMs every emit) and deduped against its last payload.
+      // NOTE: timers live on the plugin instance — `destroy()` clears them on plugin teardown,
+      // so no Vue beforeUnmount cleanup is needed.
+      const updateDispatcher = CM.ViewPlugin.fromClass(
+        class {
+          constructor() {
+            this._timers = {};
+            this._last = {};
+          }
+          destroy() {
+            for (const t of Object.values(this._timers)) clearTimeout(t);
+          }
+          update(u) {
+            if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
+              const head = u.state.selection.main.head;
+              const line = u.state.doc.lineAt(head);
+              this._maybeEmit("selection-change", self.selectionDebounceMs, {
+                line: line.number,
+                column: head - line.from + 1,
+              });
+            }
+            if (self.focusTrackingEnabled && u.focusChanged) {
+              this._maybeEmit("focus-change", self.focusDebounceMs, { focused: u.view.hasFocus });
+            }
+            if (self.viewportTrackingEnabled && u.viewportChanged) {
+              const vp = u.view.viewport;
+              this._maybeEmit("viewport-change", self.viewportDebounceMs, {
+                from_line: u.state.doc.lineAt(vp.from).number,
+                to_line: u.state.doc.lineAt(vp.to).number,
+              });
+            }
+            if (self.geometryTrackingEnabled && u.geometryChanged) {
+              this._maybeEmit("geometry-change", self.geometryDebounceMs, {
+                width: u.view.dom.clientWidth,
+                height: u.view.dom.clientHeight,
+                content_height: u.view.contentHeight,
+              });
+            }
+          }
+          _maybeEmit(name, debounceMs, payload) {
+            const last = this._last[name];
+            if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
+            this._last[name] = payload;
+            if (this._timers[name]) clearTimeout(this._timers[name]);
+            if (debounceMs > 0) {
+              this._timers[name] = setTimeout(() => self.$emit(name, payload), debounceMs);
+            } else {
+              self.$emit(name, payload);
+            }
+          }
+        },
+      );
+
       const extensions = [
         CM.basicSetup,
         changeSender,
+        updateDispatcher,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
