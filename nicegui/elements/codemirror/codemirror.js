@@ -130,6 +130,60 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setDiagnostics(diagnostics) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const cmDiagnostics = [];
+      for (const d of diagnostics) {
+        if (!Number.isInteger(d.line) || d.line < 1 || d.line > doc.lines) {
+          console.warn(`Diagnostic line out of range: ${d.line} (doc has ${doc.lines} lines)`);
+          continue;
+        }
+        const line = doc.line(d.line);
+        // Column values are 1-indexed; end_column is exclusive. Out-of-range values clamp to line bounds.
+        const startOffset = Number.isInteger(d.column) ? Math.max(1, d.column) - 1 : 0;
+        const endOffset = Number.isInteger(d.end_column) ? Math.max(1, d.end_column) - 1 : line.length;
+        const from = Math.min(line.from + startOffset, line.to);
+        const to = Math.min(line.from + endOffset, line.to);
+        const message = d.message;
+        cmDiagnostics.push({
+          from,
+          to: Math.max(from, to),
+          severity: d.severity || "error",
+          message,
+          source: d.source ?? undefined,
+          // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render.
+          renderMessage: () => {
+            const span = document.createElement("span");
+            span.setHTML(message);
+            return span;
+          },
+        });
+      }
+      this.editor.dispatch(CM.setDiagnostics(this.editor.state, cmDiagnostics));
+    },
+    openLintPanel() {
+      if (this.editor) CM.openLintPanel(this.editor);
+    },
+    closeLintPanel() {
+      if (this.editor) CM.closeLintPanel(this.editor);
+    },
+    toggleLintPanel() {
+      if (!this.editor) return;
+      // @codemirror/lint exposes openLintPanel/closeLintPanel but no public "is open" predicate,
+      // so check the rendered panel directly.
+      const open = this.editor.dom.querySelector(".cm-panel-lint") !== null;
+      (open ? CM.closeLintPanel : CM.openLintPanel)(this.editor);
+    },
+    getDiagnosticCount() {
+      const counts = { error: 0, warning: 0, info: 0, hint: 0, total: 0 };
+      if (!this.editor) return counts;
+      CM.forEachDiagnostic(this.editor.state, (d) => {
+        if (counts[d.severity] !== undefined) counts[d.severity] += 1;
+        counts.total += 1;
+      });
+      return counts;
+    },
     setupExtensions() {
       const self = this;
 
@@ -151,6 +205,15 @@ export default {
       const extensions = [
         CM.basicSetup,
         changeSender,
+        // NOTE: do NOT use CM.lintGutter() here — it pulls in lintGutterTooltip,
+        // a StateField that registers itself via showTooltip.from(field) and
+        // returns null on most transactions. That null provider sits in the
+        // showTooltip facet and silently suppresses the autocomplete popup
+        // outside of paren contexts. CM.linter() installs lintState (so the
+        // setDiagnostics() API still works and inline error marks render),
+        // and its only tooltip is a hoverTooltip that fires on mouseover,
+        // not on every keystroke. The empty source disables auto-linting.
+        CM.linter(() => []),
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
