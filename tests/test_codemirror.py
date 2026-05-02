@@ -146,6 +146,12 @@ def test_set_completions_replaces(screen: Screen):
     screen.open('/')
     cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
     editor.set_completions([{'label': 'bar'}, {'label': 'baz'}])
+    # Wait for the new completions to land on the client before opening the
+    # popup — otherwise typing can race the websocket flush and trigger the
+    # autocomplete against the stale [banana] source.
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({editor.id})?.completions?.length === 2'
+    ))
     cm.click()
     cm.send_keys('ba')
     screen.wait_for(lambda: _open_count(screen) == 2)
