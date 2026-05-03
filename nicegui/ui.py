@@ -123,6 +123,7 @@ _LAZY_IMPORTS = {
     'tooltip': ('.elements.tooltip', 'Tooltip'),
     'tree': ('.elements.tree', 'Tree'),
     'upload': ('.elements.upload', 'Upload'),
+    'uplot': ('.elements.uplot', 'UPlot'),
     'video': ('.elements.video', 'Video'),
     'xterm': ('.elements.xterm', 'Xterm'),
     'clipboard': ('.functions.clipboard', None),
