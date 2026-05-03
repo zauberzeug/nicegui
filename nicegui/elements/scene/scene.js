@@ -10,6 +10,7 @@ const {
   OrbitControls,
   TrackballControls,
   STLLoader,
+  ViewHelper,
   THREE,
   TWEEN,
   Stats,
@@ -216,10 +217,15 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
-      this.controls.update(this.clock.getDelta());
+      const delta = this.clock.getDelta();
+      this.controls.update(delta);
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
+      if (this.viewHelper) {
+        this.viewHelper.render(this.renderer);
+        if (this.viewHelper.animating) this.viewHelper.update(delta);
+      }
       if (this.stats) this.stats.update();
     };
     render();
@@ -247,6 +253,16 @@ export default {
       });
     };
     this.clickEvents.forEach((event) => this.$el.addEventListener(event, click_handler));
+
+    // Forward pointerdown to viewHelper.handleClick so clicking an X/Y/Z axis sprite snap-animates
+    // the camera. We register in capture phase + stopImmediatePropagation when handleClick consumes
+    // the event so OrbitControls' pointerdown listener (registered earlier on the same element)
+    // doesn't try to start a drag-rotate on what was meant to be an inset axis click.
+    this.renderer.domElement.addEventListener("pointerdown", (event) => {
+      if (this.viewHelper && this.viewHelper.handleClick(event)) {
+        event.stopImmediatePropagation();
+      }
+    }, true);
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
@@ -421,6 +437,44 @@ export default {
         const index = this.draggable_objects.indexOf(object);
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
+    },
+    set_axes_inset(opts) {
+      this._axes = opts || {};
+      if (this._axes.enabled) {
+        if (!this.viewHelper) {
+          this.viewHelper = new ViewHelper(this.camera, this.renderer.domElement);
+          if (this.controls && this.controls.target) this.viewHelper.center = this.controls.target;
+          // Re-apply previously configured labels/style — toggling enabled=False then True
+          // disposes the helper, so labels would otherwise reset to the unlabeled default.
+          if (this._axesLabels && this._axesLabels.enabled) this.set_axes_labels(this._axesLabels);
+        }
+        // r184's ViewHelper exposes a `location` field that controls inset positioning. The
+        // field accepts pixel offsets from the corresponding edges; null on the opposite axis
+        // selects which side anchors. Internal dim is hardcoded to 128 px.
+        const mx = (this._axes.marginX ?? this._axes.margin) ?? 0;
+        const my = (this._axes.marginY ?? this._axes.margin) ?? 0;
+        const anchor = this._axes.anchor || "bottom-right";
+        this.viewHelper.location = {
+          top: anchor.includes("top") ? my : null,
+          bottom: anchor.includes("top") ? null : my,
+          left: anchor.includes("left") ? mx : null,
+          right: anchor.includes("left") ? null : mx,
+        };
+      } else if (this.viewHelper) {
+        if (this.viewHelper.dispose) this.viewHelper.dispose();
+        this.viewHelper = null;
+      }
+    },
+    set_axes_labels(opts) {
+      this._axesLabels = opts;
+      if (!this.viewHelper || !opts || !opts.enabled) return;
+      const labels = Array.isArray(opts.labels) && opts.labels.length === 3
+        ? opts.labels
+        : ["X", "Y", "Z"];
+      // Style first, then labels — both call updateLabels() internally and the label canvas
+      // reads font/color/radius at paint time (see ViewHelper.js getSpriteMaterial).
+      this.viewHelper.setLabelStyle(opts.font ?? "24px Arial", opts.color ?? "#000000", opts.radius ?? 14);
+      this.viewHelper.setLabels(labels[0], labels[1], labels[2]);
     },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
