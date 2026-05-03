@@ -1,6 +1,5 @@
 // uplot_helpers.js
 
-
 /**
  * Equal compare for plain objects/arrays
  * @param {object} a
@@ -38,9 +37,8 @@ function deepCompare(a, b) {
 export function optionsUpdateState(_lhs, _rhs) {
     const {width: lhsWidth, height: lhsHeight, plugins: lhsPlugins, ...lhs} = _lhs;
     const {width: rhsWidth, height: rhsHeight, plugins: rhsPlugins, ...rhs} = _rhs;
-    let state = 'keep';
     if (lhsHeight !== rhsHeight || lhsWidth !== rhsWidth) {
-        state = 'update';
+        return 'update';
     }
     if (Object.keys(lhs).length !== Object.keys(rhs).length) {
         return 'create';
@@ -53,25 +51,7 @@ export function optionsUpdateState(_lhs, _rhs) {
         }
     }
 
-    function extractPluginNames(plugins) {
-        if (!plugins) return [];
-        if (Array.isArray(plugins)) {
-            return plugins.map(p => {
-                if (typeof p === 'string') return p;
-                if (typeof p === 'object' && p && p.name && typeof p.name === 'string') return p.name;
-                return null; // skip unknown types
-            }).filter(Boolean);
-        }
-        if (typeof plugins === 'string') return [plugins];
-        if (typeof plugins === 'object' && plugins && 'name' in plugins && typeof plugins.name === 'string') return [plugins.name];
-        return [];
-    }
-    const lhsNames = extractPluginNames(lhsPlugins);
-    const rhsNames = extractPluginNames(rhsPlugins);
-    if (lhsNames.length !== rhsNames.length || lhsNames.some(n => !rhsNames.includes(n)) || rhsNames.some(n => !lhsNames.includes(n))) {
-        state = 'create';
-    }
-    return state;
+    return 'keep';
 }
 
 /**

@@ -287,6 +287,7 @@ __all__ = [
     'tree',
     'update',
     'upload',
+    'uplot',
     'video',
     'xterm',
 ]
@@ -409,6 +410,7 @@ if TYPE_CHECKING:
     from .elements.tooltip import Tooltip as tooltip
     from .elements.tree import Tree as tree
     from .elements.upload import Upload as upload
+    from .elements.uplot import UPlot as uplot
     from .elements.video import Video as video
     from .elements.xterm import Xterm as xterm
     from .functions import clipboard

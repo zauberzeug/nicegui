@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from ...element import Element
+
 if TYPE_CHECKING:
     import numpy as np
-
-from ...element import Element
 
 
 class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
@@ -13,7 +13,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
         self,
         options: dict,
         data: list[list[Any] | np.ndarray] | np.ndarray,
-        reset_scales: bool = True,
+        scale_mode: str = 'reset',
     ) -> None:
         """
         uPlot Element
@@ -22,28 +22,25 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
 
         :param options: uPlot options dictionary (see https://github.com/leeoniya/uPlot/tree/master/docs#basics)
         :param data: uPlot data array (see https://github.com/leeoniya/uPlot/tree/master/docs#data-format)
-        :param reset_scales: Whether to reset scales when updating data (default: True)
+        :param scale_mode: How to handle plot scale updates when new data arrives. One of 'reset', 'preserve_all', 'preserve_zoom'. (default: 'reset')
         """
         super().__init__()
         self._props['options'] = options
         self._props['data'] = data
-        self._props['resetScales'] = reset_scales
+        self._props['scaleMode'] = scale_mode
 
-    def update_data(
-        self,
-        data: list[list[Any] | np.ndarray] | np.ndarray,
-    ) -> None:
-        """
-        Update the data array and optionally reset scales.
-        """
-        with self._props.suspend_updates():
-            self._props['data'] = data
-        super().update()
 
-    def update_options(self, options: dict) -> None:
-        """
-        Update the uPlot options.
-        """
-        with self._props.suspend_updates():
-            self._props['options'] = options
-        super().update()
+    @property
+    def options(self) -> dict:
+        """The options dictionary."""
+        return self._props['options']
+
+    @property
+    def data(self) -> list:
+        """The data array."""
+        return self._props['data']
+
+    @data.setter
+    def data(self, value: list) -> None:
+        """Set the data array."""
+        self._props['data'] = value
