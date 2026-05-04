@@ -205,7 +205,7 @@ doc.text('Examples Are Starting Points', '''
       The `xterm` example, for instance, wires a browser to a Bash PTY by design — its purpose is to demo the integration, not to be exposed on the open internet.
     - **Adapt the authentication example to your needs.**
       It illustrates session-based auth at the page level, which is the recommended pattern,
-      but production apps typically need rate limiting, CSRF protections beyond the framework's defaults, password hashing, and audit logging — none of which the example provides.
+      but production apps typically need rate limiting, CSRF protections for any state-changing endpoints you add, password hashing, and audit logging — none of which the example provides.
     - **Validate uploaded content server-side.**
       The `ui.upload()` element enforces `max_file_size`, `max_total_size`, and `max_files` in the browser only.
       If your `on_upload` handler writes to disk or processes the file, also validate size and type on the server.
