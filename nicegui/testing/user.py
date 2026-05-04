@@ -117,6 +117,7 @@ class User:
                          target: str | type[T],
                          *,
                          retries: int = 3,
+                         scoped: bool = False,
                          ) -> None:
         ...
 
@@ -127,6 +128,7 @@ class User:
                          marker: str | list[str] | None = None,
                          content: str | list[str] | None = None,
                          retries: int = 3,
+                         scoped: bool = False,
                          ) -> None:
         ...
 
@@ -137,6 +139,7 @@ class User:
                          marker: str | list[str] | None = None,
                          content: str | list[str] | None = None,
                          retries: int = 3,
+                         scoped: bool = False,
                          ) -> None:
         """Assert that the page contains an element fulfilling certain filter rules.
 
@@ -147,10 +150,9 @@ class User:
         This can be adjusted with the `retries` parameter.
         """
         for _ in range(retries):
-            with self._scope:
-                if self.notify.contains(target) or self._gather_elements(target, kind, marker, content):
-                    return
-                await asyncio.sleep(0.1)
+            if self.notify.contains(target) or self._gather_elements(scoped, target=target, kind=kind, marker=marker, content=content):
+                return
+            await asyncio.sleep(0.1)
         raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
 
     @overload
@@ -158,6 +160,7 @@ class User:
                              target: str | type[T],
                              *,
                              retries: int = 3,
+                             scoped: bool = False,
                              ) -> None:
         ...
 
@@ -168,6 +171,7 @@ class User:
                              marker: str | list[str] | None = None,
                              content: str | list[str] | None = None,
                              retries: int = 3,
+                             scoped: bool = False,
                              ) -> None:
         ...
 
@@ -178,24 +182,28 @@ class User:
                              marker: str | list[str] | None = None,
                              content: str | list[str] | None = None,
                              retries: int = 3,
+                             scoped: bool = False,
                              ) -> None:
         """Assert that the page does not contain an input with the given value."""
         for _ in range(retries):
-            with self._scope:
-                if not self.notify.contains(target) and not self._gather_elements(target, kind, marker, content):
-                    return
-                await asyncio.sleep(0.05)
+            if not self.notify.contains(target) and not self._gather_elements(scoped, target=target, kind=kind, marker=marker, content=content):
+                return
+            await asyncio.sleep(0.05)
         raise AssertionError('expected not to see any ' + self._build_error_message(target, kind, marker, content))
 
     @overload
     def find(self,
              target: str,
+             *,
+             scoped: bool = False,
              ) -> UserInteraction[ui.element]:
         ...
 
     @overload
     def find(self,
              target: type[T],
+             *,
+             scoped: bool = False,
              ) -> UserInteraction[T]:
         ...
 
@@ -204,6 +212,7 @@ class User:
              *,
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
+             scoped: bool = False,
              ) -> UserInteraction[ui.element]:
         ...
 
@@ -213,6 +222,7 @@ class User:
              kind: type[T],
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
+             scoped: bool = False,
              ) -> UserInteraction[T]:
         ...
 
@@ -222,13 +232,13 @@ class User:
              kind: type[T] | None = None,
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
+             scoped: bool = False,
              ) -> UserInteraction[T]:
         """Select elements for interaction."""
-        with self._scope:
-            elements = self._gather_elements(target, kind, marker, content)
-            if not elements:
-                raise AssertionError('expected to find at least one ' +
-                                     self._build_error_message(target, kind, marker, content))
+        elements = self._gather_elements(scoped, target=target, kind=kind, marker=marker, content=content)
+        if not elements:
+            raise AssertionError('expected to find at least one ' +
+                                 self._build_error_message(target, kind, marker, content))
         return UserInteraction(self, elements, target)
 
     @property
@@ -238,23 +248,25 @@ class User:
 
     def _gather_elements(
         self,
+        scoped: bool,
+        *,
         target: str | type[T] | None = None,
         kind: type[T] | None = None,
         marker: str | list[str] | None = None,
         content: str | list[str] | None = None,
     ) -> set[T]:
-        local = isinstance(self._scope, ui.element)  # only narrow when inside a sub-element
-        if target is None:
-            if kind is None:
-                elements = set(ElementFilter(marker=marker, content=content, only_visible=True, local_scope=local))
+        with self._scope:
+            if target is None:
+                if kind is None:
+                    elements = set(ElementFilter(marker=marker, content=content, only_visible=True, local_scope=scoped))
+                else:
+                    elements = set(ElementFilter(kind=kind, marker=marker,
+                                                 content=content, only_visible=True, local_scope=scoped))
+            elif isinstance(target, str):
+                elements = set(ElementFilter(marker=target, only_visible=True, local_scope=scoped)) \
+                    .union(ElementFilter(content=target, only_visible=True, local_scope=scoped))
             else:
-                elements = set(ElementFilter(kind=kind, marker=marker,
-                               content=content, only_visible=True, local_scope=local))
-        elif isinstance(target, str):
-            elements = set(ElementFilter(marker=target, only_visible=True, local_scope=local)) \
-                .union(ElementFilter(content=target, only_visible=True, local_scope=local))
-        else:
-            elements = set(ElementFilter(kind=target, only_visible=True, local_scope=local))
+                elements = set(ElementFilter(kind=target, only_visible=True, local_scope=scoped))
         return elements  # type: ignore
 
     def _build_error_message(self,
