@@ -12,7 +12,7 @@ def create() -> None:
             'Examples are starting points, not production templates. '
             '[Read this before deploying one]'
             '(/documentation/section_security#examples_are_starting_points).'
-        ).classes('text-sm text-orange-600 dark:text-orange-300 *:m-0')
+        ).classes('text-sm text-orange-600 dark:text-orange-300')
         with ui.grid().classes('w-full grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'):
             for example in examples:
                 example_card(example)

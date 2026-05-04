@@ -169,14 +169,14 @@ doc.text('Client-Side Secrets', '''
     whose elements define what capabilities the `client_id` has.
 
     - Gate important pages with authentication (middleware redirect, login check, etc.),
-    such that unauthenticated visitors never receive a `client_id` that grants access to protected functionality.
+      such that unauthenticated visitors never receive a `client_id` that grants access to protected functionality.
     - Besides authentication, guard against side-channel leaks of an authenticated user's HTML (XSS, browser cache exposure).
 
-    **Where `client_id` is consumed: NiceGUI internals under `/_nicegui/`**
+    **Where `client_id` is consumed: NiceGUI internals under `/_nicegui/`.**
 
     - Per-client routes carry the `client_id` (in the URL or in the Socket.IO message payload) and treat it as the session token.
-    This includes the Socket.IO transport and the `ui.upload()` POST endpoint, alongside any other dynamically registered per-client route.
-    Other `/_nicegui/` routes (libraries, components, static and auto-mounted assets) serve public assets and are not per-client.
+      This includes the Socket.IO transport and the `ui.upload()` POST endpoint, alongside any other dynamically registered per-client route.
+      Other `/_nicegui/` routes (libraries, components, static and auto-mounted assets) serve public assets and are not per-client.
     - There is no separate authentication layer on the per-client routes. Protecting the page that mints the `client_id` is what protects them.
 
     Hence, a client session is considered **compromised** if either the `client_id` or client-side cookies are exposed to an attacker.
@@ -188,7 +188,7 @@ doc.text('Client-Side Secrets', '''
       (e.g. serving user-uploaded HTML files could leak secrets via JavaScript).
     - **Do not expose `client_id`** in logs, URLs, or API responses visible to other users.
     - **Treat `client_id` like a session token**: anyone who knows it can send events on behalf of that client.
-    - **Secure pages, not `/_nicegui/`**, as the source of the credential is the asset to protect, not the consumer.
+    - **Secure pages, not `/_nicegui/`**: protect where the credential is issued, not where it's consumed.
 ''')
 
 
@@ -201,7 +201,7 @@ doc.text('Examples Are Starting Points', '''
 
     - **Read every line and understand why it is there.**
       A pattern that is safe in a local demo may be unsafe behind a public URL.
-    - **Re-evaluate every threat model assumption.**
+    - **Re-evaluate every threat-model assumption.**
       The `xterm` example, for instance, wires a browser to a Bash PTY by design — its purpose is to demo the integration, not to be exposed on the open internet.
     - **Adapt the authentication example to your needs.**
       It illustrates session-based auth at the page level, which is the recommended pattern,
@@ -210,10 +210,10 @@ doc.text('Examples Are Starting Points', '''
       The `ui.upload()` element enforces `max_file_size`, `max_total_size`, and `max_files` in the browser only.
       If your `on_upload` handler writes to disk or processes the file, also validate size and type on the server.
     - **Treat reload mode (`reload=True`) as developer-only.**
-      Auto-reload watches the working directory and re-imports changed files. This is convenient locally but unsafe in any environment where untrusted writes can reach that directory.
+      Auto-reload watches the working directory and re-imports changed files — convenient locally, not appropriate for production.
 
     Examples are starting points, not finished products.
-    Every line of code in your production app is your responsibility.
+    Anything you ship is yours to maintain.
 ''')
 
 
