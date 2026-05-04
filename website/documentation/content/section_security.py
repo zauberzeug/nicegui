@@ -174,9 +174,10 @@ doc.text('Client-Side Secrets', '''
 
     **Where `client_id` is consumed: NiceGUI internals under `/_nicegui/`**
 
-    - All internal routes include a `client_id` in their path or query string, and consider it as the session token.
-    This includes the Socket.IO transport, the `ui.upload()` POST endpoint, and any other dynamically registered per-client route.
-    - There is no separate authentication layer on these routes. Protecting the page that mints the `client_id` is what protects them.
+    - Per-client routes carry the `client_id` (in the URL or in the Socket.IO message payload) and treat it as the session token.
+    This includes the Socket.IO transport and the `ui.upload()` POST endpoint, alongside any other dynamically registered per-client route.
+    Other `/_nicegui/` routes (libraries, components, static and auto-mounted assets) serve public assets and are not per-client.
+    - There is no separate authentication layer on the per-client routes. Protecting the page that mints the `client_id` is what protects them.
 
     Hence, a client session is considered **compromised** if either the `client_id` or client-side cookies are exposed to an attacker.
 
