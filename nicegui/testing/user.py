@@ -48,6 +48,9 @@ class User:
         if context.client is not self._client:
             # fall back to the bound client if the slot stack belongs to a different page
             return self._client
+        if context.slot.parent is context.client.content:
+            # fall back to the bound client's layout when the current slot is the page content for backward compatibility
+            return self._client
         return context.slot.parent
 
     @property
@@ -240,17 +243,18 @@ class User:
         marker: str | list[str] | None = None,
         content: str | list[str] | None = None,
     ) -> set[T]:
+        local = isinstance(self._scope, ui.element)  # only narrow when inside a sub-element
         if target is None:
             if kind is None:
-                elements = set(ElementFilter(marker=marker, content=content, only_visible=True, local_scope=True))
+                elements = set(ElementFilter(marker=marker, content=content, only_visible=True, local_scope=local))
             else:
                 elements = set(ElementFilter(kind=kind, marker=marker,
-                               content=content, only_visible=True, local_scope=True))
+                               content=content, only_visible=True, local_scope=local))
         elif isinstance(target, str):
-            elements = set(ElementFilter(marker=target, only_visible=True, local_scope=True)) \
-                .union(ElementFilter(content=target, only_visible=True, local_scope=True))
+            elements = set(ElementFilter(marker=target, only_visible=True, local_scope=local)) \
+                .union(ElementFilter(content=target, only_visible=True, local_scope=local))
         else:
-            elements = set(ElementFilter(kind=target, only_visible=True, local_scope=True))
+            elements = set(ElementFilter(kind=target, only_visible=True, local_scope=local))
         return elements  # type: ignore
 
     def _build_error_message(self,
