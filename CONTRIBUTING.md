@@ -3,7 +3,7 @@
 We're thrilled that you're interested in contributing to NiceGUI!
 Here are some guidelines that will help you get started.
 
-We follow a [Code of Conduct](https://github.com/zauberzeug/nicegui/blob/main/CODE_OF_CONDUCT.md).
+We follow a [Code of Conduct](CODE_OF_CONDUCT.md).
 By participating, you agree to abide by its terms.
 
 ## About NiceGUI
@@ -97,9 +97,9 @@ Then install NiceGUI in editable mode with all dependencies:
 uv sync
 ```
 
-This installs the `nicegui` package and all its dependencies and links it to your local development environment so that changes you make to the code will be immediately reflected.
-Thereby enabling you to use your local version of NiceGUI in other projects.
-To run the tests you need some additional setup which is described in [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md).
+This installs the `nicegui` package in editable mode, so code changes are reflected immediately.
+You can also use your local version of NiceGUI in other projects.
+To run the tests you need some additional setup which is described in [tests/README.md](tests/README.md).
 
 **Option 3: Plain Docker** — start the development container:
 
@@ -127,11 +127,14 @@ To view the log output, use the command:
 The conventions below cover both general Python style and NiceGUI-specific patterns.
 
 - **Principles**
+
   - Always prefer simple solutions
   - Avoid duplication — check the codebase for similar functionality before adding new patterns
   - Remove obsolete code rather than working around it
   - When fixing bugs, exhaust existing patterns before introducing new ones; if you must introduce a new one, remove the old approach so logic doesn't duplicate
+
 - **Style**
+
   - Follow **PEP 8** with a 120 character line length
   - Use single quotes in Python, double quotes in JavaScript
   - Use f-strings wherever possible (mark performance-critical exceptions with `# NOTE:`)
@@ -139,41 +142,53 @@ The conventions below cover both general Python style and NiceGUI-specific patte
   - No mutable defaults (`[]`, `{}`) without `# noqa: B006` and a justification — prefer `None`
   - Put high-level/interesting code at the top of files; helper functions go below their usage
   - Each sentence in documentation goes on a new line ([why](https://nick.groenen.me/notes/one-sentence-per-line/))
+
 - **Async and background tasks**
+
   - No blocking I/O in async code — sync I/O blocks the event loop and freezes every connected client
   - Use `background_tasks.create()`, never `asyncio.create_task()` — the garbage collector might drop unfinished tasks
   - Use `helpers.should_await()` to check if a result should be awaited
   - Use `helpers.expects_arguments()` to check if a handler expects arguments
   - Use `core.app.handle_exception()` for exceptions in background tasks
+
 - **Error handling**
+
   - Use `with contextlib.suppress(...)` instead of try/except/pass for cleaner exception handling
   - Catch `ImportError` for optional dependencies, not `ModuleNotFoundError` — covers both missing and broken installations
   - Use assertions for internal invariants (e.g., `assert self.current_scene is not None`)
   - Raise descriptive exceptions (`ValueError`, `RuntimeError`) with helpful messages
+
 - **Elements** (core library)
+
   - **Mixins**: Elements use mixin composition; inheritance order matters for Python's Method Resolution Order (MRO)
   - **Props vs. attributes**: Use `self._props` for data that syncs to Vue/frontend; use instance attributes for Python-only state
   - **Context managers**: Elements can be used as context managers (`with element:`) for slot/child management
   - **Component registration**: Use class parameters for components: `component='file.js'`, `esm={'package': 'dist'}`, `default_classes='css-class'`
+
 - **Memory** (core library)
+
   - **Weakref pattern**: Use `self._element = weakref.ref(element)` to avoid circular references (which require more costly garbage collection).
     When dereferencing, always check for `None`: `element = self._element(); if element is not None: element.update()`
   - **WeakValueDictionary**: Use for caches that shouldn't prevent garbage collection by means of CPython's reference counting
+
 - **Binding** (core library)
+
   - **BindableProperty**: Use with `cast(Self, sender)` in on-change handlers for type safety
   - **Triple underscore storage**: BindableProperty stores values in `___property_name` attributes
   - **Batch updates**: Use `suspend_updates()` context manager when changing properties in `update()` to avoid infinite cycles
-- **Method returns**: Methods that support chaining (fluent interface) return `Self` from `typing_extensions`, enabling the builder pattern (`element.method1().method2().method3()`)
+
+- **Method chaining**: Methods that support chaining (fluent interface) return `Self` from `typing_extensions`, enabling the builder pattern.
+  When chaining, use backslash line continuation:
+
+  ```python
+  ui.button('Click me') \
+      .classes('bg-green') \
+      .on('click', lambda: ui.notify('Hello'))
+  ```
+
 - **Dataclasses**: Prefer `@dataclass(kw_only=True, slots=True)`
+
 - **Tests**: Include tests for new features and bug fixes. Prefer the `User` fixture (fast, runs in the same async context as NiceGUI, no browser); use the `Screen` fixture only when testing browser/JavaScript interactions.
-
-When chaining methods (builder pattern), use backslash line continuation:
-
-```python
-ui.button('Click me') \
-    .classes('bg-green') \
-    .on('click', lambda: ui.notify('Hello'))
-```
 
 ### Before submitting a pull request
 
@@ -197,7 +212,7 @@ Run these from the project root:
    uv run pytest
    ```
 
-   Tests require python-selenium with ChromeDriver — see [tests/README.md](https://github.com/zauberzeug/nicegui/blob/main/tests/README.md) for setup.
+   Tests require python-selenium with ChromeDriver — see [tests/README.md](tests/README.md) for setup.
 
 3. **Add documentation** for new features and behavior changes:
 
