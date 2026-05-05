@@ -2,6 +2,7 @@ from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...events import Handler, MermaidNodeClickEventArguments, handle_event
+from ...helpers import remove_indentation
 from ..mixins.content_element import ContentElement
 
 
@@ -52,8 +53,9 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         return self
 
     def _handle_content_change(self, content: str) -> None:
-        self._props[self.CONTENT_PROP] = content.strip()
-        self.run_method('update', content.strip())
+        content = remove_indentation(content)
+        self._props[self.CONTENT_PROP] = content
+        self.run_method('update', content)
 
     def _render_markdown(self) -> str:
         return f'```mermaid\n{self.content}\n```' if self.content else ''

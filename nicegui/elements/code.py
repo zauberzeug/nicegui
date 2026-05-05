@@ -1,9 +1,9 @@
 import asyncio
 import time
 
+from ..helpers import remove_indentation
 from .button import Button as button
 from .markdown import Markdown as markdown
-from .markdown import remove_indentation
 from .mixins.content_element import ContentElement
 from .timer import Timer as timer
 

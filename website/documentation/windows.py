@@ -1,7 +1,6 @@
 from collections.abc import Callable
 
 from nicegui import helpers, ui
-from nicegui.elements.markdown import remove_indentation
 
 from .. import design as d
 from ..design import phosphor_icon
@@ -26,7 +25,7 @@ def code_window(code: str = '', *, title: str = 'main.py', language: str = 'pyth
                         .props('flat round size=xs').classes('opacity-30 hover:opacity-100 transition-opacity'):
                     phosphor_icon('ph-copy').classes('text-base')
         if code:
-            ui.markdown(f'````{language}\n{remove_indentation(code)}\n````') \
+            ui.markdown(f'````{language}\n{helpers.remove_indentation(code)}\n````') \
                 .classes('w-full grow py-2 overflow-x-auto [&_pre]:px-4 [&_pre]:w-fit [&_pre]:min-w-full')
     return window
 

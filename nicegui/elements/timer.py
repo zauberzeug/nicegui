@@ -2,6 +2,7 @@ from contextlib import AbstractContextManager, nullcontext
 
 from typing_extensions import Self
 
+from .. import core
 from ..client import Client, ClientConnectionTimeout
 from ..element import Element
 from ..logging import log
@@ -12,6 +13,10 @@ class Timer(BaseTimer, Element, component='timer.js'):
 
     def _get_context(self) -> AbstractContextManager:
         return self.parent_slot or nullcontext()
+
+    def _skip_registration(self) -> bool:
+        # Per-client ui.timer: skip on the script-mode preflight; will register on each per-client re-execution.
+        return core.is_script_mode_preflight()
 
     async def _can_start(self) -> bool:
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.

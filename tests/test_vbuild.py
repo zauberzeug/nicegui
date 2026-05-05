@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from nicegui.elements.markdown import remove_indentation
+from nicegui.helpers import remove_indentation
 from nicegui.vbuild import VBuild
 
 
