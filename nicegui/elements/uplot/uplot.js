@@ -7,7 +7,7 @@ export default {
   props: {
     options: { type: Object, required: true },
     data: { type: Array, required: true },
-    scaleMode: { type: String, required: false },
+    scaleMode: { type: String, required: false, default: "reset" },
   },
   data() {
     return {
