@@ -7,7 +7,6 @@ from nicegui.testing import Screen
 
 
 def test_connection_survives_alert_dialog(screen: Screen):
-    """Test that a blocking alert() dialog does not kill the connection."""
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')
@@ -17,27 +16,19 @@ def test_connection_survives_alert_dialog(screen: Screen):
 
     client_id = screen.selenium.execute_script('return window.clientId')
 
-    # Open a blocking alert dialog (freezes the main JS thread, so Socket.IO cannot respond to pings).
-    # Wait longer than reconnect_timeout (3s) but rely on the heartbeat worker (interval=2s) to refresh
-    # the delete task at least once during the alert. 3.5s = past the timeout, with 1.5s safety after the
-    # 2s heartbeat resets the deadline.
     screen.selenium.execute_script('setTimeout(() => alert("blocking"), 100)')
     time.sleep(3.5)
 
-    # Client must still exist thanks to heartbeat worker
-    assert client_id in Client.instances, 'client should survive blocking dialog thanks to heartbeat'
+    assert client_id in Client.instances
 
-    # Dismiss the alert — main thread resumes, Socket.IO auto-reconnects
     screen.selenium.switch_to.alert.accept()
     screen.wait(2.0)
 
-    # Input value should be preserved (no page reload happened)
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
-    assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect'
+    assert element.get_attribute('value') == 'hello'
 
 
-def test_connection_survives_alert_with_high_reconnect_timeout(screen: Screen):
-    """Test with lower reconnect_timeout after many messages have been sent."""
+def test_connection_survives_alert_after_many_messages(screen: Screen):
     counter = [0]
 
     def increment():
@@ -52,31 +43,25 @@ def test_connection_survives_alert_with_high_reconnect_timeout(screen: Screen):
 
     screen.open('/')
     screen.type('hello')
-
-    # Let the timer generate many messages so the early message history gets pruned
     screen.wait(1.5)
 
     client_id = screen.selenium.execute_script('return window.clientId')
     next_msg_id = screen.selenium.execute_script('return window.nextMessageId')
-    assert next_msg_id > 10, f'expected many messages, got {next_msg_id}'
+    assert next_msg_id > 10
 
-    # Block the main thread; same 3.5s window as above (past reconnect_timeout, heartbeat keeps it alive)
     screen.selenium.execute_script('setTimeout(() => alert("blocking"), 100)')
     time.sleep(3.5)
 
-    assert client_id in Client.instances, 'client should survive thanks to heartbeat'
+    assert client_id in Client.instances
 
-    # Dismiss alert — Socket.IO reconnects with current next_message_id (not stale one)
     screen.selenium.switch_to.alert.accept()
     screen.wait(2.0)
 
-    # Input value should be preserved (no page reload)
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
-    assert element.get_attribute('value') == 'hello', 'input should be preserved (no reload)'
+    assert element.get_attribute('value') == 'hello'
 
 
 def test_client_deleted_when_heartbeat_stops(screen: Screen):
-    """Test that the client is eventually deleted when browser navigates away (worker stops)."""
     @ui.page('/', reconnect_timeout=1.0)
     def page():
         ui.label('Hello')
@@ -85,9 +70,7 @@ def test_client_deleted_when_heartbeat_stops(screen: Screen):
     client_id = screen.selenium.execute_script('return window.clientId')
     assert client_id in Client.instances
 
-    # Navigate away (this stops the worker and socket)
     screen.selenium.get('about:blank')
     screen.wait(3.0)
 
-    # Client should be deleted since no heartbeat is being sent
-    assert client_id not in Client.instances, 'client should be deleted after navigation away'
+    assert client_id not in Client.instances
