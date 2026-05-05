@@ -20,7 +20,10 @@ def is_port_open(host: str, port: int) -> bool:
 
 
 def find_free_port() -> int:
-    """Find a free port usable by ui.run (which binds to all interfaces by default)."""
+    """Find a free port usable by ui.run (which binds to all interfaces by default).
+
+    Best-effort only: another process may grab the port between this call returning and ui.run binding.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind(('0.0.0.0', 0))
         return sock.getsockname()[1]
