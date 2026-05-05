@@ -34,6 +34,10 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
         """The options dictionary."""
         return self._props['options']
 
+    @options.setter
+    def options(self, value: dict) -> None:
+        self._props['options'] = value
+
     @property
     def data(self) -> list:
         """The data array."""
@@ -41,5 +45,4 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
 
     @data.setter
     def data(self, value: list) -> None:
-        """Set the data array."""
         self._props['data'] = value
