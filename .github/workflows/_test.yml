@@ -31,7 +31,7 @@ jobs:
       - name: Install Python
         run: uv python install ${{ matrix.python }}
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --locked
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
         run: uv run pytest
@@ -46,4 +46,4 @@ jobs:
         run: ./test_startup.sh
       - name: Restore dependencies for effective caching
         if: matrix.scope == 'startup' && always()
-        run: uv sync
+        run: uv sync --locked
