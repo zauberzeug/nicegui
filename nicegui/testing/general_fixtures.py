@@ -20,8 +20,13 @@ def pytest_configure(config: pytest.Config) -> None:
     """Register the "nicegui_main_file" marker and set up a session-unique storage path."""
     config.addinivalue_line('markers', 'nicegui_main_file: specify the main file for the test')
 
+    from .. import app  # pylint: disable=import-outside-toplevel
     from ..storage import Storage  # pylint: disable=import-outside-toplevel
     Storage.path = Path(_nicegui_storage_dir).resolve()
+    # Rebuild app.storage once so its FilePersistentDict picks up the new path
+    # (the instance constructed at App.__init__ captured the default path).
+    # Safe here: app.start() has not run yet, so no shutdown hook is bound to the old instance.
+    app.storage = Storage()
 
 
 def pytest_unconfigure(config: pytest.Config) -> None:  # pylint: disable=unused-argument
