@@ -336,4 +336,18 @@ async def test_local_scope_false_searches_entire_page_inside_element_context(use
             ui.label('inside')
             assert sorted(texts(ElementFilter(kind=ui.label, local_scope=False))) == ['inside', 'outside']
 
+
+@pytest.mark.parametrize('default_local_scope', [True, False])
+async def test_default_local_scope(user: User, default_local_scope, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(ElementFilter, 'DEFAULT_LOCAL_SCOPE', default_local_scope)
+
+    @ui.page('/')
+    def page():
+        ui.label('A')
+        with ui.row():
+            ui.label('B')
+            assert texts(ElementFilter(kind=ui.label)) == (['B'] if default_local_scope else ['A', 'B'])
+            assert texts(ElementFilter(kind=ui.label, local_scope=True)) == ['B']
+            assert texts(ElementFilter(kind=ui.label, local_scope=False)) == ['A', 'B']
+
     await user.open('/')
