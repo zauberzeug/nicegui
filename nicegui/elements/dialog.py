@@ -2,8 +2,6 @@ import asyncio
 import weakref
 from typing import Any
 
-from typing_extensions import Self
-
 from ..context import context
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
@@ -46,15 +44,13 @@ class Dialog(ValueElement[bool], component='dialog.js'):
             self._submitted = asyncio.Event()
         return self._submitted
 
-    def open(self) -> Self:
+    def open(self) -> None:
         """Open the dialog."""
         self.value = True
-        return self
 
-    def close(self) -> Self:
+    def close(self) -> None:
         """Close the dialog."""
         self.value = False
-        return self
 
     def __await__(self):
         self._result = None
