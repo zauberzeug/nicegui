@@ -17,7 +17,7 @@
 
 ## Mental Models — The "Why" Behind NiceGUI
 
-Understanding these mental models prevents the most common LLM mistakes. They explain *why* the API is shaped the way it is.
+Understanding these mental models prevents the most common LLM mistakes. They explain _why_ the API is shaped the way it is.
 
 ### 1. There is no virtual DOM — understand what "rebuilding" costs
 
@@ -61,6 +61,7 @@ def index():
 ### 3. `@ui.page` creates a new Python scope per visitor — but only once per page load
 
 Each time a user navigates to a `@ui.page` route, the decorated function runs exactly once, building the page. It is **not** called again on state changes. All subsequent UI updates happen through:
+
 - Bindings (automatic)
 - `@ui.refreshable` (explicit rebuild of a subtree)
 - Direct element mutation (`.set_text()`, `.visible = False`, etc.)
@@ -94,6 +95,7 @@ NiceGUI bindings use two complementary mechanisms:
 - **Pull**: a refresh loop runs every `binding_refresh_interval` (default 0.1s) and re-checks `active_links` — this is what makes bindings work against plain `dict` keys and ordinary object attributes that have no setter to hook into.
 
 In practice:
+
 - Binding a `ui.input` value to a plain dataclass attribute → the refresh loop picks up changes (~100ms)
 - Binding between two NiceGUI elements (both use `BindableProperty`) → propagation is synchronous
 - You usually don't need to call `.update()` after a bound assignment; either the descriptor or the refresh loop handles it
@@ -102,6 +104,7 @@ In practice:
 ### 6. Why Python-first is a hard rule, not just style
 
 When you bypass NiceGUI's Python API and manipulate the DOM directly via JavaScript:
+
 - NiceGUI's Python-side model diverges from the client DOM (they are out of sync)
 - The next time NiceGUI sends an update for that element, it overwrites your JS change
 - Bindings and refreshables don't know about changes made outside the Python model
@@ -121,14 +124,14 @@ NiceGUI runs in a single asyncio event loop. Every page, every user, every timer
 
 `app.storage.user` is per-user (session-scoped) and persistent across page reloads. A module-level `dict` is per-process (shared across all users) and lost on server restart. Always ask: "Should this be per-user, per-session, or global?" and pick accordingly:
 
-| Storage | Scope | Persistence |
-|---|---|---|
-| local variable in `@ui.page` | per page load | until page reload |
-| `app.storage.client` | per browser connection | lost on page reload |
-| `app.storage.tab` | per browser tab | survives reload, lost when tab closes |
-| `app.storage.user` | per user (session cookie) | until cookie expires |
-| `app.storage.general` | all users | persistent on disk |
-| module-level variable | entire server | server restart |
+| Storage                      | Scope                     | Persistence                           |
+| ---------------------------- | ------------------------- | ------------------------------------- |
+| local variable in `@ui.page` | per page load             | until page reload                     |
+| `app.storage.client`         | per browser connection    | lost on page reload                   |
+| `app.storage.tab`            | per browser tab           | survives reload, lost when tab closes |
+| `app.storage.user`           | per user (session cookie) | until cookie expires                  |
+| `app.storage.general`        | all users                 | persistent on disk                    |
+| module-level variable        | entire server             | server restart                        |
 
 ### 9. The Outbox — why you don't need to batch updates manually
 
@@ -159,19 +162,19 @@ async def index():
 
 **Never reach for raw CSS, Quasar props, or JavaScript unless NiceGUI's Python API is insufficient.**
 
-| Situation | WRONG | RIGHT |
-|---|---|---|
-| Change background color | `ui.add_head_html('<style>body{background:blue}</style>')` | `ui.query('body').classes('bg-blue')` |
-| Hide an element | `element.run_method('hide')` | `element.visible = False` |
-| Style a button | `ui.button(...).style('background-color: green')` | `ui.button(..., color='green')` |
-| Center content | raw flexbox CSS | `with ui.row().classes('justify-center'):` |
-| React to input | JS event listener | `ui.input(on_change=handler)` |
-| Repeat an action | `asyncio.create_task(loop())` | `ui.timer(interval, callback)` |
-| Navigate | `ui.run_javascript('window.location = ...')` | `ui.navigate.to(url)` |
-| Show a message | custom HTML overlay | `ui.notify('message')` |
-| Copy to clipboard | `ui.run_javascript("navigator.clipboard.writeText(...)")` | `await ui.clipboard.write(text)` |
-| Styled download link | `ui.html('<a href=... style=...>')` | `ui.button('Download').props('href=/download tag=a')` |
-| CPU work in thread | `asyncio.get_event_loop().run_in_executor(None, fn)` | `await asyncio.to_thread(fn)` (3.9+; use `run_in_executor` for custom executors) |
+| Situation               | WRONG                                                      | RIGHT                                                                            |
+| ----------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Change background color | `ui.add_head_html('<style>body{background:blue}</style>')` | `ui.query('body').classes('bg-blue')`                                            |
+| Hide an element         | `element.run_method('hide')`                               | `element.visible = False`                                                        |
+| Style a button          | `ui.button(...).style('background-color: green')`          | `ui.button(..., color='green')`                                                  |
+| Center content          | raw flexbox CSS                                            | `with ui.row().classes('justify-center'):`                                       |
+| React to input          | JS event listener                                          | `ui.input(on_change=handler)`                                                    |
+| Repeat an action        | `asyncio.create_task(loop())`                              | `ui.timer(interval, callback)`                                                   |
+| Navigate                | `ui.run_javascript('window.location = ...')`               | `ui.navigate.to(url)`                                                            |
+| Show a message          | custom HTML overlay                                        | `ui.notify('message')`                                                           |
+| Copy to clipboard       | `ui.run_javascript("navigator.clipboard.writeText(...)")`  | `await ui.clipboard.write(text)`                                                 |
+| Styled download link    | `ui.html('<a href=... style=...>')`                        | `ui.button('Download').props('href=/download tag=a')`                            |
+| CPU work in thread      | `asyncio.get_event_loop().run_in_executor(None, fn)`       | `await asyncio.to_thread(fn)` (3.9+; use `run_in_executor` for custom executors) |
 
 ---
 
@@ -180,6 +183,7 @@ async def index():
 Every element exposes three orthogonal styling methods that return `Self` (chainable):
 
 ### `.classes(add, *, remove, toggle, replace)`
+
 Apply **Tailwind CSS** or **Quasar utility classes**. This is the primary styling tool.
 
 ```python
@@ -192,6 +196,7 @@ element.classes(toggle='hidden')
 ```
 
 ### `.style(add, *, remove, replace)`
+
 Inline CSS as a **semicolon-separated string**. Use only when no Tailwind/Quasar class fits.
 
 ```python
@@ -199,6 +204,7 @@ ui.label('Hi').style('font-size: 2rem; color: #333')
 ```
 
 ### `.props(add, *, remove)`
+
 **Quasar component props** as space-separated `key` or `key=value` pairs.
 Boolean props are `True` if no value is given.
 
@@ -209,6 +215,7 @@ ui.table(...).props('flat bordered')
 ```
 
 ### `ui.query(selector)`
+
 Style arbitrary DOM elements (e.g. the page body):
 
 ```python
@@ -217,7 +224,9 @@ ui.query('.nicegui-content').style('max-width: 960px; margin: auto')
 ```
 
 ### Color values
+
 The `color` parameter (on button, badge, chip, etc.) accepts, in priority order:
+
 1. Quasar color names (`primary`, `secondary`, `positive`, `negative`, `warning`, `info`, `dark`, `grey-5`, …)
 2. Tailwind color names (`red-500`, `blue-200`, …)
 3. CSS color values (`#ff0000`, `rgb(255,0,0)`, `red`)
@@ -264,6 +273,7 @@ with ui.splitter() as splitter:
 ```
 
 ### Page structure elements
+
 ```python
 with ui.header():
     ui.label('My App')
@@ -486,6 +496,7 @@ ui.label().bind_text_from(state, ('nested', 'key'))
 ```
 
 Available bind methods (all support `forward`/`backward` transform functions):
+
 - `bind_value` / `bind_value_from` / `bind_value_to`
 - `bind_text` / `bind_text_from` / `bind_text_to`
 - `bind_visibility` / `bind_visibility_from` / `bind_visibility_to`
@@ -758,146 +769,154 @@ async def index():
 ## Element Reference
 
 ### Text & Media
-| Element | Description |
-|---|---|
-| `ui.label(text)` | Plain text |
-| `ui.markdown(content)` | Markdown with auto-dedent |
-| `ui.html(content)` | Raw HTML |
-| `ui.code(content, language)` | Syntax-highlighted code block |
-| `ui.codemirror(value, language)` | Editable code editor |
-| `ui.mermaid(content)` | Mermaid diagram |
-| `ui.restructured_text(content)` | RST content |
-| `ui.image(source)` | Image (path, URL, or base64) |
-| `ui.interactive_image(source)` | Image with click/hover events |
-| `ui.audio(source)` | Audio player |
-| `ui.video(source)` | Video player |
-| `ui.icon(name)` | Material Design icon |
-| `ui.avatar(text_or_icon)` | Avatar (initials or icon) |
-| `ui.badge(text)` | Small badge label |
-| `ui.chip(text)` | Chip / tag |
-| `ui.link(text, target)` | Hyperlink |
-| `ui.chat_message(text, name)` | Chat bubble |
-| `ui.log(max_lines)` | Auto-scrolling log |
+
+| Element                          | Description                   |
+| -------------------------------- | ----------------------------- |
+| `ui.label(text)`                 | Plain text                    |
+| `ui.markdown(content)`           | Markdown with auto-dedent     |
+| `ui.html(content)`               | Raw HTML                      |
+| `ui.code(content, language)`     | Syntax-highlighted code block |
+| `ui.codemirror(value, language)` | Editable code editor          |
+| `ui.mermaid(content)`            | Mermaid diagram               |
+| `ui.restructured_text(content)`  | RST content                   |
+| `ui.image(source)`               | Image (path, URL, or base64)  |
+| `ui.interactive_image(source)`   | Image with click/hover events |
+| `ui.audio(source)`               | Audio player                  |
+| `ui.video(source)`               | Video player                  |
+| `ui.icon(name)`                  | Material Design icon          |
+| `ui.avatar(text_or_icon)`        | Avatar (initials or icon)     |
+| `ui.badge(text)`                 | Small badge label             |
+| `ui.chip(text)`                  | Chip / tag                    |
+| `ui.link(text, target)`          | Hyperlink                     |
+| `ui.chat_message(text, name)`    | Chat bubble                   |
+| `ui.log(max_lines)`              | Auto-scrolling log            |
 
 ### Input
-| Element | Description |
-|---|---|
-| `ui.input(label)` | Text input |
-| `ui.textarea(label)` | Multi-line text |
-| `ui.number(label)` | Numeric input |
-| `ui.select(options)` | Dropdown select |
-| `ui.radio(options)` | Radio group |
-| `ui.toggle(options)` | Toggle button group |
-| `ui.checkbox(text)` | Checkbox |
-| `ui.switch(text)` | Toggle switch |
-| `ui.slider(min, max)` | Range slider |
-| `ui.range(min, max)` | Dual-handle range |
-| `ui.knob(value)` | Rotary knob |
-| `ui.rating(max)` | Star rating |
-| `ui.color_input(label)` | Color picker input |
-| `ui.color_picker()` | Popover color picker (attach to a button/icon) |
-| `ui.date(value)` | Date picker |
-| `ui.time(value)` | Time picker |
-| `ui.date_input(label)` | Date input with picker |
-| `ui.time_input(label)` | Time input with picker |
-| `ui.upload()` | File upload |
-| `ui.input_chips(label)` | Multi-value chip input |
-| `ui.editor(value)` | WYSIWYG rich text editor |
+
+| Element                 | Description                                    |
+| ----------------------- | ---------------------------------------------- |
+| `ui.input(label)`       | Text input                                     |
+| `ui.textarea(label)`    | Multi-line text                                |
+| `ui.number(label)`      | Numeric input                                  |
+| `ui.select(options)`    | Dropdown select                                |
+| `ui.radio(options)`     | Radio group                                    |
+| `ui.toggle(options)`    | Toggle button group                            |
+| `ui.checkbox(text)`     | Checkbox                                       |
+| `ui.switch(text)`       | Toggle switch                                  |
+| `ui.slider(min, max)`   | Range slider                                   |
+| `ui.range(min, max)`    | Dual-handle range                              |
+| `ui.knob(value)`        | Rotary knob                                    |
+| `ui.rating(max)`        | Star rating                                    |
+| `ui.color_input(label)` | Color picker input                             |
+| `ui.color_picker()`     | Popover color picker (attach to a button/icon) |
+| `ui.date(value)`        | Date picker                                    |
+| `ui.time(value)`        | Time picker                                    |
+| `ui.date_input(label)`  | Date input with picker                         |
+| `ui.time_input(label)`  | Time input with picker                         |
+| `ui.upload()`           | File upload                                    |
+| `ui.input_chips(label)` | Multi-value chip input                         |
+| `ui.editor(value)`      | WYSIWYG rich text editor                       |
 
 ### Layout & Structure
-| Element | Description |
-|---|---|
-| `ui.row()` | Horizontal flex row |
-| `ui.column()` | Vertical flex column |
-| `ui.grid(columns)` | CSS grid |
-| `ui.card()` | Card container |
-| `ui.card_section()` | Card section |
-| `ui.card_actions()` | Card action bar |
-| `ui.expansion(label)` | Collapsible section |
-| `ui.scroll_area()` | Scrollable container |
-| `ui.splitter()` | Resizable split panes |
-| `ui.separator()` | Horizontal divider |
-| `ui.space()` | Flexible spacer |
-| `ui.header()` | Page header |
-| `ui.footer()` | Page footer |
-| `ui.left_drawer()` | Left sidebar drawer |
-| `ui.right_drawer()` | Right sidebar drawer |
-| `ui.page_sticky(position)` | Fixed-position overlay |
-| `ui.page_scroller()` | Scroll-to-top button |
-| `ui.teleport(to)` | Render child in different DOM location |
+
+| Element                    | Description                            |
+| -------------------------- | -------------------------------------- |
+| `ui.row()`                 | Horizontal flex row                    |
+| `ui.column()`              | Vertical flex column                   |
+| `ui.grid(columns)`         | CSS grid                               |
+| `ui.card()`                | Card container                         |
+| `ui.card_section()`        | Card section                           |
+| `ui.card_actions()`        | Card action bar                        |
+| `ui.expansion(label)`      | Collapsible section                    |
+| `ui.scroll_area()`         | Scrollable container                   |
+| `ui.splitter()`            | Resizable split panes                  |
+| `ui.separator()`           | Horizontal divider                     |
+| `ui.space()`               | Flexible spacer                        |
+| `ui.header()`              | Page header                            |
+| `ui.footer()`              | Page footer                            |
+| `ui.left_drawer()`         | Left sidebar drawer                    |
+| `ui.right_drawer()`        | Right sidebar drawer                   |
+| `ui.page_sticky(position)` | Fixed-position overlay                 |
+| `ui.page_scroller()`       | Scroll-to-top button                   |
+| `ui.teleport(to)`          | Render child in different DOM location |
 
 ### Navigation
-| Element | Description |
-|---|---|
-| `ui.tabs()` + `ui.tab_panels()` | Tab navigation |
-| `ui.stepper()` | Step-by-step wizard |
-| `ui.carousel()` | Image/slide carousel |
-| `ui.pagination(min, max)` | Page number controls |
-| `ui.sub_pages()` | Nested sub-page routing |
+
+| Element                         | Description             |
+| ------------------------------- | ----------------------- |
+| `ui.tabs()` + `ui.tab_panels()` | Tab navigation          |
+| `ui.stepper()`                  | Step-by-step wizard     |
+| `ui.carousel()`                 | Image/slide carousel    |
+| `ui.pagination(min, max)`       | Page number controls    |
+| `ui.sub_pages()`                | Nested sub-page routing |
 
 ### Overlay & Feedback
-| Element | Description |
-|---|---|
-| `ui.dialog()` | Modal dialog |
-| `ui.menu()` | Dropdown menu |
-| `ui.context_menu()` | Right-click menu |
-| `ui.tooltip(text)` | Hover tooltip |
+
+| Element                | Description             |
+| ---------------------- | ----------------------- |
+| `ui.dialog()`          | Modal dialog            |
+| `ui.menu()`            | Dropdown menu           |
+| `ui.context_menu()`    | Right-click menu        |
+| `ui.tooltip(text)`     | Hover tooltip           |
 | `ui.notification(msg)` | Persistent notification |
-| `ui.spinner()` | Loading spinner |
-| `ui.skeleton()` | Placeholder skeleton |
-| `ui.fab(icon)` | Floating action button |
-| `ui.fab_action(icon)` | FAB sub-action |
+| `ui.spinner()`         | Loading spinner         |
+| `ui.skeleton()`        | Placeholder skeleton    |
+| `ui.fab(icon)`         | Floating action button  |
+| `ui.fab_action(icon)`  | FAB sub-action          |
 
 ### Data & Charts
-| Element | Description |
-|---|---|
-| `ui.table(columns, rows)` | Quasar data table |
-| `ui.aggrid(options)` | AG Grid |
-| `ui.tree(nodes)` | Foldable tree |
-| `ui.json_editor(content)` | JSON editor |
-| `ui.echart(options)` | Apache ECharts |
-| `ui.plotly(figure)` | Plotly chart |
-| `ui.matplotlib()` / `ui.pyplot()` | Matplotlib figure |
-| `ui.altair(chart)` | Vega-Altair chart |
-| `ui.highchart(options)` | Highcharts (requires license) |
-| `ui.line_plot(n)` | Efficient streaming line chart |
+
+| Element                           | Description                    |
+| --------------------------------- | ------------------------------ |
+| `ui.table(columns, rows)`         | Quasar data table              |
+| `ui.aggrid(options)`              | AG Grid                        |
+| `ui.tree(nodes)`                  | Foldable tree                  |
+| `ui.json_editor(content)`         | JSON editor                    |
+| `ui.echart(options)`              | Apache ECharts                 |
+| `ui.plotly(figure)`               | Plotly chart                   |
+| `ui.matplotlib()` / `ui.pyplot()` | Matplotlib figure              |
+| `ui.altair(chart)`                | Vega-Altair chart              |
+| `ui.highchart(options)`           | Highcharts (requires license)  |
+| `ui.line_plot(n)`                 | Efficient streaming line chart |
 
 ### Advanced / Specialized
-| Element | Description |
-|---|---|
-| `ui.scene()` | Interactive 3D (Three.js) |
-| `ui.leaflet()` | Interactive map (Leaflet.js) |
-| `ui.interactive_image()` | Image with SVG overlays |
-| `ui.joystick()` | Virtual joystick |
-| `ui.keyboard(on_key)` | Global keyboard listener |
-| `ui.xterm()` | Terminal emulator |
-| `ui.anywidget(widget)` | Embed anywidget |
-| `ui.timer(interval, cb)` | Repeating/one-shot timer |
-| `ui.dark_mode()` | Dark mode toggle |
-| `ui.colors(primary, ...)` | Global theme colors |
-| `ui.query(selector)` | Style arbitrary DOM elements |
+
+| Element                   | Description                  |
+| ------------------------- | ---------------------------- |
+| `ui.scene()`              | Interactive 3D (Three.js)    |
+| `ui.leaflet()`            | Interactive map (Leaflet.js) |
+| `ui.interactive_image()`  | Image with SVG overlays      |
+| `ui.joystick()`           | Virtual joystick             |
+| `ui.keyboard(on_key)`     | Global keyboard listener     |
+| `ui.xterm()`              | Terminal emulator            |
+| `ui.anywidget(widget)`    | Embed anywidget              |
+| `ui.timer(interval, cb)`  | Repeating/one-shot timer     |
+| `ui.dark_mode()`          | Dark mode toggle             |
+| `ui.colors(primary, ...)` | Global theme colors          |
+| `ui.query(selector)`      | Style arbitrary DOM elements |
 
 ### Global Functions
-| Function | Description |
-|---|---|
-| `ui.notify(msg)` | Toast notification |
-| `ui.navigate.to(url)` | Navigate to URL |
-| `ui.navigate.back/forward/reload()` | Browser history navigation |
-| `ui.run_javascript(code)` | Execute JS (await for result) |
-| `ui.download(src)` | Trigger file download |
-| `ui.clipboard.write(text)` | Write to clipboard |
-| `ui.clipboard.read()` | Read from clipboard (await) |
-| `ui.update(element)` | Force push element update |
-| `ui.refreshable` | Decorator for rebuilding UI sections |
-| `ui.refreshable_method` | Same, for class methods |
-| `ui.state(value)` | Local state inside `@ui.refreshable` |
-| `ui.page_title(title)` | Set browser tab title |
-| `ui.add_css/add_scss/add_sass(code)` | Global styles |
-| `ui.add_head_html(html)` | Inject into `<head>` |
-| `ui.add_body_html(html)` | Inject into `<body>` |
-| `ui.on(event, handler)` | Global app event listener |
-| `ui.on_exception(handler)` | Global exception handler |
-| `ui.status_code(code)` | Set HTTP response status |
+
+| Function                             | Description                          |
+| ------------------------------------ | ------------------------------------ |
+| `ui.notify(msg)`                     | Toast notification                   |
+| `ui.navigate.to(url)`                | Navigate to URL                      |
+| `ui.navigate.back/forward/reload()`  | Browser history navigation           |
+| `ui.run_javascript(code)`            | Execute JS (await for result)        |
+| `ui.download(src)`                   | Trigger file download                |
+| `ui.clipboard.write(text)`           | Write to clipboard                   |
+| `ui.clipboard.read()`                | Read from clipboard (await)          |
+| `ui.update(element)`                 | Force push element update            |
+| `ui.refreshable`                     | Decorator for rebuilding UI sections |
+| `ui.refreshable_method`              | Same, for class methods              |
+| `ui.state(value)`                    | Local state inside `@ui.refreshable` |
+| `ui.page_title(title)`               | Set browser tab title                |
+| `ui.add_css/add_scss/add_sass(code)` | Global styles                        |
+| `ui.add_head_html(html)`             | Inject into `<head>`                 |
+| `ui.add_body_html(html)`             | Inject into `<body>`                 |
+| `ui.on(event, handler)`              | Global app event listener            |
+| `ui.on_exception(handler)`           | Global exception handler             |
+| `ui.status_code(code)`               | Set HTTP response status             |
 
 ---
 
@@ -955,6 +974,7 @@ for label in labels:
 ## Common Patterns
 
 ### Dynamic list
+
 ```python
 names = ['Alice', 'Bob']
 
@@ -974,12 +994,14 @@ ui.button('Add', on_click=lambda: (names.append('New'), name_list.refresh()))
 ```
 
 ### Reactive form with validation
+
 ```python
 ui.input('Email', validation={'Must contain @': lambda v: '@' in v})
 ui.number('Age', min=0, max=150, validation={'Too young': lambda v: v >= 18})
 ```
 
 ### Async data loading
+
 ```python
 @ui.page('/')
 async def index():
@@ -992,6 +1014,7 @@ async def index():
 ```
 
 ### Card grid layout
+
 ```python
 with ui.grid(columns=3).classes('w-full gap-4'):
     for item in items:
@@ -1003,6 +1026,7 @@ with ui.grid(columns=3).classes('w-full gap-4'):
 ```
 
 ### Bind label to slider value
+
 ```python
 slider = ui.slider(min=0, max=100, value=50)
 ui.label().bind_text_from(slider, 'value', backward=lambda v: f'Value: {v}')
@@ -1104,6 +1128,7 @@ my_app/
 ```
 
 **Key rules for project structure:**
+
 - Keep files under 200–300 lines where practical; refactor when a file grows unwieldy (applies to app code, not to NiceGUI library internals)
 - `@ui.page` functions are free functions or static methods (not instance methods)
 - Put high-level/interesting code at the top of files; helper functions below their usage
@@ -1144,6 +1169,7 @@ def dashboard():
 These follow NiceGUI project conventions and work well for NiceGUI-based apps:
 
 ### Python Style
+
 - **Single quotes** for strings: `'hello'` not `"hello"` (in Python code)
 - **f-strings** preferred over `.format()` or `%`
 - **`# NOTE:`** prefix for non-obvious implementation details
@@ -1153,6 +1179,7 @@ These follow NiceGUI project conventions and work well for NiceGUI-based apps:
 - **`ImportError`** (not `ModuleNotFoundError`) when catching optional dependency errors
 
 ### Async Rules
+
 ```python
 # NEVER block the event loop
 import time
@@ -1173,7 +1200,9 @@ async def safe_task():
 ```
 
 ### Fluent Interface Formatting
+
 When chaining methods, use backslash continuation:
+
 ```python
 ui.button('Click me') \
     .classes('bg-green text-white') \
@@ -1209,6 +1238,6 @@ ui.button('Click me') \
 
 ---
 
-*This file is intended for AI assistants working with NiceGUI projects.*
-*For full API docs see https://nicegui.io/documentation.*
-*Source: NiceGUI repository — https://github.com/zauberzeug/nicegui*
+_This file is intended for AI assistants working with NiceGUI projects._
+_For full API docs see https://nicegui.io/documentation._
+_Source: NiceGUI repository — https://github.com/zauberzeug/nicegui_
