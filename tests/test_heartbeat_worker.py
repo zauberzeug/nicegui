@@ -6,6 +6,18 @@ from nicegui import Client, ui
 from nicegui.testing import Screen
 
 
+def _wait_for_disconnect_to_register(client_id: str, timeout: float = 10) -> None:
+    # ping_interval + ping_timeout (>= 6s by default) must elapse before socket.io reports the
+    # disconnect server-side; only then does _delete_tasks populate and the heartbeat have work to do.
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        client = Client.instances.get(client_id)
+        if client and client._delete_tasks:  # pylint: disable=protected-access
+            return
+        time.sleep(0.2)
+    raise AssertionError('disconnect was never registered server-side')
+
+
 def test_connection_survives_alert_dialog(screen: Screen):
     @ui.page('/', reconnect_timeout=3.0)
     def page():
@@ -17,7 +29,8 @@ def test_connection_survives_alert_dialog(screen: Screen):
     client_id = screen.selenium.execute_script('return window.clientId')
 
     screen.selenium.execute_script('setTimeout(() => alert("blocking"), 100)')
-    time.sleep(3.5)
+    _wait_for_disconnect_to_register(client_id)
+    time.sleep(4.0)  # past reconnect_timeout — without the heartbeat the client would be deleted by now
 
     assert client_id in Client.instances
 
@@ -50,7 +63,8 @@ def test_connection_survives_alert_after_many_messages(screen: Screen):
     assert next_msg_id > 10
 
     screen.selenium.execute_script('setTimeout(() => alert("blocking"), 100)')
-    time.sleep(3.5)
+    _wait_for_disconnect_to_register(client_id)
+    time.sleep(4.0)
 
     assert client_id in Client.instances
 
@@ -71,6 +85,6 @@ def test_client_deleted_when_heartbeat_stops(screen: Screen):
     assert client_id in Client.instances
 
     screen.selenium.get('about:blank')
-    screen.wait(3.0)
+    screen.wait(8.0)  # > ping_interval + ping_timeout + reconnect_timeout
 
     assert client_id not in Client.instances
