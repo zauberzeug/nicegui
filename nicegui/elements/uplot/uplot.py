@@ -29,7 +29,6 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
         self._props['data'] = data
         self._props['scaleMode'] = scale_mode
 
-
     @property
     def options(self) -> dict:
         """The options dictionary."""
