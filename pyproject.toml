@@ -46,7 +46,7 @@ dependencies = [
 altair = ["altair>=6.0.0"]
 anywidget = ["anywidget>=0.9.21"]
 native = ["pywebview>=5.0.1,<7"]
-plotly = ["plotly>=5.13,<7.0"]
+plotly = ["plotly>=6.7.0,<7.0"]
 matplotlib = [
     "matplotlib>=3.5.0,<4",
     "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
@@ -61,7 +61,7 @@ dev = [
     "altair>=6.0.0",  # extra: altair
     "anywidget>=0.9.21",  # extra: anywidget
     "pywebview>=5.0.1,<7",  # extra: native
-    "plotly>=5.13,<7.0",  # extra: plotly
+    "plotly>=6.7.0,<7.0",  # extra: plotly
     "matplotlib>=3.5.0,<4",  # extra: matplotlib
     "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
     "pillow>=12.2.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/245, for matplotlib
