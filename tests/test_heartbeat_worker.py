@@ -77,17 +77,6 @@ def test_connection_survives_alert_with_high_reconnect_timeout(screen: Screen):
     assert element.get_attribute('value') == 'hello', 'input should be preserved (no reload)'
 
 
-def test_heartbeat_worker_is_started(screen: Screen):
-    """Test that the heartbeat worker is created on page load."""
-    @ui.page('/')
-    def page():
-        ui.label('Hello')
-
-    screen.open('/')
-    has_worker = screen.selenium.execute_script('return window.heartbeatWorker !== undefined')
-    assert has_worker, 'heartbeat worker should be created'
-
-
 def test_client_deleted_when_heartbeat_stops(screen: Screen):
     """Test that the client is eventually deleted when browser navigates away (worker stops)."""
     @ui.page('/', reconnect_timeout=1.0)

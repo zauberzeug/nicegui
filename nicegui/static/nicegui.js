@@ -423,16 +423,14 @@ function createApp(elements, options) {
         options.query.next_message_id = window.nextMessageId;
       });
       if (window.Worker) {
-        window.heartbeatWorker = new Worker(
+        const heartbeatWorker = new Worker(
           `${options.prefix}/_nicegui/${options.version}/static/nicegui-heartbeat.js`,
         );
         window.addEventListener("pagehide", () => {
-          if (window.heartbeatWorker) {
-            window.heartbeatWorker.postMessage({ type: "stop" });
-            window.heartbeatWorker.terminate();
-          }
+          heartbeatWorker.postMessage({ type: "stop" });
+          heartbeatWorker.terminate();
         });
-        window.heartbeatWorker.postMessage({
+        heartbeatWorker.postMessage({
           type: "start",
           url: `${options.prefix}/_nicegui/heartbeat`,
           clientId: window.clientId,
