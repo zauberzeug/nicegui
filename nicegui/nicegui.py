@@ -197,8 +197,11 @@ async def _exception_handler_500(request: Request, exception: Exception) -> Resp
 
 @app.post('/_nicegui/heartbeat')
 async def _heartbeat(request: Request) -> Response:
-    data = await request.json()
-    if client := Client.instances.get(data['client_id']):
+    try:
+        client_id = (await request.json()).get('client_id')
+    except ValueError:
+        return Response(status_code=400)
+    if client_id and (client := Client.instances.get(client_id)):
         client._handle_heartbeat()  # pylint: disable=protected-access
     return Response(status_code=200)
 
