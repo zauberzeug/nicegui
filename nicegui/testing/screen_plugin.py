@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
@@ -58,9 +59,40 @@ def nicegui_chrome_options() -> webdriver.ChromeOptions:
     return chrome_options
 
 
+def _pid_alive(pid: int) -> bool:
+    """Best-effort cross-platform liveness check for a process ID."""
+    if sys.platform == 'win32':
+        import ctypes  # pylint: disable=import-outside-toplevel
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not handle:
+            return False
+        kernel32.CloseHandle(handle)
+        return True
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except OSError:
+        return True  # exists but we lack permission to signal
+    return True
+
+
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
-    """Remove all screenshots from the screenshot directory before the test session."""
+    """Remove screenshots from the current PID's directory and prune dirs of finished concurrent runs."""
+    parent = Screen.SCREENSHOT_DIR.parent
+    if parent.exists():
+        for sibling in parent.iterdir():
+            if not sibling.is_dir() or sibling == Screen.SCREENSHOT_DIR:
+                continue
+            try:
+                pid = int(sibling.name)
+            except ValueError:
+                continue  # not a pid-named dir; user/foreign content, leave alone
+            if not _pid_alive(pid):
+                shutil.rmtree(sibling, ignore_errors=True)
     for name in Screen.SCREENSHOT_DIR.glob('*.png'):
         name.unlink()
 
