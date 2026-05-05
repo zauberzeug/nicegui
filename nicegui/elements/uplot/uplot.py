@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from ...element import Element
 
@@ -9,20 +9,20 @@ if TYPE_CHECKING:
 
 
 class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
+
     def __init__(
         self,
         options: dict,
         data: list[list[Any] | np.ndarray] | np.ndarray,
-        scale_mode: str = 'reset',
+        scale_mode: Literal['reset', 'preserve_all', 'preserve_zoom'] = 'reset',
     ) -> None:
-        """
-        uPlot Element
+        """uPlot
 
-        Renders a uPlot chart.
+        An element to create a chart using `uPlot <https://leeoniya.github.io/uPlot/>`_.
 
-        :param options: uPlot options dictionary (see https://github.com/leeoniya/uPlot/tree/master/docs#basics)
-        :param data: uPlot data array (see https://github.com/leeoniya/uPlot/tree/master/docs#data-format)
-        :param scale_mode: How to handle plot scale updates when new data arrives. One of 'reset', 'preserve_all', 'preserve_zoom'. (default: 'reset')
+        :param options: chart options (see `uPlot options <https://github.com/leeoniya/uPlot/tree/master/docs#basics>`_)
+        :param data: chart data (see `uPlot data format <https://github.com/leeoniya/uPlot/tree/master/docs#data-format>`_)
+        :param scale_mode: how scales are updated on data changes: "reset" (always recompute, default), "preserve_all" (never recompute), or "preserve_zoom" (recompute unless the user is zoomed)
         """
         super().__init__()
         self._props['options'] = options
