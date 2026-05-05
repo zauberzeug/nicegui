@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
@@ -45,17 +47,20 @@ class Fullscreen(ValueElement[bool], component='fullscreen.js'):
     def require_escape_hold(self, value: bool) -> None:
         self._props['require-escape-hold'] = value
 
-    def enter(self) -> None:
+    def enter(self) -> Self:
         """Enter fullscreen mode."""
         self.value = True
+        return self
 
-    def exit(self) -> None:
+    def exit(self) -> Self:
         """Exit fullscreen mode."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle fullscreen mode."""
         self.value = not self.value
+        return self
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

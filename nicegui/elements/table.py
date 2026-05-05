@@ -411,9 +411,10 @@ class Table(FilterElement, component='table.js'):
         self.is_fullscreen = value
         return self
 
-    def toggle_fullscreen(self) -> None:
+    def toggle_fullscreen(self) -> Self:
         """Toggle fullscreen mode."""
         self.is_fullscreen = not self.is_fullscreen
+        return self
 
     def add_rows(self, rows: list[dict]) -> None:
         """Add rows to the table."""
