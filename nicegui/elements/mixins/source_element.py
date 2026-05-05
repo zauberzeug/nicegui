@@ -91,12 +91,13 @@ class SourceElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_source(self, source: Any) -> None:
+    def set_source(self, source: Any) -> Self:
         """Set the source of this element.
 
         :param source: The new source.
         """
         self.source = source
+        return self
 
     def _handle_source_change(self, source: Any) -> None:
         """Called when the source of this element changes.

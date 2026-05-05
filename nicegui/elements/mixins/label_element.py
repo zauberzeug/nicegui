@@ -84,12 +84,13 @@ class LabelElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_label(self, label: str | None) -> None:
+    def set_label(self, label: str | None) -> Self:
         """Set the label of this element.
 
         :param label: The new label.
         """
         self.label = label
+        return self
 
     def _handle_label_change(self, label: str | None) -> None:
         """Called when the label of this element changes.
