@@ -170,7 +170,7 @@ class Outbox:
                 return
 
         # target message ID not found, reload the page
-        self.client.run_javascript('window.location.reload()')
+        self.client.run_javascript('console.log("reloading because outbox rewind failed"); window.location.reload()')
 
     def prune_history(self, next_message_id: MessageId) -> None:
         """Prune the message history up to the given message ID."""
