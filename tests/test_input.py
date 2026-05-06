@@ -138,10 +138,11 @@ def test_validate_after_removing_error_prop(screen: Screen):
     @ui.page('/')
     def page():
         input_ = ui.input('Name', value='valid', validation=lambda v: None if v else 'required')
-        ui.button('Remove error', on_click=lambda: input_.props(remove='error error-message').validate())
+        ui.button('Reset', on_click=lambda: (input_.props(remove='error error-message').validate(), ui.label('done')))
 
     screen.open('/')
-    screen.click('Remove error')
+    screen.click('Reset')
+    screen.should_contain('done')
 
 
 def test_autocompletion(screen: Screen):
