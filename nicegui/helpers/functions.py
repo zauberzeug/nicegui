@@ -43,8 +43,14 @@ def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
     (i.e. not an ``AwaitableResponse`` or an ``asyncio.Task``).
 
     Note: We want to await an awaitable result even if the handler is not an async function (like a lambda statement).
+
+    UI elements that happen to implement ``__await__`` (currently only ``Dialog``) are excluded:
+    their await semantics are meant for explicit ``await my_dialog`` in async code,
+    not for accidentally surfacing as the return value of a chainable mutator like ``dialog.close()``.
+    Handlers that genuinely need to await something either return a coroutine or are themselves ``async``.
     """
-    return isinstance(result, Awaitable) and not isinstance(result, (AwaitableResponse, asyncio.Task))
+    from ..element import Element  # pylint: disable=import-outside-toplevel
+    return isinstance(result, Awaitable) and not isinstance(result, (Element, AwaitableResponse, asyncio.Task))
 
 
 async def await_with_context(awaitable: Awaitable[_T], context: AbstractContextManager) -> _T:
