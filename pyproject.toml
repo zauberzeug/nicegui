@@ -113,7 +113,11 @@ website = [
 ]
 
 [project.urls]
+Homepage = "https://nicegui.io"
+Documentation = "https://nicegui.io/documentation"
 Repository = "https://github.com/zauberzeug/nicegui"
+Issues = "https://github.com/zauberzeug/nicegui/issues"
+Changelog = "https://github.com/zauberzeug/nicegui/releases"
 
 [project.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
