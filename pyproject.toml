@@ -118,6 +118,7 @@ Documentation = "https://nicegui.io/documentation"
 Repository = "https://github.com/zauberzeug/nicegui"
 Issues = "https://github.com/zauberzeug/nicegui/issues"
 Changelog = "https://github.com/zauberzeug/nicegui/releases"
+Funding = "https://github.com/sponsors/zauberzeug"
 
 [project.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
