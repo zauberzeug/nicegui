@@ -120,7 +120,6 @@ class UserInteraction(Generic[T]):
                 elif isinstance(element, ui.tab):
                     if element.tabs is not None:  # DEPRECATED: check not needed once ui.tab requires a ui.tabs ancestor
                         element.tabs.value = element.props['name']
-                    return self
 
                 elif isinstance(element, ui.tree) and isinstance(self.target, str):
                     NODE_KEY = element.props.get('node-key')

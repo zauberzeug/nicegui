@@ -886,6 +886,18 @@ async def test_switching_tabs_wrapped_in_row(user: User) -> None:
     await user.should_see('Switching to A')
 
 
+async def test_tab_click_handler(user: User) -> None:
+    @ui.page('/')
+    def _():
+        with ui.tabs():
+            ui.tab('A').on('click', lambda: ui.notify('A clicked'))
+            ui.tab('B')
+
+    await user.open('/')
+    user.find('A').click()
+    await user.should_see('A clicked')
+
+
 async def test_clearing_container_with_button_inside(user: User) -> None:
     @ui.page('/')
     def page():
