@@ -36,6 +36,7 @@ There are several ways to help out, depending on what you want to do:
 
 - **Report a bug or request a feature** → see [Reporting issues](#reporting-issues)
 - **Report a security vulnerability** → see [Reporting security vulnerabilities](#reporting-security-vulnerabilities)
+- **Beta-test the development version** → see [Beta-testing](#beta-testing)
 - **Contribute code or documentation** → see [Contributing code and documentation](#contributing-code-and-documentation)
 - **Create video or tutorial content** → see [Video and tutorial content](#video-and-tutorial-content)
 
@@ -58,6 +59,16 @@ If possible, include steps to reproduce the issue.
 Security issues are handled through GitHub's private vulnerability reporting, not public issues, so we can discuss and patch in a secure workspace before disclosure.
 
 See [SECURITY.md](SECURITY.md) for the full policy and the supported reporting channels.
+
+## Beta-testing
+
+If you have an existing NiceGUI project, you can help us catch regressions before they ship by running it against the development version:
+
+```bash
+pip install -U git+https://github.com/zauberzeug/nicegui.git@main
+```
+
+If anything breaks, behaves worse than the current release, or feels off, please [open an issue](https://github.com/zauberzeug/nicegui/issues/new/choose).
 
 ## Contributing code and documentation
 
