@@ -28,9 +28,7 @@ def preserve_cursor_demo() -> None:
 
 
 @doc.demo('Hover tooltips on lines', '''
-    `set_line_tooltips` attaches hover content to specific lines.
-    Values render via NiceGUI's global DOMPurify-backed `setHTML` polyfill,
-    so plain text and sanitized HTML both work — `<script>` tags and other unsafe markup are stripped.
+    `line_tooltips` maps 1-indexed line numbers to hover content.
 ''')
 def line_tooltips_demo() -> None:
     editor = ui.codemirror(
@@ -38,10 +36,21 @@ def line_tooltips_demo() -> None:
         '    """Sum two numbers."""\n'
         '    return a + b\n',
     ).classes('h-40')
-    editor.set_line_tooltips({
-        1: 'symbol: add, arity: 2',
-        3: '<b>returns</b> the sum of <code>a</code> and <code>b</code>',
-    })
+    editor.line_tooltips[1] = 'symbol: add, arity: 2'
+    editor.line_tooltips[3] = 'returns the sum of a and b'
+
+
+@doc.demo('HTML rendering for tooltips', '''
+    Pass `line_tooltip_html=True` to render tooltip content as HTML,
+    sanitized via NiceGUI's DOMPurify-backed `setHTML` polyfill.
+''')
+def line_tooltip_html_demo() -> None:
+    editor = ui.codemirror(
+        'def add(a, b):\n'
+        '    return a + b\n',
+        line_tooltip_html=True,
+    ).classes('h-32')
+    editor.line_tooltips[2] = '<b>returns</b> the sum of <code>a</code> and <code>b</code>'
 
 
 doc.reference(ui.codemirror)

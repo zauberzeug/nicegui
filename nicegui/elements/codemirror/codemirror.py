@@ -264,6 +264,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        line_tooltips: dict[int, str] | None = None,
+        line_tooltip_html: bool = False,
     ) -> None:
         """CodeMirror
 
@@ -284,6 +286,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param line_tooltips: initial mapping of 1-indexed line numbers to hover tooltip content; an empty string suppresses the tooltip on that line (default: ``None``)
+        :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -296,6 +300,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['line-tooltips'] = dict(line_tooltips or {})
+        self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -356,28 +362,16 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
 
-    def set_line_tooltips(self, tooltips: dict[int, str], set_name: str = 'default') -> None:
-        """Set hover tooltip content for lines.
+    @property
+    def line_tooltips(self) -> dict[int, str]:
+        """Mapping of 1-indexed line numbers to hover tooltip content.
 
-        Values are rendered via NiceGUI's global ``Element.prototype.setHTML`` polyfill
-        (DOMPurify-backed), so plain text and sanitized HTML both work.
-        Multiple named sets can be managed independently and are concatenated when hovering the same line.
-
-        :param tooltips: dict mapping 1-indexed line numbers to tooltip content strings
-        :param set_name: named set for independent management
+        Mutating this dict (assignment, ``del``, ``update``, ``clear``) syncs to the client.
+        An empty string suppresses the tooltip on that line.
 
         *Added in version X.Y.Z*
         """
-        self.run_method('setLineTooltips', tooltips, set_name)
-
-    def clear_line_tooltips(self, set_name: str | None = None) -> None:
-        """Clear line tooltip metadata.
-
-        :param set_name: clear only this named set, or all sets if ``None``
-
-        *Added in version X.Y.Z*
-        """
-        self.run_method('clearLineTooltips', set_name)
+        return self._props['line-tooltips']
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
