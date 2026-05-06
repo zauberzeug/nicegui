@@ -174,10 +174,10 @@ def test_replace_language_completions(screen: Screen, replace: bool, expect_prin
     if expect_print:
         screen.wait_for(lambda: 'print' in _rendered_labels(screen))
     else:
-        # Replace-mode + a non-matching prefix produces no popup, so the success
-        # signal is wait_for timing out. Mirrors screen.should_not_contain's pattern.
-        with pytest.raises(AssertionError):
-            screen.wait_for(lambda: 'print' in _rendered_labels(screen))
+        # Replace-mode + a non-matching prefix should produce no popup. Wait briefly
+        # for the autocomplete machinery to settle, then assert nothing rendered.
+        screen.wait(0.5)
+        assert 'print' not in _rendered_labels(screen)
 
 
 def test_complete_words_in_document(screen: Screen):

@@ -25,7 +25,7 @@ COMPLETION_ICON_TYPES = Literal[
 
 
 class CompletionItem(TypedDict):
-    """Single autocomplete entry for ``ui.codemirror.set_completions``.
+    """Single autocomplete entry for the ``completions`` parameter and ``set_completions``.
 
     Only ``label`` is required. All keys use snake_case; the JS layer maps them to CodeMirror 6's camelCase.
 
@@ -338,7 +338,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         :param completions: list of autocomplete entries shown in the dropdown.
-            Each item is a :class:`CompletionItem` dict; only ``label`` is required.
+            Each item is a ``CompletionItem`` dict; only ``label`` is required.
             By default these merge with whatever the active language pack provides.
             *Added in version X.Y.Z*
         :param replace_language_completions: if ``True``, suppress the active language pack's
@@ -349,7 +349,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
             elsewhere in the document (CodeMirror's ``completeAnyWord`` source). Default: ``False``.
             *Added in version X.Y.Z*
         :param tooltip_class: CSS class added to the autocomplete popup container.
-            Combine with :func:`ui.add_css` to style the popup.
+            Combine with ``ui.add_css`` to style the popup.
             *Added in version X.Y.Z*
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
@@ -431,7 +431,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def completions(self) -> list[CompletionItem]:
         """The current autocomplete entries shown in the dropdown.
 
-        Returns a copy; reassign the property or call :meth:`set_completions` to update the editor.
+        Returns a copy; reassign the property or call ``set_completions`` to update the editor.
 
         *Added in version X.Y.Z*
         """
@@ -445,7 +445,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def set_completions(self, completions: list[CompletionItem] | None) -> None:
         """Sets the autocomplete entries shown in the dropdown.
 
-        Each item is a :class:`CompletionItem` dict; only ``label`` is required.
+        Each item is a ``CompletionItem`` dict; only ``label`` is required.
         Pass ``None`` or an empty list to remove the entries.
 
         *Added in version X.Y.Z*
