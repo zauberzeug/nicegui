@@ -7,7 +7,7 @@ from selenium.common.exceptions import JavascriptException
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
 
@@ -401,3 +401,128 @@ def test_rotate_with_order(screen: Screen):
         'return [[m[0], m[4], m[8]], [m[1], m[5], m[9]], [m[2], m[6], m[10]]];'
     )
     assert np.allclose(server_R, expected, atol=1e-6)
+
+
+def _wait_for_scene_ready(screen: Screen, scene_id: int) -> None:
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene_id}) && !!getElement({scene_id}).renderer'
+    ))
+
+
+def _count_clipping_planes(screen: Screen, scene_id: int, object_id: str) -> int:
+    return screen.selenium.execute_script(
+        f'const o = getElement({scene_id}).objects.get("{object_id}");'
+        'let n = 0;'
+        'o.traverse((c) => {'
+        '  if (!c.material) return;'
+        '  const mats = Array.isArray(c.material) ? c.material : [c.material];'
+        '  for (const m of mats) if (m.clippingPlanes) n += m.clippingPlanes.length;'
+        '});'
+        'return n;'
+    )
+
+
+def test_set_clipping_planes(screen: Screen):
+    from nicegui import events
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=0)])
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) >= 1)
+    box.clear_clipping_planes()
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) == 0)
+
+
+async def test_clipping_planes_in_object_data(user: User):
+    from nicegui import events
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal box
+        with ui.scene() as scene:
+            box = scene.box()
+
+    await user.open('/')
+    # `data` is the tuple scene.js init_objects consumes on every fresh connect, so
+    # asserting its shape here is what makes the planes survive a reload.
+    assert box.data[-1] == []
+    box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=2)])
+    assert box.data[-1] == [{'nx': 0, 'ny': 0, 'nz': 1, 'd': 2}]
+    box.clear_clipping_planes()
+    assert box.data[-1] == []
+
+
+def test_intersection_planes_in_click_event(screen: Screen):
+    from nicegui import events
+    scene = None
+    intersections: list = []
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+
+        def handle(e: events.SceneClickEventArguments):
+            intersections.append(e.intersections)
+        scene = ui.scene(
+            on_click=handle,
+            intersection_planes=[
+                events.SceneIntersectionPlane(name='ground', axis='z', offset=0),
+                events.SceneIntersectionPlane(name='wall', axis='x', offset=2),
+            ],
+        )
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    canvas = screen.find_by_tag('canvas')
+    canvas.click()
+    screen.wait_for(lambda: bool(intersections))
+    keys = set(intersections[0].keys())
+    assert keys == {'ground', 'wall'}
+
+
+async def test_intersection_planes_validation(user: User):
+    from nicegui import events
+
+    with pytest.raises(ValueError, match='axis'):
+        events.SceneIntersectionPlane(name='foo', axis='w')  # type: ignore[arg-type]
+
+    @ui.page('/')
+    def page():
+        with pytest.raises(ValueError, match=r'[Dd]uplicate'):
+            ui.scene(intersection_planes=[
+                events.SceneIntersectionPlane(name='dup'),
+                events.SceneIntersectionPlane(name='dup'),
+            ])
+        ui.label('ok')
+
+    await user.open('/')
+    await user.should_see('ok')
+
+
+def test_raycaster_threshold_runtime_change(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(raycaster_threshold=0.05)
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id})._raycaster.params.Line.threshold'
+    ) == 0.05
+    scene._props['raycaster-threshold'] = 0.5
+    scene.update()
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id})._raycaster.params.Line.threshold'
+    ) == 0.5)

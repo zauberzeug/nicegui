@@ -15,6 +15,12 @@ const {
   Stats,
 } = SceneLib;
 
+const INTERSECTION_AXIS_NORMALS = {
+  x: new THREE.Vector3(1, 0, 0),
+  y: new THREE.Vector3(0, 1, 0),
+  z: new THREE.Vector3(0, 0, 1),
+};
+
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
   const nI = coords[0].length;
@@ -230,10 +236,23 @@ export default {
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
+    // Pre-compute THREE.Plane objects for the configured intersection planes (rebuilt by setter).
+    // Clone the normal so the per-axis singleton in INTERSECTION_AXIS_NORMALS is never mutated
+    // (intersectPlane doesn't mutate today, but normalize/applyMatrix4 in a future caller would).
+    this._buildIntersectionPlanes = () => {
+      const specs = this.intersectionPlanes || [];
+      this._intersectionPlanes = specs.map((spec) => {
+        const normal = (INTERSECTION_AXIS_NORMALS[spec.axis] || INTERSECTION_AXIS_NORMALS.z).clone();
+        return { name: spec.name, plane: new THREE.Plane(normal, -(spec.offset || 0)) };
+      });
+    };
+    this._buildIntersectionPlanes();
+
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
-      this.controls.update(this.clock.getDelta());
+      const delta = this.clock.getDelta();
+      this.controls.update(delta);
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -242,10 +261,19 @@ export default {
     render();
 
     const raycaster = new THREE.Raycaster();
+    raycaster.params.Line.threshold = this.raycasterThreshold ?? 1.0;
+    raycaster.params.Points.threshold = this.raycasterThreshold ?? 1.0;
+    this._raycaster = raycaster;
+    const _intersection = new THREE.Vector3();
     const click_handler = (mouseEvent) => {
-      let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
-      let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
-      raycaster.setFromCamera({ x: x, y: y }, this.camera);
+      const x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
+      const y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
+      raycaster.setFromCamera({ x, y }, this.camera);
+      const intersections = {};
+      for (const { name, plane } of this._intersectionPlanes) {
+        const hit = raycaster.ray.intersectPlane(plane, _intersection);
+        intersections[name] = hit ? { x: _intersection.x, y: _intersection.y, z: _intersection.z } : null;
+      }
       this.$emit("click3d", {
         hits: raycaster
           .intersectObjects(this.scene.children, true)
@@ -255,6 +283,7 @@ export default {
             object_name: o.object.name,
             point: o.point,
           })),
+        intersections,
         click_type: mouseEvent.type,
         button: mouseEvent.button,
         alt_key: mouseEvent.altKey,
@@ -348,6 +377,11 @@ export default {
               delete mesh.userData.pendingMaterialInfo;
               this.material(id, color, opacity, side);
             }
+            if (mesh.userData.pendingClippingPlanes) {
+              const planes = mesh.userData.pendingClippingPlanes;
+              delete mesh.userData.pendingClippingPlanes;
+              this.set_clipping_planes(id, planes);
+            }
           },
           undefined,
           (error) => console.error(error),
@@ -374,6 +408,11 @@ export default {
               const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
               delete mesh.userData.pendingMaterialInfo;
               this.material(id, color, opacity, side);
+            }
+            if (mesh.userData.pendingClippingPlanes) {
+              const planes = mesh.userData.pendingClippingPlanes;
+              delete mesh.userData.pendingClippingPlanes;
+              this.set_clipping_planes(id, planes);
             }
           },
           undefined,
@@ -522,6 +561,33 @@ export default {
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
+    set_clipping_planes(object_id, planes) {
+      if (!this.objects.has(object_id)) return;
+      const object = this.objects.get(object_id);
+      // GLTF and STL groups have no children until the loader callback fires, so
+      // traverse() walks an empty group and the planes silently vanish.
+      // Stash them and replay from the loader.
+      if ((object.userData.isGltf || object.userData.isStl) && !object.userData.loaded) {
+        object.userData.pendingClippingPlanes = planes;
+        return;
+      }
+      // An empty `planes` array (Object3D.clear_clipping_planes / fresh Object3D in init_objects)
+      // disables clipping for this subtree — three.js treats `mat.clippingPlanes = []` the same
+      // as `null` on the shader side.
+      const clipPlanes = planes.map((p) =>
+        new THREE.Plane(new THREE.Vector3(p.nx, p.ny, p.nz).normalize(), p.d));
+      object.traverse((child) => {
+        if (!child.material) return;
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach((mat) => {
+          mat.clippingPlanes = clipPlanes;
+          mat.clipIntersection = false; // union: clip where ANY plane clips
+          mat.needsUpdate = true;
+        });
+      });
+      // Local clipping is opt-in on the renderer; flip it the first time anyone sets clipping planes.
+      if (clipPlanes.length) this.renderer.localClippingEnabled = true;
+    },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
@@ -663,6 +729,7 @@ export default {
         sz,
         visible,
         draggable,
+        clipping_planes,
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
@@ -672,6 +739,7 @@ export default {
         this.scale(id, sx, sy, sz);
         this.visible(id, visible);
         this.draggable(id, draggable);
+        if (clipping_planes && clipping_planes.length) this.set_clipping_planes(id, clipping_planes);
       }
     },
   },
@@ -689,5 +757,18 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    raycasterThreshold: Number,
+    intersectionPlanes: Array,
+  },
+  watch: {
+    raycasterThreshold(value) {
+      if (!this._raycaster) return;
+      const t = value ?? 1.0;
+      this._raycaster.params.Line.threshold = t;
+      this._raycaster.params.Points.threshold = t;
+    },
+    intersectionPlanes() {
+      if (this._buildIntersectionPlanes) this._buildIntersectionPlanes();
+    },
   },
 };
