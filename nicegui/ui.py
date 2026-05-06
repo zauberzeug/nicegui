@@ -60,6 +60,7 @@ _LAZY_IMPORTS = {
     'item_section': ('.elements.item', 'ItemSection'),
     'joystick': ('.elements.joystick', 'Joystick'),
     'json_editor': ('.elements.json_editor', 'JsonEditor'),
+    'keep_alive': ('.elements.keep_alive', 'KeepAlive'),
     'keyboard': ('.elements.keyboard', 'Keyboard'),
     'knob': ('.elements.knob', 'Knob'),
     'label': ('.elements.label', 'Label'),
@@ -208,6 +209,7 @@ __all__ = [
     'item_section',
     'joystick',
     'json_editor',
+    'keep_alive',
     'keyboard',
     'knob',
     'label',
@@ -344,6 +346,7 @@ if TYPE_CHECKING:
     from .elements.item import ItemSection as item_section
     from .elements.joystick import Joystick as joystick
     from .elements.json_editor import JsonEditor as json_editor
+    from .elements.keep_alive import KeepAlive as keep_alive
     from .elements.keyboard import Keyboard as keyboard
     from .elements.knob import Knob as knob
     from .elements.label import Label as label

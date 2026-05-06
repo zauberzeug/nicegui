@@ -21,3 +21,6 @@ class Switch(TextElement, ValueElement[bool | None], DisableableElement):
         :param on_change: callback which is invoked when state is changed by the user
         """
         super().__init__(tag='q-toggle', text=text, value=value, on_value_change=on_change)
+
+    def _render_markdown(self) -> str:
+        return f'- [{"x" if self.value else " "}] {self._text or ""}'

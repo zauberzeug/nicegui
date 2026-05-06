@@ -311,6 +311,7 @@ def map_of_nicegui():
             - [`ui.download`](/documentation/download): download a file to the client
             - [`ui.fullscreen`](/documentation/fullscreen): enter, exit and toggle fullscreen mode
             - [`ui.keyboard`](/documentation/keyboard): define keyboard event handlers
+            - [`ui.keep_alive`](/documentation/keep_alive): keep elements alive even when they are not visible
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler

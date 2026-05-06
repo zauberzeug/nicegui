@@ -3,7 +3,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from nicegui import binding, ui
-from nicegui.elements.markdown import remove_indentation
+from nicegui.helpers import remove_indentation
 
 from .. import design as d
 from ..design import create_anchor_name, subheading

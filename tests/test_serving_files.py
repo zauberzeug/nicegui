@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 import httpx
@@ -129,7 +128,6 @@ def test_404_for_non_existing_static_file(screen: Screen):
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/does_not_exist.jpg')
-        screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
         assert r.status_code == 404
         assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
 

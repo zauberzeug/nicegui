@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from typing_extensions import Self
 
-from nicegui import background_tasks, events, ui
+from nicegui import events, ui
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 
@@ -82,8 +82,7 @@ class UserInteraction(Generic[T]):
                 if isinstance(element, DisableableElement) and not element.enabled:
                     continue
                 if isinstance(element, ui.link):
-                    href = element.props.get('href', '#')
-                    background_tasks.create(self.user.open(href), name=f'open {href}')
+                    self.user.navigate.to(element.props.get('href', '#'))
                     return self
 
                 if isinstance(element, ui.select):

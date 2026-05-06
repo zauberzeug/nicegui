@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
+from starlette.background import BackgroundTask
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
@@ -151,6 +152,22 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        accept = request.headers.get('accept', '')
+        # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
+        # It works for the real use case: agents sending exactly `Accept: text/markdown`.
+        if self.page.resolve_markdown() and 'text/markdown' in accept and 'text/html' not in accept:
+            parts = []
+            if title := self.resolve_title():
+                parts.append(f'# {title}')
+            if markdown := self.layout._render_markdown():  # pylint: disable=protected-access
+                parts.append(markdown)
+            return Response(
+                content='\n\n'.join(parts),
+                status_code=status_code,
+                headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
+                media_type='text/markdown; charset=utf-8',
+                background=BackgroundTask(self.delete),
+            )
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
         elements = json.dumps({

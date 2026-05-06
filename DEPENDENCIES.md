@@ -3,7 +3,7 @@
 - @tailwindcss/browser: 4.1.13 ([MIT](https://opensource.org/licenses/MIT))
 - @unocss/reset: ^66.6.0 ([MIT](https://opensource.org/licenses/MIT))
 - @unocss/runtime: ^66.6.0 ([MIT](https://opensource.org/licenses/MIT))
-- dompurify: ^3.3.2 ([MPL-2.0](https://opensource.org/licenses/MPL-2.0) or [Apache-2.0](https://opensource.org/licenses/Apache-2.0))
+- dompurify: ^3.4.0 ([MPL-2.0](https://opensource.org/licenses/MPL-2.0) or [Apache-2.0](https://opensource.org/licenses/Apache-2.0))
 - quasar: 2.18.5 ([MIT](https://opensource.org/licenses/MIT))
 - sass: ^1.94.0 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.8.1 ([MIT](https://opensource.org/licenses/MIT))
