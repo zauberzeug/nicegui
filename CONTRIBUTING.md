@@ -37,7 +37,7 @@ There are several ways to help out, depending on what you want to do:
 - **Report a bug or request a feature** → see [Reporting issues](#reporting-issues)
 - **Report a security vulnerability** → see [Reporting security vulnerabilities](#reporting-security-vulnerabilities)
 - **Contribute code or documentation** → see [Contributing code and documentation](#contributing-code-and-documentation)
-- **Create video content** → see [Video and tutorial content](#video-and-tutorial-content)
+- **Create video or tutorial content** → see [Video and tutorial content](#video-and-tutorial-content)
 
 For non-trivial work, please discuss your approach with maintainers before implementing.
 If you're unsure, present options and trade-offs first.
@@ -49,8 +49,8 @@ For larger changes, work step-by-step and confirm direction with maintainers alo
 > If you've found a security vulnerability, do **not** open a public issue.
 > See [Reporting security vulnerabilities](#reporting-security-vulnerabilities) instead.
 
-If you encounter a bug or other issue with NiceGUI, the best way to report it is by opening a new issue on our [GitHub repository](https://github.com/zauberzeug/nicegui).
-When creating the issue, please provide a clear and concise description of the problem, including any relevant error messages and code snippets.
+If you encounter a bug or other issue with NiceGUI, please [open a new issue](https://github.com/zauberzeug/nicegui/issues/new/choose) using one of the templates.
+Provide a clear and concise description of the problem, including any relevant error messages and code snippets.
 If possible, include steps to reproduce the issue.
 
 ## Reporting security vulnerabilities
@@ -243,7 +243,7 @@ Run these from the project root:
 > 3. Your `main` branch should stay in sync with the upstream repository.
 
 > [!NOTE]
-> **AI co-authorship:** if you used an AI coding agent to help write your PR, please check that the commit message includes a `Co-authored-by:` trailer.
+> **AI co-authorship:** if you used an AI assistant to help write your PR, please check that the commit message includes a `Co-authored-by:` trailer.
 > Some agents add it automatically; others don't, and some silently **remove** existing ones when amending or rebasing.
 > If missing, add the appropriate line (PRs are welcome to add lines for other agents):
 >
