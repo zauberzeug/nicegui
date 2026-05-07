@@ -8,6 +8,7 @@ from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
 from .. import core
+from ..helpers import remove_indentation
 from .mixins.content_element import ContentElement
 
 
@@ -66,19 +67,11 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
 
+    def _render_markdown(self) -> str:
+        return self.content
+
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
     """Render Markdown content to HTML."""
     return markdown2.markdown(remove_indentation(content), extras=extras.split())
-
-
-def remove_indentation(text: str) -> str:
-    """Remove indentation from a multi-line string based on the indentation of the first non-empty line."""
-    lines = text.splitlines()
-    while lines and not lines[0].strip():
-        lines.pop(0)
-    if not lines:
-        return ''
-    indentation = len(lines[0]) - len(lines[0].lstrip())
-    return '\n'.join(line[indentation:] for line in lines)

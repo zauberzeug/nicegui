@@ -9,8 +9,8 @@ from .functions import (
     normalize_lifecycle_handler,
     should_await,
 )
-from .network import find_free_port, is_port_open, schedule_browser
-from .strings import event_type_to_camel_case, kebab_to_camel_case
+from .network import find_free_port, format_url, is_port_open, schedule_browser
+from .strings import event_type_to_camel_case, kebab_to_camel_case, remove_indentation
 from .warnings import warn_once
 
 __all__ = [
@@ -18,6 +18,7 @@ __all__ = [
     'event_type_to_camel_case',
     'expects_arguments',
     'find_free_port',
+    'format_url',
     'hash_file_path',
     'is_coroutine_function',
     'is_file',
@@ -26,6 +27,7 @@ __all__ = [
     'is_user_simulation',
     'kebab_to_camel_case',
     'normalize_lifecycle_handler',
+    'remove_indentation',
     'require_top_level_layout',
     'schedule_browser',
     'should_await',

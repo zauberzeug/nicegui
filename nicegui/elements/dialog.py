@@ -66,6 +66,9 @@ class Dialog(ValueElement[bool], component='dialog.js'):
         self._result = result
         self.submitted.set()
 
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown() if self.value else ''
+
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         if not self.value:

@@ -45,6 +45,33 @@ def adding_rows():
     ui.button('Add row', on_click=add)
 
 
+@doc.demo('Adding rows without losing client-side edits', '''
+    Mutating `grid.options['rowData']` triggers a full rebuild on the client and discards any in-progress cell edits.
+
+    An AG Grid [transaction](https://www.ag-grid.com/javascript-data-grid/data-update-transactions/)
+    adds rows without rebuilding the grid, so unsaved edits are preserved.
+    Wrap the `rowData` mutation in `grid.props.suspend_updates()`
+    to keep the server-side list in sync without firing the rebuild.
+
+    Try it: start editing a cell, then click *Add row* without leaving the cell —
+    your edit stays intact.
+''')
+def adding_rows_preserving_edits():
+    def add():
+        row = {'Name': f'Row {len(grid.options["rowData"])}'}
+        with grid.props.suspend_updates():
+            grid.options['rowData'].append(row)
+        grid.run_grid_method('applyTransaction', {'add': [row]})
+        grid.run_grid_method('ensureIndexVisible', len(grid.options['rowData']) - 1)
+
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'Name', 'editable': True}],
+        'rowData': [],
+        'stopEditingWhenCellsLoseFocus': True,
+    }).classes('h-52')
+    ui.button('Add row', on_click=add)
+
+
 @doc.demo('Select AG Grid Rows', '''
     You can add checkboxes to grid cells to allow the user to select single or multiple rows.
 

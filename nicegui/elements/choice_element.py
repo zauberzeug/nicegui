@@ -21,6 +21,20 @@ class ChoiceElement(ValueElement[Any]):
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
+    def _render_markdown(self) -> str:
+        if self.value is None:
+            return ''
+        values = self.value if isinstance(self.value, list) else [self.value]
+        labels = []
+        for value in values:
+            try:
+                labels.append(str(self._labels[self._values.index(value)]))
+            except (ValueError, IndexError):
+                labels.append(str(value))
+        display = ', '.join(labels)
+        form_label = getattr(self, 'label', None) or ''
+        return f'{form_label}: {display}' if form_label else display
+
     def _update_values_and_labels(self) -> None:
         self._values = self.options if isinstance(self.options, list) else list(self.options.keys())
         self._labels = self.options if isinstance(self.options, list) else list(self.options.values())

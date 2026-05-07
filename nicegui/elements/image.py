@@ -35,6 +35,9 @@ class Image(SourceElement, component='image.js'):
             source = pil_to_tempfile(source, self.PIL_CONVERT_FORMAT)
         super()._set_props(source)
 
+    def _render_markdown(self) -> str:
+        return f'![]({self._props.get("src", "")})'
+
     def force_reload(self) -> None:
         """Force the image to reload from the source."""
         if self._props['src'].startswith('data:'):

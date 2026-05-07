@@ -45,14 +45,15 @@ class FilePersistentDict(PersistentDict):
 
         @background_tasks.await_on_shutdown
         async def async_backup() -> None:
+            if not self:
+                self.filepath.unlink(missing_ok=True)
+                return
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
                 await f.write(json.dumps(self, indent=self.indent))
 
         if core.is_loop_running():
             background_tasks.create_lazy(async_backup(), name=self.filepath.stem)
+        elif not self:
+            self.filepath.unlink(missing_ok=True)
         else:
             self.filepath.write_text(json.dumps(self, indent=self.indent), encoding=self.encoding)
-
-    def clear(self) -> None:
-        super().clear()
-        self.filepath.unlink(missing_ok=True)
