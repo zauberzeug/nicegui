@@ -25,7 +25,7 @@ from .screen import Screen
 Screen.PORT = helpers.find_free_port()
 Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
 DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
-atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # session-level cleanup; per-test cleanup lives in the screen fixture
+atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # per-test cleanup lives in the screen fixture
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
