@@ -36,6 +36,10 @@ def expects_arguments(func: Callable) -> bool:
                for p in signature(func).parameters.values())
 
 
+class NoImplicitAwait:
+    """Marker base for awaitables that must not be implicitly awaited by event handlers."""
+
+
 def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
     """Determine if a result should be awaited.
 
@@ -44,13 +48,10 @@ def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
 
     Note: We want to await an awaitable result even if the handler is not an async function (like a lambda statement).
 
-    UI elements that happen to implement ``__await__`` (currently only ``Dialog``) are excluded:
-    their await semantics are meant for explicit ``await my_dialog`` in async code,
-    not for accidentally surfacing as the return value of a chainable mutator like ``dialog.close()``.
-    Handlers that genuinely need to await something either return a coroutine or are themselves ``async``.
+    Subclasses of ``NoImplicitAwait`` are also excluded
+    so that chainable mutators returning ``self`` on awaitable elements (like ``Dialog``) are not silently awaited.
     """
-    from ..element import Element  # pylint: disable=import-outside-toplevel
-    return isinstance(result, Awaitable) and not isinstance(result, (Element, AwaitableResponse, asyncio.Task))
+    return isinstance(result, Awaitable) and not isinstance(result, (NoImplicitAwait, AwaitableResponse, asyncio.Task))
 
 
 async def await_with_context(awaitable: Awaitable[_T], context: AbstractContextManager) -> _T:
