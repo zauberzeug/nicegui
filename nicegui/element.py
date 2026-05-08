@@ -39,7 +39,7 @@ TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
-class Element(Visibility, helpers.NoImplicitAwait):
+class Element(Visibility):
     component: Component | None = None
     exposed_libraries: ClassVar[list[Library]] = []
     _default_props: ClassVar[dict[str, Any]] = {}
