@@ -83,9 +83,11 @@ class UserInteraction(Generic[T]):
                     continue
 
                 if isinstance(element, ui.link):
+                    self._handle_click_event(element)
                     self.user.navigate.to(element.props.get('href', '#'))
+                    return self
 
-                elif isinstance(element, ui.select):
+                if isinstance(element, ui.select):
                     if element.is_showing_popup:
                         _NOT_FOUND = object()
                         if isinstance(element.options, dict):
