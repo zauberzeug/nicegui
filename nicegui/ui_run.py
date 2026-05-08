@@ -244,7 +244,7 @@ def run(root: Callable | None = None, *,
         width, height = window_size or (800, 600)
         native_host = '127.0.0.1' if host == '0.0.0.0' else host
         if reload:
-            shutdown_event = multiprocessing.Event()
+            shutdown_event = multiprocessing.get_context('spawn').Event()  # match uvicorn ChangeReload worker (#1841)
         native_favicon = str(Path(favicon).resolve()) if favicon and helpers.is_file(favicon) else None
         native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless,
                                shutdown_event, native_favicon)
