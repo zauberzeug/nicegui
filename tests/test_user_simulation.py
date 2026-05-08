@@ -351,7 +351,7 @@ async def test_trigger_with_event_arguments(user: User, args_value: Any, expecte
 async def test_click_link(user: User) -> None:
     @ui.page('/')
     def page():
-        ui.link('go to other', '/other')
+        ui.link('go to other', '/other').on('click', lambda: ui.notify('Link clicked'))
 
     @ui.page('/other')
     def other():
@@ -359,6 +359,7 @@ async def test_click_link(user: User) -> None:
 
     await user.open('/')
     user.find('go to other').click()
+    await user.should_see('Link clicked')
     await user.should_see('Other page')
 
 
@@ -569,6 +570,27 @@ async def test_select_none_value(user: User) -> None:
     user.find(ui.select).click()
     user.find('B').click()
     await user.should_see('Value: None')
+
+
+async def test_select_click_handler(user: User) -> None:
+    clicks = []
+
+    @ui.page('/')
+    def _():
+        ui.select(['A', 'B', 'C']).on('click', lambda: clicks.append('click'))
+
+    await user.open('/')
+    user.find(ui.select).click()
+    assert len(clicks) == 1, 'Opening select should fire click handler'
+
+    user.find('B').click()
+    assert len(clicks) == 1, 'Clicking option should not fire click handler'
+
+    user.find(ui.select).click()
+    assert len(clicks) == 2, 'Opening select should fire click handler again'
+
+    user.find(ui.select).click()  # closes popup (wrapper re-click) → fires wrapper click
+    assert len(clicks) == 3, 'Closing select should fire click handler'
 
 
 async def test_upload_table(user: User) -> None:

@@ -81,11 +81,11 @@ class UserInteraction(Generic[T]):
             for element in self.elements:  # pylint: disable=too-many-nested-blocks
                 if isinstance(element, DisableableElement) and not element.enabled:
                     continue
+
                 if isinstance(element, ui.link):
                     self.user.navigate.to(element.props.get('href', '#'))
-                    return self
 
-                if isinstance(element, ui.select):
+                elif isinstance(element, ui.select):
                     if element.is_showing_popup:
                         _NOT_FOUND = object()
                         if isinstance(element.options, dict):
@@ -105,9 +105,12 @@ class UserInteraction(Generic[T]):
                         else:
                             # User clicked the select itself (not a valid option): just close the popup
                             element._is_showing_popup = False  # pylint: disable=protected-access
+                            self._handle_click_event(element)
                     else:
                         element._is_showing_popup = True  # pylint: disable=protected-access
+                        self._handle_click_event(element)
                     return self
+
                 elif isinstance(element, ui.radio):
                     if isinstance(element.options, dict):
                         target_value = next((k for k, v in element.options.items() if v == self.target), '')
@@ -119,6 +122,9 @@ class UserInteraction(Generic[T]):
                 elif isinstance(element, ui.tab):
                     if element.tabs is not None:  # DEPRECATED: check not needed once ui.tab requires a ui.tabs ancestor
                         element.tabs.value = element.props['name']
+
+                elif isinstance(element, (ui.checkbox, ui.switch)):
+                    element.value = not element.value
 
                 elif isinstance(element, ui.tree) and isinstance(self.target, str):
                     NODE_KEY = element.props.get('node-key')
@@ -139,15 +145,19 @@ class UserInteraction(Generic[T]):
                     element.update()
                     return self
 
-                for listener in element._event_listeners.values():  # pylint: disable=protected-access
-                    if listener.element_id != element.id:
-                        continue
-                    args = not element.value if isinstance(element, (ui.checkbox, ui.switch)) else None
-                    event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
-                    events.handle_event(listener.handler, event_arguments)
-                    if element.is_deleted:
-                        break
+                self._handle_click_event(element)
+
         return self
+
+    def _handle_click_event(self, element: ui.element) -> None:
+        assert self.user.client
+        for listener in element._event_listeners.values():  # pylint: disable=protected-access
+            if listener.element_id != element.id or listener.type != 'click':
+                continue
+            event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=None)
+            events.handle_event(listener.handler, event_arguments)
+            if element.is_deleted:
+                break
 
     def clear(self) -> Self:
         """Clear the selected elements.
