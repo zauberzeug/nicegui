@@ -589,7 +589,7 @@ async def test_select_click_handler(user: User) -> None:
     user.find(ui.select).click()
     assert len(clicks) == 2, 'Opening select should fire click handler again'
 
-    user.find(ui.select).click()  # closes popup (wrapper re-click) → fires wrapper click
+    user.find(ui.select).click()
     assert len(clicks) == 3, 'Closing select should fire click handler'
 
 
