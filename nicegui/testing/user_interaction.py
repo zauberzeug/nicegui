@@ -83,9 +83,9 @@ class UserInteraction(Generic[T]):
                     continue
 
                 if isinstance(element, ui.link):
-                    self._handle_click_event(element)
+                    self._dispatch_click(element)
                     self.user.navigate.to(element.props.get('href', '#'))
-                    return self
+                    break
 
                 if isinstance(element, ui.select):
                     if element.is_showing_popup:
@@ -107,11 +107,11 @@ class UserInteraction(Generic[T]):
                         else:
                             # User clicked the select itself (not a valid option): just close the popup
                             element._is_showing_popup = False  # pylint: disable=protected-access
-                            self._handle_click_event(element)
+                            self._dispatch_click(element)
                     else:
                         element._is_showing_popup = True  # pylint: disable=protected-access
-                        self._handle_click_event(element)
-                    return self
+                        self._dispatch_click(element)
+                    break
 
                 elif isinstance(element, ui.radio):
                     if isinstance(element.options, dict):
@@ -119,14 +119,16 @@ class UserInteraction(Generic[T]):
                     else:
                         target_value = self.target
                     element.value = target_value
-                    return self
+                    break
 
                 elif isinstance(element, ui.tab):
                     if element.tabs is not None:  # DEPRECATED: check not needed once ui.tab requires a ui.tabs ancestor
                         element.tabs.value = element.props['name']
+                    self._dispatch_click(element)
 
                 elif isinstance(element, (ui.checkbox, ui.switch)):
                     element.value = not element.value
+                    self._dispatch_click(element)
 
                 elif isinstance(element, ui.tree) and isinstance(self.target, str):
                     NODE_KEY = element.props.get('node-key')
@@ -137,7 +139,7 @@ class UserInteraction(Generic[T]):
                         if self.target == node.get(LABEL_KEY)
                     ), None)
                     if target_key is None:
-                        return self
+                        break
                     expanded_set = set(element.props.get('expanded', [node[NODE_KEY] for node in element.nodes()]))
                     if target_key in expanded_set:
                         expanded_set.remove(target_key)
@@ -145,13 +147,14 @@ class UserInteraction(Generic[T]):
                         expanded_set.add(target_key)
                     element.props['expanded'] = list(expanded_set)
                     element.update()
-                    return self
+                    break
 
-                self._handle_click_event(element)
+                else:
+                    self._dispatch_click(element)
 
         return self
 
-    def _handle_click_event(self, element: ui.element) -> None:
+    def _dispatch_click(self, element: ui.element) -> None:
         assert self.user.client
         for listener in element._event_listeners.values():  # pylint: disable=protected-access
             if listener.element_id != element.id or listener.type != 'click':
