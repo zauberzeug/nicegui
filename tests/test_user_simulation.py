@@ -192,7 +192,8 @@ async def test_notification(user: User) -> None:
 async def test_checkbox_and_switch(user: User, kind: type) -> None:
     @ui.page('/')
     def page():
-        element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+        element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}')) \
+            .on('click', lambda e: ui.notify(f'Clicked: {e.sender.value}'))
         ui.label().bind_text_from(element, 'value', lambda v: 'enabled' if v else 'disabled')
 
     await user.open('/')
@@ -201,10 +202,12 @@ async def test_checkbox_and_switch(user: User, kind: type) -> None:
     user.find('element').click()
     await user.should_see('enabled')
     await user.should_see('Changed: True')
+    await user.should_see('Clicked: True')
 
     user.find('element').click()
     await user.should_see('disabled')
     await user.should_see('Changed: False')
+    await user.should_see('Clicked: False')
 
 
 @pytest.mark.parametrize('kind', [ui.input, ui.editor, ui.codemirror])
