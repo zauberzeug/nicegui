@@ -23,6 +23,7 @@ def create() -> None:
             _column('Resources', [
                 ('Documentation', '/documentation'),
                 ('Examples', '/examples'),
+                ('LLM reference', '/llms.txt'),
                 ('GitHub', 'https://github.com/zauberzeug/nicegui/'),
                 ('PyPI', 'https://pypi.org/project/nicegui/'),
             ])

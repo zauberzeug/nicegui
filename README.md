@@ -90,7 +90,8 @@ The whole content of [https://nicegui.io](https://nicegui.io) is [implemented wi
 and can be started locally with `docker run -p 8080:8080 zauberzeug/nicegui` or by executing `main.py` from this repository.
 
 You may also have a look at our [in-depth examples](https://github.com/zauberzeug/nicegui/tree/main/examples) of what you can do with NiceGUI.
-In our wiki we have a list of great [NiceGUI projects from the community](https://github.com/zauberzeug/nicegui/wiki#community-projects), a section with [Tutorials](https://github.com/zauberzeug/nicegui/wiki#tutorials), a growing list of [FAQs](https://github.com/zauberzeug/nicegui/wiki/FAQs) and [some strategies for using ChatGPT / LLMs to get help about NiceGUI](https://github.com/zauberzeug/nicegui/wiki#chatgpt).
+In our wiki we have a list of great [NiceGUI projects from the community](https://github.com/zauberzeug/nicegui/wiki#community-projects), a section with [Tutorials](https://github.com/zauberzeug/nicegui/wiki#tutorials) and a growing list of [FAQs](https://github.com/zauberzeug/nicegui/wiki/FAQs).
+When building NiceGUI projects with AI assistants, point them at [`nicegui/llms.md`](nicegui/llms.md) — a concise reference that ships with the package (also served at <https://nicegui.io/llms.txt>).
 
 ## Why?
 
