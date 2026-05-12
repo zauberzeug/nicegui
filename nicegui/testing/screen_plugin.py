@@ -65,8 +65,15 @@ def _pid_alive(pid: int) -> bool:
     """Best-effort cross-platform liveness check for a process ID."""
     if sys.platform == 'win32':
         import ctypes  # pylint: disable=import-outside-toplevel
+        from ctypes import wintypes  # pylint: disable=import-outside-toplevel
         PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        # HANDLE is pointer-sized; without explicit argtypes/restype, ctypes defaults to c_int
+        # and truncates the handle on Win64 — CloseHandle would then fail to release it.
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
         handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
         if not handle:
             return False
