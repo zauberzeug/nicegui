@@ -91,7 +91,7 @@ with row:
 # ui.label('This would go to page root, NOT inside row')
 ```
 
-### 5. The binding system is pull-based, not push-based
+### 5. The binding system is push-and-pull
 
 NiceGUI bindings use two complementary mechanisms:
 

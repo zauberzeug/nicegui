@@ -45,10 +45,8 @@ documentation.build_tree()
 
 @app.get('/llms.md')
 @app.get('/llms.txt')
-def _get_llms(request: Request) -> FileResponse:
-    path = Path(__file__).parent / 'nicegui' / 'llms.md'
-    type_ = 'markdown' if request.url.path.endswith('.md') else 'plain'
-    return FileResponse(path, media_type=f'text/{type_}; charset=utf-8')
+def _get_llms() -> FileResponse:
+    return FileResponse(Path(__file__).parent / 'nicegui' / 'llms.md', media_type='text/markdown; charset=utf-8')
 
 
 @app.post('/dark_mode')
