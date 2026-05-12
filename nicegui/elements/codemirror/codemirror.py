@@ -25,7 +25,7 @@ COMPLETION_ICON_TYPES = Literal[
 
 
 class CompletionItem(TypedDict):
-    """Single autocomplete entry for the ``completions`` parameter and ``set_completions``.
+    """Single autocomplete entry for the ``completions`` parameter and property.
 
     Only ``label`` is required. All keys use snake_case; the JS layer maps them to CodeMirror 6's camelCase.
 
@@ -431,7 +431,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def completions(self) -> list[CompletionItem]:
         """The current autocomplete entries shown in the dropdown.
 
-        Returns a copy; reassign the property or call ``set_completions`` to update the editor.
+        Each item is a ``CompletionItem`` dict; only ``label`` is required.
+        Returns a copy; reassign the property to update the editor
+        (pass ``None`` or an empty list to remove all entries).
 
         *Added in version X.Y.Z*
         """
@@ -439,17 +441,6 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
     @completions.setter
     def completions(self, completions: list[CompletionItem] | None) -> None:
-        self._props['completions'] = completions or []
-        self.update()
-
-    def set_completions(self, completions: list[CompletionItem] | None) -> None:
-        """Sets the autocomplete entries shown in the dropdown.
-
-        Each item is a ``CompletionItem`` dict; only ``label`` is required.
-        Pass ``None`` or an empty list to remove the entries.
-
-        *Added in version X.Y.Z*
-        """
         self._props['completions'] = completions or []
         self.update()
 
