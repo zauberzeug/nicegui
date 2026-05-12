@@ -1,7 +1,11 @@
 # NiceGUI – LLM Reference
 
-> Concise, opinionated guide for AI assistants working with NiceGUI.
-> The single most important rule: **everything is Python**. Reach for `ui.*` before CSS, Quasar, or JavaScript.
+Concise, opinionated guide for AI assistants working with NiceGUI.
+The single most important rule: **everything is Python**. Reach for `ui.*` before CSS, Quasar, or JavaScript.
+
+**Where this file lives:** it ships with the `nicegui` PyPI package as `nicegui/llms.md`, so the copy bundled with the user's installed version matches the API they actually have. For the current `main`, fetch <https://nicegui.io/llms.txt>.
+
+**Fetching docs:** every page on <https://nicegui.io> returns Markdown when requested with `Accept: text/markdown`, so agents can read the full documentation without parsing HTML.
 
 ---
 

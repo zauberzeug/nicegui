@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import Response
+from starlette.responses import FileResponse, Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
@@ -41,6 +41,14 @@ app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_squ
 
 documentation.build_search_index()
 documentation.build_tree()
+
+
+@app.get('/llms.md')
+@app.get('/llms.txt')
+def _get_llms(request: Request) -> FileResponse:
+    path = Path(__file__).parent / 'nicegui' / 'llms.md'
+    type_ = 'markdown' if request.url.path.endswith('.md') else 'plain'
+    return FileResponse(path, media_type=f'text/{type_}; charset=utf-8')
 
 
 @app.post('/dark_mode')
