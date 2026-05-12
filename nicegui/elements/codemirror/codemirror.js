@@ -1,19 +1,23 @@
 import * as CM from "nicegui-codemirror";
 
 class TextWidget extends CM.WidgetType {
-  constructor(text, cls) {
+  constructor(text, cls, html) {
     super();
     this.text = text;
     this.cls = cls || "";
+    this.html = !!html;
   }
   eq(other) {
-    return other.text === this.text && other.cls === this.cls;
+    return other.text === this.text && other.cls === this.cls && other.html === this.html;
   }
   toDOM() {
-    // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render.
     const span = document.createElement("span");
     if (this.cls) span.className = this.cls;
-    span.setHTML(this.text);
+    if (this.html) {
+      span.setHTML(this.text);
+    } else {
+      span.textContent = this.text;
+    }
     return span;
   }
   ignoreEvent() {
@@ -33,7 +37,8 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
-    decorations: Object,
+    decorations: Array,
+    decorationTextHtml: Boolean,
     id: String,
   },
   watch: {
@@ -49,10 +54,11 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    // NOTE: identity-watch is sufficient — Python `set_decorations` always assigns a fresh dict
-    // to `self._props['decorations']`, never mutates the existing one in place.
-    decorations(newDecorations) {
-      this.setDecorations(newDecorations);
+    decorations: {
+      deep: true,
+      handler(newDecorations) {
+        this.setDecorations(newDecorations);
+      },
     },
   },
   data() {
@@ -158,14 +164,12 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
-    setDecorations(decorationSets) {
+    setDecorations(decorations) {
       if (!this.editor || !this.decorationsConfig) return;
       const all = [];
-      for (const specs of Object.values(decorationSets || {})) {
-        for (const spec of specs) {
-          const dec = this._createDecoration(spec);
-          if (dec) all.push(dec);
-        }
+      for (const spec of decorations || []) {
+        const dec = this._createDecoration(spec);
+        if (dec) all.push(dec);
       }
       const decorationSet = CM.Decoration.set(all, true);
       this.editor.dispatch({
@@ -216,14 +220,14 @@ export default {
         const replaceSpec = {};
         if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
         if (spec.block) replaceSpec.block = true;
-        if (spec.text !== undefined) replaceSpec.widget = new TextWidget(spec.text, spec.class);
+        if (spec.text !== undefined) replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
         else if (spec.class) replaceSpec.class = spec.class;
         return CM.Decoration.replace(replaceSpec).range(from, to);
       }
       if (spec.kind === "widget") {
         const pos = Math.max(0, Math.min(spec.position, doc.length));
         return CM.Decoration.widget({
-          widget: new TextWidget(spec.text, spec.class),
+          widget: new TextWidget(spec.text, spec.class, this.decorationTextHtml),
           side: spec.side ?? 1,
         }).range(pos);
       }
@@ -300,7 +304,7 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
-    if (this.decorations && Object.keys(this.decorations).length > 0) {
+    if (this.decorations && this.decorations.length > 0) {
       this.setDecorations(this.decorations);
     }
   },

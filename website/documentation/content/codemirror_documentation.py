@@ -28,8 +28,8 @@ def preserve_cursor_demo() -> None:
 
 
 @doc.demo('Decorations', '''
-    `set_decorations` adds styled overlays on top of the editor's text without modifying the
-    document. There are four kinds:
+    The `decorations` property is a mutable list of styled overlays on top of the editor's text,
+    without modifying the document. There are four kinds:
 
     - **mark** — style a character range
     - **line** — style an entire line
@@ -37,8 +37,8 @@ def preserve_cursor_demo() -> None:
     - **widget** — insert a text annotation at a position
 
     The host application supplies its own CSS for whatever class names it passes.
-    Widget and replace `text` values render via NiceGUI's global `setHTML` polyfill,
-    so plain text and sanitized HTML both work.
+    Widget and replace `text` values render as plain text by default; pass
+    `decoration_text_html=True` to the constructor to render them as sanitized HTML.
 ''')
 def decorations_demo() -> None:
     ui.add_head_html('''
@@ -48,23 +48,24 @@ def decorations_demo() -> None:
             .my-hint   { color: #888; font-size: 0.8em; padding: 0 4px; }
         </style>
     ''')
-    editor = ui.codemirror('alpha\nbeta\ngamma\ndelta\nepsilon').classes('h-32')
+    editor = ui.codemirror('alpha\nbeta\ngamma\ndelta\nepsilon',
+                           decoration_text_html=True).classes('h-32')
+
+    def assign(specs):
+        editor.decorations = specs
+
     with ui.row():
-        ui.button('Mark range', on_click=lambda: editor.set_decorations(
-            [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'my-error'}],
-        ))
-        ui.button('Highlight line', on_click=lambda: editor.set_decorations(
-            [{'kind': 'line', 'line': 3, 'class': 'my-error'}],
-        ))
-        ui.button('Fold lines', on_click=lambda: editor.set_decorations(
+        ui.button('Mark range', on_click=lambda: assign(
+            [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'my-error'}]))
+        ui.button('Highlight line', on_click=lambda: assign(
+            [{'kind': 'line', 'line': 3, 'class': 'my-error'}]))
+        ui.button('Fold lines', on_click=lambda: assign(
             [{'kind': 'replace', 'from': 6, 'to': 22,
-              'text': '{ ... 3 lines ... }', 'class': 'my-fold', 'block': True}],
-        ))
-        ui.button('Annotate (HTML)', on_click=lambda: editor.set_decorations(
+              'text': '{ ... 3 lines ... }', 'class': 'my-fold', 'block': True}]))
+        ui.button('Annotate (HTML)', on_click=lambda: assign(
             [{'kind': 'widget', 'position': 5,
-              'text': '<b style="color: #c00">⚠ first</b>'}],
-        ))
-        ui.button('Clear', on_click=editor.clear_decorations)
+              'text': '<b style="color: #c00">⚠ first</b>'}]))
+        ui.button('Clear', on_click=lambda: assign([]))
 
 
 doc.reference(ui.codemirror)

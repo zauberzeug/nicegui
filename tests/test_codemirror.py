@@ -120,16 +120,16 @@ def test_set_and_clear_line_decorations(screen: Screen):
 
     screen.open('/')
     _wait_for_cm_mount(screen)
-    editor.set_decorations([
+    editor.decorations = [
         {'kind': 'line', 'line': 1, 'class': 'my-line-class'},
         {'kind': 'line', 'line': 3, 'class': 'my-line-class'},
-    ])
+    ]
     screen.wait_for(lambda: _line_decoration_count(screen, 'my-line-class') == 2)
-    editor.clear_decorations()
+    editor.decorations = []
     screen.wait_for(lambda: _line_decoration_count(screen, 'my-line-class') == 0)
 
 
-def test_named_decoration_sets_independent(screen: Screen):
+def test_decorations_list_mutations_sync(screen: Screen):
     editor = None
 
     @ui.page('/')
@@ -139,13 +139,15 @@ def test_named_decoration_sets_independent(screen: Screen):
 
     screen.open('/')
     _wait_for_cm_mount(screen)
-    editor.set_decorations([{'kind': 'line', 'line': 1, 'class': 'set-a'}], set_name='a')
-    editor.set_decorations([{'kind': 'line', 'line': 2, 'class': 'set-b'}], set_name='b')
+    editor.decorations.append({'kind': 'line', 'line': 1, 'class': 'set-a'})
+    editor.decorations.append({'kind': 'line', 'line': 2, 'class': 'set-b'})
     screen.wait_for(lambda: _line_decoration_count(screen, 'set-a') == 1
                     and _line_decoration_count(screen, 'set-b') == 1)
-    editor.clear_decorations('a')
+    del editor.decorations[0]
     screen.wait_for(lambda: _line_decoration_count(screen, 'set-a') == 0
                     and _line_decoration_count(screen, 'set-b') == 1)
+    editor.decorations.clear()
+    screen.wait_for(lambda: _line_decoration_count(screen, 'set-b') == 0)
 
 
 def _visible_text_length(screen: Screen) -> int:
@@ -172,9 +174,9 @@ def test_replace_decoration_collapses_range(screen: Screen):
     _wait_for_cm_mount(screen)
     baseline = _visible_text_length(screen)
     # 'beta\n' spans offsets 6..11 (5 chars + newline) — collapse hides those characters.
-    editor.set_decorations([{'kind': 'replace', 'from': 6, 'to': 11}])
+    editor.decorations = [{'kind': 'replace', 'from': 6, 'to': 11}]
     screen.wait_for(lambda: _visible_text_length(screen) < baseline)
-    editor.clear_decorations()
+    editor.decorations = []
     screen.wait_for(lambda: _visible_text_length(screen) == baseline)
 
 
@@ -188,9 +190,9 @@ def test_replace_decoration_with_text(screen: Screen):
 
     screen.open('/')
     _wait_for_cm_mount(screen)
-    editor.set_decorations([
+    editor.decorations = [
         {'kind': 'replace', 'from': 6, 'to': 10, 'text': 'BETA-NEW', 'class': 'cm-test-suggest'},
-    ])
+    ]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-suggest') == 1)
     widget_text = screen.selenium.execute_script(
         'return document.querySelector(".cm-content span.cm-test-suggest").textContent;'
@@ -207,15 +209,15 @@ def test_widget_text_renders_html_sanitized(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
+        editor = ui.codemirror('alpha\nbeta\ngamma', decoration_text_html=True)
 
     screen.open('/')
     _wait_for_cm_mount(screen)
-    editor.set_decorations([
+    editor.decorations = [
         {'kind': 'widget', 'position': 5,
          'text': '<b>safe</b><script>window.__deco_hijack=1</script>',
          'class': 'cm-test-html-widget'},
-    ])
+    ]
     screen.wait_for(lambda: screen.selenium.execute_script(
         'const w = document.querySelector(".cm-content span.cm-test-html-widget");'
         'return !!(w && w.querySelector("b"));'
@@ -229,6 +231,32 @@ def test_widget_text_renders_html_sanitized(screen: Screen):
     assert not hijacked, 'inline script must not have executed'
 
 
+def test_widget_text_defaults_to_plain(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    editor.decorations = [
+        {'kind': 'widget', 'position': 5,
+         'text': '<b>literal</b>',
+         'class': 'cm-test-plain-widget'},
+    ]
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-plain-widget') == 1)
+    widget_html = screen.selenium.execute_script(
+        'return document.querySelector(".cm-content span.cm-test-plain-widget").innerHTML;'
+    )
+    widget_text = screen.selenium.execute_script(
+        'return document.querySelector(".cm-content span.cm-test-plain-widget").textContent;'
+    )
+    assert '<b>' not in widget_html, 'plain mode must render < and > as entities'
+    assert widget_text == '<b>literal</b>'
+
+
 def test_replace_decoration_block_mode(screen: Screen):
     editor = None
 
@@ -240,10 +268,10 @@ def test_replace_decoration_block_mode(screen: Screen):
     screen.open('/')
     _wait_for_cm_mount(screen)
     # Lines 2-3 ('beta\ngamma') span offsets 6..16 — must cover full lines for block mode.
-    editor.set_decorations([{
+    editor.decorations = [{
         'kind': 'replace', 'from': 6, 'to': 16,
         'text': '{ ... folded ... }', 'class': 'cm-test-fold', 'block': True,
-    }])
+    }]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-fold') == 1)
     visible = screen.selenium.execute_script(
         'return document.querySelector(".cm-content").innerText;'
@@ -263,17 +291,17 @@ def test_mark_decoration_styles_range(screen: Screen):
 
     screen.open('/')
     _wait_for_cm_mount(screen)
-    editor.set_decorations([{
+    editor.decorations = [{
         'kind': 'mark', 'from': 6, 'to': 10,
         'class': 'cm-test-mark', 'attributes': {'data-marker': 'beta'},
-    }])
+    }]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-mark') == 1)
     marker_attr = screen.selenium.execute_script(
         'return document.querySelector(".cm-content span.cm-test-mark").getAttribute("data-marker");'
     )
     assert marker_attr == 'beta'
     assert editor.value == 'alpha\nbeta\ngamma'
-    editor.clear_decorations()
+    editor.decorations = []
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-mark') == 0)
 
 
@@ -287,9 +315,9 @@ def test_widget_decoration_inserts_text(screen: Screen):
 
     screen.open('/')
     _wait_for_cm_mount(screen)
-    editor.set_decorations([
+    editor.decorations = [
         {'kind': 'widget', 'position': 5, 'text': '<-- end of alpha', 'class': 'cm-test-hint'},
-    ])
+    ]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-hint') == 1)
     widget_text = screen.selenium.execute_script(
         'return document.querySelector(".cm-content span.cm-test-hint").textContent;'
