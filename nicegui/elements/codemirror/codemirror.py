@@ -10,7 +10,7 @@ from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
 
 class Diagnostic(TypedDict):
-    """Single linting diagnostic for ``ui.codemirror.set_diagnostics``.
+    """Single linting diagnostic entry.
 
     ``severity`` defaults to ``'error'`` if omitted; ``source`` is shown next to the message.
     ``column`` and ``end_column`` (1-indexed; ``end_column`` is exclusive) narrow the mark
@@ -25,7 +25,7 @@ class Diagnostic(TypedDict):
 
 
 class DiagnosticCount(TypedDict):
-    """Per-severity counts returned by ``ui.codemirror.get_diagnostic_count``."""
+    """Per-severity counts returned by :meth:`CodeMirror.get_diagnostic_count`."""
     error: int
     warning: int
     info: int
@@ -291,6 +291,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        diagnostics: list[Diagnostic] | None = DEFAULT_PROP | None,
+        diagnostic_message_html: bool = DEFAULT_PROP | False,
     ) -> None:
         """CodeMirror
 
@@ -311,6 +313,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param diagnostics: initial list of ``Diagnostic`` dicts rendered as inline marks with hover tooltips (default: ``None``)
+        :param diagnostic_message_html: render diagnostic ``message`` content as sanitized HTML rather than plain text (default: ``False``)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -323,6 +327,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['diagnostics'] = list(diagnostics or [])
+        self._props['diagnostic-message-html'] = diagnostic_message_html
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -383,26 +389,19 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
 
-    def set_diagnostics(self, diagnostics: list[Diagnostic]) -> None:
-        """Set linting diagnostics as inline marks with hover tooltips on the affected lines.
+    @property
+    def diagnostics(self) -> list[Diagnostic]:
+        """List of linting diagnostics rendered as inline marks with hover tooltips.
 
-        Each entry is a ``Diagnostic`` dict with required ``line`` (1-indexed) and ``message``;
-        ``severity`` (``'error'`` | ``'warning'`` | ``'info'`` | ``'hint'``, default ``'error'``),
-        ``source`` (label shown next to the message), and the column range
-        (``column`` and ``end_column``, 1-indexed; ``end_column`` is exclusive) are optional.
-        Out-of-range or non-integer ``line`` values are skipped with a console warning;
-        out-of-range column values are clamped to line bounds.
+        Each entry is a ``Diagnostic`` dict. Mutations sync to the client.
 
         *Added in version X.Y.0*
         """
-        self.run_method('setDiagnostics', diagnostics)
+        return self._props['diagnostics']
 
-    def clear_diagnostics(self) -> None:
-        """Clear all linting diagnostics.
-
-        *Added in version X.Y.0*
-        """
-        self.run_method('setDiagnostics', [])
+    @diagnostics.setter
+    def diagnostics(self, diagnostics: list[Diagnostic] | None) -> None:
+        self._props['diagnostics'] = list(diagnostics or [])
 
     def open_lint_panel(self) -> None:
         """Show CodeMirror's lint panel listing all current diagnostics.

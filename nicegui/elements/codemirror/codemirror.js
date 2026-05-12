@@ -12,6 +12,8 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    diagnostics: Array,
+    diagnosticMessageHtml: Boolean,
     id: String,
   },
   watch: {
@@ -26,6 +28,9 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    diagnostics(newDiagnostics) {
+      this.applyDiagnostics(newDiagnostics);
     },
   },
   data() {
@@ -131,13 +136,14 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
-    setDiagnostics(diagnostics) {
+    applyDiagnostics(diagnostics) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
+      const useHtml = this.diagnosticMessageHtml;
       const cmDiagnostics = [];
-      for (const d of diagnostics) {
+      for (const d of diagnostics || []) {
         if (!Number.isInteger(d.line) || d.line < 1 || d.line > doc.lines) {
-          console.warn(`Diagnostic line out of range: ${d.line} (doc has ${doc.lines} lines)`);
+          logAndEmit("warning", `diagnostics: line ${d.line} out of range [1, ${doc.lines}]`);
           continue;
         }
         const line = doc.line(d.line);
@@ -153,10 +159,13 @@ export default {
           severity: d.severity || "error",
           message,
           source: d.source ?? undefined,
-          // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render.
           renderMessage: () => {
             const span = document.createElement("span");
-            span.setHTML(message);
+            if (useHtml) {
+              span.setHTML(message);
+            } else {
+              span.textContent = message;
+            }
             return span;
           },
         });
@@ -210,9 +219,9 @@ export default {
         // a StateField that registers itself via showTooltip.from(field) and
         // returns null on most transactions. That null provider sits in the
         // showTooltip facet and silently suppresses the autocomplete popup
-        // outside of paren contexts. CM.linter() installs lintState (so the
-        // setDiagnostics() API still works and inline error marks render),
-        // and its only tooltip is a hoverTooltip that fires on mouseover,
+        // outside of paren contexts. CM.linter() installs lintState (so
+        // diagnostics dispatched via CM.setDiagnostics still render as inline
+        // marks), and its only tooltip is a hoverTooltip that fires on mouseover,
         // not on every keystroke. The empty source disables auto-linting.
         CM.linter(() => []),
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
@@ -262,5 +271,6 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    this.applyDiagnostics(this.diagnostics);
   },
 };
