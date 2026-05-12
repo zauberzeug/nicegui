@@ -37,17 +37,20 @@ class Fab(ValueElement[bool], LabelElement, IconElement, BackgroundColorElement,
         super().__init__(tag='q-fab', value=value, label=label, background_color=color, icon=icon)
         self._props['direction'] = direction
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the FAB."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the FAB."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the FAB."""
         self.value = not self.value
+        return self
 
 
 class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableElement):

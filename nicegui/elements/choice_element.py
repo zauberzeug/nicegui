@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import Self
+
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
@@ -52,7 +54,7 @@ class ChoiceElement(ValueElement[Any]):
             self._update_options()
         super().update()
 
-    def set_options(self, options: list | dict, *, value: Any = ...) -> None:
+    def set_options(self, options: list | dict, *, value: Any = ...) -> Self:
         """Set the options of this choice element.
 
         :param options: The new options.
@@ -62,3 +64,4 @@ class ChoiceElement(ValueElement[Any]):
         if value is not ...:
             self.value = value
         self.update()
+        return self

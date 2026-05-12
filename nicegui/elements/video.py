@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.source_element import SourceElement
 
@@ -33,7 +35,7 @@ class Video(SourceElement, component='video.js'):
         self._props.set_bool('muted', muted)
         self._props.set_bool('loop', loop)
 
-    def set_source(self, source: str | Path) -> None:
+    def set_source(self, source: str | Path) -> Self:
         return super().set_source(source)
 
     def seek(self, seconds: float) -> None:

@@ -27,7 +27,7 @@ class ElementFilter(Generic[T]):
     def __init__(self: ElementFilter[Element], *,
                  marker: str | list[str] | None = None,
                  content: str | list[str] | None = None,
-                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 local_scope: bool | None = None,
                  only_visible: bool = False,
                  ) -> None:
         ...
@@ -37,7 +37,7 @@ class ElementFilter(Generic[T]):
                  kind: type[T],
                  marker: str | list[str] | None = None,
                  content: str | list[str] | None = None,
-                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 local_scope: bool | None = None,
                  only_visible: bool = False,
                  ) -> None:
         ...
@@ -46,7 +46,7 @@ class ElementFilter(Generic[T]):
                  kind: type[T] | None = None,
                  marker: str | list[str] | None = None,
                  content: str | list[str] | None = None,
-                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 local_scope: bool | None = None,
                  only_visible: bool = False,
                  ) -> None:
         """ElementFilter
@@ -81,6 +81,9 @@ class ElementFilter(Generic[T]):
         :param local_scope: if ``True``, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
         :param only_visible: if ``True``, filter out elements that are not visible or whose ancestors are not visible
         """
+        if local_scope is None:
+            local_scope = self.DEFAULT_LOCAL_SCOPE
+
         self._kind = kind
         self._markers = marker.split() if isinstance(marker, str) else marker or []
         self._contents = [content] if isinstance(content, str) else content or []
