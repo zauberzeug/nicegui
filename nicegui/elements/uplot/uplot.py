@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Literal
 
 from ...element import Element
@@ -13,7 +14,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
     def __init__(
         self,
         options: dict,
-        data: list[list[Any] | np.ndarray] | np.ndarray,
+        data: Sequence[Any] | np.ndarray,
         scale_mode: Literal['reset', 'preserve_all', 'preserve_zoom'] = 'reset',
     ) -> None:
         """uPlot
@@ -44,5 +45,5 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
         return self._props['data']
 
     @data.setter
-    def data(self, value: list) -> None:
+    def data(self, value: Sequence[Any] | np.ndarray) -> None:
         self._props['data'] = value
