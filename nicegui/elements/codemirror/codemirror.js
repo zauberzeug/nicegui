@@ -15,6 +15,7 @@ export default {
     completions: Array,
     replaceLanguageCompletions: Boolean,
     completeWordsInDocument: Boolean,
+    completionInfoHtml: Boolean,
     tooltipClass: String,
     id: String,
   },
@@ -38,6 +39,9 @@ export default {
       this.rebuildCompletions();
     },
     completeWordsInDocument() {
+      this.rebuildCompletions();
+    },
+    completionInfoHtml() {
       this.rebuildCompletions();
     },
     tooltipClass() {
@@ -147,10 +151,15 @@ export default {
       });
     },
     buildCompletionSource(completions) {
-      // setHTML (DOMPurify-backed polyfill) so plain text and sanitized HTML both render in the side panel.
+      const useHtml = this.completionInfoHtml;
       const renderInfo = (info) => () => {
         const div = document.createElement("div");
-        div.setHTML(info);
+        if (useHtml) {
+          // setHTML (DOMPurify-backed polyfill) sanitizes HTML.
+          div.setHTML(info);
+        } else {
+          div.textContent = info;
+        }
         return div;
       };
       return (context) => {

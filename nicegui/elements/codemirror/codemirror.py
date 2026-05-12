@@ -35,7 +35,8 @@ class CompletionItem(TypedDict):
     - ``snippet``: treat ``apply`` as a snippet template; Tab/Shift-Tab cycles between fields.
     - ``display_label``: shown in the dropdown instead of ``label``; ``label`` is still used for matching.
     - ``detail``: short text shown next to the label (e.g. a type signature).
-    - ``info``: longer description shown when the entry is highlighted.
+    - ``info``: longer description shown when the entry is highlighted. Rendered as plain text by default;
+      pass ``completion_info_html=True`` to the editor constructor to render as sanitized HTML.
     - ``type``: icon shown next to the entry; one of the 12 built-in CM6 types.
     - ``boost``: sort weight from -99 to 99 (higher floats to the top).
     - ``commit_characters``: extra characters that, when typed, accept this completion (e.g. ``['.', '(']``).
@@ -316,6 +317,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         completions: list[CompletionItem] | None = DEFAULT_PROP | None,
         replace_language_completions: bool = DEFAULT_PROP | False,
         complete_words_in_document: bool = DEFAULT_PROP | False,
+        completion_info_html: bool = DEFAULT_PROP | False,
         tooltip_class: str | None = DEFAULT_PROP | None,
     ) -> None:
         """CodeMirror
@@ -348,6 +350,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param complete_words_in_document: if ``True``, also suggest identifiers already present
             elsewhere in the document (CodeMirror's ``completeAnyWord`` source). Default: ``False``.
             *Added in version X.Y.Z*
+        :param completion_info_html: render the side-panel ``info`` text as sanitized HTML rather than
+            plain text. Default: ``False``.
+            *Added in version X.Y.Z*
         :param tooltip_class: CSS class added to the autocomplete popup container.
             Combine with ``ui.add_css`` to style the popup.
             *Added in version X.Y.Z*
@@ -366,6 +371,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['completions'] = completions or []
         self._props['replace-language-completions'] = replace_language_completions
         self._props['complete-words-in-document'] = complete_words_in_document
+        self._props['completion-info-html'] = completion_info_html
         self._props['tooltip-class'] = tooltip_class
         self._update_method = 'setEditorValueFromProps'
 

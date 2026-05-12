@@ -41,11 +41,12 @@ def preserve_cursor_demo() -> None:
     ``complete_words_in_document=True`` to also surface identifiers already typed elsewhere.
     Call ``editor.trigger_completion()`` to open the popup programmatically.
 
-    The side-panel ``info`` content renders via NiceGUI's global ``setHTML`` polyfill, so plain
-    text and sanitized HTML both work — useful for code samples, links, or formatted notes.
+    Side-panel ``info`` content renders as plain text by default; pass
+    ``completion_info_html=True`` to the constructor to render ``info`` as sanitized HTML
+    via NiceGUI's ``setHTML`` polyfill — useful for code samples, links, or formatted notes.
 ''')
 def custom_completions_demo() -> None:
-    editor = ui.codemirror('', language='Python', completions=[
+    editor = ui.codemirror('', language='Python', completion_info_html=True, completions=[
         {'label': 'np.array', 'apply': 'np.array(', 'detail': 'numpy.array(...)',
          'info': 'Build an N-D array. <code>np.array([1, 2, 3])</code> &rarr; <b>1-D</b>.',
          'type': 'function', 'section': 'numpy', 'commit_characters': ['(']},

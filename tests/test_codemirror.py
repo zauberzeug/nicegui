@@ -243,10 +243,33 @@ def test_trigger_completion(screen: Screen):
     screen.wait_for(lambda: 'hello' in _rendered_labels(screen))
 
 
-def test_completion_info_renders_html_sanitized(screen: Screen):
+def test_completion_info_default_is_plain_text(screen: Screen):
     @ui.page('/')
     def page():
         ui.codemirror('', completions=[
+            {'label': 'foo', 'info': '<b>raw</b>'},
+        ])
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys('foo')
+    screen.wait_for(lambda: _open_count(screen) == 1)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'const tip = document.querySelector(".cm-completionInfo");'
+        'return !!(tip && tip.textContent.includes("<b>raw</b>"));'
+    ))
+    has_bold = screen.selenium.execute_script(
+        'const tip = document.querySelector(".cm-completionInfo");'
+        'return !!(tip && tip.querySelector("b"));'
+    )
+    assert not has_bold, 'default rendering must not interpret HTML'
+
+
+def test_completion_info_html_opt_in_renders_sanitized(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.codemirror('', completion_info_html=True, completions=[
             {'label': 'foo',
              'info': '<b>safe</b><script>window.__info_hijack=1</script>'},
         ])
