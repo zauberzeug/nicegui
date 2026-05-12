@@ -29,12 +29,13 @@ class ColorPicker(Menu):
                     handle_event(handler, ColorPickEventArguments(sender=self, client=self.client, color=e.args))
             self.q_color = Element('q-color').on('change', handle_change)
 
-    def set_color(self, color: str) -> None:
+    def set_color(self, color: str) -> Self:
         """Set the color of the picker.
 
         :param color: the color to set
         """
         self.q_color.props(f'model-value="{color}"')
+        return self
 
     def on_pick(self, callback: Handler[ColorPickEventArguments]) -> Self:
         """Add a callback to be invoked when a color is picked."""
