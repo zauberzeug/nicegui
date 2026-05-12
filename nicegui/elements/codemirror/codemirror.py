@@ -9,7 +9,7 @@ from ...logging import log
 
 
 class LineAnchor(TypedDict):
-    """A single anchor pinned to a line in :meth:`ui.codemirror.set_line_anchors`.
+    """A single anchor pinned to a line in :attr:`ui.codemirror.line_anchors`.
 
     ``id`` is a caller-chosen stable identifier used to look up the current line in
     :attr:`ui.codemirror.line_anchor_positions` after document edits remap the anchor.
@@ -279,6 +279,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        line_anchors: list[LineAnchor] | None = None,
     ) -> None:
         """CodeMirror
 
@@ -299,6 +300,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param line_anchors: initial list of line anchors tracking document positions through edits (default: ``None``)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -306,7 +308,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         if on_change is not None:
             super().on_value_change(on_change)
 
-        self._anchor_positions: dict[str, dict[str, int]] = {}
+        self._anchor_positions: dict[str, int] = {}
         self.on('anchor-positions', self._update_anchor_mirror)
 
         self._props['language'] = language
@@ -314,6 +316,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['line-anchors'] = list(line_anchors or [])
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -374,63 +377,43 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
 
-    def set_line_anchors(self, anchors: list[LineAnchor], set_name: str = 'default') -> None:
-        """Set named anchors that track document positions through edits.
+    @property
+    def line_anchors(self) -> list[LineAnchor]:
+        """Anchors tracking document positions through edits; mutating this list syncs to the client.
 
-        Each anchor is a :class:`LineAnchor` dict with a caller-chosen ``id`` and an initial ``line``.
-        CodeMirror remaps the underlying position when the document changes;
-        the current line for each anchor is exposed on the Python side via :attr:`line_anchor_positions`.
+        Each entry is a :class:`LineAnchor` dict with a caller-chosen ``id`` and a 1-indexed
+        initial ``line``. CodeMirror remaps the underlying position when the document changes;
+        read the current line for each anchor via :attr:`line_anchor_positions`.
 
-        Multiple named sets can be managed independently (e.g. ``'breakpoints'``, ``'targets'``).
-        Calling ``set_line_anchors`` for the same ``set_name`` replaces that set's anchors;
-        anchors in other sets are left untouched.
-
-        The browser is the source of truth: :attr:`line_anchor_positions` is populated by the
-        next ``anchor-positions`` event and briefly lags this call until the JS round-trip lands.
         Lines exceeding the current document length are clamped to the last line on the JS side
-        (a ``console.warn`` is logged in the browser); read :attr:`line_anchor_positions` after
-        the round-trip to see where each anchor actually landed.
-
-        :raises ValueError: if any anchor has ``line < 1`` or if two anchors share the same ``id``
+        (a warning is emitted via NiceGUI's logger). Duplicate ids in the same list are
+        last-wins; a warning is emitted via NiceGUI's logger.
 
         *Added in version X.Y.Z*
         """
-        seen: dict[str, int] = {}
-        for a in anchors:
-            if a['line'] < 1:
-                raise ValueError(f'line must be >= 1, got {a["line"]} for anchor {a["id"]!r}')
-            if a['id'] in seen:
-                raise ValueError(f'duplicate anchor id {a["id"]!r} in set {set_name!r}')
-            seen[a['id']] = a['line']
-        self.run_method('setLineAnchors', anchors, set_name)
+        return self._props['line-anchors']
 
-    def clear_line_anchors(self, set_name: str | None = None) -> None:
-        """Clear anchors.
-
-        :param set_name: clear only this named set, or all sets if ``None``
-
-        *Added in version X.Y.Z*
-        """
-        self.run_method('clearLineAnchors', set_name)
+    @line_anchors.setter
+    def line_anchors(self, anchors: list[LineAnchor] | None) -> None:
+        self._props['line-anchors'] = list(anchors or [])
 
     @property
-    def line_anchor_positions(self) -> dict[str, dict[str, int]]:
+    def line_anchor_positions(self) -> dict[str, int]:
         """Current anchor positions, as last reported by the browser.
 
-        Returns a nested dict ``{set_name: {anchor_id: 1-indexed line}}``.
-        The browser is the source of truth, so this property briefly lags
-        :meth:`set_line_anchors` and :meth:`clear_line_anchors` calls until the
-        JS round-trip completes, and updates asynchronously when document edits
-        remap anchor positions.
+        Returns a flat ``{anchor_id: 1-indexed line}`` mapping. The browser is the source of
+        truth, so this property briefly lags assignments to :attr:`line_anchors` until the
+        JS round-trip completes, and updates asynchronously when document edits remap anchor
+        positions.
 
         *Added in version X.Y.Z*
         """
-        return {name: dict(positions) for name, positions in self._anchor_positions.items()}
+        return dict(self._anchor_positions)
 
     def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
         anchors = e.args.get('anchors')
         if isinstance(anchors, dict):
-            self._anchor_positions = anchors
+            self._anchor_positions = {str(k): int(v) for k, v in anchors.items()}
         else:
             log.warning('codemirror: ignoring malformed anchor-positions payload: %r', anchors)
 

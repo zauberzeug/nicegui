@@ -40,20 +40,19 @@ def line_anchors_demo() -> None:
         'rbt.move_l([100.0, 0.0, 200.0])\n'
         'rbt.move_l([100.0, 100.0, 200.0])\n'
     )
-    editor = ui.codemirror(code, language='Python').classes('h-40')
-    editor.set_line_anchors([{'id': 'A', 'line': 1}, {'id': 'B', 'line': 2}])
+    editor = ui.codemirror(code, language='Python',
+                           line_anchors=[{'id': 'A', 'line': 1}, {'id': 'B', 'line': 2}]).classes('h-40')
     status = ui.label()
 
     def show_positions(_=None) -> None:
-        pos = editor.line_anchor_positions.get('default', {})
+        pos = editor.line_anchor_positions
         status.set_text(f'target A is on line {pos.get("A", "?")}, target B is on line {pos.get("B", "?")}')
 
     editor.on('anchor-positions', show_positions)
     show_positions()
 
     def update_target(target_id: str, new_pose: str) -> None:
-        pos = editor.line_anchor_positions.get('default', {})
-        line_no = pos.get(target_id)
+        line_no = editor.line_anchor_positions.get(target_id)
         if not line_no:
             return
         lines = (editor.value or '').split('\n')

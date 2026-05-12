@@ -1,50 +1,25 @@
 import * as CM from "nicegui-codemirror";
 
-// Line anchors: named sets of {id, line} pairs that CM6 RangeSet auto-remaps
-// through document edits. Each AnchorValue carries its id + setName so a single
-// shared StateField can hold multiple independently-managed sets.
+// Line anchors: {id, line} pairs whose positions CM6 RangeSet auto-remaps
+// through document edits. Each AnchorValue carries its id.
 
 class AnchorValue extends CM.RangeValue {
-  constructor(id, setName) {
+  constructor(id) {
     super();
     this.id = id;
-    this.setName = setName;
   }
-  // Required by RangeValue for RangeSet diffing.
-  eq(other) { return this.id === other.id && this.setName === other.setName; }
+  eq(other) { return this.id === other.id; }
 }
 
-const setAnchorsEffect = CM.StateEffect.define();    // value: {setName, ranges}
-const clearAnchorsEffect = CM.StateEffect.define();  // value: setName | null
+const setAnchorsEffect = CM.StateEffect.define();  // value: list of ranges (replaces all)
 
 const anchorField = CM.StateField.define({
   create() { return CM.RangeSet.empty; },
   update(set, tr) {
     set = set.map(tr.changes);
     for (const effect of tr.effects) {
-      if (effect.is(clearAnchorsEffect)) {
-        if (effect.value === null) return CM.RangeSet.empty;
-        const keep = [];
-        const cursor = set.iter();
-        while (cursor.value) {
-          if (cursor.value.setName !== effect.value) {
-            keep.push(cursor.value.range(cursor.from, cursor.to));
-          }
-          cursor.next();
-        }
-        return CM.RangeSet.of(keep, true);
-      }
       if (effect.is(setAnchorsEffect)) {
-        const { setName, ranges } = effect.value;
-        const keep = [];
-        const cursor = set.iter();
-        while (cursor.value) {
-          if (cursor.value.setName !== setName) {
-            keep.push(cursor.value.range(cursor.from, cursor.to));
-          }
-          cursor.next();
-        }
-        return CM.RangeSet.of([...keep, ...ranges], true);
+        return CM.RangeSet.of(effect.value, true);
       }
     }
     return set;
@@ -63,6 +38,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    lineAnchors: Array,
     id: String,
   },
   watch: {
@@ -77,6 +53,12 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    lineAnchors: {
+      deep: true,
+      handler(newAnchors) {
+        this.applyLineAnchors(newAnchors);
+      },
     },
   },
   data() {
@@ -183,48 +165,46 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
-    async setLineAnchors(anchors, setName) {
+    async applyLineAnchors(anchors) {
       if (!this.editor) await this.editorPromise;
       clearTimeout(this._anchorTimer);
       this._anchorTimer = null;
       const doc = this.editor.state.doc;
       const ranges = [];
-      for (const a of anchors) {
-        if (a.line > doc.lines) {
-          console.warn(
-            `Line anchor ${JSON.stringify(a.id)} requested line ${a.line} ` +
+      const seen = new Set();
+      for (const a of anchors || []) {
+        if (a.line < 1) {
+          logAndEmit("warning", `line_anchors: anchor ${JSON.stringify(a.id)} has line ${a.line}; clamping to 1.`);
+        } else if (a.line > doc.lines) {
+          logAndEmit(
+            "warning",
+            `line_anchors: anchor ${JSON.stringify(a.id)} requested line ${a.line} ` +
               `but document only has ${doc.lines} line(s); clamping to last line.`,
           );
         }
+        if (seen.has(a.id)) {
+          logAndEmit("warning", `line_anchors: duplicate id ${JSON.stringify(a.id)}; last entry wins.`);
+        }
+        seen.add(a.id);
         const lineNum = Math.max(1, Math.min(a.line, doc.lines));
         const pos = doc.line(lineNum).from;
-        ranges.push(new AnchorValue(a.id, setName).range(pos, pos));
+        ranges.push(new AnchorValue(a.id).range(pos, pos));
       }
-      this.editor.dispatch({ effects: setAnchorsEffect.of({ setName, ranges }) });
+      this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
       this.emitAnchorPositions();
     },
-    async clearLineAnchors(setName) {
-      if (!this.editor) await this.editorPromise;
-      clearTimeout(this._anchorTimer);
-      this._anchorTimer = null;
-      this.editor.dispatch({ effects: clearAnchorsEffect.of(setName ?? null) });
-      this.emitAnchorPositions();
-    },
-    // Reads live editor state so callers don't need to capture anything.
     emitAnchorPositions() {
       if (!this.editor) return;
       const state = this.editor.state;
       const field = state.field(anchorField);
       const doc = state.doc;
-      const sets = {};
+      const positions = {};
       const cursor = field.iter();
       while (cursor.value) {
-        const sn = cursor.value.setName;
-        if (!sets[sn]) sets[sn] = {};
-        sets[sn][cursor.value.id] = doc.lineAt(cursor.from).number;
+        positions[cursor.value.id] = doc.lineAt(cursor.from).number;
         cursor.next();
       }
-      this.$emit("anchor-positions", { anchors: sets });
+      this.$emit("anchor-positions", { anchors: positions });
     },
     setupExtensions() {
       const self = this;
@@ -314,5 +294,8 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.lineAnchors && this.lineAnchors.length > 0) {
+      this.applyLineAnchors(this.lineAnchors);
+    }
   },
 };
