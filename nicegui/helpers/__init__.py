@@ -3,6 +3,7 @@ import os
 from .elements import require_top_level_layout
 from .files import hash_file_path, is_file
 from .functions import (
+    NoImplicitAwait,
     await_with_context,
     expects_arguments,
     is_coroutine_function,
@@ -14,6 +15,7 @@ from .strings import event_type_to_camel_case, kebab_to_camel_case, remove_inden
 from .warnings import warn_once
 
 __all__ = [
+    'NoImplicitAwait',
     'await_with_context',
     'event_type_to_camel_case',
     'expects_arguments',

@@ -25,6 +25,6 @@ jobs:
       - name: Install Python
         run: uv python install 3.10
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --locked
       - name: ${{ matrix.target.name }}
         run: uv run ${{ matrix.target.command }}

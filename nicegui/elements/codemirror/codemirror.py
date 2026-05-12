@@ -1,7 +1,7 @@
 from itertools import accumulate, chain, repeat
 from typing import Literal, TypedDict, get_args
 
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
@@ -369,9 +369,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def theme(self, theme: SUPPORTED_THEMES) -> None:
         self._props['theme'] = theme
 
-    def set_theme(self, theme: SUPPORTED_THEMES) -> None:
+    def set_theme(self, theme: SUPPORTED_THEMES) -> Self:
         """Sets the theme of the editor."""
         self._props['theme'] = theme
+        return self
 
     @property
     def supported_themes(self) -> list[str]:
@@ -387,9 +388,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
         self._props['language'] = language
 
-    def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
+    def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> Self:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
+        return self
 
     @property
     def supported_languages(self) -> list[str]:
@@ -408,12 +410,13 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def line_wrapping(self, value: bool) -> None:
         self._props['line-wrapping'] = value
 
-    def set_line_wrapping(self, value: bool) -> None:
+    def set_line_wrapping(self, value: bool) -> Self:
         """Sets whether line wrapping is enabled.
 
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+        return self
 
     @property
     def decorations(self) -> list[DecorationSpec]:

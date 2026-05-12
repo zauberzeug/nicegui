@@ -2,6 +2,8 @@ import re
 from colorsys import rgb_to_yiq
 from typing import Any
 
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
@@ -46,11 +48,12 @@ class ColorInput(LabelElement, ValueElement[str | None], DisableableElement):
         self.preview = preview
         self._update_preview()
 
-    def open_picker(self) -> None:
+    def open_picker(self) -> Self:
         """Open the color picker"""
         if self.value:
             self.picker.set_color(self.value)
         self.picker.open()
+        return self
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
