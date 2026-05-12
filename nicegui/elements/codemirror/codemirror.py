@@ -366,8 +366,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def line_tooltips(self) -> dict[int, str]:
         """Mapping of 1-indexed line numbers to hover tooltip content.
 
-        Mutating this dict (assignment, ``del``, ``update``, ``clear``) syncs to the client.
-        An empty string suppresses the tooltip on that line.
+        Mutations sync to the client. An empty string suppresses the tooltip on that line.
 
         *Added in version X.Y.Z*
         """
