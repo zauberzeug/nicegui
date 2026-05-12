@@ -46,7 +46,7 @@ repos:
     hooks:
       - id: mdformat
         args: ["--wrap", "keep", "--number"]
-        exclude: ^\.cursor/
         additional_dependencies:
+          - mdformat-frontmatter
           - mdformat-gfm
           - mdformat-simple-breaks

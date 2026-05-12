@@ -84,8 +84,8 @@ export default {
         for (const alias of [language.name, ...language.alias])
           if (name.toLowerCase() === alias.toLowerCase()) return language;
 
-      console.error(`Language not found: ${this.language}`);
-      console.info("Supported language names:", languages.map((lang) => lang.name).join(", "));
+      console.error(`Language not found: ${name}`);
+      console.info("Supported language names:", this.languages.map((lang) => lang.name).join(", "));
       return null;
     },
     // Get the names of all supported languages
@@ -102,9 +102,8 @@ export default {
         return;
       }
 
-      const lang_description = this.findLanguage(language, this.languages);
+      const lang_description = this.findLanguage(language);
       if (!lang_description) {
-        console.error("Language not found:", language);
         return;
       }
 
