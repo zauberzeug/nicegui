@@ -15,17 +15,24 @@ from nicegui import helpers
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
     pytest_addoption,
-    pytest_configure,
     pytest_unconfigure,
 )
+from .general_fixtures import pytest_configure as _general_pytest_configure
 from .screen import Screen
 
 # pylint: disable=redefined-outer-name
 
-Screen.PORT = helpers.find_free_port()
-Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
-DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
-atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # per-test cleanup lives in the screen fixture
+DOWNLOAD_DIR: Path | None = None  # set in pytest_configure()
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Configure storage (delegated) and set up session-unique Screen.PORT, SCREENSHOT_DIR, DOWNLOAD_DIR."""
+    _general_pytest_configure(config)
+    global DOWNLOAD_DIR  # pylint: disable=global-statement # noqa: PLW0603
+    Screen.PORT = helpers.find_free_port()
+    Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
+    DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
+    atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # per-test cleanup lives in the screen fixture
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
@@ -39,6 +46,7 @@ def pytest_runtest_makereport(item, call):  # pylint: disable=unused-argument
 @pytest.fixture(scope='session')
 def nicegui_chrome_options() -> webdriver.ChromeOptions:
     """Configure the Chrome options for the NiceGUI tests."""
+    assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('disable-search-engine-choice-screen')
@@ -132,6 +140,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
+    assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
     _reset_browser_state(nicegui_driver)
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
     screen_ = Screen(nicegui_driver, caplog, request)
