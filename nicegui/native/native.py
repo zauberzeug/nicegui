@@ -2,14 +2,17 @@
 from __future__ import annotations
 
 import inspect
+import multiprocessing
 import warnings
 from collections.abc import Callable
-from multiprocessing import Pipe, Queue
+from multiprocessing import Queue
 from multiprocessing.connection import Connection
 from typing import Any
 
 from .. import run
 from ..logging import log
+
+SPAWN_CONTEXT = multiprocessing.get_context('spawn')  # match uvicorn's ChangeReload worker (#1841)
 
 method_queue: Queue | None = None
 response_queue: Queue | None = None
@@ -20,9 +23,9 @@ event_sender: Connection | None = None
 def create_queues() -> None:
     """Create the message queues and event pipe. (For internal use only.)"""
     global method_queue, response_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
-    method_queue = Queue()
-    response_queue = Queue()
-    event_receiver, event_sender = Pipe(duplex=False)
+    method_queue = SPAWN_CONTEXT.Queue()
+    response_queue = SPAWN_CONTEXT.Queue()
+    event_receiver, event_sender = SPAWN_CONTEXT.Pipe(duplex=False)
 
 
 def remove_queues() -> None:

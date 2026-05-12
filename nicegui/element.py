@@ -478,7 +478,7 @@ class Element(Visibility):
     def move(self,
              target_container: Element | None = None,
              target_index: int = -1, *,
-             target_slot: str | None = None) -> None:
+             target_slot: str | None = None) -> Self:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
@@ -505,6 +505,7 @@ class Element(Visibility):
         parent_slot.children.insert(target_index, self)
 
         target_container.update()
+        return self
 
     def remove(self, element: Element | int) -> None:
         """Remove a child element.

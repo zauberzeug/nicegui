@@ -116,9 +116,10 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
         return self
 
-    def reset(self) -> None:
+    def reset(self) -> Self:
         """Clear the upload queue."""
         self.run_method('reset')
+        return self
 
     def _handle_delete(self) -> None:
         app.remove_route(self._props['url'])

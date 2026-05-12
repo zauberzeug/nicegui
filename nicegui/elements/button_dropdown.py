@@ -60,14 +60,17 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the dropdown."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the dropdown."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the dropdown."""
         self.value = not self.value
+        return self

@@ -24,6 +24,6 @@ jobs:
       - name: Install Python
         run: uv python install 3.10
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --locked
       - name: Install pre-commit hooks
         run: uv run pre-commit install
