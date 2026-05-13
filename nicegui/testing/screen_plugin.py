@@ -69,7 +69,18 @@ def nicegui_chrome_options() -> webdriver.ChromeOptions:
     return chrome_options
 
 
-def _pid_alive(pid: int) -> bool:
+@pytest.fixture(scope='session')
+def nicegui_remove_all_screenshots() -> None:
+    """Prune directories of finished concurrent runs and remove screenshots from previous runs."""
+    if Screen.SCREENSHOT_DIR.parent.exists():
+        for path in Screen.SCREENSHOT_DIR.parent.iterdir():
+            if path.is_dir() and path.name.isdigit() and path != Screen.SCREENSHOT_DIR and not _is_alive(int(path.name)):
+                shutil.rmtree(path, ignore_errors=True)
+    for path in Screen.SCREENSHOT_DIR.glob('*.png'):
+        path.unlink()
+
+
+def _is_alive(pid: int) -> bool:
     """Best-effort cross-platform liveness check for a process ID."""
     if sys.platform == 'win32':
         import ctypes  # pylint: disable=import-outside-toplevel
@@ -94,24 +105,6 @@ def _pid_alive(pid: int) -> bool:
     except OSError:
         return True  # exists but we lack permission to signal
     return True
-
-
-@pytest.fixture(scope='session')
-def nicegui_remove_all_screenshots() -> None:
-    """Remove screenshots from the current PID's directory and prune dirs of finished concurrent runs."""
-    parent = Screen.SCREENSHOT_DIR.parent
-    if parent.exists():
-        for sibling in parent.iterdir():
-            if not sibling.is_dir() or sibling == Screen.SCREENSHOT_DIR:
-                continue
-            try:
-                pid = int(sibling.name)
-            except ValueError:
-                continue  # not a pid-named dir; user/foreign content, leave alone
-            if not _pid_alive(pid):
-                shutil.rmtree(sibling, ignore_errors=True)
-    for name in Screen.SCREENSHOT_DIR.glob('*.png'):
-        name.unlink()
 
 
 @pytest.fixture(scope='session')

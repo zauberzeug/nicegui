@@ -1,9 +1,5 @@
 # pylint: disable=unused-import
-from .general_fixtures import (  # noqa: F401
-    nicegui_reset_globals,
-    pytest_addoption,
-    pytest_unconfigure,
-)
+from .general_fixtures import nicegui_reset_globals, pytest_addoption, pytest_unconfigure  # noqa: F401
 from .screen_plugin import (  # noqa: F401
     nicegui_chrome_options,
     nicegui_driver,
