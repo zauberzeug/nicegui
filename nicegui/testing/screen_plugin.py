@@ -1,7 +1,6 @@
 import atexit
 import os
 import shutil
-import sys
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
@@ -12,6 +11,7 @@ from selenium.webdriver.chrome.service import Service
 
 from nicegui import helpers
 
+from .filelock import FileLock
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
     pytest_addoption,
@@ -72,39 +72,14 @@ def nicegui_chrome_options() -> webdriver.ChromeOptions:
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
     """Prune directories of finished concurrent runs and remove screenshots from previous runs."""
+    FileLock(Screen.SCREENSHOT_DIR / '.lock').acquire()
     if Screen.SCREENSHOT_DIR.parent.exists():
         for path in Screen.SCREENSHOT_DIR.parent.iterdir():
-            if path.is_dir() and path.name.isdigit() and path != Screen.SCREENSHOT_DIR and not _is_alive(int(path.name)):
+            if path.is_dir() and path.name.isdigit() and (probe := FileLock(path / '.lock')).acquire():
+                probe.release()
                 shutil.rmtree(path, ignore_errors=True)
     for path in Screen.SCREENSHOT_DIR.glob('*.png'):
         path.unlink()
-
-
-def _is_alive(pid: int) -> bool:
-    """Best-effort cross-platform liveness check for a process ID."""
-    if sys.platform == 'win32':
-        import ctypes  # pylint: disable=import-outside-toplevel
-        from ctypes import wintypes  # pylint: disable=import-outside-toplevel
-        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-        # HANDLE is pointer-sized; without explicit argtypes/restype, ctypes defaults to c_int
-        # and truncates the handle on Win64 — CloseHandle would then fail to release it.
-        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-        kernel32.OpenProcess.restype = wintypes.HANDLE
-        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
-        kernel32.CloseHandle.restype = wintypes.BOOL
-        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-        if not handle:
-            return False
-        kernel32.CloseHandle(handle)
-        return True
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except OSError:
-        return True  # exists but we lack permission to signal
-    return True
 
 
 @pytest.fixture(scope='session')
