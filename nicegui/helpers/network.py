@@ -19,6 +19,16 @@ def is_port_open(host: str, port: int) -> bool:
         sock.close()
 
 
+def find_free_port() -> int:
+    """Find a free port usable by ui.run (which binds to all interfaces by default).
+
+    Best-effort only: another process may grab the port between this call returning and ui.run binding.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(('0.0.0.0', 0))
+        return sock.getsockname()[1]
+
+
 def format_url(protocol: str, host: str, port: int) -> str:
     """Format a URL, bracketing IPv6 hosts and omitting the port for http:80 / https:443."""
     if ':' in host and not host.startswith('['):
