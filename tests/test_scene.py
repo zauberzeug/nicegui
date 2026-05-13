@@ -314,6 +314,43 @@ def test_set_axes_inset_and_labels(screen: Screen):
     ))
 
 
+def test_axes_inset_preserves_main_scene_render(screen: Screen):
+    """``viewHelper.render()`` clears the framebuffer when ``renderer.autoClear`` is true,
+    which wipes the main scene one draw after it renders. The render loop must save/restore
+    ``autoClear`` around the helper call so the main scene survives each frame."""
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
+    scene.set_axes_inset(enabled=True)
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return !!getElement({scene.id}).viewHelper'
+    ))
+    # Patch viewHelper.render to record renderer.autoClear at call time. The render loop
+    # must drop it to false before the helper draws — otherwise the helper wipes the main
+    # scene's framebuffer.
+    screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'const orig = el.viewHelper.render.bind(el.viewHelper);'
+        'window.__autoClearLog = [];'
+        'el.viewHelper.render = function (renderer) {'
+        '  window.__autoClearLog.push(renderer.autoClear);'
+        '  return orig(renderer);'
+        '};'
+    )
+    # Let the rAF loop run several frames.
+    screen.wait(0.3)
+    log = screen.selenium.execute_script('return window.__autoClearLog')
+    assert len(log) >= 2, f'expected multiple viewHelper.render calls, got {log}'
+    assert all(v is False for v in log), \
+        f'renderer.autoClear must be false during viewHelper.render; got {log}'
+
+
 def test_axes_inset_handle_click_snaps_camera(screen: Screen):
     scene = None
 

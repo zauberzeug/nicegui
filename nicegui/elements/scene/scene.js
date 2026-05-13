@@ -223,7 +223,10 @@ export default {
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
       if (this.viewHelper) {
+        const autoClear = this.renderer.autoClear;
+        this.renderer.autoClear = false;
         this.viewHelper.render(this.renderer);
+        this.renderer.autoClear = autoClear;
         if (this.viewHelper.animating) this.viewHelper.update(delta);
       }
       if (this.stats) this.stats.update();
