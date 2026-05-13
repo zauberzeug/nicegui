@@ -18,9 +18,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 def pytest_configure(config: pytest.Config) -> None:
     """Register the "nicegui_main_file" marker and set up a session-unique storage path."""
+    global _nicegui_storage_dir  # pylint: disable=global-statement # noqa: PLW0603
+    if _nicegui_storage_dir is not None:
+        return  # already configured (e.g. plugin.py + user_plugin.py both loaded)
+
     config.addinivalue_line('markers', 'nicegui_main_file: specify the main file for the test')
 
-    global _nicegui_storage_dir  # pylint: disable=global-statement # noqa: PLW0603
     _nicegui_storage_dir = tempfile.mkdtemp(prefix='nicegui-test-storage-')
 
     from .. import app  # pylint: disable=import-outside-toplevel
@@ -34,8 +37,10 @@ def pytest_configure(config: pytest.Config) -> None:
 
 def pytest_unconfigure(config: pytest.Config) -> None:  # pylint: disable=unused-argument
     """Clean up session-unique storage directory."""
+    global _nicegui_storage_dir  # pylint: disable=global-statement # noqa: PLW0603
     if _nicegui_storage_dir is not None:
         shutil.rmtree(_nicegui_storage_dir, ignore_errors=True)
+        _nicegui_storage_dir = None
 
 
 def get_path_to_main_file(request: pytest.FixtureRequest) -> Path | None:

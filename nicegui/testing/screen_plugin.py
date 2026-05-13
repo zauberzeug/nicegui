@@ -32,7 +32,7 @@ def pytest_configure(config: pytest.Config) -> None:
     Screen.PORT = helpers.find_free_port()
     Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
     DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
-    atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # per-test cleanup lives in the screen fixture
+    atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # safety net for aborted session
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
@@ -143,6 +143,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
     _reset_browser_state(nicegui_driver)
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
+    DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
     screen_ = Screen(nicegui_driver, caplog, request)
     try:
         yield screen_
@@ -161,8 +162,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     finally:
         os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
         screen_.stop_server()
-        if DOWNLOAD_DIR.exists():
-            shutil.rmtree(DOWNLOAD_DIR)
+        shutil.rmtree(DOWNLOAD_DIR, ignore_errors=True)
 
 
 def _reset_browser_state(driver: webdriver.Chrome) -> None:
