@@ -31,14 +31,12 @@ table = ui.table(columns=[
     {'id': 1, 'name': 'Bob', 'age': 21},
     {'id': 2, 'name': 'Carol', 'age': 20},
 ], row_key='name').classes('w-60')
-table.add_slot('header', r'''
-    <q-tr :props="props">
-        <q-th auto-width />
-        <q-th v-for="col in props.cols" :key="col.name" :props="props">
-            {{ col.label }}
-        </q-th>
-    </q-tr>
-''')
+with table.add_slot('header'):
+    with table.row():
+        table.header().props('auto-width')
+        for column in table.columns:
+            with table.header(column['name']):
+                ui.label(column['label'])
 table.add_slot('body', r'''
     <q-tr :props="props">
         <q-td auto-width >

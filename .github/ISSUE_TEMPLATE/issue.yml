@@ -19,6 +19,8 @@ body:
       options:
         - label: I added a very descriptive title here.
           required: true
+        - label: This is not a security issue (those should be reported via the [security advisory](https://github.com/zauberzeug/nicegui/security/advisories/new) instead).
+          required: true
         - label: This is not a Q&A. I am sure something is wrong with NiceGUI or its documentation.
           required: true
         - label: I used the GitHub search to find a similar [issue](https://github.com/zauberzeug/nicegui/issues) and came up empty.

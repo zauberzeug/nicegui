@@ -5,11 +5,13 @@ import time
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Literal, Union
+from typing import Any, Literal
 
 import socketio
 from fastapi import HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import FileResponse, Response
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
@@ -54,6 +56,7 @@ app.mount('/_nicegui_ws/', sio_app)
 
 
 mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('text/javascript', '.mjs')
 mimetypes.add_type('text/css', '.css')
 
 static_files = CacheControlledStaticFiles(
@@ -71,14 +74,14 @@ def _get_library(key: str) -> FileResponse:
         path = libraries[dict_key].path
         if is_map:
             path = path.with_name(path.name + '.map')
-        if path.exists():
+        if path.is_file():
             return FileResponse(path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def _get_component(key: str) -> Response:
-    if key in js_components and js_components[key].path.exists():
+    if key in js_components and js_components[key].path.is_file():
         return FileResponse(js_components[key].path, media_type='text/javascript')
     elif key in vue_components:
         return Response(vue_components[key].script, media_type='text/javascript')
@@ -91,7 +94,7 @@ def _get_resource(key: str, path: str) -> FileResponse:
         filepath = resources[key].path / path
         if not filepath.resolve().is_relative_to(resources[key].path.resolve()):
             raise HTTPException(status_code=403, detail='forbidden')
-        if filepath.exists():
+        if filepath.is_file():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
@@ -110,7 +113,7 @@ def _get_esm(key: str, path: str) -> FileResponse:
         filepath = esm_modules[key].path / path
         if not filepath.resolve().is_relative_to(esm_modules[key].path.resolve()):
             raise HTTPException(status_code=403, detail='forbidden')
-        if filepath.exists():
+        if filepath.is_file():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'ESM module "{key}" not found')
@@ -160,6 +163,11 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
+    if (endpoint := request.scope.get('endpoint')) is not None and endpoint is not app and not request.scope.get('nicegui_page_path') and isinstance(exception, StarletteHTTPException):
+        # non-page endpoints raising 404 should get JSON, not our HTML error page
+        # NOTE: match Starlette's HTTPException (the base class) so e.g. auth dependencies that raise it directly are covered
+        # NOTE: when mounted via ui.run_with(), the parent's Mount sets endpoint=app even if no inner route matched — exclude that case
+        return await http_exception_handler(request, exception)
     root = core.root
     if root is not None:
         kwargs = {
@@ -179,17 +187,34 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
 
 @app.exception_handler(Exception)
 async def _exception_handler_500(request: Request, exception: Exception) -> Response:
+    if not request.scope.get('nicegui_page_path'):
+        raise exception  # Simply return "Internal Server Error", just like FastAPI would do
     log.exception(exception)
     with Client(page(''), request=request) as client:
         error_content(500, exception)
     return client.build_response(request, 500)
 
 
+@sio.on('connect')
+async def _on_connect(sid: str, data: dict[str, Any], _=None) -> None:
+    query = {k: v[0] for k, v in urllib.parse.parse_qs(data.get('QUERY_STRING', '')).items()}
+    if query.get('implicit_handshake', '') == 'true':
+        result = await _on_handshake(sid, query)
+        if result == 'WRONG_SERVER_ID':
+            raise socketio.exceptions.ConnectionRefusedError('Wrong server ID')
+        if not result:
+            raise socketio.exceptions.ConnectionRefusedError('Implicit handshake failed')
+
+
 @sio.on('handshake')
-async def _on_handshake(sid: str, data: dict[str, Any]) -> Union[bool, Literal['WRONG_SERVER_ID']]:
+async def _on_handshake(sid: str, data: dict[str, Any]) -> bool | Literal['WRONG_SERVER_ID']:
     server_id = data.get('server_id')
     if server_id != core.app._uuid:  # pylint: disable=protected-access
-        if data.get('mismatches', 0) > 3:
+        try:
+            mismatches = int(data.get('mismatches', 0))
+        except (TypeError, ValueError):
+            mismatches = 0
+        if mismatches > 3:
             helpers.warn_once('Client reports that its HTML page is served '
                               'by a different server than this server\n'
                               'Are you using multiple workers without session affinity?\n'
@@ -201,12 +226,13 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> Union[bool, Literal['
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
-    if sid[:5].startswith('test-'):
+    if sid.startswith('test-'):
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
     else:
         client.environ = sio.get_environ(sid)
         await sio.enter_room(sid, client.id)
-    client.handle_handshake(sid, data['document_id'], data.get('next_message_id'))
+    client.handle_handshake(sid, data['document_id'],
+                            int(data['next_message_id']) if 'next_message_id' in data else None)
     assert client.tab_id is not None
     await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
     return True
@@ -232,23 +258,20 @@ def _on_event(_: str, msg: dict) -> None:
 
 @sio.on('javascript_response')
 def _on_javascript_response(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.handle_javascript_response(msg)
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_javascript_response(msg)
 
 
 @sio.on('ack')
 def _on_ack(_: str, msg: dict) -> None:
-    client = Client.instances.get(msg['client_id'])
-    if not client:
-        return
-    client.outbox.prune_history(msg['next_message_id'])
+    if client := Client.instances.get(msg['client_id']):
+        client.outbox.prune_history(msg['next_message_id'])
 
 
-@sio.on('too_long_message')
-def _on_too_long_message(_: str) -> None:
-    log.warning('Received a too long message from the client.')
+@sio.on('log')
+def _on_log(_: str, msg: dict) -> None:
+    if client := Client.instances.get(msg['client_id']):
+        client.handle_log_message(msg)
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:

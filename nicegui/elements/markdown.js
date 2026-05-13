@@ -4,8 +4,9 @@ export default {
   template: `<div></div>`,
   async mounted() {
     await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.dynamic_resource_path}/${this.resource_name}`);
-    if (this.use_mermaid) {
+    await loadResource(window.path_prefix + `${this.dynamicResourcePath}/${this.resourceName}`);
+    this.renderContent();
+    if (this.useMermaid) {
       this.mermaid = (await import("nicegui-mermaid")).mermaid;
       this.mermaid.initialize({ startOnLoad: false });
       this.renderMermaid();
@@ -15,14 +16,25 @@ export default {
     return {
       mermaid: null,
       diagrams: {},
+      previousInnerHTML: null,
     };
   },
   updated() {
+    this.renderContent();
     this.renderMermaid();
   },
   methods: {
+    renderContent() {
+      if (this.innerHTML === this.previousInnerHTML) return;
+      if (this.sanitize) {
+        this.$el.setHTML(this.innerHTML);
+      } else {
+        this.$el.innerHTML = this.innerHTML;
+      }
+      this.previousInnerHTML = this.innerHTML;
+    },
     renderMermaid() {
-      if (!this.use_mermaid || !this.mermaid) return;
+      if (!this.useMermaid || !this.mermaid) return;
       // render new diagrams
       const usedKeys = new Set();
       this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
@@ -53,9 +65,11 @@ export default {
     },
   },
   props: {
-    dynamic_resource_path: String,
-    resource_name: String,
-    use_mermaid: {
+    innerHTML: String,
+    dynamicResourcePath: String,
+    resourceName: String,
+    sanitize: Boolean,
+    useMermaid: {
       required: false,
       default: false,
       type: Boolean,

@@ -1,9 +1,12 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, Optional, get_args
+from typing import Literal, get_args
 
-from nicegui.elements.mixins.disableable_element import DisableableElement
-from nicegui.elements.mixins.value_element import ValueElement
-from nicegui.events import GenericEventArguments, Handler, ValueChangeEventArguments
+from typing_extensions import Self
+
+from ...defaults import DEFAULT_PROP, resolve_defaults
+from ...elements.mixins.disableable_element import DisableableElement
+from ...elements.mixins.value_element import ValueElement
+from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -245,23 +248,24 @@ SUPPORTED_THEMES = Literal[
 ]
 
 
-class CodeMirror(ValueElement, DisableableElement,
+class CodeMirror(ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
     VALUE_PROP = 'value'
     LOOPBACK = None
 
+    @resolve_defaults
     def __init__(
         self,
         value: str = '',
         *,
-        on_change: Optional[Handler[ValueChangeEventArguments]] = None,
-        language: Optional[SUPPORTED_LANGUAGES] = None,
-        theme: SUPPORTED_THEMES = 'basicLight',
-        indent: str = ' ' * 4,
-        line_wrapping: bool = False,
-        highlight_whitespace: bool = False,
+        on_change: Handler[ValueChangeEventArguments[str]] | None = None,
+        language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
+        theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
+        indent: str = DEFAULT_PROP | ' ' * 4,
+        line_wrapping: bool = DEFAULT_PROP | False,
+        highlight_whitespace: bool = DEFAULT_PROP | False,
     ) -> None:
         """CodeMirror
 
@@ -292,9 +296,12 @@ class CodeMirror(ValueElement, DisableableElement,
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
-        self._props['lineWrapping'] = line_wrapping
-        self._props['highlightWhitespace'] = highlight_whitespace
+        self._props['line-wrapping'] = line_wrapping
+        self._props['highlight-whitespace'] = highlight_whitespace
         self._update_method = 'setEditorValueFromProps'
+
+        self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
 
     @property
     def theme(self) -> str:
@@ -305,9 +312,10 @@ class CodeMirror(ValueElement, DisableableElement,
     def theme(self, theme: SUPPORTED_THEMES) -> None:
         self._props['theme'] = theme
 
-    def set_theme(self, theme: SUPPORTED_THEMES) -> None:
+    def set_theme(self, theme: SUPPORTED_THEMES) -> Self:
         """Sets the theme of the editor."""
         self._props['theme'] = theme
+        return self
 
     @property
     def supported_themes(self) -> list[str]:
@@ -320,12 +328,13 @@ class CodeMirror(ValueElement, DisableableElement,
         return self._props['language']
 
     @language.setter
-    def language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
+    def language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
         self._props['language'] = language
 
-    def set_language(self, language: Optional[SUPPORTED_LANGUAGES] = None) -> None:
+    def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> Self:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
+        return self
 
     @property
     def supported_languages(self) -> list[str]:
@@ -338,18 +347,19 @@ class CodeMirror(ValueElement, DisableableElement,
 
         *Added in version 3.2.0*
         """
-        return self._props['lineWrapping']
+        return self._props['line-wrapping']
 
     @line_wrapping.setter
     def line_wrapping(self, value: bool) -> None:
-        self._props['lineWrapping'] = value
+        self._props['line-wrapping'] = value
 
-    def set_line_wrapping(self, value: bool) -> None:
+    def set_line_wrapping(self, value: bool) -> Self:
         """Sets whether line wrapping is enabled.
 
         *Added in version 3.2.0*
         """
-        self._props['lineWrapping'] = value
+        self._props['line-wrapping'] = value
+        return self
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
@@ -376,7 +386,9 @@ class CodeMirror(ValueElement, DisableableElement,
         end_positions = accumulate(old_lengths)
         document_parts: list[str] = []
         codepoint_parts: list[bytes] = []
-        for end, old_len, new_len, insert in zip(end_positions, old_lengths, new_lengths, chain(inserted, repeat([]))):
+        for end, old_len, new_len, insert in zip(
+            end_positions, old_lengths, new_lengths, chain(inserted, repeat([])), strict=False,
+        ):
             if new_len == -1:
                 start = end - old_len
                 py_start = self._codepoints[:start].count(1)

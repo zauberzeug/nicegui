@@ -45,7 +45,7 @@ def test_set_source_in_tab(screen: Screen):
 def test_with_cross(screen: Screen, cross: bool):
     @ui.page('/')
     def page():
-        ui.interactive_image(URL_PATH1, content='<circle cx="100" cy="100" r="15" />', cross=cross)
+        ui.interactive_image(URL_PATH1, content='<circle cx="100" cy="100" r="15" />', cross=cross, sanitize=False)
 
     screen.open('/')
     screen.find_by_tag('svg')
@@ -110,7 +110,8 @@ def test_loaded_event(screen: Screen):
 def test_add_layer(screen: Screen):
     @ui.page('/')
     def page():
-        ii = ui.interactive_image(URL_PATH1, content='<rect x="0" y="0" width="100" height="100" fill="red" />')
+        ii = ui.interactive_image(
+            URL_PATH1, content='<rect x="0" y="0" width="100" height="100" fill="red" />', sanitize=False)
         ii.add_layer(content='<circle cx="100" cy="100" r="15" />')
 
     screen.open('/')
@@ -118,3 +119,12 @@ def test_add_layer(screen: Screen):
     with screen.implicitly_wait(0.5):
         assert len(screen.find_all_by_tag('rect')) == 1
         assert len(screen.find_all_by_tag('circle')) == 1
+
+
+def test_xss_sanitization(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.interactive_image(size=(100, 100), content='<rect width="100" height="100" onclick="alert(\'XSS\')" />')
+
+    screen.open('/')
+    assert screen.find_all_by_tag('rect')[0].get_attribute('onclick') is None

@@ -1,11 +1,11 @@
-FROM python:3.9
+FROM python:3.10
 
 ENV DEBIAN_FRONTEND=noninteractive \
     DISPLAY=:99
 
 # Install packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    sudo git chromium chromium-driver \
+    sudo git chromium chromium-driver gh \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv

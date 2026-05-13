@@ -1,5 +1,7 @@
+import atexit
 import os
 import shutil
+import tempfile
 from collections.abc import Generator
 from pathlib import Path
 
@@ -7,16 +9,30 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
+from nicegui import helpers
+
+from .filelock import FileLock
 from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
     nicegui_reset_globals,
     pytest_addoption,
-    pytest_configure,
+    pytest_unconfigure,
 )
+from .general_fixtures import pytest_configure as _general_pytest_configure
 from .screen import Screen
 
 # pylint: disable=redefined-outer-name
 
-DOWNLOAD_DIR = Path(__file__).parent / 'download'
+DOWNLOAD_DIR: Path | None = None  # set in pytest_configure()
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Configure storage (delegated) and set up session-unique Screen.PORT, SCREENSHOT_DIR, DOWNLOAD_DIR."""
+    _general_pytest_configure(config)
+    global DOWNLOAD_DIR  # pylint: disable=global-statement # noqa: PLW0603
+    Screen.PORT = helpers.find_free_port()
+    Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
+    DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
+    atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # safety net for aborted session
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
@@ -27,42 +43,48 @@ def pytest_runtest_makereport(item, call):  # pylint: disable=unused-argument
     setattr(item, f'rep_{rep.when}', rep)
 
 
-@pytest.fixture
-def nicegui_chrome_options(chrome_options: webdriver.ChromeOptions) -> webdriver.ChromeOptions:
+@pytest.fixture(scope='session')
+def nicegui_chrome_options() -> webdriver.ChromeOptions:
     """Configure the Chrome options for the NiceGUI tests."""
+    assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
+    chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('disable-search-engine-choice-screen')
     chrome_options.add_argument('no-sandbox')
     chrome_options.add_argument('headless')
-    chrome_options.add_argument('disable-gpu' if 'GITHUB_ACTIONS' in os.environ else '--use-gl=angle')
+    if 'GITHUB_ACTIONS' in os.environ:
+        chrome_options.add_argument('disable-gpu')
+        chrome_options.add_argument('enable-unsafe-swiftshader')
+    else:
+        chrome_options.add_argument('--use-gl=angle')
     chrome_options.add_argument('window-size=600x600')
     chrome_options.add_experimental_option('prefs', {
         'download.default_directory': str(DOWNLOAD_DIR),
         'download.prompt_for_download': False,  # To auto download the file
         'download.directory_upgrade': True,
     })
+    chrome_options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
     if 'CHROME_BINARY_LOCATION' in os.environ:
         chrome_options.binary_location = os.environ['CHROME_BINARY_LOCATION']
     return chrome_options
 
 
-@pytest.fixture
-def capabilities(capabilities: dict) -> dict:
-    """Configure the Chrome driver capabilities."""
-    capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
-    return capabilities
+@pytest.fixture(scope='session')
+def nicegui_remove_all_screenshots() -> None:
+    """Prune directories of finished concurrent runs and remove screenshots from previous runs."""
+    FileLock(Screen.SCREENSHOT_DIR / '.lock').acquire()
+    if Screen.SCREENSHOT_DIR.parent.exists():
+        for path in Screen.SCREENSHOT_DIR.parent.iterdir():
+            if path.is_dir() and path.name.isdigit() and (probe := FileLock(path / '.lock')).acquire():
+                probe.release()
+                shutil.rmtree(path, ignore_errors=True)
+    for path in Screen.SCREENSHOT_DIR.glob('*.png'):
+        path.unlink()
 
 
 @pytest.fixture(scope='session')
-def nicegui_remove_all_screenshots() -> None:
-    """Remove all screenshots from the screenshot directory before the test session."""
-    for name in Screen.SCREENSHOT_DIR.glob('*.png'):
-        name.unlink()
-
-
-@pytest.fixture()
 def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
-    """Create a new Chrome driver instance."""
+    """Create a new Chrome driver instance (reused across tests in the session)."""
     for executable_path in (None, shutil.which('chromedriver'), 'chromedriver'):  # Required for ARM devcontainers
         try:
             s = Service(executable_path=executable_path)
@@ -86,7 +108,10 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
+    assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
+    _reset_browser_state(nicegui_driver)
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
+    DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
     screen_ = Screen(nicegui_driver, caplog, request)
     try:
         yield screen_
@@ -105,5 +130,18 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     finally:
         os.environ.pop('NICEGUI_SCREEN_TEST_PORT', None)
         screen_.stop_server()
-        if DOWNLOAD_DIR.exists():
-            shutil.rmtree(DOWNLOAD_DIR)
+        shutil.rmtree(DOWNLOAD_DIR, ignore_errors=True)
+
+
+def _reset_browser_state(driver: webdriver.Chrome) -> None:
+    """Reset browser state between tests when reusing the driver."""
+    while len(driver.window_handles) > 1:
+        driver.switch_to.window(driver.window_handles[-1])
+        driver.close()
+    driver.switch_to.window(driver.window_handles[0])
+    driver.execute_cdp_cmd('Storage.clearDataForOrigin', {
+        'origin': f'http://localhost:{Screen.PORT}',
+        'storageTypes': 'cookies,local_storage,session_storage',
+    })
+    driver.get('about:blank')
+    driver.get_log('browser')

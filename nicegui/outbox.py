@@ -7,6 +7,7 @@ from collections import deque
 from typing import TYPE_CHECKING, Any
 
 from . import background_tasks, core
+from .dependencies import JsComponent
 
 if TYPE_CHECKING:
     from .client import Client
@@ -40,13 +41,11 @@ class Outbox:
         self.message_history: deque[HistoryEntry] = deque()
         self.next_message_id: int = 0
 
+        self._loaded_components: set[str] = set()
         self._should_stop = False
         self._enqueue_event: asyncio.Event | None = None
 
-        if core.app.is_started:
-            background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
-        else:
-            core.app.on_startup(self.loop)
+        background_tasks.create_or_defer(self.loop(), name=f'outbox loop {client.id}')
 
     @property
     def client(self) -> Client:
@@ -105,6 +104,18 @@ class Outbox:
                         element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
+                    js_components = [
+                        component
+                        for element in self.updates.values()
+                        if not isinstance(element, Deleted)
+                        and isinstance((component := element.component), JsComponent)
+                        and component.name not in self._loaded_components
+                    ]
+                    if js_components:
+                        coros.append(self._emit((client.id, 'load_js_components', {
+                            'components': [{'key': c.key, 'tag': c.tag} for c in js_components],
+                        })))
+                        self._loaded_components.update(c.name for c in js_components)
                     coros.append(self._emit((client.id, 'update', data)))
                     self.updates.clear()
 
@@ -159,7 +170,7 @@ class Outbox:
                 return
 
         # target message ID not found, reload the page
-        self.client.run_javascript('window.location.reload()')
+        self.client.run_javascript('console.log("reloading because outbox rewind failed"); window.location.reload()')
 
     def prune_history(self, next_message_id: MessageId) -> None:
         """Prune the message history up to the given message ID."""
@@ -169,3 +180,4 @@ class Outbox:
     def stop(self) -> None:
         """Stop the outbox loop."""
         self._should_stop = True
+        self._set_enqueue_event()  # wake the loop so it checks _should_stop immediately

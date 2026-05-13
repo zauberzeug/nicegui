@@ -1,7 +1,8 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -10,19 +11,22 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, DisableableElement):
+class Fab(ValueElement[bool], LabelElement, IconElement, BackgroundColorElement, DisableableElement):
 
+    @resolve_defaults
     def __init__(self,
                  icon: str, *,
-                 value: bool = False,
-                 label: str = '',
-                 color: Optional[str] = 'primary',
-                 direction: Literal['up', 'down', 'left', 'right'] = 'right',
+                 value: bool = DEFAULT_PROPS['model-value'] | False,
+                 label: str = DEFAULT_PROP | '',
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 direction: Literal['up', 'down', 'left', 'right'] = DEFAULT_PROP | 'right',
                  ) -> None:
         """Floating Action Button (FAB)
 
         A floating action button that can be used to trigger an action.
         This element is based on Quasar's `QFab <https://quasar.dev/vue-components/floating-action-button#qfab-api>`_ component.
+
+        *Added in version 2.22.0*
 
         :param icon: icon to be displayed on the FAB
         :param value: whether the FAB is already opened (default: ``False``)
@@ -33,25 +37,30 @@ class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, Disab
         super().__init__(tag='q-fab', value=value, label=label, background_color=color, icon=icon)
         self._props['direction'] = direction
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the FAB."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the FAB."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the FAB."""
         self.value = not self.value
+        return self
 
 
 class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableElement):
 
-    def __init__(self, icon: str, *,
-                 label: str = '',
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
+    @resolve_defaults
+    def __init__(self,
+                 icon: str, *,
+                 label: str = DEFAULT_PROP | '',
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
                  auto_close: bool = True,
                  ) -> None:
         """Floating Action Button Action

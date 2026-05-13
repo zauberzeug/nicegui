@@ -20,7 +20,7 @@ def local():
 ''')
 def base64():
     base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=='
-    ui.image(base64).classes('w-2 h-2 m-auto')
+    ui.image(base64).classes('size-2 m-auto')
 
 
 @doc.demo('PIL image', '''

@@ -1,2 +1,2 @@
 nicegui>=3.0
-tortoise-orm
+tortoise-orm>=1.0.0

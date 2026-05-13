@@ -1,13 +1,13 @@
-from typing import Literal, Optional
+from typing import Literal
 
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Column(Element, default_classes='nicegui-column'):
+class Column(SortableElement, default_classes='nicegui-column'):
 
     def __init__(self, *,
                  wrap: bool = False,
-                 align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
+                 align_items: Literal['start', 'end', 'center', 'baseline', 'stretch'] | None = None,
                  ) -> None:
         """Column Element
 

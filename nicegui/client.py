@@ -5,13 +5,14 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Awaitable, Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
+from starlette.background import BackgroundTask
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
@@ -50,7 +51,7 @@ class ClientConnectionTimeout(TimeoutError):
 
 
 class Client:
-    page_routes: ClassVar[dict[Callable[..., Any], str]] = {}
+    page_routes: ClassVar[dict[Callable, str]] = {}
     '''Maps page builders to their routes.'''
 
     instances: ClassVar[dict[str, Client]] = {}
@@ -81,9 +82,13 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
         self.outbox = Outbox(self)
+
+        if self._request is not None:
+            self._request.scope['nicegui_page_path'] = self.page.path
 
         with Element('q-layout', _client=self).props('view="hhh lpr fff"').classes('nicegui-layout') as self.layout:
             with Element('q-page-container') as self.page_container:
@@ -91,15 +96,16 @@ class Client:
                     self.content = Element('div').classes('nicegui-content')
 
         self.title: str | None = None
+        self.status_code: int = 200
 
         self._head_html = ''
         self._body_html = ''
 
         self.storage = ObservableDict()
 
-        self.connect_handlers: list[Callable[..., Any] | Awaitable] = []
-        self.disconnect_handlers: list[Callable[..., Any] | Awaitable] = []
-        self.delete_handlers: list[Callable[..., Any] | Awaitable] = []
+        self.connect_handlers: list[Callable] = []
+        self.disconnect_handlers: list[Callable] = []
+        self.delete_handlers: list[Callable] = []
 
         self._temporary_socket_id: str | None = None
 
@@ -146,6 +152,22 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        accept = request.headers.get('accept', '')
+        # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
+        # It works for the real use case: agents sending exactly `Accept: text/markdown`.
+        if self.page.resolve_markdown() and 'text/markdown' in accept and 'text/html' not in accept:
+            parts = []
+            if title := self.resolve_title():
+                parts.append(f'# {title}')
+            if markdown := self.layout._render_markdown():  # pylint: disable=protected-access
+                parts.append(markdown)
+            return Response(
+                content='\n\n'.join(parts),
+                status_code=status_code,
+                headers={'Cache-Control': 'no-store', 'X-NiceGUI-Content': 'page'},
+                media_type='text/markdown; charset=utf-8',
+                background=BackgroundTask(self.delete),
+            )
         self.outbox.updates.clear()
         prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
         elements = json.dumps({
@@ -155,6 +177,8 @@ class Client:
             **core.app.config.socket_io_js_query_params,
             'client_id': self.id,
             'next_message_id': self.outbox.next_message_id,
+            'implicit_handshake': not _is_prefetch(request),
+            'server_id': core.app._uuid,  # pylint: disable=protected-access
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
@@ -162,7 +186,6 @@ class Client:
             request=request,
             name='index.html',
             context={
-                'server_id': core.app._uuid,  # pylint: disable=protected-access
                 'request': request,
                 'version': __version__,
                 'elements': elements.translate(HTML_ESCAPE_TABLE),
@@ -182,6 +205,7 @@ class Client:
                 'translations': translations.get(self.page.resolve_language(), translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
+                'unocss': core.app.config.unocss,
                 'headwind_css': HEADWIND_CONTENT if core.app.config.tailwind else '',
                 'prod_js': core.app.config.prod_js,
                 'socket_io_js_query_params': socket_io_js_query_params,
@@ -205,10 +229,8 @@ class Client:
             return
         self._waiting_for_connection.set()
         self._connected.clear()
-        purpose = (self.request.headers.get('Sec-Purpose') or self.request.headers.get('Purpose') or '').lower()
-        is_prefetch = 'prefetch' in purpose and 'prerender' not in purpose
         try:
-            await asyncio.wait_for(self._connected.wait(), timeout=None if is_prefetch else timeout)
+            await asyncio.wait_for(self._connected.wait(), timeout=None if _is_prefetch(self.request) else timeout)
         except asyncio.TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
@@ -249,7 +271,7 @@ class Client:
 
         return AwaitableResponse(send_and_forget, send_and_wait)
 
-    def open(self, target: Callable[..., Any] | str, new_tab: bool = False) -> None:
+    def open(self, target: Callable | str, new_tab: bool = False) -> None:
         """Open a new page in the client."""
         path = target if isinstance(target, str) else self.page_routes[target]
         self.outbox.enqueue_message('open', {'path': path, 'new_tab': new_tab}, self.id)
@@ -258,33 +280,41 @@ class Client:
         """Download a file from a given URL or raw bytes."""
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
-    def on_connect(self, handler: Callable[..., Any] | Awaitable) -> None:
+    def on_connect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client connects.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
-        self.connect_handlers.append(handler)
 
-    def on_disconnect(self, handler: Callable[..., Any] | Awaitable) -> None:
+        self.connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_connect()'))
+
+    def on_disconnect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client disconnects.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
-        self.disconnect_handlers.append(handler)
+        self.disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_disconnect()'))
 
-    def on_delete(self, handler: Callable[..., Any] | Awaitable) -> None:
+    def on_delete(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client is deleted.
 
-        The callback has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
 
         *Added in version 3.0.0*
         """
-        self.delete_handlers.append(handler)
+        self.delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_delete()'))
+
+    def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
+        """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).
+
+        The callback has an optional parameter of `Exception`.
+        """
+        self._exception_handlers.append(handler)
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
-        """Cancel pending disconnect task and invoke connect handlers."""
+        """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
         self._waiting_for_connection.clear()
         self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
@@ -299,12 +329,13 @@ class Client:
             self.safe_invoke(t)
 
     def handle_disconnect(self, socket_id: str) -> None:
-        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't."""
+        """Wait for the browser to reconnect; invoke deletion handlers if it doesn't. (For internal use only.)"""
         if socket_id not in self._socket_to_document_id:
             return
         document_id = self._socket_to_document_id.pop(socket_id)
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
+        tab_id_to_close = self.tab_id
         self.tab_id = None
 
         for t in self.disconnect_handlers:
@@ -317,6 +348,7 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
+                await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
@@ -326,7 +358,7 @@ class Client:
             self._delete_tasks.pop(document_id).cancel()
 
     def handle_event(self, msg: dict) -> None:
-        """Forward an event to the corresponding element."""
+        """Forward an event to the corresponding element. (For internal use only.)"""
         with self:
             sender = self.elements.get(msg['id'])
             if sender is not None and not sender.is_ignoring_events:
@@ -335,27 +367,27 @@ class Client:
                     msg['args'] = msg['args'][0]
                 sender._handle_event(msg)  # pylint: disable=protected-access
 
+    def handle_log_message(self, msg: dict) -> None:
+        """Log a message from the client. (For internal use only.)"""
+        {
+            'debug': log.debug,
+            'info': log.info,
+            'warning': log.warning,
+            'error': log.error,
+        }[msg['level']](msg['message'])
+
     def handle_javascript_response(self, msg: dict) -> None:
-        """Store the result of a JavaScript command."""
+        """Store the result of a JavaScript command. (For internal use only.)"""
         JavaScriptRequest.resolve(msg['request_id'], msg.get('result'))
 
-    def safe_invoke(self, func: Callable[..., Any] | Awaitable) -> None:
+    def safe_invoke(self, func: Callable) -> None:
         """Invoke the potentially async function in the client context and catch any exceptions."""
-        func_name = func.__name__ if hasattr(func, '__name__') else str(func)
         try:
-            if isinstance(func, Awaitable):
-                async def func_with_client():
-                    with self:
-                        await func
-                background_tasks.create(func_with_client(), name=f'func with client {self.id} {func_name}')
-            else:
-                with self:
-                    result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
-                if helpers.is_coroutine_function(func) and not isinstance(result, asyncio.Task):
-                    async def result_with_client():
-                        with self:
-                            await result
-                    background_tasks.create(result_with_client(), name=f'result with client {self.id} {func_name}')
+            with self:
+                result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
+                if helpers.should_await(result):
+                    name = f'func with client {self.id} {func.__name__ if hasattr(func, "__name__") else func}'
+                    background_tasks.create(helpers.await_with_context(result, self), name=name)
         except Exception as e:
             core.app.handle_exception(e)
 
@@ -373,6 +405,18 @@ class Client:
         """Remove all elements from the client."""
         self.remove_elements(self.elements.values())
 
+    def handle_exception(self, exception: Exception) -> None:
+        """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
+        for handler in self._exception_handlers:
+            with self.content:
+                if helpers.expects_arguments(handler):
+                    result = cast(Callable[[Exception], Any], handler)(exception)
+                else:
+                    result = cast(Callable[[], Any], handler)()
+            if helpers.should_await(result):
+                background_tasks.create(helpers.await_with_context(result, self.content),
+                                        name=f'UI exception {handler.__name__}')
+
     def delete(self) -> None:
         """Delete a client and all its elements.
 
@@ -389,6 +433,8 @@ class Client:
         self.outbox.stop()
         del Client.instances[self.id]
         self._deleted = True
+        self._connected.set()  # for terminating connected() waits
+        self._connected.clear()
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
@@ -417,3 +463,8 @@ class Client:
 
         except Exception:
             log.exception('Error while pruning clients')
+
+
+def _is_prefetch(request: Request) -> bool:
+    purpose = (request.headers.get('Sec-Purpose') or request.headers.get('Purpose') or '').lower()
+    return 'prefetch' in purpose and 'prerender' not in purpose

@@ -14,4 +14,17 @@ def main_demo() -> None:
                 on_change=lambda e: editor.set_line_wrapping(e.value))
 
 
+@doc.demo('Preserving Cursor Position', '''
+    ``set_value`` applies only the modified region, so cursor positions and selections outside the change are preserved.
+    Try editing the code below while the first line updates automatically.
+''')
+def preserve_cursor_demo() -> None:
+    from datetime import datetime
+
+    editor = ui.codemirror(f'# {datetime.now():%H:%M:%S}\n', language='Python')
+    ui.timer(1, lambda: editor.set_value(
+        f'# {datetime.now():%H:%M:%S}\n' + editor.value.split('\n', 1)[-1]
+    ))
+
+
 doc.reference(ui.codemirror)

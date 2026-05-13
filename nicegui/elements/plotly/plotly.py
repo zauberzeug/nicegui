@@ -1,16 +1,16 @@
 from __future__ import annotations
 
+from contextlib import suppress
+
 from ... import optional_features
 from ...element import Element
 
-try:
+with suppress(ImportError):
     import plotly.graph_objects as go
     optional_features.register('plotly')
-except ImportError:
-    pass
 
 
-class Plotly(Element, component='plotly.vue', esm={'nicegui-plotly': 'dist'}):
+class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
 
     def __init__(self, figure: dict | go.Figure) -> None:
         """Plotly Element

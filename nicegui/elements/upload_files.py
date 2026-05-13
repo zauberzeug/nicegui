@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import weakref
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
@@ -151,7 +149,13 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
         if temp_file:
             await temp_file.close()
 
+    filename = _sanitize_filename(upload.filename)
     if temp_file:
-        return LargeFileUpload(upload.filename or '', upload.content_type or '', Path(str(temp_file.name)))
+        return LargeFileUpload(filename, upload.content_type or '', Path(str(temp_file.name)))
     else:
-        return SmallFileUpload(upload.filename or '', upload.content_type or '', buffer.getvalue())
+        return SmallFileUpload(filename, upload.content_type or '', buffer.getvalue())
+
+
+def _sanitize_filename(name: str | None) -> str:
+    """Strip all path components from a filename to prevent path traversal."""
+    return (name or '').rsplit('/')[-1].rsplit('\\')[-1]

@@ -1003,13 +1003,13 @@ function addSub(link) {
 }
 const targetMap = /* @__PURE__ */ new WeakMap();
 const ITERATE_KEY = Symbol(
-  "Object iterate" 
+  "Object iterate"
 );
 const MAP_KEY_ITERATE_KEY = Symbol(
-  "Map keys iterate" 
+  "Map keys iterate"
 );
 const ARRAY_ITERATE_KEY = Symbol(
-  "Array iterate" 
+  "Array iterate"
 );
 function track(target, type, key) {
   if (shouldTrack && activeSub) {
@@ -5341,7 +5341,7 @@ const publicPropertiesMap = (
       queueJob(i.update);
     }),
     $nextTick: (i) => i.n || (i.n = nextTick.bind(i.proxy)),
-    $watch: (i) => instanceWatch.bind(i) 
+    $watch: (i) => instanceWatch.bind(i)
   })
 );
 const isReservedPrefix = (key) => key === "_" || key === "$";
@@ -8411,14 +8411,14 @@ function watchPostEffect(effect, options) {
   return doWatch(
     effect,
     null,
-    extend({}, options, { flush: "post" }) 
+    extend({}, options, { flush: "post" })
   );
 }
 function watchSyncEffect(effect, options) {
   return doWatch(
     effect,
     null,
-    extend({}, options, { flush: "sync" }) 
+    extend({}, options, { flush: "sync" })
   );
 }
 function watch(source, cb, options) {
@@ -12758,68 +12758,68 @@ const TELEPORT = Symbol(`Teleport` );
 const SUSPENSE = Symbol(`Suspense` );
 const KEEP_ALIVE = Symbol(`KeepAlive` );
 const BASE_TRANSITION = Symbol(
-  `BaseTransition` 
+  `BaseTransition`
 );
 const OPEN_BLOCK = Symbol(`openBlock` );
 const CREATE_BLOCK = Symbol(`createBlock` );
 const CREATE_ELEMENT_BLOCK = Symbol(
-  `createElementBlock` 
+  `createElementBlock`
 );
 const CREATE_VNODE = Symbol(`createVNode` );
 const CREATE_ELEMENT_VNODE = Symbol(
-  `createElementVNode` 
+  `createElementVNode`
 );
 const CREATE_COMMENT = Symbol(
-  `createCommentVNode` 
+  `createCommentVNode`
 );
 const CREATE_TEXT = Symbol(
-  `createTextVNode` 
+  `createTextVNode`
 );
 const CREATE_STATIC = Symbol(
-  `createStaticVNode` 
+  `createStaticVNode`
 );
 const RESOLVE_COMPONENT = Symbol(
-  `resolveComponent` 
+  `resolveComponent`
 );
 const RESOLVE_DYNAMIC_COMPONENT = Symbol(
-  `resolveDynamicComponent` 
+  `resolveDynamicComponent`
 );
 const RESOLVE_DIRECTIVE = Symbol(
-  `resolveDirective` 
+  `resolveDirective`
 );
 const RESOLVE_FILTER = Symbol(
-  `resolveFilter` 
+  `resolveFilter`
 );
 const WITH_DIRECTIVES = Symbol(
-  `withDirectives` 
+  `withDirectives`
 );
 const RENDER_LIST = Symbol(`renderList` );
 const RENDER_SLOT = Symbol(`renderSlot` );
 const CREATE_SLOTS = Symbol(`createSlots` );
 const TO_DISPLAY_STRING = Symbol(
-  `toDisplayString` 
+  `toDisplayString`
 );
 const MERGE_PROPS = Symbol(`mergeProps` );
 const NORMALIZE_CLASS = Symbol(
-  `normalizeClass` 
+  `normalizeClass`
 );
 const NORMALIZE_STYLE = Symbol(
-  `normalizeStyle` 
+  `normalizeStyle`
 );
 const NORMALIZE_PROPS = Symbol(
-  `normalizeProps` 
+  `normalizeProps`
 );
 const GUARD_REACTIVE_PROPS = Symbol(
-  `guardReactiveProps` 
+  `guardReactiveProps`
 );
 const TO_HANDLERS = Symbol(`toHandlers` );
 const CAMELIZE = Symbol(`camelize` );
 const CAPITALIZE = Symbol(`capitalize` );
 const TO_HANDLER_KEY = Symbol(
-  `toHandlerKey` 
+  `toHandlerKey`
 );
 const SET_BLOCK_TRACKING = Symbol(
-  `setBlockTracking` 
+  `setBlockTracking`
 );
 const PUSH_SCOPE_ID = Symbol(`pushScopeId` );
 const POP_SCOPE_ID = Symbol(`popScopeId` );
@@ -17693,25 +17693,25 @@ const noopDirectiveTransform = () => ({ props: [] });
 
 const V_MODEL_RADIO = Symbol(`vModelRadio` );
 const V_MODEL_CHECKBOX = Symbol(
-  `vModelCheckbox` 
+  `vModelCheckbox`
 );
 const V_MODEL_TEXT = Symbol(`vModelText` );
 const V_MODEL_SELECT = Symbol(
-  `vModelSelect` 
+  `vModelSelect`
 );
 const V_MODEL_DYNAMIC = Symbol(
-  `vModelDynamic` 
+  `vModelDynamic`
 );
 const V_ON_WITH_MODIFIERS = Symbol(
-  `vOnModifiersGuard` 
+  `vOnModifiersGuard`
 );
 const V_ON_WITH_KEYS = Symbol(
-  `vOnKeysGuard` 
+  `vOnKeysGuard`
 );
 const V_SHOW = Symbol(`vShow` );
 const TRANSITION = Symbol(`Transition` );
 const TRANSITION_GROUP = Symbol(
-  `TransitionGroup` 
+  `TransitionGroup`
 );
 registerRuntimeHelpers({
   [V_MODEL_RADIO]: `vModelRadio`,
@@ -17817,7 +17817,7 @@ function createDOMCompilerError(code, loc) {
   return createCompilerError(
     code,
     loc,
-    DOMErrorMessages 
+    DOMErrorMessages
   );
 }
 const DOMErrorMessages = {
@@ -18302,7 +18302,7 @@ const validateHtmlNesting = (node, context) => {
 
 const DOMNodeTransforms = [
   transformStyle,
-  ...[transformTransition, validateHtmlNesting] 
+  ...[transformTransition, validateHtmlNesting]
 ];
 const DOMDirectiveTransforms = {
   cloak: noopDirectiveTransform,
@@ -18331,7 +18331,7 @@ function compile(src, options = {}) {
         DOMDirectiveTransforms,
         options.directiveTransforms || {}
       ),
-      transformHoist: null 
+      transformHoist: null
     })
   );
 }
@@ -18365,7 +18365,7 @@ function compileToFunction(template, options) {
     {
       hoistStatic: true,
       onError: onError ,
-      onWarn: (e) => onError(e, true) 
+      onWarn: (e) => onError(e, true)
     },
     options
   );

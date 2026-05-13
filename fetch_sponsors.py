@@ -99,12 +99,12 @@ special_sponsors = json.loads(json_path.read_text(encoding='utf-8'))['special']
 top_sponsors = [
     s['login']
     for s in sponsors
-    if s['tier_amount'] >= 100 and not s['tier_is_one_time'] and s['login'] not in special_sponsors
+    if s['tier_amount'] >= 100 and not s['tier_is_one_time'] and s['login'] not in {*special_sponsors, 'LambdaTest-Inc'}
 ]
 json_path.write_text(json.dumps({
     'special': special_sponsors,
     'top': top_sponsors,
-    'normal': len(sponsors) - len(top_sponsors) - len(special_sponsors),
+    'total': len(sponsors),
     'contributors': len(contributors),
 }, indent=2) + '\n', encoding='utf-8')
 
@@ -117,7 +117,7 @@ readme_path = Path('README.md')
 readme_content = readme_path.read_text(encoding='utf-8')
 updated_content = re.sub(
     r'<!-- SPONSORS -->.*?<!-- SPONSORS -->',
-    f'<!-- SPONSORS -->\n{sponsor_html}\n<!-- SPONSORS -->',
+    f'<!-- SPONSORS -->\n\n{sponsor_html}\n<!-- SPONSORS -->',
     readme_content,
     flags=re.DOTALL,
 )

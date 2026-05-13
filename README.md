@@ -90,7 +90,8 @@ The whole content of [https://nicegui.io](https://nicegui.io) is [implemented wi
 and can be started locally with `docker run -p 8080:8080 zauberzeug/nicegui` or by executing `main.py` from this repository.
 
 You may also have a look at our [in-depth examples](https://github.com/zauberzeug/nicegui/tree/main/examples) of what you can do with NiceGUI.
-In our wiki we have a list of great [NiceGUI projects from the community](https://github.com/zauberzeug/nicegui/wiki#community-projects), a section with [Tutorials](https://github.com/zauberzeug/nicegui/wiki#tutorials), a growing list of [FAQs](https://github.com/zauberzeug/nicegui/wiki/FAQs) and [some strategies for using ChatGPT / LLMs to get help about NiceGUI](https://github.com/zauberzeug/nicegui/wiki#chatgpt).
+In our wiki we have a list of great [NiceGUI projects from the community](https://github.com/zauberzeug/nicegui/wiki#community-projects), a section with [Tutorials](https://github.com/zauberzeug/nicegui/wiki#tutorials) and a growing list of [FAQs](https://github.com/zauberzeug/nicegui/wiki/FAQs).
+When building NiceGUI projects with AI assistants, point them at [`nicegui/llms.md`](nicegui/llms.md) — a concise reference that ships with the package (also served at <https://nicegui.io/llms.txt>).
 
 ## Why?
 
@@ -111,15 +112,16 @@ Maintenance of this project is made possible by all the [contributors](https://g
 If you would like to support this project and have your avatar or company logo appear below, please [sponsor us](https://github.com/sponsors/zauberzeug). 💖
 
 <!-- SPONSORS -->
+
 <p align="center">
   <a href="https://github.com/lechler-gmbh"><img src="https://github.com/lechler-gmbh.png" width="50px" alt="Lechler GmbH" /></a>
   <a href="https://github.com/Zhifeng2019"><img src="https://github.com/Zhifeng2019.png" width="50px" alt="Zhifeng" /></a>
-  <a href="https://github.com/sereneturtlefox"><img src="https://github.com/sereneturtlefox.png" width="50px" alt="None" /></a>
   <a href="https://github.com/whoulden"><img src="https://github.com/whoulden.png" width="50px" alt="Wayne Houlden" /></a>
   <a href="https://github.com/digiquip"><img src="https://github.com/digiquip.png" width="50px" alt="DigiQuip AS" /></a>
   <a href="https://github.com/aitech95"><img src="https://github.com/aitech95.png" width="50px" alt="JACOB SHI " /></a>
-  <a href="https://github.com/Christian-D-Bock"><img src="https://github.com/Christian-D-Bock.png" width="50px" alt="Christian Bock" /></a>
-  <a href="https://github.com/LambdaTest-Inc"><img src="https://github.com/LambdaTest-Inc.png" width="50px" alt="LambdaTest" /></a>
+  <a href="https://github.com/LambdaTest-Inc"><img src="https://github.com/LambdaTest-Inc.png" width="50px" alt="TestMu AI Open Source Office (Formerly LambdaTest)" /></a>
+  <a href="https://github.com/Zaga-Solutions"><img src="https://github.com/Zaga-Solutions.png" width="50px" alt="Zaga Solutions" /></a>
+  <a href="https://github.com/Discolike"><img src="https://github.com/Discolike.png" width="50px" alt="DiscoLike Inc." /></a>
 </p>
 <!-- SPONSORS -->
 

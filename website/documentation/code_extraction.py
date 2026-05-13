@@ -1,6 +1,6 @@
 import inspect
 import re
-from typing import Callable
+from collections.abc import Callable
 
 import isort
 

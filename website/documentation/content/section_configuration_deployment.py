@@ -1,6 +1,7 @@
 from nicegui import ui
 
-from ..windows import bash_window, python_window
+from ..search import index_sizes
+from ..windows import bash_window, code_window, python_window
 from . import doc, run_documentation
 
 doc.title('Configuration & Deployment')
@@ -37,6 +38,17 @@ doc.intro(run_documentation)
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+
+    Native mode requires a browser engine with ES module and import map support (Chrome 89+).
+    On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.
+
+    On Windows, native mode requires the .NET Framework to be installed,
+    as pywebview uses it for the EdgeChromium backend.
+    This is typically pre-installed on standard Windows installations,
+    but may be missing on minimal or freshly installed systems.
+
+    On Windows, a file-path `favicon` is also used as the native window icon (taskbar, title bar).
+    The `.ico` format is required.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -53,42 +65,56 @@ def native_mode_demo():
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
 
 
-# Currently, options passed via app.native are not used if they are set behind a main guard
-# See discussion at: https://github.com/zauberzeug/nicegui/pull/4627
+@doc.demo('Native Window Events', '''
+    In native mode you can react to window lifecycle events using `app.native.on`.
+    Handlers can be sync or async and optionally accept a `NativeEventArguments` parameter.
+    Supported events: "shown", "loaded", "minimized", "maximized", "restored", "resized", "moved", "closed", "drop".
+    The "resized" event provides `width` and `height` in `e.args`, "moved" provides `x` and `y`,
+    and "drop" provides `files` with a list of filesystem paths.
+''', tab=lambda: ui.label('NiceGUI'))
+def native_events_demo():
+    from nicegui import app
+
+    ui.label('Try this demo in native mode to see the events in action!')
+
+    # app.native.on('minimized', lambda: print('Window minimized'))
+    # app.native.on('resized', lambda e: print(f'{e.args["width"]}x{e.args["height"]}'))
+    # app.native.on('drop', lambda e: print(f'Dropped files: {e.args["files"]}'))
+    #
+    # ui.run(native=True)
+
+
 doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
     Therefore any configuration changes from code run under a
     [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
     The following examples show the difference between a working and a non-working configuration.
+
+    For packaged apps (nicegui-pack, PyInstaller, etc.), also see the "Packaging with Native Mode" section below
+    regarding the correct placement of `freeze_support()`.
 ''')
 
 
 @doc.ui
 def native_main_guard():
-    with ui.row().classes('w-full items-stretch'):
-        with python_window('good_example.py', classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import app, ui
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import app, ui
 
-                app.native.window_args['resizable'] = False  # works
+            app.native.window_args['resizable'] = False  # works
 
-                if __name__ == '__main__':
-                    ui.run(native=True, reload=False)
-                ```
-            ''')
-        with python_window('bad_example.py', classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import app, ui
+            if __name__ == '__main__':
+                ui.run(native=True, reload=False)
+        ''', title='good_example.py')
+        python_window('''
+            from nicegui import app, ui
 
-                if __name__ == '__main__':
-                    app.native.window_args['resizable'] = False  # ignored
+            if __name__ == '__main__':
+                app.native.window_args['resizable'] = False  # ignored
 
-                    ui.run(native=True, reload=False)
-                ```
-            ''')
+                ui.run(native=True, reload=False)
+        ''', title='bad_example.py')
 
 
 # Show a helpful workaround until issue is fixed upstream.
@@ -173,17 +199,14 @@ doc.text('Server Hosting', '''
 
 @doc.ui
 def docker_run():
-    with bash_window(classes='max-w-lg w-full h-44'):
-        ui.markdown('''
-            ```bash
-            docker run -it --restart always \\
+    bash_window('''
+        docker run -it --restart always \\
             -p 80:8080 \\
             -e PUID=$(id -u) \\
             -e PGID=$(id -g) \\
             -v $(pwd)/:/app/ \\
             zauberzeug/nicegui:latest
-            ```
-        ''')
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -195,21 +218,18 @@ doc.text('', '''
 
 @doc.ui
 def docker_compose():
-    with python_window('docker-compose.yml', classes='max-w-lg w-full h-60'):
-        ui.markdown('''
-            ```yaml
-            app:
-                image: zauberzeug/nicegui:latest
-                restart: always
-                ports:
-                    - 80:8080
-                environment:
-                    - PUID=1000 # change this to your user id
-                    - PGID=1000 # change this to your group id
-                volumes:
-                    - ./:/app/
-            ```
-        ''')
+    code_window('''
+        app:
+            image: zauberzeug/nicegui:latest
+            restart: always
+            ports:
+                - 80:8080
+            environment:
+                - PUID=1000 # change this to your user id
+                - PGID=1000 # change this to your group id
+            volumes:
+                - ./:/app/
+    ''', title='docker-compose.yml', language='yaml').classes('w-full')
 
 
 doc.text('', '''
@@ -225,18 +245,15 @@ doc.text('', '''
 
 @doc.ui
 def uvicorn_ssl():
-    with python_window('main.py', classes='max-w-lg w-full'):
-        ui.markdown('''
-            ```python
-            from nicegui import ui
+    python_window('''
+        from nicegui import ui
 
-            ui.run(
-                port=443,
-                ssl_certfile="<path_to_certfile>",
-                ssl_keyfile="<path_to_keyfile>",
-            )
-            ```
-        ''')
+        ui.run(
+            port=443,
+            ssl_certfile="<path_to_certfile>",
+            ssl_keyfile="<path_to_keyfile>",
+        )
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -265,24 +282,18 @@ doc.text('Package for Installation', '''
 
 @doc.ui
 def pyinstaller():
-    with ui.row().classes('w-full items-stretch'):
-        with python_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import native, ui
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
 
-                def root():
-                    ui.label('Hello from PyInstaller')
+            def root():
+                ui.label('Hello from PyInstaller')
 
-                ui.run(root, reload=False, port=native.find_open_port())
-                ```
-            ''')
-        with bash_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```bash
-                nicegui-pack --onefile --name "myapp" main.py
-                ```
-            ''')
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            nicegui-pack --onefile --name "myapp" main.py
+        ''')
 
 
 doc.text('', '''
@@ -337,15 +348,12 @@ doc.text('', '''
 
 @doc.ui
 def install_pyinstaller():
-    with bash_window(classes='max-w-lg w-full h-42 self-center'):
-        ui.markdown('''
-            ```bash
-            python -m venv venv
-            source venv/bin/activate
-            pip install nicegui
-            pip install pyinstaller
-            ```
-        ''')
+    bash_window('''
+        python -m venv venv
+        source venv/bin/activate
+        pip install nicegui
+        pip install pyinstaller
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -358,21 +366,116 @@ doc.text('', '''
     See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
 ''')
 
-doc.text('', '''
-    **macOS Packaging**
+doc.text('Packaging with Nuitka', '''
+    NiceGUI apps can also be bundled with [Nuitka](https://nuitka.net/), which compiles Python to C.
+    Compared to PyInstaller, builds take longer but the resulting binaries are harder to decompile.
 
-    Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
+    Two flags are required because NiceGUI uses [PEP 562](https://peps.python.org/pep-0562/) lazy imports
+    that Nuitka's static analyzer cannot follow on its own:
+
+    - `--include-package=nicegui` bundles every submodule reachable through `from nicegui import ui`.
+    - `--include-package-data=nicegui` bundles data files (templates, libraries, ESM bundles for elements).
+
+    The same `ui.run` rules as for PyInstaller apply:
+    call it with `reload=False` and provide a `root` page or at least one `@page` function.
+''')
+
+
+@doc.ui
+def nuitka():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
+
+            def root():
+                ui.label('Hello from Nuitka')
+
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            python -m nuitka \\
+                --onefile \\
+                --include-package=nicegui \\
+                --include-package-data=nicegui \\
+                main.py
+        ''')
+
+
+doc.text('', '''
+    **Tips:**
+
+    - Use `--standalone` for a `main.dist/` directory that starts faster than `--onefile`,
+    which unpacks itself into a temporary directory on every launch.
+
+    - For optional packages your app uses (e.g. `pyecharts` for `ui.echart.from_pyecharts`,
+    or any other third-party package shipping templates or data files),
+    add matching `--include-package=<name>` and `--include-package-data=<name>` flags.
+
+    - Native mode (`ui.run(reload=False, native=True)`) works the same as with PyInstaller.
+    Platform-specific flags include
+    `--macos-create-app-bundle` (Mac),
+    `--windows-disable-console` (Windows), and
+    `--linux-onefile-icon=<path>` (Linux).
+
+    - First builds are slow because Nuitka compiles the entire dependency graph; subsequent builds reuse Nuitka's cache.
+    Add `--show-progress` to monitor long builds.
+''')
+
+doc.text('', '''
+    **Packaging with Native Mode**
+
+    When packaging your app (using nicegui-pack, PyInstaller, py2exe, etc.),
+    you need to call `freeze_support()` to prevent new processes from being spawned in an endless loop.
+    It should be called as the first statement inside the main guard.
+
+    If you use `app.native` settings, they must be defined **outside** the main guard
+    so they are applied before `freeze_support()` intercepts the subprocess:
 
     ```python
-    # macOS packaging support
-    from multiprocessing import freeze_support  # noqa
-    freeze_support()  # noqa
+    from multiprocessing import freeze_support
+    from nicegui import app, ui
 
-    # all your other imports and code
+    app.native.window_args['transparent'] = True  # outside main guard
+
+    # any other code (page functions, etc.)
+
+    if __name__ == '__main__':
+        freeze_support()  # first statement in main guard
+        ui.run(native=True, reload=False)
     ```
 
-    The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
-    This is key to prevent process spawning.
+''')
+
+doc.text('Documentation Index', '''
+    NiceGUI serves its entire documentation as machine-readable JSON endpoints.
+    Each index is a JSON array of objects with these fields:
+
+    | Field     | Type    | Description                                                                                 |
+    | --------- | ------- | ------------------------------------------------------------------------------------------- |
+    | `title`   | string  | Section heading, e.g. "Button: Click Handler" or "Example: Chat App"                        |
+    | `content` | string  | Description or search text (Markdown or reStructuredText)                                   |
+    | `format`  | string  | Content format: "md" or "rst"                                                              |
+    | `url`     | string  | Doc page path or GitHub example link                                                        |
+    | `demo`    | string? | Complete Python demo code, or "" if none (sitewide index only; key absent in other indices) |
+''')
+
+
+@doc.ui
+def _documentation_index_table():
+    ui.markdown(f'''
+        **Available indices:**
+
+        | Endpoint | Entries | Tokens | Includes code | Use case |
+        | -------- | ------- | ------ | ------------- | -------- |
+        | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | {index_sizes['sitewide']['entries']} | ~{index_sizes['sitewide']['tokens']}k | Yes | RAG, AI tooling, full context                                                    |
+        | [`/static/search_index.json`](https://nicegui.io/static/search_index.json)     | {index_sizes['search']['entries']}   | ~{index_sizes['search']['tokens']}k   | No  | Powers the on-site doc search; includes GitHub examples                          |
+        | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | {index_sizes['examples']['entries']} | ~{index_sizes['examples']['tokens']}k | No  | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
+    ''')
+
+
+doc.text('', '''
+    We welcome contributions for MCP servers, AI agent skills, and enhanced RAG implementations —
+    see the [contributing guide](https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md).
 ''')
 
 doc.text('NiceGUI On Air', '''

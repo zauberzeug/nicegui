@@ -7,33 +7,39 @@ import socket
 import sys
 import time
 import warnings
+from collections.abc import Callable
+from contextlib import suppress
+from multiprocessing.connection import Connection
+from multiprocessing.synchronize import Event as MultiprocessingEvent
+from pathlib import Path
 from threading import Event, Thread
-from typing import Any, Callable
+from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
 from ..server import Server
-from . import native
+from . import native, window_icon
+from .event_manager import event_manager
 
-try:
+with suppress(ImportError):
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)
         warnings.filterwarnings('ignore', category=DeprecationWarning)
         import webview
+        import webview.dom
     optional_features.register('webview')
-except ModuleNotFoundError:
-    pass
 
 
 def _open_window(
-    host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
-    method_queue: mp.Queue, response_queue: mp.Queue,
+    protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
+    method_queue: mp.Queue, response_queue: mp.Queue, event_sender: Connection,
+    favicon: str | Path | None = None,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
     window_kwargs = {
-        'url': f'http://{host}:{port}',
+        'url': helpers.format_url(protocol, host, port),
         'title': title,
         'width': width,
         'height': height,
@@ -46,8 +52,47 @@ def _open_window(
     assert window is not None
     closed = Event()
     window.events.closed += closed.set
+    _bind_pywebview_events(window, event_sender)
+
+    if sys.platform == 'win32' and favicon is not None:
+        def on_shown() -> None:
+            window_icon.apply_icon(window.native.Handle.ToInt32(), title, str(favicon))
+            window.events.shown -= on_shown
+        window.events.shown += on_shown
+
     _start_window_method_executor(window, method_queue, response_queue, closed)
+    _warn_if_esm_unsupported(window)
     webview.start(**core.app.native.start_args)
+
+
+def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> None:
+    def send(event_type: str, **kwargs: Any) -> None:
+        try:
+            event_sender.send({'type': event_type, 'args': kwargs})
+        except OSError:
+            pass
+
+    def bind_drop() -> None:
+        window.evaluate_js('''
+            document.addEventListener("dragover", function(e) {
+              if (e.dataTransfer && e.dataTransfer.types.indexOf("Files") >= 0) e.preventDefault();
+            });
+        ''')
+        window.dom.document.events.drop += \
+            webview.dom.DOMEventHandler(lambda e: send('drop', files=[  # type: ignore[arg-type]
+                file_.get('pywebviewFullPath', '') for file_ in e.get('dataTransfer', {}).get('files', [])
+            ]), True, False)
+
+    window.events.shown += lambda: send('shown')
+    window.events.loaded += lambda: send('loaded')
+    window.events.loaded += bind_drop
+    window.events.minimized += lambda: send('minimized')
+    window.events.maximized += lambda: send('maximized')
+    window.events.restored += lambda: send('restored')
+    window.events.resized += lambda width, height: send('resized', width=width, height=height)
+    window.events.moved += lambda x, y: send('moved', x=x, y=y)
+    window.events.closed += lambda: send('closed')
+    # NOTE: 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -95,15 +140,33 @@ def _start_window_method_executor(window: webview.Window,
     Thread(target=window_method_executor).start()
 
 
-def activate(host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool) -> None:
+def _warn_if_esm_unsupported(window: webview.Window) -> None:
+    """Log an error after page load if the browser engine lacks ES module / import map support."""
+    def check() -> None:
+        if not window.evaluate_js('typeof Vue !== "undefined"'):
+            log.error(
+                'Vue failed to load, and NiceGUI critically relies on it. '
+                'This typically means the webview browser engine does not support import maps (requires Chrome 89+). '
+                'On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.',
+            )
+
+    window.events.loaded += check
+
+
+def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
+             shutdown_event: MultiprocessingEvent | None = None,
+             favicon: str | Path | None = None) -> None:
     """Activate native mode."""
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
+        if shutdown_event is not None:
+            shutdown_event.set()
         Server.instance.should_exit = True
         while not core.app.is_stopped:
             time.sleep(0.1)
         _thread.interrupt_main()
+        event_manager.stop()
         native.remove_queues()
 
     if not optional_features.has('webview'):
@@ -113,7 +176,9 @@ def activate(host: str, port: int, title: str, width: int, height: int, fullscre
 
     mp.freeze_support()
     native.create_queues()
-    args = host, port, title, width, height, fullscreen, frameless, native.method_queue, native.response_queue
+    event_manager.start()
+    args = (protocol, host, port, title, width, height, fullscreen, frameless,
+            native.method_queue, native.response_queue, native.event_sender, favicon)
     process = mp.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
@@ -127,10 +192,8 @@ def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
     This is better than, e.g., passing port=0 to uvicorn.
     """
     for port in range(start_port, end_port + 1):
-        try:
+        with suppress(OSError):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(('localhost', port))
                 return port
-        except OSError:
-            pass
     raise OSError('No open port found')

@@ -1,15 +1,19 @@
-from typing import Optional
+from typing import Any
 
+from typing_extensions import Self
+
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class Fullscreen(ValueElement, component='fullscreen.js'):
+class Fullscreen(ValueElement[bool], component='fullscreen.js'):
     LOOPBACK = None
 
+    @resolve_defaults
     def __init__(self, *,
-                 require_escape_hold: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None) -> None:
+                 require_escape_hold: bool = DEFAULT_PROP | False,
+                 on_value_change: Handler[ValueChangeEventArguments[bool]] | None = None) -> None:
         """Fullscreen control element
 
         This element is based on Quasar's `AppFullscreen <https://quasar.dev/quasar-plugins/app-fullscreen>`_ plugin
@@ -26,7 +30,9 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
         :param on_value_change: callback which is invoked when the fullscreen state changes
         """
         super().__init__(value=False, on_value_change=on_value_change)
-        self._props['requireEscapeHold'] = require_escape_hold
+        self._props['require-escape-hold'] = require_escape_hold
+
+        self._props.add_rename('requireEscapeHold', 'require-escape-hold')  # DEPRECATED: remove in NiceGUI 4.0
 
     @property
     def require_escape_hold(self) -> bool:
@@ -35,24 +41,27 @@ class Fullscreen(ValueElement, component='fullscreen.js'):
         This feature is only supported in some browsers like Google Chrome or Microsoft Edge.
         In unsupported browsers, this setting has no effect.
         """
-        return self._props['requireEscapeHold']
+        return self._props['require-escape-hold']
 
     @require_escape_hold.setter
     def require_escape_hold(self, value: bool) -> None:
-        self._props['requireEscapeHold'] = value
+        self._props['require-escape-hold'] = value
 
-    def enter(self) -> None:
+    def enter(self) -> Self:
         """Enter fullscreen mode."""
         self.value = True
+        return self
 
-    def exit(self) -> None:
+    def exit(self) -> Self:
         """Exit fullscreen mode."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle fullscreen mode."""
         self.value = not self.value
+        return self
 
-    def _handle_value_change(self, value: bool) -> None:
+    def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         self.run_method('enter' if value else 'exit')

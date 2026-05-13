@@ -1,14 +1,16 @@
-from typing import Optional
+from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
 from .item import Item
 from .mixins.value_element import ValueElement
 
 
-class Menu(ValueElement):
+class Menu(ValueElement[bool]):
 
-    def __init__(self, *, value: bool = False) -> None:
+    @resolve_defaults
+    def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
         """Menu
 
         Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
@@ -19,31 +21,37 @@ class Menu(ValueElement):
 
         :param value: whether the menu is already opened (default: `False`)
         """
-        super().__init__(tag='q-menu', value=value, on_value_change=None)
+        super().__init__(tag='q-menu', value=value)
 
         # https://github.com/zauberzeug/nicegui/issues/1738
         self._props.add_warning('touch-position',
                                 'The prop "touch-position" is not supported by `ui.menu`. '
                                 'Use "ui.context_menu()" instead.')
 
-    def open(self) -> None:
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown() if self.value else ''
+
+    def open(self) -> Self:
         """Open the menu."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the menu."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the menu."""
         self.value = not self.value
+        return self
 
 
 class MenuItem(Item):
 
     def __init__(self,
                  text: str = '',
-                 on_click: Optional[Handler[ClickEventArguments]] = None, *,
+                 on_click: Handler[ClickEventArguments] | None = None, *,
                  auto_close: bool = True,
                  ) -> None:
         """Menu Item

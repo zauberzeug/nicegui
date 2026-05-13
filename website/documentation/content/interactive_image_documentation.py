@@ -13,7 +13,7 @@ def main_demo() -> None:
         ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
     src = 'https://picsum.photos/id/565/640/360'
-    ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
+    ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True, sanitize=False)
 
 
 @doc.demo('Adding layers', '''
@@ -37,7 +37,7 @@ def adding_layers():
         highlight.content = f'<circle cx="{e.image_x}" cy="{e.image_y}" r="28" fill="yellow" opacity="0.5" />'
 
     src = 'https://picsum.photos/id/674/640/360'
-    image = ui.interactive_image(src, on_mouse=mouse_handler, cross=True)
+    image = ui.interactive_image(src, on_mouse=mouse_handler, cross=True, sanitize=False)
     highlight = image.add_layer()
 
 
@@ -69,7 +69,7 @@ def force_reload():
 ''')
 def blank_canvas():
     ui.interactive_image(
-        size=(800, 600), cross=True,
+        size=(800, 600), cross=True, sanitize=False,
         on_mouse=lambda e: e.sender.set_content(f'''
             <circle cx="{e.image_x}" cy="{e.image_y}" r="50" fill="orange" />
         '''),
@@ -124,7 +124,7 @@ def svg_content():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross=True, content='''
         <rect id="A" x="85" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
         <rect id="B" x="180" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
-    ''').on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
+    ''', sanitize=False).on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
 
 
 doc.reference(ui.interactive_image)

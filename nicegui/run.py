@@ -1,17 +1,20 @@
 import asyncio
 import logging
+import signal
 import traceback
+from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
+from contextlib import suppress
 from functools import partial
 from pickle import PicklingError
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec
 
 from . import core, helpers
 
-process_pool: Optional[ProcessPoolExecutor] = None
+process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')
@@ -22,7 +25,7 @@ def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
     try:
-        process_pool = ProcessPoolExecutor()
+        process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
 
@@ -92,7 +95,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
         try:
             await _run(process_pool, safe_callback, lambda: None)
         except BrokenProcessPool:
-            process_pool = ProcessPoolExecutor()
+            process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
         finally:
             raise e
 
@@ -107,17 +110,13 @@ def reset() -> None:
     global process_pool, thread_pool  # pylint: disable=global-statement # noqa: PLW0603
 
     if process_pool is not None:
-        try:
+        with suppress(Exception):
             _kill_processes()
             process_pool.shutdown(wait=False, cancel_futures=True)
-        except Exception:  # pylint: disable=broad-except
-            pass
         process_pool = None
 
-    try:
+    with suppress(Exception):
         thread_pool.shutdown(wait=False, cancel_futures=True)
-    except Exception:  # pylint: disable=broad-except
-        pass
     thread_pool = ThreadPoolExecutor()
 
 
@@ -130,6 +129,11 @@ def tear_down() -> None:
         _kill_processes()
         process_pool.shutdown(wait=True, cancel_futures=True)
     thread_pool.shutdown(wait=False, cancel_futures=True)
+
+
+def _ignore_sigint() -> None:
+    """Ignore SIGINT in worker processes so only the parent handles Ctrl-C (see #6025)."""
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
 def _kill_processes() -> None:

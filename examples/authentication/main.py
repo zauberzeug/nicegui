@@ -5,8 +5,6 @@ Please see the `OAuth2 example at FastAPI <https://fastapi.tiangolo.com/tutorial
 use the great `Authlib package <https://docs.authlib.org/en/v0.13/client/starlette.html#using-fastapi>`_ to implement a classing real authentication system.
 Here we just demonstrate the NiceGUI integration.
 """
-from typing import Optional
-
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -16,7 +14,8 @@ from nicegui import app, ui
 # in reality users passwords would obviously need to be hashed
 passwords = {'user1': 'pass1', 'user2': 'pass2'}
 
-unrestricted_page_routes = {'/login'}
+# top-level static routes like /favicon.ico must be unrestricted, otherwise the middleware redirects them to /login
+unrestricted_page_routes = {'/favicon.ico', '/login'}
 
 
 @app.add_middleware
@@ -27,10 +26,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
-        if not app.storage.user.get('authenticated', False):
-            if not request.url.path.startswith('/_nicegui') and request.url.path not in unrestricted_page_routes:
-                return RedirectResponse(f'/login?redirect_to={request.url.path}')
-        return await call_next(request)
+        path = request.url.path
+        if app.storage.user.get('authenticated') or path in unrestricted_page_routes or path.startswith('/_nicegui'):
+            return await call_next(request)
+        return RedirectResponse(f'/login?redirect_to={path}')
 
 
 @ui.page('/')
@@ -50,20 +49,22 @@ def test_page() -> None:
 
 
 @ui.page('/login')
-def login(redirect_to: str = '/') -> Optional[RedirectResponse]:
-    def try_login() -> None:  # local function to avoid passing username and password as arguments
+def login(redirect_to: str = '/') -> RedirectResponse | None:
+    if app.storage.user.get('authenticated'):
+        return RedirectResponse('/')
+
+    def try_login() -> None:
         if passwords.get(username.value) == password.value:
-            app.storage.user.update({'username': username.value, 'authenticated': True})
+            app.storage.user.update(username=username.value, authenticated=True)
             ui.navigate.to(redirect_to)  # go back to where the user wanted to go
         else:
             ui.notify('Wrong username or password', color='negative')
 
-    if app.storage.user.get('authenticated', False):
-        return RedirectResponse('/')
-    with ui.card().classes('absolute-center'):
-        username = ui.input('Username').on('keydown.enter', try_login)
+    with ui.card().classes('absolute-center items-stretch'):
+        username = ui.input('Username').props('autofocus').on('keydown.enter', lambda: password.run_method('focus'))
         password = ui.input('Password', password=True, password_toggle_button=True).on('keydown.enter', try_login)
         ui.button('Log in', on_click=try_login)
+
     return None
 
 

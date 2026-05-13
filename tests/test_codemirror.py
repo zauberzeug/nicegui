@@ -1,4 +1,6 @@
 import pytest
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -60,6 +62,30 @@ def test_change_set(screen: Screen, doc: str, sections: list[int], inserted: lis
 
     screen.open('/')
     assert editor._apply_change_set(sections, inserted) == expected
+
+
+def test_set_value_preserves_cursor(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Hello World')
+
+    screen.open('/')
+    cm = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-content")]')
+    cm.click()
+    cm.send_keys(Keys.HOME)
+    for _ in range(5):
+        cm.send_keys(Keys.ARROW_RIGHT)  # Move cursor after 'Hello'
+
+    editor.value = 'Hello Earth'
+    screen.wait(0.5)
+
+    cm.send_keys(',')  # Insert comma after 'Hello'
+    screen.wait(0.5)
+
+    assert editor.value == 'Hello, Earth'
 
 
 def test_encode_codepoints():

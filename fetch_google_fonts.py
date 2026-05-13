@@ -28,7 +28,7 @@ css += '\n' + httpx.get(f'https://fonts.googleapis.com/css?family={"|".join(css_
                         headers={'User-Agent': AGENT}, timeout=5).content.decode()
 css += '\n' + httpx.get(f'https://fonts.googleapis.com/css?family={"|".join(css2_families)}',
                         headers={'User-Agent': AGENT}, timeout=5).content.decode()
-for font_url in re.findall(r'url\((.*?)\)', css):
+for font_url in set(re.findall(r'url\((.*?)\)', css)):
     font = httpx.get(font_url, timeout=5).content
     filepath = FONTS_DIRECTORY.joinpath(font_url.split('/')[-1])
     filepath = filepath.with_stem(hashlib.sha256(filepath.stem.encode()).hexdigest()[:16])
@@ -36,8 +36,6 @@ for font_url in re.findall(r'url\((.*?)\)', css):
         raise RuntimeError(f'Duplicate filepath: {filepath}')
     filepath.write_bytes(font)
     css = css.replace(font_url, f'fonts/{filepath.name}')
-css = css.replace('https://fonts.gstatic.com/s/materialicons/v140', 'fonts')
-css = css.replace('https://fonts.gstatic.com/s/roboto/v30', 'fonts')
 css = css.replace("'", '"')
 # for each @font-face block, add font-display: block
 css = re.sub(r'@font-face\s*{\s*font-family:\s*"Material',

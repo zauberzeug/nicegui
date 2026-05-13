@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from socketio import AsyncServer
 
@@ -19,9 +20,19 @@ script_mode: bool = False
 script_client: Client | None = None
 
 
+def is_loop_running() -> bool:
+    """Return whether the NiceGUI event loop is running and tasks can be scheduled."""
+    return loop is not None and loop.is_running()
+
+
 def is_script_mode_preflight() -> bool:
     """Return whether this is the preflight run of the script mode."""
     return script_mode and not app.is_started  # pylint: disable=undefined-variable # noqa: F821
+
+
+def is_script_mode_re_execution() -> bool:
+    """Return whether the script is being re-executed for a per-client connection in script mode."""
+    return script_mode and app.is_started  # pylint: disable=undefined-variable # noqa: F821
 
 
 def reset() -> None:

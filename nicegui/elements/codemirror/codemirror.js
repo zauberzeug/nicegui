@@ -12,6 +12,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    id: String,
   },
   watch: {
     language(newLanguage) {
@@ -36,6 +37,12 @@ export default {
       }),
     };
   },
+  beforeUnmount() {
+    if (this.editor) {
+      const element = mounted_app.elements[this.$props.id.slice(1)];
+      if (element) element.props.value = this.editor.state.doc.toString();
+    }
+  },
   methods: {
     // Find the language's extension by its name. Case insensitive.
     findLanguage(name) {
@@ -43,8 +50,8 @@ export default {
         for (const alias of [language.name, ...language.alias])
           if (name.toLowerCase() === alias.toLowerCase()) return language;
 
-      console.error(`Language not found: ${this.language}`);
-      console.info("Supported language names:", languages.map((lang) => lang.name).join(", "));
+      console.error(`Language not found: ${name}`);
+      console.info("Supported language names:", this.languages.map((lang) => lang.name).join(", "));
       return null;
     },
     // Get the names of all supported languages
@@ -61,9 +68,8 @@ export default {
         return;
       }
 
-      const lang_description = this.findLanguage(language, this.languages);
+      const lang_description = this.findLanguage(language);
       if (!lang_description) {
-        console.error("Language not found:", language);
         return;
       }
 
@@ -96,10 +102,22 @@ export default {
     },
     setEditorValue(value) {
       if (!this.editor) return;
-      if (this.editor.state.doc.toString() === value) return;
+      const old = this.editor.state.doc.toString();
+      if (old === value) return;
+
+      // Find the changed region so we only replace what differs.
+      // This preserves cursor positions and selections outside the change.
+      let start = 0;
+      while (start < old.length && start < value.length && old[start] === value[start]) start++;
+      let oldEnd = old.length;
+      let newEnd = value.length;
+      while (oldEnd > start && newEnd > start && old[oldEnd - 1] === value[newEnd - 1]) {
+        oldEnd--;
+        newEnd--;
+      }
 
       this.emitting = false;
-      this.editor.dispatch({ changes: { from: 0, to: this.editor.state.doc.length, insert: value } });
+      this.editor.dispatch({ changes: { from: start, to: oldEnd, insert: value.slice(start, newEnd) } });
       this.emitting = true;
     },
     setDisabled(disabled) {
@@ -127,7 +145,7 @@ export default {
             if (!self.emitting) return;
             self.$emit("update:value", update.changes);
           }
-        }
+        },
       );
 
       const extensions = [

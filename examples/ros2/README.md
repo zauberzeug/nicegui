@@ -11,7 +11,6 @@ ROS2 and NiceGUI are fully functional in this example.
 
 Over all it is a bit more complex than a super minimal example to allow auto-reloading of the NiceGUI ROS2 node.
 
-
 ## Usage
 
 Change into the `examples/ros2` folder and run:

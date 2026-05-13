@@ -1,14 +1,12 @@
-from typing import Optional, Union
-
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Grid(Element, default_classes='nicegui-grid'):
+class Grid(SortableElement, default_classes='nicegui-grid'):
 
     def __init__(self,
                  *,
-                 rows: Optional[Union[int, str]] = None,
-                 columns: Optional[Union[int, str]] = None,
+                 rows: int | str | None = None,
+                 columns: int | str | None = None,
                  ) -> None:
         """Grid Element
 

@@ -1,6 +1,6 @@
 export default {
   template: `
-    <div :style="{ position: 'relative', aspectRatio: size ? size[0] / size[1] : undefined }">
+    <div :style="{ position: 'relative', aspectRatio: aspectRatio }">
       <img
         ref="img"
         :src="computed_src"
@@ -16,7 +16,7 @@ export default {
           <line v-if="cross" x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
           <slot name="cross" :x="x" :y="y"></slot>
         </g>
-        <g v-html="content"></g>
+        <g ref="contentGroup"></g>
       </svg>
       <slot></slot>
     </div>
@@ -32,9 +32,19 @@ export default {
       computed_src: undefined,
       waiting_source: undefined,
       loading: false,
+      DOMPurify: null,
+      previousContent: null,
     };
   },
   mounted() {
+    if (this.sanitize) {
+      import("dompurify").then(({ default: DOMPurify }) => {
+        this.DOMPurify = DOMPurify;
+        this.renderContent();
+      });
+    } else {
+      this.renderContent();
+    }
     setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
     const handle_completion = () => {
       if (this.waiting_source) {
@@ -60,9 +70,25 @@ export default {
     }
   },
   updated() {
+    this.renderContent();
     this.compute_src();
   },
   methods: {
+    renderContent() {
+      const content = this.content || "";
+      if (content === this.previousContent) return;
+      if (this.sanitize) {
+        if (!this.DOMPurify) return;
+        const sanitized = this.DOMPurify.sanitize(`<svg>${content}</svg>`, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        });
+        const match = sanitized.match(/^<svg>(.*)<\/svg>$/is);
+        this.$refs.contentGroup.innerHTML = match ? match[1] : "";
+      } else {
+        this.$refs.contentGroup.innerHTML = content;
+      }
+      this.previousContent = content;
+    },
     compute_src() {
       const suffix = this.t ? (this.src.includes("?") ? "&" : "?") + "_nicegui_t=" + this.t : "";
       const new_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src + suffix;
@@ -121,6 +147,13 @@ export default {
     },
   },
   computed: {
+    aspectRatio() {
+      if (this.size) return this.size[0] / this.size[1];
+      if (this.loaded_image_width && this.loaded_image_height) {
+        return this.loaded_image_width / this.loaded_image_height;
+      }
+      return undefined;
+    },
     onCrossEvents() {
       if (!this.cross && !this.$slots.cross) return {};
       return {
@@ -144,5 +177,6 @@ export default {
     events: Array,
     cross: Boolean,
     t: String,
+    sanitize: Boolean,
   },
 };

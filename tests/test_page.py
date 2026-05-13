@@ -1,12 +1,15 @@
 import asyncio
 import re
-from typing import Optional
+from typing import Literal
 
+import httpx
+import pytest
+from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
-from selenium.webdriver.common.by import By
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from nicegui import app, background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_page(screen: Screen):
@@ -64,7 +67,7 @@ def test_creating_new_page_after_startup(screen: Screen):
 
 
 def test_wait_for_connected(screen: Screen):
-    label: Optional[ui.label] = None
+    label: ui.label | None = None
 
     async def load() -> None:
         assert label
@@ -133,8 +136,11 @@ def test_adding_elements_after_connected(screen: Screen):
 
 
 def test_exception(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     def page():
+        ui.on_exception(exceptions.append)
         raise RuntimeError('some exception')
 
     screen.allowed_js_errors.append('/ - Failed to load resource')
@@ -142,11 +148,15 @@ def test_exception(screen: Screen):
     screen.should_contain('500')
     screen.should_contain('Server error')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert not exceptions, 'ui.on_exception is for in-page exceptions (after page sent to browser)'
 
 
 def test_exception_after_connected(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     async def page():
+        ui.on_exception(exceptions.append)
         await ui.context.client.connected()
         ui.label('this is shown')
         raise RuntimeError('some exception')
@@ -154,6 +164,45 @@ def test_exception_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('this is shown')
     screen.assert_py_logger('ERROR', 'some exception')
+    assert exceptions, 'in-page exception should be caught by ui.on_exception'
+
+
+def test_api_exception(screen: Screen):
+    @app.get('/')
+    def api_exception():
+        raise RuntimeError('some exception in a GET endpoint')
+
+    screen.allowed_js_errors.append('/ - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('Internal Server Error')
+
+
+@pytest.mark.parametrize('exception_class', [HTTPException, StarletteHTTPException])
+def test_api_http_exception_404_returns_json(screen: Screen, exception_class: type) -> None:
+    @app.get('/api/missing')
+    def api_missing():
+        raise exception_class(404, 'item not found')
+
+    screen.start_server()
+    response = httpx.get(f'http://localhost:{Screen.PORT}/api/missing')
+    assert response.status_code == 404, 'status code should be forwarded'
+    assert response.headers['content-type'].startswith('application/json'), \
+        "endpoints raising HTTPException(404) should get FastAPI's default JSON response, not NiceGUI's HTML error page"
+    assert response.json() == {'detail': 'item not found'}
+
+
+def test_ui_page_http_exception_404_keeps_html(screen: Screen):
+    @ui.page('/blog/{id_}')
+    def blog(id_: int):
+        if id_ != 1:
+            raise HTTPException(404, 'blog post not found')
+        ui.label(f'Blog post {id_}')
+
+    screen.start_server()
+    response = httpx.get(f'http://localhost:{Screen.PORT}/blog/99')
+    assert response.status_code == 404, 'status code should be forwarded'
+    assert response.headers['content-type'].startswith('text/html'), \
+        'ui.page raising HTTPException(404) should render the HTML error page for browsers'
 
 
 def test_page_with_args(screen: Screen):
@@ -187,7 +236,10 @@ def test_async_connect_handler(screen: Screen):
     screen.should_contain('42')
 
 
-def test_dark_mode(screen: Screen):
+@pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
+def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | None):
+    app.config.unocss = unocss
+
     @ui.page('/auto', dark=None)
     def page():
         ui.label('A').classes('text-blue-400 dark:text-red-400')
@@ -263,20 +315,6 @@ def test_warning_about_to_late_responses(screen: Screen):
     screen.assert_py_logger('ERROR', re.compile('it was returned after the HTML had been delivered to the client'))
 
 
-def test_reconnecting_without_page_reload(screen: Screen):
-    @ui.page('/', reconnect_timeout=3.0)
-    def page():
-        ui.input('Input').props('autofocus')
-        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()'))
-
-    screen.open('/')
-    screen.type('hello')
-    screen.click('drop connection')
-    screen.wait(2.0)
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
-    assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
-
-
 def test_ip(screen: Screen):
     @ui.page('/')
     def page():
@@ -286,9 +324,10 @@ def test_ip(screen: Screen):
     screen.should_contain('127.0.0.1')
 
 
-def test_multicast(screen: Screen):
+@pytest.mark.parametrize('path', ['/', None])
+def test_multicast(screen: Screen, path: str | None):
     def update():
-        for client in app.clients('/'):
+        for client in app.clients(path):
             with client:
                 ui.label('added')
 
@@ -311,6 +350,22 @@ def test_warning_if_response_takes_too_long(screen: Screen):
         await asyncio.sleep(1)
         ui.label('all done')
 
-    screen.allowed_js_errors.append('/ - Failed to load resource')
-    screen.open('/')
+    screen.start_server()
+    # NOTE: using httpx instead of screen.open to avoid Selenium script timeout on incomplete page responses
+    httpx.get(f'http://localhost:{Screen.PORT}/', timeout=5)
+    screen.wait(1)
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))
+
+
+async def test_async_page_does_not_leak_event_wait_tasks(user: User):
+    @ui.page('/')
+    async def page():
+        ui.label('Hello')
+
+    for _ in range(5):
+        await user.open('/')
+    await asyncio.sleep(0.1)
+    assert not any(
+        t.get_name().startswith('wait for connection') and not t.done()
+        for t in asyncio.all_tasks()
+    ), 'connection-wait tasks should be cancelled after page coroutine completes'

@@ -1,4 +1,4 @@
-import { createJSONEditor, createAjvValidator } from "nicegui-json-editor";
+import { createJSONEditor, createAjvValidator, formatsPlugin } from "nicegui-json-editor";
 
 export default {
   template: "<div></div>",
@@ -22,7 +22,12 @@ export default {
   methods: {
     checkValidation() {
       if (this.schema !== undefined) {
-        this.properties.validator = createAjvValidator({ schema: this.schema, schemaDefinitions: {}, ajvOptions: {} });
+        this.properties.validator = createAjvValidator({
+          schema: this.schema,
+          schemaDefinitions: {},
+          ajvOptions: {},
+          onCreateAjv: (ajv) => formatsPlugin(ajv),
+        });
       }
     },
     update_editor() {

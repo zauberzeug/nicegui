@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 import httpx
@@ -13,6 +12,14 @@ IMAGE_FILE = Path(TEST_DIR) / 'media' / 'test1.jpg'
 VIDEO_FILE = Path(TEST_DIR) / 'media' / 'test.mp4'
 VIDEO_FILE.parent.mkdir(exist_ok=True)
 VIDEO_FILE.write_bytes(b'\x00' * 2000)  # dummy video file large enough to be streamed
+
+
+@pytest.fixture
+def secret_file():
+    secret_path = Path(TEST_DIR) / '.env'
+    secret_path.write_text('TOP SECRET DATA')
+    yield secret_path
+    secret_path.unlink(missing_ok=True)
 
 
 def assert_video_file_streaming(path: str) -> None:
@@ -39,6 +46,21 @@ def test_media_files_can_be_streamed(screen: Screen):
     assert_video_file_streaming('/media/test.mp4')
 
 
+def test_media_files_against_path_traversal(screen: Screen, secret_file):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/media/%2e%2e/.env')
+        assert 'TOP SECRET DATA' not in r.text
+        assert r.status_code == 404
+
+
 def test_adding_single_media_file(screen: Screen):
     url_path = app.add_media_file(local_file=VIDEO_FILE)
 
@@ -48,6 +70,37 @@ def test_adding_single_media_file(screen: Screen):
 
     screen.open('/')
     assert_video_file_streaming(url_path)
+
+
+def test_invalid_range_header_returns_416(screen: Screen):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        for range_value in ['bytes=1000-500', 'bytes=9999-10000', 'bytes=abc-def', 'invalid']:
+            r = http_client.get(f'http://localhost:{Screen.PORT}/media/test.mp4', headers={'Range': range_value})
+            assert r.status_code == 416, f'Expected 416 for Range: {range_value}'
+
+
+def test_malicious_chunk_size_is_clamped(screen: Screen):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        for chunk_size in [-1, 0, -9999]:
+            r = http_client.get(
+                f'http://localhost:{Screen.PORT}/media/test.mp4?nicegui_chunk_size={chunk_size}',
+                headers={'Range': 'bytes=0-1000'},
+            )
+            assert r.status_code == 206
 
 
 @pytest.mark.parametrize('url_path', ['/static', '/static/'])
@@ -75,7 +128,6 @@ def test_404_for_non_existing_static_file(screen: Screen):
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/does_not_exist.jpg')
-        screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
         assert r.status_code == 404
         assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
 
@@ -129,6 +181,10 @@ def test_mimetypes_of_static_files(screen: Screen):
     screen.open('/')
 
     response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.esm-browser.js', timeout=5)
+    assert response.status_code == 200
+    assert response.headers['Content-Type'].startswith('text/javascript')
+
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/dompurify.mjs', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 

@@ -1,15 +1,19 @@
+from typing_extensions import Self
+
 from ..context import context
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 
-class Footer(ValueElement, default_classes='nicegui-footer'):
+class Footer(ValueElement[bool], default_classes='nicegui-footer'):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: bool = True,
+                 value: bool = DEFAULT_PROPS['model-value'] | True,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  wrap: bool = True,
                  ) -> None:
         """Footer
@@ -40,14 +44,17 @@ class Footer(ValueElement, default_classes='nicegui-footer'):
 
         self.move(target_index=-1)
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the footer"""
         self.value = not self.value
+        return self
 
-    def show(self) -> None:
+    def show(self) -> Self:
         """Show the footer"""
         self.value = True
+        return self
 
-    def hide(self) -> None:
+    def hide(self) -> Self:
         """Hide the footer"""
         self.value = False
+        return self

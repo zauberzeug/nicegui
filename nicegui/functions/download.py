@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional, Union
 
 from .. import core, helpers
 from ..context import context
@@ -14,7 +13,7 @@ class Download:
     *Added in version 2.14.0*
     """
 
-    def __call__(self, src: Union[str, Path, bytes], filename: Optional[str] = None, media_type: str = '') -> None:
+    def __call__(self, src: str | Path | bytes, filename: str | None = None, media_type: str = '') -> None:
         """Download
 
         Function to trigger the download of a file, URL or bytes.
@@ -31,7 +30,7 @@ class Download:
             src = str(src)
             self.from_url(src, filename, media_type)
 
-    def file(self, path: Union[str, Path], filename: Optional[str] = None, media_type: str = '') -> None:
+    def file(self, path: str | Path, filename: str | None = None, media_type: str = '') -> None:
         """Download file from local path
 
         Function to trigger the download of a file.
@@ -45,7 +44,7 @@ class Download:
         src = core.app.add_static_file(local_file=path, single_use=True)
         context.client.download(src, filename, media_type)
 
-    def from_url(self, url: str, filename: Optional[str] = None, media_type: str = '') -> None:
+    def from_url(self, url: str, filename: str | None = None, media_type: str = '') -> None:
         """Download from a relative URL
 
         Function to trigger the download from a relative URL.
@@ -73,7 +72,7 @@ class Download:
                         'Please refer to the documentation for more details.')
         context.client.download(url, filename, media_type)
 
-    def content(self, content: Union[bytes, str], filename: Optional[str] = None, media_type: str = '') -> None:
+    def content(self, content: bytes | str, filename: str | None = None, media_type: str = '') -> None:
         """Download raw bytes or string content
 
         Function to trigger the download of raw data.

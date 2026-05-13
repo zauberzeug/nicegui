@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import logging
 import time
-from typing import Optional
 
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi import Request
@@ -28,7 +27,7 @@ oauth.register(
 
 
 @ui.page('/')
-async def main(request: Request) -> Optional[RedirectResponse]:
+async def main(request: Request) -> RedirectResponse | None:
     user_info = app.storage.user.get('user_info', {})
     if not _is_valid(user_info):
         app.storage.user.pop('user_info', None)
