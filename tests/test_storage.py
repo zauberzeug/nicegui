@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import re
 import time
 from pathlib import Path
 
@@ -372,6 +373,17 @@ async def test_user_storage_is_pruned(screen: Screen):
     await nicegui.prune_user_storage(force=True)
     assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
+
+
+def test_storage_serialization_error_points_at_offending_key(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update', on_click=lambda: app.storage.general.update(X={'Y': {1, 2, 3}}))
+
+    screen.open('/')
+    screen.click('Update')
+    screen.wait(0.5)  # let the deferred backup task run
+    screen.assert_py_logger('ERROR', re.compile(r"storage-general.*\.json at \['X'\]\['Y'\]: value of type 'set'"))
 
 
 async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
