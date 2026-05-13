@@ -209,6 +209,12 @@ def test_snippet_completion(screen: Screen):
     cm.click()
     editor.trigger_completion()
     screen.wait_for(lambda: 'mysnippet' in _rendered_labels(screen))
+    # CM6 first-option auto-selection is set on a microtask after the popup mounts; CI runners
+    # are slow enough that ENTER can race ahead of `selected: 0` being committed, in which case
+    # the keystroke falls through to a newline insert instead of accepting the completion.
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return !!document.querySelector(\'.cm-tooltip-autocomplete li[aria-selected="true"]\')'
+    ))
     cm.send_keys(Keys.ENTER)
     screen.wait_for(lambda: 'for item in iterable:' in (editor.value or ''))
     assert 'pass' in editor.value
