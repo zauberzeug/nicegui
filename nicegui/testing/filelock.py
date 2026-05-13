@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 if sys.platform == 'win32':
-    import msvcrt
+    import msvcrt  # pylint: disable=import-error
 else:
     import fcntl
 
