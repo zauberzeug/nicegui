@@ -32,6 +32,7 @@ class page:
                  response_timeout: float = 3.0,
                  reconnect_timeout: float | None = None,
                  markdown: bool | None = None,
+                 sitemap: bool | dict = False,
                  api_router: APIRouter | None = None,
                  **kwargs: Any,
                  ) -> None:
@@ -60,6 +61,11 @@ class page:
         :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
             (experimental, defaults to `markdown` argument of `run` command, *added in version 3.11.0*)
+        :param sitemap: whether the page should appear in ``/sitemap.xml``. Default: ``False``
+            (NiceGUI does not enumerate page paths anywhere public by default, so opt-in preserves
+            apps relying on unguessable URLs). Pass ``True`` to include with no metadata, or a dict like
+            ``{'lastmod': '2026-05-14', 'changefreq': 'weekly', 'priority': 0.8}`` to attach metadata.
+            Paths with ``{...}`` parameters are always skipped (no enumerator).
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
@@ -74,6 +80,13 @@ class page:
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
         self.markdown = markdown
+
+        if sitemap is False:
+            core.app.sitemap.remove(self.path)
+        elif sitemap is True:
+            core.app.sitemap.add(self.path)
+        else:
+            core.app.sitemap.add(self.path, **sitemap)
 
         create_favicon_route(self.path, favicon)
 
