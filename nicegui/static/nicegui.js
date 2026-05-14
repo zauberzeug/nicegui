@@ -272,8 +272,10 @@ function renderRecursively(elements, id, propsContext) {
         else setTimeout(delayed_emitter, 10);
       };
       throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-      if (element.props["loopback"] === False && event.type == "update:modelValue") {
-        element.props["model-value"] = args;
+      // mirror locally so the client-rendered value survives re-render when the server elides the echo (see #5933)
+      if ((element.props["loopback"] === true || element.props["loopback"] === false)
+          && event.type == "update:modelValue") {
+        element.props["model-value"] = args[0];
       }
     };
 

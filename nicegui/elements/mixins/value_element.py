@@ -15,7 +15,7 @@ class ValueElement(Element, Generic[ValueT]):
     LOOPBACK: bool | None = True
     '''Whether to set the new value directly on the client or after getting an update from the server.
 
-    - ``True``: The value is updated by sending a change event to the server which responds with an update.
+    - ``True``: The value is updated by sending a change event to the server; the server echoes back unless the value matches what the client just sent.
     - ``False``: The value is updated by setting the VALUE_PROP directly on the client.
     - ``None``: The value is updated automatically by the Vue element.
     '''
@@ -43,9 +43,14 @@ class ValueElement(Element, Generic[ValueT]):
             self.on_value_change(on_value_change)
 
         def handle_change(e: GenericEventArguments) -> None:
-            self._send_update_on_value_change = self.LOOPBACK is True
-            self.set_value(self._event_args_to_value(e))
-            self._send_update_on_value_change = True
+            self._send_update_on_value_change = False
+            try:
+                self.set_value(self._event_args_to_value(e))
+            finally:
+                self._send_update_on_value_change = True
+            # skip the echo when the server's value matches what the client locally rendered (see #5933)
+            if self.LOOPBACK is True and self._props[self.VALUE_PROP] != e.args:
+                self.update()
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments[ValueT]]) -> Self:
