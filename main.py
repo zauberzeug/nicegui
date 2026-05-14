@@ -89,15 +89,14 @@ def _main_page() -> None:
         </script>
     ''')
 
-    ui.skip_to_main()
-
-    custom_sub_pages({
+    main_content = custom_sub_pages({
         '/': main_page.create,
         '/examples': examples_page.create,
         '/documentation': lambda: documentation.render_page(documentation.registry['']),
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
     }, show_404=False).classes('w-full')
+    ui.skip_link(target=main_content)
 
     footer_section.create()
 
