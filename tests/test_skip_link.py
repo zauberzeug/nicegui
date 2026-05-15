@@ -64,6 +64,23 @@ def test_link_precedes_other_content_in_document(screen: Screen):
     assert is_before
 
 
+def test_link_is_deleted_with_calling_context(screen: Screen):
+    link = container = None
+
+    @ui.page('/')
+    def page():
+        nonlocal link, container
+        with ui.column() as container:
+            target = ui.label('Main content')
+            link = ui.skip_link(target=target)
+        ui.button('Clear', on_click=container.clear)
+
+    screen.open('/')
+    assert not link.is_deleted
+    screen.click('Clear')
+    screen.wait_for(lambda: link.is_deleted)
+
+
 def test_multiple_skip_links_preserve_order_and_precede_content(screen: Screen):
     @ui.page('/')
     def page():

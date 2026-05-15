@@ -1,3 +1,5 @@
+import weakref
+
 from ..context import context
 from ..element import Element
 from .mixins.text_element import TextElement
@@ -41,6 +43,13 @@ class SkipLink(TextElement, default_classes='nicegui-skip-link'):
             if not isinstance(child, SkipLink):
                 self.move(target_index=index)
                 break
+        # canary in the calling context so the link is deleted when its parent is cleared
+        # (e.g. a sub_pages route change), matching the lifecycle of ui.dialog
+        canary = Element()
+        canary.visible = False
+        weakref.finalize(
+            canary, lambda: self.delete() if not self.is_deleted and self._parent_slot and self._parent_slot() else None
+        )
         self._props['href'] = f'#{target.html_id}'
         self.on('click', js_handler='''(e) => {
             const el = getHtmlElement(e.currentTarget.hash.slice(1));
