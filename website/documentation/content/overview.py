@@ -9,6 +9,7 @@ from . import (
     section_configuration_deployment,
     section_controls,
     section_data_elements,
+    section_foundations,
     section_page_layout,
     section_pages_routing,
     section_security,
@@ -28,6 +29,9 @@ doc.text('Overview', '''
     You can focus on writing Python code.
     This makes it ideal for a wide range of projects including short
     scripts, dashboards, robotics projects, IoT solutions, smart home automation, and machine learning.
+
+    If you are an AI: the full documentation is available as a
+    [machine-readable JSON index](/documentation/section_configuration_deployment#documentation_index).
 ''')
 
 doc.text('How to use this guide', '''
@@ -141,6 +145,9 @@ tiles = [
     (section_security, '''
         Learn about security best practices, common vulnerabilities, and how to write secure NiceGUI applications.
     '''),
+    (section_foundations, '''
+        Why Vue, Quasar, FastAPI, and Tailwind CSS — and how they fit together.
+    '''),
 ]
 
 
@@ -183,6 +190,7 @@ def map_of_nicegui():
                 - [`.mark()`](/documentation/element_filter#markers): mark an element for querying with an [ElementFilter](/documentation/element_filter)
             - interaction:
                 - [`.on()`](/documentation/generic_events): add Python and JavaScript event handlers
+                - [`.make_sortable()`](/documentation/sortable): enable drag-and-drop sorting on container elements
                 - `.update()`: send an update to the client (mostly done automatically)
                 - `.run_method()`: run a method on the client side
                 - `.get_computed_prop()`: get the value of a property that is computed on the client side
@@ -303,6 +311,7 @@ def map_of_nicegui():
             - [`ui.download`](/documentation/download): download a file to the client
             - [`ui.fullscreen`](/documentation/fullscreen): enter, exit and toggle fullscreen mode
             - [`ui.keyboard`](/documentation/keyboard): define keyboard event handlers
+            - [`ui.keep_alive`](/documentation/keep_alive): keep elements alive even when they are not visible
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler
@@ -311,6 +320,7 @@ def map_of_nicegui():
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions
             - [`ui.run`](/documentation/run) and `ui.run_with`: run the app (standalone or attached to a FastAPI app)
             - [`ui.run_javascript`](/documentation/run#run_custom_javascript_on_the_client_side): run custom JavaScript on the client side (can use `getElement()`, `getHtmlElement()`, and `emitEvent()`)
+            - [`ui.status_code`](/documentation/status_code): set the HTTP status code for the current page response
             - [`ui.teleport`](/documentation/teleport): teleport an element to a different location in the HTML DOM
             - [`ui.timer`](/documentation/timer): run a function periodically or once after a delay
             - `ui.update`: send updates of multiple elements to the client

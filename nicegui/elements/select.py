@@ -11,14 +11,14 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableElement, component='select.js'):
 
     @resolve_defaults
     def __init__(self,
                  options: list | dict, *,
                  label: str | None = DEFAULT_PROP | None,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  with_input: bool = False,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
                  multiple: bool = DEFAULT_PROP | False,

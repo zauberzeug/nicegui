@@ -4,13 +4,13 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Time(ValueElement, DisableableElement):
+class Time(ValueElement[str | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self,
                  value: str | None = DEFAULT_PROPS['model-value'] | None, *,
                  mask: str = DEFAULT_PROP | 'HH:mm',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  ) -> None:
         """Time Picker
 

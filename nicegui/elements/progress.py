@@ -4,7 +4,7 @@ from .mixins.color_elements import TextColorElement
 from .mixins.value_element import ValueElement
 
 
-class LinearProgress(ValueElement, TextColorElement):
+class LinearProgress(ValueElement[float], TextColorElement):
     VALUE_PROP = 'value'
 
     @resolve_defaults
@@ -32,7 +32,7 @@ class LinearProgress(ValueElement, TextColorElement):
                 label().classes('absolute-center text-white').style('font-size: 0.875rem').bind_text_from(self, 'value')
 
 
-class CircularProgress(ValueElement, TextColorElement):
+class CircularProgress(ValueElement[float], TextColorElement):
     VALUE_PROP = 'value'
 
     @resolve_defaults

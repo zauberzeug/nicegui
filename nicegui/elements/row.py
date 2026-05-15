@@ -1,9 +1,9 @@
 from typing import Literal
 
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Row(Element, default_classes='nicegui-row'):
+class Row(SortableElement, default_classes='nicegui-row'):
 
     def __init__(self, *,
                  wrap: bool = True,

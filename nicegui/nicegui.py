@@ -9,7 +9,9 @@ from typing import Any
 
 import socketio
 from fastapi import HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import FileResponse, Response
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
 from .app import App
@@ -72,14 +74,14 @@ def _get_library(key: str) -> FileResponse:
         path = libraries[dict_key].path
         if is_map:
             path = path.with_name(path.name + '.map')
-        if path.exists():
+        if path.is_file():
             return FileResponse(path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def _get_component(key: str) -> Response:
-    if key in js_components and js_components[key].path.exists():
+    if key in js_components and js_components[key].path.is_file():
         return FileResponse(js_components[key].path, media_type='text/javascript')
     elif key in vue_components:
         return Response(vue_components[key].script, media_type='text/javascript')
@@ -92,7 +94,7 @@ def _get_resource(key: str, path: str) -> FileResponse:
         filepath = resources[key].path / path
         if not filepath.resolve().is_relative_to(resources[key].path.resolve()):
             raise HTTPException(status_code=403, detail='forbidden')
-        if filepath.exists():
+        if filepath.is_file():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
@@ -111,7 +113,7 @@ def _get_esm(key: str, path: str) -> FileResponse:
         filepath = esm_modules[key].path / path
         if not filepath.resolve().is_relative_to(esm_modules[key].path.resolve()):
             raise HTTPException(status_code=403, detail='forbidden')
-        if filepath.exists():
+        if filepath.is_file():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'ESM module "{key}" not found')
@@ -161,6 +163,11 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
+    if (endpoint := request.scope.get('endpoint')) is not None and endpoint is not app and not request.scope.get('nicegui_page_path') and isinstance(exception, StarletteHTTPException):
+        # non-page endpoints raising 404 should get JSON, not our HTML error page
+        # NOTE: match Starlette's HTTPException (the base class) so e.g. auth dependencies that raise it directly are covered
+        # NOTE: when mounted via ui.run_with(), the parent's Mount sets endpoint=app even if no inner route matched — exclude that case
+        return await http_exception_handler(request, exception)
     root = core.root
     if root is not None:
         kwargs = {

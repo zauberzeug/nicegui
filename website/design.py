@@ -76,6 +76,16 @@ TEXT_HERO = 'text-[clamp(2.5rem,5vw,4.5rem)]'
 TEXT_SECTION_TITLE = 'text-[clamp(1.8rem,3vw,3rem)]'
 TEXT_CTA_TITLE = 'text-[clamp(1.5rem,2.5vw,2.25rem)]'
 
+# Mermaid
+MERMAID_CLASSES = f'''
+    [&_rect]:fill-[{_BG_SURFACE_LIGHT}]! [&_rect]:dark:fill-[{_BG_SURFACE_DARK}]!
+    [&_rect]:stroke-[{_BORDER_LIGHT}]! [&_rect]:dark:stroke-[{_BORDER_DARK}]!
+    [&_span]:text-[{_TEXT_PRIMARY_LIGHT}]! [&_span]:dark:text-[{_TEXT_PRIMARY_DARK}]!
+    [&_.edgeLabel>p]:bg-[{_BG_LIGHT}]! [&_.edgeLabel>p]:dark:bg-[{_BG_DARK}]!
+    [&_.edgeLabel>p]:text-[{_TEXT_SECONDARY_LIGHT}]! [&_.edgeLabel>p]:dark:text-[{_TEXT_SECONDARY_DARK}]!
+    [&_path]:stroke-[{_TEXT_PRIMARY_LIGHT}]! [&_path]:dark:stroke-[{_TEXT_PRIMARY_DARK}]!
+'''
+
 
 # --- Helpers ---
 

@@ -153,3 +153,27 @@ async def test_event_memory_leak(screen: Screen):
     await asyncio.sleep(1)
     Client.prune_instances(client_age_threshold=0)
     assert not event.callbacks, 'event callbacks should be cleared after pruning clients'
+
+
+async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
+    exceptions: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(exceptions.append)
+
+        def raise_sync():
+            raise RuntimeError('sync error')
+
+        async def raise_async():
+            raise RuntimeError('async error')
+
+        ui.button('Click sync', on_click=raise_sync)
+        ui.button('Click async', on_click=raise_async)
+
+    await user.open('/')
+    user.find('Click sync').click()
+    user.find('Click async').click()
+    await asyncio.sleep(0.1)
+    assert len(exceptions) == 2 and 'sync error' in str(exceptions[0]) and 'async error' in str(exceptions[1])
+    caplog.records.clear()

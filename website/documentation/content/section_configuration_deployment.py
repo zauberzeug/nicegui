@@ -1,5 +1,6 @@
 from nicegui import ui
 
+from ..search import index_sizes
 from ..windows import bash_window, code_window, python_window
 from . import doc, run_documentation
 
@@ -45,6 +46,9 @@ doc.intro(run_documentation)
     as pywebview uses it for the EdgeChromium backend.
     This is typically pre-installed on standard Windows installations,
     but may be missing on minimal or freshly installed systems.
+
+    On Windows, a file-path `favicon` is also used as the native window icon (taskbar, title bar).
+    The `.ico` format is required.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -362,6 +366,61 @@ doc.text('', '''
     See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
 ''')
 
+doc.text('Packaging with Nuitka', '''
+    NiceGUI apps can also be bundled with [Nuitka](https://nuitka.net/), which compiles Python to C.
+    Compared to PyInstaller, builds take longer but the resulting binaries are harder to decompile.
+
+    Two flags are required because NiceGUI uses [PEP 562](https://peps.python.org/pep-0562/) lazy imports
+    that Nuitka's static analyzer cannot follow on its own:
+
+    - `--include-package=nicegui` bundles every submodule reachable through `from nicegui import ui`.
+    - `--include-package-data=nicegui` bundles data files (templates, libraries, ESM bundles for elements).
+
+    The same `ui.run` rules as for PyInstaller apply:
+    call it with `reload=False` and provide a `root` page or at least one `@page` function.
+''')
+
+
+@doc.ui
+def nuitka():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
+
+            def root():
+                ui.label('Hello from Nuitka')
+
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            python -m nuitka \\
+                --onefile \\
+                --include-package=nicegui \\
+                --include-package-data=nicegui \\
+                main.py
+        ''')
+
+
+doc.text('', '''
+    **Tips:**
+
+    - Use `--standalone` for a `main.dist/` directory that starts faster than `--onefile`,
+    which unpacks itself into a temporary directory on every launch.
+
+    - For optional packages your app uses (e.g. `pyecharts` for `ui.echart.from_pyecharts`,
+    or any other third-party package shipping templates or data files),
+    add matching `--include-package=<name>` and `--include-package-data=<name>` flags.
+
+    - Native mode (`ui.run(reload=False, native=True)`) works the same as with PyInstaller.
+    Platform-specific flags include
+    `--macos-create-app-bundle` (Mac),
+    `--windows-disable-console` (Windows), and
+    `--linux-onefile-icon=<path>` (Linux).
+
+    - First builds are slow because Nuitka compiles the entire dependency graph; subsequent builds reuse Nuitka's cache.
+    Add `--show-progress` to monitor long builds.
+''')
+
 doc.text('', '''
     **Packaging with Native Mode**
 
@@ -385,6 +444,38 @@ doc.text('', '''
         ui.run(native=True, reload=False)
     ```
 
+''')
+
+doc.text('Documentation Index', '''
+    NiceGUI serves its entire documentation as machine-readable JSON endpoints.
+    Each index is a JSON array of objects with these fields:
+
+    | Field     | Type    | Description                                                                                 |
+    | --------- | ------- | ------------------------------------------------------------------------------------------- |
+    | `title`   | string  | Section heading, e.g. "Button: Click Handler" or "Example: Chat App"                        |
+    | `content` | string  | Description or search text (Markdown or reStructuredText)                                   |
+    | `format`  | string  | Content format: "md" or "rst"                                                              |
+    | `url`     | string  | Doc page path or GitHub example link                                                        |
+    | `demo`    | string? | Complete Python demo code, or "" if none (sitewide index only; key absent in other indices) |
+''')
+
+
+@doc.ui
+def _documentation_index_table():
+    ui.markdown(f'''
+        **Available indices:**
+
+        | Endpoint | Entries | Tokens | Includes code | Use case |
+        | -------- | ------- | ------ | ------------- | -------- |
+        | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | {index_sizes['sitewide']['entries']} | ~{index_sizes['sitewide']['tokens']}k | Yes | RAG, AI tooling, full context                                                    |
+        | [`/static/search_index.json`](https://nicegui.io/static/search_index.json)     | {index_sizes['search']['entries']}   | ~{index_sizes['search']['tokens']}k   | No  | Powers the on-site doc search; includes GitHub examples                          |
+        | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | {index_sizes['examples']['entries']} | ~{index_sizes['examples']['tokens']}k | No  | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
+    ''')
+
+
+doc.text('', '''
+    We welcome contributions for MCP servers, AI agent skills, and enhanced RAG implementations —
+    see the [contributing guide](https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md).
 ''')
 
 doc.text('NiceGUI On Air', '''

@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import Response
+from starlette.responses import FileResponse, Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
@@ -41,6 +41,12 @@ app.add_static_file(local_file=svg.PATH / 'logo_square.png', url_path='/logo_squ
 
 documentation.build_search_index()
 documentation.build_tree()
+
+
+@app.get('/llms.md')
+@app.get('/llms.txt')
+def _get_llms() -> FileResponse:
+    return FileResponse(Path(__file__).parent / 'nicegui' / 'llms.md', media_type='text/markdown; charset=utf-8')
 
 
 @app.post('/dark_mode')
@@ -120,6 +126,7 @@ def _documentation_detail_page(name: str, tree: ui.tree) -> None:
     elif name in documentation.redirects:
         ui.navigate.to('/documentation/' + documentation.redirects[name])
     else:
+        ui.status_code(404)
         with ui.column().classes('w-full min-h-[50vh] items-center justify-center text-center p-16'):
             ui.label(f'Documentation for "{name}" could not be found.')
 
@@ -130,4 +137,4 @@ def _status():
 
 
 # NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0, markdown=True)

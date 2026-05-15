@@ -15,7 +15,7 @@ class SelectableElement(Element):
     def __init__(self, *,
                  selectable: bool,
                  selected: bool,
-                 on_selection_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_selection_change: Handler[ValueChangeEventArguments[bool]] | None = None,
                  **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if not selectable:
@@ -28,18 +28,18 @@ class SelectableElement(Element):
         self.set_selected(selected)
         self.on('update:selected', lambda e: self.set_selected(e.args))
 
-        self._selection_change_handlers: list[Handler[ValueChangeEventArguments]] = []
+        self._selection_change_handlers: list[Handler[ValueChangeEventArguments[bool]]] = []
         if on_selection_change:
             self.on_selection_change(on_selection_change)
 
-    def on_selection_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_selection_change(self, callback: Handler[ValueChangeEventArguments[bool]]) -> Self:
         """Add a callback to be invoked when the selection state changes."""
         self._selection_change_handlers.append(callback)
         return self
 
     def bind_selected_to(self,
                          target_object: Any,
-                         target_name: str = 'selected',
+                         target_name: str | tuple[str, ...] = 'selected',
                          forward: Callable[[Any], Any] | None = None, *,
                          strict: bool | None = None,
                          ) -> Self:
@@ -47,6 +47,7 @@ class SelectableElement(Element):
 
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -59,7 +60,7 @@ class SelectableElement(Element):
 
     def bind_selected_from(self,
                            target_object: Any,
-                           target_name: str = 'selected',
+                           target_name: str | tuple[str, ...] = 'selected',
                            backward: Callable[[Any], Any] | None = None, *,
                            strict: bool | None = None,
                            ) -> Self:
@@ -67,6 +68,7 @@ class SelectableElement(Element):
 
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
@@ -79,7 +81,7 @@ class SelectableElement(Element):
 
     def bind_selected(self,
                       target_object: Any,
-                      target_name: str = 'selected', *,
+                      target_name: str | tuple[str, ...] = 'selected', *,
                       forward: Callable[[Any], Any] | None = None,
                       backward: Callable[[Any], Any] | None = None,
                       strict: bool | None = None,
@@ -89,6 +91,7 @@ class SelectableElement(Element):
         The binding works both ways, from this element to the target and from the target to this element.
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -102,19 +105,20 @@ class SelectableElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_selected(self, selected: bool) -> None:
+    def set_selected(self, selected: bool) -> Self:
         """Set the selection state of this element.
 
         :param selected: The new selection state.
         """
         self.selected = selected
+        return self
 
     def _handle_selection_change(self, selected: bool) -> None:
         """Called when the selection state of this element changes.
 
         :param selected: The new selection state.
         """
-        previous_value = self._props.get('selected')
+        previous_value = self._props.get('selected', False)
         self._props['selected'] = selected
         args = ValueChangeEventArguments(sender=self, client=self.client, value=selected, previous_value=previous_value)
         for handler in self._selection_change_handlers:

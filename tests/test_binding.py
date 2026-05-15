@@ -1,5 +1,6 @@
 import copy
 import weakref
+from typing import Any
 
 import pytest
 from selenium.webdriver.common.keys import Keys
@@ -145,7 +146,7 @@ def test_bindable_dataclass(screen: Screen):
 
     assert len(binding.bindings) == 2
     assert len(binding.active_links) == 1
-    assert binding.active_links[0][1] == 'not_bindable'
+    assert binding.active_links[0][1] == ('not_bindable',)  # Names are now normalized to tuples
 
 
 async def test_copy_instance_with_bindable_property(user: User):
@@ -287,3 +288,48 @@ def test_binding_refresh_interval_none(screen: Screen):
     screen.assert_py_logger(
         'WARNING', 'Starting active binding loop even though it was disabled via binding_refresh_interval=None.',
     )
+
+
+@pytest.mark.parametrize('data_type', ['dict-dict', 'object-dict', 'dict-object'])
+@pytest.mark.parametrize('initialize', [True, False])
+async def test_nested_binding(data_type: str, initialize: bool, user: User):
+    class Data:
+        def __init__(self, config: dict[str, int]) -> None:
+            self.config = config
+
+    class Config:
+        def __init__(self, volume: int) -> None:
+            self.volume = volume
+
+    data: Any
+    if data_type == 'dict-dict':
+        data = {'config': {'volume': 0}} if initialize else {}
+    if data_type == 'object-dict':
+        data = Data({'volume': 0} if initialize else {})
+    if data_type == 'dict-object':
+        data = {'config': Config(0)} if initialize else {}
+
+    @ui.page('/')
+    def page():
+        ui.number('Volume', min=0, max=100, value=50).bind_value_to(data, ('config', 'volume'), forward=int)
+        ui.label().bind_text_from(data, ('config', 'volume'), backward=lambda v: f'Volume: {v}%')
+        with pytest.raises((KeyError, AttributeError), match=r'Could not bind non-existing'):
+            ui.input().bind_value(data, ('x', 'y'), strict=True)
+        with pytest.raises(AssertionError, match='cannot be empty'):
+            ui.input().bind_value(data, ())
+        with pytest.raises(AssertionError, match='cannot be empty'):
+            ui.input().bind_value(data, '')
+        with pytest.raises(AssertionError, match='must contain only strings'):
+            ui.input().bind_value(data, ('valid', 123))  # type: ignore[arg-type]
+
+    await user.open('/')
+    await user.should_see('Volume: 50%')
+    if data_type == 'dict-dict':
+        assert data == {'config': {'volume': 50}}
+    if data_type == 'object-dict':
+        assert data.config == {'volume': 50}
+    if data_type == 'dict-object':
+        if initialize:
+            assert data['config'].volume == 50
+        else:
+            assert data == {'config': {'volume': 50}}

@@ -99,7 +99,7 @@ special_sponsors = json.loads(json_path.read_text(encoding='utf-8'))['special']
 top_sponsors = [
     s['login']
     for s in sponsors
-    if s['tier_amount'] >= 100 and not s['tier_is_one_time'] and s['login'] not in special_sponsors
+    if s['tier_amount'] >= 100 and not s['tier_is_one_time'] and s['login'] not in {*special_sponsors, 'LambdaTest-Inc'}
 ]
 json_path.write_text(json.dumps({
     'special': special_sponsors,

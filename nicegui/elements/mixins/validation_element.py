@@ -4,13 +4,14 @@ from typing import Any, TypeAlias, cast
 from typing_extensions import Self
 
 from ... import background_tasks, helpers
+from ...events import ValueT
 from .value_element import ValueElement
 
 ValidationFunction: TypeAlias = Callable[[Any], str | None | Awaitable[str | None]]
 ValidationDict = dict[str, Callable[[Any], bool]]
 
 
-class ValidationElement(ValueElement):
+class ValidationElement(ValueElement[ValueT]):
 
     def __init__(self, validation: ValidationFunction | ValidationDict | None, **kwargs: Any) -> None:
         self._validation = validation
@@ -45,7 +46,7 @@ class ValidationElement(ValueElement):
         :param error: The optional error message
         """
         new_error_prop = None if error is None and self.validation is None else (error is not None)
-        if self._error == error and self._props['error'] == new_error_prop:
+        if self._error == error and self._props.get('error') == new_error_prop:
             return
         self._error = error
         self._props['error'] = new_error_prop

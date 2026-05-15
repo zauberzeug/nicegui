@@ -2,6 +2,8 @@ import re
 from colorsys import rgb_to_yiq
 from typing import Any
 
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .button import Button as button
@@ -14,15 +16,15 @@ HEX_COLOR_PATTERN_6 = re.compile(r'^#([0-9a-fA-F]{6})$')
 HEX_COLOR_PATTERN_3 = re.compile(r'^#([0-9a-fA-F]{3})$')
 
 
-class ColorInput(LabelElement, ValueElement, DisableableElement):
+class ColorInput(LabelElement, ValueElement[str | None], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 value: str | None = DEFAULT_PROPS['model-value'] | '',
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  preview: bool = False,
                  ) -> None:
         """Color Input
@@ -46,11 +48,12 @@ class ColorInput(LabelElement, ValueElement, DisableableElement):
         self.preview = preview
         self._update_preview()
 
-    def open_picker(self) -> None:
+    def open_picker(self) -> Self:
         """Open the color picker"""
         if self.value:
             self.picker.set_color(self.value)
         self.picker.open()
+        return self
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

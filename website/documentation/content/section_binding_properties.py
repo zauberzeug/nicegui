@@ -64,6 +64,21 @@ def bind_dictionary():
     ui.button('Turn 18', on_click=lambda: data.update(age=18))
 
 
+@doc.demo('Bind to nested properties', '''
+    The binding methods also accept a tuple of strings for nested keys.
+    This allows you to bind to nested properties of complex data structures, like dictionaries of dictionaries or nested dataclasses.
+
+    *Added in version 3.10.0*
+''')
+def bind_nested():
+    data = {'user': {'name': 'Bob', 'age': 17}}
+
+    ui.label().bind_text_from(data, ('user', 'name'), backward=lambda n: f'Name: {n}')
+    ui.label().bind_text_from(data, ('user', 'age'), backward=lambda a: f'Age: {a}')
+
+    ui.button('Turn 18', on_click=lambda: data['user'].update(age=18))
+
+
 @doc.demo('Bind to variable', '''
     Here we are binding the value from the datepicker to a bare variable.
     Therefore we use the dictionary `globals()` which contains all global variables.

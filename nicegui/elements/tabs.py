@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Any
 
 from .. import helpers
@@ -9,29 +7,6 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
-
-
-class Tabs(ValueElement):
-
-    def __init__(self, *,
-                 value: Tab | TabPanel | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
-                 ) -> None:
-        """Tabs
-
-        This element represents `Quasar's QTabs <https://quasar.dev/vue-components/tabs#qtabs-api>`_ component.
-        It contains individual tabs.
-
-        :param value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
-        :param on_change: callback to be executed when the selected tab changes (*since version 3.6.0*: event ``value`` is the tab name)
-        """
-        super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
-
-    def _value_to_model_value(self, value: Any) -> Any:
-        return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
-
-    def _value_to_event_value(self, value: Any) -> Any:
-        return self._value_to_model_value(value)
 
 
 class Tab(LabelElement, IconElement, DisableableElement):
@@ -59,13 +34,50 @@ class Tab(LabelElement, IconElement, DisableableElement):
                               'This will raise an error in NiceGUI 4.0.')
 
 
-class TabPanels(ValueElement):
+class TabPanel(DisableableElement, default_classes='nicegui-tab-panel'):
+
+    def __init__(self, name: Tab | str) -> None:
+        """Tab Panel
+
+        This element represents `Quasar's QTabPanel <https://quasar.dev/vue-components/tab-panels#qtabpanel-api>`_ component.
+        It is a child of a `TabPanels` element.
+
+        :param name: `ui.tab` or the name of a tab element
+        """
+        super().__init__(tag='q-tab-panel')
+        self._props['name'] = name.props['name'] if isinstance(name, Tab) else name
+
+
+class Tabs(ValueElement[str | Tab | TabPanel | None]):
+
+    def __init__(self, *,
+                 value: Tab | TabPanel | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | Tab | TabPanel | None]] | None = None,
+                 ) -> None:
+        """Tabs
+
+        This element represents `Quasar's QTabs <https://quasar.dev/vue-components/tabs#qtabs-api>`_ component.
+        It contains individual tabs.
+
+        :param value: `ui.tab`, `ui.tab_panel`, or name of the tab to be initially selected
+        :param on_change: callback to be executed when the selected tab changes (*since version 3.6.0*: event ``value`` is the tab name)
+        """
+        super().__init__(tag='q-tabs', value=value, on_value_change=on_change)
+
+    def _value_to_model_value(self, value: Any) -> Any:
+        return value.props['name'] if isinstance(value, (Tab, TabPanel)) else value
+
+    def _value_to_event_value(self, value: Any) -> Any:
+        return self._value_to_model_value(value)
+
+
+class TabPanels(ValueElement[str | Tab | TabPanel | None]):
 
     @resolve_defaults
     def __init__(self,
                  tabs: Tabs | None = None, *,
                  value: Tab | TabPanel | str | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | Tab | TabPanel | None]] | None = None,
                  animated: bool = DEFAULT_PROP | True,
                  keep_alive: bool = DEFAULT_PROP | True,
                  ) -> None:
@@ -95,17 +107,3 @@ class TabPanels(ValueElement):
 
     def _value_to_event_value(self, value: Any) -> Any:
         return self._value_to_model_value(value)
-
-
-class TabPanel(DisableableElement, default_classes='nicegui-tab-panel'):
-
-    def __init__(self, name: Tab | str) -> None:
-        """Tab Panel
-
-        This element represents `Quasar's QTabPanel <https://quasar.dev/vue-components/tab-panels#qtabpanel-api>`_ component.
-        It is a child of a `TabPanels` element.
-
-        :param name: `ui.tab` or the name of a tab element
-        """
-        super().__init__(tag='q-tab-panel')
-        self._props['name'] = name.props['name'] if isinstance(name, Tab) else name
