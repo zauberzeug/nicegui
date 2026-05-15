@@ -5,6 +5,7 @@ from typing_extensions import Self
 from ..context import context
 from ..element import Element
 from ..events import Handler, UiEventArguments, handle_event
+from .mixins.color_elements import QUASAR_COLORS, TAILWIND_COLORS
 
 NotificationPosition = Literal[
     'top-left',
@@ -199,6 +200,47 @@ class Notification(Element, component='notification.js'):
 
     def set_visibility(self, visible: bool) -> Self:
         raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
+
+    def add_action(self,
+                   on_click: Handler[UiEventArguments],
+                   *,
+                   no_dismiss: bool = False,
+                   text: str = '',
+                   color: str | None = 'primary',
+                   icon: str | None = None,
+                   **kwargs: Any) -> Self:
+        """Add an action button to the notification.
+
+        :param on_click: callback to be invoked when the action button is clicked
+        :param no_dismiss: if True, the notification will not be dismissed when the action button is clicked (default: False)
+        :param text: the label of the action button
+        :param color: the color of the action button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
+        :param icon: the name of an icon to be displayed on the action button (default: `None`)
+
+        Note: You can pass additional keyword arguments according to `Quasar's QBtn API <https://quasar.dev/vue-components/button#qbtn-api>`_.
+        """
+        actions = self._props['options'].setdefault('actions', [])
+        event_name = f'action_{len(actions)}'
+
+        action: dict[str, Any] = {
+            'noDismiss': no_dismiss,
+            'label': text,
+            ':handler': f'() => getElement({self.id}).$emit("{event_name}")',
+        }
+        if icon is not None:
+            action['icon'] = icon
+        if color in QUASAR_COLORS:
+            action['color'] = color
+        elif color in TAILWIND_COLORS:
+            action['class'] = f'text-{color}'
+        elif color is not None:
+            action['style'] = f'color: {color};'
+        action.update(kwargs)
+        actions.append(action)
+
+        self.on(event_name, lambda _: handle_event(on_click, UiEventArguments(sender=self, client=self.client)), [])
+
+        return self
 
     def _render_markdown(self) -> str:
         return self.message
