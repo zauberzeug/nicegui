@@ -16,7 +16,7 @@ from starlette.background import BackgroundTask
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
-from .awaitable_response import AwaitableResponse, NullResponse
+from .awaitable_response import AwaitableResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
@@ -262,8 +262,6 @@ class Client:
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
-        if self._deleted:
-            return NullResponse()
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 

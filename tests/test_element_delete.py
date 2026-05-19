@@ -1,10 +1,9 @@
-import logging
 import weakref
 
 import pytest
 
 from nicegui import binding, ui
-from nicegui.helpers import warnings as _warnings
+from nicegui.helpers.warnings import _shown_warnings
 from nicegui.testing import Screen, User
 
 
@@ -215,9 +214,8 @@ async def test_run_method_silent_after_client_delete(user: User, caplog: pytest.
     assert label.client.is_deleted
     assert label.is_deleted  # cascaded
 
-    _warnings._shown_warnings.clear()  # pylint: disable=protected-access
+    _shown_warnings.clear()
     caplog.clear()
-    caplog.set_level(logging.WARNING, logger='nicegui')
     label.run_method('foo')
     label.update()
     label.get_computed_prop('bar')
@@ -243,9 +241,8 @@ async def test_run_method_warns_after_explicit_element_delete(user: User, caplog
     assert label.is_deleted
     assert not label.client.is_deleted
 
-    _warnings._shown_warnings.clear()  # pylint: disable=protected-access
+    _shown_warnings.clear()
     caplog.clear()
-    caplog.set_level(logging.WARNING, logger='nicegui')
     label.run_method('foo')
 
     warning_records = [r for r in caplog.records if 'still being used' in r.message]
