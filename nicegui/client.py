@@ -16,7 +16,7 @@ from starlette.background import BackgroundTask
 from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
-from .awaitable_response import AwaitableResponse
+from .awaitable_response import AwaitableResponse, NullResponse
 from .dependencies import generate_resources
 from .element import Element
 from .favicon import get_favicon_url
@@ -132,6 +132,11 @@ class Client:
     def has_socket_connection(self) -> bool:
         """Whether the client is connected."""
         return self.tab_id is not None
+
+    @property
+    def is_deleted(self) -> bool:
+        """Whether the client has been deleted (e.g. by browser disconnect after ``reconnect_timeout``)."""
+        return self._deleted
 
     @property
     def head_html(self) -> str:
@@ -257,6 +262,8 @@ class Client:
 
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
         """
+        if self._deleted:
+            return NullResponse()
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 

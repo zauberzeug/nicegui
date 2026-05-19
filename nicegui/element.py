@@ -412,7 +412,12 @@ class Element(Visibility):
 
     def update(self) -> None:
         """Update the element on the client side."""
+        if self.client.is_deleted:
+            return  # silent: client teardown race (e.g. browser reload during async callback)
         if self.is_deleted:
+            helpers.warn_once(f'Element {self.id} has been deleted but is still being used. '
+                              'This is most likely a bug in your application code.',
+                              stack_info=True)
             return
         self.client.outbox.enqueue_update(self)
 
@@ -428,6 +433,13 @@ class Element(Visibility):
         """
         if not core.is_loop_running():
             return NullResponse()
+        if self.client.is_deleted:
+            return NullResponse()  # silent: client teardown race
+        if self.is_deleted:
+            helpers.warn_once(f'Element {self.id} has been deleted but is still being used. '
+                              'This is most likely a bug in your application code.',
+                              stack_info=True)
+            return NullResponse()
         return self.client.run_javascript(
             f'return runMethod({self.id}, {json.dumps(name)}, {json.dumps(args)})', timeout=timeout,
         )
@@ -441,6 +453,13 @@ class Element(Visibility):
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
         if not core.is_loop_running():
+            return NullResponse()
+        if self.client.is_deleted:
+            return NullResponse()  # silent: client teardown race
+        if self.is_deleted:
+            helpers.warn_once(f'Element {self.id} has been deleted but is still being used. '
+                              'This is most likely a bug in your application code.',
+                              stack_info=True)
             return NullResponse()
         return self.client.run_javascript(
             f'return getComputedProp({self.id}, {json.dumps(prop_name)})', timeout=timeout,

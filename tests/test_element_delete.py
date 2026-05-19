@@ -1,7 +1,11 @@
+import logging
 import weakref
 
+import pytest
+
 from nicegui import binding, ui
-from nicegui.testing import Screen
+from nicegui.helpers import warnings as _warnings
+from nicegui.testing import Screen, User
 
 
 def test_remove_element_by_reference(screen: Screen):
@@ -194,6 +198,58 @@ def test_slot_children_cleared_on_delete(screen: Screen):
     screen.click('Delete')
     screen.should_contain('Deleted')
     assert len(labels) == 0, 'all labels should be deleted immediately'
+
+
+async def test_run_method_silent_after_client_delete(user: User, caplog: pytest.LogCaptureFixture):
+    """Mutations on elements after the client has been deleted (e.g. browser reload race
+    past reconnect_timeout) must be silent — user code did nothing wrong. See issue #6058."""
+    captured: dict = {}
+
+    @ui.page('/')
+    def page():
+        captured['label'] = ui.label('hi')
+
+    await user.open('/')
+    label = captured['label']
+    label.client.delete()
+    assert label.client.is_deleted
+    assert label.is_deleted  # cascaded
+
+    _warnings._shown_warnings.clear()  # pylint: disable=protected-access
+    caplog.clear()
+    caplog.set_level(logging.WARNING, logger='nicegui')
+    label.run_method('foo')
+    label.update()
+    label.get_computed_prop('bar')
+
+    warning_records = [r for r in caplog.records if 'deleted' in r.message.lower()]
+    assert warning_records == [], f'expected silent, got: {[r.message for r in warning_records]}'
+
+
+async def test_run_method_warns_after_explicit_element_delete(user: User, caplog: pytest.LogCaptureFixture):
+    """Calling a method on an explicitly deleted element while the client is still alive
+    is a user bug and should produce a visible (one-shot) warning. See issue #6058."""
+    captured: dict = {}
+
+    @ui.page('/')
+    def page():
+        with ui.row() as row:
+            captured['label'] = ui.label('hi')
+            captured['row'] = row
+
+    await user.open('/')
+    label = captured['label']
+    captured['row'].remove(label)
+    assert label.is_deleted
+    assert not label.client.is_deleted
+
+    _warnings._shown_warnings.clear()  # pylint: disable=protected-access
+    caplog.clear()
+    caplog.set_level(logging.WARNING, logger='nicegui')
+    label.run_method('foo')
+
+    warning_records = [r for r in caplog.records if 'still being used' in r.message]
+    assert warning_records, f'expected warning, got: {[r.message for r in caplog.records]}'
 
 
 def test_event_listeners_cleared_on_delete(screen: Screen):
