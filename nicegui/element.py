@@ -410,14 +410,26 @@ class Element(Visibility):
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
         events.handle_event(listener.handler, args)
 
-    def update(self) -> None:
-        """Update the element on the client side."""
+    def _is_safe_to_interact(self) -> bool:
+        """Return True if it is safe to send messages to this element's client.
+
+        Silent when the *client* has been deleted (e.g. browser reload race past ``reconnect_timeout``):
+        an async callback resuming after the teardown is not a user bug. Emits a one-shot warning
+        when the *element* has been explicitly deleted but the client is still alive: that is a real
+        use-after-free in user code and worth surfacing.
+        """
         if self.client.is_deleted:
-            return  # silent: client teardown race (e.g. browser reload during async callback)
+            return False
         if self.is_deleted:
-            helpers.warn_once(f'Element {self.id} has been deleted but is still being used. '
+            helpers.warn_once(f'{self} (id={self.id}) has been deleted but is still being used. '
                               'This is most likely a bug in your application code.',
                               stack_info=True)
+            return False
+        return True
+
+    def update(self) -> None:
+        """Update the element on the client side."""
+        if not self._is_safe_to_interact():
             return
         self.client.outbox.enqueue_update(self)
 
@@ -431,14 +443,7 @@ class Element(Visibility):
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.is_loop_running():
-            return NullResponse()
-        if self.client.is_deleted:
-            return NullResponse()  # silent: client teardown race
-        if self.is_deleted:
-            helpers.warn_once(f'Element {self.id} has been deleted but is still being used. '
-                              'This is most likely a bug in your application code.',
-                              stack_info=True)
+        if not core.is_loop_running() or not self._is_safe_to_interact():
             return NullResponse()
         return self.client.run_javascript(
             f'return runMethod({self.id}, {json.dumps(name)}, {json.dumps(args)})', timeout=timeout,
@@ -452,14 +457,7 @@ class Element(Visibility):
         :param prop_name: name of the computed prop
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.is_loop_running():
-            return NullResponse()
-        if self.client.is_deleted:
-            return NullResponse()  # silent: client teardown race
-        if self.is_deleted:
-            helpers.warn_once(f'Element {self.id} has been deleted but is still being used. '
-                              'This is most likely a bug in your application code.',
-                              stack_info=True)
+        if not core.is_loop_running() or not self._is_safe_to_interact():
             return NullResponse()
         return self.client.run_javascript(
             f'return getComputedProp({self.id}, {json.dumps(prop_name)})', timeout=timeout,
