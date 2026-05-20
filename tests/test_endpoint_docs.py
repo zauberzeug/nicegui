@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from nicegui import Client, __version__, ui
+from nicegui import __version__, ui
 from nicegui.testing import Screen
 
 
@@ -9,14 +9,15 @@ from nicegui.testing import Screen
 def test_endpoint_documentation(screen: Screen, endpoint_documentation: str):
     screen.ui_run_kwargs['fastapi_docs'] = True
     screen.ui_run_kwargs['endpoint_documentation'] = endpoint_documentation
+    uploads: list[ui.upload] = []
 
     @ui.page('/')
     def page():
         ui.markdown('Hey!')
-        ui.upload()
+        uploads.append(ui.upload())
 
     screen.open('/')
-    client_id = next(iter(Client.instances))
+    upload = uploads[0]
 
     if endpoint_documentation == 'none':
         expected_paths = set()
@@ -29,7 +30,7 @@ def test_endpoint_documentation(screen: Screen, endpoint_documentation: str):
             f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
             f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
             f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
-            f'/_nicegui/client/{client_id}/upload/5',
+            f'/_nicegui/client/{upload.client.id}/upload/{upload.id}',
         }
     elif endpoint_documentation == 'all':
         expected_paths = {
@@ -39,7 +40,7 @@ def test_endpoint_documentation(screen: Screen, endpoint_documentation: str):
             f'/_nicegui/{__version__}/resources/{{key}}/{{path}}',
             f'/_nicegui/{__version__}/dynamic_resources/{{name}}',
             f'/_nicegui/{__version__}/esm/{{key}}/{{path}}',
-            f'/_nicegui/client/{client_id}/upload/5',
+            f'/_nicegui/client/{upload.client.id}/upload/{upload.id}',
         }
     else:
         raise ValueError(f'Unknown endpoint documentation setting: {endpoint_documentation}')
