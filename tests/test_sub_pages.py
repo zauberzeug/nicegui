@@ -976,7 +976,7 @@ def test_on_path_changed_event(screen: Screen):
     assert calls == {'index': 2, 'main': 1, 'other': 2}
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
     assert paths == ['/other']
     assert calls == {'index': 3, 'main': 2, 'other': 2}
 
@@ -1089,6 +1089,25 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     screen.should_contain('main page')
 
 
+def test_navigate_from_initial_404_does_not_leak_sad_face(screen: Screen):
+    # Regression test for https://github.com/zauberzeug/nicegui/issues/6069
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Go to home', '/')
+        ui.sub_pages({'/': lambda: ui.label('main page')})
+
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
+    screen.open('/bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+    screen.should_not_contain("This page doesn't exist.")
+
+    screen.click('Go to home')
+    screen.should_contain('main page')
+    screen.should_not_contain('404: sub page /bad_path not found')
+    screen.should_not_contain("This page doesn't exist.")
+
+
 def test_http_404_on_initial_request(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
@@ -1107,7 +1126,7 @@ def test_http_404_on_initial_request(screen: Screen):
     screen.should_contain('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
@@ -1128,7 +1147,7 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
     screen.should_contain('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen):
@@ -1160,7 +1179,7 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     screen.should_contain('sub sub page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_with_root_function_and_sub_pages(screen: Screen):
