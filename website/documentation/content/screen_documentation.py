@@ -32,10 +32,9 @@ def screen_fixture():
 doc.text('Configuration', '''
     The `screen` fixture can be configured by setting the following static attributes:
 
-    - `PORT`: The port to use for the server (default: automatically determined free port).
+    - `PORT`: The port to use for the server (default: 3392).
     - `IMPLICIT_WAIT`: The implicit wait time in seconds (default: 4).
-    - `SCREENSHOT_DIR`: The directory to store the screenshots
-        (default: `./screenshots/<pid>`, a per-process subdirectory so parallel `pytest` invocations do not collide).
+    - `SCREENSHOT_DIR`: The directory to store the screenshots (default: "screenshots").
     - `CATCH_JS_ERRORS`: Whether to catch JavaScript errors (default: `True`, *added in version 3.2.0*).
 ''')
 
