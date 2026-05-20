@@ -202,22 +202,6 @@ def aggrid_with_html_columns():
 @doc.demo('Respond to an AG Grid event', '''
     All AG Grid events are passed through to NiceGUI via the AG Grid global listener.
     These events can be subscribed to using the `.on()` method.
-
-    Note: Certain events, e. g. `rowClicked` don't seem to work. This is because some
-    event arguments include cyclic references. For these seemingly non-working events
-    you'll see an error on the developer console in your browser.
-
-    To inspect the event arguments and find the values you are interested in, you can
-    replace the event registration with the following JavaScript handler:
-    ```
-    .on('rowClicked', js_handler='console.log')
-    ```
-    Then limit the event arguments to the necessary ones, e. g. `data`, thus
-    excluding the cycles:
-    ```
-    .on('rowClicked', lambda event: ui.notify(f'Row: {event.args}'), ['data'])
-    ```
-    This selection can be serialized safely and will work correctly.
 ''')
 def aggrid_respond_to_event():
     ui.aggrid({
@@ -231,6 +215,24 @@ def aggrid_respond_to_event():
             {'name': 'Carol', 'age': 42},
         ],
     }).on('cellClicked', lambda event: ui.notify(f'Cell value: {event.args["value"]}'))
+
+
+doc.text('', '''
+    **Note:** Certain events, e. g. `rowClicked` don't seem to work.
+    This is because some event arguments include cyclic references.
+    For these seemingly non-working events you'll see an error on the developer console in your browser.
+
+    To inspect the event arguments and find the values you are interested in,
+    you can replace the event registration with the following JavaScript handler:
+    ```
+    .on('rowClicked', js_handler='console.log')
+    ```
+    Then limit the event arguments to the necessary ones, e. g. `data`, thus excluding the cycles:
+    ```
+    .on('rowClicked', lambda event: ui.notify(f'Row: {event.args}'), ['data'])
+    ```
+    This selection can be serialized safely and will work correctly.
+''')
 
 
 @doc.demo('AG Grid with complex objects', '''
