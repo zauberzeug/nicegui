@@ -202,8 +202,6 @@ class page:
                     task.add_done_callback(check_for_late_return_value)
 
             if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
-                # The SubPages element renders its own 404 label inside the page; don't inject
-                # a sibling sad-face block on top of user-supplied chrome. Just return 404 status.
                 log.warning(f'{request.url} not found')
                 return client.build_response(request, 404)
 

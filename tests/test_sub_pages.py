@@ -1090,7 +1090,7 @@ def test_navigate_from_404_to_root_path(screen: Screen):
 
 
 def test_navigate_from_initial_404_does_not_leak_sad_face(screen: Screen):
-    # Regression test for https://github.com/zauberzeug/nicegui/issues/6069
+    # regression test for #6069
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
