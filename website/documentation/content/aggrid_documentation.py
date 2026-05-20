@@ -218,16 +218,16 @@ def aggrid_respond_to_event():
 
 
 doc.text('', '''
-    **Note:** Certain events, e. g. `rowClicked` don't seem to work.
+    **Note:** Certain events, e.g. `rowClicked`, don't seem to work.
     This is because some event arguments include cyclic references.
-    For these seemingly non-working events you'll see an error on the developer console in your browser.
+    For these seemingly non-working events you'll see a serialization error on the developer console in your browser.
 
     To inspect the event arguments and find the values you are interested in,
     you can replace the event registration with the following JavaScript handler:
     ```
     .on('rowClicked', js_handler='console.log')
     ```
-    Then limit the event arguments to the necessary ones, e. g. `data`, thus excluding the cycles:
+    Then limit the event arguments to the necessary ones, e.g. `data`, thus excluding the cycles:
     ```
     .on('rowClicked', lambda event: ui.notify(f'Row: {event.args}'), ['data'])
     ```
