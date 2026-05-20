@@ -67,6 +67,28 @@ def plot_updates():
     ui.button('Add trace', on_click=add_trace)
 
 
+@doc.demo('Extending traces without re-sending the full figure', '''
+    Calling `plot.update()` re-transmits the entire figure to the client.
+    For live data, [`Plotly.extendTraces`](https://plotly.com/javascript/plotlyjs-function-reference/#plotlyextendtraces) appends points to existing traces with minimal traffic.
+    Use `plot.run_plot_method('extendTraces', ...)` to call it directly, and mutate `figure['data']` on the server so the next `plot.update()` reflects the full state.
+''')
+def extending_traces():
+    from random import random
+
+    fig = {'data': [{'type': 'scatter', 'x': [], 'y': []}],
+           'layout': {'margin': {'l': 30, 'r': 0, 't': 0, 'b': 30}}}
+    plot = ui.plotly(fig).classes('w-full h-40')
+
+    def add_point():
+        t = len(fig['data'][0]['x'])
+        y = random()
+        fig['data'][0]['x'].append(t)
+        fig['data'][0]['y'].append(y)
+        plot.run_plot_method('extendTraces', {'x': [[t]], 'y': [[y]]}, [0])
+
+    ui.button('Add point', on_click=add_point)
+
+
 @doc.demo('Plot events', r'''
     This demo shows how to handle Plotly events.
     Try clicking on a data point to see the event data.
