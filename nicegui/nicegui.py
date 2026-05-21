@@ -144,11 +144,11 @@ async def _startup() -> None:
     run.setup()
     app.start()
     background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    app.timer(10, Client.prune_instances)
-    app.timer(10, Slot.prune_stacks)
-    app.timer(10, prune_tab_storage)
+    app.timer(10, Client.prune_instances, _internal=True)
+    app.timer(10, Slot.prune_stacks, _internal=True)
+    app.timer(10, prune_tab_storage, _internal=True)
     if app.storage.secret is not None:
-        app.timer(10, prune_user_storage)
+        app.timer(10, prune_user_storage, _internal=True)
     air.connect()
 
 

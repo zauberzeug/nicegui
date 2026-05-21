@@ -18,6 +18,7 @@ class Timer:
                  active: bool = True,
                  once: bool = False,
                  immediate: bool = True,
+                 _internal: bool = False,
                  ) -> None:
         """Timer
 
@@ -37,6 +38,7 @@ class Timer:
         self.active = active
         self._is_canceled = False
         self._immediate = immediate
+        self._internal = _internal
         self._current_invocation: asyncio.Task | None = None
 
         coroutine = self._run_once if once else self._run_in_loop
@@ -49,7 +51,8 @@ class Timer:
 
     def _skip_registration(self) -> bool:
         # Global app.timer: skip on per-client re-execution; was registered on the first run.
-        return core.is_script_mode_re_execution()
+        # Internal timers (registered by NiceGUI itself from `_startup`) are exempt — they run once per process.
+        return core.is_script_mode_re_execution() and not self._internal
 
     def activate(self) -> None:
         """Activate the timer."""
