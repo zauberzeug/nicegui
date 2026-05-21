@@ -6,7 +6,8 @@ from pathlib import Path
 import httpx
 import pytest
 
-from nicegui import Client, app, background_tasks, context, core, nicegui, ui
+from nicegui import Client, app, background_tasks, context, core, ui
+from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
 from nicegui.testing import Screen, User
 
@@ -213,7 +214,7 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.open('/')
     screen.should_contain('2')
 
-    background_tasks.create(nicegui.prune_tab_storage(force=True))
+    background_tasks.create(prune_tab_storage(force=True))
     screen.wait(0.1)
     screen.open('/')
     screen.should_contain('1')
@@ -369,7 +370,7 @@ async def test_user_storage_is_pruned(screen: Screen):
 
     screen.close()
     screen.wait(5)  # more than 3 seconds
-    await nicegui.prune_user_storage(force=True)
+    await prune_user_storage(force=True)
     assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
 
