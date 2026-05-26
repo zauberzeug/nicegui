@@ -1,5 +1,4 @@
 import atexit
-import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -12,6 +11,8 @@ from . import general
 
 # pylint: disable=redefined-outer-name
 
+_configured = False
+
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     """Add pytest option for main file."""
@@ -20,9 +21,10 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 def pytest_configure(config: pytest.Config) -> None:
     """Set up a session-unique storage path and register the "nicegui_main_file" marker."""
-    if Storage.path != Path(os.environ.get('NICEGUI_STORAGE_PATH', '.nicegui')).resolve():
-        return  # already configured
-
+    global _configured  # pylint: disable=global-statement # noqa: PLW0603
+    if _configured:
+        return
+    _configured = True
     Storage.path = Path(tempfile.mkdtemp(prefix='nicegui-test-storage-')).resolve()
     atexit.register(shutil.rmtree, Storage.path, ignore_errors=True)
     app.storage = Storage()  # rebuild app.storage so its FilePersistentDict picks up the new path
