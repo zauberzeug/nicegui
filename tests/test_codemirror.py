@@ -139,6 +139,18 @@ def test_line_tooltip_api(screen: Screen):
     screen.should_not_contain('error')
 
 
+def test_line_tooltip_stick_to_text(screen: Screen):
+    @ui.page('/')
+    def page():
+        editor = ui.codemirror('abc').classes('w-24')
+        editor.line_tooltips[1] = 'tooltip'
+
+    screen.open('/')
+    ActionChains(screen.selenium).move_to_element(screen.find('abc')).click().send_keys(Keys.HOME, Keys.ENTER).perform()
+    ActionChains(screen.selenium).move_to_element(screen.find('abc')).perform()
+    screen.should_contain('tooltip')
+
+
 def test_line_tooltip_plain_text_default(screen: Screen):
     @ui.page('/')
     def page():
