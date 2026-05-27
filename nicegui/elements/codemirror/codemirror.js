@@ -11,7 +11,9 @@ class TooltipValue extends CM.RangeValue {
 const setTooltipsEffect = CM.StateEffect.define();
 
 const tooltipField = CM.StateField.define({
-  create() { return CM.RangeSet.empty; },
+  create() {
+    return CM.RangeSet.empty;
+  },
   update(set, tr) {
     set = set.map(tr.changes);
     for (const effect of tr.effects) {
@@ -53,7 +55,7 @@ export default {
       this.setLineWrapping(newLineWrapping);
     },
     lineTooltips(newTooltips) {
-      this.applyLineTooltips(newTooltips);
+      this.setLineTooltips(newTooltips);
     },
   },
   data() {
@@ -158,7 +160,7 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
-    applyLineTooltips(tooltips) {
+    setLineTooltips(tooltips) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
       const ranges = [];
@@ -194,11 +196,12 @@ export default {
       const lineTooltip = CM.hoverTooltip((view, pos) => {
         const set = view.state.field(tooltipField);
         const line = view.state.doc.lineAt(pos);
-        let content = "";
+        let content = null;
         set.between(line.from, line.to, (_from, _to, value) => {
-          if (typeof value.content === "string") content = value.content;
+          content = value.content;
+          return false;  // at most one tooltip per line — stop after the first match
         });
-        if (!content) return null;
+        if (content === null) return null;
         const renderHtml = self.lineTooltipHtml;
         return {
           pos: line.from,
@@ -264,6 +267,6 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
-    this.applyLineTooltips(this.lineTooltips);
+    this.setLineTooltips(this.lineTooltips);
   },
 };

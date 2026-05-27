@@ -274,13 +274,15 @@ class CodeMirror(ValueElement[str], DisableableElement,
         An element to create a code editor using `CodeMirror <https://codemirror.net/>`_.
 
         It supports syntax highlighting for over 140 languages, more than 30 themes, line numbers, code folding, (limited) auto-completion, and more.
-        Per-line hover tooltips can be attached via the ``line_tooltips`` dict.
 
         Supported languages and themes:
             - Languages: A list of supported languages can be found in the `@codemirror/language-data <https://github.com/codemirror/language-data/blob/main/src/language-data.ts>`_ package.
             - Themes: A list can be found in the `@uiw/codemirror-themes-all <https://github.com/uiwjs/react-codemirror/tree/master/themes/all>`_ package.
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
+
+        *Since version 3.13.0:*
+        Per-line tooltips can be attached via the ``line_tooltips`` dict.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
@@ -289,8 +291,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
-        :param line_tooltips: initial mapping of 1-indexed line numbers to hover tooltip content; an empty string suppresses the tooltip on that line (default: ``None``)
-        :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``)
+        :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
+        :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -303,7 +305,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
-        self._props['line-tooltips'] = dict(line_tooltips or {})
+        self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
@@ -370,17 +372,15 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
     @property
     def line_tooltips(self) -> dict[int, str]:
-        """Mapping of 1-indexed line numbers to hover tooltip content.
+        """Mapping of 1-indexed line numbers to tooltip content.
 
-        Mutations sync to the client. An empty string suppresses the tooltip on that line.
-
-        *Added in version X.Y.Z*
+        *Added in version 3.13.0*
         """
         return self._props['line-tooltips']
 
     @line_tooltips.setter
     def line_tooltips(self, value: dict[int, str]) -> None:
-        self._props['line-tooltips'] = dict(value)
+        self._props['line-tooltips'] = value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
