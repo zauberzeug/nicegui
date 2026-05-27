@@ -25,7 +25,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                  options: dict, *,
                  html_columns: list[int] = DEFAULT_PROP | [],
                  theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
-                 auto_size_columns: bool = True,
+                 auto_size_columns: bool | None = None,
                  modules: Literal['community', 'enterprise'] | list[str] = 'community',
                  ) -> None:
         """AG Grid
@@ -38,7 +38,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param options: dictionary of AG Grid options
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``None``, i.e. fit to width unless columns use ``flex``)
         :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         """
         if not isinstance(modules, list):
@@ -47,6 +47,14 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
 
         super().__init__()
+        if auto_size_columns is None:
+            auto_size_columns = not self._uses_flex(options)  # auto: flex columns size themselves
+        elif auto_size_columns and self._uses_flex(options):
+            helpers.warn_once(
+                'AG Grid: auto_size_columns=True is incompatible with columns using "flex" '
+                '(AG Grid ignores flex when autoSizeStrategy is set, and the grid may render blank).\n'
+                'Use either flex or auto_size_columns, not both.'
+            )
         self._props['options'] = {
             'theme': theme or 'quartz',
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
@@ -79,12 +87,22 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                 'Please migrate ASAP as the backwards-compatibility will be removed in NiceGUI 4.0.'
             )
 
+    @staticmethod
+    def _uses_flex(options: dict) -> bool:
+        """Whether any column requests flex sizing (mutually exclusive with autoSizeStrategy).
+
+        Detects both the literal ``flex`` key and the dynamic ``:flex`` property form,
+        which NiceGUI converts to ``flex`` on the client (see #5087).
+        """
+        return any(col.get('flex') is not None or ':flex' in col
+                   for col in [options.get('defaultColDef', {}), *options.get('columnDefs', [])])
+
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
                     theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
-                    auto_size_columns: bool = True,
+                    auto_size_columns: bool | None = None,
                     options: dict = {},  # noqa: B006
                     modules: Literal['community', 'enterprise'] | list[str] = 'community',
                     ) -> Self:
@@ -103,7 +121,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param df: Pandas DataFrame
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``None``, i.e. fit to width unless columns use ``flex``)
         :param options: dictionary of additional AG Grid options
         :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
@@ -142,7 +160,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                     df: 'pl.DataFrame', *,
                     html_columns: list[int] = [],  # noqa: B006
                     theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
-                    auto_size_columns: bool = True,
+                    auto_size_columns: bool | None = None,
                     options: dict = {},  # noqa: B006
                     modules: Literal['community', 'enterprise'] | list[str] = 'community',
                     ) -> Self:
@@ -156,7 +174,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param df: Polars DataFrame
         :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
-        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``True``)
+        :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``None``, i.e. fit to width unless columns use ``flex``)
         :param options: dictionary of additional AG Grid options
         :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element

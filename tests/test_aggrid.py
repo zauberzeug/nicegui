@@ -11,7 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import Event, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_update_table(screen: Screen):
@@ -380,3 +380,23 @@ def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unex
         screen.should_contain(item)
     for item in unexpected:
         screen.should_not_contain(item)
+
+
+async def test_auto_size_columns_vs_flex(user: User):
+    """auto_size_columns=None must skip autoSizeStrategy for flex columns, but respect explicit values (#5087)."""
+    grids: dict = {}
+
+    @ui.page('/')
+    def page():
+        grids['default'] = ui.aggrid({'columnDefs': [{'field': 'a'}]})
+        grids['flex'] = ui.aggrid({'defaultColDef': {'flex': 1}, 'columnDefs': [{'field': 'a'}]})
+        grids['dynamic_flex'] = ui.aggrid({'columnDefs': [{'field': 'a', ':flex': '1'}]})
+        grids['forced'] = ui.aggrid({'defaultColDef': {'flex': 1}}, auto_size_columns=True)
+        grids['off'] = ui.aggrid({'columnDefs': [{'field': 'a'}]}, auto_size_columns=False)
+
+    await user.open('/')
+    assert 'autoSizeStrategy' in grids['default'].options, 'None default without flex should fit-to-width'
+    assert 'autoSizeStrategy' not in grids['flex'].options, 'None default with flex should skip autoSizeStrategy (#5087)'
+    assert 'autoSizeStrategy' not in grids['dynamic_flex'].options, 'dynamic :flex should also skip autoSizeStrategy'
+    assert 'autoSizeStrategy' in grids['forced'].options, 'explicit auto_size_columns=True must be respected'
+    assert 'autoSizeStrategy' not in grids['off'].options, 'explicit auto_size_columns=False must be respected'
