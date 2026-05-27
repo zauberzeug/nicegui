@@ -29,6 +29,8 @@ def preserve_cursor_demo() -> None:
 
 @doc.demo('Hover tooltips on lines', '''
     `line_tooltips` maps 1-indexed line numbers to hover content.
+
+    *Added in NiceGUI 3.13.0*
 ''')
 def line_tooltips_demo() -> None:
     editor = ui.codemirror(
@@ -43,6 +45,8 @@ def line_tooltips_demo() -> None:
 @doc.demo('HTML rendering for tooltips', '''
     Pass `line_tooltip_html=True` to render tooltip content as HTML,
     sanitized via NiceGUI's DOMPurify-backed `setHTML` polyfill.
+
+    *Added in NiceGUI 3.13.0*
 ''')
 def line_tooltip_html_demo() -> None:
     editor = ui.codemirror(
