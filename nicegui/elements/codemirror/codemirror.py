@@ -274,6 +274,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         An element to create a code editor using `CodeMirror <https://codemirror.net/>`_.
 
         It supports syntax highlighting for over 140 languages, more than 30 themes, line numbers, code folding, (limited) auto-completion, and more.
+        Per-line hover tooltips can be attached via the ``line_tooltips`` dict.
 
         Supported languages and themes:
             - Languages: A list of supported languages can be found in the `@codemirror/language-data <https://github.com/codemirror/language-data/blob/main/src/language-data.ts>`_ package.
@@ -376,6 +377,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version X.Y.Z*
         """
         return self._props['line-tooltips']
+
+    @line_tooltips.setter
+    def line_tooltips(self, value: dict[int, str]) -> None:
+        self._props['line-tooltips'] = dict(value)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
