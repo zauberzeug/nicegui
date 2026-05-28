@@ -48,11 +48,9 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         super().__init__()
 
-        col_defs = [options.get('defaultColDef', {}), *options.get('columnDefs', [])]
-        uses_flex = any(col.get('flex') or ':flex' in col for col in col_defs)
         if auto_size_columns is None:
-            auto_size_columns = not uses_flex  # auto: flex columns size themselves
-        elif auto_size_columns and uses_flex:
+            auto_size_columns = not self._uses_flex(options)
+        elif auto_size_columns and self._uses_flex(options):
             helpers.warn_once('AG Grid: "flex" is ignored when auto_size_columns=True. Grid may render blank.')
 
         self._props['options'] = {
@@ -65,6 +63,11 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._props['modules'] = modules[:]
 
         self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
+
+    @staticmethod
+    def _uses_flex(options: dict) -> bool:
+        col_defs = [options.get('defaultColDef', {}), *options.get('columnDefs', [])]
+        return any(col.get('flex') or ':flex' in col for col in col_defs)
 
     @staticmethod
     def _migrate_deprecated_checkbox_renderer(options: dict) -> None:
@@ -212,6 +215,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @auto_size_columns.setter
     def auto_size_columns(self, value: bool) -> None:
         if value and not self.auto_size_columns:
+            if self._uses_flex(self._props['options']):
+                helpers.warn_once('AG Grid: "flex" is ignored when auto_size_columns=True. Grid may render blank.')
             self._props['options']['autoSizeStrategy'] = {'type': 'fitGridWidth'}
         if not value and self.auto_size_columns:
             self._props['options'].pop('autoSizeStrategy')
