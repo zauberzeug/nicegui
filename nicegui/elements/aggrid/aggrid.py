@@ -188,6 +188,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @options.setter
     def options(self, value: dict) -> None:
         self._props['options'] = value
+        if self.auto_size_columns and self._uses_flex(value):
+            helpers.warn_once('AG Grid: "flex" is ignored when auto_size_columns=True. Grid may render blank.')
 
     @property
     def html_columns(self) -> list[int]:
