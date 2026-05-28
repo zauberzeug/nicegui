@@ -396,7 +396,8 @@ async def test_auto_size_columns_vs_flex(user: User):
 
     await user.open('/')
     assert 'autoSizeStrategy' in grids['default'].options, 'None default without flex should fit-to-width'
-    assert 'autoSizeStrategy' not in grids['flex'].options, 'None default with flex should skip autoSizeStrategy (#5087)'
+    assert 'autoSizeStrategy' not in grids[
+        'flex'].options, 'None default with flex should skip autoSizeStrategy (#5087)'
     assert 'autoSizeStrategy' not in grids['dynamic_flex'].options, 'dynamic :flex should also skip autoSizeStrategy'
     assert 'autoSizeStrategy' in grids['forced'].options, 'explicit auto_size_columns=True must be respected'
     assert 'autoSizeStrategy' not in grids['off'].options, 'explicit auto_size_columns=False must be respected'
