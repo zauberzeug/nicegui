@@ -166,8 +166,7 @@ def test_line_tooltip_html_sanitized(screen: Screen):
     @ui.page('/')
     def page():
         editor = ui.codemirror('hello', line_tooltip_html=True).classes('w-24')
-        editor.line_tooltips[1] = \
-            '<b>bold</b><script>console.error("X" + "SS")</script><svg onload="console.error("X" + "SS")"></svg>'
+        editor.line_tooltips[1] = '<b>bold</b><img src=x onerror="console.error(`X` + `SS`)">'
 
     screen.open('/')
     ActionChains(screen.selenium).move_to_element(screen.find('hello')).perform()
