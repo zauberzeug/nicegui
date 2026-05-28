@@ -385,6 +385,7 @@ def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unex
 @pytest.mark.parametrize('args,auto_size_strategy_expected', [
     ({'options': {'columnDefs': [{'field': 'a'}]}}, True),
     ({'options': {'columnDefs': [{'field': 'a'}], 'defaultColDef': {'flex': 1}}}, False),
+    ({'options': {'columnDefs': [{'field': 'a', 'flex': 0}]}}, True),
     ({'options': {'columnDefs': [{'field': 'a', ':flex': '1'}]}}, False),
     ({'options': {'columnDefs': [{'field': 'a'}]}, 'auto_size_columns': False}, False),
     ({'options': {'defaultColDef': {'flex': 1}}, 'auto_size_columns': True}, True),

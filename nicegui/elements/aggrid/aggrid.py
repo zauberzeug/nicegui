@@ -49,7 +49,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         super().__init__()
 
         col_defs = [options.get('defaultColDef', {}), *options.get('columnDefs', [])]
-        uses_flex = any(col.get('flex') is not None or ':flex' in col for col in col_defs)
+        uses_flex = any(col.get('flex') or ':flex' in col for col in col_defs)
         if auto_size_columns is None:
             auto_size_columns = not uses_flex  # auto: flex columns size themselves
         elif auto_size_columns and uses_flex:
