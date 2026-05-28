@@ -47,14 +47,14 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
 
         super().__init__()
+
+        col_defs = [options.get('defaultColDef', {}), *options.get('columnDefs', [])]
+        uses_flex = any(col.get('flex') is not None or ':flex' in col for col in col_defs)
         if auto_size_columns is None:
-            auto_size_columns = not self._uses_flex(options)  # auto: flex columns size themselves
-        elif auto_size_columns and self._uses_flex(options):
-            helpers.warn_once(
-                'AG Grid: auto_size_columns=True is incompatible with columns using "flex" '
-                '(AG Grid ignores flex when autoSizeStrategy is set, and the grid may render blank).\n'
-                'Use either flex or auto_size_columns, not both.'
-            )
+            auto_size_columns = not uses_flex  # auto: flex columns size themselves
+        elif auto_size_columns and uses_flex:
+            helpers.warn_once('AG Grid: "flex" is ignored when auto_size_columns=True. Grid may render blank.')
+
         self._props['options'] = {
             'theme': theme or 'quartz',
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
@@ -86,16 +86,6 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                 "    'editable': True,\n"
                 'Please migrate ASAP as the backwards-compatibility will be removed in NiceGUI 4.0.'
             )
-
-    @staticmethod
-    def _uses_flex(options: dict) -> bool:
-        """Whether any column requests flex sizing (mutually exclusive with autoSizeStrategy).
-
-        Detects both the literal ``flex`` key and the dynamic ``:flex`` property form,
-        which NiceGUI converts to ``flex`` on the client (see #5087).
-        """
-        return any(col.get('flex') is not None or ':flex' in col
-                   for col in [options.get('defaultColDef', {}), *options.get('columnDefs', [])])
 
     @classmethod
     def from_pandas(cls,
