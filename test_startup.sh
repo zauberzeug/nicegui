@@ -2,11 +2,62 @@
 
 set -euo pipefail
 
+request() {
+    local url="$1"
+    uv run --no-sync python - "$url" <<'PY'
+import sys
+import urllib.error
+import urllib.request
+
+url = sys.argv[1]
+try:
+    with urllib.request.urlopen(url, timeout=5) as response:
+        response.read()
+        if response.status >= 500:
+            raise SystemExit(f'{url} returned HTTP {response.status}')
+except urllib.error.HTTPError as e:
+    if e.code >= 500:
+        raise SystemExit(f'{url} returned HTTP {e.code}') from e
+except Exception as e:
+    raise SystemExit(f'Failed to request {url}: {e}') from e
+PY
+}
+
 run() {
     pwd
-    output=$({ timeout 10 uv run --no-sync ./"$1" "${@:2}"; } 2>&1)
-    exitcode=$?
-    [[ $exitcode -eq 124 ]] && exitcode=0 # exitcode 124 is coming from "timeout command above"
+    local output_file
+    output_file=$(mktemp)
+    local exitcode=0
+    { timeout 10 uv run --no-sync ./"$1" "${@:2}"; } > "$output_file" 2>&1 &
+    local pid=$!
+
+    local ready=0
+    for _ in {1..50}; do
+        if grep -qE "NiceGUI ready to go|Uvicorn running on http://127.0.0.1:8000" "$output_file"; then
+            ready=1
+            break
+        fi
+        if ! kill -0 "$pid" 2>/dev/null; then
+            break
+        fi
+        sleep 0.2
+    done
+
+    if [[ $ready -eq 1 ]]; then
+        local url
+        url=$(grep -Eo "http://(127\.0\.0\.1|localhost):[0-9]+" "$output_file" | head -n 1 || true)
+        request "${url:-http://127.0.0.1:8080}/" || exitcode=1
+    else
+        exitcode=1
+    fi
+
+    local process_exit=0
+    wait "$pid" || process_exit=$?
+    [[ $process_exit -eq 124 ]] && process_exit=0 # exitcode 124 is coming from "timeout command above"
+    [[ $process_exit -ne 0 ]] && exitcode=$process_exit
+    local output
+    output=$(cat "$output_file")
+    rm "$output_file"
     echo "$output" | grep -qE "NiceGUI ready to go|Uvicorn running on http://127.0.0.1:8000" || exitcode=1
     echo "$output" | grep -qE "Traceback|Error" && exitcode=1
     if [[ $exitcode -ne 0 ]]; then
