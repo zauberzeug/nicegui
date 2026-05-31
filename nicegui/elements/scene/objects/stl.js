@@ -6,7 +6,7 @@ const {
 
 const stl_loader = new STLLoader();
 
-export default {
+export default class STL {
     create_mesh(url, wireframe) {
         const geometry = new THREE.BufferGeometry();
         let mesh;

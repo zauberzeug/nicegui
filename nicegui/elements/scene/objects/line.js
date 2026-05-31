@@ -1,7 +1,7 @@
 import SceneLib from "nicegui-scene";
 const { THREE } = SceneLib;
 
-export default {
+export default class Line {
     create_mesh(start, end) {
         const geometry = new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(...start),

@@ -1,7 +1,7 @@
 import SceneLib from "nicegui-scene";
 const { THREE } = SceneLib;
 
-export default {
+export default class Curve {
     create_mesh(start, control1, control2, end, num_points) {
         const curve = new THREE.CubicBezierCurve3(
             new THREE.Vector3(...start),

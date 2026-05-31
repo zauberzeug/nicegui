@@ -126,7 +126,6 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
 
 def register_library(path: Path, *, import_name: str | None = None, max_time: float | None) -> Library:
     """Register a *.js library."""
-    print(f'registering: {path=}, {import_name=}, {max_time=}')
     key = compute_key(path, max_time=max_time)
     name = import_name or _get_name(path)
     if path.suffix in {'.js', '.mjs'}:

@@ -2,7 +2,7 @@ import SceneLib from "nicegui-scene";
 const {
     THREE,
 } = SceneLib;
-export default {
+export default class QuadraticBezierTube {
     create_geometry(...args) {
         const curve = new THREE.QuadraticBezierCurve3(
             new THREE.Vector3(...args[0]),

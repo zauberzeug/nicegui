@@ -13,50 +13,6 @@ const {
   Stats,
 } = SceneLib;
 
-function texture_geometry(coords) {
-  const geometry = new THREE.BufferGeometry();
-  const nI = coords[0].length;
-  const nJ = coords.length;
-  const vertices = [];
-  const indices = [];
-  const uvs = [];
-  for (let j = 0; j < nJ; ++j) {
-    for (let i = 0; i < nI; ++i) {
-      const XYZ = coords[j][i] || [0, 0, 0];
-      vertices.push(...XYZ);
-      uvs.push(i / (nI - 1), j / (nJ - 1));
-    }
-  }
-  for (let j = 0; j < nJ - 1; ++j) {
-    for (let i = 0; i < nI - 1; ++i) {
-      if (coords[j][i] && coords[j][i + 1] && coords[j + 1][i] && coords[j + 1][i + 1]) {
-        const idx00 = i + j * nI;
-        const idx10 = i + j * nI + 1;
-        const idx01 = i + j * nI + nI;
-        const idx11 = i + j * nI + 1 + nI;
-        indices.push(idx10, idx00, idx01);
-        indices.push(idx11, idx10, idx01);
-      }
-    }
-  }
-  geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1));
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
-  geometry.computeVertexNormals();
-  return geometry;
-}
-
-function texture_material(texture) {
-  texture.flipY = false;
-  texture.minFilter = THREE.LinearFilter;
-  return new THREE.MeshLambertMaterial({
-    map: texture,
-    side: THREE.DoubleSide,
-    transparent: true,
-  });
-}
-
-
 export default {
   template: `
     <div style="position:relative" data-initializing>
@@ -259,15 +215,16 @@ export default {
   methods: {
     create(import_name, id, parent_id, ...args) {
       if (!this.is_initialized) return Promise.resolve();
-      return import(import_name).then((component) => {
-        return this.create_from_component(component, id, parent_id, ...args);
+      return import(import_name).then((component_module) => {
+        return this.create_from_component_class(component_module.default, id, parent_id, ...args);
       }).catch((reason) => console.error(`Importing "${import_name}" failed: ${reason}`));
     },
-    create_from_component(component, id, parent_id, ...args) {
+    create_from_component_class(compoent_class, id, parent_id, ...args) {
+      const component = new compoent_class();
       let mesh;
-      if (typeof component.default.create_geometry == "function") {
-        const geometry = component.default.create_geometry(...args)
+      if (typeof component.create_geometry == "function") {
         const wireframe = args.pop()
+        const geometry = component.create_geometry(...args)
         if (wireframe) {
           mesh = new THREE.LineSegments(
             new THREE.EdgesGeometry(geometry),
@@ -278,18 +235,19 @@ export default {
           mesh = new THREE.Mesh(geometry, material);
         }
       }
-      else if (typeof component.default.create_mesh == "function") {
-        mesh = component.default.create_mesh(...args);
+      else if (typeof component.create_mesh == "function") {
+        mesh = component.create_mesh(...args);
       } else {
-        console.error(`The "${import_name}" 3D component doesn't export either a "create_geometry" or "create_mesh" method. Skipping creation.`)
+        console.error(`The "${compoent_class}" 3D component doesn't export either a "create_geometry" or "create_mesh" method. Skipping creation.`)
         return;
       }
-      const parent = this.objects.get(parent_id)
+      const object = { id, mesh, component }
       mesh.object_id = id;
-      this.objects.set(id, { id: object_id, mesh, component, data: {} });
+      this.objects.set(id, object);
+      const parent = this.objects.get(parent_id)
       parent.mesh.add(mesh);
-      if (typeof component.default.attached == "function") {
-        component.default.attached(mesh, parent.mesh)
+      if (typeof component.attached == "function") {
+        component.attached(parent.mesh)
       }
     },
     name(object_id, name) {
@@ -299,25 +257,21 @@ export default {
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
       if (!object) return;
-      if (object.data.isGltf && !object.data.loaded) {
-        object.data.pendingMaterialInfo = { color, opacity, side };
-        return;
-      }
-      const vertexColors = color === null;
-      const apply = (material) => {
-        (Array.isArray(material) ? material : [material]).forEach((m) => {
-          m.color.set(vertexColors ? "#ffffff" : color);
-          m.needsUpdate = m.vertexColors != vertexColors;
-          m.vertexColors = vertexColors;
-          m.opacity = opacity;
-          if (side == "front") m.side = THREE.FrontSide;
-          else if (side == "back") m.side = THREE.BackSide;
-          else m.side = THREE.DoubleSide;
-        });
-      };
-      if (object.data.isGltf) {
-        object.mesh.traverse((child) => child.isMesh && child.material && apply(child.material));
+      if (typeof object.component.apply_material === "function") {
+        object.component.apply_material(color, opacity, side)
       } else if (object.mesh.material) {
+        const vertexColors = color === null;
+        const apply = (material) => {
+          (Array.isArray(material) ? material : [material]).forEach((m) => {
+            m.color.set(vertexColors ? "#ffffff" : color);
+            m.needsUpdate = m.vertexColors != vertexColors;
+            m.vertexColors = vertexColors;
+            m.opacity = opacity;
+            if (side == "front") m.side = THREE.FrontSide;
+            else if (side == "back") m.side = THREE.BackSide;
+            else m.side = THREE.DoubleSide;
+          });
+        };
         apply(object.mesh.material);
       }
     },
@@ -345,9 +299,9 @@ export default {
     draggable(object_id, value) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
-      if (value) this.draggable_objects.push(object);
+      if (value) this.draggable_objects.push(object.mesh);
       else {
-        const index = this.draggable_objects.indexOf(object);
+        const index = this.draggable_objects.indexOf(object.mesh);
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
@@ -355,53 +309,37 @@ export default {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
       object.mesh.removeFromParent();
-      if (typeof object.component.default.detached == "function") {
-        object.component.default.detached(object)
+      if (typeof object.component.detached == "function") {
+        object.component.detached()
       }
       this.draggable(object_id, false)
       this.objects.delete(object_id);
-      if (typeof object.component.default.deleted == "function") {
-        object.component.default.deleted(object)
+      if (typeof object.component.deleted == "function") {
+        object.component.deleted()
       }
     },
     run_method_on_component(object_id, method_name, ...args) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
-      return object.component[method_name](object, ...args);
-    },
-    set_texture_url(object_id, url) {
-      if (!this.objects.has(object_id)) return;
-      const obj = this.objects.get(object_id);
-      if (obj.busy) return;
-      obj.busy = true;
-      const on_success = (texture) => {
-        obj.material = texture_material(texture);
-        obj.busy = false;
-      };
-      const on_error = () => (obj.busy = false);
-      this.texture_loader.load(url, on_success, undefined, on_error);
-    },
-    set_texture_coordinates(object_id, coords) {
-      if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id).geometry = texture_geometry(coords);
+      return object.component[method_name](...args);
     },
     attach(object_id, parent_id, x, y, z, R) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
       const parent = this.objects.get(parent_id);
-      parent.add(object);
+      parent.mesh.add(object.mesh);
       this.move(object_id, x, y, z);
       this.rotate(object_id, R);
-      if (typeof object.component.default.attached == "function") {
-        object.component.default.attached(mesh, parent.mesh)
+      if (typeof object.component.attached == "function") {
+        object.component.attached(parent.mesh)
       }
     },
     detach(object_id, x, y, z, R) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
-      object.removeFromParent();
-      if (typeof object.component.default.detached == "function") {
-        object.component.default.detached(mesh)
+      object.mesh.removeFromParent();
+      if (typeof object.component.detached == "function") {
+        object.component.detached()
       }
       this.attach(object_id, this.scene.object_id, x, y, z, R)
     },

@@ -1,13 +1,11 @@
-
 import SceneLib from "nicegui-scene";
 const {
     THREE,
 } = SceneLib;
-export default {
+
+export default class Extrusion {
     create_geometry(outline, height) {
         const shape = new THREE.Shape();
-        const outline = args[0];
-        const height = args[1];
         shape.autoClose = true;
         if (outline.length) {
             shape.moveTo(outline[0][0], outline[0][1]);

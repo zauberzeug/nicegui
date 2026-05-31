@@ -3,8 +3,7 @@ const {
     THREE,
 } = SceneLib;
 
-export default {
-
+export default class Box {
     create_geometry(...args) {
         return new THREE.BoxGeometry(...args);
     }

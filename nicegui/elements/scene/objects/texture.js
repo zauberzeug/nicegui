@@ -46,21 +46,26 @@ function texture_material(texture) {
     });
 }
 
-export default {
+export default class Texture {
+    busy = false
+
     create_mesh(url, coords) {
-        return new THREE.Mesh(texture_geometry(coords), texture_material(texture_loader.load(url)));
-    },
-    set_url(mesh, url) {
-        if (mesh.busy) return;
-        mesh.busy = true;
+        return new THREE.Mesh(
+            texture_geometry(coords),
+            texture_material(texture_loader.load(url))
+        );
+    }
+    set_url(url) {
+        if (this.busy) return;
+        this.busy = true;
         const on_success = (texture) => {
-            mesh.material = texture_material(texture);
-            mesh.busy = false;
+            this.mesh.material = texture_material(texture);
+            this.busy = false;
         };
-        const on_error = () => (mesh.busy = false);
+        const on_error = () => (this.busy = false);
         texture_loader.load(url, on_success, undefined, on_error);
-    },
-    set_coordinates(mesh, coords) {
-        mesh.geometry = texture_geometry(coords);
-    },
+    }
+    set_coordinates(coords) {
+        this.mesh.geometry = texture_geometry(coords);
+    }
 }

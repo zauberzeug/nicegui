@@ -18,8 +18,14 @@ class Object3D:
     current_scene: Scene | None = None
     _component_import_name: ClassVar[str | None] = None
 
-    def __init_subclass__(cls, *, component: str | Path):
+    def __init_subclass__(cls, *, component: str | Path | None = None):
         super().__init_subclass__()
+        if not component:
+            # Fallback to parent's component to ease inheriting from Object3D classes
+            for base in cls.__mro__[1:]:
+                if getattr(base, '_component_import_name', False):
+                    return
+            raise TypeError("parameter 'component' must be supplied as a class named argument")
         base = Path(inspect.getfile(cls)).parent
 
         def glob_absolute_paths(file: str | Path) -> list[Path]:

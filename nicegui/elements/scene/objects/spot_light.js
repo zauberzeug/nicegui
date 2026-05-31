@@ -1,7 +1,7 @@
 import SceneLib from "nicegui-scene";
 const { THREE } = SceneLib;
 
-export default {
+export default class SpotLight {
     create_mesh(color, intensity, distance, angle, penumbra, decay) {
         const mesh = new THREE.Group();
         const light = new THREE.SpotLight(color, intensity, distance, angle, penumbra, decay);

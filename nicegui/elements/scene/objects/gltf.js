@@ -3,37 +3,46 @@ const { THREE, GLTFLoader } = SceneLib;
 
 const gltf_loader = new GLTFLoader();
 
-export default {
+export default class GLTF {
+    mesh
+    loaded = false
+    pendingMaterialInfo = null
+
     create_mesh(url) {
-        const mesh = new THREE.Group();
-        mesh.userData.isGltf = true;
-        mesh.userData.loaded = false;
+        this.mesh = new THREE.Group();
         gltf_loader.load(
             url,
             (gltf) => {
-                mesh.add(gltf.scene);
-                mesh.userData.loaded = true;
-                if (mesh.userData.pendingMaterialInfo) {
-                    const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
-                    delete mesh.userData.pendingMaterialInfo;
-                    const vertexColors = color === null;
-                    const apply = (material) => {
-                        (Array.isArray(material) ? material : [material]).forEach((m) => {
-                            m.color.set(vertexColors ? "#ffffff" : color);
-                            m.needsUpdate = m.vertexColors != vertexColors;
-                            m.vertexColors = vertexColors;
-                            m.opacity = opacity;
-                            if (side === "front") m.side = THREE.FrontSide;
-                            else if (side === "back") m.side = THREE.BackSide;
-                            else m.side = THREE.DoubleSide;
-                        });
-                    };
-                    mesh.traverse((child) => child.isMesh && child.material && apply(child.material));
+                this.mesh.add(gltf.scene);
+                this.loaded = true;
+                if (this.pendingMaterialInfo) {
+                    const { color, opacity, side } = this.pendingMaterialInfo;
+                    this.pendingMaterialInfo = null;
+                    this.apply_material(color, opacity, side);
                 }
             },
             undefined,
             (error) => console.error(error),
         );
-        return mesh;
+        return this.mesh;
+    }
+    apply_material(color, opacity, side) {
+        if (!self.loaded) {
+            self.pendingMaterialInfo = { color, opacity, side };
+            return;
+        }
+        const vertexColors = color === null;
+        const apply = (material) => {
+            (Array.isArray(material) ? material : [material]).forEach((m) => {
+                m.color.set(vertexColors ? "#ffffff" : color);
+                m.needsUpdate = m.vertexColors != vertexColors;
+                m.vertexColors = vertexColors;
+                m.opacity = opacity;
+                if (side === "front") m.side = THREE.FrontSide;
+                else if (side === "back") m.side = THREE.BackSide;
+                else m.side = THREE.DoubleSide;
+            });
+        };
+        this.mesh.traverse((child) => child.isMesh && child.material && apply(child.material));
     }
 }
