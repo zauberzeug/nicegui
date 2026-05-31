@@ -1,8 +1,6 @@
 import SceneLib from "nicegui-scene";
 const {
-  CSS2DObject,
   CSS2DRenderer,
-  CSS3DObject,
   CSS3DRenderer,
   DragControls,
   GLTFLoader,
@@ -58,14 +56,6 @@ function texture_material(texture) {
   });
 }
 
-function set_point_cloud_data(position, color, geometry) {
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
-  if (color === null) {
-    geometry.deleteAttribute("color");
-  } else {
-    geometry.setAttribute("color", new THREE.Float32BufferAttribute(color.flat(), 3));
-  }
-}
 
 export default {
   template: `
@@ -77,10 +67,12 @@ export default {
     </div>`,
 
   mounted() {
-    this.scene = new THREE.Scene();
-    this.clock = new THREE.Clock();
     this.objects = new Map();
-    this.objects.set("scene", this.scene);
+    this.scene = new THREE.Scene();
+    this.scene.object_id = "scene"
+    this.objects.set("scene", { id: "scene", mesh: this.scene });
+
+    this.clock = new THREE.Clock();
     this.draggable_objects = [];
     this.is_initialized = false;
 
@@ -265,135 +257,50 @@ export default {
   },
 
   methods: {
-    create(type, id, parent_id, ...args) {
-      if (!this.is_initialized) return;
+    create(import_name, id, parent_id, ...args) {
+      if (!this.is_initialized) return Promise.resolve();
+      return import(import_name).then((component) => {
+        return this.create_from_component(component, id, parent_id, ...args);
+      }).catch((reason) => console.error(`Importing "${import_name}" failed: ${reason}`));
+    },
+    create_from_component(component, id, parent_id, ...args) {
       let mesh;
-      if (type == "group") {
-        mesh = new THREE.Group();
-      } else if (type == "line") {
-        const start = new THREE.Vector3(...args[0]);
-        const end = new THREE.Vector3(...args[1]);
-        const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
-        const material = new THREE.LineBasicMaterial({ transparent: true });
-        mesh = new THREE.Line(geometry, material);
-      } else if (type == "curve") {
-        const curve = new THREE.CubicBezierCurve3(
-          new THREE.Vector3(...args[0]),
-          new THREE.Vector3(...args[1]),
-          new THREE.Vector3(...args[2]),
-          new THREE.Vector3(...args[3]),
-        );
-        const points = curve.getPoints(args[4] - 1);
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ transparent: true });
-        mesh = new THREE.Line(geometry, material);
-      } else if (type == "text") {
-        const div = document.createElement("div");
-        div.textContent = args[0];
-        div.style.cssText = args[1];
-        mesh = new CSS2DObject(div);
-      } else if (type == "text3d") {
-        const div = document.createElement("div");
-        div.textContent = args[0];
-        div.style.cssText = "userSelect:none;" + args[1];
-        mesh = new CSS3DObject(div);
-      } else if (type == "texture") {
-        const url = args[0];
-        const coords = args[1];
-        const geometry = texture_geometry(coords);
-        const material = texture_material(this.texture_loader.load(url));
-        mesh = new THREE.Mesh(geometry, material);
-      } else if (type == "spot_light") {
-        mesh = new THREE.Group();
-        const light = new THREE.SpotLight(...args);
-        light.position.set(0, 0, 0);
-        light.target = new THREE.Object3D();
-        light.target.position.set(1, 0, 0);
-        mesh.add(light);
-        mesh.add(light.target);
-      } else if (type == "point_cloud") {
-        const geometry = new THREE.BufferGeometry();
-        const material = new THREE.PointsMaterial({ size: args[2], transparent: true });
-        set_point_cloud_data(args[0], args[1], geometry);
-        mesh = new THREE.Points(geometry, material);
-      } else if (type == "gltf") {
-        const url = args[0];
-        mesh = new THREE.Group();
-        mesh.userData.isGltf = true;
-        mesh.userData.loaded = false;
-        this.gltf_loader.load(
-          url,
-          (gltf) => {
-            mesh.add(gltf.scene);
-            mesh.userData.loaded = true;
-            if (mesh.userData.pendingMaterialInfo) {
-              const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
-              delete mesh.userData.pendingMaterialInfo;
-              this.material(id, color, opacity, side);
-            }
-          },
-          undefined,
-          (error) => console.error(error),
-        );
-      } else if (type == "axes_helper") {
-        mesh = new THREE.AxesHelper(args[0]);
-        mesh.material.transparent = true;
-      } else {
-        let geometry;
-        const wireframe = args.pop();
-        if (type == "box") geometry = new THREE.BoxGeometry(...args);
-        if (type == "sphere") geometry = new THREE.SphereGeometry(...args);
-        if (type == "cylinder") geometry = new THREE.CylinderGeometry(...args);
-        if (type == "ring") geometry = new THREE.RingGeometry(...args);
-        if (type == "quadratic_bezier_tube") {
-          const curve = new THREE.QuadraticBezierCurve3(
-            new THREE.Vector3(...args[0]),
-            new THREE.Vector3(...args[1]),
-            new THREE.Vector3(...args[2]),
-          );
-          geometry = new THREE.TubeGeometry(curve, ...args.slice(3));
-        }
-        if (type == "extrusion") {
-          const shape = new THREE.Shape();
-          const outline = args[0];
-          const height = args[1];
-          shape.autoClose = true;
-          if (outline.length) {
-            shape.moveTo(outline[0][0], outline[0][1]);
-            outline.slice(1).forEach((p) => shape.lineTo(p[0], p[1]));
-          }
-          const settings = { depth: height, bevelEnabled: false };
-          geometry = new THREE.ExtrudeGeometry(shape, settings);
-        }
-        if (type == "stl") {
-          const url = args[0];
-          geometry = new THREE.BufferGeometry();
-          this.stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
-        }
-        let material;
+      if (typeof component.default.create_geometry == "function") {
+        const geometry = component.default.create_geometry(...args)
+        const wireframe = args.pop()
         if (wireframe) {
           mesh = new THREE.LineSegments(
             new THREE.EdgesGeometry(geometry),
             new THREE.LineBasicMaterial({ transparent: true }),
           );
         } else {
-          material = new THREE.MeshPhongMaterial({ transparent: true });
+          const material = new THREE.MeshPhongMaterial({ transparent: true });
           mesh = new THREE.Mesh(geometry, material);
         }
       }
+      else if (typeof component.default.create_mesh == "function") {
+        mesh = component.default.create_mesh(...args);
+      } else {
+        console.error(`The "${import_name}" 3D component doesn't export either a "create_geometry" or "create_mesh" method. Skipping creation.`)
+        return;
+      }
+      const parent = this.objects.get(parent_id)
       mesh.object_id = id;
-      this.objects.set(id, mesh);
-      this.objects.get(parent_id).add(this.objects.get(id));
+      this.objects.set(id, { id: object_id, mesh, component, data: {} });
+      parent.mesh.add(mesh);
+      if (typeof component.default.attached == "function") {
+        component.default.attached(mesh, parent.mesh)
+      }
     },
     name(object_id, name) {
       if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id).name = name;
+      this.objects.get(object_id).mesh.name = name;
     },
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
       if (!object) return;
-      if (object.userData.isGltf && !object.userData.loaded) {
-        object.userData.pendingMaterialInfo = { color, opacity, side };
+      if (object.data.isGltf && !object.data.loaded) {
+        object.data.pendingMaterialInfo = { color, opacity, side };
         return;
       }
       const vertexColors = color === null;
@@ -408,19 +315,19 @@ export default {
           else m.side = THREE.DoubleSide;
         });
       };
-      if (object.userData.isGltf) {
-        object.traverse((child) => child.isMesh && child.material && apply(child.material));
-      } else if (object.material) {
-        apply(object.material);
+      if (object.data.isGltf) {
+        object.mesh.traverse((child) => child.isMesh && child.material && apply(child.material));
+      } else if (object.mesh.material) {
+        apply(object.mesh.material);
       }
     },
     move(object_id, x, y, z) {
       if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id).position.set(x, y, z);
+      this.objects.get(object_id).mesh.position.set(x, y, z);
     },
     scale(object_id, sx, sy, sz) {
       if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id).scale.set(sx, sy, sz);
+      this.objects.get(object_id).mesh.scale.set(sx, sy, sz);
     },
     rotate(object_id, R) {
       if (!this.objects.has(object_id)) return;
@@ -429,7 +336,7 @@ export default {
         new THREE.Vector3(...R[1]),
         new THREE.Vector3(...R[2]),
       );
-      this.objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
+      this.objects.get(object_id).mesh.rotation.setFromRotationMatrix(R4.transpose());
     },
     visible(object_id, value) {
       if (!this.objects.has(object_id)) return;
@@ -447,10 +354,20 @@ export default {
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
-      object.removeFromParent();
+      object.mesh.removeFromParent();
+      if (typeof object.component.default.detached == "function") {
+        object.component.default.detached(object)
+      }
+      this.draggable(object_id, false)
       this.objects.delete(object_id);
-      const index = this.draggable_objects.indexOf(object);
-      if (index != -1) this.draggable_objects.splice(index, 1);
+      if (typeof object.component.default.deleted == "function") {
+        object.component.default.deleted(object)
+      }
+    },
+    run_method_on_component(object_id, method_name, ...args) {
+      if (!this.objects.has(object_id)) return;
+      const object = this.objects.get(object_id);
+      return object.component[method_name](object, ...args);
     },
     set_texture_url(object_id, url) {
       if (!this.objects.has(object_id)) return;
@@ -468,11 +385,6 @@ export default {
       if (!this.objects.has(object_id)) return;
       this.objects.get(object_id).geometry = texture_geometry(coords);
     },
-    set_points(object_id, position, color) {
-      if (!this.objects.has(object_id)) return;
-      const geometry = this.objects.get(object_id).geometry;
-      set_point_cloud_data(position, color, geometry);
-    },
     attach(object_id, parent_id, x, y, z, R) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
@@ -480,14 +392,18 @@ export default {
       parent.add(object);
       this.move(object_id, x, y, z);
       this.rotate(object_id, R);
+      if (typeof object.component.default.attached == "function") {
+        object.component.default.attached(mesh, parent.mesh)
+      }
     },
     detach(object_id, x, y, z, R) {
       if (!this.objects.has(object_id)) return;
       const object = this.objects.get(object_id);
       object.removeFromParent();
-      this.scene.add(object);
-      this.move(object_id, x, y, z);
-      this.rotate(object_id, R);
+      if (typeof object.component.default.detached == "function") {
+        object.component.default.detached(mesh)
+      }
+      this.attach(object_id, this.scene.object_id, x, y, z, R)
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
@@ -563,7 +479,7 @@ export default {
       }
       this.camera.updateProjectionMatrix();
     },
-    init_objects(data) {
+    async init_objects(data) {
       this.resize();
       this.$el.removeAttribute("data-initializing");
       this.is_initialized = true;
@@ -586,7 +502,7 @@ export default {
         visible,
         draggable,
       ] of data) {
-        this.create(type, id, parent_id, ...args);
+        await this.create(type, id, parent_id, ...args);
         this.name(id, name);
         this.material(id, color, opacity, side);
         this.move(id, x, y, z);

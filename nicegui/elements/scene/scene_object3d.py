@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import inspect
 import math
 import uuid
-from typing import TYPE_CHECKING, Any, Literal
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import Self
+
+from nicegui.dependencies import register_library
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
@@ -12,9 +16,24 @@ if TYPE_CHECKING:
 
 class Object3D:
     current_scene: Scene | None = None
+    _component_import_name: ClassVar[str | None] = None
 
-    def __init__(self, type_: str, *args: Any) -> None:
-        self.type = type_
+    def __init_subclass__(cls, *, component: str | Path):
+        super().__init_subclass__()
+        base = Path(inspect.getfile(cls)).parent
+
+        def glob_absolute_paths(file: str | Path) -> list[Path]:
+            path = Path(file)
+            if not path.is_absolute():
+                path = base / path
+            return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+        cls._component_import_name = cls.__name__
+        max_time = max((path.stat().st_mtime for path in glob_absolute_paths(component)), default=None)
+        for path in glob_absolute_paths(component):
+            register_library(path, import_name=cls._component_import_name, max_time=max_time)
+
+    def __init__(self, *args: Any) -> None:
         self.id = str(uuid.uuid4())
         self.name: str | None = None
         assert self.current_scene is not None
@@ -46,7 +65,7 @@ class Object3D:
     def data(self) -> list[Any]:
         """Data to be sent to the frontend."""
         return [
-            self.type, self.id, self.parent.id, self.args,
+            self._component_import_name, self.id, self.parent.id, self.args,
             self.name,
             self.color, self.opacity, self.side_,
             self.x, self.y, self.z,
@@ -64,7 +83,7 @@ class Object3D:
         self.scene.stack.pop()
 
     def _create(self) -> None:
-        self.scene.run_method('create', self.type, self.id, self.parent.id, *self.args)
+        self.scene.run_method('create', self._component_import_name, self.id, self.parent.id, *self.args)
 
     def _name(self) -> None:
         self.scene.run_method('name', self.id, self.name)
@@ -346,3 +365,6 @@ class Object3D:
             child.delete()
         del self.scene.objects[self.id]
         self._delete()
+
+    def run_method(self, name: str, *args: Any, timeout: float = 1):
+        self.scene.run_method('run_method_on_component', self.id, name, *args, timeout=timeout)

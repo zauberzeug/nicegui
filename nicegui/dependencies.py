@@ -124,10 +124,11 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, max_time: float | None) -> Library:
+def register_library(path: Path, *, import_name: str | None = None, max_time: float | None) -> Library:
     """Register a *.js library."""
+    print(f'registering: {path=}, {import_name=}, {max_time=}')
     key = compute_key(path, max_time=max_time)
-    name = _get_name(path)
+    name = import_name or _get_name(path)
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
@@ -161,8 +162,9 @@ def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     esm_modules[key] = EsmModule(name=name, path=path)
 
 
-def setup_esm_package(package_file: str, package_name: str, esm_name: str, exports: dict[str, str]) \
-        -> tuple[Callable[[str], object], Callable[[], list[str]]]:
+def setup_esm_package(
+    package_file: str, package_name: str, esm_name: str, exports: dict[str, str]
+) -> tuple[Callable[[str], object], Callable[[], list[str]]]:
     """Register an ESM module and return ``__getattr__`` and ``__dir__`` for lazy class loading.
 
     Each ESM element package can use this in its ``__init__.py``:
@@ -219,12 +221,9 @@ def _get_name(path: Path) -> str:
     return path.name.split('.', 1)[0]
 
 
-def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[str],
-                                                                          list[str],
-                                                                          list[str],
-                                                                          dict[str, str],
-                                                                          list[str],
-                                                                          list[str]]:
+def generate_resources(
+    prefix: str, elements: Iterable[Element]
+) -> tuple[list[str], list[str], list[str], dict[str, str], list[str], list[str]]:
     """Generate the resources required by the elements to be sent to the client."""
     done_libraries: set[str] = set()
     done_components: set[str] = set()
@@ -232,7 +231,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     vue_html: list[str] = []
     vue_styles: list[str] = []
     imports: dict[str, str] = {
-        'vue': f'{prefix}/_nicegui/{__version__}/static/vue.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
+        'vue': f"{prefix}/_nicegui/{__version__}/static/vue.esm-browser{'.prod' if core.app.config.prod_js else ''}.js",
         'sass': f'{prefix}/_nicegui/{__version__}/static/sass.default.js',
         'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
         'dompurify': f'{prefix}/_nicegui/{__version__}/static/dompurify.mjs',
