@@ -10,7 +10,7 @@ def test_radio_click(screen: Screen):
 
     screen.open('/')
     screen.click('A')
-    screen.should_contain('Value: A')
+    screen.should_contain('Value: Meow')
     screen.click('B')
     screen.should_contain('Value: B')
 
