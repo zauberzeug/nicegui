@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import Self
 
-from nicegui.dependencies import register_library
+from nicegui.awaitable_response import AwaitableResponse
+from nicegui.dependencies import register_esm, register_library
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
@@ -18,14 +19,17 @@ class Object3D:
     current_scene: Scene | None = None
     _component_import_name: ClassVar[str | None] = None
 
-    def __init_subclass__(cls, *, component: str | Path | None = None):
+    def __init_subclass__(
+        cls, *, component: str | Path | None = None, dependencies: list[str | Path] | None = None, esm: dict[str, str] | None = None,
+    ):
         super().__init_subclass__()
         if not component:
             # Fallback to parent's component to ease inheriting from Object3D classes
-            for base in cls.__mro__[1:]:
-                if getattr(base, '_component_import_name', False):
+            for base_cls in cls.__mro__[1:]:
+                if getattr(base_cls, '_component_import_name', False):
                     return
             raise TypeError("parameter 'component' must be supplied as a class named argument")
+
         base = Path(inspect.getfile(cls)).parent
 
         def glob_absolute_paths(file: str | Path) -> list[Path]:
@@ -34,10 +38,18 @@ class Object3D:
                 path = base / path
             return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
 
-        cls._component_import_name = cls.__name__
-        max_time = max((path.stat().st_mtime for path in glob_absolute_paths(component)), default=None)
-        for path in glob_absolute_paths(component):
-            register_library(path, import_name=cls._component_import_name, max_time=max_time)
+        cls._component_import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
+        for library, import_name in {component: cls._component_import_name, **dict.fromkeys(dependencies or [])}.items():
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
+            for path in glob_absolute_paths(library):
+                register_library(path, import_name=import_name, max_time=max_time)
+
+        for key, esm_path in (esm or {}).items():
+            path = Path(esm_path)
+            if not path.is_absolute():
+                path = base / path
+            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(path)), default=None)
+            register_esm(key, path, max_time=max_time)
 
     def __init__(self, *args: Any) -> None:
         self.id = str(uuid.uuid4())
@@ -372,5 +384,14 @@ class Object3D:
         del self.scene.objects[self.id]
         self._delete()
 
-    def run_method(self, name: str, *args: Any, timeout: float = 1):
-        self.scene.run_method('run_method_on_component', self.id, name, *args, timeout=timeout)
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        """Run a method on the JS component on the client side.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        :param timeout: maximum time to wait for a response (default: 1 second)
+        """
+        return self.scene.run_method('run_method_on_component', self.id, name, *args, timeout=timeout)

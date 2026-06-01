@@ -247,7 +247,7 @@ export default {
       const parent = this.objects.get(parent_id)
       parent.mesh.add(mesh);
       if (typeof component.attached == "function") {
-        component.attached(parent.mesh)
+        component.attached(this, parent.mesh)
       }
     },
     name(object_id, name) {
@@ -310,7 +310,7 @@ export default {
       const object = this.objects.get(object_id);
       object.mesh.removeFromParent();
       if (typeof object.component.detached == "function") {
-        object.component.detached()
+        object.component.detached(this)
       }
       this.draggable(object_id, false)
       this.objects.delete(object_id);
@@ -331,7 +331,7 @@ export default {
       this.move(object_id, x, y, z);
       this.rotate(object_id, R);
       if (typeof object.component.attached == "function") {
-        object.component.attached(parent.mesh)
+        object.component.attached(this, parent.mesh)
       }
     },
     detach(object_id, x, y, z, R) {
@@ -339,7 +339,7 @@ export default {
       const object = this.objects.get(object_id);
       object.mesh.removeFromParent();
       if (typeof object.component.detached == "function") {
-        object.component.detached()
+        object.component.detached(this)
       }
       this.attach(object_id, this.scene.object_id, x, y, z, R)
     },

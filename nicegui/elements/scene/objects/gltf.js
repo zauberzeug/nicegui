@@ -15,7 +15,7 @@ export default class GLTF {
             (gltf) => {
                 this.mesh.add(gltf.scene);
                 this.loaded = true;
-                if (this.pendingMaterialInfo) {
+                if (this.pendingMaterialInfo != null) {
                     const { color, opacity, side } = this.pendingMaterialInfo;
                     this.pendingMaterialInfo = null;
                     this.apply_material(color, opacity, side);
@@ -27,8 +27,8 @@ export default class GLTF {
         return this.mesh;
     }
     apply_material(color, opacity, side) {
-        if (!self.loaded) {
-            self.pendingMaterialInfo = { color, opacity, side };
+        if (!this.loaded) {
+            this.pendingMaterialInfo = { color, opacity, side };
             return;
         }
         const vertexColors = color === null;
