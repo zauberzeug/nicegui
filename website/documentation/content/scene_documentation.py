@@ -1,6 +1,12 @@
+from nicegui.dependencies import register_library
 from nicegui import ui
 
 from . import doc
+from pathlib import Path
+
+path = Path(__file__).parent / Path('./static/pulsing_sphere.js')
+max_time = path.stat().st_mtime
+register_library(path, import_name='website__documentation__content__scene_documentation__PulsingSphere', max_time=max_time)
 
 
 @doc.demo(ui.scene)
@@ -314,6 +320,57 @@ def custom_composed_objects() -> None:
     with ui.scene().classes('w-full h-64'):
         CoordinateSystem('origin')
         CoordinateSystem('custom frame').move(-2, -2, 1).rotate(0.1, 0.2, 0.3)
+
+
+@doc.demo('Custom 3D Scene Objects', '''
+    If the bundled primitives are not enough for your need, or if you want to run some
+    complex logic on the client side, the scene provides you with a way to create your
+    own 3D objects. It works by subclassing `Object3D`, implementing a corresponding
+    module in JS, and linking them together.
+
+    The ["3D Scene Custom Objects" example](https://github.com/zauberzeug/nicegui/tree/main/examples/3d_scene_custom_objects)
+    demonstrates how to build this class and module, and what is the interface available to you.
+''')
+def custom_3d_scene_objects() -> None:
+    import math
+    import time
+
+    from typing_extensions import Self
+    from nicegui.elements.scene.scene_object3d import Object3D
+
+    class PulsingSphere(Object3D, component='static/pulsing_sphere.js'):
+        def __init__(self, radius: float = 1.0) -> None:
+            super().__init__(radius)
+
+        def set_scale(self, s: float) -> Self:
+            self.run_method('set_scale', s)
+            return self
+
+    with ui.scene().classes('w-full h-64'):
+        sphere = PulsingSphere(radius=1.0)
+
+    ui.timer(0.05, lambda: sphere.set_scale(1.0 + 0.4 * math.sin(time.time() * 3)))
+
+    # pulsing_sphere.js:
+    """
+    import SceneLib from "nicegui-scene";
+    const { THREE } = SceneLib;
+
+    export default class PulsingSphere {
+        mesh;
+
+        create_mesh(radius) {
+            const geometry = new THREE.SphereGeometry(radius, 32, 16);
+            const material = new THREE.MeshPhongMaterial({ color: 0x44aaff, transparent: true });
+            this.mesh = new THREE.Mesh(geometry, material);
+            return this.mesh;
+        }
+
+        set_scale(s) {
+            this.mesh.scale.set(s, s, s);
+        }
+    }
+    """
 
 
 @doc.demo('Attaching/detaching objects', '''
