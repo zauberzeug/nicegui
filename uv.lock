@@ -780,6 +780,22 @@ wheels = [
 ]
 
 [[package]]
+name = "eclipse-zenoh"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/42/c8502d0e77f74b9cf4c192a01e620b3d15273d371464485796807d202d9d/eclipse_zenoh-1.9.0.tar.gz", hash = "sha256:b0477ab431132ebfe1096eccac13ea0066d50d1528d726c8872c00e0345070d1", size = 164557, upload-time = "2026-04-10T13:23:35.883Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e7/3b/22b9104b0a022bd2b1627b4866876831585eda2eacb9ca1f3b4b8e847945/eclipse_zenoh-1.9.0-cp39-abi3-linux_armv6l.whl", hash = "sha256:15b6f37c407617ea4de32d32835cbcab4d1a116b892477490fc6c10a7d27c73b", size = 10664168, upload-time = "2026-04-10T13:23:15.008Z" },
+    { url = "https://files.pythonhosted.org/packages/05/c5/ee0815c7ec49c5a29307cd935478305159bb3f0b2489f8c54fc6db3fdf36/eclipse_zenoh-1.9.0-cp39-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:6f66059b12e1ec53c70bc25192b0e74502751759064726dbb153ed6dd8f4dc8b", size = 19942168, upload-time = "2026-04-10T13:23:17.785Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/6a/42b83b4e8c262ebbb3bcae702394478326c807f54b3162130b0a603e1a01/eclipse_zenoh-1.9.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:180dd2a6da3b86b52e87f5e470a1f8a86db03c519978b22ffb1dc7c11f98ef3b", size = 10225694, upload-time = "2026-04-10T13:23:20.244Z" },
+    { url = "https://files.pythonhosted.org/packages/27/57/28e66893801b63df36fea355a64b6fc22637e1148a952ee11e3039ae955e/eclipse_zenoh-1.9.0-cp39-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:949d82851bc9e3ad646fd1307ee544ed23359dcfd18d4065075fc592f6ab6fa7", size = 10517069, upload-time = "2026-04-10T13:23:23.053Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/2f/be614f1f7f4e046da2764cd36227d19db3655839219744ce7a12e6e2dae6/eclipse_zenoh-1.9.0-cp39-abi3-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3a1fe847225cda21e3e74677cfd4ddfd2e72600d5a56968d4229d981c67f78d4", size = 11580068, upload-time = "2026-04-10T13:23:25.594Z" },
+    { url = "https://files.pythonhosted.org/packages/58/1b/2a074d4f4595bd37c3d12f1b2ad49bceef5c8cd0962cbfd97d1d39f32e1f/eclipse_zenoh-1.9.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:43299593891cfd648bca4b2aa00f3dca916508a49a0c9e6960902e6e867b247e", size = 10537556, upload-time = "2026-04-10T13:23:28.414Z" },
+    { url = "https://files.pythonhosted.org/packages/ab/33/c3116f1bf7647ee0ea8972efbe0fe5710ae75ea7226440a8fda7f04a4cbc/eclipse_zenoh-1.9.0-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:8c139a43706c8ff3c94fa625008af8667687c161a8395ad1fa3faff29c16fae4", size = 10721249, upload-time = "2026-04-10T13:23:30.843Z" },
+    { url = "https://files.pythonhosted.org/packages/26/16/a94c4f37e3a088faadf4b5fbc64e5f69dea1023dc7efc49b3be0e0ecc953/eclipse_zenoh-1.9.0-cp39-abi3-win_amd64.whl", hash = "sha256:5dfb352eca4585b85edbbc84c6db58906008e202823ca280496c0b867f9719f0", size = 9124510, upload-time = "2026-04-10T13:23:34.119Z" },
+]
+
+[[package]]
 name = "editorconfig"
 version = "0.17.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2092,6 +2108,9 @@ altair = [
 anywidget = [
     { name = "anywidget" },
 ]
+distributed = [
+    { name = "eclipse-zenoh" },
+]
 highcharts = [
     { name = "nicegui-highcharts" },
 ]
@@ -2118,6 +2137,7 @@ dev = [
     { name = "cssbeautifier" },
     { name = "debugpy" },
     { name = "dnspython" },
+    { name = "eclipse-zenoh" },
     { name = "fonttools" },
     { name = "html-sanitizer" },
     { name = "isort" },
@@ -2182,6 +2202,7 @@ requires-dist = [
     { name = "anywidget", marker = "extra == 'anywidget'", specifier = ">=0.9.21" },
     { name = "certifi", specifier = ">=2024.7.4" },
     { name = "docutils", specifier = ">=0.19.0" },
+    { name = "eclipse-zenoh", marker = "extra == 'distributed'", specifier = ">=1.0.0" },
     { name = "fastapi", specifier = ">=0.109.1,!=0.123.5" },
     { name = "fonttools", marker = "extra == 'matplotlib'", specifier = ">=4.60.2" },
     { name = "h11", specifier = ">=0.16.0" },
@@ -2212,7 +2233,7 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.22.0" },
     { name = "watchfiles", specifier = ">=0.18.1" },
 ]
-provides-extras = ["altair", "anywidget", "highcharts", "matplotlib", "native", "plotly", "redis"]
+provides-extras = ["altair", "anywidget", "distributed", "highcharts", "matplotlib", "native", "plotly", "redis"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2222,6 +2243,7 @@ dev = [
     { name = "cssbeautifier", specifier = ">=1.15.4,<2" },
     { name = "debugpy", specifier = ">=1.3.0,<2" },
     { name = "dnspython", specifier = ">=2.4.0,<3" },
+    { name = "eclipse-zenoh", specifier = ">=1.0.0" },
     { name = "fonttools", specifier = ">=4.60.2" },
     { name = "html-sanitizer", specifier = ">=2.6.0,<3" },
     { name = "isort", specifier = ">=6.0.0,<7.0.0" },
