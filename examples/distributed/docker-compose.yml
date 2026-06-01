@@ -7,7 +7,7 @@ services:
       - ../../nicegui:/app/nicegui
       - ./main.py:/app/main.py
     entrypoint: ["/bin/sh", "-c"]
-    command: ["pip3 install eclipse-zenoh && python3 main.py"] # TODO: remove pip3 after this PR is released and nicegui is upgraded
+    command: ["pip3 install eclipse-zenoh tinycss2 && python3 main.py"] # TODO: remove pip3 after this PR is released and nicegui is upgraded
     networks:
       - distributed
     deploy:
