@@ -1,9 +1,10 @@
 import asyncio
 import json
+import threading
 
 import pytest
 
-from nicegui import Event, ui
+from nicegui import Event, core, ui
 from nicegui.distributed import ZENOH_AVAILABLE, DistributedSession, _peer_to_endpoint
 from nicegui.distributed_event import DistributedEvent
 from nicegui.testing import User
@@ -98,16 +99,16 @@ async def test_emit_registers_publisher_on_wire_topic(user: User, fresh_session)
     assert any(wire.startswith(f'nicegui/events/{expected_ns}/') for wire in wire_topics)
 
 
-async def test_remote_event_invokes_local_callback(user: User, fresh_session):
-    """A payload arriving from a sibling Zenoh peer on the namespaced wire topic must trigger callbacks."""
+async def test_remote_event_invokes_local_callback_on_loop_thread(user: User, fresh_session):
+    """Remote payloads trigger the callback ON the asyncio loop thread, not the Zenoh worker thread."""
     import zenoh  # local import: only reachable when ZENOH_AVAILABLE
     DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
-    received: list[str] = []
+    received: list[tuple[str, threading.Thread]] = []
 
     @ui.page('/')
     def page():
         event = DistributedEvent[str]()
-        event.subscribe(received.append)
+        event.subscribe(lambda value: received.append((value, threading.current_thread())))
 
     await user.open('/')
 
@@ -118,8 +119,7 @@ async def test_remote_event_invokes_local_callback(user: User, fresh_session):
     sibling_config = zenoh.Config.from_json5(json.dumps({'connect': {'endpoints': [LOOPBACK_ENDPOINT]}}))
     sibling = zenoh.open(sibling_config)
     try:
-        sibling_pub = sibling.declare_publisher(wire_topic)
-        sibling_pub.put(json.dumps({
+        sibling.declare_publisher(wire_topic).put(json.dumps({
             'instance_id': 'sibling',
             'data': {'args': ('hello',), 'kwargs': {}},
         }).encode())
@@ -130,4 +130,26 @@ async def test_remote_event_invokes_local_callback(user: User, fresh_session):
     finally:
         sibling.close()
 
-    assert received == ['hello']
+    assert [value for value, _ in received] == ['hello']
+    assert received[0][1] is threading.main_thread()
+
+
+def test_emit_raises_before_local_fire_on_non_json_payload(fresh_session):
+    """A non-JSON-serializable arg must raise BEFORE any local callback fires."""
+    DistributedSession.initialize(True, storage_secret='alpha')
+    fired: list = []
+    event = DistributedEvent[object]()
+    event.subscribe(fired.append)
+    with pytest.raises(TypeError, match='JSON'):
+        event.emit({'a', 'set'})
+    assert fired == []
+
+
+def test_initialize_registers_shutdown_hook(fresh_session, monkeypatch):
+    """Resources must be released on app teardown; initialize hooks shutdown into core.app."""
+    captured: list = []
+    monkeypatch.setattr(core.app, 'on_shutdown', captured.append)
+    DistributedSession.initialize(True, storage_secret='alpha')
+    session = DistributedSession.get()
+    assert session is not None
+    assert any(getattr(h, '__self__', None) is session for h in captured)

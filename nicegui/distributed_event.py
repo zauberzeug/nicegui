@@ -47,7 +47,8 @@ class DistributedEvent(Event[P]):
         """Set up distributed event handling if enabled.
 
         This method is safe to call multiple times due to the _zenoh_setup_done guard.
-        It's called during DistributedEvent initialization and retroactively when DistributedSession.initialize() is called.
+        It's called during DistributedEvent initialization and retroactively
+        when DistributedSession.initialize() is called.
         Events emitted before distributed mode is initialized will only be local.
         """
         if self._zenoh_setup_done:
@@ -66,12 +67,7 @@ class DistributedEvent(Event[P]):
         self._zenoh_setup_done = True
 
     def _validate_distributable(self, args: tuple, kwargs: dict) -> None:
-        """Raise ``TypeError`` early if the payload cannot reach remote peers.
-
-        Without this, ``super().emit(...)`` would fire local callbacks before
-        ``session.publish(...)`` tried to serialise and failed, leaving the local
-        side fired and the remote side empty - an asymmetric failure that's hard to debug.
-        """
+        """Raise ``TypeError`` upfront if the payload cannot be sent to remote peers."""
         from .distributed import DistributedSession  # pylint: disable=import-outside-toplevel,cyclic-import
         if DistributedSession.get() is None:
             return
