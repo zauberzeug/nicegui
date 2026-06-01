@@ -323,13 +323,14 @@ def custom_composed_objects() -> None:
 
 
 @doc.demo('Custom 3D Scene Objects', '''
-    If the bundled primitives are not enough for your need, or if you want to run some
+    If the bundled primitives are not enough for your needs, or if you want to run some
     complex logic on the client side, the scene provides you with a way to create your
     own 3D objects. It works by subclassing `Object3D`, implementing a corresponding
     module in JS, and linking them together.
 
     The ["3D Scene Custom Objects" example](https://github.com/zauberzeug/nicegui/tree/main/examples/3d_scene_custom_objects)
-    demonstrates how to build this class and module, and what is the interface available to you.
+    demonstrates a more sophisticated use-case and shows how to build this class and
+    module, and what's the interface available to you.
 ''')
 def custom_3d_scene_objects() -> None:
     import math
@@ -351,8 +352,8 @@ def custom_3d_scene_objects() -> None:
 
     ui.timer(0.05, lambda: sphere.set_scale(1.0 + 0.4 * math.sin(time.time() * 3)))
 
-    # pulsing_sphere.js:
     """
+    // Contents of `pulsing_sphere.js`:
     import SceneLib from "nicegui-scene";
     const { THREE } = SceneLib;
 

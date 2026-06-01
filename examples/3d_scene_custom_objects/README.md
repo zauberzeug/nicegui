@@ -14,12 +14,16 @@ from typing_extensions import Self
 from nicegui.elements.scene.scene_object3d import Object3D
 
 
-class PulsingSphere(Object3D, component='pulsing_sphere.js'):
-    def __init__(self, radius: float = 1.0) -> None:
-        super().__init__(radius)
+class DynamicRoad(Object3D, component='dynamic_road.js'):
+    def __init__(self, curves: list[dict], width: float, thickness: float) -> None:
+        super().__init__(curves, width, thickness)
 
-    def set_scale(self, s: float) -> Self:
-        self.run_method('set_scale', s)
+    def set_curves(self, curves: list[dict]) -> Self:
+        self.run_method('set_curves', curves)
+        return self
+
+    def set_arrow_color(self, color: str) -> Self:
+        self.run_method('set_arrow_color', color)
         return self
 ```
 
@@ -35,37 +39,40 @@ per scene object and calls one of two entry points to build the mesh:
   the built-in `material()` / `scale()` / `move()` controls automatically.
 - `create_mesh(...args)` — return a `THREE.Object3D` outright. Use this when
   you need ongoing access to the mesh from your own methods (store it on
-  `this.mesh`), or when the mesh is complex and cannot be represented with
-  just a `THREE.BufferGeometry`.
+  `this.group`/`this.mesh`), or when the mesh is complex and cannot be
+  represented with just a `THREE.BufferGeometry`.
 
 Optional hooks the framework will call if you define them:
 
 - `apply_material(color, opacity, side)` — override the default material
-  handling (useful for groups/GLTF where multiple sub-meshes exist).
+  handling. For composite objects, you can apply material selectively — in this
+  example `apply_material` only affects the road mesh, leaving the direction
+  line and arrow helpers untouched.
 - `attached(scene, parent_mesh)` — after the mesh is added to its parent.
 - `detached(scene)` — after the mesh is removed from its parent.
 - `deleted()` — after the object is deleted.
+
+An empty object would look like this (omit methods you don't want to implement):
 
 ```js
 import SceneLib from "nicegui-scene";
 const { THREE } = SceneLib;
 
-export default class PulsingSphere {
-  mesh;
+export default class CustomObject {
+    // Either
+    create_geometry(...args) {} // return a THREE.BufferGeometry
+    // Or:
+    create_mesh(...args) {} // return a THREE.Mesh
 
-  create_mesh(radius) {
-    const geometry = new THREE.SphereGeometry(radius, 32, 16);
-    const material = new THREE.MeshPhongMaterial({ color: 0x44aaff, transparent: true });
-    this.mesh = new THREE.Mesh(geometry, material);
-    return this.mesh;
-  }
+    apply_material(color, opacity, side) {}
 
-  set_scale(s) {
-    this.mesh.scale.set(s, s, s);
-  }
+    attached(scene, parent_mesh) {}
+    detached(scene) {}
+
+    deleted() {}
 }
 ```
 
-Run with: `uv run main.py`.
+Run the example with: `uv run main.py`.
 
 ![Screenshot](screenshot.webp)
