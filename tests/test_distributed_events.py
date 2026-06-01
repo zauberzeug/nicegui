@@ -55,9 +55,12 @@ def test_peer_to_endpoint_explicit_port():
     assert _peer_to_endpoint('host.example.com:9999') == 'tcp/host.example.com:9999'
 
 
-def test_namespace_falls_back_to_shared_without_secret():
-    assert DistributedSession._derive_namespace(None) == 'shared'
-    assert DistributedSession._derive_namespace('') == 'shared'
+def test_session_rejects_without_storage_secret():
+    """Without a secret, unrelated deployments would silently cross-talk on the same network."""
+    with pytest.raises(ValueError, match='storage_secret'):
+        DistributedSession(True, storage_secret=None)
+    with pytest.raises(ValueError, match='storage_secret'):
+        DistributedSession(True, storage_secret='')
 
 
 def test_namespace_is_deterministic_and_isolating():

@@ -5,6 +5,7 @@ import uuid
 from collections.abc import Callable
 from typing import Any
 
+from . import core
 from .logging import log
 
 try:
@@ -62,6 +63,12 @@ class DistributedSession:
         if not ZENOH_AVAILABLE:
             raise ImportError('zenoh is required for distributed events. '
                               'Install with: pip install "nicegui[distributed]"')
+        if not storage_secret:
+            raise ValueError(
+                'distributed events require ui.run(storage_secret=...). '
+                'Without a secret, unrelated deployments would silently cross-talk on '
+                'the same network. Pass the same secret on every node you want to sync.'
+            )
 
         self.session = zenoh.open(_normalize_config(config))
         self.instance_id = str(uuid.uuid4())
@@ -72,14 +79,12 @@ class DistributedSession:
                  f'(instance: {self.instance_id[:8]}..., namespace: {self.namespace})')
 
     @staticmethod
-    def _derive_namespace(storage_secret: str | None) -> str:
-        """Topic namespace derived from storage_secret via HMAC, or ``shared`` if none is set.
+    def _derive_namespace(storage_secret: str) -> str:
+        """Topic namespace derived from storage_secret via HMAC-SHA256.
 
         HMAC means the namespace on the wire never reveals the secret and gives no meaningful
         brute-force surface beyond what the secret already provides for cookie signing.
         """
-        if not storage_secret:
-            return 'shared'
         return hmac.new(storage_secret.encode(), TOPIC_NAMESPACE_INFO, hashlib.sha256).hexdigest()[:16]
 
     def wire_topic(self, logical_topic: str) -> str:
@@ -101,6 +106,8 @@ class DistributedSession:
         if cls._instance is None:
             cls._instance = cls(config, storage_secret=storage_secret)
             cls._setup_existing_events()
+            # Release the Zenoh session, publishers and subscribers when the app shuts down.
+            core.app.on_shutdown(cls._instance.shutdown)
 
     @classmethod
     def _setup_existing_events(cls) -> None:
@@ -147,11 +154,20 @@ class DistributedSession:
                 # NOTE: Ignore events from our own instance (deduplication)
                 if payload['instance_id'] == self.instance_id:
                     return
-                callback(payload['data'])
             except (json.JSONDecodeError, UnicodeDecodeError) as e:
                 log.error(f'Failed to deserialize event from topic {topic}: {e}')
-            except Exception as e:
+                return
+            except Exception as e:  # pylint: disable=broad-except
                 log.exception(f'Failed to handle event from topic {topic}: {e}')
+                return
+            # NOTE: Zenoh invokes this callback on a Rust-managed worker thread; downstream
+            # NiceGUI machinery (slot weakrefs, asyncio.create_task) must run on the loop thread.
+            data = payload['data']
+            if core.loop is not None:
+                core.loop.call_soon_threadsafe(callback, data)
+            else:
+                # No loop yet (e.g. during early startup or in stand-alone scripts) - run inline.
+                callback(data)
 
         if wire not in self.subscribers:
             self.subscribers[wire] = self.session.declare_subscriber(wire, handler)

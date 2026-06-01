@@ -30,4 +30,4 @@ def index():
     reaction_event.subscribe(show_reaction)
 
 
-ui.run(distributed=True)
+ui.run(distributed=True, storage_secret='distributed-events-demo')

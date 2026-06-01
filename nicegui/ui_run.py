@@ -215,6 +215,12 @@ def run(root: Callable | None = None, *,
         core.app.setup()
 
     if helpers.is_user_simulation():
+        if distributed is not None:
+            raise RuntimeError(
+                'ui.run(distributed=...) is not supported under user simulation. '
+                'Tests that need a DistributedSession should construct one explicitly '
+                'in the fixture via DistributedSession.initialize(...).'
+            )
         set_storage_secret(storage_secret, session_middleware_kwargs)
         return
 

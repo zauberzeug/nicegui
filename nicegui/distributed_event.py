@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import json
 
 from typing_extensions import ParamSpec
 
@@ -64,10 +65,29 @@ class DistributedEvent(Event[P]):
         session.subscribe(self.topic, remote_handler)
         self._zenoh_setup_done = True
 
+    def _validate_distributable(self, args: tuple, kwargs: dict) -> None:
+        """Raise ``TypeError`` early if the payload cannot reach remote peers.
+
+        Without this, ``super().emit(...)`` would fire local callbacks before
+        ``session.publish(...)`` tried to serialise and failed, leaving the local
+        side fired and the remote side empty - an asymmetric failure that's hard to debug.
+        """
+        from .distributed import DistributedSession  # pylint: disable=import-outside-toplevel,cyclic-import
+        if DistributedSession.get() is None:
+            return
+        try:
+            json.dumps({'args': args, 'kwargs': kwargs})
+        except (TypeError, ValueError) as e:
+            raise TypeError(
+                f'DistributedEvent payload is not JSON-serializable: {e}. '
+                f'Allowed: str, int, float, bool, list, dict, None.'
+            ) from e
+
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
         if not self._zenoh_setup_done:
             self._setup_distributed()
+        self._validate_distributable(args, kwargs)
 
         super().emit(*args, **kwargs)
 
@@ -80,6 +100,7 @@ class DistributedEvent(Event[P]):
         """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
         if not self._zenoh_setup_done:
             self._setup_distributed()
+        self._validate_distributable(args, kwargs)
 
         await super().call(*args, **kwargs)
 
