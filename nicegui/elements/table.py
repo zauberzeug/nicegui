@@ -379,12 +379,13 @@ class Table(FilterElement, component='table.js'):
     def selection(self, value: Literal[None, 'single', 'multiple']) -> None:
         self._props['selection'] = value or 'none'
 
-    def set_selection(self, value: Literal[None, 'single', 'multiple']) -> None:
+    def set_selection(self, value: Literal[None, 'single', 'multiple']) -> Self:
         """Set the selection type.
 
         *Added in version 2.11.0*
         """
         self.selection = value
+        return self
 
     @property
     def pagination(self) -> dict:
@@ -405,13 +406,15 @@ class Table(FilterElement, component='table.js'):
         """Set fullscreen mode."""
         self._props['fullscreen'] = value
 
-    def set_fullscreen(self, value: bool) -> None:
+    def set_fullscreen(self, value: bool) -> Self:
         """Set fullscreen mode."""
         self.is_fullscreen = value
+        return self
 
-    def toggle_fullscreen(self) -> None:
+    def toggle_fullscreen(self) -> Self:
         """Toggle fullscreen mode."""
         self.is_fullscreen = not self.is_fullscreen
+        return self
 
     def add_rows(self, rows: list[dict]) -> None:
         """Add rows to the table."""

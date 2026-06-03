@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import signal
 import traceback
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -24,7 +25,7 @@ def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
     try:
-        process_pool = ProcessPoolExecutor()
+        process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
 
@@ -94,7 +95,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
         try:
             await _run(process_pool, safe_callback, lambda: None)
         except BrokenProcessPool:
-            process_pool = ProcessPoolExecutor()
+            process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
         finally:
             raise e
 
@@ -128,6 +129,11 @@ def tear_down() -> None:
         _kill_processes()
         process_pool.shutdown(wait=True, cancel_futures=True)
     thread_pool.shutdown(wait=False, cancel_futures=True)
+
+
+def _ignore_sigint() -> None:
+    """Ignore SIGINT in worker processes so only the parent handles Ctrl-C (see #6025)."""
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
 def _kill_processes() -> None:
