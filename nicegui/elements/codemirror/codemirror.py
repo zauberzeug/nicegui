@@ -319,6 +319,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         complete_words_in_document: bool = DEFAULT_PROP | False,
         completion_info_html: bool = DEFAULT_PROP | False,
         tooltip_class: str | None = DEFAULT_PROP | None,
+        line_tooltips: dict[int, str] | None = None,
+        line_tooltip_html: bool = False,
     ) -> None:
         """CodeMirror
 
@@ -331,6 +333,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
             - Themes: A list can be found in the `@uiw/codemirror-themes-all <https://github.com/uiwjs/react-codemirror/tree/master/themes/all>`_ package.
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
+
+        *Since version 3.13.0:*
+        Per-line tooltips can be attached via the ``line_tooltips`` dict.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
@@ -356,6 +361,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param tooltip_class: CSS class added to the autocomplete popup container.
             Combine with ``ui.add_css`` to style the popup.
             *Added in version X.Y.Z*
+        :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
+        :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -373,6 +380,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['complete-words-in-document'] = complete_words_in_document
         self._props['completion-info-html'] = completion_info_html
         self._props['tooltip-class'] = tooltip_class
+        self._props['line-tooltips'] = line_tooltips or {}
+        self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -459,6 +468,18 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Added in version X.Y.Z*
         """
         self.run_method('triggerCompletion')
+
+    @property
+    def line_tooltips(self) -> dict[int, str]:
+        """Mapping of 1-indexed line numbers to tooltip content.
+
+        *Added in version 3.13.0*
+        """
+        return self._props['line-tooltips']
+
+    @line_tooltips.setter
+    def line_tooltips(self, value: dict[int, str]) -> None:
+        self._props['line-tooltips'] = value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
