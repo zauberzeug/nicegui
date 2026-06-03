@@ -10,7 +10,7 @@ from .functions import (
     normalize_lifecycle_handler,
     should_await,
 )
-from .network import format_url, is_port_open, schedule_browser
+from .network import find_free_port, format_url, is_port_open, schedule_browser
 from .strings import event_type_to_camel_case, kebab_to_camel_case, remove_indentation
 from .warnings import warn_once
 
@@ -19,6 +19,7 @@ __all__ = [
     'await_with_context',
     'event_type_to_camel_case',
     'expects_arguments',
+    'find_free_port',
     'format_url',
     'hash_file_path',
     'is_coroutine_function',
