@@ -5,6 +5,8 @@ import time
 from contextlib import suppress
 from pathlib import Path
 
+from typing_extensions import Self
+
 from .. import optional_features
 from ..logging import log
 from .mixins.source_element import SourceElement
@@ -27,7 +29,7 @@ class Image(SourceElement, component='image.js'):
         """
         super().__init__(source=source)
 
-    def set_source(self, source: str | Path | PIL_Image) -> None:
+    def set_source(self, source: str | Path | PIL_Image) -> Self:
         return super().set_source(source)
 
     def _set_props(self, source: str | Path | PIL_Image) -> None:

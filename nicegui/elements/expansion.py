@@ -1,3 +1,5 @@
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -34,13 +36,15 @@ class Expansion(SortableElement, IconElement, TextElement, ValueElement[bool], D
         self._props.set_optional('caption', caption)
         self._props.set_optional('group', group)
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the expansion."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the expansion."""
         self.value = False
+        return self
 
     def _render_markdown(self) -> str:
         parts = []

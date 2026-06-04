@@ -129,6 +129,7 @@ class SlideItem(DisableableElement):
                                                                                       side=e.args.get('side', side))))
         return self
 
-    def reset(self) -> None:
+    def reset(self) -> Self:
         """Reset the slide item to its initial state."""
         self.run_method('reset')
+        return self

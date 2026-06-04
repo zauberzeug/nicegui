@@ -1,5 +1,7 @@
 from contextlib import AbstractContextManager, nullcontext
 
+from typing_extensions import Self
+
 from .. import core
 from ..client import Client, ClientConnectionTimeout
 from ..element import Element
@@ -48,5 +50,5 @@ class Timer(BaseTimer, Element, component='timer.js'):
             assert parent_slot is not None
             parent_slot.parent.remove(self)
 
-    def set_visibility(self, visible: bool) -> None:
+    def set_visibility(self, visible: bool) -> Self:
         raise NotImplementedError('Use `activate()`, `deactivate()` or `cancel()`. See #3670 for more information.')
