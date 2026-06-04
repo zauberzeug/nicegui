@@ -121,12 +121,13 @@ class ValueElement(Element, Generic[ValueT]):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_value(self, value: ValueT) -> None:
+    def set_value(self, value: ValueT) -> Self:
         """Set the value of this element.
 
         :param value: The value to set.
         """
         self.value = value
+        return self
 
     def _handle_value_change(self, value: Any) -> None:
         previous_value = self._props.get(self.VALUE_PROP)

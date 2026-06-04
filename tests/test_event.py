@@ -86,6 +86,19 @@ async def test_exception_during_emit(user: User, caplog: pytest.LogCaptureFixtur
     caplog.records.pop(0)
 
 
+async def test_await_emitted(user: User):
+    event = Event()
+    app.timer(0.1, lambda: event.emit(42))
+
+    @ui.page('/')
+    async def page():
+        number = await event.emitted()
+        ui.label(f'Emitted number: {number}')
+
+    await user.open('/')
+    await user.should_see('Emitted number: 42')
+
+
 async def test_exception_during_call(user: User):
     event = Event()
     event.subscribe(lambda: print(1 / 0))

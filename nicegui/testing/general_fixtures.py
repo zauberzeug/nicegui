@@ -1,10 +1,17 @@
+import atexit
+import shutil
+import tempfile
 from pathlib import Path
 
 import pytest
 
+from .. import app
+from ..storage import Storage
 from . import general
 
 # pylint: disable=redefined-outer-name
+
+_configured = False
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -13,7 +20,14 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Register the "nicegui_main_file" marker."""
+    """Set up a session-unique storage path and register the "nicegui_main_file" marker."""
+    global _configured  # pylint: disable=global-statement # noqa: PLW0603
+    if _configured:
+        return
+    _configured = True
+    Storage.path = Path(tempfile.mkdtemp(prefix='nicegui-test-storage-')).resolve()
+    atexit.register(shutil.rmtree, Storage.path, ignore_errors=True)
+    app.storage = Storage()  # rebuild app.storage so its FilePersistentDict picks up the new path
     config.addinivalue_line('markers', 'nicegui_main_file: specify the main file for the test')
 
 

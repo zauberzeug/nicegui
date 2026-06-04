@@ -84,12 +84,13 @@ class TextElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_text(self, text: str) -> None:
+    def set_text(self, text: str) -> Self:
         """Set the text of this element.
 
         :param text: The new text.
         """
         self.text = text
+        return self
 
     def _handle_text_change(self, text: str) -> None:
         """Called when the text of this element changes.

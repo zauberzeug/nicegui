@@ -57,4 +57,34 @@ def keybindings_demo() -> None:
     ui.button('Unbind F5', on_click=lambda: editor.remove_keybinding('F5'))
 
 
+@doc.demo('Hover tooltips on lines', '''
+    `line_tooltips` maps 1-indexed line numbers to hover content.
+
+    *Added in NiceGUI 3.13.0*
+''')
+def line_tooltips_demo() -> None:
+    editor = ui.codemirror(
+        'def add(a, b):\n'
+        '    """Sum two numbers."""\n'
+        '    return a + b\n',
+    ).classes('h-40')
+    editor.line_tooltips[1] = 'symbol: add, arity: 2'
+    editor.line_tooltips[3] = 'returns the sum of a and b'
+
+
+@doc.demo('HTML rendering for tooltips', '''
+    Pass `line_tooltip_html=True` to render tooltip content as HTML,
+    sanitized via NiceGUI's DOMPurify-backed `setHTML` polyfill.
+
+    *Added in NiceGUI 3.13.0*
+''')
+def line_tooltip_html_demo() -> None:
+    editor = ui.codemirror(
+        'def add(a, b):\n'
+        '    return a + b\n',
+        line_tooltip_html=True,
+    ).classes('h-32')
+    editor.line_tooltips[2] = '<b>returns</b> the sum of <code>a</code> and <code>b</code>'
+
+
 doc.reference(ui.codemirror)

@@ -287,6 +287,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        line_tooltips: dict[int, str] | None = None,
+        line_tooltip_html: bool = False,
     ) -> None:
         """CodeMirror
 
@@ -305,6 +307,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
         Wrap with :meth:`binding` for per-binding overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
         Use :meth:`on_keybinding` to add bindings at runtime and :meth:`remove_keybinding` to drop them.
 
+        *Since version 3.13.0:*
+        Per-line tooltips can be attached via the ``line_tooltips`` dict.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param keybindings: mapping of CodeMirror key strings (e.g. ``'Mod-s'``, ``'F5'``) to handlers, optionally wrapped with :meth:`binding` (default: `None`)
@@ -313,6 +318,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
+        :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -326,6 +333,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
         self._props['keybindings'] = []
+        self._props['line-tooltips'] = line_tooltips or {}
+        self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -347,9 +356,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def theme(self, theme: SUPPORTED_THEMES) -> None:
         self._props['theme'] = theme
 
-    def set_theme(self, theme: SUPPORTED_THEMES) -> None:
+    def set_theme(self, theme: SUPPORTED_THEMES) -> Self:
         """Sets the theme of the editor."""
         self._props['theme'] = theme
+        return self
 
     @property
     def supported_themes(self) -> list[str]:
@@ -365,9 +375,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
         self._props['language'] = language
 
-    def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
+    def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> Self:
         """Sets the language of the editor (case-insensitive)."""
         self._props['language'] = language
+        return self
 
     @property
     def supported_languages(self) -> list[str]:
@@ -386,12 +397,25 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def line_wrapping(self, value: bool) -> None:
         self._props['line-wrapping'] = value
 
-    def set_line_wrapping(self, value: bool) -> None:
+    def set_line_wrapping(self, value: bool) -> Self:
         """Sets whether line wrapping is enabled.
 
         *Added in version 3.2.0*
         """
         self._props['line-wrapping'] = value
+        return self
+
+    @property
+    def line_tooltips(self) -> dict[int, str]:
+        """Mapping of 1-indexed line numbers to tooltip content.
+
+        *Added in version 3.13.0*
+        """
+        return self._props['line-tooltips']
+
+    @line_tooltips.setter
+    def line_tooltips(self, value: dict[int, str]) -> None:
+        self._props['line-tooltips'] = value
 
     @staticmethod
     def binding(
