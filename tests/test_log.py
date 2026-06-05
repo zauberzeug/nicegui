@@ -70,6 +70,18 @@ def test_special_characters(screen: Screen):
     screen.should_contain('100%')
 
 
+def test_log_push_non_string(screen: Screen):
+    @ui.page('/')
+    def page():
+        log = ui.log()
+        log.push(42)
+        log.push(None)
+
+    screen.open('/')
+    screen.should_contain('42')
+    screen.should_contain('None')
+
+
 def test_log_against_defaults(screen: Screen):
     @ui.page('/')
     def page():

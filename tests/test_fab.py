@@ -36,3 +36,14 @@ def test_fab(screen: Screen):
 
     screen.click('Toggle FAB')
     screen.should_contain('FAB is open')
+
+
+def test_fab_returns_self(screen: Screen):
+    @ui.page('/')
+    def page():
+        fab = ui.fab('menu')
+        assert fab.open() is fab
+        assert fab.close() is fab
+        assert fab.toggle() is fab
+
+    screen.open('/')
