@@ -1,6 +1,8 @@
 import asyncio
 import inspect
 import mimetypes
+import multiprocessing
+import sys
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -119,6 +121,11 @@ def _get_esm(key: str, path: str) -> FileResponse:
 async def _startup() -> None:
     """Handle the startup event."""
     if not app.config.has_run_config:
+        argv0 = Path(sys.argv[0]) if sys.argv else Path()
+        is_dash_m_package = argv0.name == '__main__.py' and (argv0.parent / '__init__.py').is_file()
+        if multiprocessing.current_process().name != 'MainProcess' and is_dash_m_package:
+            raise RuntimeError('\n\nAuto-reload is not supported when running a package with `python -m`.\n'
+                               'Pass `reload=False` to ui.run() to start the server.')
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
                            'If ui.run() is behind a main guard\n'
