@@ -99,4 +99,22 @@ def plot_events():
     plot.on('plotly_click', ui.notify)
 
 
+@doc.demo('Large datasets', '''
+    When plotting a large number of data points, pass NumPy arrays (or pandas Series) to Plotly rather than Python lists,
+    and avoid converting them back with `.tolist()`.
+    For NumPy arrays, Plotly uses a compact binary encoding (base64-encoded typed arrays)
+    that the browser can render much more efficiently than parsing millions of numbers from a plain JSON array,
+    which can otherwise freeze the UI.
+''')
+def large_datasets():
+    import numpy as np
+    import plotly.graph_objects as go
+
+    x = np.linspace(0, 10, 100_000)
+    y = np.sin(x) + np.random.normal(0, 0.1, x.size)
+    fig = go.Figure(go.Scattergl(x=x, y=y, mode='markers', marker=dict(size=2)))
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    ui.plotly(fig).classes('w-full h-40')
+
+
 doc.reference(ui.plotly)
