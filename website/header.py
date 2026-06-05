@@ -145,7 +145,7 @@ def _github_badge() -> None:
     with ui.link(target='https://github.com/zauberzeug/nicegui/') \
             .classes(f'rounded-full px-3.5 py-[0.4em] {d.TEXT_13PX} {SM_UP} '
                      f'{d.BORDER} {d.BORDER_ACCENT}! dark:{d.BORDER_ACCENT}/50! '
-                     f'hover:{d.BG_ACCENT}/10 duration-150'):
+                     f'hover:{d.BG_ACCENT}/10 transition-[background-color] duration-150'):
         with ui.row().classes(f'gap-2 items-center {d.TEXT_ACCENT}'):
             phosphor_icon('ph-github-logo').classes('text-base')
             ui.label().bind_text_from(github_stars.stars, 'string').classes(MD_UP)

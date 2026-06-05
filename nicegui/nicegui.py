@@ -3,7 +3,6 @@ import inspect
 import mimetypes
 import multiprocessing
 import sys
-import time
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -15,7 +14,7 @@ from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import FileResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
+from . import air, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources, vue_components
@@ -24,8 +23,6 @@ from .json import NiceGUIJSONResponse
 from .logging import log
 from .page import page
 from .page_arguments import PageArguments
-from .persistence import PersistentDict
-from .slot import Slot
 from .staticfiles import CacheControlledStaticFiles
 from .version import __version__
 
@@ -150,12 +147,6 @@ async def _startup() -> None:
     core.loop = asyncio.get_running_loop()
     run.setup()
     app.start()
-    background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    app.timer(10, Client.prune_instances)
-    app.timer(10, Slot.prune_stacks)
-    app.timer(10, prune_tab_storage)
-    if app.storage.secret is not None:
-        app.timer(10, prune_user_storage)
     air.connect()
 
 
@@ -263,31 +254,3 @@ def _on_ack(_: str, msg: dict) -> None:
 def _on_log(_: str, msg: dict) -> None:
     if client := Client.instances.get(msg['client_id']):
         client.handle_log_message(msg)
-
-
-async def prune_tab_storage(*, force: bool = False) -> None:
-    """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
-    tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
-    for tab_id, tab in list(tab_storages.items()):
-        if force or time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
-            tab.clear()
-            if isinstance(tab, PersistentDict):
-                await tab.close()
-            del tab_storages[tab_id]
-
-
-async def prune_user_storage(*, force: bool = False) -> None:
-    """Remove user storage objects without a client session."""
-    client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
-    storages_to_close: list[PersistentDict] = []
-    now = time.time()
-    user_storages = core.app.storage._users  # pylint: disable=protected-access
-    for session_id in list(user_storages):
-        if session_id not in client_session_ids:
-            age = now - user_storages[session_id].last_modified
-            if force or age > 10.0:  # NOTE: do not remove storages created by middleware and still wait for client
-                storages_to_close.append(user_storages.pop(session_id))
-    results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
-    for result in results:
-        if isinstance(result, Exception):
-            log.exception(result)
