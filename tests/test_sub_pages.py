@@ -1292,13 +1292,21 @@ def test_remaining_path_for_wildcard_routing(screen: Screen):
         ui.sub_pages({'/sub': sub_page}, show_404=False)
 
     def sub_page(args: PageArguments):
-        ui.label(f'remaining={args.remaining_path}')
+        ui.label(f'remaining={args.remaining_path!r}')
+        ui.link('deeper', '/sub/x/2/a')
+        ui.link('shallow', '/sub')
 
     screen.open('/sub')
-    screen.should_contain('remaining=')
+    screen.should_contain("remaining=''")
 
     screen.open('/sub/x/2/a')
-    screen.should_contain('remaining=/x/2/a')
+    screen.should_contain("remaining='/x/2/a'")
+
+    # NOTE: client-side navigation between paths matching the same route must re-render with the new remaining_path (#6090)
+    screen.click('shallow')
+    screen.should_contain("remaining=''")
+    screen.click('deeper')  # navigating deeper from an exact match is the regression trigger
+    screen.should_contain("remaining='/x/2/a'")
 
 
 def test_query_parameters_wildcard_routing(screen: Screen):
