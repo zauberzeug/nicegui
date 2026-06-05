@@ -49,6 +49,8 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
+        *Added in NiceGUI 3.13.0*
+
         :param name: name of the plotly.js function (without the ``Plotly.`` prefix)
         :param args: arguments to pass after the chart element
         :param timeout: timeout in seconds (default: 1 second)
