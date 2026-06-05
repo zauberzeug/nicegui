@@ -127,7 +127,6 @@ async def test_nested_containers(user: User):
 
 
 async def test_instance_level_render_markdown_override(user: User):
-    """`_render_markdown` is overridable per instance (contract relied on by ``website/design.py:override_markdown``)."""
     def build():
         ui.label('Visible')
         with ui.column() as skipped:

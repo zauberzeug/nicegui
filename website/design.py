@@ -4,11 +4,8 @@ import re
 from typing import TypeVar
 
 from nicegui import ui
-from nicegui.element import Element
 
 SPECIAL_CHARACTERS = re.compile('[^(a-z)(A-Z)(0-9)-]')
-
-_E = TypeVar('_E', bound=Element)
 
 # --- Raw color values ---
 
@@ -93,13 +90,11 @@ MERMAID_CLASSES = f'''
 
 # --- Helpers ---
 
-def override_markdown(element: _E, markdown: str) -> _E:
-    """Replace ``element``'s `Accept: text/markdown` rendering with the given string.
+_E = TypeVar('_E', bound=ui.element)
 
-    Used here to (a) inject heading prefixes onto elements whose default markdown
-    is structurally a paragraph and (b) zero out decorative site chrome that
-    contributes nothing to an agent reading the page.
-    """
+
+def override_markdown(element: _E, markdown: str) -> _E:
+    """Replace ``element``'s `Accept: text/markdown` rendering with the given string."""
     element._render_markdown = lambda: markdown  # type: ignore[method-assign]  # pylint: disable=protected-access
     return element
 
@@ -107,11 +102,8 @@ def override_markdown(element: _E, markdown: str) -> _E:
 def section_heading(subtitle_: str, title_: str) -> None:
     """Render a section heading with a subtitle."""
     ui.label(subtitle_).classes(f'{TEXT_19PX} font-medium {TEXT_SECONDARY}')
-    override_markdown(
-        ui.markdown(title_).classes(
-            f'{TEXT_SECTION_TITLE} font-medium mt-[-12px] [&_em]:not-italic [&_em]:{TEXT_BLUE}'),
-        f'# {title_}',
-    )
+    h = ui.markdown(title_).classes(f'{TEXT_SECTION_TITLE} font-medium mt-[-12px] [&_em]:not-italic [&_em]:{TEXT_BLUE}')
+    override_markdown(h, f'# {title_}')
 
 
 def subheading(text: str, *, link: str | None = None, major: bool = False, anchor_name: str | None = None) -> None:
@@ -124,7 +116,7 @@ def subheading(text: str, *, link: str | None = None, major: bool = False, ancho
             override_markdown(ui.link(text, link).classes(classes), f'## [{text}]({link})')
         else:
             override_markdown(ui.label(text).classes(classes), f'## {text}')
-        with override_markdown(ui.link(target=f'#{name}'), '').classes('absolute').style('transform: translateX(-150%)'):
+        with override_markdown(ui.link(target=f'#{name}').classes('absolute').style('transform: translateX(-150%)'), ''):
             phosphor_icon('ph-link').classes('opacity-0 group-hover:opacity-50 transition-opacity')
 
 
@@ -135,7 +127,7 @@ def create_anchor_name(text: str) -> str:
 
 def phosphor_icon(name: str) -> ui.html:
     """Render a Phosphor duotone icon, e.g. ``phosphor_icon('ph-code')``."""
-    return override_markdown(ui.html(f'<i class="ph-duotone {name}"></i>', sanitize=False), '').classes('-mb-1')
+    return override_markdown(ui.html(f'<i class="ph-duotone {name}"></i>', sanitize=False).classes('-mb-1'), '')
 
 
 def themed_image(src: str, *, classes: str = '') -> None:
