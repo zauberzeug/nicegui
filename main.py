@@ -77,6 +77,7 @@ def _main_page() -> None:
             .props('accordion no-connectors no-selection-unset icon=chevron_right color=primary')
         tree.visible = False
         spinner = ui.image('/static/loading.gif').classes('w-8 h-8 m-auto').props('no-spinner no-transition')
+        d.override_markdown(spinner, '')
 
         @intersection_observer
         def update_tree() -> None:
