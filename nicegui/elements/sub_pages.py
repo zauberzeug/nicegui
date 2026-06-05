@@ -87,7 +87,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             match is not None and
             self._match is not None and
             match.path == self._match.path and
-            (self._match.remaining_path == match.remaining_path or has_nested_sub_pages) and
+            (self._match.remaining_path == match.remaining_path or has_nested_sub_pages or self._404_enabled) and
             not self._required_query_params_changed(match) and
             not (self.has_404 and self._match.remaining_path == match.remaining_path)
         ):
