@@ -73,6 +73,8 @@ def plot_updates():
     appends points to existing traces with minimal traffic.
     Use `plot.run_plot_method('extendTraces', ...)` to call it directly,
     and mutate `figure['data']` on the server so the next `plot.update()` reflects the full state.
+    Note the dict form of the figure (instead of `go.Figure`),
+    so the trace's `x` and `y` stay mutable lists that can be appended to.
 
     *Added in version 3.13.0*
 ''')
