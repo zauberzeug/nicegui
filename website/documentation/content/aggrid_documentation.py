@@ -217,6 +217,24 @@ def aggrid_respond_to_event():
     }).on('cellClicked', lambda event: ui.notify(f'Cell value: {event.args["value"]}'))
 
 
+doc.text('', '''
+    **Note:** Certain events, e.g. `rowClicked`, don't seem to work.
+    This is because some event arguments include cyclic references.
+    For these seemingly non-working events you'll see a serialization error on the developer console in your browser.
+
+    To inspect the event arguments and find the values you are interested in,
+    you can replace the event registration with the following JavaScript handler:
+    ```
+    .on('rowClicked', js_handler='console.log')
+    ```
+    Then limit the event arguments to the necessary ones, e.g. `data`, thus excluding the cycles:
+    ```
+    .on('rowClicked', lambda event: ui.notify(f'Row: {event.args}'), ['data'])
+    ```
+    This selection can be serialized safely and will work correctly.
+''')
+
+
 @doc.demo('AG Grid with complex objects', '''
     You can use nested complex objects in AG Grid by separating the field names with a period.
     (This is the reason why keys in `rowData` are not allowed to contain periods.)
