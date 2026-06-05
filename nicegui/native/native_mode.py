@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import _thread
 import multiprocessing as mp
+import pickle
 import queue
 import socket
 import sys
@@ -34,9 +35,17 @@ def _open_window(
     protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue, event_sender: Connection,
     favicon: str | Path | None = None,
+    window_args: dict[str, Any] | None = None,
+    settings: dict[str, Any] | None = None,
+    start_args: dict[str, Any] | None = None,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
+
+    # Let re-imported values win over the parent's picklable subset, so previous behavior is preserved (#6082).
+    window_args = {**(window_args or {}), **core.app.native.window_args}
+    settings = {**(settings or {}), **core.app.native.settings}
+    start_args = {**(start_args or {}), **core.app.native.start_args}
 
     window_kwargs = {
         'url': helpers.format_url(protocol, host, port),
@@ -45,9 +54,9 @@ def _open_window(
         'height': height,
         'fullscreen': fullscreen,
         'frameless': frameless,
-        **core.app.native.window_args,
+        **window_args,
     }
-    webview.settings.update(**core.app.native.settings)
+    webview.settings.update(**settings)
     window = webview.create_window(**window_kwargs)
     assert window is not None
     closed = Event()
@@ -62,7 +71,7 @@ def _open_window(
 
     _start_window_method_executor(window, method_queue, response_queue, closed)
     _warn_if_esm_unsupported(window)
-    webview.start(**core.app.native.start_args)
+    webview.start(**start_args)
 
 
 def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> None:
@@ -178,11 +187,31 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
     native.create_queues()
     event_manager.start()
     args = (protocol, host, port, title, width, height, fullscreen, frameless,
-            native.method_queue, native.response_queue, native.event_sender, favicon)
+            native.method_queue, native.response_queue, native.event_sender, favicon,
+            _picklable_subset('window_args', core.app.native.window_args),
+            _picklable_subset('settings', core.app.native.settings),
+            _picklable_subset('start_args', core.app.native.start_args))
     process = native.SPAWN_CONTEXT.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
+
+
+def _picklable_subset(name: str, config: dict[str, Any]) -> dict[str, Any]:
+    """Return the picklable items of a native config dict so they can be passed to the spawned window process."""
+    result: dict[str, Any] = {}
+    for key, value in config.items():
+        try:
+            pickle.dumps(value)
+        except Exception:  # pylint: disable=broad-except
+            helpers.warn_once(
+                f'Cannot forward app.native.{name}["{key}"] to the native window process because it is not picklable. '
+                'It is ignored unless your main module gets re-imported in the spawned process. '
+                'See https://github.com/zauberzeug/nicegui/issues/6082 for details.'
+            )
+            continue
+        result[key] = value
+    return result
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
