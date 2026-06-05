@@ -160,7 +160,7 @@ def create_tiles():
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}').classes(
-            f'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
+            f'rounded-xl p-5 transition-transform duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
         ):
             if page.title:
                 ui.label(page.title.replace('*', '')).classes(f'{d.TEXT_19PX} font-semibold mb-1')
