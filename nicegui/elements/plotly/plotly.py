@@ -46,7 +46,8 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         See the `plotly.js function reference <https://plotly.com/javascript/plotlyjs-function-reference/>`_ for a list of methods.
         The chart's HTML element is passed as the first argument automatically.
 
-        If the function is awaited, the result of the method call is returned.
+        If the function is awaited, the result of the method call is returned
+        (unless it resolves to the chart's HTML element, in which case ``None`` is returned).
         Otherwise, the method is executed without waiting for a response.
 
         *Added in NiceGUI 3.13.0*
