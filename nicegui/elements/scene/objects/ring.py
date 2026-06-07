@@ -28,5 +28,5 @@ class Ring(Object3D, component='ring.js'):
         :param wireframe: whether to display the ring as a wireframe (default: `False`)
         """
         super().__init__(
-            'ring', inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe
+            inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe
         )
