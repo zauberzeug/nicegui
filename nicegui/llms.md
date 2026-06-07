@@ -439,7 +439,7 @@ export default class PulsingSphere {
     return this.mesh;
   }
   set_scale(s) { this.mesh.scale.set(s, s, s); }
-  // optional hooks: apply_material(color, opacity, side), attached(scene, parent_mesh), detached(scene), deleted()
+  // optional hooks: apply_material(color, opacity, side), created(scene)
 }
 ```
 
@@ -448,7 +448,7 @@ framework wraps it in a `MeshPhongMaterial` and the built-in `material()` /
 `scale()` / `move()` controls work automatically. Use `create_mesh(...args)`
 when you need to keep a handle on the mesh for your own methods.
 
-Optional lifecycle hooks (the framework calls them only if defined): `apply_material(color, opacity, side)` overrides the default material handling (useful for groups/GLTF with many sub-meshes); `attached(scene, parent_mesh)` runs after the mesh is added to a parent; `detached(scene)` runs after the mesh is removed; `deleted()` runs after the object is deleted.
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material(color, opacity, side)` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created(scene)` runs after the mesh is created by the scene.
 
 ---
 
@@ -1288,5 +1288,5 @@ ui.button('Click me') \
 ---
 
 _This file is intended for AI assistants working with NiceGUI projects._
-_For full API docs see https://nicegui.io/documentation._
-_Source: NiceGUI repository — https://github.com/zauberzeug/nicegui_
+_For full API docs see <https://nicegui.io/documentation>._
+_Source: NiceGUI repository — <https://github.com/zauberzeug/nicegui>_
