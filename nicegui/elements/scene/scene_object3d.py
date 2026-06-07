@@ -10,6 +10,7 @@ from typing_extensions import Self
 
 from nicegui.awaitable_response import AwaitableResponse
 from nicegui.dependencies import register_esm, register_library
+from nicegui.helpers import warn_once
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
@@ -81,7 +82,16 @@ class Object3D:
 
     @property
     def data(self) -> list[Any]:
-        """Data to be sent to the frontend."""
+        """Data to be sent to the frontend.
+
+        **Note: This property is deprecated and will be removed in NiceGUI 4.0.
+        It's a public method meant for internal use and is no longer needed.**
+        """
+        warn_once(
+            'The `data` property of `Object3D` is deprecated and will be '
+            "removed in NiceGUI 4.0. It's a public method meant for internal use "
+            'and is no longer needed.'
+        )
         return [
             self._component_import_name, self.id, self.parent.id, self.args,
             self.name,

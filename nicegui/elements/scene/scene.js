@@ -44,6 +44,11 @@ export default {
     </div>`,
 
   mounted() {
+    let resolve_init;
+    this.init_promise = new Promise((resolve) => {
+      resolve_init = resolve;
+    });
+
     this.objects = new Map();
     this.scene = new THREE.Scene();
     this.scene.object_id = "scene";
@@ -52,7 +57,6 @@ export default {
 
     this.clock = new THREE.Clock();
     this.draggable_objects = [];
-    this.is_initialized = false;
 
     if (this.showStats) {
       this.stats = new Stats();
@@ -225,6 +229,9 @@ export default {
 
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
+      resolve_init();
+      this.resize();
+      this.$el.removeAttribute("data-initializing");
       this.$emit("init");
       clearInterval(connectInterval);
     }, 100);
@@ -237,8 +244,6 @@ export default {
 
   methods: {
     async create(import_name, id, parent_id, ...args) {
-      if (!this.is_initialized) return;
-
       // Initial bootstrapping
       let resolve_ready, reject_ready;
       const ready_promise = new Promise((resolve, reject) => {
@@ -249,6 +254,7 @@ export default {
         id, ready_promise
       }
       this.objects.set(id, object);
+      await this.init_promise;
 
       try {
         // Find the component class
@@ -446,39 +452,6 @@ export default {
         this.camera.right = (this.camera.aspect * this.cameraParams.size) / 2;
       }
       this.camera.updateProjectionMatrix();
-    },
-    async init_objects(data) {
-      this.resize();
-      this.$el.removeAttribute("data-initializing");
-      this.is_initialized = true;
-      for (const [
-        type,
-        id,
-        parent_id,
-        args,
-        name,
-        color,
-        opacity,
-        side,
-        x,
-        y,
-        z,
-        R,
-        sx,
-        sy,
-        sz,
-        visible,
-        draggable,
-      ] of data) {
-        await this.create(type, id, parent_id, ...args);
-        await this.name(id, name);
-        await this.material(id, color, opacity, side);
-        await this.move(id, x, y, z);
-        await this.rotate(id, R);
-        await this.scale(id, sx, sy, sz);
-        await this.visible(id, visible);
-        await this.draggable(id, draggable);
-      }
     },
   },
 

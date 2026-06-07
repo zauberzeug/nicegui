@@ -180,7 +180,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     def _handle_init(self) -> None:
         self._initialized_event.set()
         self.move_camera(duration=0)
-        self.run_method('init_objects', [obj.data for obj in self.objects.values()])
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
