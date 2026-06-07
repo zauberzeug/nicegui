@@ -300,6 +300,7 @@ export default {
 
       // Attach to scene
       const parent = this.objects.get(parent_id)
+      await parent.ready_promise;
       parent.mesh.add(object.mesh);
     },
     async name(object_id, name) {
