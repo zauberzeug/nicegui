@@ -1,10 +1,10 @@
 
 import SceneLib from "nicegui-scene";
 const {
-    THREE,
+  THREE,
 } = SceneLib;
 export default class Ring {
-    create_geometry(...args) {
-        return new THREE.RingGeometry(...args);
-    }
+  create_geometry(...args) {
+    return new THREE.RingGeometry(...args);
+  }
 }

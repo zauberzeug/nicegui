@@ -1,9 +1,9 @@
 import SceneLib from "nicegui-scene";
 const {
-    THREE,
+  THREE,
 } = SceneLib;
 export default class Sphere {
-    create_geometry(...args) {
-        return new THREE.SphereGeometry(...args);
-    }
+  create_geometry(...args) {
+    return new THREE.SphereGeometry(...args);
+  }
 }

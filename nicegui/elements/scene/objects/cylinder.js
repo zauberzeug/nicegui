@@ -1,9 +1,9 @@
 import SceneLib from "nicegui-scene";
 const {
-    THREE,
+  THREE,
 } = SceneLib;
 export default class Cylinder {
-    create_geometry(...args) {
-        return new THREE.CylinderGeometry(...args);
-    }
+  create_geometry(...args) {
+    return new THREE.CylinderGeometry(...args);
+  }
 }
