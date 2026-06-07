@@ -10,7 +10,23 @@ import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import * as TWEEN from "@tweenjs/tween.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
+class SimpleMaterialLoader {
+  apply(material, color, opacity, side) {
+    const vertexColors = color === null;
+    (Array.isArray(material) ? material : [material]).forEach((m) => {
+      m.color.set(vertexColors ? "#ffffff" : color);
+      m.needsUpdate = m.vertexColors != vertexColors;
+      m.vertexColors = vertexColors;
+      m.opacity = opacity;
+      if (side == "front") m.side = THREE.FrontSide;
+      else if (side == "back") m.side = THREE.BackSide;
+      else m.side = THREE.DoubleSide;
+    });
+  }
+}
+
 export default {
+  SimpleMaterialLoader,
   CSS2DObject,
   CSS2DRenderer,
   CSS3DObject,

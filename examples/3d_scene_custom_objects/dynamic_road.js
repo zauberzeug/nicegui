@@ -1,5 +1,5 @@
 import SceneLib from "nicegui-scene";
-const { THREE } = SceneLib;
+const { THREE, SimpleMaterialLoader } = SceneLib;
 
 function buildCurve(spec) {
   const V = (p) => new THREE.Vector3(p[0], p[1], p[2]);
@@ -22,6 +22,8 @@ function buildCurve(spec) {
       return null;
   }
 }
+
+let material_loader = new SimpleMaterialLoader();
 
 export default class DynamicRoad {
   group; road; directionLine; arrows;
@@ -99,6 +101,7 @@ export default class DynamicRoad {
   }
 
   set_arrow_color(color) {
+    console.log("YAY")
     this.latestArrowColor = color
     this.directionLine.material.color.set(color);
     for (const a of this.arrows) a.setColor(new THREE.Color(color));
@@ -106,14 +109,6 @@ export default class DynamicRoad {
 
   apply_material(color, opacity, side) {
     this.latestMaterial = { color, opacity, side }
-    const vertexColors = color === null;
-    const m = this.road.material;
-    m.color.set(vertexColors ? '#ffffff' : color);
-    m.needsUpdate = m.vertexColors !== vertexColors;
-    m.vertexColors = vertexColors;
-    m.opacity = opacity;
-    if (side === 'front') m.side = THREE.FrontSide;
-    else if (side === 'back') m.side = THREE.BackSide;
-    else m.side = THREE.DoubleSide;
+    material_loader.apply(this.road.material, color, opacity, side)
   }
 }

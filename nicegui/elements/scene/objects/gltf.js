@@ -1,7 +1,8 @@
 import SceneLib from "nicegui-scene";
-const { THREE, GLTFLoader } = SceneLib;
+const { THREE, GLTFLoader, SimpleMaterialLoader } = SceneLib;
 
 const gltf_loader = new GLTFLoader();
+const material_loader = new SimpleMaterialLoader();
 
 export default class GLTF {
   mesh
@@ -31,18 +32,6 @@ export default class GLTF {
       this.pendingMaterialInfo = { color, opacity, side };
       return;
     }
-    const vertexColors = color === null;
-    const apply = (material) => {
-      (Array.isArray(material) ? material : [material]).forEach((m) => {
-        m.color.set(vertexColors ? "#ffffff" : color);
-        m.needsUpdate = m.vertexColors != vertexColors;
-        m.vertexColors = vertexColors;
-        m.opacity = opacity;
-        if (side === "front") m.side = THREE.FrontSide;
-        else if (side === "back") m.side = THREE.BackSide;
-        else m.side = THREE.DoubleSide;
-      });
-    };
-    this.mesh.traverse((child) => child.isMesh && child.material && apply(child.material));
+    this.mesh.traverse((child) => child.isMesh && child.material && material_loader.apply(child.material, color, opacity, side));
   }
 }

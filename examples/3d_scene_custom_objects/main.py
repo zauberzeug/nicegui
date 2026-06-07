@@ -30,13 +30,19 @@ curves_a = [
 curves_b = [
     {'type': 'catmullrom', 'points': [[0, 0, 0], [1, 1, 0.5], [2, 0, 0.7], [3, -1, 0.5], [4, 0, 0]]},
 ]
+arrow_color_iterator = cycle(['#ffaaff', '#22aaff'])
+road_color_iterator = cycle(['#8c8680', '#5c5a55'])
+curve_iterator = cycle([curves_b, curves_a])
 
 with ui.scene(width=1024, height=800, fps=60) as scene:
-    road = DynamicRoad(curves=curves_a, width=0.5, thickness=0.1).material('#808080')
+    road = (
+        DynamicRoad(curves=next(curve_iterator), width=0.5, thickness=0.1)
+        .set_arrow_color(next(arrow_color_iterator))
+        .material(next(road_color_iterator))
+    )
 
-color_iterator = cycle(['#ff00ff', '#0099ee'])
-curve_iterator = cycle([curves_b, curves_a])
-ui.button('Change color', on_click=lambda: road.set_arrow_color(next(color_iterator)))
+ui.button('Change arrow color', on_click=lambda: road.set_arrow_color(next(arrow_color_iterator)))
+ui.button('Change road color', on_click=lambda: road.material(next(road_color_iterator)))
 ui.button('Swap curves', on_click=lambda: road.set_curves(next(curve_iterator)))
 
 ui.run()

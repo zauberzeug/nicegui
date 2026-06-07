@@ -48,7 +48,8 @@ Optional hooks the framework will call if you define them:
 - `apply_material(color, opacity, side)` — override the default material
   handling. For composite objects, you can apply material selectively — in this
   example `apply_material` only affects the road mesh, leaving the direction
-  line and arrow helpers untouched.
+  line and arrow helpers untouched. You can use the `SimpleMaterialLoader` class
+  found in `SceneLib` to apply the material to your meshes.
 
 An empty object would look like this (omit methods you don't want to implement):
 

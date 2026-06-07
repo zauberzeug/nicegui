@@ -1,5 +1,6 @@
 import SceneLib from "nicegui-scene";
 const {
+  SimpleMaterialLoader,
   CSS2DRenderer,
   CSS3DRenderer,
   DragControls,
@@ -220,6 +221,8 @@ export default {
     };
     this.clickEvents.forEach((event) => this.$el.addEventListener(event, click_handler));
 
+    this.material_loader = new SimpleMaterialLoader();
+
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
       this.$emit("init");
@@ -304,19 +307,9 @@ export default {
       if (typeof object.component.apply_material === "function") {
         await object.component.apply_material(color, opacity, side)
       } else if (object.mesh.material) {
-        const vertexColors = color === null;
-        const apply = (material) => {
-          (Array.isArray(material) ? material : [material]).forEach((m) => {
-            m.color.set(vertexColors ? "#ffffff" : color);
-            m.needsUpdate = m.vertexColors != vertexColors;
-            m.vertexColors = vertexColors;
-            m.opacity = opacity;
-            if (side == "front") m.side = THREE.FrontSide;
-            else if (side == "back") m.side = THREE.BackSide;
-            else m.side = THREE.DoubleSide;
-          });
-        };
-        apply(object.mesh.material);
+        this.material_loader.apply(object.mesh.material, color, opacity, side);
+      } else {
+        console.warn(`A material change was requested for object ${object_id} but the mesh doesn't support materials`)
       }
     },
     async move(object_id, x, y, z) {
