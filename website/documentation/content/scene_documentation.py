@@ -4,9 +4,9 @@ from nicegui import ui
 from . import doc
 from pathlib import Path
 
-path = Path(__file__).parent / Path('./static/pulsing_sphere.js')
+path = Path(__file__).parent / Path('./static/torus_knot.js')
 max_time = path.stat().st_mtime
-register_library(path, import_name='website__documentation__content__scene_documentation__PulsingSphere', max_time=max_time)
+register_library(path, import_name='website__documentation__content__scene_documentation__TorusKnot', max_time=max_time)
 
 
 @doc.demo(ui.scene)
@@ -322,8 +322,8 @@ def custom_composed_objects() -> None:
         CoordinateSystem('custom frame').move(-2, -2, 1).rotate(0.1, 0.2, 0.3)
 
 
-@doc.demo('Custom 3D Scene Objects', '''
-    If the bundled primitives are not enough for your needs, or if you want to run some
+@doc.demo('Custom 3D Objects', '''
+    If the primitives bundled in NiceGUI are not enough for your needs, or if you want to run
     complex logic on the client side, the scene provides you with a way to create your
     own 3D objects. It works by subclassing `Object3D`, implementing a corresponding
     module in JS, and linking them together.
@@ -333,45 +333,67 @@ def custom_composed_objects() -> None:
     module, and what's the interface available to you.
 ''')
 def custom_3d_scene_objects() -> None:
-    import math
-    import time
-
     from typing_extensions import Self
     from nicegui.elements.scene.scene_object3d import Object3D
 
-    class PulsingSphere(Object3D, component='static/pulsing_sphere.js'):
-        def __init__(self, radius: float = 1.0) -> None:
-            super().__init__(radius)
+    class TorusKnot(Object3D, component='static/torus_knot.js'):
+        def __init__(self, radius: float = 1.0, tube: float = 0.4, p: int = 2, q: int = 3) -> None:
+            super().__init__(radius, tube, p, q)
 
-        def set_scale(self, s: float) -> Self:
-            self.run_method('set_scale', s)
+        def update_topology(self, p: int, q: int) -> Self:
+            self.run_method('update_topology', p, q)
             return self
 
-    with ui.scene().classes('w-full h-64'):
-        sphere = PulsingSphere(radius=1.0)
+    with ui.scene().classes('w-full h-96'):
+        knot = TorusKnot(radius=1.5, tube=0.4, p=2, q=3).move(z=1)
 
-    ui.timer(0.05, lambda: sphere.set_scale(1.0 + 0.4 * math.sin(time.time() * 3)))
+    with ui.row():
+        ui.label('P (Winds around axis):')
+        p_slider = ui.slider(min=1, max=10, value=2, step=1)
+        ui.label('Q (Winds around interior):')
+        q_slider = ui.slider(min=1, max=10, value=3, step=1)
+
+    def handle_change():
+        knot.update_topology(int(p_slider.value), int(q_slider.value))
+    p_slider.on_value_change(handle_change)
+    q_slider.on_value_change(handle_change)
 
     """
-    // Contents of `pulsing_sphere.js`:
+    // --------------------------------------------------------
+    // Contents of `static/torus_knot.js`:
+    // --------------------------------------------------------
     import SceneLib from "nicegui-scene";
     const { THREE } = SceneLib;
 
-    export default class PulsingSphere {
+    export default class TorusKnot {
         mesh;
+        radius;
+        tube;
 
-        create_mesh(radius) {
-            const geometry = new THREE.SphereGeometry(radius, 32, 16);
-            const material = new THREE.MeshPhongMaterial({ color: 0x44aaff, transparent: true });
+        create_mesh(radius, tube, p, q) {
+            this.radius = radius;
+            this.tube = tube;
+
+            const geometry = new THREE.TorusKnotGeometry(radius, tube, 128, 16, p, q);
+            const material = new THREE.MeshStandardMaterial({
+            color: 0xcc33ff,
+            roughness: 0.1,
+            metalness: 0.8
+            });
+
             this.mesh = new THREE.Mesh(geometry, material);
             return this.mesh;
         }
 
-        set_scale(s) {
-            this.mesh.scale.set(s, s, s);
+        update_topology(p, q) {
+            this.mesh.geometry.dispose();
+            this.mesh.geometry = new THREE.TorusKnotGeometry(this.radius, this.tube, 128, 16, p, q);
         }
     }
     """
+
+
+ui.run()
 
 
 @doc.demo('Attaching/detaching objects', '''
