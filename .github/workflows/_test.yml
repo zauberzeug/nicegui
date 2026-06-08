@@ -39,7 +39,7 @@ jobs:
         if: matrix.scope == 'pytest' && failure()
         with:
           name: screenshots-${{ matrix.python }}
-          path: screenshots/*.failed.png
+          path: screenshots/**/*.failed.png
           retention-days: 14
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'startup'

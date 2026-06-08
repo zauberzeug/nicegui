@@ -1,5 +1,30 @@
 import * as CM from "nicegui-codemirror";
 
+// Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
+class TooltipValue extends CM.RangeValue {
+  constructor(content) {
+    super();
+    this.content = content;
+  }
+}
+
+const setTooltipsEffect = CM.StateEffect.define();
+
+const tooltipField = CM.StateField.define({
+  create() {
+    return CM.RangeSet.empty;
+  },
+  update(set, tr) {
+    set = set.map(tr.changes);
+    for (const effect of tr.effects) {
+      if (effect.is(setTooltipsEffect)) {
+        set = CM.RangeSet.of(effect.value, true);
+      }
+    }
+    return set;
+  },
+});
+
 export default {
   template: `
     <div></div>
@@ -12,6 +37,8 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    lineTooltips: Object,
+    lineTooltipHtml: Boolean,
     id: String,
   },
   watch: {
@@ -26,6 +53,9 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    lineTooltips(newTooltips) {
+      this.setLineTooltips(newTooltips);
     },
   },
   data() {
@@ -130,6 +160,21 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setLineTooltips(tooltips) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const ranges = [];
+      for (const [line, content] of Object.entries(tooltips || {})) {
+        const lineNum = parseInt(line);
+        if (lineNum >= 1 && lineNum <= doc.lines) {
+          const pos = doc.line(lineNum).from;
+          ranges.push(new TooltipValue(content).range(pos, pos));
+        } else {
+          logAndEmit("warning", `line_tooltips: line ${lineNum} out of range [1, ${doc.lines}]`);
+        }
+      }
+      this.editor.dispatch({ effects: setTooltipsEffect.of(ranges) });
+    },
     setupExtensions() {
       const self = this;
 
@@ -148,9 +193,33 @@ export default {
         },
       );
 
+      const lineTooltip = CM.hoverTooltip((view, pos) => {
+        const set = view.state.field(tooltipField);
+        const line = view.state.doc.lineAt(pos);
+        let content = null;
+        set.between(line.from, line.to, (_from, _to, value) => {
+          content = value.content;
+          return false;  // at most one tooltip per line — stop after the first match
+        });
+        if (content === null) return null;
+        const renderHtml = self.lineTooltipHtml;
+        return {
+          pos: line.from,
+          above: true,
+          create() {
+            const dom = document.createElement("div");
+            if (renderHtml) dom.setHTML(content);
+            else dom.textContent = content;
+            return { dom };
+          },
+        };
+      });
+
       const extensions = [
         CM.basicSetup,
         changeSender,
+        tooltipField,
+        lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
@@ -198,5 +267,6 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    this.setLineTooltips(this.lineTooltips);
   },
 };

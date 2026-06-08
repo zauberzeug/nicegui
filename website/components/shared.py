@@ -45,7 +45,7 @@ def cta_button(
     """Styled CTA button with optional Phosphor icons."""
     with ui.button(on_click=on_click) \
             .props('unelevated no-caps rounded size=1rem') \
-            .classes('px-7 py-2.5 transition-all duration-150 hover:-translate-y-px') as button:
+            .classes('px-7 py-2.5 transition-transform duration-150 hover:-translate-y-px') as button:
         with ui.row(align_items='center').classes('gap-2'):
             if left_icon:
                 phosphor_icon(left_icon)
