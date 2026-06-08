@@ -134,6 +134,11 @@ class Client:
         return self.tab_id is not None
 
     @property
+    def is_deleted(self) -> bool:
+        """Whether the client has been deleted (e.g. by browser disconnect after ``reconnect_timeout``)."""
+        return self._deleted
+
+    @property
     def head_html(self) -> str:
         """The HTML code to be inserted in the <head> of the page template."""
         return self.shared_head_html + self._head_html
