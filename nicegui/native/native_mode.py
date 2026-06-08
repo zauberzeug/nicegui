@@ -38,6 +38,7 @@ def _open_window(
     window_args: dict[str, Any] | None = None,
     settings: dict[str, Any] | None = None,
     start_args: dict[str, Any] | None = None,
+    dropped_keys: dict[str, list[str]] | None = None,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -46,6 +47,16 @@ def _open_window(
     window_args = {**(window_args or {}), **core.app.native.window_args}
     settings = {**(settings or {}), **core.app.native.settings}
     start_args = {**(start_args or {}), **core.app.native.start_args}
+
+    # Warn only about keys the parent could not pickle AND re-import did not restore here, i.e. that are truly lost.
+    for name, merged in [('window_args', window_args), ('settings', settings), ('start_args', start_args)]:
+        for key in (dropped_keys or {}).get(name, []):
+            if key not in merged:
+                helpers.warn_once(
+                    f'Could not forward app.native.{name}["{key}"] to the native window process '
+                    'because it is not picklable, so it is ignored. '
+                    'See https://github.com/zauberzeug/nicegui/issues/6082 for details.'
+                )
 
     window_kwargs = {
         'url': helpers.format_url(protocol, host, port),
@@ -186,32 +197,31 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
     mp.freeze_support()
     native.create_queues()
     event_manager.start()
+    window_args, dropped_window_args = _split_picklable(core.app.native.window_args)
+    settings, dropped_settings = _split_picklable(core.app.native.settings)
+    start_args, dropped_start_args = _split_picklable(core.app.native.start_args)
+    dropped_keys = {'window_args': dropped_window_args, 'settings': dropped_settings, 'start_args': dropped_start_args}
     args = (protocol, host, port, title, width, height, fullscreen, frameless,
             native.method_queue, native.response_queue, native.event_sender, favicon,
-            _picklable_subset('window_args', core.app.native.window_args),
-            _picklable_subset('settings', core.app.native.settings),
-            _picklable_subset('start_args', core.app.native.start_args))
+            window_args, settings, start_args, dropped_keys)
     process = native.SPAWN_CONTEXT.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
 
 
-def _picklable_subset(name: str, config: dict[str, Any]) -> dict[str, Any]:
-    """Return the picklable items of a native config dict so they can be passed to the spawned window process."""
-    result: dict[str, Any] = {}
+def _split_picklable(config: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Split a native config dict into its picklable items and the keys that cannot cross the spawn boundary."""
+    picklable: dict[str, Any] = {}
+    dropped: list[str] = []
     for key, value in config.items():
         try:
             pickle.dumps(value)
         except Exception:  # pylint: disable=broad-except
-            helpers.warn_once(
-                f'Cannot forward app.native.{name}["{key}"] to the native window process because it is not picklable. '
-                'It is ignored unless your main module gets re-imported in the spawned process. '
-                'See https://github.com/zauberzeug/nicegui/issues/6082 for details.'
-            )
-            continue
-        result[key] = value
-    return result
+            dropped.append(key)
+        else:
+            picklable[key] = value
+    return picklable, dropped
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:
