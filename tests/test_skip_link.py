@@ -1,104 +1,85 @@
-from selenium.webdriver.common.by import By
+from itertools import pairwise
+
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.remote.webelement import WebElement
 
 from nicegui import ui
 from nicegui.testing import Screen
 
 
-def test_skip_link_focuses_target(screen: Screen):
-    target = None
+def _is_in_viewport(screen: Screen, element: WebElement) -> bool:
+    return screen.selenium.execute_script('''
+        const rect = arguments[0].getBoundingClientRect();
+        return rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.left >= 0 && rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+    ''', element)
 
+
+def _assert_dom_order(screen: Screen, *elements: WebElement) -> None:
+    for first, second in pairwise(elements):
+        assert screen.selenium.execute_script('''
+            return arguments[0].compareDocumentPosition(arguments[1]) & Node.DOCUMENT_POSITION_FOLLOWING;
+        ''', first, second)
+
+
+def test_skip_link_skips_to_offscreen_content(screen: Screen):
     @ui.page('/')
     def page():
-        nonlocal target
-        ui.button('Navigation 1')
-        target = ui.label('Main content')
-        ui.skip_link(target=target)
+        with ui.column().style('height: 200vh'):
+            ui.button('Navigation')
+        ui.skip_link(target=ui.label('Main content'))
 
     screen.open('/')
-    link = screen.find_by_class('nicegui-skip-link')
-    assert link.get_attribute('textContent') == 'Skip to main content'
-    assert link.get_attribute('href').endswith(f'#c{target.id}')
+    screen.should_contain('Navigation')
+    screen.should_contain('Skip to main content')  # invisible, but present in the DOM
+    assert not _is_in_viewport(screen, screen.find('Main content'))
 
-    screen.selenium.execute_script('arguments[0].focus(); arguments[0].click();', link)
-    screen.wait_for(lambda: screen.selenium.switch_to.active_element.get_attribute('id') == f'c{target.id}')
+    screen.type(Keys.TAB)
+    screen.type(Keys.ENTER)
+    assert _is_in_viewport(screen, screen.find('Main content'))
 
 
-def test_custom_text(screen: Screen):
+def test_skip_link_with_custom_text(screen: Screen):
     @ui.page('/')
     def page():
-        target = ui.label('Main content')
-        ui.skip_link('Skip navigation', target=target)
+        ui.skip_link('Skip navigation', target=ui.label('Main content'))
 
     screen.open('/')
-    link = screen.find_by_class('nicegui-skip-link')
-    assert link.get_attribute('textContent') == 'Skip navigation'
+    screen.should_contain('Skip navigation')
 
 
-def test_context_manager_replaces_text(screen: Screen):
+def test_skip_link_with_context_manager_replaces_text(screen: Screen):
     @ui.page('/')
     def page():
-        target = ui.label('Main content')
-        with ui.skip_link(text='', target=target):
+        with ui.skip_link(text='', target=ui.label('Main content')):
             ui.label('Jump to content')
 
     screen.open('/')
-    link = screen.find_by_class('nicegui-skip-link')
-    assert link.get_attribute('textContent') == 'Jump to content'
+    screen.should_contain('Jump to content')
+    screen.should_not_contain('Skip to main content')
 
 
-def test_link_precedes_other_content_in_document(screen: Screen):
-    @ui.page('/')
-    def page():
-        ui.button('First button')
-        with ui.column() as main:
-            ui.label('Main content')
-        ui.skip_link(target=main)
-
-    screen.open('/')
-    is_before = screen.selenium.execute_script('''
-        const link = document.querySelector('.nicegui-skip-link');
-        const button = [...document.querySelectorAll('button')]
-            .find(b => b.textContent.includes('First button'));
-        return !!(link.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING);
-    ''')
-    assert is_before
-
-
-def test_link_is_deleted_with_calling_context(screen: Screen):
-    link = container = None
-
-    @ui.page('/')
-    def page():
-        nonlocal link, container
-        with ui.column() as container:
-            target = ui.label('Main content')
-            link = ui.skip_link(target=target)
-        ui.button('Clear', on_click=container.clear)
-
-    screen.open('/')
-    assert not link.is_deleted
-    screen.click('Clear')
-    screen.wait_for(lambda: link.is_deleted)
-
-
-def test_multiple_skip_links_preserve_order_and_precede_content(screen: Screen):
+def test_skip_link_order(screen: Screen):
     @ui.page('/')
     def page():
         ui.button('Navigation')
-        a = ui.label('Section A')
-        b = ui.label('Section B')
-        ui.skip_link('First', target=a)
-        ui.skip_link('Second', target=b)
+        ui.skip_link('Skip link A', target=ui.label('Content A'))
+        ui.skip_link('Skip link B', target=ui.label('Content B'))
 
     screen.open('/')
-    links = screen.selenium.find_elements(By.CSS_SELECTOR, '.nicegui-skip-link')
-    assert [link.get_attribute('textContent') for link in links] == ['First', 'Second']
-    # both links must precede the regular content in document order
-    both_before_button = screen.selenium.execute_script('''
-        const links = [...document.querySelectorAll('.nicegui-skip-link')];
-        const button = [...document.querySelectorAll('button')]
-            .find(b => b.textContent.includes('Navigation'));
-        return links.every(link =>
-            !!(link.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING));
-    ''')
-    assert both_before_button
+    _assert_dom_order(screen, screen.find('Skip link A'), screen.find('Skip link B'), screen.find('Navigation'))
+
+
+def test_link_is_deleted_with_calling_context(screen: Screen):
+    link = None
+
+    @ui.page('/')
+    def page():
+        nonlocal link
+        with ui.column() as container:
+            link = ui.skip_link(target=ui.label('Main content'))
+        ui.button('Clear', on_click=container.clear)
+
+    screen.open('/')
+    screen.click('Clear')
+    screen.wait_for(lambda: link.is_deleted)
