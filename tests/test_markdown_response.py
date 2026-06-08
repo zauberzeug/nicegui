@@ -126,6 +126,17 @@ async def test_nested_containers(user: User):
     await _assert_markdown(user, build, 'First\n\nSecond')
 
 
+async def test_instance_level_render_markdown_override(user: User):
+    def build():
+        ui.label('Visible')
+        with ui.column() as skipped:
+            ui.label('Hidden by override')
+            ui.image('/static/loading.gif')
+        skipped._render_markdown = lambda: ''  # type: ignore[method-assign]  # pylint: disable=protected-access
+        ui.label('Also visible')
+    await _assert_markdown(user, build, 'Visible\n\nAlso visible')
+
+
 async def test_no_accept_returns_html(user: User):
     @ui.page('/')
     def page():
