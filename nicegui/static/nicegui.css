@@ -203,7 +203,16 @@
   clip-path: none;
   white-space: normal;
   padding: 0.5rem 1rem;
+  border: 1pt solid rgba(127, 159, 191, 0.25);
+  border-radius: 0.25em;
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   z-index: 9999;
+}
+.body--dark .nicegui-skip-link:focus {
+  background-color: black;
+}
+.body--light .nicegui-skip-link:focus {
+  background-color: white;
 }
 
 /* other NiceGUI elements */
