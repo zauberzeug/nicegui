@@ -50,9 +50,10 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
             return f'[Button: {aria_label}]'
         if icon := self._props.get('icon'):
             return f'[Button: icon:{icon}]'
-        if children := self._children_to_markdown().strip():
+        children = self._children_to_markdown()
+        if children and '\n' not in children and '[' not in children and ']' not in children:
             return f'[Button: {children}]'
-        return ''
+        return '[Button]'
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
