@@ -103,8 +103,9 @@ def plot_events():
     When plotting a large number of data points, pass NumPy arrays (or pandas Series) to Plotly rather than Python lists,
     and avoid converting them back with `.tolist()`.
     For NumPy arrays, Plotly uses a compact binary encoding (base64-encoded typed arrays)
-    that the browser can render much more efficiently than parsing millions of numbers from a plain JSON array,
-    which can otherwise freeze the UI.
+    that makes the payload roughly half the size — far less data to transfer, parse and keep in memory —
+    which is what avoids freezing the UI on large updates.
+    This requires Plotly 6.0 or newer, where the binary encoding is the default.
 ''')
 def large_datasets():
     import numpy as np
