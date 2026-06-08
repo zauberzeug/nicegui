@@ -25,6 +25,10 @@ class SkipLink(TextElement, default_classes='nicegui-skip-link'):
         Pass ``text=''`` and use the element as a context manager
         to supply custom child content (e.g. an icon next to a label).
 
+        The target is resolved by its ID captured at creation time,
+        so ``target`` should be a stable container rather than transient content that is recreated
+        (e.g. by a refreshable or a sub-page route change), otherwise the link silently does nothing.
+
         *Added in version 3.13.0*
 
         :param text: the link label (default: "Skip to main content")
