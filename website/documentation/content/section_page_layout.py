@@ -62,6 +62,7 @@ doc.intro(grid_documentation)
 doc.intro(list_documentation)
 doc.intro(slide_item_documentation)
 doc.intro(fullscreen_documentation)
+doc.intro(skip_link_documentation)
 
 
 @doc.demo('Clear Containers', '''
@@ -97,7 +98,6 @@ doc.intro(scroll_area_documentation)
 doc.intro(separator_documentation)
 doc.intro(space_documentation)
 doc.intro(skeleton_documentation)
-doc.intro(skip_link_documentation)
 doc.intro(splitter_documentation)
 doc.intro(tabs_documentation)
 doc.intro(stepper_documentation)
