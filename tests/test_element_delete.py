@@ -3,7 +3,6 @@ import weakref
 import pytest
 
 from nicegui import binding, ui
-from nicegui.helpers.warnings import _shown_warnings
 from nicegui.testing import Screen, User
 
 
@@ -199,54 +198,28 @@ def test_slot_children_cleared_on_delete(screen: Screen):
     assert len(labels) == 0, 'all labels should be deleted immediately'
 
 
-async def test_run_method_silent_after_client_delete(user: User, caplog: pytest.LogCaptureFixture):
-    """Mutations on elements after the client has been deleted (e.g. browser reload race
-    past reconnect_timeout) must be silent — user code did nothing wrong. See issue #6058."""
-    captured: dict = {}
+@pytest.mark.parametrize('deletion_method', ['client_delete', 'element_delete'])
+async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, deletion_method: str):
+    """Using an element after deletion is silent when the client is gone (benign reload race)
+    but warns once when only the element was deleted (a user bug). See issue #6058."""
+    label = None
 
     @ui.page('/')
     def page():
-        captured['label'] = ui.label('hi')
+        nonlocal label
+        label = ui.label('hi')
 
     await user.open('/')
-    label = captured['label']
-    label.client.delete()
-    assert label.client.is_deleted
-    assert label.is_deleted  # cascaded
+    assert isinstance(label, ui.label)
+    (label.client if deletion_method == 'client_delete' else label).delete()
+    assert label.client.is_deleted == (deletion_method == 'client_delete')
+    assert label.is_deleted
 
-    _shown_warnings.clear()
-    caplog.clear()
     label.run_method('foo')
     label.update()
     label.get_computed_prop('bar')
-
-    warning_records = [r for r in caplog.records if 'deleted' in r.message.lower()]
-    assert warning_records == [], f'expected silent, got: {[r.message for r in warning_records]}'
-
-
-async def test_run_method_warns_after_explicit_element_delete(user: User, caplog: pytest.LogCaptureFixture):
-    """Calling a method on an explicitly deleted element while the client is still alive
-    is a user bug and should produce a visible (one-shot) warning. See issue #6058."""
-    captured: dict = {}
-
-    @ui.page('/')
-    def page():
-        with ui.row() as row:
-            captured['label'] = ui.label('hi')
-            captured['row'] = row
-
-    await user.open('/')
-    label = captured['label']
-    captured['row'].remove(label)
-    assert label.is_deleted
-    assert not label.client.is_deleted
-
-    _shown_warnings.clear()
-    caplog.clear()
-    label.run_method('foo')
-
-    warning_records = [r for r in caplog.records if 'still being used' in r.message]
-    assert warning_records, f'expected warning, got: {[r.message for r in caplog.records]}'
+    expected_warnings = 0 if deletion_method == 'client_delete' else 1
+    assert len([record for record in caplog.records if 'still being used' in record.message]) == expected_warnings
 
 
 def test_event_listeners_cleared_on_delete(screen: Screen):
