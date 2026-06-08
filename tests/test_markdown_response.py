@@ -113,6 +113,11 @@ async def test_button(user: User):
             ui.link('NiceGUI', 'https://nicegui.io')
     await _assert_markdown(user, link_button, '[Button]')
 
+    def decorative_button():
+        with ui.button():
+            ui.html('<i class="ph-copy"></i>')._render_markdown = lambda: ''  # mirror override_markdown(..., '')
+    await _assert_markdown(user, decorative_button, '[Button]')
+
 
 async def test_code_element(user: User):
     await _assert_markdown(user, lambda: ui.code('print("hello")', language='python'), '```python\nprint("hello")\n```')

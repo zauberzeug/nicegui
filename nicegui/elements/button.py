@@ -50,8 +50,9 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
             return f'[Button: {aria_label}]'
         if icon := self._props.get('icon'):
             return f'[Button: icon:{icon}]'
-        children = self._children_to_markdown()
+        children = self._children_to_markdown().strip()
         if children and '\n' not in children and '[' not in children and ']' not in children:
+            # only surface single plain lines of child content that doesn't garble the "[Button: ...]" wrapper
             return f'[Button: {children}]'
         return '[Button]'
 
