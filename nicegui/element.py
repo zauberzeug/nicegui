@@ -415,15 +415,16 @@ class Element(Visibility):
 
         Silent when the *client* has been deleted (e.g. browser reload race past ``reconnect_timeout``)
         or already garbage-collected: an async callback resuming after the teardown is not a user bug.
-        Emits a one-shot warning when the *element* has been explicitly deleted but the client is still
-        alive: that is a real use-after-free in user code and worth surfacing.
+        Emits a one-shot warning when the *element* has been explicitly deleted but the client is still alive:
+        that is a real use-after-free in user code and worth surfacing.
         """
         client = self._client()
         if client is None or client.is_deleted:
             return False
         if self.is_deleted:
-            helpers.warn_once(f'{self} (id={self.id}) has been deleted but is still being used. '
-                              'This is most likely a bug in your application code.',
+            helpers.warn_once('An element has been deleted but is still being used. '
+                              'This is most likely a bug in your application code. '
+                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
                               stack_info=True)
             return False
         return True
