@@ -27,13 +27,13 @@ def main_demo() -> None:
 def custom_content_demo() -> None:
     @ui.page('/skip_link_custom_demo')
     def skip_link_custom_demo():
-        ui.button('Navigation 1')
+        ui.button('Menu', icon='menu')
         with ui.column() as main:
             ui.label('Main content starts here')
-        with ui.skip_link(text='', target=main).classes('bg-primary text-white p-2'), \
-                ui.row(align_items='center'):
-            ui.icon('skip_next').classes('text-2xl')
-            ui.label('Jump to main content')
+        with ui.skip_link('', target=main).classes('bg-primary text-white p-2'):
+            with ui.row(align_items='center'):
+                ui.icon('skip_next').classes('text-2xl')
+                ui.label('Jump to main content')
 
     # @ui.page('/')
     def page():
