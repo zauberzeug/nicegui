@@ -179,7 +179,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
     event_manager.start()
     args = (protocol, host, port, title, width, height, fullscreen, frameless,
             native.method_queue, native.response_queue, native.event_sender, favicon)
-    process = mp.Process(target=_open_window, args=args, daemon=True)
+    process = native.SPAWN_CONTEXT.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()

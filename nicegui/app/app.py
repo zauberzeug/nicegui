@@ -1,7 +1,9 @@
+import asyncio
 import inspect
 import os
 import platform
 import signal
+import time
 import urllib
 from collections.abc import Callable, Iterator
 from enum import Enum
@@ -10,7 +12,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 
-from .. import background_tasks, core, helpers
+from .. import background_tasks, binding, core, helpers
 from ..client import Client
 from ..context import context
 from ..elements.mixins.color_elements import QUASAR_COLORS
@@ -18,8 +20,9 @@ from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
 from ..server import Server
+from ..slot import Slot
 from ..staticfiles import CacheControlledStaticFiles
-from ..storage import Storage
+from ..storage import PersistentDict, Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
@@ -79,6 +82,12 @@ class App(FastAPI):
             self.safe_invoke(t)
         self.on_shutdown(self.storage.on_shutdown)
         self.on_shutdown(background_tasks.teardown)
+        background_tasks.create(binding.refresh_loop(), name='refresh bindings')
+        self.timer(10, Client.prune_instances)
+        self.timer(10, Slot.prune_stacks)
+        self.timer(10, prune_tab_storage)
+        if self.storage.secret is not None:
+            self.timer(10, prune_user_storage)
         self._state = State.STARTED
 
     async def stop(self) -> None:
@@ -104,6 +113,8 @@ class App(FastAPI):
 
         The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_connect()'))
 
     def on_disconnect(self, handler: Callable) -> None:
@@ -113,6 +124,8 @@ class App(FastAPI):
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_disconnect()'))
 
     def on_delete(self, handler: Callable) -> None:
@@ -122,6 +135,8 @@ class App(FastAPI):
 
         *Added in version 3.0.0*
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_delete()'))
 
     def on_startup(self, handler: Callable) -> None:
@@ -131,9 +146,9 @@ class App(FastAPI):
 
         Needs to be called before `ui.run()`.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         if self.is_started:
-            if core.script_mode:
-                raise RuntimeError('Unable to register a startup in script mode. Use a `@ui.page` function instead.')
             raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
         self._startup_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_startup()'))
 
@@ -143,6 +158,8 @@ class App(FastAPI):
         The callback can be synchronous or asynchronous.
         When NiceGUI is shut down or restarted, all tasks still in execution will be automatically canceled.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._shutdown_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_shutdown()'))
 
     def on_exception(self, handler: Callable) -> None:
@@ -150,6 +167,8 @@ class App(FastAPI):
 
         The callback has an optional parameter of `Exception`.
         """
+        if core.is_script_mode_re_execution():
+            return  # already registered on the script's first execution
         self._exception_handlers.append(handler)
 
     def handle_exception(self, exception: Exception) -> None:
@@ -383,3 +402,31 @@ class App(FastAPI):
         for client in Client.instances.values():
             if path is None or client.page.path == path:
                 yield client
+
+
+async def prune_tab_storage(*, force: bool = False) -> None:
+    """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
+    tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
+    for tab_id, tab in list(tab_storages.items()):
+        if force or time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
+            tab.clear()
+            if isinstance(tab, PersistentDict):
+                await tab.close()
+            del tab_storages[tab_id]
+
+
+async def prune_user_storage(*, force: bool = False) -> None:
+    """Remove user storage objects without a client session."""
+    client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
+    storages_to_close: list[PersistentDict] = []
+    now = time.time()
+    user_storages = core.app.storage._users  # pylint: disable=protected-access
+    for session_id in list(user_storages):
+        if session_id not in client_session_ids:
+            age = now - user_storages[session_id].last_modified
+            if force or age > 10.0:  # NOTE: do not remove storages created by middleware and still wait for client
+                storages_to_close.append(user_storages.pop(session_id))
+    results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
+    for result in results:
+        if isinstance(result, Exception):
+            log.exception(result)

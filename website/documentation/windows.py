@@ -1,10 +1,9 @@
 from collections.abc import Callable
 
 from nicegui import helpers, ui
-from nicegui.elements.markdown import remove_indentation
 
 from .. import design as d
-from ..design import phosphor_icon
+from ..design import override_markdown, phosphor_icon
 from .intersection_observer import IntersectionObserver as intersection_observer
 
 ICONS = {
@@ -26,7 +25,7 @@ def code_window(code: str = '', *, title: str = 'main.py', language: str = 'pyth
                         .props('flat round size=xs').classes('opacity-30 hover:opacity-100 transition-opacity'):
                     phosphor_icon('ph-copy').classes('text-base')
         if code:
-            ui.markdown(f'````{language}\n{remove_indentation(code)}\n````') \
+            ui.markdown(f'````{language}\n{helpers.remove_indentation(code)}\n````') \
                 .classes('w-full grow py-2 overflow-x-auto [&_pre]:px-4 [&_pre]:w-fit [&_pre]:min-w-full')
     return window
 
@@ -70,7 +69,8 @@ def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy
                 if callable(result):
                     inner_result = result()
                     assert not helpers.should_await(inner_result), 'async functions are not supported in non-lazy demos'
-    return window
+    # Skip in markdown: the lazy preview never hydrates server-side, leaking `localhost:8080` and the loading spinner.
+    return override_markdown(window, '')
 
 
 def _header_row() -> ui.row:

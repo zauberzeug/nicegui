@@ -192,7 +192,8 @@ async def test_notification(user: User) -> None:
 async def test_checkbox_and_switch(user: User, kind: type) -> None:
     @ui.page('/')
     def page():
-        element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}'))
+        element = kind('my element', on_change=lambda e: ui.notify(f'Changed: {e.value}')) \
+            .on('click', lambda e: ui.notify(f'Clicked: {e.sender.value}'))
         ui.label().bind_text_from(element, 'value', lambda v: 'enabled' if v else 'disabled')
 
     await user.open('/')
@@ -201,10 +202,12 @@ async def test_checkbox_and_switch(user: User, kind: type) -> None:
     user.find('element').click()
     await user.should_see('enabled')
     await user.should_see('Changed: True')
+    await user.should_see('Clicked: True')
 
     user.find('element').click()
     await user.should_see('disabled')
     await user.should_see('Changed: False')
+    await user.should_see('Clicked: False')
 
 
 @pytest.mark.parametrize('kind', [ui.input, ui.editor, ui.codemirror])
@@ -351,7 +354,7 @@ async def test_trigger_with_event_arguments(user: User, args_value: Any, expecte
 async def test_click_link(user: User) -> None:
     @ui.page('/')
     def page():
-        ui.link('go to other', '/other')
+        ui.link('go to other', '/other').on('click', lambda: ui.notify('Link clicked'))
 
     @ui.page('/other')
     def other():
@@ -359,6 +362,7 @@ async def test_click_link(user: User) -> None:
 
     await user.open('/')
     user.find('go to other').click()
+    await user.should_see('Link clicked')
     await user.should_see('Other page')
 
 
@@ -569,6 +573,27 @@ async def test_select_none_value(user: User) -> None:
     user.find(ui.select).click()
     user.find('B').click()
     await user.should_see('Value: None')
+
+
+async def test_select_click_handler(user: User) -> None:
+    clicks = []
+
+    @ui.page('/')
+    def _():
+        ui.select(['A', 'B', 'C']).on('click', lambda: clicks.append('click'))
+
+    await user.open('/')
+    user.find(ui.select).click()
+    assert len(clicks) == 1, 'Opening select should fire click handler'
+
+    user.find('B').click()
+    assert len(clicks) == 1, 'Clicking option should not fire click handler'
+
+    user.find(ui.select).click()
+    assert len(clicks) == 2, 'Opening select should fire click handler again'
+
+    user.find(ui.select).click()
+    assert len(clicks) == 3, 'Closing select should fire click handler'
 
 
 async def test_upload_table(user: User) -> None:
@@ -886,6 +911,18 @@ async def test_switching_tabs_wrapped_in_row(user: User) -> None:
     await user.should_see('Switching to A')
 
 
+async def test_tab_click_handler(user: User) -> None:
+    @ui.page('/')
+    def _():
+        with ui.tabs():
+            ui.tab('A').on('click', lambda: ui.notify('A clicked'))
+            ui.tab('B')
+
+    await user.open('/')
+    user.find('A').click()
+    await user.should_see('A clicked')
+
+
 async def test_clearing_container_with_button_inside(user: User) -> None:
     @ui.page('/')
     def page():
@@ -905,3 +942,69 @@ async def test_clearing_container_with_button_inside(user: User) -> None:
     await user.should_see('First handler')
     await user.should_see('click me')
     await user.should_not_see('Last handler')
+
+
+async def test_switching_between_sub_pages(user: User) -> None:
+    calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
+
+    @ui.page('/')
+    @ui.page('/b')
+    def index():
+        calls['index'] += 1
+        ui.label(f'Index render {calls["index"]}')
+        ui.button('back', on_click=ui.navigate.back)
+        ui.button('forward', on_click=ui.navigate.forward)
+        ui.button('reload', on_click=ui.navigate.reload)
+        ui.link('Go to "/"', '/')
+        ui.link('Go to "/b"', '/b')
+        ui.link('Go to "/b/"', '/b/')
+        ui.link('Go to "/other"', '/other')
+        ui.sub_pages({
+            '/': lambda: (ui.label('Page A'), calls.update(a=calls['a'] + 1)),
+            '/b': lambda: (ui.label('Page B'), calls.update(b=calls['b'] + 1)),
+        })
+
+    @ui.page('/other')
+    def other_page():
+        calls['other'] += 1
+        ui.label('Other page')
+
+    await user.open('/')
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 1, 'b': 0, 'other': 0}
+
+    user.find('Go to "/b"').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 1, 'b': 1, 'other': 0}
+
+    user.find('back').click()
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 2, 'b': 1, 'other': 0}
+
+    user.find('forward').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 2, 'b': 2, 'other': 0}
+
+    user.find('Go to "/"').click()
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 3, 'b': 2, 'other': 0}
+
+    user.find('Go to "/b/"').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 3, 'b': 3, 'other': 0}
+
+    user.find('Go to "/b/"').click()
+    await user.should_see('Page B')
+    assert calls == {'index': 1, 'a': 3, 'b': 3, 'other': 0}, 'no rebuilding if path stays the same'
+
+    user.find('Go to "/"').click()
+    await user.should_see('Page A')
+    assert calls == {'index': 1, 'a': 4, 'b': 3, 'other': 0}
+
+    user.find('reload').click()
+    await user.should_see('Index render 2')
+    assert calls == {'index': 2, 'a': 5, 'b': 3, 'other': 0}, 'reload triggers a full page reload'
+
+    user.find('Go to "/other"').click()
+    await user.should_see('Other page')
+    assert calls == {'index': 2, 'a': 5, 'b': 3, 'other': 1}, 'navigating to sibling page falls back to full page open'
