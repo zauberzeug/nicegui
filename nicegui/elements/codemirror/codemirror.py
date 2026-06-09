@@ -266,6 +266,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        line_tooltips: dict[int, str] | None = None,
+        line_tooltip_html: bool = False,
     ) -> None:
         """CodeMirror
 
@@ -279,6 +281,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
 
+        *Since version 3.13.0:*
+        Per-line tooltips can be attached via the ``line_tooltips`` dict.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param language: initial language of the editor (case-insensitive, default: `None`)
@@ -286,6 +291,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
+        :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints)
         self._codepoints = b''
@@ -298,6 +305,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['line-tooltips'] = line_tooltips or {}
+        self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -360,6 +369,18 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
         return self
+
+    @property
+    def line_tooltips(self) -> dict[int, str]:
+        """Mapping of 1-indexed line numbers to tooltip content.
+
+        *Added in version 3.13.0*
+        """
+        return self._props['line-tooltips']
+
+    @line_tooltips.setter
+    def line_tooltips(self, value: dict[int, str]) -> None:
+        self._props['line-tooltips'] = value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
