@@ -56,6 +56,7 @@ class Event(Generic[P]):
         self.instances.add(self)
 
     def subscribe(self, callback: Callable[P, Any] | Callable[[], Any], *,
+                  expect_args: bool | None = None,
                   unsubscribe_on_delete: bool | None = None) -> None:
         """Subscribe to the event.
 
@@ -65,6 +66,8 @@ class Event(Generic[P]):
         to prevent memory leaks.
 
         :param callback: the callback which will be called when the event is fired
+        :param expect_args: whether to forward the event's arguments to the callback
+            (default: ``None`` meaning auto-detected from the callback's signature, *added in version 3.13.0*)
         :param unsubscribe_on_delete: whether to unsubscribe the callback when the current client is deleted
             (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
@@ -77,7 +80,7 @@ class Event(Generic[P]):
             expect_args=helpers.expects_arguments(callback) or (
                 isinstance(getattr(callback, '__self__', None), Event) and
                 getattr(callback, '__name__', None) in {'emit', 'call'}
-            ),
+            ) if expect_args is None else expect_args,
             filepath=frame.f_code.co_filename,
             line=frame.f_lineno,
         )
@@ -119,7 +122,7 @@ class Event(Generic[P]):
             if not future.done():
                 future.set_result(args[0] if len(args) == 1 else args if args else None)
 
-        self.subscribe(callback)
+        self.subscribe(callback, expect_args=True)
         try:
             return await asyncio.wait_for(future, timeout)
         except TimeoutError as error:
