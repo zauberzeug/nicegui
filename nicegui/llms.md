@@ -5,7 +5,7 @@ The single most important rule: **everything is Python**. Reach for `ui.*` befor
 
 **Where this file lives:** it ships with the `nicegui` PyPI package as `nicegui/llms.md`, so the copy bundled with the user's installed version matches the API they actually have. For the current `main`, fetch <https://nicegui.io/llms.txt>.
 
-**Fetching docs:** every page on <https://nicegui.io> returns Markdown when requested with `Accept: text/markdown`, so agents can read the full documentation without parsing HTML.
+**Fetching docs:** every page on <https://nicegui.io> returns Markdown when requested with `Accept: text/markdown`; as of NiceGUI 3.13 recognized AI-agent user-agents also receive Markdown when their `Accept` header is ambiguous (e.g. a wildcard `*/*`), so agents can read the full documentation without parsing HTML.
 
 ---
 
@@ -128,14 +128,15 @@ NiceGUI runs in a single asyncio event loop. Every page, every user, every timer
 
 `app.storage.user` is per-user (session-scoped) and persistent across page reloads. A module-level `dict` is per-process (shared across all users) and lost on server restart. Always ask: "Should this be per-user, per-session, or global?" and pick accordingly:
 
-| Storage                      | Scope                     | Persistence                           |
-| ---------------------------- | ------------------------- | ------------------------------------- |
-| local variable in `@ui.page` | per page load             | until page reload                     |
-| `app.storage.client`         | per browser connection    | lost on page reload                   |
-| `app.storage.tab`            | per browser tab           | survives reload, lost when tab closes |
-| `app.storage.user`           | per user (session cookie) | until cookie expires                  |
-| `app.storage.general`        | all users                 | persistent on disk                    |
-| module-level variable        | entire server             | server restart                        |
+| Storage                      | Scope                                                              | Persistence                           |
+| ---------------------------- | ------------------------------------------------------------------ | ------------------------------------- |
+| local variable in `@ui.page` | per page load                                                      | until page reload                     |
+| `app.storage.client`         | per browser connection                                             | lost on page reload                   |
+| `app.storage.tab`            | per browser tab                                                    | survives reload, lost when tab closes |
+| `app.storage.user`           | per user (session cookie)                                          | until cookie expires                  |
+| `app.storage.browser`        | per browser (signed cookie, read-only outside the initial request) | until cookie expires                  |
+| `app.storage.general`        | all users                                                          | persistent on disk                    |
+| module-level variable        | entire server                                                      | server restart                        |
 
 ### 9. The Outbox — why you don't need to batch updates manually
 
@@ -289,6 +290,10 @@ with ui.footer():
     ui.label('Footer')
 
 ui.page_sticky('bottom-right', x_offset=20, y_offset=20)  # floating content
+
+main = ui.column()                                   # a stable container to jump to
+ui.skip_link('Skip to main content', target=main)    # keyboard-only link (WCAG 2.4.1); hidden until Tab focus,
+                                                     # auto-moved to the top of the layout. target must be stable, not refreshable content.
 ```
 
 ---
@@ -297,6 +302,7 @@ ui.page_sticky('bottom-right', x_offset=20, y_offset=20)  # floating content
 
 ```python
 ui.input('Name', value='Alice', on_change=handler)
+ui.input('Password', password=True, password_toggle_button=True)
 ui.textarea('Notes', rows=5)
 ui.number('Age', min=0, max=120, step=1)
 ui.select(['a', 'b', 'c'], value='a', on_change=handler)
@@ -314,7 +320,8 @@ ui.date(value='2024-01-01')              # returns ISO string
 ui.time(value='12:00')
 ui.date_input('Birthday')               # combined date picker + text input
 ui.time_input('Time')
-ui.upload(on_upload=handler, multiple=True)
+ui.upload(on_upload=handler, multiple=True,
+          auto_upload=True, max_file_size=10_000_000, max_files=5, max_total_size=50_000_000)
 ui.input_chips('Tags')                  # chip-based multi-value input
 ```
 
@@ -322,9 +329,11 @@ ui.input_chips('Tags')                  # chip-based multi-value input
 
 ## Display Elements
 
-```python
+````python
 ui.label('Hello World')
 ui.markdown('**Bold** and *italic*')
+ui.markdown('```mermaid\ngraph TD; A-->B\n```',
+            extras=['fenced-code-blocks', 'tables', 'mermaid'])  # `extras` REPLACES the default ['fenced-code-blocks', 'tables']
 ui.code('print("hello")', language='python')
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
@@ -337,11 +346,17 @@ ui.separator()
 ui.space()                              # flexible spacer (flex: 1)
 ui.spinner(size='lg', color='primary')
 ui.skeleton(type='rect', height='2rem')
+ui.circular_progress(value=0.4, min=0, max=1, size='xl', color='primary')
+ui.linear_progress(value=0.4, show_value=True)
 ui.link('Click here', target='https://example.com')
+ui.link_target('section-1')             # in-page anchor, pair with ui.link(target='#section-1')
 ui.html('<b>raw</b> HTML')             # use sparingly
+ui.element('div').classes('grid grid-cols-3 gap-2')  # generic escape hatch for arbitrary tags
+with ui.timeline():                                  # activity feed
+    ui.timeline_entry('Did the thing', title='Step 1', subtitle='10:00')
 ui.chat_message('Hello!', name='Alice', stamp='now', avatar='...')
 ui.log(max_lines=100)                  # live-updating log display
-```
+````
 
 ---
 
@@ -357,10 +372,17 @@ rows = [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
 ui.table(columns=columns, rows=rows, row_key='name')
 
 # AG Grid (advanced grid)
-ui.aggrid({
+grid = ui.aggrid({
     'columnDefs': [{'field': 'name'}, {'field': 'age'}],
     'rowData': rows,
 })
+# Build from a pandas DataFrame (auto column defs):
+# grid = ui.aggrid.from_pandas(df)
+
+# Drive the client-side AG Grid API from Python (from inside an async handler):
+async def select_all():
+    await grid.run_grid_method('selectAll')
+    await grid.run_row_method('row-id', 'setSelected', True)
 
 # Tree
 ui.tree([
@@ -384,11 +406,15 @@ ui.echart({
     'yAxis': {'type': 'value'},
     'series': [{'type': 'bar', 'data': [120, 200, 150]}],
 })
+# From a pyecharts Chart object:
+# ui.echart.from_pyecharts(pyecharts_chart)
 
 # Plotly
 import plotly.graph_objects as go
 fig = go.Figure(go.Bar(x=['A', 'B'], y=[1, 2]))
-ui.plotly(fig)
+plot = ui.plotly(fig)
+# Drive plotly.js directly instead of re-sending the whole figure (efficient for live/streaming data):
+plot.run_plot_method('extendTraces', {'x': [[3]], 'y': [[5]]}, [0])  # append a point to trace 0
 
 # Matplotlib / pyplot
 with ui.pyplot(figsize=(6, 4)) as plot:
@@ -593,6 +619,12 @@ def dashboard():
 def item_page(item_id: int):
     ui.label(f'Item {item_id}')
 
+# Slow page builder? Raise the per-page timeout (default 3s; see Mental Model #10).
+@ui.page('/heavy', response_timeout=15)
+async def heavy():
+    data = await slow_query()
+    ui.label(str(data))
+
 # Script mode: ui.* calls at the top level of the entry script (no @ui.page)
 # → NiceGUI re-executes the script once per client connection.
 # Each visitor gets a fresh execution and their own UI instance.
@@ -673,6 +705,7 @@ ui.notify('Saved!', type='positive')
 ui.notify('Error!', type='negative', position='top')
 ui.notify('Warning', type='warning', close_button='Dismiss')
 ui.notify('Loading…', type='ongoing')
+ui.notify('Saved!', group='save')   # `group` is forwarded to Quasar's Notify via **kwargs; identical groups merge with a counter
 
 # Persistent notification object
 n = ui.notification('Processing…', spinner=True)
@@ -721,29 +754,65 @@ from nicegui import app, ui
 # Startup / shutdown hooks
 app.on_startup(async_function)
 app.on_shutdown(async_function)
-app.on_connect(handler)     # new client connects
-app.on_disconnect(handler)  # client disconnects
-app.on_exception(handler)   # unhandled exceptions
+app.on_connect(handler)         # new client connects
+app.on_disconnect(handler)      # client disconnects
+app.on_exception(handler)       # unhandled exceptions (any context)
+app.on_page_exception(handler)  # unhandled exceptions raised inside a @ui.page builder
+app.on_delete(handler)          # @ui.page client instance is being deleted (per-page teardown)
 
 # Custom FastAPI routes alongside NiceGUI
 @app.get('/api/data')
 async def get_data():
     return {'value': 42}
 
-# Serve static files
-app.mount('/static', StaticFiles(directory='static'))
+# Serve static / media files via NiceGUI's first-class helpers
+# (prefer these over app.mount(StaticFiles(...)) — they respect the URL prefix and per-request headers)
+app.add_static_files('/static', 'path/to/static_dir')   # whole directory
+app.add_static_file(local_file='path/to/file.png', url_path='/icon.png')
+app.add_media_files('/media', 'path/to/videos')         # streamable (Range-request support)
+app.add_media_file(local_file='path/to/clip.mp4', url_path='/clip.mp4')
 
-# Run
+# Middleware (FastAPI passthrough) — standard pattern for auth, CORS, request logging
+from starlette.middleware.base import BaseHTTPMiddleware
+app.add_middleware(BaseHTTPMiddleware, dispatch=auth_dispatch)
+
+# Run — full flag surface
 ui.run(
     host='0.0.0.0',
     port=8080,
     title='My App',
     favicon='🚀',
-    dark=None,           # None = follow system
-    storage_secret='my-secret',
-    reload=True,         # auto-reload on file change (dev only)
-    show=False,          # don't open browser automatically
+    dark=None,                       # None = follow system
+    language='en-US',                # Quasar element language
+    storage_secret='my-secret',      # required for app.storage.user and app.storage.browser
+    reload=True,                     # auto-reload on file change (dev only)
+    show=False,                      # don't open browser automatically
+    binding_refresh_interval=0.1,    # bindings pull-loop interval; raise to reduce CPU
+    tailwind=True,                   # disable to drop the Tailwind runtime
+    prod_js=True,                    # production-minified Vue/Quasar bundles
+    fastapi_docs=False,              # set True to expose /docs, /redoc, /openapi.json
+    markdown=False,                  # experimental: serve your own pages as Markdown to agents
+                                     # (Accept: text/markdown, or recognized agent UAs); override per page via @ui.page(markdown=...)
+    # Native desktop window (pywebview) — flagship offline mode:
+    native=False,                    # True opens a native window instead of a browser
+    window_size=(1024, 768),         # implies native=True
+    fullscreen=False,                # implies native=True
+    frameless=False,                 # implies native=True
+    # Tech preview: temporary public URL without port-forwarding
+    on_air=None,                     # True for an anonymous tunnel, or a device token string
 )
+
+# Mount NiceGUI inside an existing FastAPI app instead of using ui.run()
+# (e.g. when NiceGUI is one piece of a larger API service)
+from fastapi import FastAPI
+fastapi_app = FastAPI()
+
+@ui.page('/admin')
+def admin():
+    ui.label('Admin UI')
+
+ui.run_with(fastapi_app, mount_path='/gui', storage_secret='…')
+# `uvicorn module:fastapi_app` — NiceGUI is mounted at /gui, FastAPI routes coexist.
 ```
 
 ---
@@ -774,26 +843,30 @@ async def index():
 
 ### Text & Media
 
-| Element                          | Description                   |
-| -------------------------------- | ----------------------------- |
-| `ui.label(text)`                 | Plain text                    |
-| `ui.markdown(content)`           | Markdown with auto-dedent     |
-| `ui.html(content)`               | Raw HTML                      |
-| `ui.code(content, language)`     | Syntax-highlighted code block |
-| `ui.codemirror(value, language)` | Editable code editor          |
-| `ui.mermaid(content)`            | Mermaid diagram               |
-| `ui.restructured_text(content)`  | RST content                   |
-| `ui.image(source)`               | Image (path, URL, or base64)  |
-| `ui.interactive_image(source)`   | Image with click/hover events |
-| `ui.audio(source)`               | Audio player                  |
-| `ui.video(source)`               | Video player                  |
-| `ui.icon(name)`                  | Material Design icon          |
-| `ui.avatar(text_or_icon)`        | Avatar (initials or icon)     |
-| `ui.badge(text)`                 | Small badge label             |
-| `ui.chip(text)`                  | Chip / tag                    |
-| `ui.link(text, target)`          | Hyperlink                     |
-| `ui.chat_message(text, name)`    | Chat bubble                   |
-| `ui.log(max_lines)`              | Auto-scrolling log            |
+| Element                                    | Description                                          |
+| ------------------------------------------ | ---------------------------------------------------- |
+| `ui.label(text)`                           | Plain text                                           |
+| `ui.markdown(content)`                     | Markdown with auto-dedent                            |
+| `ui.html(content)`                         | Raw HTML                                             |
+| `ui.code(content, language)`               | Syntax-highlighted code block                        |
+| `ui.codemirror(value, language)`           | Editable code editor                                 |
+| `ui.mermaid(content)`                      | Mermaid diagram                                      |
+| `ui.restructured_text(content)`            | RST content                                          |
+| `ui.image(source)`                         | Image (path, URL, or base64)                         |
+| `ui.interactive_image(source)`             | Image with click/hover events                        |
+| `ui.audio(source)`                         | Audio player                                         |
+| `ui.video(source)`                         | Video player                                         |
+| `ui.icon(name)`                            | Material Design icon                                 |
+| `ui.avatar(text_or_icon)`                  | Avatar (initials or icon)                            |
+| `ui.badge(text)`                           | Small badge label                                    |
+| `ui.chip(text)`                            | Chip / tag                                           |
+| `ui.link(text, target)`                    | Hyperlink                                            |
+| `ui.chat_message(text, name)`              | Chat bubble                                          |
+| `ui.log(max_lines)`                        | Auto-scrolling log                                   |
+| `ui.link_target(name)`                     | In-page anchor (pair with `ui.link(target='#name')`) |
+| `ui.timeline()` / `ui.timeline_entry(...)` | Activity feed / timeline                             |
+| `ui.circular_progress(value)`              | Circular progress indicator                          |
+| `ui.linear_progress(value)`                | Linear progress bar                                  |
 
 ### Input
 
@@ -823,26 +896,33 @@ async def index():
 
 ### Layout & Structure
 
-| Element                    | Description                            |
-| -------------------------- | -------------------------------------- |
-| `ui.row()`                 | Horizontal flex row                    |
-| `ui.column()`              | Vertical flex column                   |
-| `ui.grid(columns)`         | CSS grid                               |
-| `ui.card()`                | Card container                         |
-| `ui.card_section()`        | Card section                           |
-| `ui.card_actions()`        | Card action bar                        |
-| `ui.expansion(label)`      | Collapsible section                    |
-| `ui.scroll_area()`         | Scrollable container                   |
-| `ui.splitter()`            | Resizable split panes                  |
-| `ui.separator()`           | Horizontal divider                     |
-| `ui.space()`               | Flexible spacer                        |
-| `ui.header()`              | Page header                            |
-| `ui.footer()`              | Page footer                            |
-| `ui.left_drawer()`         | Left sidebar drawer                    |
-| `ui.right_drawer()`        | Right sidebar drawer                   |
-| `ui.page_sticky(position)` | Fixed-position overlay                 |
-| `ui.page_scroller()`       | Scroll-to-top button                   |
-| `ui.teleport(to)`          | Render child in different DOM location |
+| Element                                                             | Description                                                                  |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ui.row()`                                                          | Horizontal flex row                                                          |
+| `ui.column()`                                                       | Vertical flex column                                                         |
+| `ui.grid(columns)`                                                  | CSS grid                                                                     |
+| `ui.card()`                                                         | Card container                                                               |
+| `ui.card_section()`                                                 | Card section                                                                 |
+| `ui.card_actions()`                                                 | Card action bar                                                              |
+| `ui.expansion(label)`                                               | Collapsible section                                                          |
+| `ui.scroll_area()`                                                  | Scrollable container                                                         |
+| `ui.splitter()`                                                     | Resizable split panes                                                        |
+| `ui.separator()`                                                    | Horizontal divider                                                           |
+| `ui.space()`                                                        | Flexible spacer                                                              |
+| `ui.header()`                                                       | Page header                                                                  |
+| `ui.footer()`                                                       | Page footer                                                                  |
+| `ui.left_drawer()`                                                  | Left sidebar drawer                                                          |
+| `ui.right_drawer()`                                                 | Right sidebar drawer                                                         |
+| `ui.page_sticky(position)`                                          | Fixed-position overlay                                                       |
+| `ui.page_scroller()`                                                | Scroll-to-top button                                                         |
+| `ui.teleport(to)`                                                   | Render child in different DOM location                                       |
+| `ui.list()` + `ui.item()` + `ui.item_section()` + `ui.item_label()` | Quasar QList / QItem                                                         |
+| `ui.button_group()`                                                 | Group of related buttons (Quasar QBtnGroup)                                  |
+| `ui.dropdown_button(text)`                                          | Split/dropdown button with menu                                              |
+| `ui.slide_item(text)`                                               | Swipeable list item (mobile pattern)                                         |
+| `ui.element(tag)`                                                   | Generic escape hatch for arbitrary HTML tags                                 |
+| `ui.keep_alive()`                                                   | Vue `<keep-alive>` wrapper — preserves child state across visibility changes |
+| `ui.skip_link(text, target=el)`                                     | Keyboard "skip to content" accessibility link (WCAG 2.4.1)                   |
 
 ### Navigation
 
@@ -885,42 +965,47 @@ async def index():
 
 ### Advanced / Specialized
 
-| Element                   | Description                  |
-| ------------------------- | ---------------------------- |
-| `ui.scene()`              | Interactive 3D (Three.js)    |
-| `ui.leaflet()`            | Interactive map (Leaflet.js) |
-| `ui.interactive_image()`  | Image with SVG overlays      |
-| `ui.joystick()`           | Virtual joystick             |
-| `ui.keyboard(on_key)`     | Global keyboard listener     |
-| `ui.xterm()`              | Terminal emulator            |
-| `ui.anywidget(widget)`    | Embed anywidget              |
-| `ui.timer(interval, cb)`  | Repeating/one-shot timer     |
-| `ui.dark_mode()`          | Dark mode toggle             |
-| `ui.colors(primary, ...)` | Global theme colors          |
-| `ui.query(selector)`      | Style arbitrary DOM elements |
+| Element                   | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `ui.scene()`              | Interactive 3D (Three.js)                      |
+| `ui.scene_view(scene)`    | Second camera onto an existing `ui.scene`      |
+| `ui.leaflet()`            | Interactive map (Leaflet.js)                   |
+| `ui.interactive_image()`  | Image with SVG overlays                        |
+| `ui.joystick()`           | Virtual joystick                               |
+| `ui.keyboard(on_key)`     | Global keyboard listener                       |
+| `ui.xterm()`              | Terminal emulator                              |
+| `ui.anywidget(widget)`    | Embed anywidget                                |
+| `ui.timer(interval, cb)`  | Repeating/one-shot timer                       |
+| `ui.fullscreen()`         | Programmatic fullscreen control (since 2.11.0) |
+| `ui.parallax(source)`     | Parallax-image header (Quasar QParallax)       |
+| `ui.dark_mode()`          | Dark mode toggle                               |
+| `ui.colors(primary, ...)` | Global theme colors                            |
+| `ui.query(selector)`      | Style arbitrary DOM elements                   |
 
 ### Global Functions
 
-| Function                             | Description                          |
-| ------------------------------------ | ------------------------------------ |
-| `ui.notify(msg)`                     | Toast notification                   |
-| `ui.navigate.to(url)`                | Navigate to URL                      |
-| `ui.navigate.back/forward/reload()`  | Browser history navigation           |
-| `ui.run_javascript(code)`            | Execute JS (await for result)        |
-| `ui.download(src)`                   | Trigger file download                |
-| `ui.clipboard.write(text)`           | Write to clipboard                   |
-| `ui.clipboard.read()`                | Read from clipboard (await)          |
-| `ui.update(element)`                 | Force push element update            |
-| `ui.refreshable`                     | Decorator for rebuilding UI sections |
-| `ui.refreshable_method`              | Same, for class methods              |
-| `ui.state(value)`                    | Local state inside `@ui.refreshable` |
-| `ui.page_title(title)`               | Set browser tab title                |
-| `ui.add_css/add_scss/add_sass(code)` | Global styles                        |
-| `ui.add_head_html(html)`             | Inject into `<head>`                 |
-| `ui.add_body_html(html)`             | Inject into `<body>`                 |
-| `ui.on(event, handler)`              | Global app event listener            |
-| `ui.on_exception(handler)`           | Global exception handler             |
-| `ui.status_code(code)`               | Set HTTP response status             |
+| Function                                | Description                                    |
+| --------------------------------------- | ---------------------------------------------- |
+| `ui.notify(msg)`                        | Toast notification                             |
+| `ui.navigate.to(url)`                   | Navigate to URL                                |
+| `ui.navigate.back/forward/reload()`     | Browser history navigation                     |
+| `ui.run_javascript(code)`               | Execute JS (await for result)                  |
+| `ui.download(src)`                      | Trigger file download                          |
+| `ui.clipboard.write(text)`              | Write to clipboard                             |
+| `ui.clipboard.read()`                   | Read from clipboard (await)                    |
+| `ui.update(element)`                    | Force push element update                      |
+| `ui.refreshable`                        | Decorator for rebuilding UI sections           |
+| `ui.refreshable_method`                 | Same, for class methods                        |
+| `ui.state(value)`                       | Local state inside `@ui.refreshable`           |
+| `ui.page_title(title)`                  | Set browser tab title                          |
+| `ui.add_css/add_scss/add_sass(code)`    | Global styles                                  |
+| `ui.add_head_html(html)`                | Inject into `<head>`                           |
+| `ui.add_body_html(html)`                | Inject into `<body>`                           |
+| `ui.on(event, handler)`                 | Global app event listener                      |
+| `ui.on_exception(handler)`              | Global exception handler                       |
+| `ui.status_code(code)`                  | Set HTTP response status                       |
+| `ui.context.client` / `ui.context.slot` | Access current client / slot from utility code |
+| `ui.run_with(fastapi_app, ...)`         | Mount NiceGUI inside an existing FastAPI app   |
 
 ---
 
