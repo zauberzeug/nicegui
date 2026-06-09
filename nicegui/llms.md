@@ -290,6 +290,10 @@ with ui.footer():
     ui.label('Footer')
 
 ui.page_sticky('bottom-right', x_offset=20, y_offset=20)  # floating content
+
+main = ui.column()                                   # a stable container to jump to
+ui.skip_link('Skip to main content', target=main)    # keyboard-only link (WCAG 2.4.1); hidden until Tab focus,
+                                                     # auto-moved to the top of the layout. target must be stable, not refreshable content.
 ```
 
 ---
@@ -408,7 +412,9 @@ ui.echart({
 # Plotly
 import plotly.graph_objects as go
 fig = go.Figure(go.Bar(x=['A', 'B'], y=[1, 2]))
-ui.plotly(fig)
+plot = ui.plotly(fig)
+# Drive plotly.js directly instead of re-sending the whole figure (efficient for live/streaming data):
+plot.run_plot_method('extendTraces', {'x': [[3]], 'y': [[5]]}, [0])  # append a point to trace 0
 
 # Matplotlib / pyplot
 with ui.pyplot(figsize=(6, 4)) as plot:
@@ -914,6 +920,7 @@ async def index():
 | `ui.slide_item(text)`                                               | Swipeable list item (mobile pattern)                                         |
 | `ui.element(tag)`                                                   | Generic escape hatch for arbitrary HTML tags                                 |
 | `ui.keep_alive()`                                                   | Vue `<keep-alive>` wrapper — preserves child state across visibility changes |
+| `ui.skip_link(text, target=el)`                                     | Keyboard "skip to content" accessibility link (WCAG 2.4.1)                   |
 
 ### Navigation
 
