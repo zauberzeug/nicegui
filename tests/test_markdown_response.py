@@ -92,6 +92,39 @@ async def test_ua_fallback_requires_opt_in(user: User):
     assert 'text/html' in response.headers['content-type']
 
 
+async def test_ua_fallback_serves_markdown_for_claude_code(user: User):
+    """Claude Code lists both `text/markdown` and `text/html`; its agent UA tips the ambiguity to markdown."""
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={
+        'Accept': 'text/markdown, text/html, */*',
+        'User-Agent': 'Claude-User (claude-code/2.1.121; +https://support.anthropic.com/)',
+    })
+    assert 'text/markdown' in response.headers['content-type']
+
+
+async def test_ua_fallback_ignores_quality_values_in_wildcard_accept(user: User):
+    """A wildcard `Accept` with a quality value still triggers the UA fallback for a known agent."""
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'Accept': '*/*;q=0.8', 'User-Agent': 'ChatGPT-User/2.0'})
+    assert 'text/markdown' in response.headers['content-type']
+
+
+async def test_ua_fallback_serves_markdown_for_unnamed_accept(user: User):
+    """An Accept that names neither text/* type falls back to the UA: a known agent gets markdown."""
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'Accept': 'application/json', 'User-Agent': 'GPTBot/1.1'})
+    assert 'text/markdown' in response.headers['content-type']
+
+
 async def test_page_title(user: User):
     @ui.page('/', title='My Page', markdown=True)
     def page():
