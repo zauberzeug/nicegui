@@ -153,18 +153,7 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
-        accept = request.headers.get('accept', '')
-        user_agent = request.headers.get('user-agent', '')
-        # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
-        # It works for the real use case: agents sending exactly `Accept: text/markdown`.
-        explicit_markdown = 'text/markdown' in accept and 'text/html' not in accept
-        # UA-based fallback: clients like claude.ai's WebFetch send `Accept: */*` despite
-        # being agents (vs. Claude Code which sends `text/markdown, text/html, */*`).
-        # When the page opts in and the request looks like an agent with no explicit
-        # text/* preference, prefer markdown. Explicit `text/html` always wins HTML.
-        wildcard_accept = not accept or accept.strip() == '*/*'
-        ua_fallback = wildcard_accept and 'text/html' not in accept and _looks_like_agent(user_agent)
-        if self.page.resolve_markdown() and (explicit_markdown or ua_fallback):
+        if self.page.resolve_markdown() and _did_user_request_markdown(request):
             parts = []
             if title := self.resolve_title():
                 parts.append(f'# {title}')
@@ -478,22 +467,20 @@ def _is_prefetch(request: Request) -> bool:
     return 'prefetch' in purpose and 'prerender' not in purpose
 
 
-# Known live-user / agent fetchers (verified April 2026). Vendor docs change frequently;
-# refresh this list when new live-user agents are announced. Authoritative pages at the time
-# of writing: support.claude.com (ClaudeBot / Claude-User / Claude-SearchBot),
-# platform.openai.com/docs/bots (GPTBot / OAI-SearchBot / ChatGPT-User),
-# docs.perplexity.ai (PerplexityBot / Perplexity-User), Google's Search Central docs cover
-# Google-CloudVertexBot; Gemini-Deep-Research and Google-Agent (Project Mariner) are
-# documented in their respective product pages rather than on the common-crawlers page.
-# Substring match is intentional: vendors append version + embed-product suffixes
-# (e.g. `Claude-User (claude-code/2.1.121; ...)`).
-_AGENT_UA_REGEX = re.compile(
-    r'claude-?(bot|user|searchbot)|gptbot|oai-searchbot|chatgpt-user|'
-    r'perplexity(bot|-user)|google-(cloudvertexbot|agent)|gemini-deep-research',
-    re.IGNORECASE,
-)
-
-
-def _looks_like_agent(user_agent: str) -> bool:
-    """Heuristic: does the User-Agent header belong to a known live-user agent fetcher?"""
-    return bool(_AGENT_UA_REGEX.search(user_agent))
+def _did_user_request_markdown(request: Request) -> bool:
+    """Whether the request prefers a markdown response over HTML (page opt-in checked separately)."""
+    accept = request.headers.get('accept', '').strip().lower()
+    if 'text/html' in accept:
+        return False
+    if 'text/markdown' in accept:
+        return True
+    user_agent = request.headers.get('user-agent', '')
+    AI_AGENT_PATTERNS = [
+        r'claude-?(bot|user|searchbot)',
+        r'gptbot|oai-searchbot',
+        r'chatgpt-user',
+        r'perplexity(bot|-user)',
+        r'google-(cloudvertexbot|agent)',
+        r'gemini-deep-research',
+    ]
+    return accept in {'', '*/*'} and bool(re.search('|'.join(AI_AGENT_PATTERNS), user_agent, re.IGNORECASE))
