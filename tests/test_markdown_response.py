@@ -46,83 +46,22 @@ async def test_per_page_overrides_global(user: User, monkeypatch: pytest.MonkeyP
     assert 'text/html' in response.headers['content-type'], 'per-page False should override global True'
 
 
-async def test_ua_fallback_serves_markdown_for_known_agent_with_wildcard_accept(user: User):
-    """claude.ai's WebFetch sends `Accept: */*` despite being an agent — UA-sniff fixes it."""
+@pytest.mark.parametrize('accept,user_agent,expected', [
+    ('*/*', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0; +claude-user@anthropic.com)', 'text/markdown'),
+    ('*/*', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36', 'text/html'),
+    ('*/*', 'ChatGPT-User/2.0', 'text/markdown'),
+    ('*/*;q=0.8', 'ChatGPT-User/2.0', 'text/markdown'),
+    ('text/html', 'GPTBot/1.1', 'text/html'),
+    ('text/markdown, text/html, */*', 'Claude-User (claude-code/2.1.121; +https://support.anthropic.com/)', 'text/markdown'),
+    ('application/json', 'GPTBot/1.1', 'text/markdown'),
+])
+async def test_content_type_based_on_accept_and_user_agent(user: User, accept: str, user_agent: str, expected: str):
     @ui.page('/', markdown=True)
     def page():
         ui.label('Hello')
 
-    claude_user_ua = ('Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; '
-                      'Claude-User/1.0; +claude-user@anthropic.com)')
-    response = await user.http_client.get('/', headers={'Accept': '*/*', 'User-Agent': claude_user_ua})
-    assert 'text/markdown' in response.headers['content-type']
-
-
-async def test_ua_fallback_respects_explicit_html_preference(user: User):
-    """A known-agent UA asking for `text/html` still gets HTML — explicit Accept always wins."""
-    @ui.page('/', markdown=True)
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers={
-        'Accept': 'text/html',
-        'User-Agent': 'GPTBot/1.1',
-    })
-    assert 'text/html' in response.headers['content-type']
-
-
-async def test_ua_fallback_does_nothing_for_browser(user: User):
-    """A regular browser hitting a markdown-enabled page still gets HTML."""
-    @ui.page('/', markdown=True)
-    def page():
-        ui.label('Hello')
-
-    chrome_ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36'
-    response = await user.http_client.get('/', headers={'Accept': '*/*', 'User-Agent': chrome_ua})
-    assert 'text/html' in response.headers['content-type']
-
-
-async def test_ua_fallback_requires_opt_in(user: User):
-    """Without `markdown=True`, a known-agent UA still gets HTML."""
-    @ui.page('/')
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers={'Accept': '*/*', 'User-Agent': 'ChatGPT-User/2.0'})
-    assert 'text/html' in response.headers['content-type']
-
-
-async def test_ua_fallback_serves_markdown_for_claude_code(user: User):
-    """Claude Code lists both `text/markdown` and `text/html`; its agent UA tips the ambiguity to markdown."""
-    @ui.page('/', markdown=True)
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers={
-        'Accept': 'text/markdown, text/html, */*',
-        'User-Agent': 'Claude-User (claude-code/2.1.121; +https://support.anthropic.com/)',
-    })
-    assert 'text/markdown' in response.headers['content-type']
-
-
-async def test_ua_fallback_ignores_quality_values_in_wildcard_accept(user: User):
-    """A wildcard `Accept` with a quality value still triggers the UA fallback for a known agent."""
-    @ui.page('/', markdown=True)
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers={'Accept': '*/*;q=0.8', 'User-Agent': 'ChatGPT-User/2.0'})
-    assert 'text/markdown' in response.headers['content-type']
-
-
-async def test_ua_fallback_serves_markdown_for_unnamed_accept(user: User):
-    """An Accept that names neither text/* type falls back to the UA: a known agent gets markdown."""
-    @ui.page('/', markdown=True)
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers={'Accept': 'application/json', 'User-Agent': 'GPTBot/1.1'})
-    assert 'text/markdown' in response.headers['content-type']
+    response = await user.http_client.get('/', headers={'Accept': accept, 'User-Agent': user_agent})
+    assert expected in response.headers['content-type']
 
 
 async def test_page_title(user: User):
