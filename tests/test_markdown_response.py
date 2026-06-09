@@ -46,6 +46,24 @@ async def test_per_page_overrides_global(user: User, monkeypatch: pytest.MonkeyP
     assert 'text/html' in response.headers['content-type'], 'per-page False should override global True'
 
 
+@pytest.mark.parametrize('accept,user_agent,expected', [
+    ('*/*', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0; +claude-user@anthropic.com)', 'text/markdown'),
+    ('*/*', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36', 'text/html'),
+    ('*/*', 'ChatGPT-User/2.0', 'text/markdown'),
+    ('*/*;q=0.8', 'ChatGPT-User/2.0', 'text/markdown'),
+    ('text/html', 'GPTBot/1.1', 'text/html'),
+    ('text/markdown, text/html, */*', 'Claude-User (claude-code/2.1.121; +https://support.anthropic.com/)', 'text/markdown'),
+    ('application/json', 'GPTBot/1.1', 'text/markdown'),
+])
+async def test_content_type_based_on_accept_and_user_agent(user: User, accept: str, user_agent: str, expected: str):
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'Accept': accept, 'User-Agent': user_agent})
+    assert expected in response.headers['content-type']
+
+
 async def test_page_title(user: User):
     @ui.page('/', title='My Page', markdown=True)
     def page():
