@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import re
 import time
 import uuid
 from collections import defaultdict
@@ -157,10 +158,7 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
-        accept = request.headers.get('accept', '')
-        # NOTE: This simple check doesn't handle quality values (q=) or wildcards (*/*).
-        # It works for the real use case: agents sending exactly `Accept: text/markdown`.
-        if self.page.resolve_markdown() and 'text/markdown' in accept and 'text/html' not in accept:
+        if self.page.resolve_markdown() and _did_user_request_markdown(request):
             parts = []
             if title := self.resolve_title():
                 parts.append(f'# {title}')
@@ -472,3 +470,21 @@ class Client:
 def _is_prefetch(request: Request) -> bool:
     purpose = (request.headers.get('Sec-Purpose') or request.headers.get('Purpose') or '').lower()
     return 'prefetch' in purpose and 'prerender' not in purpose
+
+
+def _did_user_request_markdown(request: Request) -> bool:
+    """Whether the request prefers a markdown response over HTML (page opt-in checked separately)."""
+    accept = request.headers.get('accept', '').strip().lower()
+    if 'text/html' in accept and 'text/markdown' not in accept:
+        return False
+    if 'text/markdown' in accept and 'text/html' not in accept:
+        return True
+    AI_AGENT_PATTERNS = [
+        r'claude-?(bot|user|searchbot)',
+        r'gptbot|oai-searchbot',
+        r'chatgpt-user',
+        r'perplexity(bot|-user)',
+        r'google-(cloudvertexbot|agent)',
+        r'gemini-deep-research',
+    ]
+    return bool(re.search('|'.join(AI_AGENT_PATTERNS), request.headers.get('user-agent', ''), re.IGNORECASE))
