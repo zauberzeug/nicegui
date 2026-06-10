@@ -200,6 +200,19 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
         screen.should_contain('B2')
 
 
+def test_changing_options_in_input_value_handler(screen: Screen):
+    @ui.page('/')
+    def page():
+        select = ui.select([], with_input=True) \
+            .on('input-value', lambda e: select.set_options([o for o in ['A1', 'A2'] if str(e.args) in o]))
+        ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+
+    screen.open('/')
+    screen.find_by_tag('input').send_keys('A')
+    screen.click('A2')
+    screen.should_contain('value = A2')
+
+
 @pytest.mark.parametrize('auto_validation', [True, False])
 def test_select_validation(auto_validation: bool, screen: Screen):
     @ui.page('/')

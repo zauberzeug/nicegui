@@ -7,12 +7,14 @@ export default {
       @filter="filterFn"
       @popup-show="addClass"
       @popup-hide="removeClass"
+      @input-value="deferInputValue"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
     </q-select>
   `,
+  emits: ["input-value"],
   data() {
     return {
       initialOptions: this.options,
@@ -20,6 +22,10 @@ export default {
     };
   },
   methods: {
+    async deferInputValue(value) {
+      await this.$nextTick(); // emit one tick later to process selection-induced "update:model-value" first (#4420)
+      this.$emit("input-value", value);
+    },
     filterFn(val, update, abort) {
       update(() => (this.filteredOptions = val ? this.findFilteredOptions() : this.initialOptions));
     },
