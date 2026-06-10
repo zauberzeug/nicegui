@@ -36,7 +36,7 @@ class SkipLink(TextElement, default_classes='nicegui-skip-link'):
         """
         with context.client.layout:
             super().__init__(tag='a', text=text)
-        # NOTE: move the link to the top of the layout so it is the first focusable element.
+        # Move the link to the top of the layout so it is the first focusable element.
         # If the only siblings are other skip links, the link stays where ``super().__init__`` appended it
         # (last among skip links), which is the correct creation order.
         assert self.parent_slot is not None

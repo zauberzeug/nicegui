@@ -11,7 +11,7 @@ class AppConfig:
     socket_io_js_query_params: dict = field(default_factory=dict)
     socket_io_js_extra_headers: dict = field(default_factory=dict)
     socket_io_js_transports: list[Literal['websocket', 'polling']] = \
-        field(default_factory=lambda: ['websocket', 'polling'])  # NOTE: we favor websocket
+        field(default_factory=lambda: ['websocket', 'polling'])  # we favor websocket
     quasar_config: dict = \
         field(default_factory=lambda: {
             'brand': {},

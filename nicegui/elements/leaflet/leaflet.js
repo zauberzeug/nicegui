@@ -14,7 +14,7 @@ export default {
     additionalResources: Array,
   },
   async mounted() {
-    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
+    await this.$nextTick(); // wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.resourcePath}/leaflet/leaflet.css`);
     window.L = L;
     await Promise.all(this.additionalResources.map((resource) => loadResource(resource)));
@@ -88,7 +88,7 @@ export default {
       for (const key in L.Draw.Event) {
         const type = L.Draw.Event[key];
         this.map.on(type, async (e) => {
-          await this.$nextTick(); // NOTE: allow drawn layers to be added
+          await this.$nextTick(); // allow drawn layers to be added
           const cleanedObject = cleanObject(e, [
             "_map",
             "_events",
