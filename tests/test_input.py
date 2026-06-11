@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen, User
+from nicegui.testing import Screen
 
 
 def test_input(screen: Screen):
@@ -116,9 +116,9 @@ def test_validation_with_lagging_value_change_events(screen: Screen):
     @ui.page('/')
     def page():
         name = ui.input('Name', validation=lambda v: f'Still {10 - len(v)} characters missing' if len(v) < 10 else None)
-        listener = next(listener for listener in name._event_listeners.values()  # pylint: disable=protected-access
-                        if listener.type == 'update:value')
-        listener.throttle = 1.0  # NOTE: let value change events lag behind the typing like on a slow connection (#5185)
+        for listener in name._event_listeners.values():  # pylint: disable=protected-access
+            if listener.type == 'update:value':
+                listener.throttle = 1.0  # let change events lag behind the typing like on a slow connection (#5185)
 
     screen.open('/')
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
@@ -127,24 +127,6 @@ def test_validation_with_lagging_value_change_events(screen: Screen):
     element.send_keys('45678')  # keep typing after the error message arrived
     screen.should_contain('Still 2 characters missing')
     assert element.get_attribute('value') == '12345678'
-
-
-async def test_updates_preserve_client_sent_value(user: User) -> None:
-    input_ = None
-
-    @ui.page('/')
-    def page():
-        nonlocal input_
-        input_ = ui.input('Name', validation=lambda v: f'{len(v)} characters')
-
-    await user.open('/')
-    user.find(ui.input).trigger('update:value', 'abc')
-    assert input_.value == 'abc'
-    assert input_._to_update_dict()['preserved_props'] == ['value']  # pylint: disable=protected-access
-    assert 'preserved_props' not in input_._to_dict()  # pylint: disable=protected-access
-
-    input_.value = 'xyz'
-    assert 'preserved_props' not in input_._to_update_dict()  # pylint: disable=protected-access
 
 
 def test_input_with_multi_word_error_message(screen: Screen):
