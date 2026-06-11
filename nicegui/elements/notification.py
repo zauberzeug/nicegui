@@ -4,7 +4,7 @@ from typing_extensions import Self
 
 from ..context import context
 from ..element import Element
-from ..events import Handler, UiEventArguments, handle_event
+from ..events import GenericEventArguments, Handler, UiEventArguments, handle_event
 from .mixins.color_elements import QUASAR_COLORS, TAILWIND_COLORS
 
 NotificationPosition = Literal[
@@ -95,6 +95,10 @@ class Notification(Element, component='notification.js'):
                 self.clear()
                 self.delete()
         self.on('dismiss', handle_dismiss)
+
+        # NOTE: register up front; a post-render listener trips nicegui.js re-render, which duplicates the notification
+        self._action_handlers: list[Handler[UiEventArguments]] = []
+        self.on('action', self._handle_action)
 
     @property
     def message(self) -> str:
@@ -220,12 +224,12 @@ class Notification(Element, component='notification.js'):
         Note: You can pass additional keyword arguments according to `Quasar's QBtn API <https://quasar.dev/vue-components/button#qbtn-api>`_.
         """
         actions = self._props['options'].setdefault('actions', [])
-        event_name = f'action_{len(actions)}'
+        index = len(actions)
 
         action: dict[str, Any] = {
             'noDismiss': no_dismiss,
             'label': text,
-            ':handler': f'() => getElement({self.id}).$emit("{event_name}")',
+            ':handler': f'() => getElement({self.id}).$emit("action", {{index: {index}}})',
         }
         if icon is not None:
             action['icon'] = icon
@@ -237,10 +241,13 @@ class Notification(Element, component='notification.js'):
             action['style'] = f'color: {color};'
         action.update(kwargs)
         actions.append(action)
-
-        self.on(event_name, lambda _: handle_event(on_click, UiEventArguments(sender=self, client=self.client)), [])
+        self._action_handlers.append(on_click)
+        self.update()
 
         return self
+
+    def _handle_action(self, e: GenericEventArguments) -> None:
+        handle_event(self._action_handlers[e.args['index']], UiEventArguments(sender=self, client=self.client))
 
     def _render_markdown(self) -> str:
         return self.message

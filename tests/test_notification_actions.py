@@ -149,9 +149,9 @@ def test_add_action_multiple_actions(screen: Screen):
     assert actions[0]['label'] == 'Action 1'
     assert actions[1]['label'] == 'Action 2'
     assert actions[2]['label'] == 'Action 3'
-    assert 'action_0' in actions[0][':handler']
-    assert 'action_1' in actions[1][':handler']
-    assert 'action_2' in actions[2][':handler']
+    assert 'index: 0' in actions[0][':handler']
+    assert 'index: 1' in actions[1][':handler']
+    assert 'index: 2' in actions[2][':handler']
 
 
 def test_add_action_returns_self(screen: Screen):
@@ -177,6 +177,25 @@ def test_add_action_on_click_fires(screen: Screen):
         n.add_action(lambda: clicked.append('no'), text='No')
 
     screen.open('/')
-    screen.click('Yes')
+    screen.click('No')  # click the second action to verify the index dispatch picks the right handler
     screen.wait(0.5)
-    assert clicked == ['yes']
+    assert clicked == ['no']
+
+
+def test_add_action_after_render_no_duplicate(screen: Screen):
+    """Adding an action after the notification is on screen must not re-render and duplicate it (see PR #4819)."""
+    clicked: list[str] = []
+
+    @ui.page('/')
+    def page():
+        n = ui.notification('Decide', timeout=None)
+        ui.button('Add', on_click=lambda: n.add_action(lambda: clicked.append('late'), text='Late'))
+
+    screen.open('/')
+    assert len(screen.find_all_by_class('q-notification')) == 1
+    screen.click('Add')
+    screen.wait(0.5)
+    assert len(screen.find_all_by_class('q-notification')) == 1, 'late add_action must not duplicate the notification'
+    screen.click('Late')
+    screen.wait(0.5)
+    assert clicked == ['late']
