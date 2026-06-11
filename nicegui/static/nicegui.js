@@ -272,8 +272,9 @@ function renderRecursively(elements, id, propsContext) {
         else setTimeout(delayed_emitter, 10);
       };
       throttle(delayed_emitter, event.throttle, event.leading_events, event.trailing_events, event.listener_id);
-      if (element.props["loopback"] === False && event.type == "update:modelValue") {
-        element.props["model-value"] = args;
+      if (element.props["loopback"] === False && event.type.startsWith("update:")) {
+        const prop = event.type.substring(7).replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()); // e.g. "model-value"
+        element.props[prop] = args[0];
       }
     };
 
@@ -505,6 +506,13 @@ function createApp(elements, options) {
               continue;
             }
             replaceUndefinedAttributes(element);
+            for (const prop of element.preserved_props ?? []) {
+              // NOTE: mirrored in value_element.py: keep the current (possibly newer) client-side value
+              if (this.elements[id] && prop in this.elements[id].props) {
+                element.props[prop] = this.elements[id].props[prop];
+              }
+            }
+            delete element.preserved_props;
             this.elements[id] = element;
           }
 

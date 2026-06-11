@@ -34,6 +34,7 @@ class ValueElement(Element, Generic[ValueT]):
                  ) -> None:
         super().__init__(**kwargs)
         self._send_update_on_value_change = True
+        self._value_from_client = False
         self.set_value(value)
         self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         self._props['loopback'] = self.LOOPBACK
@@ -46,6 +47,10 @@ class ValueElement(Element, Generic[ValueT]):
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
+            if self.LOOPBACK is False:
+                # the client already has this value; future updates must not overwrite possibly newer user input,
+                # unless the value has been transformed on the way and needs to be sent back
+                self._value_from_client = self._props.get(self.VALUE_PROP) == e.args
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments[ValueT]]) -> Self:
@@ -134,12 +139,20 @@ class ValueElement(Element, Generic[ValueT]):
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
+            self._value_from_client = False
             self.update()
         args = ValueChangeEventArguments(sender=self, client=self.client,
                                          value=self._value_to_event_value(value),
                                          previous_value=self._value_to_event_value(previous_value))
         for handler in self._change_handlers:
             handle_event(handler, args)
+
+    def _to_update_dict(self) -> dict[str, Any]:
+        dict_ = super()._to_update_dict()
+        if self.LOOPBACK is False and self._value_from_client:
+            # tell the client to keep its current (possibly newer) value (see "preserved_props" in nicegui.js)
+            dict_['preserved_props'] = [self.VALUE_PROP]
+        return dict_
 
     def _event_args_to_value(self, e: GenericEventArguments) -> ValueT:
         return e.args

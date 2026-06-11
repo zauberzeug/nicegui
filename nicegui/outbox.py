@@ -101,7 +101,7 @@ class Outbox:
                 coros = []
                 if self.updates:
                     data = {
-                        element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
+                        element_id: None if element is deleted else element._to_update_dict()  # type: ignore  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
                     js_components = [

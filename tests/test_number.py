@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_number_input(screen: Screen):
@@ -176,6 +176,20 @@ def test_none_values(screen: Screen):
     screen.should_contain_input('1')
     screen.should_contain('model: 1')
     screen.should_contain('event: 1')
+
+
+async def test_update_sends_back_diverging_model_value(user: User) -> None:
+    number = None
+
+    @ui.page('/')
+    def page():
+        nonlocal number
+        number = ui.number('Number', format='%.2f', value=0)
+
+    await user.open('/')
+    user.find(ui.number).trigger('update:modelValue', '5')
+    assert number.value == 5
+    assert number._to_update_dict()['props']['model-value'] == '5.00'  # pylint: disable=protected-access
 
 
 def test_prefix_and_suffix(screen: Screen):
