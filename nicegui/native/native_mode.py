@@ -112,7 +112,7 @@ def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> 
     window.events.resized += lambda width, height: send('resized', width=width, height=height)
     window.events.moved += lambda x, y: send('moved', x=x, y=y)
     window.events.closed += lambda: send('closed')
-    # NOTE: 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
+    # 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -153,7 +153,7 @@ def _start_window_method_executor(window: webview.Window,
                     else:
                         log.error(f'window.{method_name} is not callable')
             except queue.Empty:
-                time.sleep(0.016)  # NOTE: avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
+                time.sleep(0.016)  # avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
             except Exception:
                 log.exception(f'error in window.{method_name}')
 

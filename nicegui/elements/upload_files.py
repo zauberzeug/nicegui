@@ -125,7 +125,7 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
     """
     memory_limit = (
         getattr(MultiPartParser, 'spool_max_size', 0) or
-        getattr(MultiPartParser, 'max_part_size', 0) or  # NOTE: for starlette < 0.46.0
+        getattr(MultiPartParser, 'max_part_size', 0) or  # for starlette < 0.46.0
         1024 * 1024
     )
 

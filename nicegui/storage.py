@@ -60,7 +60,7 @@ def set_storage_secret(storage_secret: str | None = None,
         core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
     else:
         if any(m.cls == SessionMiddleware for m in core.app.user_middleware):
-            # NOTE not using "add_middleware" because it would be the wrong order
+            # not using "add_middleware" because it would be the wrong order
             core.app.user_middleware.append(Middleware(RequestTrackingMiddleware))
         elif storage_secret is not None:
             core.app.add_middleware(RequestTrackingMiddleware)
