@@ -364,19 +364,6 @@ function ack() {
   window.ackedMessageId = window.nextMessageId;
 }
 
-function reloadPage(reason) {
-  const reloadCount = Number(sessionStorage.__nicegui_reload_count || 0);
-  if (reloadCount >= 3) {
-    console.log("not reloading anymore because " + reason);
-    document.getElementById("popup").ariaHidden = true;
-    document.getElementById("connection_failed_popup").ariaHidden = false;
-    return;
-  }
-  sessionStorage.__nicegui_reload_count = reloadCount + 1;
-  console.log("reloading because " + reason);
-  window.location.reload();
-}
-
 function createRandomUUID() {
   try {
     return crypto.randomUUID();
@@ -463,13 +450,11 @@ function createApp(elements, options) {
 
           function finishHandshake(ok) {
             if (!ok) {
-              reloadPage("handshake failed for clientId " + window.clientId);
-              return;
+              console.log("reloading because handshake failed for clientId " + window.clientId);
+              window.location.reload();
             }
-            sessionStorage.removeItem("__nicegui_reload_count");
             window.did_handshake = true;
             document.getElementById("popup").ariaHidden = true;
-            document.getElementById("connection_failed_popup").ariaHidden = true;
           }
 
           if (options.query.implicit_handshake) {
@@ -488,9 +473,11 @@ function createApp(elements, options) {
               window.socket.io.opts.transports = ["polling", "websocket"];
               return;
             }
-            reloadPage("connection timed out"); // see https://github.com/zauberzeug/nicegui/issues/198
+            console.log("reloading because connection timed out");
+            window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
           } else if (err.message == "Implicit handshake failed") {
-            reloadPage("implicit handshake failed for clientId " + window.clientId);
+            console.log("reloading because implicit handshake failed for clientId " + window.clientId);
+            window.location.reload();
           }
         },
         try_reconnect: async () => {
