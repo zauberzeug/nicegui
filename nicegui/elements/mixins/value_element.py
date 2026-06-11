@@ -147,10 +147,9 @@ class ValueElement(Element, Generic[ValueT]):
         for handler in self._change_handlers:
             handle_event(handler, args)
 
-    def _to_update_dict(self) -> dict[str, Any]:
-        dict_ = super()._to_update_dict()
+    def _to_dict(self) -> dict[str, Any]:
+        dict_ = super()._to_dict()
         if self.LOOPBACK is False and self._value_from_client:
-            # tell the client to keep its current (possibly newer) value (see "preserved_props" in nicegui.js)
             dict_['preserved_props'] = [self.VALUE_PROP]
         return dict_
 

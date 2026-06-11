@@ -228,10 +228,6 @@ class Element(Visibility):
             if slot != self.default_slot
         }
 
-    def _to_update_dict(self) -> dict[str, Any]:
-        """Dictionary representation for update messages (in contrast to ``_to_dict`` for full page builds)."""
-        return self._to_dict()
-
     def _to_dict(self) -> dict[str, Any]:
         return {
             'tag': self.tag,
