@@ -8,7 +8,7 @@ def is_file(path: str | Path | None) -> bool:
     if not path:
         return False
     if isinstance(path, str) and path.strip().startswith('data:'):
-        return False  # NOTE: avoid passing data URLs to Path
+        return False  # avoid passing data URLs to Path
     try:
         return Path(path).is_file()
     except OSError:

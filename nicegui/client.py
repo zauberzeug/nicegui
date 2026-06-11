@@ -395,7 +395,7 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
-        element_list = list(elements)  # NOTE: we need to iterate over the elements multiple times
+        element_list = list(elements)  # we need to iterate over the elements multiple times
         binding.remove(element_list)
         for element in element_list:
             element._handle_delete()  # pylint: disable=protected-access

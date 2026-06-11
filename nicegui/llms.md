@@ -1261,7 +1261,7 @@ These follow NiceGUI project conventions and work well for NiceGUI-based apps:
 
 - **Single quotes** for strings: `'hello'` not `"hello"` (in Python code)
 - **f-strings** preferred over `.format()` or `%`
-- **`# NOTE:`** prefix for non-obvious implementation details
+- **`# NOTE:`** only to draw special attention (e.g. changes that need to be mirrored elsewhere); plain comments otherwise
 - **No mutable defaults**: use `None` instead of `[]` or `{}`
 - **`contextlib.suppress()`** instead of `try: ... except: pass`
 - **`background_tasks.create()`** instead of `asyncio.create_task()`

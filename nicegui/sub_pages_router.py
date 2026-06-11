@@ -33,7 +33,7 @@ class SubPagesRouter:
                     break
             if request.url.query:
                 path += '?' + request.url.query
-            # NOTE: we do not use request.url.fragment because browsers do not send it to the server
+            # we do not use request.url.fragment because browsers do not send it to the server
             self.current_path = path
         else:
             self.current_path = '/'
@@ -62,7 +62,7 @@ class SubPagesRouter:
         await self._handle_open(self.current_path)
 
     async def _handle_open(self, path: str) -> bool:
-        # NOTE: keep a reference to the client because _show clears the slots so that context.client does not work anymore
+        # keep a reference to the client because _show clears the slots so that context.client does not work anymore
         client = context.client
         self.current_path = path
         self.is_initial_request = False
@@ -74,7 +74,7 @@ class SubPagesRouter:
         return await self._can_resolve_full_path(client)
 
     async def _handle_navigate(self, path: str) -> None:
-        # NOTE: keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
+        # keep a reference to the client because _handle_open clears the slots so that context.client does not work anymore
         client = context.client
         await self._handle_open(path)
         if (
@@ -119,7 +119,7 @@ class SubPagesRouter:
         sub_pages_elements = [el for el in client.layout.descendants() if isinstance(el, SubPages)]
         if any(el._active_tasks for el in sub_pages_elements):  # pylint: disable=protected-access
             await asyncio.sleep(0)
-            # NOTE: refresh the list to include newly created nested sub pages in async sub page builders after the event loop tick
+            # refresh the list to include newly created nested sub pages in async sub page builders after the event loop tick
             sub_pages_elements = [el for el in client.layout.descendants() if isinstance(el, SubPages)]
         for sub_pages in sub_pages_elements:
             if (

@@ -57,7 +57,7 @@ try:
     class WindowProxy(webview.Window):
 
         def __init__(self) -> None:  # pylint: disable=super-init-not-called
-            pass  # NOTE we don't call super().__init__ here because this is just a proxy to the actual window
+            pass  # we don't call super().__init__ here because this is just a proxy to the actual window
 
         async def get_always_on_top(self) -> bool:
             """Get whether the window is always on top."""

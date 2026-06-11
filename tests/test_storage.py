@@ -392,7 +392,7 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     def page():
         ui.label('ok')
 
-    await user.open('/')  # NOTE: needed to ensure NiceGUI's event loop is running
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
     path = tmp_path / 'storage.json'
     d = FilePersistentDict(path, encoding='utf-8')
     d['key'] = 'value'  # schedules async backup task tagged with await_on_shutdown

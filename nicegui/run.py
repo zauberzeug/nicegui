@@ -54,7 +54,7 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
     try:
         return callback(*args, **kwargs)
     except Exception as e:
-        # NOTE: we do not want to pass the original exception because it might be unpicklable
+        # we do not want to pass the original exception because it might be unpicklable
         raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
 
 

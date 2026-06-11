@@ -17,7 +17,7 @@ class Row(SortableElement, default_classes='nicegui-row'):
         :param align_items: alignment of the items in the row ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('div')
-        self._classes.append('row')  # NOTE: for compatibility with Quasar's col-* classes
+        self._classes.append('row')  # for compatibility with Quasar's col-* classes
         if align_items:
             self._classes.append(f'items-{align_items}')
 
