@@ -47,10 +47,7 @@ class ValueElement(Element, Generic[ValueT]):
             self._send_update_on_value_change = self.LOOPBACK is True
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
-            if self.LOOPBACK is False:
-                # the client already has this value; future updates must not overwrite possibly newer user input,
-                # unless the value has been transformed on the way and needs to be sent back
-                self._value_from_client = self._props.get(self.VALUE_PROP) == e.args
+            self._value_from_client = self.LOOPBACK is False and self._props.get(self.VALUE_PROP) == e.args
         self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments[ValueT]]) -> Self:
