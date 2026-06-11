@@ -131,7 +131,7 @@ def test_opening_sub_pages_directly(screen: Screen):
     screen.should_contain('two')
     screen.should_not_contain('one')
 
-    screen.open('/one/')  # NOTE: having a slash at the end of the path should not cause an error
+    screen.open('/one/')  # having a slash at the end of the path should not cause an error
     screen.should_contain('one')
     screen.should_not_contain('two')
 
@@ -437,7 +437,7 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
     screen.should_contain('main-content')
     assert calls == {'index': 1}
 
-    # NOTE: even though this is a sub page route, new_tab=True should use normal navigation
+    # even though this is a sub page route, new_tab=True should use normal navigation
     screen.click('new tab')
     screen.wait(0.5)
     screen.switch_to(1)
@@ -482,7 +482,7 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
 
     screen.click('Add sub page')
     screen.wait(0.2)
-    screen.should_contain('sub-content')  # NOTE: because browser points to /sub we see the sub page content
+    screen.should_contain('sub-content')  # because browser points to /sub we see the sub page content
     assert screen.current_path == '/sub'
 
 
@@ -685,7 +685,7 @@ def test_async_sub_pages(screen: Screen):
     screen.click('/0.1')
     screen.should_contain('after 0.1 sec')
 
-    # NOTE: below we ensure that quick page changes are not affected by the async sub page
+    # below we ensure that quick page changes are not affected by the async sub page
     screen.click('/1.0')
     screen.wait(0.1)
     screen.click('/0.1')
@@ -841,7 +841,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         calls['main'] += 1
         ui.label('Main page')
         ui.link('Go to bottom', '/page#bottom')
-        # NOTE: extend content of main page so we can verify that scroll positions are reset when doing cross-page navigation
+        # extend content of main page so we can verify that scroll positions are reset when doing cross-page navigation
         for i in range(100):
             ui.label(f'Line {i}')
 
@@ -962,7 +962,7 @@ def test_on_path_changed_event(screen: Screen):
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
-    assert paths == []  # NOTE: initial path is not reported, because the path does not "change" on first load
+    assert paths == []  # initial path is not reported, because the path does not "change" on first load
     assert calls == {'index': 1, 'main': 1, 'other': 0}
 
     screen.click('Go to other')
@@ -976,7 +976,7 @@ def test_on_path_changed_event(screen: Screen):
     assert calls == {'index': 2, 'main': 1, 'other': 2}
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
     assert paths == ['/other']
     assert calls == {'index': 3, 'main': 2, 'other': 2}
 
@@ -1018,17 +1018,17 @@ def test_exception_in_page_builder(screen: Screen):
     msg_content = 'sub page /content_with_exception produced an error'
     screen.should_contain(f'500: {msg_content}')
     screen.assert_py_logger('ERROR', msg_content)
-    # NOTE: the content should not show at all, when an error occurs
+    # the content should not show at all, when an error occurs
     screen.should_not_contain('content before exception')
 
     screen.click('Go to async exception')
     msg_async = 'sub page /async produced an error'
     screen.should_not_contain(f'500: {msg_async}')
     screen.assert_py_logger('ERROR', 'async test exception')
-    # NOTE: the content should show, when an error occurs after async task is started
+    # the content should show, when an error occurs after async task is started
     screen.should_contain('async content before exception')
 
-    screen.open('/content_with_exception')  # NOTE: directly opening the page produces same error as above
+    screen.open('/content_with_exception')  # directly opening the page produces same error as above
     screen.should_contain(f'500: {msg_content}')
     screen.assert_py_logger('ERROR', msg_content)
     screen.should_not_contain('content before exception')
@@ -1089,6 +1089,25 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     screen.should_contain('main page')
 
 
+def test_navigate_from_initial_404_does_not_leak_sad_face(screen: Screen):
+    # regression test for #6069
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Go to home', '/')
+        ui.sub_pages({'/': lambda: ui.label('main page')})
+
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
+    screen.open('/bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+    screen.should_not_contain("This page doesn't exist.")
+
+    screen.click('Go to home')
+    screen.should_contain('main page')
+    screen.should_not_contain('404: sub page /bad_path not found')
+    screen.should_not_contain("This page doesn't exist.")
+
+
 def test_http_404_on_initial_request(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
@@ -1107,7 +1126,7 @@ def test_http_404_on_initial_request(screen: Screen):
     screen.should_contain('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
@@ -1128,7 +1147,7 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
     screen.should_contain('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen):
@@ -1160,7 +1179,7 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     screen.should_contain('sub sub page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_with_root_function_and_sub_pages(screen: Screen):

@@ -45,7 +45,7 @@ export default {
     } else {
       this.renderContent();
     }
-    setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    setTimeout(() => this.compute_src(), 0); // wait for window.path_prefix to be set in app.mounted()
     const handle_completion = () => {
       if (this.waiting_source) {
         this.computed_src = this.waiting_source;

@@ -7,11 +7,10 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from fastapi import HTTPException, Request, Response
+from fastapi import Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client, ClientConnectionTimeout
-from .error import error_content
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -110,7 +109,7 @@ class page:
         return self.markdown if self.markdown is not None else core.app.config.markdown
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
+        core.app.remove_route(self.path)  # make sure only the latest route definition is used
 
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
@@ -161,7 +160,7 @@ class page:
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
-            # NOTE cleaning up the keyword args so the signature is consistent with "func" again
+            # cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
@@ -203,19 +202,16 @@ class page:
                     task.add_done_callback(check_for_late_return_value)
 
             if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
-                # Handle 404 gracefully without re-raising exception (similar to 404 handler when no root function)
                 log.warning(f'{request.url} not found')
-                with client:
-                    error_content(404, HTTPException(404, f'{client.sub_pages_router.current_path} not found'))
                 return client.build_response(request, 404)
 
-            if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
+            if isinstance(result, Response):  # if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
             return client.build_response(request, client.status_code)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
-        # NOTE adding request as a parameter so we can pass it to the client in the decorated function
+        # adding request as a parameter so we can pass it to the client in the decorated function
         if 'request' not in {p.name for p in parameters}:
             request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
             parameters.insert(0, request)

@@ -261,7 +261,7 @@ def run(root: Callable | None = None, *,
         native = False
         show_welcome_message = False
 
-    # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
+    # We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
     os.environ['NICEGUI_PORT'] = str(port)
     os.environ['NICEGUI_PROTOCOL'] = protocol
@@ -275,7 +275,7 @@ def run(root: Callable | None = None, *,
     if kwargs.get('workers', 1) > 1:
         raise ValueError('NiceGUI does not support multiple workers yet.')
 
-    # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
+    # The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
     config = CustomServerConfig(
         APP_IMPORT_STRING if reload else core.app,

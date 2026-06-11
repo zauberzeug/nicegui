@@ -261,6 +261,7 @@ def map_of_nicegui():
             - [`ui.notification`](/documentation/notification)
             - [`ui.number`](/documentation/number)
             - [`ui.pagination`](/documentation/pagination)
+            - [`ui.parallax`](/documentation/parallax)
             - [`ui.plotly`](/documentation/plotly)
             - [`ui.pyplot`](/documentation/pyplot)
             - [`ui.radio`](/documentation/radio)
@@ -273,6 +274,7 @@ def map_of_nicegui():
             - [`ui.select`](/documentation/select)
             - [`ui.separator`](/documentation/separator)
             - [`ui.skeleton`](/documentation/skeleton)
+            - [`ui.skip_link`](/documentation/skip_link)
             - [`ui.slide_item`](/documentation/slide_item)
             - [`ui.slider`](/documentation/slider)
             - [`ui.space`](/documentation/space)
@@ -292,6 +294,7 @@ def map_of_nicegui():
             - [`ui.tree`](/documentation/tree)
             - [`ui.upload`](/documentation/upload)
             - [`ui.video`](/documentation/video)
+            - [`ui.xterm`](/documentation/xterm)
         - special layout [elements](/documentation/page_layout):
             - `ui.header`
             - `ui.footer`

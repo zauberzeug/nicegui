@@ -182,6 +182,39 @@
   display: none;
 }
 
+/* skip link */
+.nicegui-skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.nicegui-skip-link:focus {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  padding: 0.5rem 1rem;
+  border: 1pt solid rgba(127, 159, 191, 0.25);
+  border-radius: 0.25em;
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
+  z-index: 9999;
+}
+.body--dark .nicegui-skip-link:focus {
+  background-color: black;
+}
+.body--light .nicegui-skip-link:focus {
+  background-color: white;
+}
+
 /* other NiceGUI elements */
 .nicegui-grid {
   display: grid;
