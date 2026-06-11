@@ -33,7 +33,6 @@ export default {
   },
   watch: {
     value(newValue) {
-      if (newValue === this.inputValue) return; // e.g. the locally mirrored value of a "preserved value" update
       this.emitting = false;
       this.inputValue = newValue;
       this.$nextTick(() => (this.emitting = true));
