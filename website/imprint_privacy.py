@@ -2,33 +2,34 @@ from nicegui import ui
 
 from . import design as d
 from .components.shared import section
+from .i18n import t
 
 
 def create() -> None:
-    ui.page_title('Imprint & Privacy | NiceGUI')
+    ui.page_title(t('Imprint & Privacy | NiceGUI'))
 
     with section('imprint'):
         ui.link_target('imprint')
-        _heading('Imprint')
+        _heading(t('Imprint'))
 
         _subheading('Zauberzeug GmbH')
-        _text('''
+        _text(t('''
             Hohenholter Str. 43, 48329 Havixbeck, Germany
 
             Represented by Rodion (Rodja) Trappe
 
             Phone: +49 2507 3817, Email: info@zauberzeug.com
-        ''')
+        '''))
 
-        _subheading('Registry entry')
-        _text('Registry court: Amtsgericht Coesfeld, Registry number: HRB 14215')
+        _subheading(t('Registry entry'))
+        _text(t('Registry court: Amtsgericht Coesfeld, Registry number: HRB 14215'))
 
-        _subheading('Tax')
-        _text('Sales tax identification number according to §27a Sales Tax Act: DE286384205')
+        _subheading(t('Tax'))
+        _text(t('Sales tax identification number according to §27a Sales Tax Act: DE286384205'))
 
         ui.link_target('privacy')
-        _heading('Privacy Policy')
-        _text('''
+        _heading(t('Privacy Policy'))
+        _text(t('''
             We use [Plausible Analytics](https://plausible.io) to understand how you interact with our site.
             Plausible Analytics is a privacy-first analytics tool
             that does not use cookies or collect any personal data or personally identifiable information (PII).
@@ -43,7 +44,7 @@ def create() -> None:
 
             For more details on Plausible Analytics and its data policy,
             visit <https://plausible.io/data-policy>.
-        ''')
+        '''))
 
 
 def _heading(text: str) -> ui.label:

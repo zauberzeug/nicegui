@@ -2,6 +2,7 @@ from nicegui import ui
 
 from .. import design as d
 from ..examples import Example, examples
+from ..i18n import t
 from .shared import section, section_heading
 
 FEATURED_TITLES = {'Authentication', 'Chat App', 'Todo List'}
@@ -10,15 +11,15 @@ FEATURED_TITLES = {'Authentication', 'Chat App', 'Todo List'}
 def create() -> None:
     """Create the examples section with featured example cards."""
     with section('examples'):
-        section_heading('examples', 'Built with NiceGUI.',
-                        'Real-world examples you can learn from and adapt.')
+        section_heading('examples', t('Built with NiceGUI.'),
+                        t('Real-world examples you can learn from and adapt.'))
 
         with ui.element().classes('reveal grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1'):
             for example in examples:
                 if example.title in FEATURED_TITLES:
                     example_card(example)
 
-        ui.markdown('[Browse all examples \u2192](/examples)').classes('reveal mt-8')
+        ui.markdown(t('[Browse all examples \u2192](/examples)')).classes('reveal mt-8')
 
 
 def example_card(example: Example) -> None:
