@@ -34,13 +34,11 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
             ``False`` disables sanitization (use only with trusted content),
             or pass a callable to apply server-side sanitization
         """
-        if extras is None:
-            extras = self.default_extras
         self._sanitize = sanitize
-        self.extras = extras[:]
+        self.extras = extras[:] if extras is not None else self.default_extras[:]
         super().__init__(content=content)
         self._props['sanitize'] = sanitize is True
-        if 'mermaid' in extras:
+        if 'mermaid' in self.extras:
             self._props['use-mermaid'] = True
 
         codehilite = self._generate_codehilite_css()
