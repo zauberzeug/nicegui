@@ -28,7 +28,7 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
 
         :param content: the Markdown content to be displayed
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_
-                       (default: `['fenced-code-blocks', 'tables']`, can be set via `ui.markdown.default_extras`)
+            (default: ``['fenced-code-blocks', 'tables']``, can be set via ``ui.markdown.default_extras``)
         :param sanitize: sanitization mode:
             ``True`` (default) uses client-side sanitization via DOMPurify,
             ``False`` disables sanitization (use only with trusted content),
