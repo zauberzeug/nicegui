@@ -7,24 +7,33 @@ export default {
       @filter="filterFn"
       @popup-show="addClass"
       @popup-hide="removeClass"
-      @input-value="deferInputValue"
+      @input-value="forwardInputValue"
+      @update:model-value="forwardModelValue"
     >
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
     </q-select>
   `,
-  emits: ["input-value"],
+  emits: ["input-value", "update:model-value"],
   data() {
     return {
       initialOptions: this.options,
       filteredOptions: this.options,
+      modelValueChanged: false,
     };
   },
   methods: {
-    async deferInputValue(value) {
-      await this.$nextTick(); // emit one tick later to process selection-induced "update:model-value" first (#4420)
-      this.$emit("input-value", value);
+    forwardModelValue(...args) {
+      this.modelValueChanged = true;
+      this.$emit("update:model-value", ...args);
+    },
+    async forwardInputValue(value) {
+      this.modelValueChanged = false;
+      await this.$nextTick(); // wait for a possible "update:model-value" event indicating a selection
+      if (!this.modelValueChanged) {
+        this.$emit("input-value", value); // suppress selection-induced events which would re-trigger filtering (#4420)
+      }
     },
     filterFn(val, update, abort) {
       update(() => (this.filteredOptions = val ? this.findFilteredOptions() : this.initialOptions));
