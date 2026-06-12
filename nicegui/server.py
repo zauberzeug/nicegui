@@ -4,6 +4,7 @@ import multiprocessing
 import multiprocessing.synchronize
 import socket
 import threading
+import time
 from typing import Any
 
 import uvicorn
@@ -37,7 +38,11 @@ class Server(uvicorn.Server):
             native.response_queue = self.config.response_queue
             if (event := self.config.shutdown_event) is not None:
                 def monitor_shutdown_event() -> None:
-                    event.wait()
+                    # Poll instead of `event.wait()`: a blocking wait would register this thread as a waiter
+                    # on the event's internal condition variable. When the auto-reloader kills the process
+                    # mid-wait, the stale registration makes a later `event.set()` block forever (#5845).
+                    while not event.is_set():
+                        time.sleep(0.1)
                     self.should_exit = True
                 threading.Thread(target=monitor_shutdown_event, daemon=True).start()
 
