@@ -56,23 +56,26 @@ doc.title('Storage')
 
     The following table will help you to choose storage.
 
-    | Storage type                | `client` | `tab`  | `browser` | `user` | `general` |
-    |-----------------------------|----------|--------|-----------|--------|-----------|
-    | Location                    | Server   | Server | Browser   | Server | Server    |
-    | Across tabs                 | No       | No     | Yes       | Yes    | Yes       |
-    | Across browsers             | No       | No     | No        | No     | Yes       |
-    | Across server restarts      | No       | No*    | No        | Yes    | Yes       |
-    | Across page reloads         | No       | Yes    | Yes       | Yes    | Yes       |
-    | Needs client connection     | No       | Yes**  | No        | No     | No        |
-    | Write only before response  | No       | No     | Yes       | No     | No        |
-    | Needs serializable data     | No       | No     | Yes       | Yes    | Yes       |
-    | Needs `storage_secret`      | No       | No     | Yes       | Yes    | No        |
+    | Storage type                | `client` | `tab`            | `browser` | `user` | `general` |
+    |-----------------------------|----------|------------------|-----------|--------|-----------|
+    | Location                    | Server   | Server           | Browser   | Server | Server    |
+    | Across tabs                 | No       | No               | Yes       | Yes    | Yes       |
+    | Across browsers             | No       | No               | No        | No     | Yes       |
+    | Across server restarts      | No       | No<sup>1)</sup>  | No        | Yes    | Yes       |
+    | Across page reloads         | No       | Yes              | Yes       | Yes    | Yes       |
+    | Needs client connection     | No       | Yes<sup>2)</sup> | No        | No     | No        |
+    | Write only before response  | No       | No               | Yes       | No     | No        |
+    | Needs serializable data     | No       | No               | Yes       | Yes    | Yes       |
+    | Needs `storage_secret`      | No       | No               | Yes       | Yes    | No        |
 
-    \* Tab storage persists across server restarts only when using Redis (see [Redis storage](#redis_storage) below).
+    <sup>1)</sup>
+    Tab storage persists across server restarts only when using Redis (see [Redis storage](#redis_storage) below).
     By default, tab storage is kept in memory and will be lost when the server restarts, as noted in the description above.
 
-    \*\* "Needs client connection" means you must use [`await client.connected()`](/documentation/page#wait_for_client_connection)
-    before accessing this storage type to ensure the WebSocket connection is established.
+    <sup>2)</sup>
+    Tab storage can only be accessed after the WebSocket connection has been established.
+    In event handlers this is already the case, but while building the page you need to
+    [`await client.connected()`](/documentation/page#wait_for_client_connection) first.
 ''')
 def storage_demo():
     from nicegui import app
