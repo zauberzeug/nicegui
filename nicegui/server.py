@@ -38,10 +38,8 @@ class Server(uvicorn.Server):
             if (event := self.config.shutdown_event) is not None:
                 def monitor_shutdown_event() -> None:
                     event.wait()
-                    # NOTE: The window is closed, so there is no client left to wait for.
-                    # Bound the connection drain, which otherwise hangs forever on stale connection bookkeeping
-                    # on Windows (#5443); app.on_shutdown callbacks still run to completion afterwards,
-                    # because uvicorn's lifespan shutdown follows the drain and is not affected by this timeout.
+                    # The window is closed, so bound the connection drain, which can hang forever on Windows (#5443).
+                    # Lifespan shutdown (with app.on_shutdown callbacks) follows the drain, unaffected by this timeout.
                     self.config.timeout_graceful_shutdown = 1
                     self.should_exit = True
                 threading.Thread(target=monitor_shutdown_event, daemon=True).start()
