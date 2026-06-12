@@ -30,6 +30,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         Provides URL-based navigation between different views to build single page applications (SPAs).
         Routes are defined as path patterns mapping to page builder functions.
         Path parameters like "/user/{id}" are extracted and passed to the builder function.
+        Only single-segment "{name}" parameters are supported (not Starlette-style converters like "{name:path}");
+        for wildcard routing use ``show_404=False`` and read ``PageArguments.remaining_path``.
 
         *Added in version 2.22.0*
 
@@ -42,6 +44,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         super().__init__()
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
+        for path in self._routes:
+            self._validate_route(path)
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
         self._rendered_path = ''
         self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
@@ -59,6 +63,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param page: function to call when this path is accessed
         :return: self for method chaining
         """
+        self._validate_route(path)
         self._routes[path] = page
         self._show()
         return self
@@ -75,16 +80,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Display the page matching the current URL path."""
         self._rendered_path = ''
         match = self._find_matching_path()
+        has_nested_sub_pages = any(isinstance(el, SubPages) for el in self.descendants())
         # if path and query params are the same, only update fragment without re-rendering
         if (
+            # pylint: disable=too-many-boolean-expressions
             match is not None and
             self._match is not None and
             match.path == self._match.path and
-            not self._required_query_params_changed(match) and
-            not (self.has_404 and self._match.remaining_path == match.remaining_path)
+            (self._match.remaining_path == match.remaining_path or has_nested_sub_pages or self._404_enabled) and
+            not self._required_query_params_changed(match)
         ):
             # Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
-            if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
+            if match.remaining_path and not has_nested_sub_pages:
                 self._set_match(None)
             else:
                 self._handle_scrolling(match, behavior='smooth')
@@ -186,6 +193,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     fragment=fragment,
                 ), query_params
         return None, query_params
+
+    @staticmethod
+    def _validate_route(path: str) -> None:
+        for parameter in re.findall(r'\{(.*?)\}', path):
+            if not re.fullmatch(r'\w+', parameter):
+                raise ValueError(
+                    f'Invalid route "{path}": the parameter "{{{parameter}}}" is not supported. '
+                    'ui.sub_pages only supports single-segment "{name}" parameters, '
+                    'not Starlette-style converters like "{name:path}". '
+                    'For wildcard routing, use show_404=False and read PageArguments.remaining_path '
+                    '(see https://nicegui.io/documentation/sub_pages).'
+                )
 
     @staticmethod
     def _match_path(pattern: str, path: str) -> dict[str, str] | None:
