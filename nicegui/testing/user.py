@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any, Callable, TypeVar, overload
+from collections.abc import Callable
+from typing import Any, TypeVar, overload
 from uuid import uuid4
 
 import httpx
 import socketio
 
 from nicegui import Client, ElementFilter, ui
-from nicegui.element import Element
 from nicegui.nicegui import _on_handshake
 from nicegui.outbox import Message
 
@@ -21,7 +21,7 @@ from .user_notify import UserNotify
 # pylint: disable=protected-access
 
 
-T = TypeVar('T', bound=Element)
+T = TypeVar('T', bound=ui.element)
 
 
 class User:
@@ -36,6 +36,7 @@ class User:
         self.navigate = UserNavigate(self)
         self.notify = UserNotify()
         self.download = UserDownload(self)
+        self.tab_id = str(uuid4())
         self.javascript_rules: dict[re.Pattern, Callable[[re.Match], Any]] = {
             re.compile('.*__IS_DRAWER_OPEN__'): lambda _: True,  # see https://github.com/zauberzeug/nicegui/issues/4508
         }
@@ -53,7 +54,7 @@ class User:
         return self._client.__exit__(exc_type, exc_val, exc_tb)
 
     def __getattribute__(self, name: str) -> Any:
-        if name not in {'notify', 'navigate', 'download'}:  # NOTE: avoid infinite recursion
+        if name not in {'notify', 'navigate', 'download'}:  # avoid infinite recursion
             ui.navigate = self.navigate
             ui.notify = self.notify
             ui.download = self.download
@@ -73,7 +74,7 @@ class User:
         self.sio.on('connect')
         await _on_handshake(f'test-{uuid4()}', {
             'client_id': self.client.id,
-            'tab_id': str(uuid4()),
+            'tab_id': self.tab_id,
             'document_id': str(uuid4()),
         })
         self.back_history.append(path)
@@ -177,7 +178,7 @@ class User:
     @overload
     def find(self,
              target: str,
-             ) -> UserInteraction[Element]:
+             ) -> UserInteraction[ui.element]:
         ...
 
     @overload
@@ -191,7 +192,7 @@ class User:
              *,
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
-             ) -> UserInteraction[Element]:
+             ) -> UserInteraction[ui.element]:
         ...
 
     @overload
@@ -219,7 +220,7 @@ class User:
         return UserInteraction(self, elements, target)
 
     @property
-    def current_layout(self) -> Element:
+    def current_layout(self) -> ui.element:
         """Return the root layout element of the current page."""
         return self._client.layout
 
@@ -232,14 +233,15 @@ class User:
     ) -> set[T]:
         if target is None:
             if kind is None:
-                elements = set(ElementFilter(marker=marker, content=content))
+                elements = set(ElementFilter(marker=marker, content=content, only_visible=True))
             else:
-                elements = set(ElementFilter(kind=kind, marker=marker, content=content))
+                elements = set(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True))
         elif isinstance(target, str):
-            elements = set(ElementFilter(marker=target)).union(ElementFilter(content=target))
+            elements = set(ElementFilter(marker=target, only_visible=True)) \
+                .union(ElementFilter(content=target, only_visible=True))
         else:
-            elements = set(ElementFilter(kind=target))
-        return {e for e in elements if e.visible}  # type: ignore
+            elements = set(ElementFilter(kind=target, only_visible=True))
+        return elements  # type: ignore
 
     def _build_error_message(self,
                              target: str | type[T] | None = None,

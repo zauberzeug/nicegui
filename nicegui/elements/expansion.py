@@ -1,21 +1,25 @@
-from typing import Optional
+from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
+from .mixins.sortable_element import SortableElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Expansion(IconElement, TextElement, ValueElement, DisableableElement, default_classes='nicegui-expansion'):
+class Expansion(SortableElement, IconElement, TextElement, ValueElement[bool], DisableableElement,
+                component='expansion.js', default_classes='nicegui-expansion'):
 
+    @resolve_defaults
     def __init__(self,
-                 text: str = '', *,
-                 caption: Optional[str] = None,
-                 icon: Optional[str] = None,
-                 group: Optional[str] = None,
-                 value: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None
+                 text: str = DEFAULT_PROPS['label'] | '', *,
+                 caption: str | None = DEFAULT_PROP | None,
+                 icon: str | None = DEFAULT_PROP | None,
+                 group: str | None = DEFAULT_PROP | None,
+                 value: bool = DEFAULT_PROPS['model-value'] | False,
+                 on_value_change: Handler[ValueChangeEventArguments[bool]] | None = None
                  ) -> None:
         """Expansion Element
 
@@ -28,19 +32,27 @@ class Expansion(IconElement, TextElement, ValueElement, DisableableElement, defa
         :param value: whether the expansion should be opened on creation (default: `False`)
         :param on_value_change: callback to execute when value changes
         """
-        super().__init__(tag='q-expansion-item', icon=icon, text=text, value=value, on_value_change=on_value_change)
-        if caption is not None:
-            self._props['caption'] = caption
-        if group is not None:
-            self._props['group'] = group
+        super().__init__(icon=icon, text=text, value=value, on_value_change=on_value_change)
+        self._props.set_optional('caption', caption)
+        self._props.set_optional('group', group)
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the expansion."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the expansion."""
         self.value = False
+        return self
+
+    def _render_markdown(self) -> str:
+        parts = []
+        if label := self._props.get('label', ''):
+            parts.append(f'**{label}**')
+        if self.value and (children_md := self._children_to_markdown()):
+            parts.append(children_md)
+        return '\n\n'.join(parts)
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text

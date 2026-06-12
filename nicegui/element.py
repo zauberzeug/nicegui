@@ -3,10 +3,10 @@ from __future__ import annotations
 import inspect
 import re
 import weakref
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from typing_extensions import Self
 
@@ -86,6 +86,9 @@ class Element(Visibility):
         if self._parent_slot:
             client.outbox.enqueue_update(parent_slot.parent)
 
+        self._props.add_rename('resource_path', 'resource-path')  # DEPRECATED: remove in NiceGUI 4.0
+        self._props.add_rename('dynamic_resource_path', 'dynamic-resource-path')  # DEPRECATED: remove in NiceGUI 4.0
+
     def __init_subclass__(cls, *,
                           component: str | Path | None = None,
                           dependencies: list[str | Path] = [],  # noqa: B006
@@ -156,7 +159,7 @@ class Element(Visibility):
         """
         path_ = Path(path)
         resource = register_resource(path_, max_time=path_.stat().st_mtime)
-        self._props['resource_path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
+        self._props['resource-path'] = f'/_nicegui/{__version__}/resources/{resource.key}'
 
     def add_dynamic_resource(self, name: str, function: Callable) -> None:
         """Add a dynamic resource to the element which returns the result of a function.
@@ -165,7 +168,7 @@ class Element(Visibility):
         :param function: function that returns the resource response
         """
         register_dynamic_resource(name, function)
-        self._props['dynamic_resource_path'] = f'/_nicegui/{__version__}/dynamic_resources'
+        self._props['dynamic-resource-path'] = f'/_nicegui/{__version__}/dynamic_resources'
 
     def add_slot(self, name: str, template: str | None = None) -> Slot:
         """Add a slot to the element.
@@ -199,6 +202,22 @@ class Element(Visibility):
         for slot in self.slots.values():
             yield from slot
 
+    def _render_markdown(self) -> str:
+        """Render the Markdown body for this element.
+
+        The default implementation recurses into children, which is the natural behavior for container elements.
+        Override to render specific content (e.g. text, value) or to actively skip children (return an empty string).
+        """
+        return self._children_to_markdown()
+
+    def _children_to_markdown(self) -> str:
+        """Collect Markdown from all child elements across all slots."""
+        return '\n\n'.join(
+            markdown
+            for child in self
+            if child.visible and (markdown := child._render_markdown())  # pylint: disable=protected-access
+        )
+
     def _collect_slot_dict(self) -> dict[str, Any]:
         return {
             name: {
@@ -223,11 +242,6 @@ class Element(Visibility):
                     'children': [child.id for child in self.default_slot.children],
                     'events': [listener.to_dict() for listener in self._event_listeners.values()],
                     'update_method': self._update_method,
-                    'component': {
-                        'key': self.component.key,
-                        'name': self.component.name,
-                        'tag': self.component.tag
-                    } if self.component else None,
                 }.items()
                 if value
             },
@@ -396,9 +410,28 @@ class Element(Visibility):
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
         events.handle_event(listener.handler, args)
 
+    def _is_safe_to_interact(self) -> bool:
+        """Return True if it is safe to send messages to this element's client.
+
+        Silent when the *client* has been deleted (e.g. browser reload race past ``reconnect_timeout``)
+        or already garbage-collected: an async callback resuming after the teardown is not a user bug.
+        Emits a one-shot warning when the *element* has been explicitly deleted but the client is still alive:
+        that is a real use-after-free in user code and worth surfacing.
+        """
+        client = self._client()
+        if client is None or client.is_deleted:
+            return False
+        if self.is_deleted:
+            helpers.warn_once('An element has been deleted but is still being used. '
+                              'This is most likely a bug in your application code. '
+                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
+                              stack_info=True)
+            return False
+        return True
+
     def update(self) -> None:
         """Update the element on the client side."""
-        if self.is_deleted:
+        if not self._is_safe_to_interact():
             return
         self.client.outbox.enqueue_update(self)
 
@@ -412,9 +445,11 @@ class Element(Visibility):
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.loop:
+        if not core.is_loop_running() or not self._is_safe_to_interact():
             return NullResponse()
-        return self.client.run_javascript(f'return runMethod({self.id}, "{name}", {json.dumps(args)})', timeout=timeout)
+        return self.client.run_javascript(
+            f'return runMethod({self.id}, {json.dumps(name)}, {json.dumps(args)})', timeout=timeout,
+        )
 
     def get_computed_prop(self, prop_name: str, *, timeout: float = 1) -> AwaitableResponse:
         """Return a computed property.
@@ -424,9 +459,11 @@ class Element(Visibility):
         :param prop_name: name of the computed prop
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.loop:
+        if not core.is_loop_running() or not self._is_safe_to_interact():
             return NullResponse()
-        return self.client.run_javascript(f'return getComputedProp({self.id}, "{prop_name}")', timeout=timeout)
+        return self.client.run_javascript(
+            f'return getComputedProp({self.id}, {json.dumps(prop_name)})', timeout=timeout,
+        )
 
     def ancestors(self, *, include_self: bool = False) -> Iterator[Element]:
         """Iterate over the ancestors of the element.
@@ -460,7 +497,7 @@ class Element(Visibility):
     def move(self,
              target_container: Element | None = None,
              target_index: int = -1, *,
-             target_slot: str | None = None) -> None:
+             target_slot: str | None = None) -> Self:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
@@ -487,6 +524,7 @@ class Element(Visibility):
         parent_slot.children.insert(target_index, self)
 
         target_container.update()
+        return self
 
     def remove(self, element: Element | int) -> None:
         """Remove a child element.
@@ -513,6 +551,9 @@ class Element(Visibility):
 
         This method can be overridden in subclasses to perform cleanup tasks.
         """
+        for slot in self.slots.values():
+            slot.children.clear()
+        self._event_listeners.clear()
 
     @property
     def is_deleted(self) -> bool:
@@ -533,7 +574,7 @@ class Element(Visibility):
             additions.append(f'text={shorten(self._text)}')
         if hasattr(self, 'content') and self.content:  # pylint: disable=no-member
             additions.append(f'content={shorten(self.content)}')  # pylint: disable=no-member
-        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic_resource_path'}
+        IGNORED_PROPS = {'loopback', 'color', 'view', 'innerHTML', 'dynamic-resource-path'}
         additions += [
             f'{key}={shorten(value)}'
             for key, value in self._props.items()

@@ -1,8 +1,9 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from typing_extensions import Self
 
 from ..binding import BindableProperty
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
     GenericEventArguments,
@@ -18,12 +19,14 @@ from ..events import (
 class Keyboard(Element, component='keyboard.js'):
     active = BindableProperty()
 
+    @resolve_defaults
     def __init__(self,
-                 on_key: Optional[Handler[KeyEventArguments]] = None, *,
+                 on_key: Handler[KeyEventArguments] | None = None, *,
                  active: bool = True,
-                 repeating: bool = True,
-                 ignore: list[Literal['input', 'select', 'button', 'textarea']] =
-                     ['input', 'select', 'button', 'textarea'],  # noqa: B006
+                 repeating: bool = DEFAULT_PROP | True,
+                 ignore: list[Literal['input', 'select', 'button', 'textarea']] = DEFAULT_PROP | [
+                     'input', 'select', 'button', 'textarea',
+                 ],
                  ) -> None:
         """Keyboard
 

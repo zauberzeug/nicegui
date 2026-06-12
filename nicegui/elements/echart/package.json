@@ -13,8 +13,8 @@
     "echarts-gl": "^2.0.9"
   },
   "devDependencies": {
-    "vite": "^7.1.11",
+    "vite": "^7.3.2",
     "terser": "^5.44.0",
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.1.3"
   }
 }

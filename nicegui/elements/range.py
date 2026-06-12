@@ -1,18 +1,18 @@
-from typing import Optional
-
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Range(ValueElement, DisableableElement):
+class Range(ValueElement[dict[str, float] | None], DisableableElement):
 
+    @resolve_defaults
     def __init__(self, *,
                  min: float,  # pylint: disable=redefined-builtin
                  max: float,  # pylint: disable=redefined-builtin
-                 step: float = 1.0,
-                 value: Optional[dict[str, float]] = None,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 step: float = DEFAULT_PROP | 1.0,
+                 value: dict[str, float] | None = DEFAULT_PROPS['model-value'] | None,
+                 on_change: Handler[ValueChangeEventArguments[dict[str, float] | None]] | None = None,
                  ) -> None:
         """Range
 

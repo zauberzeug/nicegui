@@ -1,19 +1,21 @@
-from typing import Any, Optional
+from typing import Any
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Editor(ValueElement, DisableableElement, component='editor.js', default_classes='nicegui-editor'):
+class Editor(ValueElement[str], DisableableElement, component='editor.js', default_classes='nicegui-editor'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
+    @resolve_defaults
     def __init__(self,
                  *,
-                 placeholder: Optional[str] = None,
-                 value: str = '',
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 placeholder: str | None = DEFAULT_PROP | None,
+                 value: str = DEFAULT_PROP | '',
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  ) -> None:
         """Editor
 
@@ -24,8 +26,7 @@ class Editor(ValueElement, DisableableElement, component='editor.js', default_cl
         :param on_change: callback to be invoked when the value changes
         """
         super().__init__(value=value, on_value_change=on_change)
-        if placeholder is not None:
-            self._props['placeholder'] = placeholder
+        self._props.set_optional('placeholder', placeholder)
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

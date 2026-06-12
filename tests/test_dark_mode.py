@@ -1,8 +1,15 @@
-from nicegui import ui
+from typing import Literal
+
+import pytest
+
+from nicegui import app, ui
 from nicegui.testing import Screen
 
 
-def test_dark_mode(screen: Screen):
+@pytest.mark.parametrize('unocss', [None, 'mini', 'wind3', 'wind4'])
+def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | None):
+    app.config.unocss = unocss
+
     @ui.page('/')
     def page():
         ui.label('Hello')

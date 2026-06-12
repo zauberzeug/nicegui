@@ -1,17 +1,16 @@
 from pathlib import Path
-from typing import Optional
 
 import aiofiles
 
-from nicegui import background_tasks, core, json
-from nicegui.logging import log
-
+from .. import background_tasks, core, json
+from ..logging import log
 from .persistent_dict import PersistentDict
+from .serialization import dumps
 
 
 class FilePersistentDict(PersistentDict):
 
-    def __init__(self, filepath: Path, encoding: Optional[str] = None, *, indent: bool = False) -> None:
+    def __init__(self, filepath: Path, encoding: str | None = None, *, indent: bool = False) -> None:
         self.filepath = filepath
         self.encoding = encoding
         self.indent = indent
@@ -47,14 +46,15 @@ class FilePersistentDict(PersistentDict):
 
         @background_tasks.await_on_shutdown
         async def async_backup() -> None:
+            if not self:
+                self.filepath.unlink(missing_ok=True)
+                return
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
-                await f.write(json.dumps(self, indent=self.indent))
+                await f.write(dumps(self, str(self.filepath), indent=self.indent))
 
-        if core.loop and core.loop.is_running():
+        if core.is_loop_running():
             background_tasks.create_lazy(async_backup(), name=self.filepath.stem)
+        elif not self:
+            self.filepath.unlink(missing_ok=True)
         else:
-            self.filepath.write_text(json.dumps(self, indent=self.indent), encoding=self.encoding)
-
-    def clear(self) -> None:
-        super().clear()
-        self.filepath.unlink(missing_ok=True)
+            self.filepath.write_text(dumps(self, str(self.filepath), indent=self.indent), encoding=self.encoding)

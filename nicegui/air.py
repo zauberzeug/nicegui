@@ -15,7 +15,6 @@ import socketio.exceptions
 
 from . import background_tasks, core, helpers
 from .client import Client
-from .dataclasses import KWONLY_SLOTS
 from .logging import log
 from .timer import Timer as timer
 
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Stream:
     data: AsyncIterator[bytes]
     response: httpx.Response
@@ -39,7 +38,6 @@ class Air:
         self.log = logging.getLogger('nicegui.air')
         self.token = token
         self.relay = socketio.AsyncClient()
-        self.client = httpx.AsyncClient(transport=httpx.ASGITransport(app=core.app))
         self.streaming_client = httpx.AsyncClient()
         self.connecting = False
         self.streams: dict[str, Stream] = {}
@@ -53,15 +51,11 @@ class Air:
             headers: dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
-            request = self.client.build_request(
-                data['method'],
-                url,
-                params=data['params'],
-                headers=headers,
-                content=data['body'],
-            )
-            response = await self.client.send(request)
-            self.client.cookies.clear()
+            request = httpx.Request(data['method'], url, params=data['params'], headers=headers, content=data['body'])
+            forwarded_for = headers.get('x-forwarded-for', '127.0.0.1').split(',')[0].strip()
+            transport = httpx.ASGITransport(core.app, client=(forwarded_for, 0))
+            response = await transport.handle_async_request(request)
+            await response.aread()
             instance_id = data['instance-id']
             content = response.content.replace(
                 b'const extraHeaders = {};',
@@ -80,7 +74,7 @@ class Air:
                 'content': compressed,
             }
 
-            # NOTE: chunk large responses to stay within the SocketIO limit
+            # chunk large responses to stay within the SocketIO limit
             if total_size > 1_000_000:
                 async def chunk_iterator() -> AsyncIterator[bytes]:
                     chunk_size = 512 * 1024
@@ -99,12 +93,8 @@ class Air:
             headers: dict[str, Any] = data['headers']
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
             data['params']['nicegui_chunk_size'] = 1024
-            request = self.client.build_request(
-                data['method'],
-                url,
-                params=data['params'],
-                headers=headers,
-            )
+            request = httpx.Request(data['method'], url, params=data['params'], headers=headers)
+            self.streaming_client.cookies.clear()  # avoid unbounded memory growth from accumulated Set-Cookie entries
             response = await self.streaming_client.send(request, stream=True)
             stream_id = str(uuid4())
             self.streams[stream_id] = Stream(data=response.aiter_bytes(), response=response)
@@ -143,31 +133,27 @@ class Air:
 
         @self.relay.on('handshake')
         def _handle_handshake(data: dict[str, Any]) -> bool:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return False
-            client = Client.instances[client_id]
-            client.environ = data['environ']
-            if data.get('old_tab_id'):
-                core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
-            client.tab_id = data['tab_id']
-            client.on_air = True
-            client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
-            return True
+            if client := Client.instances.get(data['client_id']):
+                client.environ = data['environ']
+                if data.get('old_tab_id'):
+                    core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
+                client.tab_id = data['tab_id']
+                client.on_air = True
+                client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
+                return True
+            return False
 
         @self.relay.on('client_disconnect')
         def _handle_client_disconnect(data: dict[str, Any]) -> None:
             self.log.debug('client disconnected.')
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            Client.instances[client_id].handle_disconnect(data['sid'])
+            if client := Client.instances.get(data['client_id']):
+                client.handle_disconnect(data['sid'])
 
         @self.relay.on('connect')
         async def _handle_connect() -> None:
             self.log.debug('connected.')
-            # NOTE: reset the warning so it can be shown again if connection breaks in the future
-            helpers._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
+            # reset the warning so it can be shown again if connection breaks in the future
+            helpers.warnings._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
         async def _handle_disconnect() -> None:
@@ -184,32 +170,28 @@ class Air:
 
         @self.relay.on('event')
         def _handle_event(data: dict[str, Any]) -> None:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            client = Client.instances[client_id]
-            args = data['msg']['args']
-            if args and isinstance(args[0], str) and args[0].startswith('{"socket_id":'):
-                arg0 = json.loads(args[0])
-                arg0['socket_id'] = client_id  # HACK: translate socket_id of ui.scene's init event
-                args[0] = json.dumps(arg0)
-            client.handle_event(data['msg'])
+            if client := Client.instances.get(data['client_id']):
+                args = data['msg']['args']
+                if args and isinstance(args[0], str) and args[0].startswith('{"socket_id":'):
+                    arg0 = json.loads(args[0])
+                    arg0['socket_id'] = client.id  # HACK: translate socket_id of ui.scene's init event
+                    args[0] = json.dumps(arg0)
+                client.handle_event(data['msg'])
+
+        @self.relay.on('log')
+        def _handle_log(data: dict[str, Any]) -> None:
+            if client := Client.instances.get(data['client_id']):
+                client.handle_log_message(data['msg'])
 
         @self.relay.on('javascript_response')
         def _handle_javascript_response(data: dict[str, Any]) -> None:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            client = Client.instances[client_id]
-            client.handle_javascript_response(data['msg'])
+            if client := Client.instances.get(data['client_id']):
+                client.handle_javascript_response(data['msg'])
 
         @self.relay.on('ack')
         def _handle_ack(data: dict[str, Any]) -> None:
-            client_id = data['client_id']
-            if client_id not in Client.instances:
-                return
-            client = Client.instances[client_id]
-            client.outbox.prune_history(data['msg']['next_message_id'])
+            if client := Client.instances.get(data['client_id']):
+                client.outbox.prune_history(data['msg']['next_message_id'])
 
         @self.relay.on('out_of_time')
         async def _handle_out_of_time() -> None:
@@ -239,7 +221,7 @@ class Air:
             return
         except socketio.exceptions.ConnectionError:
             self.log.debug('Connection error.', stack_info=True)
-        except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
+        except ValueError:  # this sometimes happens when the internal socketio client is not yet ready
             self.log.debug('ValueError while connecting.', stack_info=True)
         except Exception:
             log.exception('Could not connect to NiceGUI On Air server.')

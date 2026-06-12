@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import pandas as pd
 import polars as pl
@@ -66,6 +67,7 @@ def test_filter(screen: Screen):
     def page():
         table = ui.table(columns=columns(), rows=rows())
         ui.input('Search by name').bind_value(table, 'filter')
+        ui.label().bind_text_from(table, 'filter', lambda value: f'Filter: {value}')
 
     screen.open('/')
     screen.should_contain('Alice')
@@ -74,6 +76,7 @@ def test_filter(screen: Screen):
 
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Search by name"]')
     element.send_keys('e')
+    screen.should_contain('Filter: e')
     screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_contain('Lionel')
@@ -99,10 +102,11 @@ def test_slots(screen: Screen):
     @ui.page('/')
     def page():
         with ui.table(columns=columns(), rows=rows()) as table:
-            with table.add_slot('top-row'):
-                with table.row():
-                    with table.cell():
-                        ui.label('This is the top slot.')
+            table.add_slot('top-row', '''
+                <q-tr>
+                    <q-th>This is the top slot.</q-th>
+                </q-tr>
+            ''')
             table.add_slot('body', '''
                 <q-tr :props="props">
                     <q-td key="name" :props="props">overridden</q-td>
@@ -395,3 +399,65 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.click('Update cars with columns')  # updated columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
+
+
+def test_new_slots(screen: Screen):
+    @ui.page('/')
+    def page():
+        table = ui.table(rows=[{'name': 'Alice'}, {'name': 'Bob'}, {'name': 'Carol'}])
+        with table.add_slot('body-cell-name'):
+            with table.cell():
+                ui.button().props(':label="props.value"') \
+                    .on('click', js_handler='() => emit(props.value)', handler=lambda e: ui.notify(f'Clicked {e.args}'))
+
+    screen.open('/')
+    screen.should_contain('Alice')
+
+    screen.click('Alice')
+    screen.should_contain('Clicked Alice')
+
+
+def test_fullscreen_scroll_behavior(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.add_css('html { scroll-behavior: smooth }')
+        ui.link('Go to bottom', '#bottom')
+        ui.link_target('bottom').classes('mt-[2000px]')
+        table = ui.table(rows=[{'name': 'Alice'}])
+        with table.add_slot('bottom'):
+            ui.button('Toggle fullscreen', on_click=table.toggle_fullscreen).props('flat')
+
+    screen.open('/')
+    screen.click('Go to bottom')
+    screen.wait(1)
+    position = screen.selenium.execute_script('return window.scrollY')
+    assert position > 1000
+
+    screen.click('Toggle fullscreen')
+    screen.wait(0.5)
+    screen.click('Toggle fullscreen')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+@pytest.mark.parametrize('index,expected,unexpected', [
+    (pd.Index([100, 200], name='id'), ['id', '100', '200'], []),
+    (pd.RangeIndex(start=100, stop=102, name='index'), ['index', '100', '101'], []),
+    (pd.Index(['x', 'y']), ['index', 'x', 'y'], []),
+    (pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['char', 'num']), ['char', 'num', 'A', 'B', '1', '2'], []),
+    (pd.RangeIndex(start=0, stop=2), [], ['index']),
+])
+def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unexpected: list[str]):
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [42, 43]}, index=index)
+        ui.table.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('value')
+    screen.should_contain('42')
+    screen.should_contain('43')
+    for item in expected:
+        screen.should_contain(item)
+    for item in unexpected:
+        screen.should_not_contain(item)

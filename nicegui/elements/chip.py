@@ -1,7 +1,6 @@
-from typing import Optional
-
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
 from .mixins.disableable_element import DisableableElement
@@ -11,21 +10,22 @@ from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
+class Chip(IconElement, ValueElement[bool], TextElement, BackgroundColorElement, TextColorElement, DisableableElement, SelectableElement):
     TEXT_COLOR_PROP = 'text-color'
 
+    @resolve_defaults
     def __init__(self,
                  text: str = '',
                  *,
-                 icon: Optional[str] = None,
-                 color: Optional[str] = 'primary',
-                 text_color: Optional[str] = None,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 selectable: bool = False,
-                 selected: bool = False,
-                 on_selection_change: Optional[Handler[ValueChangeEventArguments]] = None,
-                 removable: bool = False,
-                 on_value_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 icon: str | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 text_color: str | None = DEFAULT_PROP | None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 selectable: bool = DEFAULT_PROP | False,
+                 selected: bool = DEFAULT_PROP | False,
+                 on_selection_change: Handler[ValueChangeEventArguments[bool]] | None = None,
+                 removable: bool = DEFAULT_PROP | False,
+                 on_value_change: Handler[ValueChangeEventArguments[bool]] | None = None,
                  ) -> None:
         """Chip
 
@@ -57,3 +57,6 @@ class Chip(IconElement, ValueElement, TextElement, BackgroundColorElement, TextC
         self._props['clickable'] = True
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
+
+    def _render_markdown(self) -> str:
+        return self._text or ''

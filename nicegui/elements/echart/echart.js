@@ -5,7 +5,7 @@ export default {
   template: "<div></div>",
   async mounted() {
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for Tailwind classes to be applied
-    if (this.enable_3d) {
+    if (this.enable3d) {
       await loadEchartsGL();
     }
 
@@ -95,7 +95,7 @@ export default {
       }
       convertDynamicProperties(this.options, true);
       this.chart.setOption(this.options, {
-        notMerge: this.chart.options?.series?.length != this.options.series?.length,
+        notMerge: this.chart.getOption()?.series?.length != this.options.series?.length,
       });
     },
     run_chart_method(name, ...args) {
@@ -108,7 +108,7 @@ export default {
   },
   props: {
     options: Object,
-    enable_3d: Boolean,
+    enable3d: Boolean,
     renderer: String,
     theme: String,
   },

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from typing_extensions import Self
 
 from ..events import ClickEventArguments, Handler, handle_event
@@ -9,7 +7,7 @@ from .mixins.text_element import TextElement
 
 class Item(DisableableElement):
 
-    def __init__(self, text: str = '', *, on_click: Optional[Handler[ClickEventArguments]] = None) -> None:
+    def __init__(self, text: str = '', *, on_click: Handler[ClickEventArguments] | None = None) -> None:
         """List Item
 
         Creates a clickable list item based on Quasar's
@@ -50,6 +48,14 @@ class ItemSection(TextElement):
         """
         super().__init__(tag='q-item-section', text=text)
 
+    def _render_markdown(self) -> str:
+        parts = []
+        if self._text:
+            parts.append(self._text)
+        if children := self._children_to_markdown():
+            parts.append(children)
+        return '\n\n'.join(parts)
+
 
 class ItemLabel(TextElement):
 
@@ -61,3 +67,6 @@ class ItemLabel(TextElement):
         :param text: text to be displayed (default: "")
         """
         super().__init__(tag='q-item-label', text=text)
+
+    def _render_markdown(self) -> str:
+        return self._text or ''

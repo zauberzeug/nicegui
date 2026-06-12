@@ -26,6 +26,15 @@ def test_is_port_open_on_bad_ip():
     assert not helpers.is_port_open('1.2', 0), 'should not be able to connect to a bad IP'
 
 
+def test_format_url():
+    assert helpers.format_url('http', 'localhost', 80) == 'http://localhost'  # default port 80 is omitted
+    assert helpers.format_url('http', 'localhost', 8080) == 'http://localhost:8080'  # non-default port is included
+    assert helpers.format_url('https', 'xyz.com', 443) == 'https://xyz.com'  # default port 443 is omitted
+    assert helpers.format_url('https', 'xyz.com', 8443) == 'https://xyz.com:8443'  # non-default port is included
+    assert helpers.format_url('http', '::', 8080) == 'http://[::]:8080'  # IPv6 address is enclosed in brackets
+    assert helpers.format_url('http', '[::]', 8080) == 'http://[::]:8080'  # already bracketed IPv6 address is unchanged
+
+
 def test_schedule_browser(monkeypatch):
     called_with_url = None
 
@@ -39,7 +48,7 @@ def test_schedule_browser(monkeypatch):
         sock.bind(('127.0.0.1', 0))
         host, port = sock.getsockname()
 
-        _, cancel_event = helpers.schedule_browser('http', host, port)
+        _, cancel_event = helpers.schedule_browser('http', host, port, '/my-path')
 
         try:
             # port bound, but not opened yet
@@ -48,7 +57,7 @@ def test_schedule_browser(monkeypatch):
             sock.listen()
             # port opened
             time.sleep(1)
-            assert called_with_url == f'http://{host}:{port}/'
+            assert called_with_url == f'http://{host}:{port}/my-path'
         finally:
             cancel_event.set()
 
@@ -70,7 +79,7 @@ def test_canceling_schedule_browser(monkeypatch):
     # ... and close it so schedule_browser does not launch the browser
     sock.close()
 
-    thread, cancel_event = helpers.schedule_browser('http', host, port)
+    thread, cancel_event = helpers.schedule_browser('http', host, port, '/my-path')
     time.sleep(0.2)
     cancel_event.set()
     time.sleep(0.2)

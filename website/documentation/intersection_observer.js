@@ -1,16 +1,18 @@
 export default {
   template: '<div style="position: absolute"></div>',
   mounted() {
-    this.interval = setInterval(() => {
-      const rect = this.$el.getBoundingClientRect();
-      if (rect.bottom > -window.innerHeight && rect.top < 2 * window.innerHeight) {
-        this.$emit("intersection");
-      }
-    }, 100);
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          this.observer.disconnect();
+          this.$emit("intersection");
+        }
+      },
+      { rootMargin: "100% 0px 100% 0px" },
+    );
+    this.observer.observe(this.$el);
   },
-  methods: {
-    stop() {
-      clearInterval(this.interval);
-    },
+  unmounted() {
+    this.observer.disconnect();
   },
 };

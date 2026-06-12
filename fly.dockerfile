@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 
@@ -11,7 +11,7 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock* ./
 
-RUN uv sync --no-install-project --no-dev --extra plotly --extra matplotlib --extra highcharts --group website
+RUN uv sync --no-install-project --no-dev --extra altair --extra anywidget --extra plotly --extra matplotlib --extra highcharts --group website
 
 ADD . .
 

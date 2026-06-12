@@ -1,5 +1,9 @@
+import weakref
+
+import pytest
+
 from nicegui import binding, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_remove_element_by_reference(screen: Screen):
@@ -172,3 +176,65 @@ def test_on_delete(screen: Screen):
     screen.click('Clear row')
     screen.wait(0.5)
     assert deleted_labels == ['Label C', 'Label B', 'Label A']
+
+
+def test_slot_children_cleared_on_delete(screen: Screen):
+    """Slot children are cleared when parent is deleted and no cyclic references are left behind (issue #5110)."""
+    labels = weakref.WeakSet[ui.label]()
+
+    @ui.page('/')
+    def page():
+        with ui.splitter() as splitter:
+            labels.add(ui.label('Default'))
+            with splitter.before:
+                labels.add(ui.label('Before'))
+            with splitter.after:
+                labels.add(ui.label('After'))
+        ui.button('Delete', on_click=splitter.delete).on_click(lambda: ui.notify('Deleted'))
+
+    screen.open('/')
+    screen.click('Delete')
+    screen.should_contain('Deleted')
+    assert len(labels) == 0, 'all labels should be deleted immediately'
+
+
+@pytest.mark.parametrize('deletion_method', ['client_delete', 'element_delete'])
+async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, deletion_method: str):
+    """Using an element after deletion is silent when the client is gone (benign reload race)
+    but warns once when only the element was deleted (a user bug). See issue #6058."""
+    label = None
+
+    @ui.page('/')
+    def page():
+        nonlocal label
+        label = ui.label('hi')
+
+    await user.open('/')
+    assert isinstance(label, ui.label)
+    (label.client if deletion_method == 'client_delete' else label).delete()
+    assert label.client.is_deleted == (deletion_method == 'client_delete')
+    assert label.is_deleted
+
+    label.run_method('foo')
+    label.update()
+    label.get_computed_prop('bar')
+    expected_warnings = 0 if deletion_method == 'client_delete' else 1
+    assert len([record for record in caplog.records if 'still being used' in record.message]) == expected_warnings
+
+
+def test_event_listeners_cleared_on_delete(screen: Screen):
+    """Event listeners are cleared when element is deleted and no cyclic references are left behind (issue #5110)."""
+    buttons = weakref.WeakSet[ui.button]()
+
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            button = ui.button('Click me')
+            button.on('click', lambda: button.set_text('clicked'))  # cycle: button → listener → lambda → button
+            buttons.add(button)
+        ui.button('Delete', on_click=card.clear).on_click(lambda: ui.notify('Deleted'))
+
+    screen.open('/')
+    screen.click('Delete')
+    screen.should_contain('Deleted')
+    assert len(buttons) == 0, 'all buttons should be deleted immediately'

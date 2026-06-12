@@ -7,7 +7,7 @@ doc.title('Generic Events')
 
 @doc.demo('Generic Events', '''
     Most UI elements come with predefined events.
-    For example, a `ui.button` like "A" in the demo has an `on_click` parameter that expects a coroutine or function.
+    For example, a `ui.button` like "A" in the demo has an `on_click` parameter that expects a synchronous or asynchronous function.
     But you can also use the `on` method to register a generic event handler like for "B".
     This allows you to register handlers for any event that is supported by JavaScript and Quasar.
 

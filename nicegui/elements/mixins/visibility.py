@@ -1,6 +1,5 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING, Any, Callable, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, cast
 
 from typing_extensions import Self
 
@@ -26,7 +25,7 @@ class Visibility:
 
     def bind_visibility_to(self,
                            target_object: Any,
-                           target_name: str = 'visible',
+                           target_name: str | tuple[str, ...] = 'visible',
                            forward: Callable[[Any], Any] | None = None, *,
                            strict: bool | None = None,
                            ) -> Self:
@@ -34,6 +33,7 @@ class Visibility:
 
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -46,7 +46,7 @@ class Visibility:
 
     def bind_visibility_from(self,
                              target_object: Any,
-                             target_name: str = 'visible',
+                             target_name: str | tuple[str, ...] = 'visible',
                              backward: Callable[[Any], Any] | None = None, *,
                              value: Any = None,
                              strict: bool | None = None,
@@ -55,6 +55,7 @@ class Visibility:
 
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
@@ -71,7 +72,7 @@ class Visibility:
 
     def bind_visibility(self,
                         target_object: Any,
-                        target_name: str = 'visible', *,
+                        target_name: str | tuple[str, ...] = 'visible', *,
                         forward: Callable[[Any], Any] | None = None,
                         backward: Callable[[Any], Any] | None = None,
                         value: Any = None,
@@ -82,6 +83,7 @@ class Visibility:
         The binding works both ways, from this element to the target and from the target to this element.
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -99,12 +101,13 @@ class Visibility:
              self_strict=False, other_strict=strict)
         return self
 
-    def set_visibility(self, visible: bool) -> None:
+    def set_visibility(self, visible: bool) -> Self:
         """Set the visibility of this element.
 
         :param visible: Whether the element should be visible.
         """
         self.visible = visible
+        return self
 
     def _handle_visibility_change(self, visible: str) -> None:
         """Called when the visibility of this element changes.

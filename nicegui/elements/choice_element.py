@@ -1,16 +1,18 @@
-from typing import Any, Optional, Union
+from typing import Any
+
+from typing_extensions import Self
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class ChoiceElement(ValueElement):
+class ChoiceElement(ValueElement[Any]):
 
     def __init__(self, *,
-                 tag: Optional[str] = None,
-                 options: Union[list, dict],
+                 tag: str | None = None,
+                 options: list | dict,
                  value: Any,
-                 on_change: Optional[Handler[ValueChangeEventArguments]] = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  ) -> None:
         self.options = options
         self._values: list[str] = []
@@ -21,6 +23,20 @@ class ChoiceElement(ValueElement):
         super().__init__(tag=tag, value=value, on_value_change=on_change)
         self._update_options()
 
+    def _render_markdown(self) -> str:
+        if self.value is None:
+            return ''
+        values = self.value if isinstance(self.value, list) else [self.value]
+        labels = []
+        for value in values:
+            try:
+                labels.append(str(self._labels[self._values.index(value)]))
+            except (ValueError, IndexError):
+                labels.append(str(value))
+        display = ', '.join(labels)
+        form_label = getattr(self, 'label', None) or ''
+        return f'{form_label}: {display}' if form_label else display
+
     def _update_values_and_labels(self) -> None:
         self._values = self.options if isinstance(self.options, list) else list(self.options.keys())
         self._labels = self.options if isinstance(self.options, list) else list(self.options.values())
@@ -29,7 +45,7 @@ class ChoiceElement(ValueElement):
         before_value = self.value
         self._props['options'] = [{'value': index, 'label': option} for index, option in enumerate(self._labels)]
         self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
-        if not isinstance(before_value, list):  # NOTE: no need to update value in case of multi-select
+        if not isinstance(before_value, list):  # no need to update value in case of multi-select
             self.value = before_value if before_value in self._values else None
 
     def update(self) -> None:
@@ -38,7 +54,7 @@ class ChoiceElement(ValueElement):
             self._update_options()
         super().update()
 
-    def set_options(self, options: Union[list, dict], *, value: Any = ...) -> None:
+    def set_options(self, options: list | dict, *, value: Any = ...) -> Self:
         """Set the options of this choice element.
 
         :param options: The new options.
@@ -48,3 +64,4 @@ class ChoiceElement(ValueElement):
         if value is not ...:
             self.value = value
         self.update()
+        return self

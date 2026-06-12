@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 import inspect
 import sys
 import types
 from copy import deepcopy
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Callable, Generator, overload
+from typing import Any, overload
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 
 import nicegui
@@ -14,7 +13,7 @@ from nicegui import app as nicegui_app
 from nicegui import Client
 from nicegui import ui as nicegui_ui
 from nicegui.functions.navigate import Navigate
-from nicegui.elements.markdown import remove_indentation
+from nicegui.helpers import remove_indentation
 
 from .page import DocumentationPage
 from .part import Demo, DocumentationPart
@@ -24,7 +23,7 @@ redirects: dict[str, str] = {}
 
 
 @contextmanager
-def dummy_client() -> Generator[Client, None, None]:
+def dummy_client() -> Generator[Client]:
     """Create a dummy client for pre-rendering UI."""
     try:
         with Client(nicegui_ui.page('')) as client:

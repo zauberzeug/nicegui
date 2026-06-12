@@ -1,19 +1,17 @@
-from __future__ import annotations
-
 import asyncio
 import inspect
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 from urllib.parse import urlparse
 
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
 
-from .. import background_tasks
+from .. import background_tasks, helpers, json
 from ..context import context
 from ..element import Element
 from ..elements.label import Label
-from ..functions.javascript import run_javascript
 from ..logging import log
 from ..page_arguments import PageArguments, RouteMatch
 
@@ -77,7 +75,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Display the page matching the current URL path."""
         self._rendered_path = ''
         match = self._find_matching_path()
-        # NOTE: if path and query params are the same, only update fragment without re-rendering
+        # if path and query params are the same, only update fragment without re-rendering
         if (
             match is not None and
             self._match is not None and
@@ -85,7 +83,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             not self._required_query_params_changed(match) and
             not (self.has_404 and self._match.remaining_path == match.remaining_path)
         ):
-            # NOTE: Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
+            # Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
             if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
                 self._set_match(None)
             else:
@@ -105,21 +103,26 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         try:
             result = match.builder(**kwargs)
         except Exception as e:
-            self.clear()  # NOTE: clear partial content created before the exception
+            self.clear()  # clear partial content created before the exception
             self._render_error(e)
+            self.client.handle_exception(e)
             return True
 
         self._handle_scrolling(match, behavior='instant')
-        if asyncio.iscoroutine(result):
+        if helpers.should_await(result):
             async def background_task():
                 with self:
-                    await result
+                    try:
+                        await result
+                    except Exception as e:
+                        self.client.handle_exception(e)
+                        raise
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
             self._active_tasks.add(task)
 
             def _close_if_canceled(t: asyncio.Task) -> None:
-                if t.cancelled():
+                if t.cancelled() and asyncio.iscoroutine(result):
                     result.close()
                 self._active_tasks.discard(t)
 
@@ -130,7 +133,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Display a 404 error message for unmatched routes."""
         Label(f'404: sub page {self._router.current_path} not found')
 
-    def _render_error(self, _: Exception) -> None:  # NOTE: exception is exposed for debugging scenarios via inheritance
+    def _render_error(self, _: Exception) -> None:  # exception is exposed for debugging scenarios via inheritance
         msg = f'sub page {self._router.current_path} produced an error'
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
@@ -206,18 +209,20 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _handle_scrolling(self, match: RouteMatch, *, behavior: str) -> None:
         if match.fragment:
             self._scroll_to_fragment(match.fragment, behavior=behavior)
-        elif not self._router.is_initial_request:  # NOTE: the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
+        elif not self._router.is_initial_request:  # the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
             self._scroll_to_top(behavior=behavior)
 
     def _scroll_to_fragment(self, fragment: str, *, behavior: str) -> None:
-        run_javascript(f'''
+        self.client.run_javascript(f'''
             requestAnimationFrame(() => {{
-                document.querySelector('#{fragment}, a[name="{fragment}"]')?.scrollIntoView({{ behavior: "{behavior}" }});
+                const frag = {json.dumps(fragment)};
+                const el = document.getElementById(frag) || document.querySelector("a[name=" + JSON.stringify(frag) + "]");
+                el?.scrollIntoView({{ behavior: "{behavior}" }});
             }});
         ''')
 
     def _scroll_to_top(self, *, behavior: str) -> None:
-        run_javascript(f'''
+        self.client.run_javascript(f'''
             requestAnimationFrame(() => {{ window.scrollTo({{top: 0, left: 0, behavior: "{behavior}"}}); }});
         ''')
 

@@ -3,7 +3,8 @@ from functools import lru_cache
 
 from docutils.core import publish_parts
 
-from .markdown import Markdown, remove_indentation
+from ..helpers import remove_indentation
+from .markdown import Markdown
 
 
 class ReStructuredText(Markdown):
@@ -29,6 +30,11 @@ def prepare_content(content: str) -> str:
     html = publish_parts(
         remove_indentation(content),
         writer_name='html4',
-        settings_overrides={'syntax_highlight': 'short'},
+        settings_overrides={
+            'syntax_highlight': 'short',
+            'file_insertion_enabled': False,
+            'raw_enabled': False,
+            '_disable_config': True,
+        },
     )
     return html['html_body'].replace('<div class="document"', '<div class="codehilite"')

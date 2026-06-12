@@ -27,7 +27,7 @@ def emoji_favicon():
     You can also use an base64-encoded image as favicon.
 ''', tab=lambda: (
         ui.image('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==')
-        .classes('w-4 h-4'),
+        .classes('size-4'),
         ui.label('NiceGUI'),
     ),
 )
@@ -50,7 +50,7 @@ def base64_favicon():
             <circle cx="120" cy="85" r="8" />
             <path d="m60,120 C75,150 125,150 140,120" style="fill:none; stroke:black; stroke-width:8; stroke-linecap:round" />
         </svg>
-    ''', sanitize=False).classes('w-4 h-4'),
+    ''', sanitize=False).classes('size-4'),
     ui.label('NiceGUI'),
 ))
 def svg_favicon():

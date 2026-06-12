@@ -1,13 +1,13 @@
-from typing import Literal, Optional
+from typing import Literal
 
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Row(Element, default_classes='nicegui-row'):
+class Row(SortableElement, default_classes='nicegui-row'):
 
     def __init__(self, *,
                  wrap: bool = True,
-                 align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
+                 align_items: Literal['start', 'end', 'center', 'baseline', 'stretch'] | None = None,
                  ) -> None:
         """Row Element
 
@@ -17,7 +17,7 @@ class Row(Element, default_classes='nicegui-row'):
         :param align_items: alignment of the items in the row ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('div')
-        self._classes.append('row')  # NOTE: for compatibility with Quasar's col-* classes
+        self._classes.append('row')  # for compatibility with Quasar's col-* classes
         if align_items:
             self._classes.append(f'items-{align_items}')
 

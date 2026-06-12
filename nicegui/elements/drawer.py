@@ -1,20 +1,24 @@
-from typing import Literal, Optional
+from typing import Any, Literal
+
+from typing_extensions import Self
 
 from ..context import context
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 DrawerSides = Literal['left', 'right']
 
 
-class Drawer(ValueElement, default_classes='nicegui-drawer'):
+class Drawer(ValueElement[bool | None], default_classes='nicegui-drawer'):
 
+    @resolve_defaults
     def __init__(self,
                  side: DrawerSides, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Drawer
@@ -60,33 +64,37 @@ class Drawer(ValueElement, default_classes='nicegui-drawer'):
                 )
             self.client.on_connect(_request_value)
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the drawer"""
         if self.value is None:
             self.run_method('toggle')
         else:
             self.value = not self.value
+        return self
 
-    def show(self) -> None:
+    def show(self) -> Self:
         """Show the drawer"""
         self.value = True
+        return self
 
-    def hide(self) -> None:
+    def hide(self) -> Self:
         """Hide the drawer"""
         self.value = False
+        return self
 
-    def _handle_value_change(self, value: bool) -> None:
+    def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         self._props['show-if-above'] = value is None
 
 
 class LeftDrawer(Drawer):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Left drawer
@@ -119,11 +127,12 @@ class LeftDrawer(Drawer):
 
 class RightDrawer(Drawer):
 
+    @resolve_defaults
     def __init__(self, *,
-                 value: Optional[bool] = None,
+                 value: bool | None = DEFAULT_PROPS['model-value'] | None,
                  fixed: bool = True,
-                 bordered: bool = False,
-                 elevated: bool = False,
+                 bordered: bool = DEFAULT_PROP | False,
+                 elevated: bool = DEFAULT_PROP | False,
                  top_corner: bool = False,
                  bottom_corner: bool = False) -> None:
         """Right drawer

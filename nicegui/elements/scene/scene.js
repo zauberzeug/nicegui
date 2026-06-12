@@ -6,7 +6,9 @@ const {
   CSS3DRenderer,
   DragControls,
   GLTFLoader,
+  MapControls,
   OrbitControls,
+  TrackballControls,
   STLLoader,
   THREE,
   TWEEN,
@@ -71,16 +73,18 @@ export default {
       <canvas style="position:relative"></canvas>
       <div style="position:absolute;pointer-events:none;top:0"></div>
       <div style="position:absolute;pointer-events:none;top:0"></div>
+      <div style="position:absolute;display:none;inset:0;cursor:pointer">WebGL context lost. Click to re-initialize.</div>
     </div>`,
 
   mounted() {
     this.scene = new THREE.Scene();
+    this.clock = new THREE.Clock();
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
     this.is_initialized = false;
 
-    if (this.show_stats) {
+    if (this.showStats) {
       this.stats = new Stats();
       this.stats.domElement.style.position = "absolute";
       this.stats.domElement.style.top = "0px";
@@ -89,21 +93,21 @@ export default {
 
     window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
 
-    if (this.camera_type === "perspective") {
+    if (this.cameraType === "perspective") {
       this.camera = new THREE.PerspectiveCamera(
-        this.camera_params.fov,
+        this.cameraParams.fov,
         this.width / this.height,
-        this.camera_params.near,
-        this.camera_params.far
+        this.cameraParams.near,
+        this.cameraParams.far,
       );
     } else {
       this.camera = new THREE.OrthographicCamera(
-        (-this.camera_params.size / 2) * (this.width / this.height),
-        (this.camera_params.size / 2) * (this.width / this.height),
-        this.camera_params.size / 2,
-        -this.camera_params.size / 2,
-        this.camera_params.near,
-        this.camera_params.far
+        (-this.cameraParams.size / 2) * (this.width / this.height),
+        (this.cameraParams.size / 2) * (this.width / this.height),
+        this.cameraParams.size / 2,
+        -this.cameraParams.size / 2,
+        this.cameraParams.near,
+        this.cameraParams.far,
       );
     }
     this.look_at = new THREE.Vector3(0, 0, 0);
@@ -131,8 +135,26 @@ export default {
       this.$el.style.border = "1px solid silver";
       return;
     }
-    this.renderer.setClearColor(this.background_color);
+    this.renderer.setClearColor(this.backgroundColor);
     this.renderer.setSize(this.width, this.height);
+
+    this.renderer.domElement.addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      this.$el.children[0].style.visibility = "hidden";
+      this.$el.children[1].style.visibility = "hidden";
+      this.$el.children[2].style.visibility = "hidden";
+      this.$el.children[3].style.display = "block";
+      this.$el.addEventListener(
+        "click",
+        () => {
+          const elementDefinition = mounted_app.elements[this.$el.id.slice(1)];
+          const originalTag = elementDefinition.tag;
+          elementDefinition.tag = "";
+          this.$nextTick(() => (elementDefinition.tag = originalTag));
+        },
+        { once: true },
+      );
+    });
 
     this.text_renderer = new CSS2DRenderer({
       element: this.$el.children[1],
@@ -153,7 +175,7 @@ export default {
     if (this.grid) {
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(gridSize, gridSize),
-        new THREE.MeshPhongMaterial({ color: this.background_color })
+        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
       );
       ground.translateZ(-0.01);
       ground.object_id = "ground";
@@ -165,7 +187,8 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controlClass = { trackball: TrackballControls, map: MapControls }[this.controlType] || OrbitControls;
+    this.controls = new this.controlClass(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -174,7 +197,7 @@ export default {
       position[variable] = eval(expression.replace(/x|y|z/g, (match) => `(${position[match]})`));
     };
     const handleDrag = (event) => {
-      this.drag_constraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
+      this.dragConstraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
       this.$emit(event.type, {
         type: event.type,
         object_id: event.object.object_id,
@@ -193,6 +216,7 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
+      this.controls.update(this.clock.getDelta());
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -222,7 +246,7 @@ export default {
         shift_key: mouseEvent.shiftKey,
       });
     };
-    this.click_events.forEach((event) => this.$el.addEventListener(event, click_handler));
+    this.clickEvents.forEach((event) => this.$el.addEventListener(event, click_handler));
 
     this.texture_loader = new THREE.TextureLoader();
     this.stl_loader = new STLLoader();
@@ -257,7 +281,7 @@ export default {
           new THREE.Vector3(...args[0]),
           new THREE.Vector3(...args[1]),
           new THREE.Vector3(...args[2]),
-          new THREE.Vector3(...args[3])
+          new THREE.Vector3(...args[3]),
         );
         const points = curve.getPoints(args[4] - 1);
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -295,11 +319,21 @@ export default {
       } else if (type == "gltf") {
         const url = args[0];
         mesh = new THREE.Group();
+        mesh.userData.isGltf = true;
+        mesh.userData.loaded = false;
         this.gltf_loader.load(
           url,
-          (gltf) => mesh.add(gltf.scene),
+          (gltf) => {
+            mesh.add(gltf.scene);
+            mesh.userData.loaded = true;
+            if (mesh.userData.pendingMaterialInfo) {
+              const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
+              delete mesh.userData.pendingMaterialInfo;
+              this.material(id, color, opacity, side);
+            }
+          },
           undefined,
-          (error) => console.error(error)
+          (error) => console.error(error),
         );
       } else if (type == "axes_helper") {
         mesh = new THREE.AxesHelper(args[0]);
@@ -315,7 +349,7 @@ export default {
           const curve = new THREE.QuadraticBezierCurve3(
             new THREE.Vector3(...args[0]),
             new THREE.Vector3(...args[1]),
-            new THREE.Vector3(...args[2])
+            new THREE.Vector3(...args[2]),
           );
           geometry = new THREE.TubeGeometry(curve, ...args.slice(3));
         }
@@ -340,7 +374,7 @@ export default {
         if (wireframe) {
           mesh = new THREE.LineSegments(
             new THREE.EdgesGeometry(geometry),
-            new THREE.LineBasicMaterial({ transparent: true })
+            new THREE.LineBasicMaterial({ transparent: true }),
           );
         } else {
           material = new THREE.MeshPhongMaterial({ transparent: true });
@@ -356,17 +390,29 @@ export default {
       this.objects.get(object_id).name = name;
     },
     material(object_id, color, opacity, side) {
-      if (!this.objects.has(object_id)) return;
-      const material = this.objects.get(object_id).material;
-      if (!material) return;
+      const object = this.objects.get(object_id);
+      if (!object) return;
+      if (object.userData.isGltf && !object.userData.loaded) {
+        object.userData.pendingMaterialInfo = { color, opacity, side };
+        return;
+      }
       const vertexColors = color === null;
-      material.color.set(vertexColors ? "#ffffff" : color);
-      material.needsUpdate = material.vertexColors != vertexColors;
-      material.vertexColors = vertexColors;
-      material.opacity = opacity;
-      if (side == "front") material.side = THREE.FrontSide;
-      else if (side == "back") material.side = THREE.BackSide;
-      else material.side = THREE.DoubleSide;
+      const apply = (material) => {
+        (Array.isArray(material) ? material : [material]).forEach((m) => {
+          m.color.set(vertexColors ? "#ffffff" : color);
+          m.needsUpdate = m.vertexColors != vertexColors;
+          m.vertexColors = vertexColors;
+          m.opacity = opacity;
+          if (side == "front") m.side = THREE.FrontSide;
+          else if (side == "back") m.side = THREE.BackSide;
+          else m.side = THREE.DoubleSide;
+        });
+      };
+      if (object.userData.isGltf) {
+        object.traverse((child) => child.isMesh && child.material && apply(child.material));
+      } else if (object.material) {
+        apply(object.material);
+      }
     },
     move(object_id, x, y, z) {
       if (!this.objects.has(object_id)) return;
@@ -381,7 +427,7 @@ export default {
       const R4 = new THREE.Matrix4().makeBasis(
         new THREE.Vector3(...R[0]),
         new THREE.Vector3(...R[1]),
-        new THREE.Vector3(...R[2])
+        new THREE.Vector3(...R[2]),
       );
       this.objects.get(object_id).rotation.setFromRotationMatrix(R4.transpose());
     },
@@ -469,11 +515,11 @@ export default {
             look_at_y === null ? this.look_at.y : look_at_y,
             look_at_z === null ? this.look_at.z : look_at_z,
           ],
-          duration * 1000
+          duration * 1000,
         )
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
-          this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
+          this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
           this.controls.target.set(p[6], p[7], p[8]);
@@ -481,7 +527,7 @@ export default {
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
-            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            this.controls = new this.controlClass(this.camera, this.renderer.domElement);
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
@@ -511,9 +557,9 @@ export default {
       this.text_renderer.setSize(clientWidth, clientHeight);
       this.text3d_renderer.setSize(clientWidth, clientHeight);
       this.camera.aspect = clientWidth / clientHeight;
-      if (this.camera_type === "orthographic") {
-        this.camera.left = (-this.camera.aspect * this.camera_params.size) / 2;
-        this.camera.right = (this.camera.aspect * this.camera_params.size) / 2;
+      if (this.cameraType === "orthographic") {
+        this.camera.left = (-this.camera.aspect * this.cameraParams.size) / 2;
+        this.camera.right = (this.camera.aspect * this.cameraParams.size) / 2;
       }
       this.camera.updateProjectionMatrix();
     },
@@ -556,12 +602,13 @@ export default {
     width: Number,
     height: Number,
     grid: Object,
-    camera_type: String,
-    camera_params: Object,
-    click_events: Array,
-    drag_constraints: String,
-    background_color: String,
+    cameraType: String,
+    cameraParams: Object,
+    clickEvents: Array,
+    dragConstraints: String,
+    backgroundColor: String,
     fps: Number,
-    show_stats: Boolean,
+    showStats: Boolean,
+    controlType: String,
   },
 };

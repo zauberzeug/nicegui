@@ -35,5 +35,12 @@
   },
   // More info: https://aka.ms/dev-containers-non-root.
   "remoteUser": "vscode",
-  "postCreateCommand": "uv sync"
+  "mounts": [
+    {
+      "source": "nicegui-gh-config",
+      "target": "/home/vscode/.config/gh",
+      "type": "volume"
+    }
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
 }

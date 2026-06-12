@@ -1,5 +1,5 @@
 import asyncio
-from typing import Literal, Optional
+from typing import Literal
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -77,7 +77,7 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
             input_ = ui.input('Name',
                               validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
         else:
-            async def validate(x: str) -> Optional[str]:
+            async def validate(x: str) -> str | None:
                 await asyncio.sleep(0.1)
                 return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
             input_ = ui.input('Name', validation=validate)
@@ -123,6 +123,26 @@ def test_input_with_multi_word_error_message(screen: Screen):
 
     screen.click('set error')
     screen.should_contain('Some multi word error message')
+
+
+def test_setting_error_without_validation(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.input('Name').error = 'Something is wrong'
+
+    screen.open('/')
+    screen.should_contain('Something is wrong')
+
+
+def test_validate_after_removing_error_prop(screen: Screen):
+    @ui.page('/')
+    def page():
+        input_ = ui.input('Name', value='valid', validation=lambda v: None if v else 'required')
+        ui.button('Reset', on_click=lambda: (input_.props(remove='error error-message').validate(), ui.label('done')))
+
+    screen.open('/')
+    screen.click('Reset')
+    screen.should_contain('done')
 
 
 def test_autocompletion(screen: Screen):

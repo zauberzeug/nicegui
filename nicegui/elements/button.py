@@ -1,8 +1,8 @@
 import asyncio
-from typing import Optional
 
 from typing_extensions import Self
 
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
@@ -12,11 +12,12 @@ from .mixins.text_element import TextElement
 
 class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
 
+    @resolve_defaults
     def __init__(self,
                  text: str = '', *,
-                 on_click: Optional[Handler[ClickEventArguments]] = None,
-                 color: Optional[str] = 'primary',
-                 icon: Optional[str] = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 icon: str | None = DEFAULT_PROP | None,
                  ) -> None:
         """Button
 
@@ -41,6 +42,19 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """Add a callback to be invoked when the button is clicked."""
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
+
+    def _render_markdown(self) -> str:
+        if label := self._props.get('label'):
+            return f'[Button: {label}]'
+        if aria_label := self._props.get('aria-label'):
+            return f'[Button: {aria_label}]'
+        if icon := self._props.get('icon'):
+            return f'[Button: icon:{icon}]'
+        children = self._children_to_markdown().strip()
+        if children and '\n' not in children and '[' not in children and ']' not in children:
+            # only surface single plain lines of child content that doesn't garble the "[Button: ...]" wrapper
+            return f'[Button: {children}]'
+        return '[Button]'
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text

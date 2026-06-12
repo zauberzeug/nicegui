@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from nicegui import events, ui
+from nicegui.elements.upload_files import _sanitize_filename
 from nicegui.testing import Screen
 
 test_path1 = Path('tests/test_upload.py').resolve()
@@ -163,3 +164,15 @@ async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
     screen.wait(0.1)
     assert reads[0].file.size() == size
     assert await reads[0].file.text() == tmp_file.read_text()
+
+
+@pytest.mark.parametrize('input_name,expected', [
+    ('simple.txt', 'simple.txt'),
+    ('../../etc/passwd', 'passwd'),
+    ('..\\..\\windows\\evil.exe', 'evil.exe'),
+    ('../..\\..\\mixed/traversal\\payload.txt', 'payload.txt'),
+    ('', ''),
+    (None, ''),
+])
+def test_upload_filename_sanitization(input_name: str | None, expected: str):
+    assert _sanitize_filename(input_name) == expected

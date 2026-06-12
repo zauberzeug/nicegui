@@ -1,5 +1,6 @@
 import math
-from typing import Optional
+
+from typing_extensions import Self
 
 from .scene_object3d import Object3D
 
@@ -266,7 +267,7 @@ class Texture(Object3D):
 
     def __init__(self,
                  url: str,
-                 coordinates: list[list[Optional[list[float]]]],
+                 coordinates: list[list[list[float] | None]],
                  ) -> None:
         """Texture
 
@@ -277,15 +278,17 @@ class Texture(Object3D):
         """
         super().__init__('texture', url, coordinates)
 
-    def set_url(self, url: str) -> None:
+    def set_url(self, url: str) -> Self:
         """Change the URL of the texture image."""
         self.args[0] = url
         self.scene.run_method('set_texture_url', self.id, url)
+        return self
 
-    def set_coordinates(self, coordinates: list[list[Optional[list[float]]]]) -> None:
+    def set_coordinates(self, coordinates: list[list[list[float] | None]]) -> Self:
         """Change the texture coordinates."""
         self.args[1] = coordinates
         self.scene.run_method('set_texture_coordinates', self.id, coordinates)
+        return self
 
 
 class SpotLight(Object3D):
@@ -317,7 +320,7 @@ class PointCloud(Object3D):
 
     def __init__(self,
                  points: list[list[float]],
-                 colors: Optional[list[list[float]]] = None,
+                 colors: list[list[float]] | None = None,
                  point_size: float = 1.0,
                  ) -> None:
         """Point Cloud
@@ -332,13 +335,14 @@ class PointCloud(Object3D):
         if colors is not None:
             self.material(color=None)
 
-    def set_points(self, points: list[list[float]], colors: Optional[list[list[float]]] = None) -> None:
+    def set_points(self, points: list[list[float]], colors: list[list[float]] | None = None) -> Self:
         """Change the points and colors of the point cloud."""
         self.args[0] = points
         self.args[1] = colors
         self.scene.run_method('set_points', self.id, points, colors)
         if colors is not None:
             self.material(color=None)
+        return self
 
 
 class AxesHelper(Object3D):

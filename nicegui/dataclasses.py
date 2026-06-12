@@ -1,3 +1,10 @@
-import sys
+from .helpers import warn_once
 
-KWONLY_SLOTS = {'kw_only': True, 'slots': True} if sys.version_info >= (3, 10) else {}
+# DEPRECATED: This module will be removed in NiceGUI 4.0
+
+
+def __getattr__(name: str) -> dict:
+    if name == 'KWONLY_SLOTS':
+        warn_once('nicegui.dataclasses.KWONLY_SLOTS is deprecated, use kw_only=True, slots=True directly')
+        return {'kw_only': True, 'slots': True}
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')

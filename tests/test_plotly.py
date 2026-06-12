@@ -53,3 +53,35 @@ def test_create_dynamically(screen: Screen):
     screen.open('/')
     screen.click('Create')
     assert screen.find_by_tag('svg')
+
+
+def test_run_plot_method(screen: Screen):
+    @ui.page('/')
+    def page():
+        plot = ui.plotly({'data': [{'type': 'scatter', 'mode': 'text', 'x': [1], 'y': [1], 'text': ['Alpha']}]})
+        button = ui.button('Extend')
+        button.on_click(lambda: plot.run_plot_method('extendTraces', {'x': [[2]], 'y': [[2]], 'text': [['Beta']]}, [0]))
+
+    screen.open('/')
+    screen.should_contain('Alpha')
+    screen.should_not_contain('Beta')
+
+    screen.click('Extend')
+    screen.should_contain('Beta')
+    screen.should_contain('Alpha')
+
+
+def test_run_plot_method_awaited(screen: Screen):
+    @ui.page('/')
+    def page():
+        plot = ui.plotly(go.Figure(go.Scatter(x=[1, 2, 3], y=[1, 2, 3])))
+
+        async def extend():
+            # functions like extendTraces resolve to the graph element; awaiting must not time out
+            result = await plot.run_plot_method('extendTraces', {'y': [[4]]}, [0])
+            ui.label(f'result: {result!r}')
+        ui.button('Extend', on_click=extend)
+
+    screen.open('/')
+    screen.click('Extend')
+    screen.should_contain('result: None')

@@ -1,5 +1,4 @@
 import weakref
-from typing import Optional
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -58,7 +57,7 @@ def test_classes(screen: Screen):
     ('transform: translate(120.0px, 50%)', {'transform': 'translate(120.0px, 50%)'}),
     ('box-shadow: 0 0 0.5em #1976d2', {'box-shadow': '0 0 0.5em #1976d2'}),
 ])
-def test_style_parsing(value: Optional[str], expected: dict[str, str]):
+def test_style_parsing(value: str | None, expected: dict[str, str]):
     assert Style.parse(value) == expected
 
 
@@ -89,7 +88,7 @@ def test_style_parsing(value: Optional[str], expected: dict[str, str]):
     ('''object={'one': "foo"} baz''', {'object': {'one': 'foo'}, 'baz': True}),
     ('''object={'one': "foo", "two": "bar"}''', {'object': {'one': 'foo', 'two': 'bar'}}),
 ])
-def test_props_parsing(value: Optional[str], expected: dict[str, str]):
+def test_props_parsing(value: str | None, expected: dict[str, str]):
     assert Props.parse(value) == expected
 
 
@@ -240,6 +239,38 @@ def test_xss(screen: Screen):
     screen.should_contain('</script><script>alert(2)</script>')
     screen.should_contain('<b>Bold 1</b>, `code`, copy&paste, multi\nline')
     screen.should_contain('<b>Bold 2</b>, `code`, copy&paste, multi\nline')
+
+
+def test_run_method_xss(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('XSS 1', on_click=lambda e: e.sender.run_method('console.error("X" + "SS")'))
+        ui.button('XSS 2', on_click=lambda e: e.sender.run_method('x", console.error("X" + "SS"), "y'))
+
+    screen.allowed_js_errors.append('Method "console.error("X" + "SS")" not found.')
+    screen.allowed_js_errors.append('Method "x", console.error("X" + "SS"), "y" not found.')
+    screen.open('/')
+    screen.click('XSS 1')
+    screen.click('XSS 2')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
+    screen.assert_py_logger('ERROR', 'Method "console.error("X" + "SS")" not found.')
+    screen.assert_py_logger('ERROR', 'Method "x", console.error("X" + "SS"), "y" not found.')
+
+
+def test_get_computed_prop_xss(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('XSS 1', on_click=lambda e: e.sender.get_computed_prop('console.error("X" + "SS")'))
+        ui.button('XSS 2', on_click=lambda e: e.sender.get_computed_prop('x", console.error("X" + "SS"), "y'))
+
+    screen.allowed_js_errors.append('Method "console.error("X" + "SS")" not found.')
+    screen.allowed_js_errors.append('Method "x", console.error("X" + "SS"), "y" not found.')
+    screen.open('/')
+    screen.click('XSS 1')
+    screen.click('XSS 2')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
 
 
 def test_default_props(screen: Screen):

@@ -14,4 +14,47 @@ def main_demo() -> None:
                 on_change=lambda e: editor.set_line_wrapping(e.value))
 
 
+@doc.demo('Preserving Cursor Position', '''
+    ``set_value`` applies only the modified region, so cursor positions and selections outside the change are preserved.
+    Try editing the code below while the first line updates automatically.
+''')
+def preserve_cursor_demo() -> None:
+    from datetime import datetime
+
+    editor = ui.codemirror(f'# {datetime.now():%H:%M:%S}\n', language='Python')
+    ui.timer(1, lambda: editor.set_value(
+        f'# {datetime.now():%H:%M:%S}\n' + editor.value.split('\n', 1)[-1]
+    ))
+
+
+@doc.demo('Hover tooltips on lines', '''
+    `line_tooltips` maps 1-indexed line numbers to hover content.
+
+    *Added in NiceGUI 3.13.0*
+''')
+def line_tooltips_demo() -> None:
+    editor = ui.codemirror(
+        'def add(a, b):\n'
+        '    """Sum two numbers."""\n'
+        '    return a + b\n',
+    ).classes('h-40')
+    editor.line_tooltips[1] = 'symbol: add, arity: 2'
+    editor.line_tooltips[3] = 'returns the sum of a and b'
+
+
+@doc.demo('HTML rendering for tooltips', '''
+    Pass `line_tooltip_html=True` to render tooltip content as HTML,
+    sanitized via NiceGUI's DOMPurify-backed `setHTML` polyfill.
+
+    *Added in NiceGUI 3.13.0*
+''')
+def line_tooltip_html_demo() -> None:
+    editor = ui.codemirror(
+        'def add(a, b):\n'
+        '    return a + b\n',
+        line_tooltip_html=True,
+    ).classes('h-32')
+    editor.line_tooltips[2] = '<b>returns</b> the sum of <code>a</code> and <code>b</code>'
+
+
 doc.reference(ui.codemirror)

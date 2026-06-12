@@ -22,6 +22,7 @@ export default {
       targets: [
         { src: "node_modules/leaflet/dist/leaflet.css", dest: "dist/leaflet", transform: fixWhitespace },
         { src: "node_modules/leaflet/dist/images/*", dest: "dist/leaflet/images" },
+        { src: "node_modules/leaflet-draw/dist/leaflet.draw.js", dest: "dist/leaflet-draw" },
         { src: "node_modules/leaflet-draw/dist/leaflet.draw.css", dest: "dist/leaflet-draw", transform: fixWhitespace },
         { src: "node_modules/leaflet-draw/dist/images/*", dest: "dist/leaflet-draw/images" },
       ],

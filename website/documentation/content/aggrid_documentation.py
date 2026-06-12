@@ -45,6 +45,33 @@ def adding_rows():
     ui.button('Add row', on_click=add)
 
 
+@doc.demo('Adding rows without losing client-side edits', '''
+    Mutating `grid.options['rowData']` triggers a full rebuild on the client and discards any in-progress cell edits.
+
+    An AG Grid [transaction](https://www.ag-grid.com/javascript-data-grid/data-update-transactions/)
+    adds rows without rebuilding the grid, so unsaved edits are preserved.
+    Wrap the `rowData` mutation in `grid.props.suspend_updates()`
+    to keep the server-side list in sync without firing the rebuild.
+
+    Try it: start editing a cell, then click *Add row* without leaving the cell —
+    your edit stays intact.
+''')
+def adding_rows_preserving_edits():
+    def add():
+        row = {'Name': f'Row {len(grid.options["rowData"])}'}
+        with grid.props.suspend_updates():
+            grid.options['rowData'].append(row)
+        grid.run_grid_method('applyTransaction', {'add': [row]})
+        grid.run_grid_method('ensureIndexVisible', len(grid.options['rowData']) - 1)
+
+    grid = ui.aggrid({
+        'columnDefs': [{'field': 'Name', 'editable': True}],
+        'rowData': [],
+        'stopEditingWhenCellsLoseFocus': True,
+    }).classes('h-52')
+    ui.button('Add row', on_click=add)
+
+
 @doc.demo('Select AG Grid Rows', '''
     You can add checkboxes to grid cells to allow the user to select single or multiple rows.
 
@@ -190,6 +217,24 @@ def aggrid_respond_to_event():
     }).on('cellClicked', lambda event: ui.notify(f'Cell value: {event.args["value"]}'))
 
 
+doc.text('', '''
+    **Note:** Certain events, e.g. `rowClicked`, don't seem to work.
+    This is because some event arguments include cyclic references.
+    For these seemingly non-working events you'll see a serialization error on the developer console in your browser.
+
+    To inspect the event arguments and find the values you are interested in,
+    you can replace the event registration with the following JavaScript handler:
+    ```
+    .on('rowClicked', js_handler='console.log')
+    ```
+    Then limit the event arguments to the necessary ones, e.g. `data`, thus excluding the cycles:
+    ```
+    .on('rowClicked', lambda event: ui.notify(f'Row: {event.args}'), ['data'])
+    ```
+    This selection can be serialized safely and will work correctly.
+''')
+
+
 @doc.demo('AG Grid with complex objects', '''
     You can use nested complex objects in AG Grid by separating the field names with a period.
     (This is the reason why keys in `rowData` are not allowed to contain periods.)
@@ -250,18 +295,25 @@ def aggrid_run_row_method():
               on_click=lambda: grid.run_row_method('Alice', 'setDataValue', 'age', 99))
 
 
-@doc.demo('Filter return values', '''
-    You can filter the return values of method calls by passing string that defines a JavaScript function.
-    This demo runs the grid method "getDisplayedRowAtIndex" and returns the "data" property of the result.
-''')
+@doc.ui
 def aggrid_filter_return_values():
+    ui.link_target('filter_return_values')
+
+
+@doc.demo('Access grid API via JavaScript', '''
+    You can access the AG Grid API directly via `ui.run_javascript()` for more complex operations.
+    This demo accesses the grid API to get the first displayed row's data.
+''')
+def aggrid_access_api_via_javascript():
     grid = ui.aggrid({
         'columnDefs': [{'field': 'name'}],
         'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
     })
 
     async def get_first_name() -> None:
-        row = await grid.run_grid_method('g => g.getDisplayedRowAtIndex(0).data')
+        row = await ui.run_javascript(
+            f'return getElement({grid.id}).api.getDisplayedRowAtIndex(0).data',
+        )
         ui.notify(row['name'])
 
     ui.button('Get First Name', on_click=get_first_name)
@@ -285,6 +337,33 @@ def aggrid_handle_theme_change():
     })
     ui.toggle(['quartz', 'balham', 'material', 'alpine']) \
         .bind_value(grid, 'theme').props('flat size="sm"')
+
+
+@doc.demo('AG Grid Enterprise', '''
+    You can use AG Grid Enterprise by setting the module source to the Enterprise bundle
+    (either from a CDN or from a self-hosted bundle)
+    and passing `modules='enterprise'` to the `ui.aggrid` constructor.
+
+    Use `ui.aggrid.VERSION` (*since version 3.8.0*) to programmatically reference the AG Grid version used by NiceGUI.
+    This ensures compatibility when building custom CDN URLs.
+
+    *Added in version 3.6.0*
+''')
+def project_code():
+    # bundle_url = f'https://cdn.jsdelivr.net/npm/ag-grid-enterprise@{ui.aggrid.VERSION}/+esm'
+    # ui.aggrid.set_module_source(bundle_url)
+
+    # ui.aggrid({
+    #     'columnDefs': [
+    #         {'field': 'version'},
+    #         {'field': 'description'},
+    #     ],
+    #     'rowData': [
+    #         {'version': 'Community', 'description': 'Free, no license required.'},
+    #         {'version': 'Enterprise', 'description': 'Restricted, free to test locally.'},
+    #     ],
+    # }, modules='enterprise')
+    ui.label('This demo does not run online due to licensing restrictions.')  # HIDE
 
 
 doc.reference(ui.aggrid)

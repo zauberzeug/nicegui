@@ -1,7 +1,7 @@
 import asyncio
 import os
 import time
-from collections.abc import Awaitable, Generator
+from collections.abc import Callable, Generator
 from concurrent.futures.process import BrokenProcessPool
 from pickle import PicklingError
 
@@ -32,7 +32,7 @@ def delayed_hello() -> str:
 
 
 @pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
-async def test_delayed_hello(user: User, func: Awaitable):
+async def test_delayed_hello(user: User, func: Callable):
     @ui.page('/')
     async def index():
         ui.label(await func(delayed_hello))

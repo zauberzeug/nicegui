@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -22,24 +23,27 @@ class DisableableElement(Element):
             return True
         return not self.enabled and self.ignores_events_when_disabled
 
-    def enable(self) -> None:
+    def enable(self) -> Self:
         """Enable the element."""
         self.enabled = True
+        return self
 
-    def disable(self) -> None:
+    def disable(self) -> Self:
         """Disable the element."""
         self.enabled = False
+        return self
 
     def bind_enabled_to(self,
                         target_object: Any,
-                        target_name: str = 'enabled',
-                        forward: Optional[Callable[[Any], Any]] = None, *,
-                        strict: Optional[bool] = None,
+                        target_name: str | tuple[str, ...] = 'enabled',
+                        forward: Callable[[Any], Any] | None = None, *,
+                        strict: bool | None = None,
                         ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -52,14 +56,15 @@ class DisableableElement(Element):
 
     def bind_enabled_from(self,
                           target_object: Any,
-                          target_name: str = 'enabled',
-                          backward: Optional[Callable[[Any], Any]] = None, *,
-                          strict: Optional[bool] = None,
+                          target_name: str | tuple[str, ...] = 'enabled',
+                          backward: Callable[[Any], Any] | None = None, *,
+                          strict: bool | None = None,
                           ) -> Self:
         """Bind the enabled state of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
@@ -72,16 +77,17 @@ class DisableableElement(Element):
 
     def bind_enabled(self,
                      target_object: Any,
-                     target_name: str = 'enabled', *,
-                     forward: Optional[Callable[[Any], Any]] = None,
-                     backward: Optional[Callable[[Any], Any]] = None,
-                     strict: Optional[bool] = None,
+                     target_name: str | tuple[str, ...] = 'enabled', *,
+                     forward: Callable[[Any], Any] | None = None,
+                     backward: Callable[[Any], Any] | None = None,
+                     strict: bool | None = None,
                      ) -> Self:
         """Bind the enabled state of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
@@ -95,9 +101,10 @@ class DisableableElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_enabled(self, value: bool) -> None:
+    def set_enabled(self, value: bool) -> Self:
         """Set the enabled state of the element."""
         self.enabled = value
+        return self
 
     def _handle_enabled_change(self, enabled: bool) -> None:
         """Called when the element is enabled or disabled.

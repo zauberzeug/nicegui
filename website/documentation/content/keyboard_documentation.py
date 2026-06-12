@@ -5,9 +5,9 @@ from . import doc
 
 @doc.demo(ui.keyboard)
 def main_demo() -> None:
-    from nicegui.events import KeyEventArguments
+    from nicegui import events
 
-    def handle_key(e: KeyEventArguments):
+    def handle_key(e: events.KeyEventArguments):
         if e.key == 'f' and not e.action.repeat:
             if e.action.keyup:
                 ui.notify('f was just released')

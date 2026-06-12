@@ -1,8 +1,10 @@
 import asyncio
-from typing import Optional
+import sys
 
 import httpx
 import pytest
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 from nicegui import PageArguments, background_tasks, ui
 from nicegui.testing import Screen
@@ -129,7 +131,7 @@ def test_opening_sub_pages_directly(screen: Screen):
     screen.should_contain('two')
     screen.should_not_contain('one')
 
-    screen.open('/one/')  # NOTE: having a slash at the end of the path should not cause an error
+    screen.open('/one/')  # having a slash at the end of the path should not cause an error
     screen.should_contain('one')
     screen.should_not_contain('two')
 
@@ -435,7 +437,7 @@ def test_navigate_to_new_tab_fallback(screen: Screen):
     screen.should_contain('main-content')
     assert calls == {'index': 1}
 
-    # NOTE: even though this is a sub page route, new_tab=True should use normal navigation
+    # even though this is a sub page route, new_tab=True should use normal navigation
     screen.click('new tab')
     screen.wait(0.5)
     screen.switch_to(1)
@@ -480,7 +482,7 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
 
     screen.click('Add sub page')
     screen.wait(0.2)
-    screen.should_contain('sub-content')  # NOTE: because browser points to /sub we see the sub page content
+    screen.should_contain('sub-content')  # because browser points to /sub we see the sub page content
     assert screen.current_path == '/sub'
 
 
@@ -683,7 +685,7 @@ def test_async_sub_pages(screen: Screen):
     screen.click('/0.1')
     screen.should_contain('after 0.1 sec')
 
-    # NOTE: below we ensure that quick page changes are not affected by the async sub page
+    # below we ensure that quick page changes are not affected by the async sub page
     screen.click('/1.0')
     screen.wait(0.1)
     screen.click('/0.1')
@@ -788,7 +790,7 @@ def test_optional_parameters(screen: Screen):
         name: str,
         count: int = 1,
         active: str = 'no',
-        source: Optional[str] = None,
+        source: str | None = None,
         missing: str = 'default',
     ):
         ui.label(f'name={name}, count={count}, active={active}, source={source}, missing={missing}')
@@ -814,7 +816,7 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
         args: PageArguments,
         user_id: str,
         role: str = 'guest',
-        app_name: Optional[str] = None,
+        app_name: str | None = None,
     ):
         ui.label(f'path={args.path}, user_id={user_id}, role={role}, app={app_name}')
 
@@ -839,7 +841,7 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         calls['main'] += 1
         ui.label('Main page')
         ui.link('Go to bottom', '/page#bottom')
-        # NOTE: extend content of main page so we can verify that scroll positions are reset when doing cross-page navigation
+        # extend content of main page so we can verify that scroll positions are reset when doing cross-page navigation
         for i in range(100):
             ui.label(f'Line {i}')
 
@@ -960,7 +962,7 @@ def test_on_path_changed_event(screen: Screen):
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
     screen.should_contain('main page')
-    assert paths == []  # NOTE: initial path is not reported, because the path does not "change" on first load
+    assert paths == []  # initial path is not reported, because the path does not "change" on first load
     assert calls == {'index': 1, 'main': 1, 'other': 0}
 
     screen.click('Go to other')
@@ -974,15 +976,18 @@ def test_on_path_changed_event(screen: Screen):
     assert calls == {'index': 2, 'main': 1, 'other': 2}
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
     assert paths == ['/other']
     assert calls == {'index': 3, 'main': 2, 'other': 2}
 
 
 def test_exception_in_page_builder(screen: Screen):
+    exceptions = []
+
     @ui.page('/')
     @ui.page('/{_:path}')
     def index():
+        ui.on_exception(exceptions.append)
         ui.link('Go to exception', '/')
         ui.link('Go to content with exception', '/content_with_exception')
         ui.link('Go to async exception', '/async')
@@ -1013,20 +1018,22 @@ def test_exception_in_page_builder(screen: Screen):
     msg_content = 'sub page /content_with_exception produced an error'
     screen.should_contain(f'500: {msg_content}')
     screen.assert_py_logger('ERROR', msg_content)
-    # NOTE: the content should not show at all, when an error occurs
+    # the content should not show at all, when an error occurs
     screen.should_not_contain('content before exception')
 
     screen.click('Go to async exception')
     msg_async = 'sub page /async produced an error'
     screen.should_not_contain(f'500: {msg_async}')
     screen.assert_py_logger('ERROR', 'async test exception')
-    # NOTE: the content should show, when an error occurs after async task is started
+    # the content should show, when an error occurs after async task is started
     screen.should_contain('async content before exception')
 
-    screen.open('/content_with_exception')  # NOTE: directly opening the page produces same error as above
+    screen.open('/content_with_exception')  # directly opening the page produces same error as above
     screen.should_contain(f'500: {msg_content}')
     screen.assert_py_logger('ERROR', msg_content)
     screen.should_not_contain('content before exception')
+
+    assert len(exceptions) == 4
 
 
 def test_disabling_404(screen: Screen):
@@ -1082,6 +1089,25 @@ def test_navigate_from_404_to_root_path(screen: Screen):
     screen.should_contain('main page')
 
 
+def test_navigate_from_initial_404_does_not_leak_sad_face(screen: Screen):
+    # regression test for #6069
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Go to home', '/')
+        ui.sub_pages({'/': lambda: ui.label('main page')})
+
+    screen.allowed_js_errors.append('/bad_path - Failed to load resource')
+    screen.open('/bad_path')
+    screen.should_contain('404: sub page /bad_path not found')
+    screen.should_not_contain("This page doesn't exist.")
+
+    screen.click('Go to home')
+    screen.should_contain('main page')
+    screen.should_not_contain('404: sub page /bad_path not found')
+    screen.should_not_contain("This page doesn't exist.")
+
+
 def test_http_404_on_initial_request(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
@@ -1100,7 +1126,7 @@ def test_http_404_on_initial_request(screen: Screen):
     screen.should_contain('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
@@ -1121,7 +1147,7 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
     screen.should_contain('main page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen):
@@ -1153,7 +1179,7 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     screen.should_contain('sub sub page')
 
     screen.open('/bad_path')
-    screen.should_contain('HTTPException: 404: /bad_path not found')
+    screen.should_contain('404: sub page /bad_path not found')
 
 
 def test_http_404_with_root_function_and_sub_pages(screen: Screen):
@@ -1213,6 +1239,8 @@ def test_refresh_sub_page(screen: Screen):
     def inner_other(args: PageArguments):
         calls['inner_other'] += 1
         ui.button('Refresh inner other', on_click=args.frame.refresh)
+        with ui.card():
+            ui.button('Refresh nested', on_click=ui.context.client.sub_pages_router.refresh)
 
     screen.open('/')
     screen.wait(0.2)
@@ -1238,6 +1266,10 @@ def test_refresh_sub_page(screen: Screen):
     screen.wait(0.2)
     assert calls == {'index': 1, 'outer': 3, 'inner_main': 2, 'inner_other': 4}
 
+    screen.click('Refresh nested')
+    screen.wait(0.2)
+    assert calls == {'index': 1, 'outer': 4, 'inner_main': 2, 'inner_other': 5}
+
 
 def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Screen):
     """Regression test for #5437: navigation crashed with KeyError: 'route'."""
@@ -1252,6 +1284,24 @@ def test_navigation_not_crashing_for_root_pages_with_remaining_path(screen: Scre
     screen.open('/')
     screen.click('other/1')
     screen.should_contain('404: sub page /other/1 not found')
+
+
+def test_navigate_from_root_page_to_other_page(screen: Screen):
+    def root():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', '/other')
+
+    @ui.page('/other')
+    def other_page():
+        ui.label('Other')
+
+    screen.ui_run_kwargs['root'] = root
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path == '/other'
 
 
 def test_remaining_path_for_wildcard_routing(screen: Screen):
@@ -1284,3 +1334,66 @@ def test_query_parameters_wildcard_routing(screen: Screen):
 
     screen.open('/sub/x/2/a?color=blue')
     screen.should_contain('query_parameters: color=blue')
+
+
+def test_sub_pages_against_xss_by_fragment(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('main page')})
+
+    screen.open('/')
+    screen.open('''/#x');console.error('XSS')//''')
+    assert 'XSS' not in screen.render_js_logs()
+
+
+def test_sub_pages_against_xss_by_path(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': lambda: ui.link('Go to XSS', '/"+console.error("XSS")+"')})
+
+    screen.open('/')
+    screen.click('Go to XSS')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
+
+
+def test_sub_pages_navigation_with_header(screen: Screen):
+    # regression test for #5816
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        with ui.header():
+            ui.link('Index', '/')
+            ui.link('Other', '/other')
+
+        ui.sub_pages({
+            '/': lambda: ui.label('Index page'),
+            '/other': lambda: ui.label('Other page'),
+        })
+
+    screen.open('/')
+    screen.should_contain('Index page')
+
+    screen.click('Other')
+    screen.should_contain('Other page')
+
+    screen.click('Index')
+    screen.should_contain('Index page')
+
+
+def test_ctrl_click_opens_link_in_new_tab(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({
+            '/': lambda: ui.link('Go to other', '/other'),
+            '/other': lambda: ui.label('Other page'),
+        })
+
+    screen.open('/')
+    element = screen.find('Go to other')
+    modifier = Keys.COMMAND if sys.platform == 'darwin' else Keys.CONTROL
+    ActionChains(screen.selenium).key_down(modifier).click(element).key_up(modifier).perform()
+    screen.wait_for(lambda: len(screen.selenium.window_handles) == 2)

@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from ..element import Element
 from .label import Label
@@ -6,7 +6,7 @@ from .label import Label
 
 class Log(Element, component='log.js', default_classes='nicegui-log'):
 
-    def __init__(self, max_lines: Optional[int] = None) -> None:
+    def __init__(self, max_lines: int | None = None) -> None:
         """Log View
 
         Create a log view that allows to add new lines without re-transmitting the whole history to the client.
@@ -17,9 +17,9 @@ class Log(Element, component='log.js', default_classes='nicegui-log'):
         self.max_lines = max_lines
 
     def push(self, line: Any, *,
-             classes: Optional[str] = None,
-             style: Optional[str] = None,
-             props: Optional[str] = None) -> None:
+             classes: str | None = None,
+             style: str | None = None,
+             props: str | None = None) -> None:
         """Add a new line to the log.
 
         :param line: the line to add (can contain line breaks)
