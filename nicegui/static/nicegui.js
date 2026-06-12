@@ -516,6 +516,12 @@ function createApp(elements, options) {
               continue;
             }
             replaceUndefinedAttributes(element);
+            for (const prop of element.preserved_props ?? []) {
+              if (this.elements[id] && prop in this.elements[id].props) {
+                element.props[prop] = this.elements[id].props[prop];
+              }
+            }
+            delete element.preserved_props;
             this.elements[id] = element;
           }
 
