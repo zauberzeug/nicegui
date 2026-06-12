@@ -54,7 +54,7 @@ def styling():
     and require server communication and processing.
 
     *Since version 2.7.0:*
-    The callable validation function can also be an async coroutine.
+    The callable validation function can also be an async function.
     In this case, the validation is performed asynchronously in the background.
 
     You can use the `validate` method of the input element to trigger the validation manually.

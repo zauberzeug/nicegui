@@ -8,7 +8,7 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class DateInput(LabelElement, ValueElement, DisableableElement):
+class DateInput(LabelElement, ValueElement[str | None], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
@@ -16,8 +16,8 @@ class DateInput(LabelElement, ValueElement, DisableableElement):
                  label: str | None = DEFAULT_PROP | None, *,
                  range_input: bool = False,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 value: str | None = DEFAULT_PROPS['model-value'] | '',
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  ) -> None:
         """Date Input
 
@@ -37,7 +37,7 @@ class DateInput(LabelElement, ValueElement, DisableableElement):
         self._props.set_optional('placeholder', placeholder)
 
         with self.add_slot('append'):
-            with button(icon='edit_calendar', color=None).props('flat round').classes('cursor-pointer') as self.button:
+            with button(icon='edit_calendar', color=None).props('flat round') as self.button:
                 with menu() as self.menu:
                     self.picker = date().props('no-parent-event').props('range' if range_input else '')
 

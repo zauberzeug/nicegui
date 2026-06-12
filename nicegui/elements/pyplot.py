@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import os
 import weakref
+from contextlib import suppress
 from typing import Any
 
 from typing_extensions import Self
@@ -10,7 +11,7 @@ from typing_extensions import Self
 from .. import optional_features
 from ..element import Element
 
-try:
+with suppress(ImportError):
     if os.environ.get('MATPLOTLIB', 'true').lower() == 'true':
         import matplotlib.figure
         import matplotlib.pyplot as plt
@@ -35,9 +36,6 @@ try:
 
             def __exit__(self, *_) -> None:
                 self.element.update()
-
-except ImportError:
-    pass
 
 
 class Pyplot(Element, default_classes='nicegui-pyplot'):

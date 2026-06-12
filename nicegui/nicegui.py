@@ -1,7 +1,8 @@
 import asyncio
 import inspect
 import mimetypes
-import time
+import multiprocessing
+import sys
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -9,9 +10,11 @@ from typing import Any
 
 import socketio
 from fastapi import HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import FileResponse, Response
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import air, background_tasks, binding, core, favicon, helpers, json, run, welcome
+from . import air, core, favicon, helpers, json, run, welcome
 from .app import App
 from .client import Client
 from .dependencies import dynamic_resources, esm_modules, js_components, libraries, resources, vue_components
@@ -20,8 +23,6 @@ from .json import NiceGUIJSONResponse
 from .logging import log
 from .page import page
 from .page_arguments import PageArguments
-from .persistence import PersistentDict
-from .slot import Slot
 from .staticfiles import CacheControlledStaticFiles
 from .version import __version__
 
@@ -54,6 +55,7 @@ app.mount('/_nicegui_ws/', sio_app)
 
 
 mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('text/javascript', '.mjs')
 mimetypes.add_type('text/css', '.css')
 
 static_files = CacheControlledStaticFiles(
@@ -71,14 +73,14 @@ def _get_library(key: str) -> FileResponse:
         path = libraries[dict_key].path
         if is_map:
             path = path.with_name(path.name + '.map')
-        if path.exists():
+        if path.is_file():
             return FileResponse(path, media_type='text/javascript')
     raise HTTPException(status_code=404, detail=f'library "{key}" not found')
 
 
 @app.get(f'/_nicegui/{__version__}' + '/components/{key:path}')
 def _get_component(key: str) -> Response:
-    if key in js_components and js_components[key].path.exists():
+    if key in js_components and js_components[key].path.is_file():
         return FileResponse(js_components[key].path, media_type='text/javascript')
     elif key in vue_components:
         return Response(vue_components[key].script, media_type='text/javascript')
@@ -91,7 +93,7 @@ def _get_resource(key: str, path: str) -> FileResponse:
         filepath = resources[key].path / path
         if not filepath.resolve().is_relative_to(resources[key].path.resolve()):
             raise HTTPException(status_code=403, detail='forbidden')
-        if filepath.exists():
+        if filepath.is_file():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'resource "{key}" not found')
@@ -110,7 +112,7 @@ def _get_esm(key: str, path: str) -> FileResponse:
         filepath = esm_modules[key].path / path
         if not filepath.resolve().is_relative_to(esm_modules[key].path.resolve()):
             raise HTTPException(status_code=403, detail='forbidden')
-        if filepath.exists():
+        if filepath.is_file():
             media_type, _ = mimetypes.guess_type(filepath)
             return FileResponse(filepath, media_type=media_type)
     raise HTTPException(status_code=404, detail=f'ESM module "{key}" not found')
@@ -119,6 +121,11 @@ def _get_esm(key: str, path: str) -> FileResponse:
 async def _startup() -> None:
     """Handle the startup event."""
     if not app.config.has_run_config:
+        argv0 = Path(sys.argv[0]) if sys.argv else Path()
+        is_dash_m_package = argv0.name == '__main__.py' and (argv0.parent / '__init__.py').is_file()
+        if multiprocessing.current_process().name != 'MainProcess' and is_dash_m_package:
+            raise RuntimeError('\n\nAuto-reload is not supported when running a package with `python -m`.\n'
+                               'Pass `reload=False` to ui.run() to start the server.')
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
                            'If ui.run() is behind a main guard\n'
@@ -127,7 +134,7 @@ async def _startup() -> None:
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
     await welcome.collect_urls()
-    # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
+    # ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
     sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
     sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:
@@ -140,12 +147,6 @@ async def _startup() -> None:
     core.loop = asyncio.get_running_loop()
     run.setup()
     app.start()
-    background_tasks.create(binding.refresh_loop(), name='refresh bindings')
-    app.timer(10, Client.prune_instances)
-    app.timer(10, Slot.prune_stacks)
-    app.timer(10, prune_tab_storage)
-    if app.storage.secret is not None:
-        app.timer(10, prune_user_storage)
     air.connect()
 
 
@@ -160,6 +161,11 @@ async def _shutdown() -> None:
 
 @app.exception_handler(404)
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
+    if (endpoint := request.scope.get('endpoint')) is not None and endpoint is not app and not request.scope.get('nicegui_page_path') and isinstance(exception, StarletteHTTPException):
+        # non-page endpoints raising 404 should get JSON, not our HTML error page
+        # match Starlette's HTTPException (the base class) so e.g. auth dependencies that raise it directly are covered
+        # when mounted via ui.run_with(), the parent's Mount sets endpoint=app even if no inner route matched — exclude that case
+        return await http_exception_handler(request, exception)
     root = core.root
     if root is not None:
         kwargs = {
@@ -248,31 +254,3 @@ def _on_ack(_: str, msg: dict) -> None:
 def _on_log(_: str, msg: dict) -> None:
     if client := Client.instances.get(msg['client_id']):
         client.handle_log_message(msg)
-
-
-async def prune_tab_storage(*, force: bool = False) -> None:
-    """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
-    tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
-    for tab_id, tab in list(tab_storages.items()):
-        if force or time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
-            tab.clear()
-            if isinstance(tab, PersistentDict):
-                await tab.close()
-            del tab_storages[tab_id]
-
-
-async def prune_user_storage(*, force: bool = False) -> None:
-    """Remove user storage objects without a client session."""
-    client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
-    storages_to_close: list[PersistentDict] = []
-    now = time.time()
-    user_storages = core.app.storage._users  # pylint: disable=protected-access
-    for session_id in list(user_storages):
-        if session_id not in client_session_ids:
-            age = now - user_storages[session_id].last_modified
-            if force or age > 10.0:  # NOTE: do not remove storages created by middleware and still wait for client
-                storages_to_close.append(user_storages.pop(session_id))
-    results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
-    for result in results:
-        if isinstance(result, Exception):
-            log.exception(result)

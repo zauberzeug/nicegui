@@ -8,15 +8,15 @@ from .mixins.value_element import ValueElement
 from .time import Time as time
 
 
-class TimeInput(LabelElement, ValueElement, DisableableElement):
+class TimeInput(LabelElement, ValueElement[str | None], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 value: str | None = DEFAULT_PROPS['model-value'] | '',
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  ) -> None:
         """Time Input
 
@@ -34,7 +34,7 @@ class TimeInput(LabelElement, ValueElement, DisableableElement):
         self._props.set_optional('placeholder', placeholder)
 
         with self.add_slot('append'):
-            with button(icon='schedule', color=None).props('flat round').classes('cursor-pointer') as self.button:
+            with button(icon='schedule', color=None).props('flat round') as self.button:
                 with menu() as self.menu:
                     self.picker = time()
 

@@ -1,7 +1,7 @@
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Grid(Element, default_classes='nicegui-grid'):
+class Grid(SortableElement, default_classes='nicegui-grid'):
 
     def __init__(self,
                  *,

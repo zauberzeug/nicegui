@@ -1,13 +1,15 @@
 import asyncio
 import copy
+import re
 import time
-from pathlib import Path
 
 import httpx
 import pytest
 
-from nicegui import Client, app, background_tasks, context, core, nicegui, ui
+from nicegui import Client, app, background_tasks, context, core, ui
+from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
+from nicegui.storage import Storage
 from nicegui.testing import Screen, User
 
 
@@ -97,7 +99,7 @@ def test_access_user_storage_from_fastapi(screen: Screen):
         assert response.status_code == 200
         assert response.text == '"OK"'
         time.sleep(0.5)  # wait for storage to be written
-        assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"msg":"yes"}'
+        assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"msg":"yes"}'
 
 
 def test_access_user_storage_on_interaction(screen: Screen):
@@ -111,7 +113,7 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.open('/')
     screen.click('switch')
     screen.wait(0.5)
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"test_switch":true}'
+    assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"test_switch":true}'
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -124,7 +126,7 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.click('test')
     screen.wait(1)
     assert \
-        next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"inner_function":"works"}'
+        next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"inner_function":"works"}'
 
 
 def test_access_user_storage_from_background_task(screen: Screen):
@@ -141,7 +143,7 @@ def test_access_user_storage_from_background_task(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.should_contain('Done')
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"subtask":"works"}'
+    assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"subtask":"works"}'
 
 
 def test_user_and_general_storage_is_persisted(screen: Screen):
@@ -177,7 +179,7 @@ def test_rapid_storage(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(0.5)
-    assert Path('.nicegui', 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}'
+    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}'
 
 
 def test_tab_storage_is_local(screen: Screen):
@@ -213,7 +215,7 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.open('/')
     screen.should_contain('2')
 
-    background_tasks.create(nicegui.prune_tab_storage(force=True))
+    background_tasks.create(prune_tab_storage(force=True))
     screen.wait(0.1)
     screen.open('/')
     screen.should_contain('1')
@@ -282,7 +284,7 @@ def test_deepcopy(screen: Screen):
     screen.open('/')
     screen.should_contain('Loaded')
     screen.wait(0.5)
-    assert Path('.nicegui', 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}'
+    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}'
 
 
 def test_missing_storage_secret(screen: Screen):
@@ -361,7 +363,7 @@ async def test_user_storage_is_pruned(screen: Screen):
     assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
 
-    response = httpx.get('http://localhost:3392/status')
+    response = httpx.get(f'http://localhost:{Screen.PORT}/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
     assert len(Client.instances) == 1
@@ -369,9 +371,20 @@ async def test_user_storage_is_pruned(screen: Screen):
 
     screen.close()
     screen.wait(5)  # more than 3 seconds
-    await nicegui.prune_user_storage(force=True)
+    await prune_user_storage(force=True)
     assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
+
+
+def test_storage_serialization_error_points_at_offending_key(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update', on_click=lambda: app.storage.general.update(X={'Y': {1, 2, 3}}))
+
+    screen.open('/')
+    screen.click('Update')
+    screen.wait(0.5)  # let the deferred backup task run
+    screen.assert_py_logger('ERROR', re.compile(r"storage-general.*\.json at \['X'\]\['Y'\]: value of type 'set'"))
 
 
 async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
@@ -379,7 +392,7 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     def page():
         ui.label('ok')
 
-    await user.open('/')  # NOTE: needed to ensure NiceGUI's event loop is running
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
     path = tmp_path / 'storage.json'
     d = FilePersistentDict(path, encoding='utf-8')
     d['key'] = 'value'  # schedules async backup task tagged with await_on_shutdown

@@ -8,13 +8,11 @@ from typing import TYPE_CHECKING, Any, Union, get_args, get_origin
 
 from starlette.datastructures import QueryParams
 
-from .dataclasses import KWONLY_SLOTS
-
 if TYPE_CHECKING:
     from .elements.sub_pages import SubPages
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class RouteMatch:
     """Contains details about a matched route including path parameters and query data."""
     path: str
@@ -47,7 +45,7 @@ class RouteMatch:
         return f'{self.path=}, {self.pattern=}, builder={self.builder.__name__}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class PageArguments:
     """Provides unified access to route data including path parameters and query parameters.
 

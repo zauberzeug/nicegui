@@ -123,19 +123,21 @@ function runMethod(target, method_name, args) {
   if (typeof target === "object") {
     if (method_name in target) {
       return target[method_name](...args);
-    } else {
-      return eval(method_name)(target, ...args);
+    }
+  } else {
+    const element = getElement(target);
+    if (element === null || element === undefined) return;
+    if (method_name in element) {
+      return element[method_name](...args);
+    } else if (method_name in (element.$refs.qRef || [])) {
+      return element.$refs.qRef[method_name](...args);
     }
   }
-  const element = getElement(target);
-  if (element === null || element === undefined) return;
-  if (method_name in element) {
-    return element[method_name](...args);
-  } else if (method_name in (element.$refs.qRef || [])) {
-    return element.$refs.qRef[method_name](...args);
-  } else {
-    return eval(method_name)(element, ...args);
+  let msg = `Method "${method_name}" not found.`;
+  if (method_name.includes("=>") || method_name.startsWith("(")) {
+    msg += " To run arbitrary JavaScript, use ui.run_javascript() instead.";
   }
+  logAndEmit("error", msg);
 }
 
 function getComputedProp(target, prop_name) {
@@ -224,6 +226,7 @@ function throttle(callback, time, leading, trailing, id) {
     }
   }
 }
+
 function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
@@ -399,21 +402,28 @@ function createApp(elements, options) {
       mounted_app = this;
       window.documentId = createRandomUUID();
       window.clientId = options.query.client_id;
-      const url = window.location.protocol === "https:" ? "wss://" : "ws://" + window.location.host;
+      const url = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host;
       window.path_prefix = options.prefix;
       window.nextMessageId = options.query.next_message_id;
       window.ackedMessageId = -1;
       options.query.document_id = window.documentId;
       options.query.tab_id = TAB_ID;
       options.query.old_tab_id = OLD_TAB_ID;
+      const transportNames =
+        "prerendering" in document && document.prerendering === true
+          ? ["polling", ...options.transports]
+          : [...options.transports];
       window.socket = io(url, {
         path: `${options.prefix}/_nicegui_ws/socket.io`,
         query: options.query,
         extraHeaders: options.extraHeaders,
-        transports:
-          "prerendering" in document && document.prerendering === true
-            ? ["polling", ...options.transports]
-            : options.transports,
+        transports: [...transportNames], // copy because socket.io replaces the names with transport classes in place
+        tryAllTransports: true, // if the WebSocket fails with an error, try polling within the same attempt (see #5802)
+      });
+      let usePollingFallback = transportNames[0] === "websocket" && transportNames.includes("polling");
+      window.socket.io.on("reconnect_attempt", () => {
+        // keep the otherwise-frozen reconnect query in sync to avoid triggering a reload (see #6019)
+        options.query.next_message_id = window.nextMessageId;
       });
       window.did_handshake = false;
       const messageHandlers = {
@@ -455,6 +465,14 @@ function createApp(elements, options) {
         },
         connect_error: (err) => {
           if (err.message == "timeout") {
+            if (usePollingFallback) {
+              // the WebSocket might be blocked (e.g. by a proxy or https://bugs.webkit.org/show_bug.cgi?id=302823),
+              // so we retry with polling first and let socket.io reconnect automatically (see #5802)
+              usePollingFallback = false;
+              console.log("connection timed out, falling back to polling");
+              window.socket.io.opts.transports = ["polling", "websocket"];
+              return;
+            }
             console.log("reloading because connection timed out");
             window.location.reload(); // see https://github.com/zauberzeug/nicegui/issues/198
           } else if (err.message == "Implicit handshake failed") {

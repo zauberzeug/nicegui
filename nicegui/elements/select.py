@@ -1,4 +1,5 @@
 from collections.abc import Callable, Generator, Iterable, Iterator
+from contextlib import suppress
 from copy import deepcopy
 from typing import Any, Literal
 
@@ -10,14 +11,14 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement, component='select.js'):
+class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableElement, component='select.js'):
 
     @resolve_defaults
     def __init__(self,
                  options: list | dict, *,
                  label: str | None = DEFAULT_PROP | None,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  with_input: bool = False,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
                  multiple: bool = DEFAULT_PROP | False,
@@ -62,7 +63,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
             elif not isinstance(value, list):
                 value = [value]
             else:
-                value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
+                value = value[:]  # avoid modifying the original list which could be the list of options (#3014)
         super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         if isinstance(key_generator, Generator):
             next(key_generator)  # prime the key generator, prepare it to receive the first value
@@ -123,11 +124,9 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
         if self.multiple:
             result = []
             for item in value or []:
-                try:
+                with suppress(ValueError):
                     index = self._values.index(item)
                     result.append({'value': index, 'label': self._labels[index]})
-                except ValueError:
-                    pass
             return result
         else:
             try:
@@ -158,7 +157,7 @@ class Select(LabelElement, ValidationElement, ChoiceElement, DisableableElement,
                     self.options.remove(value)
                 else:
                     self.options.append(value)
-            # NOTE: self._labels and self._values are updated via self.options since they share the same references
+            # self._labels and self._values are updated via self.options since they share the same references
             return value
         else:
             key = value

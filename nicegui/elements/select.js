@@ -30,7 +30,7 @@ export default {
         : this.initialOptions;
     },
     addClass() {
-      // NOTE: prevent the page from scrolling when the select popup is closed (#5031)
+      // prevent the page from scrolling when the select popup is closed (#5031)
       document.documentElement.classList.add("nicegui-select-popup-open");
     },
     async removeClass() {

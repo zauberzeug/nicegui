@@ -1,4 +1,5 @@
 import gc
+import weakref
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -12,6 +13,7 @@ from starlette.types import ASGIApp
 from . import core, helpers, storage
 from .air import Air
 from .language import Language
+from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
 from .nicegui import _shutdown, _startup
 from .server import Server
@@ -38,6 +40,7 @@ def run_with(
     storage_secret: str | None = None,
     session_middleware_kwargs: dict[str, Any] | None = None,
     show_welcome_message: bool = True,
+    markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
 ) -> None:
     """Run NiceGUI with FastAPI.
 
@@ -58,10 +61,29 @@ def run_with(
     :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
     :param unocss: use UnoCSS with the specified preset instead of Tailwind CSS (default: ``None``, options: "mini", "wind3", "wind4", *added in version 3.7.0*)
     :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
-    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.individual and ui.storage.browser)
+    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.user and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
+        (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
     """
+    if app is core.app:
+        raise ValueError(
+            'ui.run_with() must be called with your own FastAPI app, not nicegui.app. '
+            'Mounting nicegui.app into itself causes infinite recursion on unmatched paths. '
+            'If you do not have your own FastAPI app, use ui.run() instead.'
+        )
+    if core.script_mode:
+        log.warning(
+            'NiceGUI elements were created outside of a page context before ui.run_with() was called.\n'
+            'This is not supported and the elements will be discarded.\n'
+            'Move UI element creation into a @ui.page function or an app.on_startup handler.'
+        )
+        if core.script_client is not None:
+            core.script_client.delete()
+            core.script_client = None
+        core.script_mode = False
+
     core.app.config.add_run_config(
         reload=False,
         title=title,
@@ -77,9 +99,10 @@ def run_with(
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
         cache_control_directives=cache_control_directives,
+        markdown=markdown,
     )
     core.root = root
-    storage.set_storage_secret(storage_secret, session_middleware_kwargs)
+    storage.set_storage_secret(storage_secret, session_middleware_kwargs, parent_app=app)
     if not helpers.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
@@ -94,11 +117,15 @@ def run_with(
     @asynccontextmanager
     async def lifespan_wrapper(app):
         def _get_server_instance() -> uvicorn.Server | None:
-            for server in (obj for obj in gc.get_objects() if isinstance(obj, uvicorn.Server)):
-                wrapped = server.config.loaded_app
+            for obj in gc.get_objects():
+                if type(obj) in weakref.ProxyTypes:
+                    continue  # skip weakref proxies: isinstance() would raise ReferenceError if the referent is dead
+                if not isinstance(obj, uvicorn.Server):
+                    continue
+                wrapped = obj.config.loaded_app
                 while wrapped is not None:
                     if wrapped is app:
-                        return server
+                        return obj
                     wrapped = getattr(wrapped, 'app', None)
             return None
         if (instance := _get_server_instance()) is not None:

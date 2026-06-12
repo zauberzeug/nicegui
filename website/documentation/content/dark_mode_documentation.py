@@ -1,7 +1,9 @@
 from nicegui import ui
 
-from ..windows import WINDOW_BG_COLORS
 from . import doc
+
+LIGHT_BACKGROUND_COLOR = '#ffffff'  # TODO: use shared constants for colors
+DARK_BACKGROUND_COLOR = '#181b23'  # TODO: use shared constants for colors
 
 
 @doc.demo(ui.dark_mode)
@@ -15,11 +17,11 @@ def main_demo() -> None:
     container = label.parent_slot.parent
     ui.button('Dark', on_click=lambda: (
         label.style('color: white'),
-        container.style(f'background-color: {WINDOW_BG_COLORS["browser"][1]}'),
+        container.style(f'background-color: {DARK_BACKGROUND_COLOR}'),
     ))
     ui.button('Light', on_click=lambda: (
         label.style('color: black'),
-        container.style(f'background-color: {WINDOW_BG_COLORS["browser"][0]}'),
+        container.style(f'background-color: {LIGHT_BACKGROUND_COLOR}'),
     ))
 
 
@@ -32,7 +34,9 @@ def bind_to_switch() -> None:
     # END OF DEMO
     ui.switch('Dark mode', on_change=lambda e: (
         e.sender.style('color: white' if e.value else 'color: black'),
-        e.sender.parent_slot.parent.style(f'background-color: {WINDOW_BG_COLORS["browser"][1 if e.value else 0]}'),
+        e.sender.parent_slot.parent.style(
+            f'background-color: {DARK_BACKGROUND_COLOR if e.value else LIGHT_BACKGROUND_COLOR}',
+        ),
     ))
 
 

@@ -1,6 +1,7 @@
 import inspect
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import polars as pl
@@ -10,7 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import Event, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_update_table(screen: Screen):
@@ -293,19 +294,25 @@ def test_run_row_method(screen: Screen):
     screen.should_contain('42')
 
 
-def test_run_method_with_function(screen: Screen):
+def test_run_grid_method_xss(screen: Screen):
     @ui.page('/')
     def page():
-        grid = ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}, {'name': 'Bob'}]})
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}],
+            'rowData': [{'name': 'Alice'}, {'name': 'Bob'}],
+        })
+        ui.button('XSS 1', on_click=lambda: grid.run_grid_method('console.error("X" + "SS")'))
+        ui.button('XSS 2', on_click=lambda: grid.run_grid_method('x", console.error("X" + "SS"), "y'))
 
-        async def print_row(index: int) -> None:
-            ui.label(f'Row {index}: {await grid.run_grid_method(f"(g) => g.getDisplayedRowAtIndex({index}).data")}')
-
-        ui.button('Print Row 0', on_click=lambda: print_row(0))
-
+    screen.allowed_js_errors.append('Method "console.error("X" + "SS")" not found.')
+    screen.allowed_js_errors.append('Method "x", console.error("X" + "SS"), "y" not found.')
     screen.open('/')
-    screen.click('Print Row 0')
-    screen.should_contain("Row 0: {'name': 'Alice'}")
+    screen.click('XSS 1')
+    screen.click('XSS 2')
+    screen.wait(1)
+    assert 'XSS' not in screen.render_js_logs()
+    screen.assert_py_logger('ERROR', 'Method "console.error("X" + "SS")" not found.')
+    screen.assert_py_logger('ERROR', 'Method "x", console.error("X" + "SS"), "y" not found.')
 
 
 def test_get_client_data(screen: Screen):
@@ -341,3 +348,52 @@ def test_get_client_data(screen: Screen):
     screen.click('Get Sorted Data')
     screen.wait(0.5)
     assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
+
+
+def test_version_matches_js(screen: Screen):
+    @ui.page('/')
+    async def page():
+        ui.label(await ui.run_javascript('return (await import("nicegui-aggrid")).AllCommunityModule.version'))
+
+    screen.open('/')
+    screen.should_contain(ui.aggrid.VERSION)
+
+
+@pytest.mark.parametrize('index,expected,unexpected', [
+    (pd.Index([100, 200], name='id'), ['Id', '100', '200'], []),
+    (pd.RangeIndex(start=100, stop=102, name='index'), ['Index', '100', '101'], []),
+    (pd.Index(['x', 'y']), ['Index', 'x', 'y'], []),
+    (pd.MultiIndex.from_tuples([('A', 1), ('B', 2)], names=['char', 'num']), ['Char', 'Num', 'A', 'B', '1', '2'], []),
+    (pd.RangeIndex(start=0, stop=2), [], ['Index']),
+])
+def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unexpected: list[str]):
+    @ui.page('/')
+    def page():
+        df = pd.DataFrame({'value': [42, 43]}, index=index)
+        ui.aggrid.from_pandas(df)
+
+    screen.open('/')
+    screen.should_contain('Value')
+    screen.should_contain('42')
+    screen.should_contain('43')
+    for item in expected:
+        screen.should_contain(item)
+    for item in unexpected:
+        screen.should_not_contain(item)
+
+
+@pytest.mark.parametrize('args,auto_size_strategy_expected', [
+    ({'options': {'columnDefs': [{'field': 'a'}]}}, True),
+    ({'options': {'columnDefs': [{'field': 'a'}], 'defaultColDef': {'flex': 1}}}, False),
+    ({'options': {'columnDefs': [{'field': 'a', 'flex': 0}]}}, True),
+    ({'options': {'columnDefs': [{'field': 'a', ':flex': '1'}]}}, False),
+    ({'options': {'columnDefs': [{'field': 'a'}]}, 'auto_size_columns': False}, False),
+    ({'options': {'defaultColDef': {'flex': 1}}, 'auto_size_columns': True}, True),
+])
+async def test_auto_size_columns_vs_flex(user: User, args: dict[str, Any], auto_size_strategy_expected: bool):
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid(**args)
+        assert ('autoSizeStrategy' in grid.options) == auto_size_strategy_expected
+
+    await user.open('/')

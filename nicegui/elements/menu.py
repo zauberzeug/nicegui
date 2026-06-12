@@ -1,3 +1,5 @@
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
@@ -5,7 +7,7 @@ from .item import Item
 from .mixins.value_element import ValueElement
 
 
-class Menu(ValueElement):
+class Menu(ValueElement[bool]):
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
@@ -26,17 +28,23 @@ class Menu(ValueElement):
                                 'The prop "touch-position" is not supported by `ui.menu`. '
                                 'Use "ui.context_menu()" instead.')
 
-    def open(self) -> None:
+    def _render_markdown(self) -> str:
+        return self._children_to_markdown() if self.value else ''
+
+    def open(self) -> Self:
         """Open the menu."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the menu."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the menu."""
         self.value = not self.value
+        return self
 
 
 class MenuItem(Item):

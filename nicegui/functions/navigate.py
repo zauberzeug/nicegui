@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Any
 from urllib.parse import urlparse
 
-from .. import background_tasks, json
+from .. import background_tasks, helpers, json
 from ..client import Client
 from ..context import context
 from ..element import Element
@@ -69,11 +69,10 @@ class Navigate:
         if not new_tab and isinstance(target, str):
             parsed = urlparse(path)
             if not parsed.scheme and not parsed.netloc and \
-                    any(isinstance(el, SubPages) for el in context.client.elements.values()):
-                async def navigate_sub_pages(client: Client) -> None:
-                    with client:
-                        await client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
-                background_tasks.create(navigate_sub_pages(context.client), name='navigate_sub_pages')
+                    any(isinstance(el, SubPages) for el in context.client.layout.descendants()):
+                client = context.client
+                navigate_coro = client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
+                background_tasks.create(helpers.await_with_context(navigate_coro, client), name='navigate_sub_pages')
                 return
 
         context.client.open(path, new_tab)

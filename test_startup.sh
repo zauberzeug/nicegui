@@ -44,11 +44,6 @@ do
         continue # until https://github.com/pygobject/pycairo/issues/387 is fixed
     fi
 
-    # Skip examples/sqlite_database for Python 3.11 and 3.12
-    if [[ $(uv run python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.1[12]$ ]] && [[ $path == "examples/sqlite_database" ]]; then
-        continue # until https://github.com/omnilib/aiosqlite/issues/241 is fixed
-    fi
-
     # Skip examples/ai_interface for Python 3.14
     if [[ $(uv run python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2) =~ ^3.14$ ]] && [[ $path == "examples/ai_interface" ]]; then
         continue # It still uses Pydantic V1, which breaks horribly with Python 3.14

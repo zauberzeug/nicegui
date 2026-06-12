@@ -5,10 +5,8 @@ from typing import Any
 
 from fastapi import Request
 
-from .dataclasses import KWONLY_SLOTS
 
-
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EventListener:
     id: str = field(init=False)
     element_id: int

@@ -4,7 +4,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Rating(ValueElement, DisableableElement):
+class Rating(ValueElement[float | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self,
@@ -15,7 +15,7 @@ class Rating(ValueElement, DisableableElement):
                  icon_half: str | None = DEFAULT_PROP | None,
                  color: str | list[str] | None = DEFAULT_PROP | 'primary',
                  size: str | None = DEFAULT_PROP | None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
                  ) -> None:
         """Rating
 

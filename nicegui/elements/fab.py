@@ -11,7 +11,7 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, DisableableElement):
+class Fab(ValueElement[bool], LabelElement, IconElement, BackgroundColorElement, DisableableElement):
 
     @resolve_defaults
     def __init__(self,
@@ -26,6 +26,8 @@ class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, Disab
         A floating action button that can be used to trigger an action.
         This element is based on Quasar's `QFab <https://quasar.dev/vue-components/floating-action-button#qfab-api>`_ component.
 
+        *Added in version 2.22.0*
+
         :param icon: icon to be displayed on the FAB
         :param value: whether the FAB is already opened (default: ``False``)
         :param label: optional label for the FAB
@@ -35,17 +37,20 @@ class Fab(ValueElement, LabelElement, IconElement, BackgroundColorElement, Disab
         super().__init__(tag='q-fab', value=value, label=label, background_color=color, icon=icon)
         self._props['direction'] = direction
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the FAB."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the FAB."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the FAB."""
         self.value = not self.value
+        return self
 
 
 class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableElement):

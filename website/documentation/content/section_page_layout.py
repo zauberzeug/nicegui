@@ -10,9 +10,9 @@ from . import (
     expansion_documentation,
     fullscreen_documentation,
     grid_documentation,
+    keep_alive_documentation,
     list_documentation,
     menu_documentation,
-    slide_item_documentation,
     notification_documentation,
     notify_documentation,
     pagination_documentation,
@@ -20,6 +20,9 @@ from . import (
     scroll_area_documentation,
     separator_documentation,
     skeleton_documentation,
+    skip_link_documentation,
+    slide_item_documentation,
+    sortable_documentation,
     space_documentation,
     splitter_documentation,
     stepper_documentation,
@@ -59,6 +62,7 @@ doc.intro(grid_documentation)
 doc.intro(list_documentation)
 doc.intro(slide_item_documentation)
 doc.intro(fullscreen_documentation)
+doc.intro(skip_link_documentation)
 
 
 @doc.demo('Clear Containers', '''
@@ -86,7 +90,9 @@ def clear_containers_demo():
     ui.button('Clear', on_click=container.clear)
 
 
+doc.intro(sortable_documentation)
 doc.intro(teleport_documentation)
+doc.intro(keep_alive_documentation)
 doc.intro(expansion_documentation)
 doc.intro(scroll_area_documentation)
 doc.intro(separator_documentation)

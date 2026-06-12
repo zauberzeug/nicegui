@@ -1,5 +1,6 @@
 import hashlib
 import os
+from collections.abc import Callable
 from functools import lru_cache
 
 import markdown2
@@ -7,6 +8,7 @@ from fastapi.responses import PlainTextResponse
 from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
 
 from .. import core
+from ..helpers import remove_indentation
 from .mixins.content_element import ContentElement
 
 
@@ -16,6 +18,7 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
     def __init__(self,
                  content: str = '', *,
                  extras: list[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
         """Markdown Element
 
@@ -23,9 +26,15 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
 
         :param content: the Markdown content to be displayed
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
+        :param sanitize: sanitization mode:
+            ``True`` (default) uses client-side sanitization via DOMPurify,
+            ``False`` disables sanitization (use only with trusted content),
+            or pass a callable to apply server-side sanitization
         """
+        self._sanitize = sanitize
         self.extras = extras[:]
         super().__init__(content=content)
+        self._props['sanitize'] = sanitize is True
         if 'mermaid' in extras:
             self._props['use-mermaid'] = True
 
@@ -53,22 +62,16 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
 
     def _handle_content_change(self, content: str) -> None:
         html = prepare_content(content, extras=' '.join(self.extras))
+        if callable(self._sanitize):
+            html = self._sanitize(html)
         if self._props.get('innerHTML') != html:
             self._props['innerHTML'] = html
+
+    def _render_markdown(self) -> str:
+        return self.content
 
 
 @lru_cache(maxsize=int(os.environ.get('MARKDOWN_CONTENT_CACHE_SIZE', '1000')))
 def prepare_content(content: str, extras: str) -> str:
     """Render Markdown content to HTML."""
     return markdown2.markdown(remove_indentation(content), extras=extras.split())
-
-
-def remove_indentation(text: str) -> str:
-    """Remove indentation from a multi-line string based on the indentation of the first non-empty line."""
-    lines = text.splitlines()
-    while lines and not lines[0].strip():
-        lines.pop(0)
-    if not lines:
-        return ''
-    indentation = len(lines[0]) - len(lines[0].lstrip())
-    return '\n'.join(line[indentation:] for line in lines)

@@ -11,7 +11,7 @@ class GUI:
     """
 
     def __init__(self) -> None:
-        self.message = Event[str]()  # NOTE: broadcast data to all clients currently visiting self.root
+        self.message = Event[str]()  # broadcast data to all clients currently visiting self.root
 
     def start(self) -> None:
         """Start the NiceGUI server in a separate thread."""
@@ -19,7 +19,7 @@ class GUI:
         app.on_startup(started.set)
         thread = threading.Thread(target=lambda: ui.run(self.root, reload=False), daemon=True)
         thread.start()
-        if not started.wait(timeout=3.0):  # NOTE: wait for the server to start
+        if not started.wait(timeout=3.0):  # wait for the server to start
             raise RuntimeError('NiceGUI did not start within 3 seconds.')
 
     def root(self) -> None:

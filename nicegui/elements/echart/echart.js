@@ -95,7 +95,7 @@ export default {
       }
       convertDynamicProperties(this.options, true);
       this.chart.setOption(this.options, {
-        notMerge: this.chart.options?.series?.length != this.options.series?.length,
+        notMerge: this.chart.getOption()?.series?.length != this.options.series?.length,
       });
     },
     run_chart_method(name, ...args) {

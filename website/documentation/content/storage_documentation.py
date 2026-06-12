@@ -30,7 +30,7 @@ doc.title('Storage')
         Stored server-side, each dictionary is associated with a unique identifier held in a browser session cookie.
         Unique to each user, this storage is accessible across all their browser tabs.
         `app.storage.browser['id']` is used to identify the user.
-        This storage requires the `storage_secret` parameter in`ui.run()` to sign the browser session cookie.
+        This storage requires the `storage_secret` parameter in `ui.run()` to sign the browser session cookie.
     - `app.storage.general`:
         Also stored server-side, this dictionary provides a shared storage space accessible to all users.
     - `app.storage.browser`:

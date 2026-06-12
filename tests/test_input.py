@@ -125,6 +125,26 @@ def test_input_with_multi_word_error_message(screen: Screen):
     screen.should_contain('Some multi word error message')
 
 
+def test_setting_error_without_validation(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.input('Name').error = 'Something is wrong'
+
+    screen.open('/')
+    screen.should_contain('Something is wrong')
+
+
+def test_validate_after_removing_error_prop(screen: Screen):
+    @ui.page('/')
+    def page():
+        input_ = ui.input('Name', value='valid', validation=lambda v: None if v else 'required')
+        ui.button('Reset', on_click=lambda: (input_.props(remove='error error-message').validate(), ui.label('done')))
+
+    screen.open('/')
+    screen.click('Reset')
+    screen.should_contain('done')
+
+
 def test_autocompletion(screen: Screen):
     input_ = None
 

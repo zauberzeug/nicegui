@@ -4,15 +4,14 @@ from typing import cast
 
 from typing_extensions import Self
 
-from nicegui import ui
-from nicegui.binding import BindableProperty, bind_from
+from nicegui import binding, ui
 
 
 class colorful_label(ui.label):
     """A label with a bindable background color."""
 
     # This class variable defines what happens when the background property changes.
-    background = BindableProperty(
+    background = binding.BindableProperty(
         on_change=lambda sender, value: cast(Self, sender)._handle_background_change(value))
 
     def __init__(self, text: str = '') -> None:
@@ -35,8 +34,8 @@ for city in temperatures:
     # Bind background color from temperature.
     # There is also a bind_to method which would propagate changes from the label to the temperatures dictionary
     # and a bind method which would propagate changes both ways.
-    bind_from(self_obj=label, self_name='background',
-              other_obj=temperatures, other_name=city,
-              backward=lambda t: 'bg-green' if t < 10 else 'bg-yellow' if t < 20 else 'bg-orange')
+    binding.bind_from(self_obj=label, self_name='background',
+                      other_obj=temperatures, other_name=city,
+                      backward=lambda t: 'bg-green' if t < 10 else 'bg-yellow' if t < 20 else 'bg-orange')
 
 ui.run()

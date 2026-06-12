@@ -1,5 +1,8 @@
 from contextlib import AbstractContextManager, nullcontext
 
+from typing_extensions import Self
+
+from .. import core
 from ..client import Client, ClientConnectionTimeout
 from ..element import Element
 from ..logging import log
@@ -10,6 +13,10 @@ class Timer(BaseTimer, Element, component='timer.js'):
 
     def _get_context(self) -> AbstractContextManager:
         return self.parent_slot or nullcontext()
+
+    def _skip_registration(self) -> bool:
+        # Per-client ui.timer: skip on the script-mode preflight; will register on each per-client re-execution.
+        return core.is_script_mode_preflight()
 
     async def _can_start(self) -> bool:
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.
@@ -32,6 +39,10 @@ class Timer(BaseTimer, Element, component='timer.js'):
             super()._should_stop()
         )
 
+    def _handle_delete(self) -> None:
+        self.cancel(with_current_invocation=True)
+        super()._handle_delete()
+
     def _cleanup(self) -> None:
         super()._cleanup()
         if not self._deleted:
@@ -39,5 +50,5 @@ class Timer(BaseTimer, Element, component='timer.js'):
             assert parent_slot is not None
             parent_slot.parent.remove(self)
 
-    def set_visibility(self, visible: bool) -> None:
+    def set_visibility(self, visible: bool) -> Self:
         raise NotImplementedError('Use `activate()`, `deactivate()` or `cancel()`. See #3670 for more information.')

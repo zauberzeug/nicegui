@@ -31,20 +31,19 @@ jobs:
       - name: Install Python
         run: uv python install ${{ matrix.python }}
       - name: Install dependencies
-        run: uv sync
-      - uses: nanasess/setup-chromedriver@v2.3.0
+        run: uv sync --locked
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
         run: uv run pytest
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: matrix.scope == 'pytest' && failure()
         with:
           name: screenshots-${{ matrix.python }}
-          path: screenshots/*.failed.png
+          path: screenshots/**/*.failed.png
           retention-days: 14
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'startup'
         run: ./test_startup.sh
       - name: Restore dependencies for effective caching
         if: matrix.scope == 'startup' && always()
-        run: uv sync
+        run: uv sync --locked

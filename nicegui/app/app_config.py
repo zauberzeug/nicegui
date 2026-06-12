@@ -2,17 +2,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
-from ..dataclasses import KWONLY_SLOTS
 from ..language import Language
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class AppConfig:
     endpoint_documentation: Literal['none', 'internal', 'page', 'all'] = 'none'
     socket_io_js_query_params: dict = field(default_factory=dict)
     socket_io_js_extra_headers: dict = field(default_factory=dict)
     socket_io_js_transports: list[Literal['websocket', 'polling']] = \
-        field(default_factory=lambda: ['websocket', 'polling'])  # NOTE: we favor websocket
+        field(default_factory=lambda: ['websocket', 'polling'])  # we favor websocket
     quasar_config: dict = \
         field(default_factory=lambda: {
             'brand': {},
@@ -43,6 +42,7 @@ class AppConfig:
     unocss: Literal['mini', 'wind3', 'wind4'] | None = field(init=False)
     prod_js: bool = field(init=False)
     show_welcome_message: bool = field(init=False)
+    markdown: bool = field(init=False)
     _has_run_config: bool = False
 
     def add_run_config(self,
@@ -61,6 +61,7 @@ class AppConfig:
                        unocss: Literal['mini', 'wind3', 'wind4'] | None,
                        prod_js: bool,
                        show_welcome_message: bool,
+                       markdown: bool,
                        ) -> None:
         """Add the run config to the app config."""
         self.reload = reload
@@ -77,6 +78,7 @@ class AppConfig:
         self.unocss = unocss
         self.prod_js = prod_js
         self.show_welcome_message = show_welcome_message
+        self.markdown = markdown
         self._has_run_config = True
 
     @property

@@ -1,9 +1,9 @@
 from collections.abc import Callable
 
-from nicegui.element import Element
+from nicegui import ui
 
 
-class Counter(Element, component='counter.js'):
+class Counter(ui.element, component='counter.js'):
 
     def __init__(self, title: str, *, on_change: Callable | None = None) -> None:
         super().__init__()

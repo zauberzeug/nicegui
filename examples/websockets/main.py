@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Websockets example showing messages from connected clients and broadcasting via button click.
 
-NOTE: NiceGUI already handles all the communication for you, so you don't need to worry about websockets and the like normally.
+NiceGUI already handles all the communication for you, so you don't need to worry about websockets and the like normally.
 This example is only for advanced use cases where you want to allow other, non-NiceGUI clients to connect to your server.
 """
 import asyncio

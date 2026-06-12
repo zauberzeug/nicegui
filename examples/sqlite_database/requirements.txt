@@ -1,3 +1,2 @@
 nicegui>=3.0
-tortoise-orm
-aiosqlite==0.21.0  # until https://github.com/tortoise/tortoise-orm/issues/2037 is fixed
+tortoise-orm>=1.0.0

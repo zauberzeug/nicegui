@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import functools
+import importlib
+import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from . import core
-from .dataclasses import KWONLY_SLOTS
 from .helpers import hash_file_path
 from .vbuild import VBuild
 from .version import __version__
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
     from .element import Element
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Component:
     key: str
     name: str
@@ -36,19 +37,19 @@ class Component:
         return f'nicegui-{self.name}'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class VueComponent(Component):
     html: str
     script: str
     style: str
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsComponent(Component):
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Resource:
     key: str
     path: Path
@@ -59,13 +60,13 @@ class Resource:
         self._keys.add(self.key)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class DynamicResource:
     name: str
     function: Callable
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Import:
     name: str
     path: Path
@@ -76,7 +77,7 @@ class Import:
         self._names.add(self.name)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Library(Import):
     key: str
     _keys: ClassVar[set[str]] = set()
@@ -86,7 +87,7 @@ class Library(Import):
         self._keys.add(self.key)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EsmModule(Import):
     pass
 
@@ -152,7 +153,45 @@ def register_dynamic_resource(name: str, function: Callable) -> DynamicResource:
 
 def register_esm(name: str, path: Path, *, max_time: float | None) -> None:
     """Register an ESM module."""
-    esm_modules[compute_key(path, max_time=max_time)] = EsmModule(name=name, path=path)
+    key = compute_key(path, max_time=max_time)
+    if key in esm_modules:
+        if esm_modules[key].name == name:
+            return
+        raise ValueError(f'Conflicting ESM registration for key "{key}": "{esm_modules[key].name}" vs "{name}"')
+    esm_modules[key] = EsmModule(name=name, path=path)
+
+
+def setup_esm_package(package_file: str, package_name: str, esm_name: str, exports: dict[str, str]) \
+        -> tuple[Callable[[str], object], Callable[[], list[str]]]:
+    """Register an ESM module and return ``__getattr__`` and ``__dir__`` for lazy class loading.
+
+    Each ESM element package can use this in its ``__init__.py``:
+
+        from ...dependencies import setup_esm_package
+        __getattr__, __dir__ = setup_esm_package(__file__, __name__, 'nicegui-aggrid', {'AgGrid': '.aggrid'})
+        __all__ = ['AgGrid']
+    """
+    dist = Path(package_file).parent / 'dist'
+    register_esm(esm_name, dist, max_time=dist.stat().st_mtime)
+
+    by_submodule: dict[str, list[str]] = {}
+    for attr, submodule in exports.items():
+        by_submodule.setdefault(submodule, []).append(attr)
+
+    def __getattr__(name: str) -> object:
+        if name not in exports:
+            raise AttributeError(f'module {package_name!r} has no attribute {name!r}')
+        submodule = exports[name]
+        module = importlib.import_module(submodule, package=package_name)
+        pkg = sys.modules[package_name]
+        for attr in by_submodule[submodule]:
+            setattr(pkg, attr, getattr(module, attr))
+        return getattr(module, name)
+
+    def __dir__() -> list[str]:
+        return list(exports)
+
+    return __getattr__, __dir__
 
 
 def register_importmap_override(import_name: str, url: str) -> None:
@@ -196,6 +235,7 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
         'vue': f'{prefix}/_nicegui/{__version__}/static/vue.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
         'sass': f'{prefix}/_nicegui/{__version__}/static/sass.default.js',
         'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
+        'dompurify': f'{prefix}/_nicegui/{__version__}/static/dompurify.mjs',
     }
     js_imports: list[str] = []
     js_imports_urls: list[str] = [imports['vue']]

@@ -4,6 +4,7 @@ from fastapi import Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
+from .. import core
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
 from ..nicegui import app
@@ -70,7 +71,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._upload_handlers = [on_upload] if on_upload else []
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
-        @app.post(self._props['url'])
+        @app.post(self._props['url'], include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
         async def upload_route(request: Request) -> dict[str, str]:
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
@@ -116,9 +117,10 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self.on('rejected', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
         return self
 
-    def reset(self) -> None:
+    def reset(self) -> Self:
         """Clear the upload queue."""
         self.run_method('reset')
+        return self
 
     def _handle_delete(self) -> None:
         app.remove_route(self._props['url'])

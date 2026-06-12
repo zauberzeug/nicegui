@@ -43,7 +43,7 @@ def subscribing_to_events():
     You can use the `fit` method to resize the terminal,
     so that its number of rows and columns match the size of its container.
     Note that you might also need to resize the backing pty to match the new size of the terminal,
-    which you can do by subscribing to the terminal's `resize` event.
+    which you can do by subscribing to the terminal's resize event.
     Also note that the native `pty` module does not support resizing.
 ''')
 def resizing():
@@ -52,7 +52,7 @@ def resizing():
         ui.element('q-resize-observer').on('resize', terminal.fit)
 
     label = ui.label()
-    terminal.on('resize', lambda e: label.set_text(f'Size: {e.args["cols"]}x{e.args["rows"]}'))
+    terminal.on_resize(lambda e: label.set_text(f'Size: {e.cols}x{e.rows}'))
 
 
 @doc.demo('Showing output of a subprocess', '''
