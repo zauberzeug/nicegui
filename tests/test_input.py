@@ -236,6 +236,21 @@ def test_update_input(screen: Screen):
     assert element.get_attribute('value') == 'Pete'
 
 
+def test_setting_value_via_props_overrides_user_input(screen: Screen):
+    @ui.page('/')
+    def page():
+        input_ = ui.input('Name')
+        ui.button('Force', on_click=lambda: input_.props('value=RAW'))
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
+    element.send_keys('typed')
+
+    screen.click('Force')
+    screen.wait(0.5)
+    assert element.get_attribute('value') == 'RAW'
+
+
 def test_switching_focus(screen: Screen):
     @ui.page('/')
     def page():
