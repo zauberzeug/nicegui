@@ -55,10 +55,13 @@ doc.intro(run_documentation)
     This is particularly useful when packaging your app with PyInstaller, allowing multiple copies of the same executable to run simultaneously.
 
     **Storage in Native Mode:** All [storage types](/documentation/storage) work the same in native mode as in web mode.
-    The storage files are saved to the path specified by `NICEGUI_STORAGE_PATH` environment variable (defaults to ".nicegui" in the working directory).
-    **Important:** If multiple instances run the same file from the same location, they will all try to write to the same storage path, causing conflicts.
-    To run multiple instances of the same file, each instance must use a different `NICEGUI_STORAGE_PATH` environment variable.
-    Alternatively, if you need shared storage across multiple NiceGUI instances, use [Redis storage](/documentation/storage#redis_storage).
+    The storage files are saved to the path specified by the `NICEGUI_STORAGE_PATH` environment variable (defaults to ".nicegui" in the working directory).
+    As with any NiceGUI app, multiple instances started from the same working directory share this path.
+    Since each process holds its own copy of the data in memory and rewrites the storage files on change,
+    the instances do not see each other's data and silently overwrite each other's writes.
+    Native mode makes this situation especially likely, because multiple copies of the same packaged executable can run simultaneously.
+    To avoid it, give each instance its own `NICEGUI_STORAGE_PATH`,
+    or use [Redis storage](/documentation/storage#redis_storage) to share data consistently across instances.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
