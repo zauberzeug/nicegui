@@ -57,8 +57,7 @@ doc.title('Storage')
     | Needs `storage_secret`      | No       | No               | Yes       | Yes    | No        |
 
     <sup>1)</sup>
-    Tab storage persists across server restarts only when using Redis (see [Redis storage](#redis_storage) below).
-    By default, tab storage is kept in memory and will be lost when the server restarts, as noted in the description above.
+    Tab storage persists across server restarts only when using [Redis storage](#redis_storage).
 
     <sup>2)</sup>
     Tab storage can only be accessed after the WebSocket connection has been established.
