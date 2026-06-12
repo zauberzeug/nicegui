@@ -1,4 +1,3 @@
-import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -57,12 +56,7 @@ def test_markdown_with_mermaid(screen: Screen):
     screen.should_not_contain('Node_A')
 
 
-@pytest.mark.parametrize('use_default_extras', [True, False])
-def test_markdown_with_mermaid_on_demand(screen: Screen, use_default_extras: bool):
-    EXTRAS = ['mermaid', 'fenced-code-blocks']
-    if use_default_extras:
-        ui.markdown.default_extras = EXTRAS
-
+def test_markdown_with_mermaid_on_demand(screen: Screen):
     @ui.page('/')
     def page():
         ui.button('Create Mermaid', on_click=lambda: ui.markdown('''
@@ -70,12 +64,27 @@ def test_markdown_with_mermaid_on_demand(screen: Screen, use_default_extras: boo
             graph TD;
                 Node_A --> Node_B;
             ```
-        ''', extras=None if use_default_extras else EXTRAS))
+        ''', extras=['mermaid', 'fenced-code-blocks']))
 
     screen.open('/')
     screen.click('Create Mermaid')
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_A")]]').is_displayed()
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_B")]]').is_displayed()
+
+
+def test_default_extras(screen: Screen):
+    ui.markdown.default_extras = []
+
+    @ui.page('/')
+    def page():
+        ui.markdown('| First |\n| --- |\n| A |')
+        ui.markdown('| Second |\n| --- |\n| B |', extras=['tables'])
+
+    screen.open('/')
+    screen.should_contain('Second')
+    tables = screen.selenium.find_elements(By.TAG_NAME, 'table')
+    assert len(tables) == 1, 'only the markdown element with explicit "tables" extra should render a table'
+    assert 'Second' in tables[0].text
 
 
 def test_strip_indentation(screen: Screen):
