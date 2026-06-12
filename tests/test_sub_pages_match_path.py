@@ -165,6 +165,19 @@ def test_invalid_parameter_names():
     assert ui.sub_pages._match_path('/path{param.name}', '/path{other.name}') is None
 
 
+def test_validate_route_accepts_supported_patterns():
+    """Single-segment {name} parameters and plain paths are valid route patterns."""
+    for pattern in ['/', '/item', '/user/{id}', '/{a}/{b}', '/{user_id}', '/blog/{year}/{month}/{slug}']:
+        ui.sub_pages._validate_route(pattern)  # should not raise
+
+
+def test_validate_route_rejects_unsupported_patterns():
+    """Starlette-style converters and other non-{name} parameters are rejected at registration time."""
+    for pattern in ['/{_:path}', '/{name:path}', '/{id:int}', '/{}', '/item/{a-b}']:
+        with pytest.raises(ValueError, match='not supported'):
+            ui.sub_pages._validate_route(pattern)
+
+
 def test_adjacent_parameters():
     """Test patterns with parameters that are adjacent (no static separators)."""
     # This is an edge case - adjacent parameters without separators

@@ -1,10 +1,12 @@
+from typing_extensions import Self
+
 from ..context import context
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
 from .mixins.value_element import ValueElement
 
 
-class Header(ValueElement, component='header.js', default_classes='nicegui-header'):
+class Header(ValueElement[bool], component='header.js', default_classes='nicegui-header'):
 
     @resolve_defaults
     def __init__(self, *,
@@ -47,14 +49,17 @@ class Header(ValueElement, component='header.js', default_classes='nicegui-heade
 
         self._props.add_rename('add_scroll_padding', 'add-scroll-padding')  # DEPRECATED: remove in NiceGUI 4.0
 
-    def toggle(self):
+    def toggle(self) -> Self:
         """Toggle the header"""
         self.value = not self.value
+        return self
 
-    def show(self):
+    def show(self) -> Self:
         """Show the header"""
         self.value = True
+        return self
 
-    def hide(self):
+    def hide(self) -> Self:
         """Hide the header"""
         self.value = False
+        return self

@@ -1,14 +1,15 @@
 export default {
   template: `
-    <q-img ref="qRef" :src="computed_src">
+    <component :is="tag || 'q-img'" ref="qRef" :src="computed_src">
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
-    </q-img>
+    </component>
   `,
   props: {
     src: String,
     t: String,
+    tag: String,
   },
   data: function () {
     return {
@@ -16,7 +17,7 @@ export default {
     };
   },
   mounted() {
-    setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    setTimeout(() => this.compute_src(), 0); // wait for window.path_prefix to be set in app.mounted()
   },
   updated() {
     this.compute_src();

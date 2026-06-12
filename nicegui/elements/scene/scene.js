@@ -6,7 +6,9 @@ const {
   CSS3DRenderer,
   DragControls,
   GLTFLoader,
+  MapControls,
   OrbitControls,
+  TrackballControls,
   STLLoader,
   THREE,
   TWEEN,
@@ -76,6 +78,7 @@ export default {
 
   mounted() {
     this.scene = new THREE.Scene();
+    this.clock = new THREE.Clock();
     this.objects = new Map();
     this.objects.set("scene", this.scene);
     this.draggable_objects = [];
@@ -184,7 +187,8 @@ export default {
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controlClass = { trackball: TrackballControls, map: MapControls }[this.controlType] || OrbitControls;
+    this.controls = new this.controlClass(this.camera, this.renderer.domElement);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -212,6 +216,7 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
+      this.controls.update(this.clock.getDelta());
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -314,9 +319,19 @@ export default {
       } else if (type == "gltf") {
         const url = args[0];
         mesh = new THREE.Group();
+        mesh.userData.isGltf = true;
+        mesh.userData.loaded = false;
         this.gltf_loader.load(
           url,
-          (gltf) => mesh.add(gltf.scene),
+          (gltf) => {
+            mesh.add(gltf.scene);
+            mesh.userData.loaded = true;
+            if (mesh.userData.pendingMaterialInfo) {
+              const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
+              delete mesh.userData.pendingMaterialInfo;
+              this.material(id, color, opacity, side);
+            }
+          },
           undefined,
           (error) => console.error(error),
         );
@@ -375,17 +390,29 @@ export default {
       this.objects.get(object_id).name = name;
     },
     material(object_id, color, opacity, side) {
-      if (!this.objects.has(object_id)) return;
-      const material = this.objects.get(object_id).material;
-      if (!material) return;
+      const object = this.objects.get(object_id);
+      if (!object) return;
+      if (object.userData.isGltf && !object.userData.loaded) {
+        object.userData.pendingMaterialInfo = { color, opacity, side };
+        return;
+      }
       const vertexColors = color === null;
-      material.color.set(vertexColors ? "#ffffff" : color);
-      material.needsUpdate = material.vertexColors != vertexColors;
-      material.vertexColors = vertexColors;
-      material.opacity = opacity;
-      if (side == "front") material.side = THREE.FrontSide;
-      else if (side == "back") material.side = THREE.BackSide;
-      else material.side = THREE.DoubleSide;
+      const apply = (material) => {
+        (Array.isArray(material) ? material : [material]).forEach((m) => {
+          m.color.set(vertexColors ? "#ffffff" : color);
+          m.needsUpdate = m.vertexColors != vertexColors;
+          m.vertexColors = vertexColors;
+          m.opacity = opacity;
+          if (side == "front") m.side = THREE.FrontSide;
+          else if (side == "back") m.side = THREE.BackSide;
+          else m.side = THREE.DoubleSide;
+        });
+      };
+      if (object.userData.isGltf) {
+        object.traverse((child) => child.isMesh && child.material && apply(child.material));
+      } else if (object.material) {
+        apply(object.material);
+      }
     },
     move(object_id, x, y, z) {
       if (!this.objects.has(object_id)) return;
@@ -492,7 +519,7 @@ export default {
         )
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
-          this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
+          this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
           this.controls.target.set(p[6], p[7], p[8]);
@@ -500,7 +527,7 @@ export default {
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
-            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+            this.controls = new this.controlClass(this.camera, this.renderer.domElement);
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
@@ -582,5 +609,6 @@ export default {
     backgroundColor: String,
     fps: Number,
     showStats: Boolean,
+    controlType: String,
   },
 };

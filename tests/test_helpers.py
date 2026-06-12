@@ -26,6 +26,15 @@ def test_is_port_open_on_bad_ip():
     assert not helpers.is_port_open('1.2', 0), 'should not be able to connect to a bad IP'
 
 
+def test_format_url():
+    assert helpers.format_url('http', 'localhost', 80) == 'http://localhost'  # default port 80 is omitted
+    assert helpers.format_url('http', 'localhost', 8080) == 'http://localhost:8080'  # non-default port is included
+    assert helpers.format_url('https', 'xyz.com', 443) == 'https://xyz.com'  # default port 443 is omitted
+    assert helpers.format_url('https', 'xyz.com', 8443) == 'https://xyz.com:8443'  # non-default port is included
+    assert helpers.format_url('http', '::', 8080) == 'http://[::]:8080'  # IPv6 address is enclosed in brackets
+    assert helpers.format_url('http', '[::]', 8080) == 'http://[::]:8080'  # already bracketed IPv6 address is unchanged
+
+
 def test_schedule_browser(monkeypatch):
     called_with_url = None
 

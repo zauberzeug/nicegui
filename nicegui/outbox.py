@@ -45,10 +45,7 @@ class Outbox:
         self._should_stop = False
         self._enqueue_event: asyncio.Event | None = None
 
-        if core.app.is_started:
-            background_tasks.create(self.loop(), name=f'outbox loop {client.id}')
-        else:
-            core.app.on_startup(self.loop)
+        background_tasks.create_or_defer(self.loop(), name=f'outbox loop {client.id}')
 
     @property
     def client(self) -> Client:
@@ -173,7 +170,7 @@ class Outbox:
                 return
 
         # target message ID not found, reload the page
-        self.client.run_javascript('window.location.reload()')
+        self.client.run_javascript('console.log("reloading because outbox rewind failed"); window.location.reload()')
 
     def prune_history(self, next_message_id: MessageId) -> None:
         """Prune the message history up to the given message ID."""
@@ -183,3 +180,4 @@ class Outbox:
     def stop(self) -> None:
         """Stop the outbox loop."""
         self._should_stop = True
+        self._set_enqueue_event()  # wake the loop so it checks _should_stop immediately

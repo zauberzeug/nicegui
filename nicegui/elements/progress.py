@@ -4,7 +4,7 @@ from .mixins.color_elements import TextColorElement
 from .mixins.value_element import ValueElement
 
 
-class LinearProgress(ValueElement, TextColorElement):
+class LinearProgress(ValueElement[float], TextColorElement):
     VALUE_PROP = 'value'
 
     @resolve_defaults
@@ -29,10 +29,10 @@ class LinearProgress(ValueElement, TextColorElement):
 
         if show_value:
             with self:
-                label().classes('absolute-center text-sm text-white').bind_text_from(self, 'value')
+                label().classes('absolute-center text-white').style('font-size: 0.875rem').bind_text_from(self, 'value')
 
 
-class CircularProgress(ValueElement, TextColorElement):
+class CircularProgress(ValueElement[float], TextColorElement):
     VALUE_PROP = 'value'
 
     @resolve_defaults
@@ -60,9 +60,9 @@ class CircularProgress(ValueElement, TextColorElement):
         self._props['min'] = min
         self._props['max'] = max
         self._props['size'] = size
-        self._props['show-value'] = True  # NOTE always activate the default slot because this is expected by ui.element
+        self._props['show-value'] = True  # always activate the default slot because this is expected by ui.element
         self._props['track-color'] = 'grey-4'
 
         if show_value:
             with self:
-                label().classes('absolute-center text-xs').bind_text_from(self, 'value')
+                label().classes('absolute-center').style('font-size: 0.75rem').bind_text_from(self, 'value')

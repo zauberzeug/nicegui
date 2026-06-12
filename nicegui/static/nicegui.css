@@ -182,6 +182,39 @@
   display: none;
 }
 
+/* skip link */
+.nicegui-skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.nicegui-skip-link:focus {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  padding: 0.5rem 1rem;
+  border: 1pt solid rgba(127, 159, 191, 0.25);
+  border-radius: 0.25em;
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
+  z-index: 9999;
+}
+.body--dark .nicegui-skip-link:focus {
+  background-color: black;
+}
+.body--light .nicegui-skip-link:focus {
+  background-color: white;
+}
+
 /* other NiceGUI elements */
 .nicegui-grid {
   display: grid;
@@ -210,13 +243,17 @@
 .nicegui-leaflet video.leaflet-image-layer {
   max-width: none; /* HACK: make the video show up */
 }
+.q-parallax__media > img,
+.q-parallax__media > video {
+  max-width: none; /* HACK: make the parallax image cover the screen as it should */
+}
 .nicegui-log {
   outline: 1px solid rgba(127, 159, 191, 0.15);
+  background-color: rgba(127, 159, 191, 0.05);
 }
 .nicegui-log .q-scrollarea__container {
   scroll-padding-bottom: 0.5rem;
   scroll-snap-type: y proximity;
-  background-color: rgba(127, 159, 191, 0.05);
 }
 .nicegui-log .q-scrollarea__content {
   white-space: pre;
@@ -237,8 +274,20 @@ h6.q-timeline__title {
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   border-radius: 0.25rem;
 }
+.nicegui-code-copy {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  opacity: 0.2;
+}
+.nicegui-code-copy:hover {
+  opacity: 0.8;
+}
 .nicegui-code pre {
   padding: 0 0.5rem;
+}
+.nicegui-table-header > * {
+  display: inline-block;
 }
 .nicegui-matplotlib > svg,
 .nicegui-pyplot > svg {

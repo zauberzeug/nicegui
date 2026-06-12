@@ -1,12 +1,11 @@
 from dataclasses import dataclass, field
 from collections.abc import Callable
 
-from nicegui.dataclasses import KWONLY_SLOTS
 
 from .part import DocumentationPart
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class DocumentationPage:
     name: str
     title: str | None = None

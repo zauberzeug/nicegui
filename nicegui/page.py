@@ -7,11 +7,10 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from fastapi import HTTPException, Request, Response
+from fastapi import Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client, ClientConnectionTimeout
-from .error import error_content
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -31,6 +30,7 @@ class page:
                  language: Language = ...,  # type: ignore
                  response_timeout: float = 3.0,
                  reconnect_timeout: float | None = None,
+                 markdown: bool | None = None,
                  api_router: APIRouter | None = None,
                  **kwargs: Any,
                  ) -> None:
@@ -57,6 +57,8 @@ class page:
         :param language: language of the page (defaults to `language` argument of `run` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
         :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
+        :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
+            (experimental, defaults to `markdown` argument of `run` command, *added in version 3.11.0*)
         :param api_router: APIRouter instance to use, can be left `None` to use the default
         :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
@@ -70,6 +72,7 @@ class page:
         self.kwargs = kwargs
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
+        self.markdown = markdown
 
         create_favicon_route(self.path, favicon)
 
@@ -98,8 +101,15 @@ class page:
         """Return the reconnect_timeout of the page."""
         return self.reconnect_timeout if self.reconnect_timeout is not None else core.app.config.reconnect_timeout
 
+    def resolve_markdown(self) -> bool:
+        """Return whether the page should serve Markdown when ``Accept: text/markdown`` is requested.
+
+        *Added in version 3.11.0*
+        """
+        return self.markdown if self.markdown is not None else core.app.config.markdown
+
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
+        core.app.remove_route(self.path)  # make sure only the latest route definition is used
 
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
@@ -139,10 +149,8 @@ class page:
                 for key, handler in core.app.exception_handlers.items():
                     if key == 500 or (isinstance(key, type) and isinstance(e, key)):
                         result = handler(request, e)
-                        if helpers.is_coroutine_function(handler):
-                            async def await_handler(result: Any) -> None:
-                                await result
-                            background_tasks.create(await_handler(result), name=f'exception handler {handler.__name__}')
+                        if helpers.should_await(result):
+                            background_tasks.create(result, name=f'exception handler {handler.__name__}')
 
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)
@@ -152,7 +160,7 @@ class page:
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
-            # NOTE cleaning up the keyword args so the signature is consistent with "func" again
+            # cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
@@ -161,7 +169,8 @@ class page:
                     result = func(*dec_args, **dec_kwargs)
                 except Exception as e:
                     return create_500_error_page(e, request)
-            if helpers.is_coroutine_function(func):
+
+            if helpers.should_await(result):
                 async def wait_for_result() -> Response | None:
                     with client:
                         try:
@@ -174,16 +183,18 @@ class page:
                                                handle_exceptions=False)
                 task_wait_for_connection = background_tasks.create(
                     client._waiting_for_connection.wait(),  # pylint: disable=protected-access
+                    name=f'wait for connection {client.page.path}',
                 )
-                await asyncio.wait([
+                done, _ = await asyncio.wait([
                     task,
                     task_wait_for_connection,
                 ], timeout=self.response_timeout, return_when=asyncio.FIRST_COMPLETED)
-                if not task_wait_for_connection.done() and not task.done():
-                    task_wait_for_connection.cancel()
+                if not done:
                     task.cancel()
                     log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
                     client.delete()
+                if not task_wait_for_connection.done():
+                    task_wait_for_connection.cancel()
                 if task.done():
                     result = task.result()
                 else:
@@ -191,19 +202,16 @@ class page:
                     task.add_done_callback(check_for_late_return_value)
 
             if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
-                # Handle 404 gracefully without re-raising exception (similar to 404 handler when no root function)
                 log.warning(f'{request.url} not found')
-                with client:
-                    error_content(404, HTTPException(404, f'{client.sub_pages_router.current_path} not found'))
                 return client.build_response(request, 404)
 
-            if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
+            if isinstance(result, Response):  # if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
-            return client.build_response(request)
+            return client.build_response(request, client.status_code)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
-        # NOTE adding request as a parameter so we can pass it to the client in the decorated function
+        # adding request as a parameter so we can pass it to the client in the decorated function
         if 'request' not in {p.name for p in parameters}:
             request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
             parameters.insert(0, request)

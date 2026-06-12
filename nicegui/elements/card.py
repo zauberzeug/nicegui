@@ -3,9 +3,10 @@ from typing import Literal
 from typing_extensions import Self
 
 from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Card(Element, default_classes='nicegui-card'):
+class Card(SortableElement, default_classes='nicegui-card'):
 
     def __init__(self, *,
                  align_items: Literal['start', 'end', 'center', 'baseline', 'stretch'] | None = None,

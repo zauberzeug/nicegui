@@ -105,6 +105,37 @@ def test_multiple_targets(screen: Screen) -> None:
     screen.should_contain('B = 2 (4)')
 
 
+def test_refreshable_method_back_to_back_refresh(screen: Screen) -> None:
+    # https://github.com/zauberzeug/nicegui/issues/5888
+    class MyClass:
+
+        def __init__(self, name: str) -> None:
+            self.name = name
+            self.create_ui()
+
+        @ui.refreshable_method
+        def create_ui(self) -> None:
+            ui.label(f'{self.name}')
+
+    @ui.page('/')
+    def page():
+        a = MyClass('A1')
+        b = MyClass('B1')
+
+        def update():
+            a.name = 'A2'
+            b.name = 'B2'
+            a.create_ui.refresh()
+            b.create_ui.refresh()
+
+        ui.button('Update', on_click=update)
+
+    screen.open('/')
+    screen.click('Update')
+    screen.should_contain('A2')
+    screen.should_contain('B2')
+
+
 def test_refresh_with_arguments(screen: Screen):
     count = 0
 

@@ -1,5 +1,6 @@
 from nicegui import events, ui
 
+from ..demo import GRID_CLASSES, BROWSER_CLASSES
 from ..windows import browser_window, python_window
 from . import (
     add_style_documentation,
@@ -53,9 +54,9 @@ def styling_demo():
 
     @ui.refreshable
     def live_demo_ui():
-        with ui.column().classes('w-full items-stretch gap-8 no-wrap min-[1500px]:flex-row'):
-            with python_window(classes='w-full max-w-[44rem]'):
-                with ui.column().classes('w-full gap-2'):
+        with ui.grid().classes(GRID_CLASSES):
+            with python_window():
+                with ui.column().classes('w-full gap-2 p-4'):
                     ui.markdown(f'''
                         ```py
                         from nicegui import ui
@@ -100,8 +101,12 @@ def styling_demo():
                         ui.run()
                         ```
                     ''')
-            with browser_window(classes='w-full max-w-[44rem] min-[1500px]:max-w-[20rem] min-h-[10rem] browser-window'):
-                element: ui.element = select_element.value('element')
+            element: ui.element
+
+            def _render():
+                nonlocal element
+                element = select_element.value('element')
+            browser_window(_render).classes(BROWSER_CLASSES)
     live_demo_ui()
 
 

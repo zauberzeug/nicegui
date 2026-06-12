@@ -74,10 +74,9 @@ class page(ui.page):
                     return
                 ui.timer(self.SESSION_TOKEN_REFRESH_INTERVAL, self._refresh)
 
-            if helpers.is_coroutine_function(func):
-                await func()
-            else:
-                func()
+            result = func()
+            if helpers.should_await(result):
+                await result
 
         return super().__call__(content)
 

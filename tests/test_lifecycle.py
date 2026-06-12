@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 from nicegui import Client, app, ui
 from nicegui.testing import Screen
@@ -92,6 +93,9 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     app.on_shutdown(shutdown)
     app.on_shutdown(shutdown_async)
     app.on_shutdown(shutdown_async())
+
+    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_startup.. is deprecated'))
+    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_shutdown.. is deprecated'))
 
     @ui.page('/')
     def page():

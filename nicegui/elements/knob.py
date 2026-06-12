@@ -6,7 +6,7 @@ from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Knob(ValueElement, DisableableElement, TextColorElement):
+class Knob(ValueElement[float], DisableableElement, TextColorElement):
 
     @resolve_defaults
     def __init__(self,
@@ -20,7 +20,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
                  track_color: str | None = DEFAULT_PROP | None,
                  size: str | None = DEFAULT_PROP | None,
                  show_value: bool = False,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[float]] | None = None,
                  ) -> None:
         """Knob
 
@@ -43,7 +43,7 @@ class Knob(ValueElement, DisableableElement, TextColorElement):
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
-        self._props['show-value'] = True  # NOTE: enable default slot, e.g. for nested icon
+        self._props['show-value'] = True  # enable default slot, e.g. for nested icon
         self._props.set_optional('center-color', center_color)
         self._props.set_optional('track-color', track_color)
         self._props.set_optional('size', size)

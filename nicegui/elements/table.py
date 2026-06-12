@@ -1,4 +1,3 @@
-import importlib.util
 from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
@@ -16,15 +15,13 @@ from ..events import (
 from ..logging import log
 from .mixins.filter_element import FilterElement
 
-if importlib.util.find_spec('pandas'):
-    optional_features.register('pandas')
-    if TYPE_CHECKING:
-        import pandas as pd
+optional_features.try_register('pandas')
+if TYPE_CHECKING:
+    import pandas as pd
 
-if importlib.util.find_spec('polars'):
-    optional_features.register('polars')
-    if TYPE_CHECKING:
-        import polars as pl
+optional_features.try_register('polars')
+if TYPE_CHECKING:
+    import polars as pl
 
 
 class Table(FilterElement, component='table.js'):
@@ -40,7 +37,7 @@ class Table(FilterElement, component='table.js'):
                  selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROP | None,
                  pagination: int | dict | None = None,
                  on_select: Handler[TableSelectionEventArguments] | None = None,
-                 on_pagination_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_pagination_change: Handler[ValueChangeEventArguments[dict]] | None = None,
                  ) -> None:
         """Table
 
@@ -128,12 +125,26 @@ class Table(FilterElement, component='table.js'):
 
         return super()._to_dict()
 
+    def _render_markdown(self) -> str:
+        lines = []
+        if title := self._props.get('title'):
+            lines.append(f'**{title}**')
+            lines.append('')
+        if columns := self._props.get('columns', []):
+            headers = [col.get('label', col.get('name', '')).replace('|', '\\|') for col in columns]
+            lines.append('| ' + ' | '.join(headers) + ' |')
+            lines.append('| ' + ' | '.join('---' for _ in columns) + ' |')
+            for row in self._props.get('rows', []):
+                cells = [str(row.get(col.get('field', col.get('name', '')), '')).replace('|', '\\|') for col in columns]
+                lines.append('| ' + ' | '.join(cells) + ' |')
+        return '\n'.join(lines)
+
     def on_select(self, callback: Handler[TableSelectionEventArguments]) -> Self:
         """Add a callback to be invoked when the selection changes."""
         self._selection_handlers.append(callback)
         return self
 
-    def on_pagination_change(self, callback: Handler[ValueChangeEventArguments]) -> Self:
+    def on_pagination_change(self, callback: Handler[ValueChangeEventArguments[dict]]) -> Self:
         """Add a callback to be invoked when the pagination changes."""
         self._pagination_change_handlers.append(callback)
         return self
@@ -160,6 +171,10 @@ class Table(FilterElement, component='table.js'):
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         *Added in version 2.0.0*
+
+        *Since version 3.12.0:
+        Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
+        Pass ``df.reset_index(drop=True)`` to drop the index instead.
 
         :param df: Pandas DataFrame
         :param columns: list of column objects (defaults to the columns of the dataframe)
@@ -281,6 +296,9 @@ class Table(FilterElement, component='table.js'):
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
+        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
+            df = df.reset_index()
+
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
                     pd.api.types.is_timedelta64_dtype(dtype) or
@@ -361,12 +379,13 @@ class Table(FilterElement, component='table.js'):
     def selection(self, value: Literal[None, 'single', 'multiple']) -> None:
         self._props['selection'] = value or 'none'
 
-    def set_selection(self, value: Literal[None, 'single', 'multiple']) -> None:
+    def set_selection(self, value: Literal[None, 'single', 'multiple']) -> Self:
         """Set the selection type.
 
         *Added in version 2.11.0*
         """
         self.selection = value
+        return self
 
     @property
     def pagination(self) -> dict:
@@ -387,13 +406,15 @@ class Table(FilterElement, component='table.js'):
         """Set fullscreen mode."""
         self._props['fullscreen'] = value
 
-    def set_fullscreen(self, value: bool) -> None:
+    def set_fullscreen(self, value: bool) -> Self:
         """Set fullscreen mode."""
         self.is_fullscreen = value
+        return self
 
-    def toggle_fullscreen(self) -> None:
+    def toggle_fullscreen(self) -> Self:
         """Toggle fullscreen mode."""
         self.is_fullscreen = not self.is_fullscreen
+        return self
 
     def add_rows(self, rows: list[dict]) -> None:
         """Add rows to the table."""
@@ -444,7 +465,7 @@ class Table(FilterElement, component='table.js'):
             """
             super().__init__('q-tr')
 
-    class header(Element, default_classes='[&>*]:inline'):
+    class header(Element, default_classes='nicegui-table-header'):
 
         def __init__(self, column_name: str | None = None) -> None:
             """Header Element

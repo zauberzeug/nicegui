@@ -1,9 +1,9 @@
 import asyncio
 import time
 
+from ..helpers import remove_indentation
 from .button import Button as button
 from .markdown import Markdown as markdown
-from .markdown import remove_indentation
 from .mixins.content_element import ContentElement
 from .timer import Timer as timer
 
@@ -20,13 +20,14 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
         :param content: code to display
         :param language: language of the code (default: "python")
         """
+        self._language = language
         super().__init__(content=remove_indentation(content))
 
         with self:
-            self.markdown = markdown().classes('overflow-auto h-full') \
+            self.markdown = markdown(extras=['fenced-code-blocks']).style('overflow: auto; height: 100%') \
                 .bind_content_from(self, 'content', lambda content: f'```{language}\n{content}\n```')
             self.copy_button = button(icon='content_copy', on_click=self.show_checkmark) \
-                .props('round flat size=sm').classes('absolute right-2 top-2 opacity-20 hover:opacity-80') \
+                .props('round flat size=sm').classes('nicegui-code-copy') \
                 .on('click', js_handler=f'() => navigator.clipboard.writeText(getElement("{self.id}").content)')
 
         self._props['content'] = self.content
@@ -46,6 +47,9 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
 
     def _update_copy_button(self) -> None:
         self.copy_button.set_visibility(time.time() > self._last_scroll + 1.0)
+
+    def _render_markdown(self) -> str:
+        return f'```{self._language or ""}\n{self.content}\n```'
 
     def _handle_content_change(self, content: str) -> None:
         self._props['content'] = content

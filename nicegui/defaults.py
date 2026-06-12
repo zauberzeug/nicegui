@@ -6,7 +6,6 @@ from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec
 
-from .dataclasses import KWONLY_SLOTS
 from .element import Element
 
 T = TypeVar('T')
@@ -15,7 +14,7 @@ P = ParamSpec('P')
 R = TypeVar('R')
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class Sentinel:
     key: str | None
 
@@ -23,7 +22,7 @@ class Sentinel:
         return SentinelValue(key=self.key, default=other)  # type: ignore[return-value]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SentinelValue:
     key: str | None
     default: Any

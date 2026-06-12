@@ -2,11 +2,10 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from nicegui.element import Element
-from nicegui.events import handle_event
+from nicegui import events, ui
 
 
-class FullCalendar(Element, component='fullcalendar.js'):
+class FullCalendar(ui.element, component='fullcalendar.js'):
 
     def __init__(self, options: dict[str, Any], on_click: Callable | None = None) -> None:
         """FullCalendar
@@ -23,7 +22,7 @@ class FullCalendar(Element, component='fullcalendar.js'):
         self._update_method = 'update_calendar'
 
         if on_click:
-            self.on('click', lambda e: handle_event(on_click, e))
+            self.on('click', lambda e: events.handle_event(on_click, e))
 
     def add_event(self, title: str, start: str, end: str, **kwargs) -> None:
         """Add an event to the calendar.

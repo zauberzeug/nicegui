@@ -1,6 +1,6 @@
 from nicegui import ui
 
-from ..style import section_heading, subheading
+from ..design import section_heading, subheading
 from .content import DocumentationPage
 from .custom_restructured_text import CustomRestructuredText as custom_restructured_text
 from .demo import demo
@@ -27,7 +27,7 @@ def render_page(documentation: DocumentationPage) -> None:
                     element = custom_restructured_text(part.description.replace(':param ', ':'))
                 else:
                     element = ui.markdown(part.description)
-                element.classes('bold-links arrow-links w-full overflow-x-auto')
+                element.classes('w-full overflow-x-auto')
                 if ':param' in part.description:
                     element.classes('rst-param-tables')
             if part.ui:
@@ -38,7 +38,7 @@ def render_page(documentation: DocumentationPage) -> None:
             if part.reference:
                 generate_class_doc(part.reference, part.title)
             if part.link:
-                ui.markdown(f'See [more...](/documentation/{part.link})').classes('bold-links arrow-links')
+                ui.markdown(f'[See more \u2192](/documentation/{part.link})')
     with ui.column().classes('w-full p-8 lg:p-16 max-w-[1250px] mx-auto'):
         if documentation.extra_column:
             with ui.grid().classes('grid-cols-[2fr_1fr] max-[600px]:grid-cols-[1fr] gap-x-8 gap-y-16'):
@@ -48,5 +48,3 @@ def render_page(documentation: DocumentationPage) -> None:
                     documentation.extra_column()
         else:
             render_content()
-    with ui.column().classes('w-full p-4 items-end'):
-        ui.link('Imprint & Privacy', '/imprint_privacy').classes('text-sm')

@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
@@ -8,7 +10,7 @@ from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Input(LabelElement, ValidationElement, DisableableElement, component='input.js'):
+class Input(LabelElement, ValidationElement[str | None], DisableableElement, component='input.js'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
@@ -16,12 +18,12 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str = DEFAULT_PROP | '',
+                 value: str | None = DEFAULT_PROP | '',  # DEPRECATED: change to None in 4.0 (also derived classes)
                  password: bool = DEFAULT_PROP | False,
                  password_toggle_button: bool = False,
                  prefix: str | None = None,
                  suffix: str | None = None,
-                 on_change: Handler[ValueChangeEventArguments] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
                  autocomplete: list[str] | None = DEFAULT_PROPS['_autocomplete'] | None,
                  validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
@@ -67,7 +69,7 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
                     is_hidden = self._props.get('type') == 'password'
                     icon.props(f'name={"visibility" if is_hidden else "visibility_off"}')
                     self.props(f'type={"text" if is_hidden else "password"}')
-                icon = Icon('visibility_off').classes('cursor-pointer').on('click', toggle_type)
+                icon = Icon('visibility_off').style('cursor: pointer').on('click', toggle_type)
 
         self._props['_autocomplete'] = autocomplete or []
 
@@ -76,9 +78,10 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         if suffix is not None:
             self._props['suffix'] = suffix
 
-    def set_autocomplete(self, autocomplete: list[str] | None) -> None:
+    def set_autocomplete(self, autocomplete: list[str] | None) -> Self:
         """Set the autocomplete list."""
         self._props['_autocomplete'] = autocomplete
+        return self
 
     @property
     def prefix(self) -> str | None:
@@ -114,3 +117,9 @@ class Input(LabelElement, ValidationElement, DisableableElement, component='inpu
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')
+
+    def _render_markdown(self) -> str:
+        value = '' if self.value is None else str(self.value)
+        if self.label:
+            return f'{self.label}: {value}'
+        return value

@@ -50,6 +50,7 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
         self.layers: list[Layer] = []
         self.is_initialized = False
+        self._initialized_event = asyncio.Event()
 
         # read-write public API
         self.center = center
@@ -95,15 +96,14 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
     def _handle_init(self) -> None:
         self.is_initialized = True
+        self._initialized_event.set()
         for layer in self.layers:
             self.run_method('add_layer', layer.to_dict(), layer.id)
 
     async def initialized(self) -> None:
         """Wait until the map is initialized."""
-        event = asyncio.Event()
-        self.on('init', event.set, [])
         await self.client.connected()
-        await event.wait()
+        await self._initialized_event.wait()
 
     def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False
@@ -116,17 +116,17 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
             return NullResponse()
         return super().run_method(name, *args, timeout=timeout)
 
-    def set_center(self, center: tuple[float, float]) -> None:
+    def set_center(self, center: tuple[float, float]) -> Self:
         """Set the center location of the map."""
-        if self._props['center'] == center:
-            return
-        self._props['center'] = center
+        if self._props['center'] != center:
+            self._props['center'] = center
+        return self
 
-    def set_zoom(self, zoom: int) -> None:
+    def set_zoom(self, zoom: int) -> Self:
         """Set the zoom level of the map."""
-        if self._props['zoom'] == zoom:
-            return
-        self._props['zoom'] = zoom
+        if self._props['zoom'] != zoom:
+            self._props['zoom'] = zoom
+        return self
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""

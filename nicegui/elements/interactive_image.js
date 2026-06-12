@@ -1,6 +1,6 @@
 export default {
   template: `
-    <div :style="{ position: 'relative', aspectRatio: size ? size[0] / size[1] : undefined }">
+    <div :style="{ position: 'relative', aspectRatio: aspectRatio }">
       <img
         ref="img"
         :src="computed_src"
@@ -33,6 +33,7 @@ export default {
       waiting_source: undefined,
       loading: false,
       DOMPurify: null,
+      previousContent: null,
     };
   },
   mounted() {
@@ -44,7 +45,7 @@ export default {
     } else {
       this.renderContent();
     }
-    setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    setTimeout(() => this.compute_src(), 0); // wait for window.path_prefix to be set in app.mounted()
     const handle_completion = () => {
       if (this.waiting_source) {
         this.computed_src = this.waiting_source;
@@ -75,6 +76,7 @@ export default {
   methods: {
     renderContent() {
       const content = this.content || "";
+      if (content === this.previousContent) return;
       if (this.sanitize) {
         if (!this.DOMPurify) return;
         const sanitized = this.DOMPurify.sanitize(`<svg>${content}</svg>`, {
@@ -85,6 +87,7 @@ export default {
       } else {
         this.$refs.contentGroup.innerHTML = content;
       }
+      this.previousContent = content;
     },
     compute_src() {
       const suffix = this.t ? (this.src.includes("?") ? "&" : "?") + "_nicegui_t=" + this.t : "";
@@ -144,6 +147,13 @@ export default {
     },
   },
   computed: {
+    aspectRatio() {
+      if (this.size) return this.size[0] / this.size[1];
+      if (this.loaded_image_width && this.loaded_image_height) {
+        return this.loaded_image_width / this.loaded_image_height;
+      }
+      return undefined;
+    },
     onCrossEvents() {
       if (!this.cross && !this.$slots.cross) return {};
       return {

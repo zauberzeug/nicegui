@@ -1,6 +1,2 @@
-import { a7, a6 } from "./index-CIyxDY2d.js";
-export {
-  a7 as echarts,
-  a6 as loadEchartsGL
-};
+import{a6 as a,a7 as r}from"./index-nIbcCqvm.js";export{a as echarts,r as loadEchartsGL};
 //# sourceMappingURL=index.js.map

@@ -2,11 +2,11 @@ from typing import Literal
 
 from typing_extensions import Self
 
-from ..element import Element
 from ..events import GenericEventArguments, Handler, ScrollEventArguments, handle_event
+from .mixins.sortable_element import SortableElement
 
 
-class ScrollArea(Element, default_classes='nicegui-scroll-area'):
+class ScrollArea(SortableElement, default_classes='nicegui-scroll-area'):
 
     def __init__(self, *, on_scroll: Handler[ScrollEventArguments] | None = None) -> None:
         """Scroll Area

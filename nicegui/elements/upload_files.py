@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from io import BytesIO
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 import aiofiles
 import anyio
@@ -123,19 +123,13 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
     :param upload: the Starlette UploadFile to create a file upload from
     :param chunk_size: the size of each chunk to read in bytes (default: 1 MB)
     """
-    memory_limit = (
-        getattr(MultiPartParser, 'spool_max_size', 0) or
-        getattr(MultiPartParser, 'max_part_size', 0) or  # NOTE: for starlette < 0.46.0
-        1024 * 1024
-    )
-
     buffer = BytesIO()
     buffer_size = 0
     temp_file: aiofiles.threadpool.binary.AsyncBufferedIOBase | None = None
 
     try:
         while (chunk := await upload.read(chunk_size)):
-            if not temp_file and buffer_size + len(chunk) > memory_limit:
+            if not temp_file and buffer_size + len(chunk) > MultiPartParser.spool_max_size:
                 temp_file = await aiofiles.tempfile.NamedTemporaryFile('wb', delete=False)
                 await temp_file.write(buffer.getvalue())
                 buffer = BytesIO()  # release memory
@@ -149,8 +143,13 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
         if temp_file:
             await temp_file.close()
 
-    filename = PurePosixPath(upload.filename or '').name  # strips all path components
+    filename = _sanitize_filename(upload.filename)
     if temp_file:
         return LargeFileUpload(filename, upload.content_type or '', Path(str(temp_file.name)))
     else:
         return SmallFileUpload(filename, upload.content_type or '', buffer.getvalue())
+
+
+def _sanitize_filename(name: str | None) -> str:
+    """Strip all path components from a filename to prevent path traversal."""
+    return (name or '').rsplit('/')[-1].rsplit('\\')[-1]

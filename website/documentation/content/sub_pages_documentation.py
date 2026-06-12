@@ -1,8 +1,8 @@
 import asyncio
 from typing import Any
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 
-from nicegui import PageArguments, background_tasks, ui
+from nicegui import PageArguments, background_tasks, helpers, ui
 from nicegui.sub_pages_router import SubPagesRouter
 
 from . import doc
@@ -40,7 +40,7 @@ class FakeSubPages(ui.column):
         async def render() -> None:
             with self.clear():
                 result = self.routes[route](**self.data, **kwargs)
-                if isinstance(result, Awaitable):
+                if helpers.should_await(result):
                     await result
         self.task = background_tasks.create(render())
 
@@ -328,7 +328,7 @@ def nested_sub_pages_demo():
 
     def other():
         ui.label('sub page')
-        # ui.link('Go to main', '/')
+        # ui.link('Go to sub main', '/other')
         # ui.link('Go to A', '/other/a')
         # ui.link('Go to B', '/other/b')
         # ui.sub_pages({
@@ -338,7 +338,7 @@ def nested_sub_pages_demo():
         # }).classes('border border-gray-200 p-2')
         routes = {'/': sub_main, '/a': sub_page_a, '/b': sub_page_b}  # HIDE
         sub_pages = FakeSubPages(routes).classes('border border-gray-200 p-2')  # HIDE
-        sub_pages.link('Go to main', '/')  # HIDE
+        sub_pages.link('Go to sub main', '/')  # HIDE
         sub_pages.link('Go to A', '/a')  # HIDE
         sub_pages.link('Go to B', '/b')  # HIDE
         sub_pages.init()  # HIDE
