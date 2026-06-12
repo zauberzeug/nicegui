@@ -70,7 +70,7 @@ def test_markdown_with_mermaid_on_demand(screen: Screen, use_default_extras: boo
             graph TD;
                 Node_A --> Node_B;
             ```
-        ''', **({'extras': EXTRAS} if not use_default_extras else {})))
+        ''', extras=None if use_default_extras else EXTRAS))
 
     screen.open('/')
     screen.click('Create Mermaid')
