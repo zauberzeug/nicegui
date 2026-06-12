@@ -344,6 +344,35 @@ def test_multicast(screen: Screen, path: str | None):
     screen.should_contain('added')
 
 
+@pytest.mark.parametrize('global_lang', ['', 'de'])
+def test_html_lang_attribute(screen: Screen, global_lang: str):
+    screen.ui_run_kwargs['language'] = global_lang or None
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    @ui.page('/swiss-german', language='de-CH')
+    def swiss_german_page():
+        ui.label('Grüezi')
+
+    @ui.page('/undeclared-lang', language=None)
+    def undeclared_lang_page():
+        ui.label('Ciao')
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    assert screen.find_by_tag('html').get_attribute('lang') == global_lang
+
+    screen.open('/swiss-german')
+    screen.should_contain('Grüezi')
+    assert screen.find_by_tag('html').get_attribute('lang') == 'de-CH'
+
+    screen.open('/undeclared-lang')
+    screen.should_contain('Ciao')
+    assert screen.find_by_tag('html').get_attribute('lang') == ''
+
+
 def test_warning_if_response_takes_too_long(screen: Screen):
     @ui.page('/', response_timeout=0.5)
     async def page():

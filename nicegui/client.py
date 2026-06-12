@@ -184,6 +184,12 @@ class Client:
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
+        html_lang = self.page.resolve_language()
+        language = html_lang or 'en-US'
+        quasar_config = core.app.config.quasar_config
+        if html_lang is None:
+            # keep Quasar's lang plugin from adding a lang attribute to the html tag when no language is configured
+            quasar_config = {**quasar_config, 'lang': {'noHtmlAttrs': True, **quasar_config.get('lang', {})}}
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -197,14 +203,15 @@ class Client:
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
                 'js_imports_urls': js_imports_urls,
-                'vue_config': json.dumps(core.app.config.quasar_config),
+                'vue_config': json.dumps(quasar_config),
                 'vue_config_script': core.app.config.vue_config_script,
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
-                'language': self.page.resolve_language(),
-                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
+                'language': language,
+                'html_lang': html_lang,
+                'translations': translations.get(language, translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'unocss': core.app.config.unocss,
