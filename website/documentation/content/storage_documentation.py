@@ -17,8 +17,11 @@ doc.title('Storage')
     It features five built-in storage types:
 
     - `app.storage.tab`:
-        Stored server-side in memory, this dictionary is unique to each non-duplicated tab session and can hold arbitrary objects.
-        Data will be lost when restarting the server until <https://github.com/zauberzeug/nicegui/discussions/2841> is implemented.
+        Stored server-side in memory, this dictionary is unique to each tab session and can hold arbitrary objects.
+        The data survives page reloads and is kept for up to `app.storage.max_tab_storage_age` (30 days by default).
+        It is lost when restarting the server unless [Redis storage](#redis_storage) is used
+        (persisting it on disk by default is discussed in <https://github.com/zauberzeug/nicegui/discussions/2841>).
+        When a tab is duplicated, the new tab starts with a copy of the data, but afterwards the two tabs are independent.
         This storage requires an established connection, obtainable via [`await client.connected()`](/documentation/page#wait_for_client_connection).
     - `app.storage.client`:
         Also stored server-side in memory, this dictionary is unique to each client connection and can hold arbitrary objects.
@@ -38,21 +41,6 @@ doc.title('Storage')
         However, `app.storage.user` is generally preferred due to its advantages in reducing data payload, enhancing security, and offering larger storage capacity.
         By default, NiceGUI holds a unique identifier for the browser session in `app.storage.browser['id']`.
         This storage requires the `storage_secret` parameter in `ui.run()` to sign the browser session cookie.
-
-    **How Storage Initialization Works:**
-
-    - `app.storage.user` is automatically initialized when a user first connects, identified by a session cookie.
-      The data is loaded from persistent storage (file or Redis) and remains available across all their browser tabs.
-    - `app.storage.tab` is created when a tab establishes a WebSocket connection.
-      Each tab gets a unique identifier, and its storage persists as long as the tab remains open (unless using Redis, which persists across server restarts).
-    - `app.storage.general` is initialized once when the server starts and is shared across all users and sessions.
-    - `app.storage.browser` and `app.storage.client` are available immediately without special initialization.
-
-    **Multi-Tab Behavior:**
-    When a user opens multiple tabs, `app.storage.user` and `app.storage.browser` are shared across all tabs,
-    while `app.storage.tab` and `app.storage.client` are unique to each tab.
-    If you duplicate a tab (e.g., right-click → "Duplicate Tab"), the new tab will initially copy the data from the original tab's `app.storage.tab`,
-    but subsequent changes will be independent between the tabs.
 
     The following table will help you to choose storage.
 
