@@ -72,6 +72,21 @@ def test_markdown_with_mermaid_on_demand(screen: Screen):
     assert screen.selenium.find_element(By.XPATH, '//span[p[contains(text(), "Node_B")]]').is_displayed()
 
 
+def test_default_extras(screen: Screen):
+    ui.markdown.default_extras = []
+
+    @ui.page('/')
+    def page():
+        ui.markdown('| First |\n| --- |\n| A |')
+        ui.markdown('| Second |\n| --- |\n| B |', extras=['tables'])
+
+    screen.open('/')
+    screen.should_contain('Second')
+    tables = screen.selenium.find_elements(By.TAG_NAME, 'table')
+    assert len(tables) == 1, 'only the markdown element with explicit "tables" extra should render a table'
+    assert 'Second' in tables[0].text
+
+
 def test_strip_indentation(screen: Screen):
     @ui.page('/')
     def page():
