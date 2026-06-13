@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import multiprocessing
 import multiprocessing.synchronize
+import os
 import socket
+import sys
 import threading
+from contextlib import suppress
 from typing import Any
 
 import uvicorn
@@ -38,7 +42,15 @@ class Server(uvicorn.Server):
             if (event := self.config.shutdown_event) is not None:
                 def monitor_shutdown_event() -> None:
                     event.wait()
-                    self.should_exit = True
+                    # Run on_shutdown callbacks, then hard-exit, skipping uvicorn's connection drain, which runs
+                    # before lifespan shutdown and can hang forever on a ghost Windows connection (#5443).
+                    if core.loop is not None and core.loop.is_running() and not core.app.is_stopped:
+                        future = asyncio.run_coroutine_threadsafe(core.app.stop(), core.loop)
+                        with suppress(Exception):
+                            future.result(timeout=30)
+                    sys.stdout.flush()
+                    sys.stderr.flush()
+                    os._exit(0)
                 threading.Thread(target=monitor_shutdown_event, daemon=True).start()
 
         storage.set_storage_secret(self.config.storage_secret, self.config.session_middleware_kwargs)
