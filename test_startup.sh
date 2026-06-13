@@ -3,32 +3,23 @@
 set -euo pipefail
 
 request() {
-    local url="$1"
-    uv run --no-sync python - "$url" <<'PY'
-import sys
-import urllib.error
-import urllib.request
-
-url = sys.argv[1]
-try:
-    with urllib.request.urlopen(url, timeout=5) as response:
-        response.read()
-        if response.status >= 500:
-            raise SystemExit(f'{url} returned HTTP {response.status}')
-except urllib.error.HTTPError as e:
-    if e.code >= 500:
-        raise SystemExit(f'{url} returned HTTP {e.code}') from e
-except Exception as e:
-    raise SystemExit(f'Failed to request {url}: {e}') from e
-PY
+    local url="$1" code
+    # Servers with reload=True can print their URL before the socket accepts connections.
+    code=$(curl --silent --location --retry 5 --retry-connrefused --retry-delay 1 --output /dev/null --write-out '%{http_code}' --max-time 5 "$url" || true)
+    if (( code < 200 || code >= 500 )); then
+        echo "Request to $url failed with HTTP status $code"
+        return 1
+    fi
 }
 
 run() {
     pwd
     local output_file
     output_file=$(mktemp)
+    local request_output_file
+    request_output_file=$(mktemp)
     local exitcode=0
-    { timeout 10 uv run --no-sync ./"$1" "${@:2}"; } > "$output_file" 2>&1 &
+    { timeout 15 uv run --no-sync ./"$1" "${@:2}" < <(sleep 15); } > "$output_file" 2>&1 &
     local pid=$!
 
     local ready=0
@@ -46,7 +37,7 @@ run() {
     if [[ $ready -eq 1 ]]; then
         local url
         url=$(grep -Eo "http://(127\.0\.0\.1|localhost):[0-9]+" "$output_file" | head -n 1 || true)
-        request "${url:-http://127.0.0.1:8080}/" || exitcode=1
+        request "${url:-http://127.0.0.1:8080}/" > "$request_output_file" 2>&1 || exitcode=1
     else
         exitcode=1
     fi
@@ -57,7 +48,12 @@ run() {
     [[ $process_exit -ne 0 ]] && exitcode=$process_exit
     local output
     output=$(cat "$output_file")
-    rm "$output_file"
+    local request_output
+    request_output=$(cat "$request_output_file")
+    rm "$output_file" "$request_output_file"
+    if [[ -n $request_output ]]; then
+        output="$output"$'\n'"$request_output"
+    fi
     echo "$output" | grep -qE "NiceGUI ready to go|Uvicorn running on http://127.0.0.1:8000" || exitcode=1
     echo "$output" | grep -qE "Traceback|Error" && exitcode=1
     if [[ $exitcode -ne 0 ]]; then
