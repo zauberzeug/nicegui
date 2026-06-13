@@ -16,7 +16,7 @@ class ReStructuredText(Markdown):
 
         :param content: the ReStructuredText content to be displayed
         """
-        super().__init__(content=content)
+        super().__init__(content=content, extras=[])
 
     def _handle_content_change(self, content: str) -> None:
         html = prepare_content(content)

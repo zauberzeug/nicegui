@@ -19,7 +19,7 @@ export default {
   },
   methods: {
     setFullscreenClass(isFullscreen) {
-      // NOTE: prevent the page from smooth-scrolling when the table exits fullscreen;
+      // Prevent the page from smooth-scrolling when the table exits fullscreen;
       // Quasar uses setTimeout(() => el.scrollIntoView()) in exitFullscreen,
       // so we need a setTimeout to remove the class after that scroll completes.
       if (isFullscreen) {

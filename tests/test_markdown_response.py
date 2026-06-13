@@ -46,6 +46,24 @@ async def test_per_page_overrides_global(user: User, monkeypatch: pytest.MonkeyP
     assert 'text/html' in response.headers['content-type'], 'per-page False should override global True'
 
 
+@pytest.mark.parametrize('accept,user_agent,expected', [
+    ('*/*', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0; +claude-user@anthropic.com)', 'text/markdown'),
+    ('*/*', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36', 'text/html'),
+    ('*/*', 'ChatGPT-User/2.0', 'text/markdown'),
+    ('*/*;q=0.8', 'ChatGPT-User/2.0', 'text/markdown'),
+    ('text/html', 'GPTBot/1.1', 'text/html'),
+    ('text/markdown, text/html, */*', 'Claude-User (claude-code/2.1.121; +https://support.anthropic.com/)', 'text/markdown'),
+    ('application/json', 'GPTBot/1.1', 'text/markdown'),
+])
+async def test_content_type_based_on_accept_and_user_agent(user: User, accept: str, user_agent: str, expected: str):
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'Accept': accept, 'User-Agent': user_agent})
+    assert expected in response.headers['content-type']
+
+
 async def test_page_title(user: User):
     @ui.page('/', title='My Page', markdown=True)
     def page():
@@ -99,6 +117,30 @@ async def test_button(user: User):
     await _assert_markdown(user, lambda: ui.button('Click me', icon='thumb_up'), '[Button: Click me]')
     await _assert_markdown(user, lambda: ui.button(icon='face'), '[Button: icon:face]')
     await _assert_markdown(user, ui.button, '[Button]')
+    await _assert_markdown(user, lambda: ui.button().props('aria-label="Save"'), '[Button: Save]')
+    await _assert_markdown(user, lambda: ui.button('hello').props('aria-label="world"'), '[Button: hello]')
+    await _assert_markdown(user, lambda: ui.button(icon='face').props('aria-label="Save"'), '[Button: Save]')
+
+    def child_button():
+        with ui.button():
+            ui.label('Custom content')
+    await _assert_markdown(user, child_button, '[Button: Custom content]')
+
+    def link_button():
+        with ui.button():
+            ui.link('NiceGUI', 'https://nicegui.io')
+    await _assert_markdown(user, link_button, '[Button]')
+
+    def multiline_button():
+        with ui.button():
+            ui.label('one')
+            ui.label('two')
+    await _assert_markdown(user, multiline_button, '[Button]')
+
+    def blank_button():
+        with ui.button():
+            ui.label(' ')
+    await _assert_markdown(user, blank_button, '[Button]')
 
 
 async def test_code_element(user: User):
@@ -124,6 +166,17 @@ async def test_nested_containers(user: User):
                 ui.label('First')
                 ui.label('Second')
     await _assert_markdown(user, build, 'First\n\nSecond')
+
+
+async def test_instance_level_render_markdown_override(user: User):
+    def build():
+        ui.label('Visible')
+        with ui.column() as skipped:
+            ui.label('Hidden by override')
+            ui.image('/static/loading.gif')
+        skipped._render_markdown = lambda: ''  # type: ignore[method-assign]  # pylint: disable=protected-access
+        ui.label('Also visible')
+    await _assert_markdown(user, build, 'Visible\n\nAlso visible')
 
 
 async def test_no_accept_returns_html(user: User):

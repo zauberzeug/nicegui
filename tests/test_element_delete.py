@@ -1,7 +1,9 @@
 import weakref
 
+import pytest
+
 from nicegui import binding, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_remove_element_by_reference(screen: Screen):
@@ -194,6 +196,30 @@ def test_slot_children_cleared_on_delete(screen: Screen):
     screen.click('Delete')
     screen.should_contain('Deleted')
     assert len(labels) == 0, 'all labels should be deleted immediately'
+
+
+@pytest.mark.parametrize('deletion_method', ['client_delete', 'element_delete'])
+async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, deletion_method: str):
+    """Using an element after deletion is silent when the client is gone (benign reload race)
+    but warns once when only the element was deleted (a user bug). See issue #6058."""
+    label = None
+
+    @ui.page('/')
+    def page():
+        nonlocal label
+        label = ui.label('hi')
+
+    await user.open('/')
+    assert isinstance(label, ui.label)
+    (label.client if deletion_method == 'client_delete' else label).delete()
+    assert label.client.is_deleted == (deletion_method == 'client_delete')
+    assert label.is_deleted
+
+    label.run_method('foo')
+    label.update()
+    label.get_computed_prop('bar')
+    expected_warnings = 0 if deletion_method == 'client_delete' else 1
+    assert len([record for record in caplog.records if 'still being used' in record.message]) == expected_warnings
 
 
 def test_event_listeners_cleared_on_delete(screen: Screen):
