@@ -8,7 +8,7 @@ from typing import Any, SupportsIndex
 
 from typing_extensions import Self
 
-from . import events
+from . import events, helpers
 
 
 class ObservableCollection(abc.ABC):  # noqa: B024
@@ -22,11 +22,12 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         super().__init__(factory() if data is None else data)  # type: ignore
         self._parent = _parent
         self.last_modified = time.time()
-        self._change_handlers: list[Callable] = [on_change] if on_change else []
+        self._change_handlers: list[tuple[Callable, bool]] = \
+            [(on_change, helpers.expects_arguments(on_change))] if on_change else []
 
     @property
-    def change_handlers(self) -> list[Callable]:
-        """Return a list of all change handlers registered on this collection and its parents."""
+    def change_handlers(self) -> list[tuple[Callable, bool]]:
+        """Return all change handlers registered on this collection and its parents, each with its `expect_args`."""
         change_handlers = self._change_handlers[:]
         if self._parent is not None:
             change_handlers.extend(self._parent.change_handlers)
@@ -34,13 +35,13 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def _handle_change(self) -> None:
         self.last_modified = time.time()
-        for handler in self.change_handlers:
-            events.handle_event(handler, events.ObservableChangeEventArguments(sender=self))
+        for handler, expect_args in self.change_handlers:
+            events.handle_event(handler, events.ObservableChangeEventArguments(sender=self), expect_args=expect_args)
 
     def on_change(self, handler: Callable) -> None:
         """Register a handler to be called when the collection changes."""
         if handler != self._handle_change:  # pylint: disable=comparison-with-callable
-            self._change_handlers.append(handler)
+            self._change_handlers.append((handler, helpers.expects_arguments(handler)))
 
     def _observe(self, data: Any) -> Any:
         if isinstance(data, ObservableCollection):
