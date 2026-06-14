@@ -47,13 +47,13 @@ async def test_per_page_overrides_global(user: User, monkeypatch: pytest.MonkeyP
 
 
 @pytest.mark.parametrize('accept,user_agent,expected', [
-    ('*/*', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0; +claude-user@anthropic.com)', 'text/markdown'),
+    ('*/*', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0; +claude-user@anthropic.com)', 'text/html'),
     ('*/*', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36', 'text/html'),
-    ('*/*', 'ChatGPT-User/2.0', 'text/markdown'),
-    ('*/*;q=0.8', 'ChatGPT-User/2.0', 'text/markdown'),
+    ('*/*', 'ChatGPT-User/2.0', 'text/html'),
+    ('*/*;q=0.8', 'ChatGPT-User/2.0', 'text/html'),
     ('text/html', 'GPTBot/1.1', 'text/html'),
     ('text/markdown, text/html, */*', 'Claude-User (claude-code/2.1.121; +https://support.anthropic.com/)', 'text/markdown'),
-    ('application/json', 'GPTBot/1.1', 'text/markdown'),
+    ('application/json', 'GPTBot/1.1', 'text/html'),
 ])
 async def test_content_type_based_on_accept_and_user_agent(user: User, accept: str, user_agent: str, expected: str):
     @ui.page('/', markdown=True)

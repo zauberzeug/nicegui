@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import re
 import time
 import uuid
 from collections import defaultdict
@@ -475,16 +474,6 @@ def _is_prefetch(request: Request) -> bool:
 def _did_user_request_markdown(request: Request) -> bool:
     """Whether the request prefers a markdown response over HTML (page opt-in checked separately)."""
     accept = request.headers.get('accept', '').strip().lower()
-    if 'text/html' in accept and 'text/markdown' not in accept:
-        return False
-    if 'text/markdown' in accept and 'text/html' not in accept:
+    if 'text/markdown' in accept:
         return True
-    AI_AGENT_PATTERNS = [
-        r'claude-?(bot|user|searchbot)',
-        r'gptbot|oai-searchbot',
-        r'chatgpt-user',
-        r'perplexity(bot|-user)',
-        r'google-(cloudvertexbot|agent)',
-        r'gemini-deep-research',
-    ]
-    return bool(re.search('|'.join(AI_AGENT_PATTERNS), request.headers.get('user-agent', ''), re.IGNORECASE))
+    return False
