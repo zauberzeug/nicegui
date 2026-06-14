@@ -1,7 +1,14 @@
 import importlib
+import os
 import sys
 from types import ModuleType
 from typing import TYPE_CHECKING
+
+if os.environ.get('NICEGUI_WORKER_STUBS') == '1':
+    import multiprocessing  # cheap here: already imported by the spawn bootstrap in any real worker
+    if multiprocessing.current_process().name != 'MainProcess':
+        from . import _worker_stubs
+        _worker_stubs.install()
 
 _LAZY_IMPORTS = {
     'APIRouter': ('.api_router', 'APIRouter'),
