@@ -1,5 +1,5 @@
 <!doctype html>
-<html{% if html_lang %} lang="{{ html_lang }}"{% endif %}>
+<html{% if html_lang %} lang="{{ html_lang }}"{% else %} dir="ltr"{% endif %}>
   <head>
     <title>{{ title }}</title>
     <meta name="viewport" content="{{ viewport }}" />
