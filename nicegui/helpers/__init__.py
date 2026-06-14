@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 
 from .elements import require_top_level_layout
@@ -24,6 +25,7 @@ __all__ = [
     'hash_file_path',
     'is_coroutine_function',
     'is_file',
+    'is_main_process',
     'is_port_open',
     'is_pytest',
     'is_user_simulation',
@@ -35,6 +37,11 @@ __all__ = [
     'should_await',
     'warn_once',
 ]
+
+
+def is_main_process() -> bool:
+    """Check if the code is running in the main process (as opposed to a spawned subprocess)."""
+    return multiprocessing.current_process().name == 'MainProcess'
 
 
 def is_pytest() -> bool:
