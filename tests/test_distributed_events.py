@@ -64,7 +64,9 @@ def test_session_rejects_without_storage_secret():
         DistributedSession(True, storage_secret='')
 
 
-def test_namespace_is_deterministic_and_isolating():
+def test_namespace_is_deterministic_and_collision_avoiding():
+    # different secrets -> different namespace prefix (collision-avoidance between deployments,
+    # not a security boundary - the prefix is observable on the wire)
     ns_a = DistributedSession._derive_namespace('alpha')
     ns_b = DistributedSession._derive_namespace('beta')
     assert ns_a != ns_b

@@ -28,7 +28,8 @@ class DistributedEvent(Event[P]):
         # NOTE: Use creation location for topic so the same DistributedEvent in different processes shares it.
         # We deliberately use module name + line number only (not the absolute file path), so events sync across
         # hosts where the source happens to live at different paths. The session's storage_secret-derived
-        # namespace handles isolation between unrelated deployments.
+        # namespace keeps unrelated deployments from accidentally cross-talking (collision-avoidance,
+        # not a security boundary - see DistributedSession's trust model).
         frame = inspect.currentframe()
         assert frame is not None
         frame = frame.f_back

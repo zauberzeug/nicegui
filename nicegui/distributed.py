@@ -48,6 +48,13 @@ class DistributedSession:
     Publishers and subscribers are kept alive for the lifetime of the session.
     Event instances are expected to be long-lived (typically module-level),
     so no automatic cleanup of unused topics is performed.
+
+    Trust model: the ``storage_secret``-derived namespace is collision-avoidance only - it keeps
+    unrelated deployments from accidentally sharing topics, but is not a security boundary (the
+    derived prefix travels in Zenoh declarations/interests, so any node on the network can observe
+    and subscribe to it). For real isolation on an untrusted network, pass a raw Zenoh config dict
+    with mTLS node authentication and an ``access_control`` ACL; for payload secrecy, message-level
+    security (e.g. the experimental zenoh-mls) is needed.
     """
 
     _instance: 'DistributedSession | None' = None
@@ -57,8 +64,9 @@ class DistributedSession:
 
         :param config: True for defaults, list of "host" / "host:port" peers, or a raw Zenoh config dict
         :param storage_secret: NiceGUI's storage_secret; used to derive a topic namespace so that
-                               instances sharing the same secret sync, and instances with different
-                               secrets stay isolated even when the Zenoh transport reaches them
+                               instances sharing the same secret sync. Instances with different
+                               secrets won't accidentally cross-talk - collision-avoidance, not a
+                               security boundary (see the class docstring's trust model)
         """
         if not ZENOH_AVAILABLE:
             raise ImportError('zenoh is required for distributed events. '
@@ -82,8 +90,9 @@ class DistributedSession:
     def _derive_namespace(storage_secret: str) -> str:
         """Topic namespace derived from storage_secret via HMAC-SHA256.
 
-        HMAC means the namespace on the wire never reveals the secret and gives no meaningful
-        brute-force surface beyond what the secret already provides for cookie signing.
+        The secret itself never appears on the wire; only this 16-char digest does. The digest is
+        not confidential either - it travels in Zenoh declarations/interests, so it gives
+        collision-avoidance between deployments, not isolation from a deliberate listener.
         """
         return hmac.new(storage_secret.encode(), TOPIC_NAMESPACE_INFO, hashlib.sha256).hexdigest()[:16]
 
