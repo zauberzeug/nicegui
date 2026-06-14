@@ -26,16 +26,21 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             [(on_change, helpers.expects_arguments(on_change))] if on_change else []
 
     @property
-    def change_handlers(self) -> list[tuple[Callable, bool]]:
-        """Return all change handlers registered on this collection and its parents, each with its `expect_args`."""
+    def change_handlers(self) -> list[Callable]:
+        """Return a list of all change handlers registered on this collection and its parents."""
+        return [handler for handler, _ in self._change_handlers_with_args]
+
+    @property
+    def _change_handlers_with_args(self) -> list[tuple[Callable, bool]]:
+        """Return all change handlers and their pre-resolved `expect_args` flag, including those of parents."""
         change_handlers = self._change_handlers[:]
         if self._parent is not None:
-            change_handlers.extend(self._parent.change_handlers)
+            change_handlers.extend(self._parent._change_handlers_with_args)  # pylint: disable=protected-access
         return change_handlers
 
     def _handle_change(self) -> None:
         self.last_modified = time.time()
-        for handler, expect_args in self.change_handlers:
+        for handler, expect_args in self._change_handlers_with_args:
             events.handle_event(handler, events.ObservableChangeEventArguments(sender=self), expect_args=expect_args)
 
     def on_change(self, handler: Callable) -> None:
