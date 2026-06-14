@@ -3,8 +3,6 @@ import json
 from datetime import date, datetime
 from typing import Any
 
-from fastapi.responses import JSONResponse
-
 try:
     HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 except (ModuleNotFoundError, ValueError):
@@ -37,13 +35,6 @@ def loads(value: str) -> Any:
     Uses Python's default json module internally.
     """
     return json.loads(value)
-
-
-class NiceGUIJSONResponse(JSONResponse):
-    """FastAPI response class to support our custom json serializer implementation."""
-
-    def render(self, content: Any) -> bytes:
-        return dumps(content).encode('utf-8')
 
 
 class NumpyJsonEncoder(json.JSONEncoder):

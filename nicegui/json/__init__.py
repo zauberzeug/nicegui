@@ -8,10 +8,15 @@ in socketio.AsyncServer, which expects a module as parameter
 to override Python's default json module.
 """
 
+from typing import TYPE_CHECKING
+
 try:
-    from .orjson_wrapper import NiceGUIJSONResponse, dumps, loads
+    from .orjson_wrapper import dumps, loads
 except ImportError:
-    from .builtin_wrapper import NiceGUIJSONResponse, dumps, loads  # type: ignore
+    from .builtin_wrapper import dumps, loads  # type: ignore
+
+if TYPE_CHECKING:
+    from .response import NiceGUIJSONResponse
 
 
 __all__ = [
@@ -19,3 +24,11 @@ __all__ = [
     'dumps',
     'loads',
 ]
+
+
+def __getattr__(name: str) -> object:
+    if name == 'NiceGUIJSONResponse':  # deferred so that `import nicegui.json` does not pull in FastAPI
+        from .response import NiceGUIJSONResponse  # pylint: disable=import-outside-toplevel
+        globals()[name] = NiceGUIJSONResponse
+        return NiceGUIJSONResponse
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
