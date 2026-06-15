@@ -19,11 +19,13 @@ run() {
     local request_output_file
     request_output_file=$(mktemp)
     local exitcode=0
-    { timeout 15 uv run --no-sync ./"$1" "${@:2}" < <(sleep 15); } > "$output_file" 2>&1 &
+    local timeout_seconds=15
+    { timeout "$timeout_seconds" uv run --no-sync ./"$1" "${@:2}" < <(sleep "$timeout_seconds"); } > "$output_file" 2>&1 &
     local pid=$!
 
     local ready=0
-    for _ in {1..50}; do
+    # Poll for the whole timeout window so slow-starting servers are still detected; exit early once ready or dead.
+    for ((i = 0; i < timeout_seconds * 5; i++)); do
         if grep -qE "NiceGUI ready to go|Uvicorn running on http://127.0.0.1:8000" "$output_file"; then
             ready=1
             break
