@@ -291,9 +291,11 @@ class CodeMirror(ValueElement[str], DisableableElement,
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
 
         *Since version 3.13.0:*
-        Per-line tooltips can be attached via the ``line_tooltips`` dict, and line anchors that track
-        document positions through edits via the ``line_anchors`` dict (read back via
-        :attr:`line_anchor_positions`).
+        Per-line tooltips can be attached via the ``line_tooltips`` dict.
+
+        *Since version 3.14.0:*
+        Line anchors that track document positions through edits can be attached via the ``line_anchors``
+        dict (read back via :attr:`line_anchor_positions`).
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
@@ -302,8 +304,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
-        :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.13.0*)
-        :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.13.0*)
+        :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.14.0*)
+        :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.14.0*)
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
@@ -401,7 +403,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         Lines exceeding the current document length are clamped to the last line on the JS side
         (a warning is emitted via NiceGUI's logger).
 
-        *Added in version 3.13.0*
+        *Added in version 3.14.0*
         """
         return self._props['line-anchors']
 
@@ -419,14 +421,14 @@ class CodeMirror(ValueElement[str], DisableableElement,
         positions. With a shared element (a script-mode page or multiple open tabs) this single
         Python-side mirror is last-writer-wins across clients.
 
-        *Added in version 3.13.0*
+        *Added in version 3.14.0*
         """
         return dict(self._anchor_positions)
 
     def on_anchor_change(self, handler: Handler[CodeMirrorAnchorChangeEventArguments]) -> Self:
         """Register a callback to be invoked whenever tracked anchor positions change.
 
-        *Added in version 3.13.0*
+        *Added in version 3.14.0*
         """
         self._anchor_change_handlers.append(handler)
         return self
