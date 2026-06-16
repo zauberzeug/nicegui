@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import multiprocessing
 import signal
 import traceback
 from collections.abc import Callable
@@ -17,6 +18,9 @@ from . import core, helpers
 process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
 
+# cpu_bound must use spawn, not fork, regardless of the global start method (#3644)
+SPAWN_CONTEXT = multiprocessing.get_context('spawn')
+
 P = ParamSpec('P')
 R = TypeVar('R')
 
@@ -25,7 +29,7 @@ def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
     try:
-        process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
+        process_pool = ProcessPoolExecutor(mp_context=SPAWN_CONTEXT, initializer=_ignore_sigint)
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
 
@@ -95,7 +99,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
         try:
             await _run(process_pool, safe_callback, lambda: None)
         except BrokenProcessPool:
-            process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
+            process_pool = ProcessPoolExecutor(mp_context=SPAWN_CONTEXT, initializer=_ignore_sigint)
         finally:
             raise e
 
