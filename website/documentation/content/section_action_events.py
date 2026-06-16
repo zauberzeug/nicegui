@@ -103,37 +103,6 @@ def io_bound_demo():
     ui.button('Download', on_click=handle_click)
 
 
-@doc.demo('Distinguishing cancellation from a legitimate `None`', '''
-    Both `run.cpu_bound` and `run.io_bound` return `None` when the call is cancelled
-    or the app is shutting down — regardless of the callback's signature.
-    If your callback may itself legitimately return `None`, you cannot tell the two cases apart from the return value alone.
-
-    Wrap the callback with `run.wrap_none` so a legitimate `None` becomes `run.NONE_MARKER` (a picklable sentinel).
-    Plain `None` then unambiguously means the call was aborted.
-
-    Note: `run.wrap_none` is implemented as a callable class rather than a closure,
-    so the wrapper itself survives pickling across `cpu_bound`'s process boundary.
-    A bare `object()` does not — `pickle` constructs a fresh instance on the parent side,
-    and `result is SENTINEL` then always returns `False`.
-''')
-def sentinel_demo():
-    from nicegui import run
-
-    def lookup(key: str) -> str | None:
-        return None if key == 'missing' else f'value_for_{key}'
-
-    async def handle_click():
-        result = await run.io_bound(run.wrap_none(lookup), 'missing')
-        if result is None:
-            ui.notify('run was cancelled / app shutting down')
-        elif result is run.NONE_MARKER:
-            ui.notify('lookup returned None (genuine)')
-        else:
-            ui.notify(f'lookup returned {result}')
-
-    ui.button('Lookup', on_click=handle_click)
-
-
 doc.intro(run_javascript_documentation)
 doc.intro(clipboard_documentation)
 doc.intro(event_documentation)

@@ -110,25 +110,3 @@ async def test_returns_none_when_app_is_stopping(user: User, func: Callable):
 
     await user.open('/')
     await user.should_see('result=None')
-
-
-def returns_none() -> None:
-    return None
-
-
-def returns_value() -> str:
-    return 'real'
-
-
-@pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
-async def test_wrap_none_disambiguates(user: User, func: Callable):
-    @ui.page('/')
-    async def index():
-        none_result = await func(run.wrap_none(returns_none))
-        value_result = await func(run.wrap_none(returns_value))
-        ui.label(f'none={none_result is run.NONE_MARKER}')
-        ui.label(f'value={value_result}')
-
-    await user.open('/')
-    await user.should_see('none=True')
-    await user.should_see('value=real')

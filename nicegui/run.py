@@ -1,5 +1,4 @@
 import asyncio
-import enum
 import logging
 import signal
 import traceback
@@ -9,7 +8,7 @@ from concurrent.futures.process import BrokenProcessPool
 from contextlib import suppress
 from functools import partial
 from pickle import PicklingError
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -20,46 +19,6 @@ thread_pool = ThreadPoolExecutor()
 
 P = ParamSpec('P')
 R = TypeVar('R')
-
-
-class _Sentinel(enum.Enum):
-    NONE_MARKER = 'none_marker'
-
-
-NONE_MARKER = _Sentinel.NONE_MARKER
-'''Sentinel returned by :class:`wrap_none`-wrapped callbacks when they legitimately return ``None``.
-
-Use ``result is run.NONE_MARKER`` to detect this case. Plain ``result is None`` then means the
-``cpu_bound`` / ``io_bound`` call was cancelled or the app is shutting down.
-'''
-
-
-class wrap_none(Generic[P, R]):  # pylint: disable=invalid-name
-    """Wrap a callable so that a legitimate ``None`` return becomes :data:`NONE_MARKER`.
-
-    Use to distinguish "the callback returned ``None``" from "``cpu_bound`` / ``io_bound`` aborted"
-    when both can occur::
-
-        result = await run.cpu_bound(run.wrap_none(my_func), arg1)
-        if result is None:
-            ...  # run was cancelled / app shutting down
-        elif result is run.NONE_MARKER:
-            ...  # my_func returned None
-        else:
-            ...  # real value
-
-    Implemented as a module-level callable class (not a closure) so the wrapper itself is picklable
-    and survives ``cpu_bound``'s process boundary.
-    """
-
-    def __init__(self, fn: Callable[P, R]) -> None:
-        self.fn = fn
-
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R | _Sentinel:
-        result = self.fn(*args, **kwargs)
-        if result is None:
-            return NONE_MARKER
-        return result
 
 
 def setup() -> None:
@@ -122,8 +81,8 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     and return the result (instead of writing it in class properties or global variables).
 
     Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
-    If the callback itself may legitimately return ``None``, wrap it with :class:`wrap_none`
-    to distinguish the two cases.
+    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
+    so ``if result is None: ...`` checks should be treated as temporary.
     """
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
 
@@ -149,8 +108,8 @@ async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) 
     """Run an I/O-bound function in a separate thread.
 
     Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
-    If the callback itself may legitimately return ``None``, wrap it with :class:`wrap_none`
-    to distinguish the two cases.
+    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
+    so ``if result is None: ...`` checks should be treated as temporary.
     """
     return await _run(thread_pool, callback, *args, **kwargs)
 
