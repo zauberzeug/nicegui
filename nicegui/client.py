@@ -472,7 +472,7 @@ def _is_prefetch(request: Request) -> bool:
 
 
 def _did_user_request_markdown(request: Request) -> bool:
-    """Whether the request prefers a markdown response over HTML (page opt-in checked separately)."""
+    """Whether the request lists text/markdown in its Accept header (page opt-in checked separately)."""
     accept = request.headers.get('accept', '').strip().lower()
     if 'text/markdown' in accept:
         return True

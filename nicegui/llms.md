@@ -5,7 +5,7 @@ The single most important rule: **everything is Python**. Reach for `ui.*` befor
 
 **Where this file lives:** it ships with the `nicegui` PyPI package as `nicegui/llms.md`, so the copy bundled with the user's installed version matches the API they actually have. For the current `main`, fetch <https://nicegui.io/llms.txt>.
 
-**Fetching docs:** every page on <https://nicegui.io> returns Markdown when requested with `Accept: text/markdown`; as of NiceGUI 3.13 recognized AI-agent user-agents also receive Markdown when their `Accept` header is ambiguous (e.g. a wildcard `*/*`), so agents can read the full documentation without parsing HTML.
+**Fetching docs:** Every page on <https://nicegui.io> returns Markdown when requested with Accept: text/markdown, so agents can read the full documentation without parsing HTML. If you need to pull documentation related to a specific function or implementation family, use your `web_fetch` tool on the page that semantically matches, i.e `https://nicegui.io/documentation/section_text_elements`, `https://nicegui.io/documentation/label`, `https://nicegui.io/documentation/section_testing`, `https://nicegui.io/documentation/user`, and it will return formatted documentation.
 
 ---
 
@@ -792,7 +792,7 @@ ui.run(
     prod_js=True,                    # production-minified Vue/Quasar bundles
     fastapi_docs=False,              # set True to expose /docs, /redoc, /openapi.json
     markdown=False,                  # experimental: serve your own pages as Markdown to agents
-                                     # (Accept: text/markdown, or recognized agent UAs); override per page via @ui.page(markdown=...)
+                                     # (Accept: text/markdown); override per page via @ui.page(markdown=...)
     # Native desktop window (pywebview) — flagship offline mode:
     native=False,                    # True opens a native window instead of a browser
     window_size=(1024, 768),         # implies native=True
