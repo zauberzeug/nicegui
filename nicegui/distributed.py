@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import hmac
 import json
@@ -10,6 +11,9 @@ from .logging import log
 
 try:
     import zenoh
+    from cryptography.fernet import Fernet, InvalidToken
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     from zenoh import Sample
     ZENOH_AVAILABLE = True
 except ImportError:
@@ -19,6 +23,8 @@ except ImportError:
 
 DEFAULT_ZENOH_PORT = 7447
 TOPIC_NAMESPACE_INFO = b'nicegui-distributed-v1'
+PAYLOAD_KEY_INFO = b'nicegui-distributed-payload-v1'
+EVENT_TTL_SECONDS = 60  # reject payloads older than this (bounds replay; assumes loosely NTP-synced clocks)
 
 
 def _peer_to_endpoint(peer: str) -> str:
@@ -49,12 +55,20 @@ class DistributedSession:
     Event instances are expected to be long-lived (typically module-level),
     so no automatic cleanup of unused topics is performed.
 
-    Trust model: the ``storage_secret``-derived namespace is collision-avoidance only - it keeps
-    unrelated deployments from accidentally sharing topics, but is not a security boundary (the
-    derived prefix travels in Zenoh declarations/interests, so any node on the network can observe
-    and subscribe to it). For real isolation on an untrusted network, pass a raw Zenoh config dict
-    with mTLS node authentication and an ``access_control`` ACL; for payload secrecy, message-level
-    security (e.g. the experimental zenoh-mls) is needed.
+    Trust model:
+
+    - **Payload confidentiality & integrity (the real boundary):** event payloads are encrypted
+      with a Fernet key (AES-128-CBC + HMAC-SHA256) derived from ``storage_secret`` via HKDF before
+      they hit the wire, and decrypted on receipt. The secret never crosses the wire, so a node
+      without it sees only ciphertext and cannot forge a valid event - undecryptable messages
+      (foreign deployment, forged, or stale beyond ``EVENT_TTL_SECONDS``) are dropped silently.
+    - **The topic namespace is collision-avoidance only**, not security: the derived prefix travels
+      in Zenoh declarations/interests, so any node can observe and subscribe to it.
+    - **Residuals (document for any internet-exposed deployment):** metadata still leaks (topic /
+      key-expression names, message timing and sizes), and denial-of-service / flooding is still
+      possible. For defense-in-depth on an untrusted network, also pass a raw Zenoh config dict with
+      mTLS node authentication and an ``access_control`` ACL (``default_permission: deny``), or keep
+      the Zenoh transport on a network you control.
     """
 
     _instance: 'DistributedSession | None' = None
@@ -81,6 +95,7 @@ class DistributedSession:
         self.session = zenoh.open(_normalize_config(config))
         self.instance_id = str(uuid.uuid4())
         self.namespace = self._derive_namespace(storage_secret)
+        self._fernet = self._derive_fernet(storage_secret)
         self.publishers: dict[str, Any] = {}
         self.subscribers: dict[str, Any] = {}
         log.info(f'Distributed events enabled via Zenoh '
@@ -95,6 +110,19 @@ class DistributedSession:
         collision-avoidance between deployments, not isolation from a deliberate listener.
         """
         return hmac.new(storage_secret.encode(), TOPIC_NAMESPACE_INFO, hashlib.sha256).hexdigest()[:16]
+
+    @staticmethod
+    def _derive_fernet(storage_secret: str) -> 'Fernet':
+        """Derive the payload-encryption key from ``storage_secret`` via HKDF-SHA256.
+
+        Event payloads are encrypted with this Fernet key (AES-128-CBC + HMAC-SHA256) before going on
+        the wire and decrypted on receipt. Because the key is derived from ``storage_secret`` - which
+        never crosses the wire - a node without the secret only ever sees ciphertext and cannot forge
+        a valid event. A separate HKDF ``info`` from the namespace ensures the two derivations differ.
+        """
+        raw_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=PAYLOAD_KEY_INFO) \
+            .derive(storage_secret.encode())
+        return Fernet(base64.urlsafe_b64encode(raw_key))
 
     def wire_topic(self, logical_topic: str) -> str:
         """Map a logical (per-event) topic to the namespaced topic actually used on Zenoh."""
@@ -138,9 +166,10 @@ class DistributedSession:
                 'instance_id': self.instance_id,
                 'data': data,
             }).encode('utf-8')
+            token = self._fernet.encrypt(payload)  # confidentiality + integrity; secret never on the wire
             if wire not in self.publishers:
                 self.publishers[wire] = self.session.declare_publisher(wire)
-            self.publishers[wire].put(payload)
+            self.publishers[wire].put(token)
         except (TypeError, ValueError) as e:
             log.error(f'Failed to serialize event data for topic {topic}: {e}. '
                       'Event data must be JSON-serializable (str, int, float, bool, list, dict, None).')
@@ -159,7 +188,13 @@ class DistributedSession:
 
         def handler(sample: Sample) -> None:
             try:
-                payload = json.loads(bytes(sample.payload).decode('utf-8'))
+                plaintext = self._fernet.decrypt(bytes(sample.payload), ttl=EVENT_TTL_SECONDS)
+            except InvalidToken:
+                # Not encrypted with our secret (foreign deployment / forged), or stale (replay window
+                # exceeded). Drop quietly - this is the confidentiality/integrity boundary doing its job.
+                return
+            try:
+                payload = json.loads(plaintext.decode('utf-8'))
                 # NOTE: Ignore events from our own instance (deduplication)
                 if payload['instance_id'] == self.instance_id:
                     return

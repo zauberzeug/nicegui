@@ -121,10 +121,13 @@ async def test_remote_event_invokes_local_callback_on_loop_thread(user: User, fr
     sibling_config = zenoh.Config.from_json5(json.dumps({'connect': {'endpoints': [LOOPBACK_ENDPOINT]}}))
     sibling = zenoh.open(sibling_config)
     try:
-        sibling.declare_publisher(wire_topic).put(json.dumps({
+        # Payloads on the wire are Fernet-encrypted with a storage_secret-derived key, so the sibling
+        # must encrypt with the same secret ('alpha') for the receiver to accept the message.
+        token = DistributedSession._derive_fernet('alpha').encrypt(json.dumps({
             'instance_id': 'sibling',
             'data': {'args': ('hello',), 'kwargs': {}},
         }).encode())
+        sibling.declare_publisher(wire_topic).put(token)
         for _ in range(50):
             if received:
                 break
@@ -134,6 +137,38 @@ async def test_remote_event_invokes_local_callback_on_loop_thread(user: User, fr
 
     assert [value for value, _ in received] == ['hello']
     assert received[0][1] is threading.main_thread()
+
+
+async def test_payload_from_different_secret_is_dropped(user: User, fresh_session):
+    """Confidentiality boundary: a payload encrypted with a different storage_secret is not delivered."""
+    import zenoh  # local import: only reachable when ZENOH_AVAILABLE
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    received: list[str] = []
+
+    @ui.page('/')
+    def page():
+        event = DistributedEvent[str]()
+        event.subscribe(received.append)
+
+    await user.open('/')
+    session = DistributedSession.get()
+    assert session is not None
+    wire_topic = next(iter(session.subscribers))
+
+    sibling = zenoh.open(zenoh.Config.from_json5(json.dumps({'connect': {'endpoints': [LOOPBACK_ENDPOINT]}})))
+    try:
+        # foreign deployment: different secret -> different Fernet key -> receiver cannot decrypt
+        foreign = DistributedSession._derive_fernet('different-secret').encrypt(json.dumps({
+            'instance_id': 'attacker',
+            'data': {'args': ('leak',), 'kwargs': {}},
+        }).encode())
+        sibling.declare_publisher(wire_topic).put(foreign)
+        for _ in range(10):
+            await asyncio.sleep(0.1)
+    finally:
+        sibling.close()
+
+    assert received == [], 'payload encrypted with a different storage_secret must be dropped'
 
 
 def test_emit_raises_before_local_fire_on_non_json_payload(fresh_session):
