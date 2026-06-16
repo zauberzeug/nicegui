@@ -268,6 +268,25 @@ class CodeMirrorKeybindingSpec:
     win: str | None = None
 
 
+_VALID_KEY_MODIFIERS = frozenset({'mod', 'ctrl', 'control', 'c', 'shift', 's', 'alt', 'a', 'meta', 'cmd', 'm'})
+
+
+def _validate_keybinding(key: str) -> None:
+    """Raise ``ValueError`` if ``key`` contains an unrecognized modifier token.
+
+    CodeMirror 6 key syntax is ``Mod-Shift-x``: every segment before the last is a modifier and the last is the
+    key name (matched freely against ``KeyboardEvent.key``). A bad modifier makes CodeMirror throw
+    ``Unrecognized modifier name`` when it lazily compiles the combined keymap on the first keydown; because the
+    binding table never builds, every later keydown re-throws and the whole dispatch path goes dead — basicSetup
+    undo, Tab indent, and every valid user binding included. Validating at registration turns that silent footgun
+    into a clear error.
+    """
+    for modifier in key.split('-')[:-1]:
+        if modifier and modifier.lower() not in _VALID_KEY_MODIFIERS:  # empty segment = literal '-' key, e.g. 'Mod--'
+            raise ValueError(f'Invalid keybinding {key!r}: unrecognized modifier {modifier!r}. '
+                             f'Valid modifiers are Mod, Ctrl, Shift, Alt, Meta, Cmd.')
+
+
 class CodeMirror(ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
@@ -302,17 +321,19 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
 
+        *Since version 3.13.0:*
         Keybindings map keystrokes to Python callbacks via CodeMirror's keymap.
         Pass a bare callable for the default config (prevents the browser default, no per-OS override).
         Wrap with :meth:`binding` for per-binding overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
         Use :meth:`on_keybinding` to add bindings at runtime and :meth:`remove_keybinding` to drop them.
+        Bindings do not fire while the editor is disabled.
 
         *Since version 3.13.0:*
         Per-line tooltips can be attached via the ``line_tooltips`` dict.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
-        :param keybindings: mapping of CodeMirror key strings (e.g. ``'Mod-s'``, ``'F5'``) to handlers, optionally wrapped with :meth:`binding` (default: `None`)
+        :param keybindings: mapping of CodeMirror key strings (e.g. ``'Mod-s'``, ``'F5'``) to handlers, optionally wrapped with :meth:`binding` (default: ``None``, *added in version 3.13.0*)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -451,7 +472,12 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param mac: alternate key string used only on macOS, overriding ``key`` (default: `None`)
         :param linux: alternate key string used only on Linux, overriding ``key`` (default: `None`)
         :param win: alternate key string used only on Windows, overriding ``key`` (default: `None`)
+
+        *Added in version 3.13.0*
         """
+        for override in (mac, linux, win):
+            if override is not None:
+                _validate_keybinding(override)
         return CodeMirrorKeybindingSpec(
             callback=callback,
             prevent_default=prevent_default,
@@ -473,10 +499,18 @@ class CodeMirror(ValueElement[str], DisableableElement,
         Pass a bare callable for the default config (prevents the browser default, no per-OS override),
         or wrap with :meth:`binding` for per-binding overrides.
 
-        Re-registering the same key replaces the prior handler.
+        Re-registering the same key replaces the prior handler. Bindings do not fire while the editor is disabled.
+
+        Raises ``ValueError`` if ``key`` (or a per-OS override) uses an unrecognized modifier token.
+
+        *Added in version 3.13.0*
         """
+        _validate_keybinding(key)
         spec = handler if isinstance(handler, CodeMirrorKeybindingSpec) \
             else CodeMirrorKeybindingSpec(callback=handler)
+        for override in (spec.mac, spec.linux, spec.win):
+            if override is not None:
+                _validate_keybinding(override)
         self._keybinding_specs[key] = spec
         self._sync_keybindings_prop()
         return self
@@ -485,6 +519,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """Remove a previously bound keybinding.
 
         No-op if the key is not currently bound.
+
+        *Added in version 3.13.0*
         """
         if self._keybinding_specs.pop(key, None) is not None:
             self._sync_keybindings_prop()

@@ -10,6 +10,11 @@ from nicegui.testing import Screen
 
 # pylint: disable=protected-access
 
+# CodeMirror resolves 'Mod' to Cmd on macOS and Ctrl elsewhere, so synthesized keydowns must use the
+# matching modifier or the keybinding tests fail for Mac devs while passing on the Linux CI runner.
+# Mirror CM6's own platform check as a computed property name (resolves to ctrlKey on Linux, metaKey on Mac).
+_MOD_KEY_JS = '[/Mac/.test(navigator.platform) ? "metaKey" : "ctrlKey"]: true'
+
 
 def _wait_for_cm_mount(screen: Screen) -> None:
     """Block until CM6 has inserted its contentDOM, proving the editor is ready for keydown dispatch."""
@@ -128,7 +133,7 @@ def test_keybinding_constructor(screen: Screen):
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
-        'key: "s", code: "KeyS", ctrlKey: true, bubbles: true, cancelable: true,'
+        f'key: "s", code: "KeyS", {_MOD_KEY_JS}, bubbles: true, cancelable: true,'
         '}));'
     )
     screen.wait_for(lambda: 'save:Mod-s' in events)
@@ -151,7 +156,7 @@ def test_keybinding_constructor(screen: Screen):
     doc_after_z = screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
-        'key: "z", code: "KeyZ", ctrlKey: true, bubbles: true, cancelable: true,'
+        f'key: "z", code: "KeyZ", {_MOD_KEY_JS}, bubbles: true, cancelable: true,'
         '}));'
         'return el.editor.state.doc.toString();'
     )
@@ -196,7 +201,7 @@ def test_keybinding_method(screen: Screen):
     doc_after_z = screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
-        'key: "z", code: "KeyZ", ctrlKey: true, bubbles: true, cancelable: true,'
+        f'key: "z", code: "KeyZ", {_MOD_KEY_JS}, bubbles: true, cancelable: true,'
         '}));'
         'return el.editor.state.doc.toString();'
     )
@@ -221,7 +226,7 @@ def test_keybinding_replaces_existing(screen: Screen):
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
-        'key: "s", code: "KeyS", ctrlKey: true, bubbles: true, cancelable: true,'
+        f'key: "s", code: "KeyS", {_MOD_KEY_JS}, bubbles: true, cancelable: true,'
         '}));'
     )
     screen.wait_for(lambda: 'second' in events)
@@ -249,7 +254,7 @@ def test_keybinding_no_handler_no_traffic(screen: Screen):
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
-        'key: "s", code: "KeyS", ctrlKey: true, bubbles: true, cancelable: true,'
+        f'key: "s", code: "KeyS", {_MOD_KEY_JS}, bubbles: true, cancelable: true,'
         '}));'
     )
     screen.selenium.execute_script(
@@ -283,7 +288,7 @@ def test_keybinding_prevent_default_false(screen: Screen):
     default_prevented_s = screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'const ev = new KeyboardEvent("keydown", {'
-        'key: "s", code: "KeyS", ctrlKey: true, bubbles: true, cancelable: true});'
+        f'key: "s", code: "KeyS", {_MOD_KEY_JS}, bubbles: true, cancelable: true}});'
         'el.editor.contentDOM.dispatchEvent(ev);'
         'return ev.defaultPrevented;'
     )
@@ -293,7 +298,7 @@ def test_keybinding_prevent_default_false(screen: Screen):
     default_prevented_c = screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'const ev = new KeyboardEvent("keydown", {'
-        'key: "c", code: "KeyC", ctrlKey: true, bubbles: true, cancelable: true});'
+        f'key: "c", code: "KeyC", {_MOD_KEY_JS}, bubbles: true, cancelable: true}});'
         'el.editor.contentDOM.dispatchEvent(ev);'
         'return ev.defaultPrevented;'
     )
@@ -353,7 +358,7 @@ def test_remove_keybinding(screen: Screen):
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
-        'key: "s", code: "KeyS", ctrlKey: true, bubbles: true, cancelable: true,'
+        f'key: "s", code: "KeyS", {_MOD_KEY_JS}, bubbles: true, cancelable: true,'
         '}));'
     )
     screen.selenium.execute_script(
@@ -364,6 +369,57 @@ def test_remove_keybinding(screen: Screen):
     )
     screen.wait_for(lambda: 'control:F2' in events)
     assert 'save' not in events, f'expected Mod-s to be unbound, got {events}'
+
+
+def test_keybinding_invalid_modifier_raises():
+    """An unrecognized modifier token raises ValueError at registration.
+
+    Without this, a bad spec compiles into CM6's combined keymap and throws on the first keydown,
+    which kills *every* binding (basicSetup undo/Tab and all valid user bindings) with only a console error.
+    """
+    from nicegui.elements.codemirror.codemirror import _validate_keybinding
+    for good in ('Mod-s', 'F5', 'Mod-Shift-d', 'a', 'Ctrl-Alt-Delete', 'Cmd-Down', 'Mod--', '-'):
+        _validate_keybinding(good)  # valid descriptors must not raise
+    for bad in ('Bogus-x', 'Ctr-s', 'Mod-Shift-Boop-d'):
+        with pytest.raises(ValueError):
+            _validate_keybinding(bad)
+
+
+def test_keybinding_does_not_fire_while_disabled(screen: Screen):
+    """Keybindings stop firing while the editor is disabled and resume once re-enabled."""
+    events: list[str] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('hello', keybindings={'Mod-s': lambda e: events.append(e.key)})
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+
+    dispatch = (
+        f'const el = getElement({editor.id});'
+        'el.editor.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {'
+        f'key: "s", code: "KeyS", {_MOD_KEY_JS}, bubbles: true, cancelable: true,'
+        '}));'
+    )
+    content_editable = f'return getElement({editor.id}).editor.contentDOM.contentEditable;'
+
+    screen.selenium.execute_script(dispatch)
+    screen.wait_for(lambda: len(events) == 1)
+
+    editor.disable()
+    WebDriverWait(screen.selenium, 5).until(lambda d: d.execute_script(content_editable) == 'false')
+    screen.selenium.execute_script(dispatch)  # must not fire while disabled
+
+    editor.enable()
+    WebDriverWait(screen.selenium, 5).until(lambda d: d.execute_script(content_editable) == 'true')
+    screen.selenium.execute_script(dispatch)
+
+    # WS delivery is FIFO: once the post-enable event arrives, any disabled-period event would have too.
+    screen.wait_for(lambda: len(events) == 2)
+    assert len(events) == 2, f'disabled editor should not have fired a keybinding, got {events}'
 
 
 def test_line_tooltip_api(screen: Screen):
