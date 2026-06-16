@@ -38,9 +38,8 @@ class Server(uvicorn.Server):
             native.response_queue = self.config.response_queue
             if (event := self.config.shutdown_event) is not None:
                 def monitor_shutdown_event() -> None:
-                    # Poll instead of `event.wait()`: a blocking wait would register this thread as a waiter
-                    # on the event's internal condition variable. When the auto-reloader kills the process
-                    # mid-wait, the stale registration makes a later `event.set()` block forever (#5845).
+                    # Poll instead of `event.wait()`: a blocking wait leaves a stale waiter if the reloader
+                    # kills the process mid-wait, making a later `event.set()` hang forever (#5845).
                     while not event.is_set():
                         time.sleep(0.1)
                     self.should_exit = True
