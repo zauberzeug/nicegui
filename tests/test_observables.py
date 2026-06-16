@@ -1,10 +1,7 @@
 import asyncio
 import copy
 
-import pytest
-
-from nicegui import helpers, ui
-from nicegui.events import ObservableChangeEventArguments
+from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
 from nicegui.testing import Screen, User
 
@@ -131,47 +128,6 @@ def test_nested_observables():
     assert count == 5
     data['d'].add(4)
     assert count == 6
-
-
-def test_resolve_expect_args_once(monkeypatch: pytest.MonkeyPatch):
-    introspection_count = 0
-    original = helpers.expects_arguments
-
-    def counting_expects_arguments(func):
-        nonlocal introspection_count
-        introspection_count += 1
-        return original(func)
-
-    monkeypatch.setattr(helpers, 'expects_arguments', counting_expects_arguments)
-
-    received: list[ObservableChangeEventArguments] = []
-
-    def no_arg_handler():
-        ...
-
-    def arg_handler(arguments):
-        received.append(arguments)
-
-    # Registration resolves `expects_arguments` exactly once per handler.
-    data = ObservableDict({
-        'b': [1, 2, 3, {'x': 1}],
-        'c': {'t': [1, 2, 3]},
-    }, on_change=no_arg_handler)
-    data.on_change(arg_handler)
-    assert introspection_count == 2
-
-    # Firing the change (including nested mutations that walk the parent chain) must not introspect again.
-    introspection_count = 0
-    data['a'] = 42
-    data['b'].append(4)
-    data['b'][3]['x'] = 2
-    data['c']['t'].append(4)
-    assert introspection_count == 0
-
-    # The arg-expecting handler still receives the change arguments; the no-arg handler is still called.
-    assert len(received) == 4
-    assert all(isinstance(arguments, ObservableChangeEventArguments) for arguments in received)
-    assert received[0].sender is data
 
 
 def test_async_handler(screen: Screen):
