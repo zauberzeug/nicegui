@@ -321,7 +321,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
 
-        *Since version 3.13.0:*
+        *Since version 3.14.0:*
         Keybindings map keystrokes to Python callbacks via CodeMirror's keymap.
         Pass a bare callable for the default config (prevents the browser default, no per-OS override).
         Wrap with :meth:`binding` for per-binding overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
@@ -333,7 +333,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
-        :param keybindings: mapping of CodeMirror key strings (e.g. ``'Mod-s'``, ``'F5'``) to handlers, optionally wrapped with :meth:`binding` (default: ``None``, *added in version 3.13.0*)
+        :param keybindings: mapping of CodeMirror key strings (e.g. ``'Mod-s'``, ``'F5'``) to handlers, optionally wrapped with :meth:`binding` (default: ``None``, *added in version 3.14.0*)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -473,7 +473,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param linux: alternate key string used only on Linux, overriding ``key`` (default: `None`)
         :param win: alternate key string used only on Windows, overriding ``key`` (default: `None`)
 
-        *Added in version 3.13.0*
+        *Added in version 3.14.0*
         """
         for override in (mac, linux, win):
             if override is not None:
@@ -503,7 +503,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         Raises ``ValueError`` if ``key`` (or a per-OS override) uses an unrecognized modifier token.
 
-        *Added in version 3.13.0*
+        *Added in version 3.14.0*
         """
         _validate_keybinding(key)
         spec = handler if isinstance(handler, CodeMirrorKeybindingSpec) \
@@ -520,7 +520,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         No-op if the key is not currently bound.
 
-        *Added in version 3.13.0*
+        *Added in version 3.14.0*
         """
         if self._keybinding_specs.pop(key, None) is not None:
             self._sync_keybindings_prop()
