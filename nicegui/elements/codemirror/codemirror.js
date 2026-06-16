@@ -63,7 +63,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
-    lineAnchors: Array,
+    lineAnchors: Object,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
     id: String,
@@ -195,29 +195,31 @@ export default {
       });
     },
     async applyLineAnchors(anchors) {
+      // Every server-side prop change re-broadcasts all props and re-fires this deep watcher. Re-applying
+      // from the original declared lines would discard the live positions that anchorField has remapped
+      // through edits, so no-op when the declared anchors are unchanged. A genuine reassignment (different
+      // ids or lines) still applies; an identical re-broadcast leaves the remapped positions intact.
+      const snapshot = JSON.stringify(Object.entries(anchors || {}).sort());
+      if (snapshot === this._lastAppliedAnchors) return;
+      this._lastAppliedAnchors = snapshot;
       if (!this.editor) await this.editorPromise;
       clearTimeout(this._anchorTimer);
       this._anchorTimer = null;
       const doc = this.editor.state.doc;
       const ranges = [];
-      const seen = new Set();
-      for (const a of anchors || []) {
-        if (a.line < 1) {
-          logAndEmit("warning", `line_anchors: anchor ${JSON.stringify(a.id)} has line ${a.line}; clamping to 1.`);
-        } else if (a.line > doc.lines) {
+      for (const [id, line] of Object.entries(anchors || {})) {
+        if (line < 1) {
+          logAndEmit("warning", `line_anchors: anchor ${JSON.stringify(id)} has line ${line}; clamping to 1.`);
+        } else if (line > doc.lines) {
           logAndEmit(
             "warning",
-            `line_anchors: anchor ${JSON.stringify(a.id)} requested line ${a.line} ` +
+            `line_anchors: anchor ${JSON.stringify(id)} requested line ${line} ` +
               `but document only has ${doc.lines} line(s); clamping to last line.`,
           );
         }
-        if (seen.has(a.id)) {
-          logAndEmit("warning", `line_anchors: duplicate id ${JSON.stringify(a.id)}; last entry wins.`);
-        }
-        seen.add(a.id);
-        const lineNum = Math.max(1, Math.min(a.line, doc.lines));
+        const lineNum = Math.max(1, Math.min(line, doc.lines));
         const pos = doc.line(lineNum).from;
-        ranges.push(new AnchorValue(a.id).range(pos, pos));
+        ranges.push(new AnchorValue(id).range(pos, pos));
       }
       this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
       this.emitAnchorPositions();
@@ -276,7 +278,9 @@ export default {
         class {
           update(update) {
             if (!update.docChanged) return;
-            if (update.state.field(anchorField).size === 0) return;
+            // Skip only when there is nothing to report before and after — checking just the end state
+            // would swallow the last anchor's removal (1 -> 0), leaving the Python mirror stale.
+            if (update.state.field(anchorField).size === 0 && update.startState.field(anchorField).size === 0) return;
             clearTimeout(self._anchorTimer);
             self._anchorTimer = setTimeout(() => {
               self._anchorTimer = null;
@@ -362,7 +366,7 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
-    if (this.lineAnchors && this.lineAnchors.length > 0) {
+    if (this.lineAnchors && Object.keys(this.lineAnchors).length > 0) {
       this.applyLineAnchors(this.lineAnchors);
     }
     this.setLineTooltips(this.lineTooltips);
