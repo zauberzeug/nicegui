@@ -18,8 +18,18 @@ export default {
   async mounted() {
     this._uPlot = uPlot;
     await this._create();
+    // uPlot needs explicit width/height as initial dimensions; the ResizeObserver then keeps the
+    // chart in sync with the host element afterwards (same approach as ui.echart), so it can follow
+    // its container when sized via CSS classes.
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this._chart) {
+        this._chart.setSize({ width: this.$el.offsetWidth, height: this.$el.offsetHeight });
+      }
+    });
+    this.resizeObserver.observe(this.$el);
   },
   unmounted() {
+    this.resizeObserver?.disconnect();
     this._destroy();
   },
   watch: {

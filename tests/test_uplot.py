@@ -16,17 +16,13 @@ def test_uplot(screen: Screen):
     assert len(screen.find_all_by_tag('canvas')) == 2
 
 
-def test_update_width_and_height(screen: Screen):
+def test_resize_to_element(screen: Screen):
     @ui.page('/')
     def page():
         options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}
         data = [[0, 1], [1, 2]]
-        plot = ui.uplot(options, data)
-
-        def resize():
-            plot.options['width'] = 600
-            plot.options['height'] = 300
-        ui.button('Resize', on_click=resize)
+        plot = ui.uplot(options, data).style('width: 400px; height: 200px')
+        ui.button('Resize', on_click=lambda: plot.style('width: 600px; height: 300px'))
 
     screen.open('/')
     canvas = screen.find_by_tag('canvas')
@@ -116,7 +112,7 @@ def test_in_card(screen: Screen):
         with ui.card().style('height: 200px; width: 600px'):
             options = {'series': [{}, {'stroke': 'red'}]}
             data = [[0, 1], [2, 4]]
-            ui.uplot(options, data)
+            ui.uplot(options, data).classes('w-full h-full')  # fill the card via the ResizeObserver
 
     screen.open('/')
     canvas = screen.find_by_tag('canvas')

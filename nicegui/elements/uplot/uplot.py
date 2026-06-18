@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     import numpy as np
 
 
-class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}):
+class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, default_classes='nicegui-uplot'):
 
     def __init__(
         self,
