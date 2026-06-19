@@ -60,17 +60,14 @@ export default {
           } else if (!dataMatch(prevData, data)) {
             const mode = this.$props.scaleMode;
             if (mode === "preserve_all") {
-              this._chart.setData(data, false);
-              this._chart.redraw();
+              this._chart.setData(data, false); // keep all scales (setData redraws on its own)
             } else if (mode === "preserve_zoom") {
-              this._chart.setData(data);
-              var min = Math.min(...prevData[0]);
-              var max = Math.max(...prevData[0]);
-              if (this._chart.scales.x.max != max || this._chart.scales.x.min != min) {
-                this._restoreZoomState();
-              }
+              // keep the current scales only while the user is zoomed in, otherwise refit the new data
+              const x = this._chart.scales.x;
+              const zoomedIn = x.min > Math.min(...prevData[0]) || x.max < Math.max(...prevData[0]);
+              this._chart.setData(data, !zoomedIn);
             } else {
-              this._chart.setData(data);
+              this._chart.setData(data); // "reset": always recompute the scales
             }
           }
         })();
@@ -101,28 +98,6 @@ export default {
           this._resize();
         }
       });
-    },
-    _restoreZoomState() {
-      if (this._chart) {
-        const zoom = {};
-        for (const [key, scale] of Object.entries(this._chart.scales)) {
-          if (scale && typeof scale.min === "number" && typeof scale.max === "number") {
-            zoom[key] = { min: scale.min, max: scale.max };
-          }
-        }
-        if (zoom) {
-          for (const [key, state] of Object.entries(zoom)) {
-            if (
-              this._chart.scales &&
-              this._chart.scales[key] &&
-              typeof state.min === "number" &&
-              typeof state.max === "number"
-            ) {
-              this._chart.setScale(key, { min: state.min, max: state.max });
-            }
-          }
-        }
-      }
     },
     _destroy() {
       if (this._chart) {
