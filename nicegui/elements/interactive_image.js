@@ -105,7 +105,24 @@ export default {
         this.updateViewbox(this.size[0], this.size[1]);
       }
     },
+    refreshImageDimensions() {
+      // Sync cached dimensions with the live <img> in case the source changed size without firing "load"
+      // (e.g. a multipart/x-mixed-replace stream switching resolution); see #6122.
+      const img = this.$refs.img;
+      if (
+        this.src &&
+        img.naturalWidth &&
+        img.naturalHeight &&
+        (img.naturalWidth !== this.loaded_image_width || img.naturalHeight !== this.loaded_image_height)
+      ) {
+        this.loaded_image_width = img.naturalWidth;
+        this.loaded_image_height = img.naturalHeight;
+        this.updateViewbox(this.loaded_image_width, this.loaded_image_height);
+        this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: img.currentSrc });
+      }
+    },
     updateCrossHair(e) {
+      this.refreshImageDimensions();
       const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.x = (e.offsetX * width) / e.target.clientWidth;
@@ -118,6 +135,7 @@ export default {
       this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: e.target.src });
     },
     onMouseEvent(type, e) {
+      this.refreshImageDimensions();
       const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit("mouse", {
@@ -133,6 +151,7 @@ export default {
       });
     },
     onPointerEvent(type, e) {
+      this.refreshImageDimensions();
       const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit(`svg:${type}`, {
