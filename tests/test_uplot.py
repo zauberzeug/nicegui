@@ -319,3 +319,20 @@ def test_legend_mounted_externally(screen: Screen):
     canvas = screen.find_by_tag('canvas')
     assert canvas.get_attribute('width') == '568'
     assert canvas.get_attribute('height') == '168'
+
+
+def test_content_sized_host_does_not_grow(screen: Screen):
+    """A content-sized host must converge, not grow on every ResizeObserver cycle (the feedback loop)."""
+    @ui.page('/')
+    def page():
+        options = {'width': 400, 'height': 200, 'title': 'T', 'series': [{}, {'label': 'y', 'stroke': 'red'}]}
+        # height:auto makes the host content-sized — the configuration that could feed the observer loop
+        ui.uplot(options, [[0, 1, 2], [3, 4, 5]]).style('width: 400px; height: auto')
+
+    screen.open('/')
+    screen.wait(0.8)  # allow the chrome re-measure and observer to settle
+    height_1 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
+    screen.wait(1.0)
+    height_2 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
+    assert height_1 == height_2, f'host kept resizing: {height_1} -> {height_2}'
+    assert 0 < height_2 < 600, f'host grew unexpectedly: {height_2}'
