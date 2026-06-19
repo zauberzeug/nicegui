@@ -19,7 +19,8 @@ def test_uplot(screen: Screen):
 def test_resize_to_element(screen: Screen):
     @ui.page('/')
     def page():
-        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}
+        # legend disabled so the canvas fills the host exactly (see test_legend_fits_in_box otherwise)
+        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
         data = [[0, 1], [1, 2]]
         plot = ui.uplot(options, data).style('width: 400px; height: 200px')
         ui.button('Resize', on_click=lambda: plot.style('width: 600px; height: 300px'))
@@ -110,7 +111,8 @@ def test_in_card(screen: Screen):
     @ui.page('/')
     def page():
         with ui.card().style('height: 200px; width: 600px'):
-            options = {'series': [{}, {'stroke': 'red'}]}
+            # legend disabled so the canvas fills the card exactly (see test_legend_fits_in_box otherwise)
+            options = {'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
             data = [[0, 1], [2, 4]]
             ui.uplot(options, data).classes('w-full h-full')  # fill the card via the ResizeObserver
 
@@ -118,6 +120,21 @@ def test_in_card(screen: Screen):
     canvas = screen.find_by_tag('canvas')
     assert canvas.get_attribute('height') == '168'
     assert canvas.get_attribute('width') == '568'
+
+
+def test_legend_fits_in_box(screen: Screen):
+    @ui.page('/')
+    def page():
+        with ui.element().style('width: 400px; height: 300px'):
+            options = {'width': 400, 'height': 300, 'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
+            ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full')
+
+    screen.open('/')
+    screen.wait(0.5)  # let the chart reserve room for its title/legend on the next animation frame
+    host_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
+    chart_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot .uplot').offsetHeight")
+    # the whole chart (title + plot + legend) must stay within the host box instead of overflowing it
+    assert chart_height <= host_height
 
 
 def test_create_dynamically(screen: Screen):
