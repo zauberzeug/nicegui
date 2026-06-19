@@ -64,6 +64,42 @@ async def test_content_type_based_on_accept(user: User, accept: str, expected: s
     assert expected in response.headers['content-type']
 
 
+@pytest.mark.parametrize(
+    'user_agent',
+    [
+        'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0)',
+        'GPTBot/1.1',
+        'oai-searchbot/1.0',
+        'ChatGPT-User/2.0',
+        'PerplexityBot/1.0',
+        'Perplexity-User/1.0',
+        'Google-CloudVertexBot/1.0',
+        'Google-Agent/1.0',
+        'Gemini-Deep-Research/1.0',
+        'ModelContextProtocol/1.0',
+    ],
+)
+async def test_ai_agent_user_agent_returns_markdown(user: User, user_agent: str):
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={'User-Agent': user_agent})
+    assert 'text/markdown' in response.headers['content-type']
+
+
+async def test_browser_user_agent_returns_html(user: User):
+    @ui.page('/', markdown=True)
+    def page():
+        ui.label('Hello')
+
+    response = await user.http_client.get('/', headers={
+        'Accept': '*/*',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36',
+    })
+    assert 'text/html' in response.headers['content-type'], 'non-agent UA should not trigger markdown fallback'
+
+
 async def test_page_title(user: User):
     @ui.page('/', title='My Page', markdown=True)
     def page():

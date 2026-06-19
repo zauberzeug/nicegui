@@ -33,6 +33,19 @@ if TYPE_CHECKING:
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
+AI_AGENT_TOKENS = (
+    'claude',
+    'gptbot',
+    'oai-searchbot',
+    'chatgpt-user',
+    'perplexitybot',
+    'perplexity-user',
+    'google-cloudvertexbot',
+    'google-agent',
+    'gemini-deep-research',
+    'modelcontextprotocol',
+)
+
 HTML_ESCAPE_TABLE = str.maketrans({
     '&': '&amp;',
     '<': '&lt;',
@@ -472,8 +485,9 @@ def _is_prefetch(request: Request) -> bool:
 
 
 def _did_user_request_markdown(request: Request) -> bool:
-    """Whether the request lists text/markdown in its Accept header (page opt-in checked separately)."""
+    """Whether the request has text/markdown in its Accept header. If not, checks for known agent UA shapes."""
     accept = request.headers.get('accept', '').strip().lower()
     if 'text/markdown' in accept:
         return True
-    return False
+    ua = request.headers.get('user-agent', '').lower()
+    return any(token in ua for token in AI_AGENT_TOKENS)
