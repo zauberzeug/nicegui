@@ -31,6 +31,7 @@ def test_resize_to_element(screen: Screen):
     assert canvas.get_attribute('height') == '200'
 
     screen.click('Resize')
+    screen.wait(0.5)  # let the ResizeObserver and the next animation frame propagate the new size
     canvas = screen.find_by_tag('canvas')
     assert canvas.get_attribute('width') == '600'
     assert canvas.get_attribute('height') == '300'
@@ -54,6 +55,7 @@ def test_update_data_and_options(screen: Screen):
     assert legend_html is not None and 'C' in legend_html
 
     screen.click('Update')
+    screen.wait(0.5)  # let the data/options update round-trip to the client
     legend = screen.find_by_tag('table')
     legend_html = legend.get_attribute('outerHTML')
     assert legend_html is not None and 'D' in legend_html
