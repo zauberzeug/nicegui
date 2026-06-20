@@ -106,8 +106,8 @@ export default {
       }
     },
     refreshImageDimensions() {
-      // Sync cached dimensions with the live <img> in case the source changed size without firing "load"
-      // (e.g. a multipart/x-mixed-replace stream switching resolution); see #6122.
+      // Re-sync cached dimensions with the live <img> when the stream changed size without firing "load" (#6122).
+      // No event fires for an in-place naturalWidth change, so this only catches up on the next interaction.
       const img = this.$refs.img;
       if (
         this.src &&
@@ -118,7 +118,7 @@ export default {
         this.loaded_image_width = img.naturalWidth;
         this.loaded_image_height = img.naturalHeight;
         this.updateViewbox(this.loaded_image_width, this.loaded_image_height);
-        this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: img.currentSrc });
+        this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: img.src });
       }
     },
     updateCrossHair(e) {
