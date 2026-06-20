@@ -34,7 +34,10 @@ if TYPE_CHECKING:
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
 
 AI_AGENT_TOKENS = (
-    'claude',
+    'claudebot',
+    'claude-user',
+    'claude-searchbot',
+    'claude-code',
     'gptbot',
     'oai-searchbot',
     'chatgpt-user',
