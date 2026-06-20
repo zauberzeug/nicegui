@@ -485,7 +485,7 @@ def _is_prefetch(request: Request) -> bool:
 
 
 def _did_user_request_markdown(request: Request) -> bool:
-    """Whether the request has text/markdown in its Accept header. If not, checks for known agent UA shapes."""
+    """Check whether the request has text/markdown in its Accept header or is a known agentic user agent."""
     accept = request.headers.get('accept', '').strip().lower()
     if 'text/markdown' in accept:
         return True
