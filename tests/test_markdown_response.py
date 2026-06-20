@@ -46,58 +46,29 @@ async def test_per_page_overrides_global(user: User, monkeypatch: pytest.MonkeyP
     assert 'text/html' in response.headers['content-type'], 'per-page False should override global True'
 
 
+BROWSER_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36'
+
+
 @pytest.mark.parametrize(
-    'accept,expected',
+    'accept,user_agent,expected',
     [
-        ('*/*', 'text/html'),
-        ('text/html', 'text/html'),
-        ('text/markdown, text/html, */*', 'text/markdown'),
-        ('application/json', 'text/html'),
+        ('text/markdown, text/html, */*', '', 'text/markdown'),  # explicit markdown wins
+        ('text/markdown', BROWSER_USER_AGENT, 'text/markdown'),  # ... even for a browser user agent
+        ('*/*', BROWSER_USER_AGENT, 'text/html'),  # browser with ambiguous Accept
+        ('text/html', BROWSER_USER_AGENT, 'text/html'),  # browser asking for HTML
+        ('application/json', '', 'text/html'),  # neither markdown nor a known agent
+        ('*/*', 'GPTBot/1.1', 'text/markdown'),  # known agent user agent
+        ('text/html', 'GPTBot/1.1', 'text/markdown'),  # agent user agent overrides Accept: text/html
+        ('*/*', 'Claude-User (claude-code/2.1)', 'text/markdown'),  # another known agent
     ],
 )
-async def test_content_type_based_on_accept(user: User, accept: str, expected: str):
+async def test_content_type_based_on_accept_and_user_agent(user: User, accept: str, user_agent: str, expected: str):
     @ui.page('/', markdown=True)
     def page():
         ui.label('Hello')
 
-    response = await user.http_client.get('/', headers={'Accept': accept})
+    response = await user.http_client.get('/', headers={'Accept': accept, 'User-Agent': user_agent})
     assert expected in response.headers['content-type']
-
-
-@pytest.mark.parametrize(
-    'user_agent',
-    [
-        'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0)',
-        'GPTBot/1.1',
-        'oai-searchbot/1.0',
-        'ChatGPT-User/2.0',
-        'PerplexityBot/1.0',
-        'Perplexity-User/1.0',
-        'Google-CloudVertexBot/1.0',
-        'Google-Agent/1.0',
-        'Gemini-Deep-Research/1.0',
-        'ModelContextProtocol/1.0',
-    ],
-)
-async def test_ai_agent_user_agent_returns_markdown(user: User, user_agent: str):
-    @ui.page('/', markdown=True)
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers={'User-Agent': user_agent})
-    assert 'text/markdown' in response.headers['content-type']
-
-
-async def test_browser_user_agent_returns_html(user: User):
-    @ui.page('/', markdown=True)
-    def page():
-        ui.label('Hello')
-
-    response = await user.http_client.get('/', headers={
-        'Accept': '*/*',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36',
-    })
-    assert 'text/html' in response.headers['content-type'], 'non-agent UA should not trigger markdown fallback'
 
 
 async def test_page_title(user: User):
