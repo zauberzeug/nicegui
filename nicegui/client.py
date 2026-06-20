@@ -489,5 +489,5 @@ def _did_user_request_markdown(request: Request) -> bool:
     accept = request.headers.get('accept', '').strip().lower()
     if 'text/markdown' in accept:
         return True
-    ua = request.headers.get('user-agent', '').lower()
-    return any(token in ua for token in AI_AGENT_TOKENS)
+    user_agent = request.headers.get('user-agent', '').lower()
+    return any(token in user_agent for token in AI_AGENT_TOKENS)
