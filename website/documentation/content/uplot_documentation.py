@@ -22,7 +22,7 @@ def main_demo() -> None:
             [x / 10 for x in range(100)],
             [math.sin(x / 10) for x in range(100)],
         ],
-    )
+    ).classes('bg-white text-black')
 
 
 @doc.demo('Updating data and options', '''
@@ -36,7 +36,7 @@ def update_demo() -> None:
         options={'width': 600, 'height': 300, 'scales': {'x': {'time': False}},
                  'series': [{'label': 'x'}, {'label': 'y', 'stroke': 'blue'}]},
         data=[[0, 1, 2, 3], [1, 3, 2, 4]],
-    )
+    ).classes('bg-white text-black')
 
     def update() -> None:
         chart.data = [[0, 1, 2, 3], [random(), random(), random(), random()]]
@@ -62,7 +62,7 @@ def live_demo() -> None:
                  'series': [{'label': 'x'}, {'label': 'value', 'stroke': 'green'}]},
         data=[xs, ys],
         scale_mode='preserve_zoom',
-    )
+    ).classes('bg-white text-black')
 
     def update() -> None:
         xs.append(xs[-1] + 1)
@@ -86,8 +86,8 @@ def sizing_demo() -> None:
                'series': [{'label': 'x'}, {'label': 'cos(x)', 'stroke': 'purple'}]}
     data = [[x / 10 for x in range(100)], [math.cos(x / 10) for x in range(100)]]
 
-    ui.uplot(options, data)
-    ui.uplot(options, data).classes('w-full h-40')
+    ui.uplot(options, data).classes('bg-white text-black')
+    ui.uplot(options, data).classes('w-full h-40 bg-white text-black')
 
 
 doc.reference(ui.uplot)
