@@ -75,9 +75,9 @@ def live_demo() -> None:
 
 
 @doc.demo('Sizing', '''
-    uPlot requires a `width` and `height` in its options, which act as the initial dimensions.
-    Like other NiceGUI chart elements, the chart then fills its parent and follows its size via a
-    `ResizeObserver`, so you can size it with Tailwind classes or `.style()`.
+    The `width` and `height` in the options are optional: set them for a default size, or omit them
+    to fill the parent. Either way the chart follows its element via a `ResizeObserver`,
+    so you can size it with Tailwind classes or `.style()`.
 ''')
 def sizing_demo() -> None:
     import math
@@ -86,8 +86,8 @@ def sizing_demo() -> None:
                'series': [{'label': 'x'}, {'label': 'cos(x)', 'stroke': 'purple'}]}
     data = [[x / 10 for x in range(100)], [math.cos(x / 10) for x in range(100)]]
 
-    ui.uplot(options, data).classes('h-40')
-    ui.uplot(options, data).classes('h-80')
+    ui.uplot(options, data)
+    ui.uplot(options, data).classes('w-full h-40')
 
 
 doc.reference(ui.uplot)

@@ -113,7 +113,8 @@ export default {
       let options = { ...this.$props.options };
       convertDynamicProperties(options, true);
       // Create at the host's current size (when laid out) so the title/legend lay out for the final
-      // width from the start; options.width/height only act as a fallback for the initial render.
+      // width from the start. The host defaults to options.width/height via CSS (see uplot.py), so
+      // this normally matches the options; it differs only when CSS classes/.style() resize the host.
       if (this.$el.offsetWidth) options.width = this.$el.offsetWidth;
       if (this.$el.offsetHeight) options.height = this.$el.offsetHeight;
       this._chart = new this._uPlot(options, this.$props.data, this.$el);

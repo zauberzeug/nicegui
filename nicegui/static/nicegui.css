@@ -203,10 +203,14 @@
 .nicegui-echart,
 .nicegui-leaflet,
 .nicegui-log,
-.nicegui-scroll-area,
-.nicegui-uplot {
+.nicegui-scroll-area {
   width: 100%;
   height: 16rem;
+}
+.nicegui-uplot {
+  width: var(--nicegui-uplot-width, 100%);
+  height: var(--nicegui-uplot-height, 16rem);
+  max-width: 100%;
 }
 .nicegui-leaflet video.leaflet-image-layer {
   max-width: none; /* HACK: make the video show up */

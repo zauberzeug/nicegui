@@ -30,6 +30,11 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         self._props['data'] = data
         self._props['scaleMode'] = scale_mode
 
+        if 'width' in options:
+            self.style(f'--nicegui-uplot-width: {options["width"]}px')
+        if 'height' in options:
+            self.style(f'--nicegui-uplot-height: {options["height"]}px')
+
     @property
     def options(self) -> dict:
         """The options dictionary."""
