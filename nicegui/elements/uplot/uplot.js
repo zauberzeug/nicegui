@@ -62,9 +62,11 @@ export default {
             if (mode === "preserve_all") {
               this._chart.setData(data, false); // keep all scales (setData redraws on its own)
             } else if (mode === "preserve_zoom") {
-              // keep the current scales only while the user is zoomed in, otherwise refit the new data
+              // keep the current scales only while zoomed in, else refit; x-values are sorted ascending,
+              // so first/last are the range
+              const xs = prevData[0];
               const x = this._chart.scales.x;
-              const zoomedIn = x.min > Math.min(...prevData[0]) || x.max < Math.max(...prevData[0]);
+              const zoomedIn = xs?.length > 0 && (x.min > xs[0] || x.max < xs[xs.length - 1]);
               this._chart.setData(data, !zoomedIn);
             } else {
               this._chart.setData(data); // "reset": always recompute the scales
