@@ -58,10 +58,13 @@ HTML_ESCAPE_TABLE = str.maketrans({
     '$': '&#36;',
 })
 
-# RFC 3986 path-legal characters (sub-delims + ":" "@" "/"), plus "%" to avoid double-encoding an already-encoded
-# prefix. quote() also leaves the unreserved set (A-Za-z0-9-._~) untouched, so encoding with this safe set only
-# touches characters that are illegal in a URL path anyway (e.g. `"` `<` `>` `\` `` ` `` space) — a no-op for any
-# well-formed prefix while neutralizing reflected-header injection.
+# RFC 3986 path-legal characters (sub-delims + ":" "@" "/"), plus "%" so an already-encoded prefix is not
+# double-encoded. A literal "%xx" therefore passes through unchanged, which is safe: no sink URL-decodes the value
+# back into a markup/JS context, so it stays inert. quote() also leaves the unreserved set (A-Za-z0-9-._~) untouched,
+# so this only encodes characters illegal in a URL path anyway (e.g. `"` `<` `>` `\` `` ` `` space) — a no-op for any
+# well-formed ASCII path prefix while neutralizing reflected-header injection. Non-ASCII is the exception: it is
+# always percent-encoded (never reflected raw) but cannot round-trip cleanly, since HTTP headers are latin-1 and the
+# proxy's byte encoding decides the result.
 FORWARDED_PREFIX_SAFE_CHARS = "/:@!$&'()*+,;=%"
 
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
