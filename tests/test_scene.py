@@ -211,6 +211,26 @@ def test_gltf(screen: Screen):
     ) == 'ff0000'
 
 
+def test_gltf_keeps_own_material(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        app.add_static_file(local_file=TEST_DIR / 'media' / 'box.glb', url_path='/box.glb')
+        with ui.scene() as scene:
+            scene.gltf('/box.glb')  # box.glb ships its own red material; without material() it must not be overwritten
+
+    screen.open('/')
+    screen.wait(1.0)
+    color = screen.selenium.execute_script(
+        f'const m = scene_{scene.html_id}.children[4].getObjectByProperty("isMesh", true).material;'
+        f'return [m.color.r, m.color.g, m.color.b];'
+    )
+    assert color[0] > color[1] + 0.1 and color[0] > color[2] + 0.1, \
+        f'GLTF own material was overwritten with the default white material, got {color}'
+
+
 def test_no_cyclic_references(screen: Screen):
     objects: weakref.WeakSet = weakref.WeakSet()
     scene = None

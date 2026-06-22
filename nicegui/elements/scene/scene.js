@@ -576,6 +576,7 @@ export default {
         color,
         opacity,
         side,
+        material_is_set,
         x,
         y,
         z,
@@ -588,7 +589,8 @@ export default {
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
-        this.material(id, color, opacity, side);
+        // For GLTF models, only override the model's own materials when the user explicitly set one (#6118).
+        if (type != "gltf" || material_is_set) this.material(id, color, opacity, side);
         this.move(id, x, y, z);
         this.rotate(id, R);
         this.scale(id, sx, sy, sz);
