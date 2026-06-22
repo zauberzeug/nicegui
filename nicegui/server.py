@@ -7,6 +7,7 @@ import os
 import socket
 import sys
 import threading
+import time
 from contextlib import suppress
 from typing import Any
 
@@ -41,7 +42,10 @@ class Server(uvicorn.Server):
             native.response_queue = self.config.response_queue
             if (event := self.config.shutdown_event) is not None:
                 def monitor_shutdown_event() -> None:
-                    event.wait()
+                    # Poll instead of `event.wait()`: a blocking wait leaves a stale waiter if the reloader
+                    # kills the process mid-wait, making a later `event.set()` hang forever (#5845).
+                    while not event.is_set():
+                        time.sleep(0.1)
                     # Run on_shutdown callbacks, then hard-exit, skipping uvicorn's connection drain, which runs
                     # before lifespan shutdown and can hang forever on a ghost Windows connection (#5443).
                     if core.loop is not None and core.loop.is_running() and not core.app.is_stopped:

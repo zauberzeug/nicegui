@@ -54,7 +54,7 @@ def run(root: Callable | None = None, *,
         viewport: str = 'width=device-width, initial-scale=1',
         favicon: str | Path | None = None,
         dark: bool | None = False,
-        language: Language = 'en-US',
+        language: Language | None = None,
         binding_refresh_interval: float | None = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
@@ -95,7 +95,8 @@ def run(root: Callable | None = None, *,
     :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers).
         In Windows native mode, a local `.ico` file path is also applied as the native window icon.
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-    :param language: language for Quasar elements (default: `'en-US'`)
+    :param language: language for Quasar elements and the ``lang`` attribute of the ``html`` tag
+        (default: ``None``, in which case Quasar elements use ``'en-US'`` and the ``lang`` attribute is omitted, *updated in version 3.14.0*)
     :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
