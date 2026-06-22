@@ -8,6 +8,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
+from urllib.parse import quote
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -187,7 +188,15 @@ class Client:
                 background=BackgroundTask(self.delete),
             )
         self.outbox.updates.clear()
-        prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
+        # Defense in depth: `prefix` is reflected into the page (importmap, <script src>, JS `prefix:`, CSS @import)
+        # via `| safe`, and the X-Forwarded-Prefix part is client-controllable on a directly-exposed app or a
+        # pass-through proxy. Percent-encode it with the RFC 3986 path-legal characters as the safe set (unreserved +
+        # sub-delims + ":" "@" "/", plus "%" so an already-encoded prefix isn't double-encoded): quote() then only
+        # touches characters illegal in a URL path (`"` `<` `>` `\` space, non-ASCII), so nothing can break out of a
+        # sink, yet it's a no-op for any well-formed ASCII prefix. Non-ASCII is always encoded (never raw) but can't
+        # round-trip cleanly, since headers are latin-1.
+        prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$&'()*+,;=%") \
+            + request.scope.get('root_path', '')
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
