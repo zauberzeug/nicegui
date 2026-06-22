@@ -1,6 +1,12 @@
+import asyncio
+import io
+import struct
+from collections.abc import AsyncGenerator
 from pathlib import Path
 
 import pytest
+from fastapi.responses import StreamingResponse
+from PIL import Image
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import app, ui
@@ -123,14 +129,6 @@ def test_add_layer(screen: Screen):
 
 def test_resync_on_stream_resolution_change(screen: Screen):
     """https://github.com/zauberzeug/nicegui/issues/6122"""
-    import asyncio
-    import io
-    import struct
-    from collections.abc import AsyncGenerator
-
-    from fastapi.responses import StreamingResponse
-    from PIL import Image
-
     def jpeg(width: int, height: int) -> bytes:
         buffer = io.BytesIO()
         Image.new('RGB', (width, height)).save(buffer, format='JPEG')
