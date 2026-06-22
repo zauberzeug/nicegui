@@ -58,15 +58,6 @@ HTML_ESCAPE_TABLE = str.maketrans({
     '$': '&#36;',
 })
 
-# RFC 3986 path-legal characters (sub-delims + ":" "@" "/"), plus "%" so an already-encoded prefix is not
-# double-encoded. A literal "%xx" therefore passes through unchanged, which is safe: no sink URL-decodes the value
-# back into a markup/JS context, so it stays inert. quote() also leaves the unreserved set (A-Za-z0-9-._~) untouched,
-# so this only encodes characters illegal in a URL path anyway (e.g. `"` `<` `>` `\` `` ` `` space) — a no-op for any
-# well-formed ASCII path prefix while neutralizing reflected-header injection. Non-ASCII is the exception: it is
-# always percent-encoded (never reflected raw) but cannot round-trip cleanly, since HTTP headers are latin-1 and the
-# proxy's byte encoding decides the result.
-FORWARDED_PREFIX_SAFE_CHARS = "/:@!$&'()*+,;=%"
-
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
 
@@ -199,9 +190,12 @@ class Client:
         self.outbox.updates.clear()
         # Defense in depth: `prefix` is reflected into the page (importmap, <script src>, JS `prefix:`, CSS @import)
         # via `| safe`, and the X-Forwarded-Prefix part is client-controllable on a directly-exposed app or a
-        # pass-through proxy. Percent-encode it so no structural character can break out of any sink; a legitimate
-        # URL-path prefix only contains characters this leaves untouched (see FORWARDED_PREFIX_SAFE_CHARS).
-        prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe=FORWARDED_PREFIX_SAFE_CHARS) \
+        # pass-through proxy. Percent-encode it with the RFC 3986 path-legal characters as the safe set (unreserved +
+        # sub-delims + ":" "@" "/", plus "%" so an already-encoded prefix isn't double-encoded): quote() then only
+        # touches characters illegal in a URL path (`"` `<` `>` `\` space, non-ASCII), so nothing can break out of a
+        # sink, yet it's a no-op for any well-formed ASCII prefix. Non-ASCII is always encoded (never raw) but can't
+        # round-trip cleanly, since headers are latin-1.
+        prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$&'()*+,;=%") \
             + request.scope.get('root_path', '')
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
