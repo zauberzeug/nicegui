@@ -133,7 +133,8 @@ def test_resync_on_stream_resolution_change(screen: Screen):
         buffer = io.BytesIO()
         Image.new('RGB', (width, height)).save(buffer, format='JPEG')
         data = buffer.getvalue()
-        # pad to force instant paint
+        # Browsers won't paint a multipart frame until enough bytes have arrived, so a tiny JPEG can stall.
+        # Bulk it up by inserting a JPEG comment segment (0xFFFE marker + 2-byte length) padded with spaces after the SOI marker.
         return data[:2] + b'\xff\xfe' + struct.pack('>H', 40_002) + b' ' * 40_000 + data[2:]
 
     frame = {'data': jpeg(300, 200)}
