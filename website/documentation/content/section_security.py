@@ -186,13 +186,16 @@ doc.text('Client-Side Secrets', '''
     **To protect client sessions:**
 
     - **Serve pages over HTTPS** in production to prevent traffic sniffing.
-    - **Never let a shared cache store page responses.** Each page embeds a fresh `client_id`, so a CDN,
-      reverse-proxy cache, or any other intermediary that caches the HTML breaks the security model two ways:
-      it hands one visitor's session token to everyone who hits that cache entry, and it turns any reflected input
-      into a cache-poisoning vector — a single malicious request can store attacker-controlled HTML (XSS, phishing,
-      defacement) that is then served to every subsequent visitor. NiceGUI sends `Cache-Control: no-store` on pages
-      for exactly this reason — do not override or strip it (e.g. a blanket "cache everything" rule). This is the
-      shared-cache counterpart to the private browser-cache leak noted above.
+    - **Never let a shared cache store page responses.**
+      Each page embeds a fresh `client_id`,
+      so a CDN, reverse-proxy cache, or any other intermediary that caches the HTML breaks the security model two ways:
+      it hands one visitor's session token to everyone who hits that cache entry,
+      and it turns any reflected input into a cache-poisoning vector —
+      a single malicious request can store attacker-controlled HTML (XSS, phishing, defacement)
+      that is then served to every subsequent visitor.
+      NiceGUI sends `Cache-Control: no-store` on pages for exactly this reason —
+      do not override or strip it (e.g. a blanket "cache everything" rule).
+      This is the shared-cache counterpart to the private browser-cache leak noted above.
     - **Do not serve untrusted content** from the same origin
       (e.g. serving user-uploaded HTML files could leak secrets via JavaScript).
     - **Do not expose `client_id`** in logs, URLs, or API responses visible to other users.
