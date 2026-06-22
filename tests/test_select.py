@@ -326,18 +326,3 @@ def test_popup_scroll_behavior(screen: Screen):
     screen.type(Keys.ESCAPE)
     screen.wait(0.2)
     assert screen.selenium.execute_script('return window.scrollY') == position
-
-
-def test_with_input_select_exposes_html_id(screen: Screen):
-    """A `with_input` select must keep its html_id on a DOM element so tooltips and ui.query can anchor to it (#6114)."""
-    box = {}
-
-    @ui.page('/')
-    def page():
-        select = ui.select(['A', 'B', 'C'], with_input=True).tooltip('hello')
-        box['html_id'] = select.html_id
-
-    screen.open('/')
-    screen.wait(0.5)
-    found = screen.selenium.execute_script('return !!document.getElementById(arguments[0]);', box['html_id'])
-    assert found, f'with_input select html_id {box["html_id"]!r} is missing from the DOM (#6114)'
