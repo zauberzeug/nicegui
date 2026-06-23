@@ -65,6 +65,16 @@ static_files = CacheControlledStaticFiles(
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
 
+@app.get('/sitemap.xml', include_in_schema=False)
+def _get_sitemap(request: Request) -> Response:
+    if app.sitemap.base_url is not None:
+        base_url = app.sitemap.base_url
+    else:
+        prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
+        base_url = f'{request.url.scheme}://{request.url.netloc}{prefix}'
+    return Response(content=app.sitemap.to_xml(base_url), media_type='application/xml')
+
+
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
 def _get_library(key: str) -> FileResponse:
     is_map = key.endswith('.map')
