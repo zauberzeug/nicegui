@@ -63,6 +63,7 @@ class Object3D:
         self.color: str | None = '#ffffff'
         self.opacity: float = 1.0
         self.side_: str = 'front'
+        self.material_is_set: bool = False
         self.visible_: bool = True
         self.draggable_: bool = False
         self.x: float = 0
@@ -95,7 +96,7 @@ class Object3D:
         return [
             self._component_import_name, self.id, self.parent.id, self.args,
             self.name,
-            self.color, self.opacity, self.side_,
+            self.color, self.opacity, self.side_, self.material_is_set,
             self.x, self.y, self.z,
             self.R,
             self.sx, self.sy, self.sz,
@@ -148,10 +149,11 @@ class Object3D:
         :param opacity: opacity between 0.0 and 1.0 (default: 1.0)
         :param side: 'front', 'back', or 'double' (default: 'front')
         """
-        if self.color != color or self.opacity != opacity or self.side_ != side:
+        if self.color != color or self.opacity != opacity or self.side_ != side or not self.material_is_set:
             self.color = color
             self.opacity = opacity
             self.side_ = side
+            self.material_is_set = True
             self._material()
         return self
 
