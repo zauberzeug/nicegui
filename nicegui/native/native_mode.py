@@ -173,7 +173,7 @@ def _warn_if_esm_unsupported(window: webview.Window) -> None:
     window.events.loaded += check
 
 
-def _hard_exit_after_shutdown() -> None:
+def hard_exit_after_shutdown() -> None:
     """Run the app's ``on_shutdown`` callbacks, then hard-exit, skipping uvicorn's connection drain.
 
     The drain runs before lifespan shutdown and can hang forever on a ghost Windows connection (#5443).
@@ -196,7 +196,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
             time.sleep(0.1)
         if shutdown_event is not None:
             shutdown_event.set()
-        _hard_exit_after_shutdown()
+        hard_exit_after_shutdown()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
