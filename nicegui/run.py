@@ -58,9 +58,9 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
         raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
 
 
-async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
     if core.app.is_stopping:
-        return  # type: ignore  # the assumption is that the user's code no longer cares about this value
+        return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
@@ -69,16 +69,20 @@ async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs:
             raise
     except asyncio.CancelledError:
         pass
-    return  # type: ignore  # the assumption is that the user's code no longer cares about this value
+    return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
 
 
-async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
     """Run a CPU-bound function in a separate process.
 
     `run.cpu_bound` needs to execute the function in a separate process.
     For this it needs to transfer the whole state of the passed function to the process (which is done with pickle).
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
+
+    Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
+    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
+    so ``if result is None: ...`` checks should be treated as temporary.
     """
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
 
@@ -100,8 +104,13 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
             raise e
 
 
-async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-    """Run an I/O-bound function in a separate thread."""
+async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
+    """Run an I/O-bound function in a separate thread.
+
+    Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
+    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
+    so ``if result is None: ...`` checks should be treated as temporary.
+    """
     return await _run(thread_pool, callback, *args, **kwargs)
 
 
