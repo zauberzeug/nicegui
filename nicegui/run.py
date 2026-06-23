@@ -60,7 +60,7 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
 
 async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
     if core.app.is_stopping:
-        return None
+        return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
@@ -69,7 +69,7 @@ async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs:
             raise
     except asyncio.CancelledError:
         pass
-    return None
+    return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
 
 
 async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
