@@ -219,6 +219,9 @@ def run(root: Callable | None = None, *,
         core.air = Air('' if on_air is True else on_air)
 
     if multiprocessing.current_process().name != 'MainProcess':
+        # this is the reload server child (or a worker re-running user code): mark the environment so that
+        # subprocesses spawned from here on get worker stubs (see _worker_stubs.py and #5684)
+        os.environ['NICEGUI_WORKER_STUBS'] = '1'
         return
 
     is_repl = bool(getattr(sys, 'ps1', sys.flags.interactive))
@@ -267,6 +270,15 @@ def run(root: Callable | None = None, *,
     os.environ['NICEGUI_PORT'] = str(port)
     os.environ['NICEGUI_PROTOCOL'] = protocol
 
+    # From here on, child processes (cpu_bound workers, user-created processes, ...) are workers which should
+    # import nicegui as cheap no-op stubs (see _worker_stubs.py and #5684). The native webview window child is
+    # spawned above WITHOUT this marker because it needs the real package (it reads core.app.native.*), and the
+    # marker is removed again below before the reload supervisor spawns the server child for the same reason.
+    # Under pytest the marker is not set at all: the Screen fixture calls ui.run() in the test process, and
+    # leaking the marker into the test session would make the behavior of later tests order-dependent.
+    if not helpers.is_pytest():
+        os.environ['NICEGUI_WORKER_STUBS'] = '1'
+
     if show:
         helpers.schedule_browser(protocol, host, port, show if isinstance(show, str) else '/')
 
@@ -302,9 +314,11 @@ def run(root: Callable | None = None, *,
         sys.exit(1)
 
     if config.should_reload:
+        os.environ.pop('NICEGUI_WORKER_STUBS', None)  # the spawned server child needs the real nicegui package
         sock = config.bind_socket()
         ChangeReload(config, target=Server.instance.run, sockets=[sock]).run()
     elif config.workers > 1:
+        os.environ.pop('NICEGUI_WORKER_STUBS', None)  # spawned server workers need the real nicegui package
         sock = config.bind_socket()
         Multiprocess(config, target=Server.instance.run, sockets=[sock]).run()
     else:
