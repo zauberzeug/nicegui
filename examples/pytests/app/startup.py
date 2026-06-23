@@ -19,3 +19,15 @@ def startup() -> None:
         ui.markdown('This is an async connection demo')
         await client.connected()
         ui.markdown('Connected!')
+
+    @ui.page('/scoped_user')
+    def scoped_user_page() -> None:
+        with ui.card().mark('scope-card left'):
+            ui.label('Scope').mark('scope-title left')
+            ui.button('Shared Action Left').mark('duplicate-button')
+            ui.input('duplicated').mark('duplicated-marker')
+
+        with ui.card().mark('scope-card right'):
+            ui.label('Scope').mark('scope-title right')
+            ui.button('Shared Action Right').mark('duplicate-button')
+            ui.input('duplicated').mark('duplicated-marker')

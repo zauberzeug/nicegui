@@ -100,7 +100,6 @@ class ElementFilter(Generic[T]):
         self._exclude_kinds: list[type[Element]] = []
         self._exclude_markers: list[str] = []
         self._exclude_content: list[str] = []
-
         self._scope = context.slot.parent if local_scope else context.client.layout
 
     def __iter__(self) -> Iterator[T]:
