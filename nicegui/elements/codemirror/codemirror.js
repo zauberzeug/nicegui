@@ -1,30 +1,35 @@
 import * as CM from "nicegui-codemirror";
 
-// Line anchors: {id, line} pairs whose positions CM6 RangeSet auto-remaps
-// through document edits. Each AnchorValue carries its id.
+// A RangeSet StateField whose ranges remap through document edits.
+// Dispatching setEffect.of(ranges) replaces the whole set.
+function defineRemappableRangeSet() {
+  const setEffect = CM.StateEffect.define(); // value: list of ranges (replaces all)
+  const field = CM.StateField.define({
+    create() {
+      return CM.RangeSet.empty;
+    },
+    update(set, tr) {
+      set = set.map(tr.changes);
+      for (const effect of tr.effects) {
+        if (effect.is(setEffect)) set = CM.RangeSet.of(effect.value, true);
+      }
+      return set;
+    },
+  });
+  return { setEffect, field };
+}
 
+// Line anchors: {id, line} pairs whose positions CM6 auto-remaps through edits. Each AnchorValue carries its id.
 class AnchorValue extends CM.RangeValue {
   constructor(id) {
     super();
     this.id = id;
   }
-  eq(other) { return this.id === other.id; }
+  eq(other) {
+    return this.id === other.id;
+  }
 }
-
-const setAnchorsEffect = CM.StateEffect.define();  // value: list of ranges (replaces all)
-
-const anchorField = CM.StateField.define({
-  create() { return CM.RangeSet.empty; },
-  update(set, tr) {
-    set = set.map(tr.changes);
-    for (const effect of tr.effects) {
-      if (effect.is(setAnchorsEffect)) {
-        return CM.RangeSet.of(effect.value, true);
-      }
-    }
-    return set;
-  },
-});
+const { setEffect: setAnchorsEffect, field: anchorField } = defineRemappableRangeSet();
 
 // Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
 class TooltipValue extends CM.RangeValue {
@@ -33,23 +38,7 @@ class TooltipValue extends CM.RangeValue {
     this.content = content;
   }
 }
-
-const setTooltipsEffect = CM.StateEffect.define();
-
-const tooltipField = CM.StateField.define({
-  create() {
-    return CM.RangeSet.empty;
-  },
-  update(set, tr) {
-    set = set.map(tr.changes);
-    for (const effect of tr.effects) {
-      if (effect.is(setTooltipsEffect)) {
-        set = CM.RangeSet.of(effect.value, true);
-      }
-    }
-    return set;
-  },
-});
+const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRangeSet();
 
 export default {
   template: `
@@ -296,7 +285,7 @@ export default {
         let content = null;
         set.between(line.from, line.to, (_from, _to, value) => {
           content = value.content;
-          return false;  // at most one tooltip per line — stop after the first match
+          return false; // at most one tooltip per line — stop after the first match
         });
         if (content === null) return null;
         const renderHtml = self.lineTooltipHtml;
