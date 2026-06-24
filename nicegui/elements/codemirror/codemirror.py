@@ -13,7 +13,6 @@ from ...events import (
     ValueChangeEventArguments,
     handle_event,
 )
-from ...logging import log
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -325,7 +324,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
-        self._props['line-anchors'] = {str(k): int(v) for k, v in (line_anchors or {}).items()}
+        self._props['line-anchors'] = line_anchors or {}
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
@@ -410,7 +409,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
     @line_anchors.setter
     def line_anchors(self, anchors: dict[str, int] | None) -> None:
-        self._props['line-anchors'] = {str(k): int(v) for k, v in (anchors or {}).items()}
+        self._props['line-anchors'] = anchors or {}
 
     @property
     def line_anchor_positions(self) -> dict[str, int]:
@@ -433,22 +432,12 @@ class CodeMirror(ValueElement[str], DisableableElement,
         return self
 
     def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
-        anchors = e.args.get('anchors')
-        if not isinstance(anchors, dict):
-            log.warning('codemirror: ignoring malformed anchor-positions payload: %r', anchors)
-            return
-        positions: dict[str, int] = {}
-        for anchor_id, line in anchors.items():
-            try:
-                positions[str(anchor_id)] = int(line)
-            except (TypeError, ValueError):
-                log.warning('codemirror: ignoring anchor %r with non-integer line %r', anchor_id, line)
-        self._anchor_positions = positions
+        self._anchor_positions = e.args['anchors']
         for handler in self._anchor_change_handlers:
             handle_event(handler, CodeMirrorAnchorChangeEventArguments(
                 sender=self,
                 client=self.client,
-                anchors=dict(positions),
+                anchors=dict(self._anchor_positions),
             ))
 
     @property
