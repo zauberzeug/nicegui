@@ -43,7 +43,7 @@ class Knob(ValueElement[float], DisableableElement, TextColorElement):
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
-        self._props['show-value'] = True  # NOTE: enable default slot, e.g. for nested icon
+        self._props['show-value'] = True  # enable default slot, e.g. for nested icon
         self._props.set_optional('center-color', center_color)
         self._props.set_optional('track-color', track_color)
         self._props.set_optional('size', size)

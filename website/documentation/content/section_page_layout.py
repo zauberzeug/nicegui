@@ -13,7 +13,6 @@ from . import (
     keep_alive_documentation,
     list_documentation,
     menu_documentation,
-    slide_item_documentation,
     notification_documentation,
     notify_documentation,
     pagination_documentation,
@@ -21,6 +20,8 @@ from . import (
     scroll_area_documentation,
     separator_documentation,
     skeleton_documentation,
+    skip_link_documentation,
+    slide_item_documentation,
     sortable_documentation,
     space_documentation,
     splitter_documentation,
@@ -61,6 +62,7 @@ doc.intro(grid_documentation)
 doc.intro(list_documentation)
 doc.intro(slide_item_documentation)
 doc.intro(fullscreen_documentation)
+doc.intro(skip_link_documentation)
 
 
 @doc.demo('Clear Containers', '''

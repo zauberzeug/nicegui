@@ -8,3 +8,8 @@ def warn_once(message: str, *, stack_info: bool = False) -> None:
     if message not in _shown_warnings:
         log.warning(message, stack_info=stack_info)
         _shown_warnings.add(message)
+
+
+def reset() -> None:
+    """Forget which warnings have already been shown (e.g. between tests)."""
+    _shown_warnings.clear()
