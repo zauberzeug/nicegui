@@ -395,10 +395,11 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def line_anchors(self) -> dict[str, int]:
         """Anchors tracking document positions through edits; assigning this dict syncs to the client.
 
-        Maps a caller-chosen ``id`` to its 1-indexed initial ``line``. CodeMirror remaps the underlying
-        position when the document changes; read the current line for each anchor via
-        :attr:`line_anchor_positions`. An anchor is dropped only when a deletion spans across its
-        position — a full-line delete that starts at the anchor slides it to the following line.
+        Maps a caller-chosen ``id`` to its 1-indexed initial ``line``.
+        CodeMirror remaps the underlying position when the document changes;
+        read the current line for each anchor via :attr:`line_anchor_positions`.
+        An anchor is dropped only when a deletion spans across its position —
+        a full-line delete that starts at the anchor slides it to the following line.
 
         Lines exceeding the current document length are clamped to the last line on the JS side
         (a warning is emitted via NiceGUI's logger).
@@ -415,11 +416,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
     def line_anchor_positions(self) -> dict[str, int]:
         """Current anchor positions, as last reported by the browser.
 
-        Returns a flat ``{anchor_id: 1-indexed line}`` mapping. The browser is the source of
-        truth, so this property briefly lags assignments to :attr:`line_anchors` until the
-        JS round-trip completes, and updates asynchronously when document edits remap anchor
-        positions. With a shared element (a script-mode page or multiple open tabs) this single
-        Python-side mirror is last-writer-wins across clients.
+        Returns a flat ``{anchor_id: 1-indexed line}`` mapping.
+        The browser is the source of truth, so this property briefly lags assignments to :attr:`line_anchors`
+        until the JS round-trip completes, and updates asynchronously when document edits remap anchor positions.
 
         *Added in version 3.14.0*
         """
