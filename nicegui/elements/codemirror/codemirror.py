@@ -6,7 +6,13 @@ from typing_extensions import Self
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
-from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
+from ...events import (
+    CodeMirrorAnchorChangeEventArguments,
+    GenericEventArguments,
+    Handler,
+    ValueChangeEventArguments,
+    handle_event,
+)
 
 SUPPORTED_LANGUAGES = Literal[
     'Angular Template',
@@ -266,6 +272,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        line_anchors: dict[str, int] | None = None,
+        on_anchor_change: Handler[CodeMirrorAnchorChangeEventArguments] | None = None,
         line_tooltips: dict[int, str] | None = None,
         line_tooltip_html: bool = False,
     ) -> None:
@@ -284,6 +292,10 @@ class CodeMirror(ValueElement[str], DisableableElement,
         *Since version 3.13.0:*
         Per-line tooltips can be attached via the ``line_tooltips`` dict.
 
+        *Since version 3.14.0:*
+        Line anchors that track document positions through edits can be attached via the ``line_anchors`` dict
+        (read back via :attr:`line_anchor_positions`).
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param language: initial language of the editor (case-insensitive, default: `None`)
@@ -291,6 +303,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.14.0*)
+        :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.14.0*)
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
@@ -300,11 +314,17 @@ class CodeMirror(ValueElement[str], DisableableElement,
         if on_change is not None:
             super().on_value_change(on_change)
 
+        self._anchor_positions: dict[str, int] = {}
+        self.on('anchor-positions', self._update_anchor_mirror)
+        if on_anchor_change is not None:
+            self.on_anchor_change(on_anchor_change)
+
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['line-anchors'] = line_anchors or {}
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
@@ -369,6 +389,51 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
         return self
+
+    @property
+    def line_anchors(self) -> dict[str, int]:
+        """Anchors tracking document positions through edits; assigning this dict syncs to the client.
+
+        Maps a caller-chosen ``id`` to its 1-indexed initial ``line``.
+        CodeMirror remaps the underlying position when the document changes;
+        read the current line for each anchor via :attr:`line_anchor_positions`.
+        An anchor is dropped only when a deletion spans across its position —
+        a full-line delete that starts at the anchor slides it to the following line.
+
+        Lines exceeding the current document length are clamped to the last line on the JS side
+        (a warning is emitted via NiceGUI's logger).
+
+        *Added in version 3.14.0*
+        """
+        return self._props['line-anchors']
+
+    @line_anchors.setter
+    def line_anchors(self, anchors: dict[str, int] | None) -> None:
+        self._props['line-anchors'] = anchors or {}
+
+    @property
+    def line_anchor_positions(self) -> dict[str, int]:
+        """Current anchor positions, as last reported by the browser.
+
+        Returns a flat ``{anchor_id: 1-indexed line}`` mapping.
+        The browser is the source of truth, so this property briefly lags assignments to :attr:`line_anchors`
+        until the JS round-trip completes, and updates asynchronously when document edits remap anchor positions.
+
+        *Added in version 3.14.0*
+        """
+        return dict(self._anchor_positions)
+
+    def on_anchor_change(self, handler: Handler[CodeMirrorAnchorChangeEventArguments]) -> Self:
+        """Register a callback to be invoked whenever tracked anchor positions change.
+
+        *Added in version 3.14.0*
+        """
+        self.on('anchor-positions', lambda e: handle_event(handler,
+                CodeMirrorAnchorChangeEventArguments(sender=self, client=self.client, anchors=e.args['anchors'])))
+        return self
+
+    def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
+        self._anchor_positions = e.args['anchors']
 
     @property
     def line_tooltips(self) -> dict[int, str]:

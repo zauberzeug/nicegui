@@ -1,5 +1,36 @@
 import * as CM from "nicegui-codemirror";
 
+// A RangeSet StateField whose ranges remap through document edits.
+// Dispatching setEffect.of(ranges) replaces the whole set.
+function defineRemappableRangeSet() {
+  const setEffect = CM.StateEffect.define(); // value: list of ranges (replaces all)
+  const field = CM.StateField.define({
+    create() {
+      return CM.RangeSet.empty;
+    },
+    update(set, tr) {
+      set = set.map(tr.changes);
+      for (const effect of tr.effects) {
+        if (effect.is(setEffect)) set = CM.RangeSet.of(effect.value, true);
+      }
+      return set;
+    },
+  });
+  return { setEffect, field };
+}
+
+// Line anchors: {id, line} pairs whose positions CM6 auto-remaps through edits. Each AnchorValue carries its id.
+class AnchorValue extends CM.RangeValue {
+  constructor(id) {
+    super();
+    this.id = id;
+  }
+  eq(other) {
+    return this.id === other.id;
+  }
+}
+const { setEffect: setAnchorsEffect, field: anchorField } = defineRemappableRangeSet();
+
 // Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
 class TooltipValue extends CM.RangeValue {
   constructor(content) {
@@ -7,23 +38,7 @@ class TooltipValue extends CM.RangeValue {
     this.content = content;
   }
 }
-
-const setTooltipsEffect = CM.StateEffect.define();
-
-const tooltipField = CM.StateField.define({
-  create() {
-    return CM.RangeSet.empty;
-  },
-  update(set, tr) {
-    set = set.map(tr.changes);
-    for (const effect of tr.effects) {
-      if (effect.is(setTooltipsEffect)) {
-        set = CM.RangeSet.of(effect.value, true);
-      }
-    }
-    return set;
-  },
-});
+const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRangeSet();
 
 export default {
   template: `
@@ -37,6 +52,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    lineAnchors: Object,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
     id: String,
@@ -53,6 +69,12 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    lineAnchors: {
+      deep: true,
+      handler(newAnchors) {
+        this.applyLineAnchors(newAnchors);
+      },
     },
     lineTooltips(newTooltips) {
       this.setLineTooltips(newTooltips);
@@ -72,6 +94,7 @@ export default {
       const element = mounted_app.elements[this.$props.id.slice(1)];
       if (element) element.props.value = this.editor.state.doc.toString();
     }
+    clearTimeout(this._anchorTimer);
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -160,6 +183,49 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    async applyLineAnchors(anchors) {
+      // Every server-side prop change re-broadcasts all props and re-fires this deep watcher. Re-applying
+      // from the original declared lines would discard the live positions that anchorField has remapped
+      // through edits, so no-op when the declared anchors are unchanged. A genuine reassignment (different
+      // ids or lines) still applies; an identical re-broadcast leaves the remapped positions intact.
+      const snapshot = JSON.stringify(Object.entries(anchors || {}).sort());
+      if (snapshot === this._lastAppliedAnchors) return;
+      this._lastAppliedAnchors = snapshot;
+      if (!this.editor) await this.editorPromise;
+      clearTimeout(this._anchorTimer);
+      this._anchorTimer = null;
+      const doc = this.editor.state.doc;
+      const ranges = [];
+      for (const [id, line] of Object.entries(anchors || {})) {
+        if (line < 1) {
+          logAndEmit("warning", `line_anchors: anchor ${JSON.stringify(id)} has line ${line}; clamping to 1.`);
+        } else if (line > doc.lines) {
+          logAndEmit(
+            "warning",
+            `line_anchors: anchor ${JSON.stringify(id)} requested line ${line} ` +
+              `but document only has ${doc.lines} line(s); clamping to last line.`,
+          );
+        }
+        const lineNum = Math.max(1, Math.min(line, doc.lines));
+        const pos = doc.line(lineNum).from;
+        ranges.push(new AnchorValue(id).range(pos, pos));
+      }
+      this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
+      this.emitAnchorPositions();
+    },
+    emitAnchorPositions() {
+      if (!this.editor) return;
+      const state = this.editor.state;
+      const field = state.field(anchorField);
+      const doc = state.doc;
+      const positions = {};
+      const cursor = field.iter();
+      while (cursor.value) {
+        positions[cursor.value.id] = doc.lineAt(cursor.from).number;
+        cursor.next();
+      }
+      this.$emit("anchor-positions", { anchors: positions });
+    },
     setLineTooltips(tooltips) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
@@ -193,13 +259,33 @@ export default {
         },
       );
 
+      // The 50 ms debounce coalesces bursts (paste, multi-cursor insert) so high-latency
+      // connections do not see one event per keystroke. The fire-time callback reads live
+      // editor state via emitAnchorPositions(), so a stale timer that survives a clear or
+      // re-set transaction will see the up-to-date field rather than its scheduling-time snapshot.
+      const anchorTracker = CM.ViewPlugin.fromClass(
+        class {
+          update(update) {
+            if (!update.docChanged) return;
+            // Skip only when there is nothing to report before and after — checking just the end state
+            // would swallow the last anchor's removal (1 -> 0), leaving the Python mirror stale.
+            if (update.state.field(anchorField).size === 0 && update.startState.field(anchorField).size === 0) return;
+            clearTimeout(self._anchorTimer);
+            self._anchorTimer = setTimeout(() => {
+              self._anchorTimer = null;
+              self.emitAnchorPositions();
+            }, 50);
+          }
+        },
+      );
+
       const lineTooltip = CM.hoverTooltip((view, pos) => {
         const set = view.state.field(tooltipField);
         const line = view.state.doc.lineAt(pos);
         let content = null;
         set.between(line.from, line.to, (_from, _to, value) => {
           content = value.content;
-          return false;  // at most one tooltip per line — stop after the first match
+          return false; // at most one tooltip per line — stop after the first match
         });
         if (content === null) return null;
         const renderHtml = self.lineTooltipHtml;
@@ -218,6 +304,8 @@ export default {
       const extensions = [
         CM.basicSetup,
         changeSender,
+        anchorTracker,
+        anchorField,
         tooltipField,
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
@@ -267,6 +355,9 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.lineAnchors && Object.keys(this.lineAnchors).length > 0) {
+      this.applyLineAnchors(this.lineAnchors);
+    }
     this.setLineTooltips(this.lineTooltips);
   },
 };
