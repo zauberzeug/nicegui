@@ -293,8 +293,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         Per-line tooltips can be attached via the ``line_tooltips`` dict.
 
         *Since version 3.14.0:*
-        Line anchors that track document positions through edits can be attached via the ``line_anchors``
-        dict (read back via :attr:`line_anchor_positions`).
+        Line anchors that track document positions through edits can be attached via the ``line_anchors`` dict
+        (read back via :attr:`line_anchor_positions`).
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
@@ -315,9 +315,9 @@ class CodeMirror(ValueElement[str], DisableableElement,
             super().on_value_change(on_change)
 
         self._anchor_positions: dict[str, int] = {}
-        self._anchor_change_handlers: list[Handler[CodeMirrorAnchorChangeEventArguments]] = \
-            [on_anchor_change] if on_anchor_change is not None else []
         self.on('anchor-positions', self._update_anchor_mirror)
+        if on_anchor_change is not None:
+            self.on_anchor_change(on_anchor_change)
 
         self._props['language'] = language
         self._props['theme'] = theme
@@ -428,17 +428,12 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         *Added in version 3.14.0*
         """
-        self._anchor_change_handlers.append(handler)
+        self.on('anchor-positions', lambda e: handle_event(handler,
+                CodeMirrorAnchorChangeEventArguments(sender=self, client=self.client, anchors=e.args['anchors'])))
         return self
 
     def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
         self._anchor_positions = e.args['anchors']
-        for handler in self._anchor_change_handlers:
-            handle_event(handler, CodeMirrorAnchorChangeEventArguments(
-                sender=self,
-                client=self.client,
-                anchors=dict(self._anchor_positions),
-            ))
 
     @property
     def line_tooltips(self) -> dict[int, str]:
