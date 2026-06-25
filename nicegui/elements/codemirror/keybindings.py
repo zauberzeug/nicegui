@@ -13,36 +13,36 @@ class KeybindingElement(Element):
     """Mixin mapping CodeMirror keystrokes to Python callbacks via CodeMirror's keymap.
 
     The frontend emits a ``keybinding`` event carrying the registered key; the registry of callbacks
-    (``_keybinding_specs``) lives here on the server, while the serializable subset is mirrored into the
-    ``keybindings`` prop for the client to build its keymap.
+    (``_keymap``) lives here on the server, while the serializable subset is mirrored into the
+    ``keymap`` prop for the client to build its keymap.
     """
 
     def __init__(
         self,
         *,
-        keybindings: dict[str, Handler[CodeMirrorKeybindingEventArguments] | KeybindingElement.binding] | None = None,
+        keymap: dict[str, Handler[CodeMirrorKeybindingEventArguments] | KeybindingElement.keybinding] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self._props['keybindings'] = []
-        self._keybinding_specs: dict[str, KeybindingElement.binding] = {}
+        self._props['keymap'] = []
+        self._keymap: dict[str, KeybindingElement.keybinding] = {}
         self.on('keybinding', self._dispatch_keybinding)
-        if keybindings:
+        if keymap:
             with self._props.suspend_updates():
-                for key, handler in keybindings.items():
-                    self.on_keybinding(key, handler)
+                for key, handler in keymap.items():
+                    self.map_key(key, handler)
 
     @dataclass(frozen=True, slots=True)
-    class binding:
-        """Wraps a keybinding callback with per-binding configuration overrides.
+    class keybinding:
+        """Wraps a keybinding callback with per-key configuration overrides.
 
-        Pass an instance as a value in the ``keybindings`` mapping (or to ``on_keybinding``) when you need to
+        Pass an instance as a value in the ``keymap`` mapping (or to ``map_key``) when you need to
         opt out of preventing the browser default action (e.g. "Mod-c" that notifies Python while still letting
         the browser copy normally), or to provide per-platform shortcut overrides::
 
-            ui.codemirror(keybindings={
-                'Mod-c': ui.codemirror.binding(log_copy, prevent_default=False),
-                'Alt-Down': ui.codemirror.binding(move_down, mac='Cmd-Down'),
+            ui.codemirror(keymap={
+                'Mod-c': ui.codemirror.keybinding(log_copy, prevent_default=False),
+                'Alt-Down': ui.codemirror.keybinding(move_down, mac='Cmd-Down'),
             })
 
         Note:
@@ -77,45 +77,45 @@ class KeybindingElement(Element):
                 **({'win': self.win} if self.win is not None else {}),
             }
 
-    def on_keybinding(
+    def map_key(
         self,
         key: str,
-        handler: Handler[CodeMirrorKeybindingEventArguments] | KeybindingElement.binding,
+        handler: Handler[CodeMirrorKeybindingEventArguments] | KeybindingElement.keybinding,
     ) -> Self:
-        """Bind a keystroke to a callback.
+        """Map a keystroke to a callback.
 
         The ``key`` follows CodeMirror 6's keybinding syntax (e.g. "Mod-s", "F5", "Mod-Shift-d").
         "Mod" resolves to "Cmd" on macOS and "Ctrl" elsewhere.
 
         Pass a bare callable for the default config (prevents the browser default, no per-OS override),
-        or wrap with ``binding`` for per-binding overrides.
+        or wrap with ``keybinding`` for per-key overrides.
 
-        Re-registering the same key replaces the prior handler. Bindings do not fire while the editor is disabled.
+        Re-registering the same key replaces the prior handler. Keybindings do not fire while the editor is disabled.
 
         *Added in version 3.14.0*
         """
-        spec = handler if isinstance(handler, KeybindingElement.binding) else KeybindingElement.binding(handler)
-        self._keybinding_specs[key] = spec
-        self._sync_keybindings_prop()
+        spec = handler if isinstance(handler, KeybindingElement.keybinding) else KeybindingElement.keybinding(handler)
+        self._keymap[key] = spec
+        self._sync_keymap()
         return self
 
-    def remove_keybinding(self, key: str) -> Self:
+    def unmap_key(self, key: str) -> Self:
         """Remove a previously bound keybinding.
 
         No-op if the key is not currently bound.
 
         *Added in version 3.14.0*
         """
-        if self._keybinding_specs.pop(key, None) is not None:
-            self._sync_keybindings_prop()
+        if self._keymap.pop(key, None) is not None:
+            self._sync_keymap()
         return self
 
-    def _sync_keybindings_prop(self) -> None:
-        self._props['keybindings'] = [{'key': key, **spec.to_dict()} for key, spec in self._keybinding_specs.items()]
+    def _sync_keymap(self) -> None:
+        self._props['keymap'] = [{'key': key, **spec.to_dict()} for key, spec in self._keymap.items()]
 
     def _dispatch_keybinding(self, e: GenericEventArguments) -> None:
         key = e.args['key']
-        spec = self._keybinding_specs.get(key)
+        spec = self._keymap.get(key)
         if spec is None:
             return
         handle_event(spec.callback, CodeMirrorKeybindingEventArguments(sender=self, client=self.client, key=key))

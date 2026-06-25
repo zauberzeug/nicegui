@@ -123,7 +123,7 @@ def test_keybinding_constructor(screen: Screen):
         nonlocal editor
         editor = ui.codemirror(
             'hello',
-            keybindings={
+            keymap={
                 'Mod-s': lambda e: events.append(f'save:{e.key}'),
                 'F5': lambda: events.append('refresh'),
                 'Mod-z': lambda e: events.append(f'override:{e.key}'),
@@ -168,7 +168,7 @@ def test_keybinding_constructor(screen: Screen):
 
 
 def test_keybinding_method(screen: Screen):
-    """Bindings added via on_keybinding after mount fire correctly and win over basicSetup defaults.
+    """Bindings added via map_key after mount fire correctly and win over basicSetup defaults.
 
     Exercises the Vue watch + Compartment.reconfigure path AND verifies Prec.high persists
     across reconfigure (Mod-z is basicSetup's undo).
@@ -192,11 +192,11 @@ def test_keybinding_method(screen: Screen):
     screen.wait_for(lambda: editor.value == 'helloafter')
 
     # Bind AFTER mount — exercises the watcher + Compartment.reconfigure path.
-    editor.on_keybinding('Mod-z', lambda e: events.append(e.key))
+    editor.map_key('Mod-z', lambda e: events.append(e.key))
     WebDriverWait(screen.selenium, 5).until(
         lambda d: d.execute_script(
             f'const el = getElement({editor.id});'
-            'return (el.$props.keybindings || []).some(b => b.key === "Mod-z");'
+            'return (el.$props.keymap || []).some(b => b.key === "Mod-z");'
         )
     )
 
@@ -220,8 +220,8 @@ def test_keybinding_replaces_existing(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('hello', keybindings={'Mod-s': lambda: events.append('first')})
-        editor.on_keybinding('Mod-s', lambda: events.append('second'))
+        editor = ui.codemirror('hello', keymap={'Mod-s': lambda: events.append('first')})
+        editor.map_key('Mod-s', lambda: events.append('second'))
 
     screen.open('/')
     _wait_for_cm_mount(screen)
@@ -246,7 +246,7 @@ def test_keybinding_no_handler_no_traffic(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('hello', keybindings={'F2': lambda e: events.append({'key': e.key})})
+        editor = ui.codemirror('hello', keymap={'F2': lambda e: events.append({'key': e.key})})
         # Tap the raw channel to capture *any* keybinding traffic, including unmatched ones
         # if the JS dispatcher were buggy enough to emit them.
         editor.on('keybinding', lambda e: events.append(e.args))
@@ -279,9 +279,9 @@ def test_keybinding_prevent_default_false(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('hello', keybindings={
+        editor = ui.codemirror('hello', keymap={
             'Mod-s': lambda e: events.append(e.key),
-            'Mod-c': ui.codemirror.binding(lambda e: events.append(e.key), prevent_default=False),
+            'Mod-c': ui.codemirror.keybinding(lambda e: events.append(e.key), prevent_default=False),
         })
 
     screen.open('/')
@@ -309,7 +309,7 @@ def test_keybinding_prevent_default_false(screen: Screen):
 
 
 def test_keybinding_per_os_fields_serialized(screen: Screen):
-    """Per-OS overrides (mac/linux/win) surface in the keybindings prop sent to JS.
+    """Per-OS overrides (mac/linux/win) surface in the keymap prop sent to JS.
 
     We can't trigger CM6's per-OS keybinding resolution from a single Linux test runner,
     but we can verify the prop payload carries the right fields so CM6 will use them on
@@ -320,8 +320,8 @@ def test_keybinding_per_os_fields_serialized(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('hello', keybindings={
-            'Alt-Down': ui.codemirror.binding(
+        editor = ui.codemirror('hello', keymap={
+            'Alt-Down': ui.codemirror.keybinding(
                 lambda: None, mac='Cmd-Down', linux='Ctrl-Down', win='Ctrl-Shift-Down',
             ),
             'F5': lambda: None,
@@ -331,7 +331,7 @@ def test_keybinding_per_os_fields_serialized(screen: Screen):
     _wait_for_cm_mount(screen)
     bindings = screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
-        'return el.$props.keybindings;'
+        'return el.$props.keymap;'
     )
     by_key = {b['key']: b for b in bindings}
     assert by_key['Alt-Down'].get('mac') == 'Cmd-Down', f'expected mac field, got {by_key["Alt-Down"]}'
@@ -341,19 +341,19 @@ def test_keybinding_per_os_fields_serialized(screen: Screen):
         assert field not in by_key['F5'], f'F5 should have no {field} field, got {by_key["F5"]}'
 
 
-def test_remove_keybinding(screen: Screen):
-    """remove_keybinding unbinds a key so subsequent presses produce no event."""
+def test_unmap_key(screen: Screen):
+    """unmap_key removes a mapping so subsequent presses produce no event."""
     events: list[str] = []
     editor = None
 
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('hello', keybindings={
+        editor = ui.codemirror('hello', keymap={
             'Mod-s': lambda: events.append('save'),
             'F2': lambda e: events.append(f'control:{e.key}'),
         })
-        editor.remove_keybinding('Mod-s')
+        editor.unmap_key('Mod-s')
 
     screen.open('/')
     _wait_for_cm_mount(screen)
@@ -386,7 +386,7 @@ def test_invalid_keybinding_is_reported(screen: Screen, keybinding: str, error: 
     """
     @ui.page('/')
     def page():
-        ui.codemirror('hello', keybindings={keybinding: lambda: None})
+        ui.codemirror('hello', keymap={keybinding: lambda: None})
 
     screen.allowed_js_errors.append(error)
     screen.open('/')
@@ -403,7 +403,7 @@ def test_keybinding_does_not_fire_while_disabled(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('hello', keybindings={'Mod-s': lambda e: events.append(e.key)})
+        editor = ui.codemirror('hello', keymap={'Mod-s': lambda e: events.append(e.key)})
 
     screen.open('/')
     _wait_for_cm_mount(screen)

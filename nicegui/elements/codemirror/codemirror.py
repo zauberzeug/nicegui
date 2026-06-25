@@ -26,7 +26,7 @@ class CodeMirror(KeybindingElement, ValueElement[str], DisableableElement,
         value: str = '',
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
-        keybindings: dict[str, Handler[CodeMirrorKeybindingEventArguments] | CodeMirror.binding] | None = None,
+        keymap: dict[str, Handler[CodeMirrorKeybindingEventArguments] | CodeMirror.keybinding] | None = None,
         language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,
@@ -51,15 +51,15 @@ class CodeMirror(KeybindingElement, ValueElement[str], DisableableElement,
         Per-line tooltips can be attached via the ``line_tooltips`` dict.
 
         *Since version 3.14.0:*
-        Keybindings map keystrokes to Python callbacks via CodeMirror's keymap.
+        The ``keymap`` maps keystrokes (CodeMirror key strings) to Python callbacks.
         Pass a bare callable for the default config (prevents the browser default, no per-OS override).
-        Wrap with ``binding`` for per-binding overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
-        Use ``on_keybinding`` to add bindings at runtime and ``remove_keybinding`` to drop them.
-        Bindings do not fire while the editor is disabled.
+        Wrap with ``keybinding`` for per-key overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
+        Use ``map_key`` to add keybindings at runtime and ``unmap_key`` to drop them.
+        Keybindings do not fire while the editor is disabled.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
-        :param keybindings: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``binding`` (default: ``None``, *added in version 3.14.0*)
+        :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``keybinding`` (default: ``None``, *added in version 3.14.0*)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -68,7 +68,7 @@ class CodeMirror(KeybindingElement, ValueElement[str], DisableableElement,
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
-        super().__init__(value=value, on_value_change=self._update_codepoints, keybindings=keybindings)
+        super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap)
         self._codepoints = b''
         self._update_codepoints()
         if on_change is not None:

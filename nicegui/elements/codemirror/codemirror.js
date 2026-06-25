@@ -37,7 +37,7 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
-    keybindings: Array,
+    keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
     id: String,
@@ -55,8 +55,8 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    keybindings() {
-      this.setKeybindings();
+    keymap() {
+      this.setKeymap();
     },
     lineTooltips(newTooltips) {
       this.setLineTooltips(newTooltips);
@@ -165,7 +165,7 @@ export default {
       });
     },
     buildUserKeymap() {
-      return (this.keybindings || []).map(({ key, mac, linux, win, preventDefault }) => {
+      return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => {
         const entry = {
           key,
           run: () => {
@@ -183,7 +183,7 @@ export default {
         return entry;
       });
     },
-    setKeybindings() {
+    setKeymap() {
       if (!this.editor) return;
       this.editor.dispatch({
         effects: this.userKeymapConfig.reconfigure(CM.keymap.of(this.buildUserKeymap())),
@@ -191,7 +191,7 @@ export default {
       this.validateUserKeymap();
     },
     validateUserKeymap() {
-      if (!this.editor || !(this.keybindings || []).length) return;
+      if (!this.editor || !(this.keymap || []).length) return;
       try {
         // Force CodeMirror to build its combined keymap now instead of lazily on the first keydown:
         // a chord whose prefix is also a standalone binding (incl. basicSetup's, e.g. "Mod-a Mod-b"
@@ -268,7 +268,7 @@ export default {
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
-        // User keybindings: Prec.high so they win over basicSetup defaults like Mod-z.
+        // User keymap: Prec.high so they win over basicSetup defaults like Mod-z.
         CM.Prec.high(this.userKeymapConfig.of(CM.keymap.of(this.buildUserKeymap()))),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
         CM.indentUnit.of(this.indent),
