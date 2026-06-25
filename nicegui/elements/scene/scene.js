@@ -15,7 +15,14 @@ const {
 async function get_object(objects, object_id) {
   const object = objects.get(object_id);
   if (object === undefined) return;
-  if (object.ready_promise) await object.ready_promise
+  if (object.ready_promise) {
+    try {
+      await object.ready_promise;
+    } catch {
+      // the scene's `create` method already logged the failure; do nothing here
+      return;
+    }
+  }
   return object
 }
 
@@ -289,7 +296,7 @@ export default {
         object.mesh = mesh
         object.component = component
         if (typeof object.component.created == "function") {
-          await object.component.created(this);
+          await object.component.created();
         }
         resolve_ready();
       } catch (reason) {
@@ -299,8 +306,7 @@ export default {
       }
 
       // Attach to scene
-      const parent = this.objects.get(parent_id)
-      await parent.ready_promise;
+      const parent = await get_object(this.objects, parent_id);
       parent.mesh.add(object.mesh);
     },
     async name(object_id, name) {
