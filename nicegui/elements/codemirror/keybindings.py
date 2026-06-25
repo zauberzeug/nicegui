@@ -8,26 +8,6 @@ from typing_extensions import Self
 from ...element import Element
 from ...events import CodeMirrorKeybindingEventArguments, GenericEventArguments, Handler, handle_event
 
-_VALID_KEY_MODIFIERS = frozenset({'mod', 'ctrl', 'control', 'c', 'shift', 's', 'alt', 'a', 'meta', 'cmd', 'm'})
-
-
-def _validate_keybinding(key: str) -> None:
-    """Raise ``ValueError`` if ``key`` contains an unrecognized modifier token.
-
-    CodeMirror 6 key syntax is "Mod-Shift-x": every segment before the last is a modifier and the last is the
-    key name (matched freely against ``KeyboardEvent.key``). Space-separated strokes form a multi-stroke chord
-    like "Ctrl-x Ctrl-s", so each stroke is validated independently. A bad modifier makes CodeMirror throw
-    "Unrecognized modifier name" when it lazily compiles the combined keymap on the first keydown; because the
-    binding table never builds, every later keydown re-throws and the whole dispatch path goes dead — basicSetup
-    undo, Tab indent, and every valid user binding included. Validating at registration turns that silent footgun
-    into a clear error.
-    """
-    for stroke in key.split():  # space separates the strokes of a multi-stroke chord
-        for modifier in stroke.split('-')[:-1]:
-            if modifier and modifier.lower() not in _VALID_KEY_MODIFIERS:  # empty segment = literal '-' key, e.g. 'Mod--'
-                raise ValueError(f'Invalid keybinding {key!r}: unrecognized modifier {modifier!r}. '
-                                 f'Valid modifiers are Mod, Ctrl, Shift, Alt, Meta, Cmd.')
-
 
 class KeybindingElement(Element):
     """Mixin mapping CodeMirror keystrokes to Python callbacks via CodeMirror's keymap.
@@ -88,11 +68,6 @@ class KeybindingElement(Element):
         linux: str | None = field(default=None, kw_only=True)
         win: str | None = field(default=None, kw_only=True)
 
-        def __post_init__(self) -> None:
-            for override in (self.mac, self.linux, self.win):
-                if override is not None:
-                    _validate_keybinding(override)
-
         def to_dict(self) -> dict[str, Any]:
             """Serialize to the frontend payload (the mapping key is added by the element)."""
             return {
@@ -117,11 +92,8 @@ class KeybindingElement(Element):
 
         Re-registering the same key replaces the prior handler. Bindings do not fire while the editor is disabled.
 
-        Raises ``ValueError`` if ``key`` (or a per-OS override) uses an unrecognized modifier token.
-
         *Added in version 3.14.0*
         """
-        _validate_keybinding(key)
         spec = handler if isinstance(handler, KeybindingElement.binding) else KeybindingElement.binding(handler)
         self._keybinding_specs[key] = spec
         self._sync_keybindings_prop()

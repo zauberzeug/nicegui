@@ -373,19 +373,26 @@ def test_remove_keybinding(screen: Screen):
     assert 'save' not in events, f'expected Mod-s to be unbound, got {events}'
 
 
-def test_keybinding_invalid_modifier_raises():
-    """An unrecognized modifier token raises ValueError at registration.
+@pytest.mark.parametrize('keybinding, error', [
+    pytest.param('Ctr-s', 'Unrecognized modifier name', id='bad-modifier'),  # 'Ctr' is not a valid modifier
+    pytest.param('Mod-a Mod-b', 'used both as a regular binding and as a multi-stroke prefix', id='prefix-conflict'),
+])
+def test_invalid_keybinding_is_reported(screen: Screen, keybinding: str, error: str):
+    """A keybinding CodeMirror rejects at keymap-build time is reported to the server log, not silently swallowed.
 
-    Without this, a bad spec compiles into CM6's combined keymap and throws on the first keydown,
-    which kills *every* binding (basicSetup undo/Tab and all valid user bindings) with only a console error.
+    'Ctr-s' has an unrecognized modifier; 'Mod-a Mod-b' uses Mod-a as a chord prefix while basicSetup already
+    binds Mod-a (select-all). Both make CodeMirror's keymap build throw, which the editor forces at registration
+    and reports via logAndEmit instead of silently killing every keybinding on the first keypress.
     """
-    from nicegui.elements.codemirror.keybindings import _validate_keybinding
-    for good in ('Mod-s', 'F5', 'Mod-Shift-d', 'a', 'Ctrl-Alt-Delete', 'Cmd-Down', 'Mod--', '-',
-                 'Ctrl-x Ctrl-s', 'Mod-k Mod-d'):  # incl. space-separated multi-stroke chords
-        _validate_keybinding(good)  # valid descriptors must not raise
-    for bad in ('Bogus-x', 'Ctr-s', 'Mod-Shift-Boop-d'):
-        with pytest.raises(ValueError):
-            _validate_keybinding(bad)
+    @ui.page('/')
+    def page():
+        ui.codemirror('hello', keybindings={keybinding: lambda: None})
+
+    screen.allowed_js_errors.append(error)
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    screen.wait_for(lambda: any(error in record.message for record in screen.caplog.records))
+    screen.assert_py_logger('ERROR', re.compile(error))
 
 
 def test_keybinding_does_not_fire_while_disabled(screen: Screen):
@@ -423,25 +430,6 @@ def test_keybinding_does_not_fire_while_disabled(screen: Screen):
     # WS delivery is FIFO: once the post-enable event arrives, any disabled-period event would have too.
     screen.wait_for(lambda: len(events) == 2)
     assert len(events) == 2, f'disabled editor should not have fired a keybinding, got {events}'
-
-
-def test_keybinding_prefix_conflict_is_reported(screen: Screen):
-    """A chord whose prefix collides with an existing binding is surfaced instead of silently swallowed.
-
-    'Mod-a Mod-b' uses Mod-a as a multi-stroke prefix, but basicSetup already binds Mod-a (select-all),
-    so CodeMirror's keymap build throws. The editor forces that build at registration and reports the
-    conflict via logAndEmit (browser console + server log) rather than silently killing every keybinding.
-    """
-    @ui.page('/')
-    def page():
-        ui.codemirror('hello', keybindings={'Mod-a Mod-b': lambda: None})
-
-    conflict = 'used both as a regular binding and as a multi-stroke prefix'
-    screen.allowed_js_errors.append(conflict)
-    screen.open('/')
-    _wait_for_cm_mount(screen)
-    screen.wait_for(lambda: any(conflict in record.message for record in screen.caplog.records))
-    screen.assert_py_logger('ERROR', re.compile(conflict))
 
 
 def test_line_tooltip_api(screen: Screen):
