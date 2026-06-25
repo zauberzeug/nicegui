@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
@@ -421,6 +423,25 @@ def test_keybinding_does_not_fire_while_disabled(screen: Screen):
     # WS delivery is FIFO: once the post-enable event arrives, any disabled-period event would have too.
     screen.wait_for(lambda: len(events) == 2)
     assert len(events) == 2, f'disabled editor should not have fired a keybinding, got {events}'
+
+
+def test_keybinding_prefix_conflict_is_reported(screen: Screen):
+    """A chord whose prefix collides with an existing binding is surfaced instead of silently swallowed.
+
+    'Mod-a Mod-b' uses Mod-a as a multi-stroke prefix, but basicSetup already binds Mod-a (select-all),
+    so CodeMirror's keymap build throws. The editor forces that build at registration and reports the
+    conflict via logAndEmit (browser console + server log) rather than silently killing every keybinding.
+    """
+    @ui.page('/')
+    def page():
+        ui.codemirror('hello', keybindings={'Mod-a Mod-b': lambda: None})
+
+    conflict = 'used both as a regular binding and as a multi-stroke prefix'
+    screen.allowed_js_errors.append(conflict)
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    screen.wait_for(lambda: any(conflict in record.message for record in screen.caplog.records))
+    screen.assert_py_logger('ERROR', re.compile(conflict))
 
 
 def test_line_tooltip_api(screen: Screen):

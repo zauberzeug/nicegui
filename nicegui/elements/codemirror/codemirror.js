@@ -188,6 +188,23 @@ export default {
       this.editor.dispatch({
         effects: this.userKeymapConfig.reconfigure(CM.keymap.of(this.buildUserKeymap())),
       });
+      this.validateUserKeymap();
+    },
+    validateUserKeymap() {
+      if (!this.editor || !(this.keybindings || []).length) return;
+      try {
+        // Force CodeMirror to build its combined keymap now instead of lazily on the first keydown:
+        // a chord whose prefix is also a standalone binding (incl. basicSetup's, e.g. "Mod-a Mod-b"
+        // vs. the built-in Mod-a) throws here rather than silently killing every keybinding later.
+        CM.runScopeHandlers(this.editor, new KeyboardEvent("keydown", { key: "Unidentified" }), "editor");
+      } catch (error) {
+        // mounted() can run before the websocket handshake, so defer like NiceGUI's own event emitter.
+        const report = () => {
+          if (window.did_handshake) logAndEmit("error", `ui.codemirror: ${error.message}`);
+          else setTimeout(report, 10);
+        };
+        report();
+      }
     },
     setLineTooltips(tooltips) {
       if (!this.editor) return;
@@ -228,7 +245,7 @@ export default {
         let content = null;
         set.between(line.from, line.to, (_from, _to, value) => {
           content = value.content;
-          return false;  // at most one tooltip per line — stop after the first match
+          return false; // at most one tooltip per line — stop after the first match
         });
         if (content === null) return null;
         const renderHtml = self.lineTooltipHtml;
@@ -300,5 +317,6 @@ export default {
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
     this.setLineTooltips(this.lineTooltips);
+    this.validateUserKeymap();
   },
 };
