@@ -66,15 +66,6 @@ class KeyBindingElement(Element):
         linux: str | None = field(default=None, kw_only=True)
         win: str | None = field(default=None, kw_only=True)
 
-        def to_dict(self) -> dict[str, Any]:
-            """Serialize to the frontend payload (the mapping key is added by the element)."""
-            return {
-                'preventDefault': self.prevent_default,
-                **({'mac': self.mac} if self.mac is not None else {}),
-                **({'linux': self.linux} if self.linux is not None else {}),
-                **({'win': self.win} if self.win is not None else {}),
-            }
-
     def map_key(
         self,
         key: str,
@@ -109,7 +100,16 @@ class KeyBindingElement(Element):
         return self
 
     def _sync_keymap(self) -> None:
-        self._props['keymap'] = [{'key': key, **spec.to_dict()} for key, spec in self._keymap.items()]
+        self._props['keymap'] = [
+            {
+                'key': key,
+                'preventDefault': spec.prevent_default,
+                **({'mac': spec.mac} if spec.mac is not None else {}),
+                **({'linux': spec.linux} if spec.linux is not None else {}),
+                **({'win': spec.win} if spec.win is not None else {}),
+            }
+            for key, spec in self._keymap.items()
+        ]
 
     def _dispatch_keybinding(self, e: GenericEventArguments) -> None:
         key = e.args['key']
