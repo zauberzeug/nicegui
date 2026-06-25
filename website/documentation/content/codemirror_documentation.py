@@ -28,15 +28,15 @@ def preserve_cursor_demo() -> None:
 
 
 @doc.demo('Custom Keybindings', '''
-    Map keystrokes to Python callbacks via the ``keymap`` constructor parameter or the ``map_key`` method.
+    Map keystrokes to Python callbacks via the `keymap` constructor parameter or the `map_key` method.
     Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) —
-    use ``Mod`` for Cmd on macOS and Ctrl elsewhere.
+    use "Mod" for Cmd on macOS and Ctrl elsewhere.
 
-    By default, keybindings prevent the browser default action so they can override shortcuts like ``Mod-s``.
-    Wrap a callback with ``ui.codemirror.KeyBinding(...)`` to override that (``prevent_default=False``)
-    or to provide per-platform shortcut overrides (``mac=``, ``linux=``, ``win=``).
+    By default, keybindings prevent the browser default action so they can override shortcuts like "Mod-s".
+    Wrap a callback with `ui.codemirror.KeyBinding(...)` to override that (`prevent_default=False`)
+    or to provide per-platform shortcut overrides (`mac=`, `linux=`, `win=`).
 
-    Use ``unmap_key(key)`` to remove a mapping at runtime.
+    Use `unmap_key(key)` to remove a mapping at runtime.
 ''')
 def keymap_demo() -> None:
     editor = ui.codemirror(

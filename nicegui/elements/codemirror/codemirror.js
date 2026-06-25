@@ -165,23 +165,16 @@ export default {
       });
     },
     buildUserKeymap() {
-      return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => {
-        const entry = {
-          key,
-          run: () => {
-            this.$emit("keybinding", { key });
-            // Returning true marks the binding as handled, which both stops keymap traversal
-            // and prevents the browser default. Returning false does neither — letting the
-            // event continue to lower-precedence bindings and the browser's native handling.
-            return preventDefault;
-          },
-        };
-        // CM6 picks the per-OS field on the matching platform, falling back to `key` elsewhere.
-        if (mac) entry.mac = mac;
-        if (linux) entry.linux = linux;
-        if (win) entry.win = win;
-        return entry;
-      });
+      return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
+        key,
+        mac, // unset mac will fall back to key
+        linux, // unset linux will fall back to key
+        win, // unset win will fall back to key
+        run: () => {
+          this.$emit("keybinding", { key });
+          return preventDefault;
+        },
+      }));
     },
     setKeymap() {
       if (!this.editor) return;
@@ -198,12 +191,7 @@ export default {
         // vs. the built-in Mod-a) throws here rather than silently killing every keybinding later.
         CM.runScopeHandlers(this.editor, new KeyboardEvent("keydown", { key: "Unidentified" }), "editor");
       } catch (error) {
-        // mounted() can run before the websocket handshake, so defer like NiceGUI's own event emitter.
-        const report = () => {
-          if (window.did_handshake) logAndEmit("error", `ui.codemirror: ${error.message}`);
-          else setTimeout(report, 10);
-        };
-        report();
+        logAndEmit("error", `ui.codemirror: ${error.message}`);
       }
     },
     setLineTooltips(tooltips) {

@@ -54,9 +54,9 @@ class KeyBindingElement(Element):
             lower-precedence CodeMirror bindings (e.g. ``basicSetup``'s ``Mod-z`` undo)
             *and* the browser's native handler. Use ``False`` when you want a Python
             notification without overriding either layer.
-        :param mac: alternate key string used only on macOS, overriding ``key`` (default: `None`)
-        :param linux: alternate key string used only on Linux, overriding ``key`` (default: `None`)
-        :param win: alternate key string used only on Windows, overriding ``key`` (default: `None`)
+        :param mac: alternate key string used only on macOS, overriding ``key`` (default: ``None``)
+        :param linux: alternate key string used only on Linux, overriding ``key`` (default: ``None``)
+        :param win: alternate key string used only on Windows, overriding ``key`` (default: ``None``)
 
         *Added in version 3.14.0*
         """

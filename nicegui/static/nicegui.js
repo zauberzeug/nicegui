@@ -165,7 +165,12 @@ function logAndEmit(level, message) {
   } else {
     console.log(message);
   }
-  window.socket.emit("log", { client_id: window.clientId, level, message });
+  // The socket may not be connected yet (e.g. when called during mounted()), so wait for the handshake.
+  const emit = () => {
+    if (window.did_handshake) window.socket.emit("log", { client_id: window.clientId, level, message });
+    else setTimeout(emit, 10);
+  };
+  emit();
 }
 
 function stringifyEventArgs(args, event_args) {
