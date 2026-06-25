@@ -29,8 +29,8 @@ def preserve_cursor_demo() -> None:
 
 @doc.demo('Custom Keybindings', '''
     Map keystrokes to Python callbacks via the ``keybindings`` constructor parameter or the ``on_keybinding`` method.
-    Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) — use
-    ``Mod`` for Cmd on macOS and Ctrl elsewhere.
+    Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) —
+    use ``Mod`` for Cmd on macOS and Ctrl elsewhere.
 
     By default, bindings prevent the browser default action so they can override shortcuts like ``Mod-s``.
     Wrap a callback with ``ui.codemirror.binding(...)`` to override that (``prevent_default=False``)
@@ -39,21 +39,19 @@ def preserve_cursor_demo() -> None:
     Use ``remove_keybinding(key)`` to unbind at runtime.
 ''')
 def keybindings_demo() -> None:
-    status = ui.label('Click into the editor and press Mod-s, Mod-r, F5, Mod-c, or Mod-Shift-d.')
     editor = ui.codemirror(
-        'def hello():\n    print("hi")',
-        language='Python',
         keybindings={
-            'Mod-s': lambda e: status.set_text(f'Saved! ({e.key})'),
-            'Mod-r': lambda: status.set_text('Run!'),
-            'F5': lambda: status.set_text('Refresh!'),
-            'Mod-c': ui.codemirror.binding(
-                lambda: status.set_text('Copy logged (browser still copies).'),
+            'a': lambda: ui.notify('Pressed a'),
+            'Ctrl-c': lambda: ui.notify('Pressed Ctrl-c'),
+            'Mod-r': lambda: ui.notify('Pressed Mod-r'),
+            'Mod-s': ui.codemirror.binding(
+                lambda: ui.notify('Pressed Mod-s (no prevent_default)'),
                 prevent_default=False,
             ),
+            'Mod-x Mod-y': lambda: ui.notify('Pressed Mod-x then Mod-y'),
         },
     ).classes('h-32')
-    editor.on_keybinding('Mod-Shift-d', lambda: status.set_text('Bound at runtime via on_keybinding.'))
+    ui.button('Bind F5', on_click=lambda: editor.on_keybinding('F5', lambda: ui.notify('Pressed F5')))
     ui.button('Unbind F5', on_click=lambda: editor.remove_keybinding('F5'))
 
 
