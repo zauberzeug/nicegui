@@ -440,12 +440,6 @@ class SortableEventArguments(UiEventArguments):
 
 @dataclass(kw_only=True, slots=True)
 class CodeMirrorKeybindingEventArguments(UiEventArguments):
-    """Arguments emitted when a CodeMirror keybinding fires.
-
-    The ``key`` is always the dict key under which the handler was registered
-    (e.g. ``'Mod-s'`` or ``'Alt-Down'``), even when ``mac=``/``linux=``/``win=``
-    overrides resolved to a different keystroke on the user's platform.
-    """
     key: str
 
 
