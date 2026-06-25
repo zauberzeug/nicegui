@@ -281,7 +281,7 @@ def test_keybinding_prevent_default_false(screen: Screen):
         nonlocal editor
         editor = ui.codemirror('hello', keymap={
             'Mod-s': lambda e: events.append(e.key),
-            'Mod-c': ui.codemirror.keybinding(lambda e: events.append(e.key), prevent_default=False),
+            'Mod-c': ui.codemirror.KeyBinding(lambda e: events.append(e.key), prevent_default=False),
         })
 
     screen.open('/')
@@ -321,7 +321,7 @@ def test_keybinding_per_os_fields_serialized(screen: Screen):
     def page():
         nonlocal editor
         editor = ui.codemirror('hello', keymap={
-            'Alt-Down': ui.codemirror.keybinding(
+            'Alt-Down': ui.codemirror.KeyBinding(
                 lambda: None, mac='Cmd-Down', linux='Ctrl-Down', win='Ctrl-Shift-Down',
             ),
             'F5': lambda: None,

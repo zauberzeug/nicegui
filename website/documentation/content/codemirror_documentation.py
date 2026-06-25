@@ -33,7 +33,7 @@ def preserve_cursor_demo() -> None:
     use ``Mod`` for Cmd on macOS and Ctrl elsewhere.
 
     By default, keybindings prevent the browser default action so they can override shortcuts like ``Mod-s``.
-    Wrap a callback with ``ui.codemirror.keybinding(...)`` to override that (``prevent_default=False``)
+    Wrap a callback with ``ui.codemirror.KeyBinding(...)`` to override that (``prevent_default=False``)
     or to provide per-platform shortcut overrides (``mac=``, ``linux=``, ``win=``).
 
     Use ``unmap_key(key)`` to remove a mapping at runtime.
@@ -44,7 +44,7 @@ def keymap_demo() -> None:
             'a': lambda: ui.notify('Pressed a'),
             'Ctrl-c': lambda: ui.notify('Pressed Ctrl-c'),
             'Mod-r': lambda: ui.notify('Pressed Mod-r'),
-            'Mod-s': ui.codemirror.keybinding(
+            'Mod-s': ui.codemirror.KeyBinding(
                 lambda: ui.notify('Pressed Mod-s (no prevent_default)'),
                 prevent_default=False,
             ),

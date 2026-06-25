@@ -8,12 +8,12 @@ from typing_extensions import Self
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
-from ...events import CodeMirrorKeybindingEventArguments, GenericEventArguments, Handler, ValueChangeEventArguments
+from ...events import CodeMirrorKeyBindingEventArguments, GenericEventArguments, Handler, ValueChangeEventArguments
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
-from .keybindings import KeybindingElement
+from .keybindings import KeyBindingElement
 
 
-class CodeMirror(KeybindingElement, ValueElement[str], DisableableElement,
+class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
@@ -26,7 +26,7 @@ class CodeMirror(KeybindingElement, ValueElement[str], DisableableElement,
         value: str = '',
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
-        keymap: dict[str, Handler[CodeMirrorKeybindingEventArguments] | CodeMirror.keybinding] | None = None,
+        keymap: dict[str, Handler[CodeMirrorKeyBindingEventArguments] | CodeMirror.KeyBinding] | None = None,
         language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,
@@ -53,13 +53,13 @@ class CodeMirror(KeybindingElement, ValueElement[str], DisableableElement,
         *Since version 3.14.0:*
         The ``keymap`` maps keystrokes (CodeMirror key strings) to Python callbacks.
         Pass a bare callable for the default config (prevents the browser default, no per-OS override).
-        Wrap with ``keybinding`` for per-key overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
+        Wrap with ``KeyBinding`` for per-key overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
         Use ``map_key`` to add keybindings at runtime and ``unmap_key`` to drop them.
         Keybindings do not fire while the editor is disabled.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
-        :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``keybinding`` (default: ``None``, *added in version 3.14.0*)
+        :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")

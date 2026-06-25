@@ -439,7 +439,7 @@ class SortableEventArguments(UiEventArguments):
 
 
 @dataclass(kw_only=True, slots=True)
-class CodeMirrorKeybindingEventArguments(UiEventArguments):
+class CodeMirrorKeyBindingEventArguments(UiEventArguments):
     key: str
 
 

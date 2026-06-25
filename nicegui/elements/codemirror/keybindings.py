@@ -6,34 +6,32 @@ from typing import Any
 from typing_extensions import Self
 
 from ...element import Element
-from ...events import CodeMirrorKeybindingEventArguments, GenericEventArguments, Handler, handle_event
+from ...events import CodeMirrorKeyBindingEventArguments, GenericEventArguments, Handler, handle_event
 
 
-class KeybindingElement(Element):
+class KeyBindingElement(Element):
     """Mixin mapping CodeMirror keystrokes to Python callbacks via CodeMirror's keymap.
 
-    The frontend emits a ``keybinding`` event carrying the registered key; the registry of callbacks
+    The frontend emits a ``KeyBinding`` event carrying the registered key; the registry of callbacks
     (``_keymap``) lives here on the server, while the serializable subset is mirrored into the
-    ``keymap`` prop for the client to build its keymap.
+    "keymap" prop for the client to build its keymap.
     """
 
     def __init__(
         self,
         *,
-        keymap: dict[str, Handler[CodeMirrorKeybindingEventArguments] | KeybindingElement.keybinding] | None = None,
+        keymap: dict[str, Handler[CodeMirrorKeyBindingEventArguments] | KeyBindingElement.KeyBinding] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._props['keymap'] = []
-        self._keymap: dict[str, KeybindingElement.keybinding] = {}
+        self._keymap: dict[str, KeyBindingElement.KeyBinding] = {}
         self.on('keybinding', self._dispatch_keybinding)
-        if keymap:
-            with self._props.suspend_updates():
-                for key, handler in keymap.items():
-                    self.map_key(key, handler)
+        for key, handler in (keymap or {}).items():
+            self.map_key(key, handler)
 
     @dataclass(frozen=True, slots=True)
-    class keybinding:
+    class KeyBinding:
         """Wraps a keybinding callback with per-key configuration overrides.
 
         Pass an instance as a value in the ``keymap`` mapping (or to ``map_key``) when you need to
@@ -41,8 +39,8 @@ class KeybindingElement(Element):
         the browser copy normally), or to provide per-platform shortcut overrides::
 
             ui.codemirror(keymap={
-                'Mod-c': ui.codemirror.keybinding(log_copy, prevent_default=False),
-                'Alt-Down': ui.codemirror.keybinding(move_down, mac='Cmd-Down'),
+                'Mod-c': ui.codemirror.KeyBinding(log_copy, prevent_default=False),
+                'Alt-Down': ui.codemirror.KeyBinding(move_down, mac='Cmd-Down'),
             })
 
         Note:
@@ -62,7 +60,7 @@ class KeybindingElement(Element):
 
         *Added in version 3.14.0*
         """
-        callback: Handler[CodeMirrorKeybindingEventArguments]
+        callback: Handler[CodeMirrorKeyBindingEventArguments]
         prevent_default: bool = field(default=True, kw_only=True)
         mac: str | None = field(default=None, kw_only=True)
         linux: str | None = field(default=None, kw_only=True)
@@ -80,7 +78,7 @@ class KeybindingElement(Element):
     def map_key(
         self,
         key: str,
-        handler: Handler[CodeMirrorKeybindingEventArguments] | KeybindingElement.keybinding,
+        handler: Handler[CodeMirrorKeyBindingEventArguments] | KeyBindingElement.KeyBinding,
     ) -> Self:
         """Map a keystroke to a callback.
 
@@ -88,13 +86,13 @@ class KeybindingElement(Element):
         "Mod" resolves to "Cmd" on macOS and "Ctrl" elsewhere.
 
         Pass a bare callable for the default config (prevents the browser default, no per-OS override),
-        or wrap with ``keybinding`` for per-key overrides.
+        or wrap with ``KeyBinding`` for per-key overrides.
 
         Re-registering the same key replaces the prior handler. Keybindings do not fire while the editor is disabled.
 
         *Added in version 3.14.0*
         """
-        spec = handler if isinstance(handler, KeybindingElement.keybinding) else KeybindingElement.keybinding(handler)
+        spec = handler if isinstance(handler, KeyBindingElement.KeyBinding) else KeyBindingElement.KeyBinding(handler)
         self._keymap[key] = spec
         self._sync_keymap()
         return self
@@ -118,4 +116,4 @@ class KeybindingElement(Element):
         spec = self._keymap.get(key)
         if spec is None:
             return
-        handle_event(spec.callback, CodeMirrorKeybindingEventArguments(sender=self, client=self.client, key=key))
+        handle_event(spec.callback, CodeMirrorKeyBindingEventArguments(sender=self, client=self.client, key=key))
