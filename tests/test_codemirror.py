@@ -377,7 +377,7 @@ def test_keybinding_invalid_modifier_raises():
     Without this, a bad spec compiles into CM6's combined keymap and throws on the first keydown,
     which kills *every* binding (basicSetup undo/Tab and all valid user bindings) with only a console error.
     """
-    from nicegui.elements.codemirror.codemirror import _validate_keybinding
+    from nicegui.elements.codemirror.keybindings import _validate_keybinding
     for good in ('Mod-s', 'F5', 'Mod-Shift-d', 'a', 'Ctrl-Alt-Delete', 'Cmd-Down', 'Mod--', '-',
                  'Ctrl-x Ctrl-s', 'Mod-k Mod-d'):  # incl. space-separated multi-stroke chords
         _validate_keybinding(good)  # valid descriptors must not raise

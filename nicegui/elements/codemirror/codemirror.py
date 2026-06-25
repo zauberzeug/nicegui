@@ -1,45 +1,19 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from itertools import accumulate, chain, repeat
-from typing import Any, get_args
+from typing import get_args
 
 from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
-from ...events import (
-    CodeMirrorKeybindingEventArguments,
-    GenericEventArguments,
-    Handler,
-    ValueChangeEventArguments,
-    handle_event,
-)
+from ...events import CodeMirrorKeybindingEventArguments, GenericEventArguments, Handler, ValueChangeEventArguments
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
-
-_VALID_KEY_MODIFIERS = frozenset({'mod', 'ctrl', 'control', 'c', 'shift', 's', 'alt', 'a', 'meta', 'cmd', 'm'})
-
-
-def _validate_keybinding(key: str) -> None:
-    """Raise ``ValueError`` if ``key`` contains an unrecognized modifier token.
-
-    CodeMirror 6 key syntax is "Mod-Shift-x": every segment before the last is a modifier and the last is the
-    key name (matched freely against ``KeyboardEvent.key``). Space-separated strokes form a multi-stroke chord
-    like "Ctrl-x Ctrl-s", so each stroke is validated independently. A bad modifier makes CodeMirror throw
-    "Unrecognized modifier name" when it lazily compiles the combined keymap on the first keydown; because the
-    binding table never builds, every later keydown re-throws and the whole dispatch path goes dead — basicSetup
-    undo, Tab indent, and every valid user binding included. Validating at registration turns that silent footgun
-    into a clear error.
-    """
-    for stroke in key.split():  # space separates the strokes of a multi-stroke chord
-        for modifier in stroke.split('-')[:-1]:
-            if modifier and modifier.lower() not in _VALID_KEY_MODIFIERS:  # empty segment = literal '-' key, e.g. 'Mod--'
-                raise ValueError(f'Invalid keybinding {key!r}: unrecognized modifier {modifier!r}. '
-                                 f'Valid modifiers are Mod, Ctrl, Shift, Alt, Meta, Cmd.')
+from .keybindings import KeybindingElement
 
 
-class CodeMirror(ValueElement[str], DisableableElement,
+class CodeMirror(KeybindingElement, ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
@@ -94,7 +68,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
-        super().__init__(value=value, on_value_change=self._update_codepoints)
+        super().__init__(value=value, on_value_change=self._update_codepoints, keybindings=keybindings)
         self._codepoints = b''
         self._update_codepoints()
         if on_change is not None:
@@ -105,20 +79,12 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
-        self._props['keybindings'] = []
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
-
-        self._keybinding_specs: dict[str, CodeMirror.binding] = {}
-        self.on('keybinding', self._dispatch_keybinding)
-        if keybindings:
-            with self._props.suspend_updates():
-                for key, handler in keybindings.items():
-                    self.on_keybinding(key, handler)
 
     @property
     def theme(self) -> str:
@@ -189,102 +155,6 @@ class CodeMirror(ValueElement[str], DisableableElement,
     @line_tooltips.setter
     def line_tooltips(self, value: dict[int, str]) -> None:
         self._props['line-tooltips'] = value
-
-    @dataclass(frozen=True, slots=True)
-    class binding:
-        """Wraps a keybinding callback with per-binding configuration overrides.
-
-        Pass an instance as a value in the ``keybindings`` mapping (or to ``on_keybinding``) when you need to
-        opt out of preventing the browser default action (e.g. "Mod-c" that notifies Python while still letting
-        the browser copy normally), or to provide per-platform shortcut overrides::
-
-            ui.codemirror(keybindings={
-                'Mod-c': ui.codemirror.binding(log_copy, prevent_default=False),
-                'Alt-Down': ui.codemirror.binding(move_down, mac='Cmd-Down'),
-            })
-
-        Note:
-            The ``key`` field on the event passed to your callback is always the
-            dict key (e.g. ``'Alt-Down'``) — never the resolved per-OS variant.
-
-        :param callback: the handler callable
-        :param prevent_default: whether to mark the binding as handled (default: `True`).
-            When ``True``, the browser default action is suppressed and CodeMirror stops
-            keymap traversal at this binding. When ``False``, the event continues to
-            lower-precedence CodeMirror bindings (e.g. ``basicSetup``'s ``Mod-z`` undo)
-            *and* the browser's native handler. Use ``False`` when you want a Python
-            notification without overriding either layer.
-        :param mac: alternate key string used only on macOS, overriding ``key`` (default: `None`)
-        :param linux: alternate key string used only on Linux, overriding ``key`` (default: `None`)
-        :param win: alternate key string used only on Windows, overriding ``key`` (default: `None`)
-
-        *Added in version 3.14.0*
-        """
-        callback: Handler[CodeMirrorKeybindingEventArguments]
-        prevent_default: bool = field(default=True, kw_only=True)
-        mac: str | None = field(default=None, kw_only=True)
-        linux: str | None = field(default=None, kw_only=True)
-        win: str | None = field(default=None, kw_only=True)
-
-        def __post_init__(self) -> None:
-            for override in (self.mac, self.linux, self.win):
-                if override is not None:
-                    _validate_keybinding(override)
-
-        def to_dict(self) -> dict[str, Any]:
-            """Serialize to the frontend payload (the mapping key is added by the element)."""
-            return {
-                'preventDefault': self.prevent_default,
-                **({'mac': self.mac} if self.mac is not None else {}),
-                **({'linux': self.linux} if self.linux is not None else {}),
-                **({'win': self.win} if self.win is not None else {}),
-            }
-
-    def on_keybinding(
-        self,
-        key: str,
-        handler: Handler[CodeMirrorKeybindingEventArguments] | CodeMirror.binding,
-    ) -> Self:
-        """Bind a keystroke to a callback.
-
-        The ``key`` follows CodeMirror 6's keybinding syntax (e.g. "Mod-s", "F5", "Mod-Shift-d").
-        "Mod" resolves to "Cmd" on macOS and "Ctrl" elsewhere.
-
-        Pass a bare callable for the default config (prevents the browser default, no per-OS override),
-        or wrap with ``binding`` for per-binding overrides.
-
-        Re-registering the same key replaces the prior handler. Bindings do not fire while the editor is disabled.
-
-        Raises ``ValueError`` if ``key`` (or a per-OS override) uses an unrecognized modifier token.
-
-        *Added in version 3.14.0*
-        """
-        _validate_keybinding(key)
-        spec = handler if isinstance(handler, CodeMirror.binding) else CodeMirror.binding(handler)
-        self._keybinding_specs[key] = spec
-        self._sync_keybindings_prop()
-        return self
-
-    def remove_keybinding(self, key: str) -> Self:
-        """Remove a previously bound keybinding.
-
-        No-op if the key is not currently bound.
-
-        *Added in version 3.14.0*
-        """
-        if self._keybinding_specs.pop(key, None) is not None:
-            self._sync_keybindings_prop()
-        return self
-
-    def _sync_keybindings_prop(self) -> None:
-        self._props['keybindings'] = [{'key': key, **spec.to_dict()} for key, spec in self._keybinding_specs.items()]
-
-    def _dispatch_keybinding(self, e: GenericEventArguments) -> None:
-        key = e.args['key']
-        spec = self._keybinding_specs.get(key)
-        if spec is None:
-            return
-        handle_event(spec.callback, CodeMirrorKeybindingEventArguments(sender=self, client=self.client, key=key))
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
