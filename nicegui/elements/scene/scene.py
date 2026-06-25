@@ -41,23 +41,23 @@ class SceneObject:
 
 class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
-    from .scene_objects import AxesHelper as axes_helper
-    from .scene_objects import Box as box
-    from .scene_objects import Curve as curve
-    from .scene_objects import Cylinder as cylinder
-    from .scene_objects import Extrusion as extrusion
-    from .scene_objects import Gltf as gltf
-    from .scene_objects import Group as group
-    from .scene_objects import Line as line
-    from .scene_objects import PointCloud as point_cloud
-    from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
-    from .scene_objects import Ring as ring
-    from .scene_objects import Sphere as sphere
-    from .scene_objects import SpotLight as spot_light
-    from .scene_objects import Stl as stl
-    from .scene_objects import Text as text
-    from .scene_objects import Text3d as text3d
-    from .scene_objects import Texture as texture
+    from .objects.axes_helper import AxesHelper as axes_helper
+    from .objects.box import Box as box
+    from .objects.curve import Curve as curve
+    from .objects.cylinder import Cylinder as cylinder
+    from .objects.extrusion import Extrusion as extrusion
+    from .objects.gltf import Gltf as gltf
+    from .objects.group import Group as group
+    from .objects.line import Line as line
+    from .objects.point_cloud import PointCloud as point_cloud
+    from .objects.quadratic_bezier_tube import QuadraticBezierTube as quadratic_bezier_tube
+    from .objects.ring import Ring as ring
+    from .objects.sphere import Sphere as sphere
+    from .objects.spot_light import SpotLight as spot_light
+    from .objects.stl import Stl as stl
+    from .objects.text import Text as text
+    from .objects.text3d import Text3d as text3d
+    from .objects.texture import Texture as texture
 
     @resolve_defaults
     def __init__(self,
@@ -180,7 +180,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     def _handle_init(self) -> None:
         self._initialized_event.set()
         self.move_camera(duration=0)
-        self.run_method('init_objects', [obj.data for obj in self.objects.values()])
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

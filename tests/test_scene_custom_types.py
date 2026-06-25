@@ -1,0 +1,55 @@
+from typing_extensions import Self
+
+from nicegui import ui
+from nicegui.elements.scene.scene_object3d import Object3D
+from nicegui.testing import Screen
+
+
+class Tracer(Object3D, component='tracer.js'):
+    def __init__(self, label: str) -> None:
+        super().__init__(label)
+
+    def set_value(self, value: int) -> Self:
+        self.run_method('set_value', value)
+        return self
+
+
+def test_custom_type_create_and_method_dispatch(screen: Screen):
+    tracer: Tracer = None  # type: ignore
+
+    @ui.page('/')
+    def page():
+        nonlocal tracer
+        with ui.scene():
+            tracer = Tracer('hello')
+
+    screen.open('/')
+    screen.wait(0.8)
+
+    created = screen.selenium.execute_script('return window.__tracer.created')
+    assert created is not None and len(created) == 1
+    assert created[0]['label'] == 'hello'
+
+    assert tracer is not None
+    tracer.set_value(42)
+    screen.wait(0.5)
+    values = screen.selenium.execute_script('return window.__tracer.values')
+    assert values and values[-1]['value'] == 42
+    assert values[-1]['id'] == tracer.id
+
+
+def test_custom_type_module_loads_once_for_multiple_instances(screen: Screen):
+    @ui.page('/')
+    def page():
+        with ui.scene():
+            Tracer('a')
+            Tracer('b')
+
+    screen.open('/')
+    screen.wait(0.8)
+
+    # Module top-level resets window.__tracer; two created entries proves the
+    # module ran exactly once even though the class was instantiated twice.
+    created = screen.selenium.execute_script('return window.__tracer.created')
+    assert created is not None and len(created) == 2
+    assert [c['label'] for c in created] == ['a', 'b']
