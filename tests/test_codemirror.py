@@ -378,7 +378,8 @@ def test_keybinding_invalid_modifier_raises():
     which kills *every* binding (basicSetup undo/Tab and all valid user bindings) with only a console error.
     """
     from nicegui.elements.codemirror.codemirror import _validate_keybinding
-    for good in ('Mod-s', 'F5', 'Mod-Shift-d', 'a', 'Ctrl-Alt-Delete', 'Cmd-Down', 'Mod--', '-'):
+    for good in ('Mod-s', 'F5', 'Mod-Shift-d', 'a', 'Ctrl-Alt-Delete', 'Cmd-Down', 'Mod--', '-',
+                 'Ctrl-x Ctrl-s', 'Mod-k Mod-d'):  # incl. space-separated multi-stroke chords
         _validate_keybinding(good)  # valid descriptors must not raise
     for bad in ('Bogus-x', 'Ctr-s', 'Mod-Shift-Boop-d'):
         with pytest.raises(ValueError):
