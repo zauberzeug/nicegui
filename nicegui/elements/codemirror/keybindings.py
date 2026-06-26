@@ -12,7 +12,7 @@ from ...events import CodeMirrorKeyBindingEventArguments, GenericEventArguments,
 class KeyBindingElement(Element):
     """Mixin mapping CodeMirror keystrokes to Python callbacks via CodeMirror's keymap.
 
-    The frontend emits a ``KeyBinding`` event carrying the registered key; the registry of callbacks
+    The frontend emits a "keybinding" event carrying the registered key; the registry of callbacks
     (``_keymap``) lives here on the server, while the serializable subset is mirrored into the
     "keymap" prop for the client to build its keymap.
     """
