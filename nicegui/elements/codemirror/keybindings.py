@@ -47,6 +47,8 @@ class KeyBindingElement(Element):
             The ``key`` field on the event passed to your callback is always the
             dict key (e.g. ``'Alt-Down'``) — never the resolved per-OS variant.
 
+        *Added in version 3.14.0*
+
         :param callback: the handler callable
         :param prevent_default: whether to mark the binding as handled (default: `True`).
             When ``True``, the browser default action is suppressed and CodeMirror stops
@@ -57,8 +59,6 @@ class KeyBindingElement(Element):
         :param mac: alternate key string used only on macOS, overriding ``key`` (default: ``None``)
         :param linux: alternate key string used only on Linux, overriding ``key`` (default: ``None``)
         :param win: alternate key string used only on Windows, overriding ``key`` (default: ``None``)
-
-        *Added in version 3.14.0*
         """
         callback: Handler[CodeMirrorKeyBindingEventArguments]
         prevent_default: bool = field(default=True, kw_only=True)
