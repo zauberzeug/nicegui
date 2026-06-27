@@ -11,6 +11,7 @@ from fastapi import Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client, ClientConnectionTimeout
+from .error import error_content
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -194,6 +195,12 @@ class page:
                     task.cancel()
                     log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
                     client.delete()
+                    # The client is gone, so serving the normal page would only handshake-fail and reload-loop (#6126).
+                    # Serve a terminal error page through a fresh, alive client whose handshake succeeds.
+                    with Client(page(''), request=request) as error_client:
+                        error_content(500, f'The page took longer than the response_timeout of {self.response_timeout} seconds to build. '
+                                      'Await ui.context.client.connected() before long-running setup or increase response_timeout.')
+                    return error_client.build_response(request, 500)
                 if not task_wait_for_connection.done():
                     task_wait_for_connection.cancel()
                 if task.done():
