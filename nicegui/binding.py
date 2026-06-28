@@ -129,25 +129,21 @@ def _discard_binding_key_from_object_index(obj_id: ObjectId, binding_key: Bindin
         del _binding_keys_by_object[obj_id]
 
 
+def _add_binding_key_to_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
+    """Add one endpoint reference to the reverse index used by remove()."""
+    bucket = _binding_keys_by_object.get(obj_id)
+    if bucket is None:
+        _binding_keys_by_object[obj_id] = binding_key
+    elif isinstance(bucket, set):
+        bucket.add(binding_key)
+    elif bucket != binding_key:
+        _binding_keys_by_object[obj_id] = {bucket, binding_key}
+
+
 def _index_binding(source_obj: Any, target_obj: Any, binding_key: BindingKey) -> None:
     """Index both endpoints so remove() can find affected binding lists without a full scan."""
-    source_obj_id = id(source_obj)
-    source_bucket = _binding_keys_by_object.get(source_obj_id)
-    if source_bucket is None:
-        _binding_keys_by_object[source_obj_id] = binding_key
-    elif isinstance(source_bucket, set):
-        source_bucket.add(binding_key)
-    elif source_bucket != binding_key:
-        _binding_keys_by_object[source_obj_id] = {source_bucket, binding_key}
-
-    target_obj_id = id(target_obj)
-    target_bucket = _binding_keys_by_object.get(target_obj_id)
-    if target_bucket is None:
-        _binding_keys_by_object[target_obj_id] = binding_key
-    elif isinstance(target_bucket, set):
-        target_bucket.add(binding_key)
-    elif target_bucket != binding_key:
-        _binding_keys_by_object[target_obj_id] = {target_bucket, binding_key}
+    _add_binding_key_to_object_index(id(source_obj), binding_key)
+    _add_binding_key_to_object_index(id(target_obj), binding_key)
 
 
 def _bind_one_way(source_obj: Any, source_name: NamePath, target_obj: Any, target_name: NamePath,

@@ -129,7 +129,7 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
     """
     signature = inspect.signature(original_func)
     default_prop_params = _default_prop_params(signature)
-    requires_signature_bind = any(param.positional_only for param in default_prop_params)
+    has_positional_only_default_props = any(param.positional_only for param in default_prop_params)
     fallback_kwargs_by_arg_count = _fallback_kwargs_by_arg_count(signature, default_prop_params)
     positional_default_prop_indices: tuple[int, ...] = tuple(
         index for param in default_prop_params if (index := param.positional_arg_index) is not None
@@ -138,7 +138,7 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
     @functools.wraps(original_func)
     def decorated(*args: P.args, **kwargs: P.kwargs) -> R:
         # Common constructor calls can resolve omitted sentinels without normalizing every argument.
-        if requires_signature_bind or (not args and 'self' not in kwargs):
+        if has_positional_only_default_props or (not args and 'self' not in kwargs):
             return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params, args, kwargs)
 
         element: Element = args[0] if args else kwargs['self']  # type: ignore[assignment]

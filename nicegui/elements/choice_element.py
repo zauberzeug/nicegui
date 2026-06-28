@@ -64,23 +64,23 @@ class ChoiceElement(ValueElement[Any]):
         shallowly because mutating keys in place would violate Python's hash contract.
         """
         if isinstance(self.options, list):
-            values_snapshot = self._copy_client_visible_options(self._values)
+            values_snapshot = self._copy_options_for_snapshot(self._values)
             return values_snapshot, values_snapshot
-        return list(self._values), self._copy_client_visible_options(self._labels)
+        return list(self._values), self._copy_options_for_snapshot(self._labels)
 
     @staticmethod
-    def _copy_client_visible_options(options: list[Any]) -> list[Any]:
+    def _copy_options_for_snapshot(options: list[Any]) -> list[Any]:
         """Deep-copy options when possible without rejecting valid non-copyable values."""
-        copied_options = list(options)
-        for option in copied_options:
+        options_snapshot = list(options)
+        for option in options_snapshot:
             if type(option) not in _IMMUTABLE_OPTION_TYPES:
                 break
         else:
-            return copied_options
+            return options_snapshot
         try:
-            return deepcopy(copied_options)
+            return deepcopy(options_snapshot)
         except Exception:  # some valid option objects are not deepcopy-able
-            return copied_options
+            return options_snapshot
 
     def _update_options(self) -> None:
         before_value = self.value

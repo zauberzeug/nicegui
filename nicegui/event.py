@@ -15,6 +15,7 @@ from .client import Client
 from .slot import Slot
 
 P = ParamSpec('P')
+_EVENT_FORWARDING_METHODS = {'emit', 'call'}
 
 
 @dataclass(kw_only=True, slots=True)
@@ -189,7 +190,7 @@ def _should_forward_event_args(callback: Callable[P, Any] | Callable[[], Any], e
     # Event.emit/call accept *args, so signature inspection alone cannot tell they forward payloads.
     return (
         isinstance(getattr(callback, '__self__', None), Event)
-        and getattr(callback, '__name__', None) in {'emit', 'call'}
+        and getattr(callback, '__name__', None) in _EVENT_FORWARDING_METHODS
     )
 
 
