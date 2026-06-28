@@ -6,6 +6,8 @@ from typing_extensions import Self
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
+# Scalar types whose values are never mutated in place; the shallow-copied snapshot can be
+# compared by value without needing deepcopy.
 _IMMUTABLE_OPTION_TYPES = frozenset({str, int, float, bool, type(None)})
 
 

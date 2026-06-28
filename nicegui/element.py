@@ -457,6 +457,9 @@ class Element(Visibility):
 
     def update(self) -> None:
         """Update the element on the client side."""
+        # NOTE: This method intentionally duplicates _is_safe_to_interact() inline so it can
+        # reuse the resolved `client` for the outbox call below (avoiding a second attribute
+        # and weakref dereference on every update). Keep the two in sync.
         client = self._client()
         if client is None or client.is_deleted:
             return
@@ -511,6 +514,9 @@ class Element(Visibility):
 
     def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
         """Iterate over the descendants of the element.
+
+        Iterates over *all* slots' children (not just the default slot), so elements
+        in named slots are included in the traversal.
 
         :param include_self: whether to include the element itself in the iteration
         """
