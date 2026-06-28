@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
 
 from . import background_tasks, core, helpers
+from .helpers.functions import is_unmanaged_awaitable
 from .slot import Slot
 
 if TYPE_CHECKING:
@@ -467,7 +468,7 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()
-        if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
+        if is_unmanaged_awaitable(result):
             background_tasks.create_or_defer(_await_and_handle_in_context(result, handler_context), name=str(handler))
     except Exception as e:
         core.app.handle_exception(e)
@@ -482,7 +483,7 @@ def handle_observable_change(handler: Handler[ObservableChangeEventArguments], s
             )
         else:
             result = cast(Callable[[], Any], handler)()
-        if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
+        if is_unmanaged_awaitable(result):
             background_tasks.create_or_defer(_await_and_handle_in_context(result, nullcontext()), name=str(handler))
     except Exception as e:
         core.app.handle_exception(e)

@@ -194,6 +194,7 @@ def _remove_active_links_for_objects(removed_object_ids: set[ObjectId]) -> None:
 
 
 def _get_attribute(obj: object | Mapping, name: NamePath) -> Any:
+    """Read a nested attribute or key from *obj*, returning ``_MISSING`` if any segment is absent."""
     if len(name) == 1:
         key = name[0]
         try:
@@ -209,6 +210,7 @@ def _get_attribute(obj: object | Mapping, name: NamePath) -> Any:
 
 
 def _set_attribute(obj: object | Mapping, name: NamePath, value: Any) -> None:
+    """Write *value* into a nested attribute or key on *obj*, auto-creating dict intermediates."""
     if len(name) == 1:
         key = name[0]
         if isinstance(obj, MutableMapping):
@@ -248,6 +250,7 @@ async def refresh_loop() -> None:
 
 
 def _refresh_step() -> None:
+    """Iterate all polling-based active links, propagating any changed values to their targets."""
     t = time.time()
     for link in active_links:
         (source_obj, source_name, target_obj, target_name, transform) = link
@@ -262,10 +265,12 @@ def _refresh_step() -> None:
 
 
 def _propagate(source_obj: Any, source_name: NamePath) -> None:
+    """Propagate a source value change through all dependent bindings, recursively."""
     _propagate_recursively(source_obj, source_name, set())
 
 
 def _propagate_recursively(source_obj: Any, source_name: NamePath, visited: set[BindingKey]) -> None:
+    """Depth-first propagate a value change from source to targets, skipping visited keys to avoid cycles."""
     source_key = (id(source_obj), source_name)
     if source_key in visited:
         return

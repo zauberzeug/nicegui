@@ -12,6 +12,7 @@ from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .client import Client
+from .helpers.functions import is_unmanaged_awaitable
 from .slot import Slot
 
 P = ParamSpec('P')
@@ -141,8 +142,7 @@ class Event(Generic[P]):
                     result = func(*args, **kwargs)
                 else:
                     result = func()  # type: ignore[call-arg]
-                # Most handlers return None or self; only run the heavier awaitable checks for possible awaitables.
-                if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
+                if is_unmanaged_awaitable(result):
                     name = f'{callback.filepath}:{callback.line}'
                     background_tasks.create_or_defer(callback.await_result(result), name=name)
             except Exception as e:
@@ -177,7 +177,7 @@ class Event(Generic[P]):
 
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
     result = callback.run(*args, **kwargs)
-    if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
+    if is_unmanaged_awaitable(result):
         result = await callback.await_result(result)
     return result
 

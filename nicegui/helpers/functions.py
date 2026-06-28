@@ -129,6 +129,15 @@ def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
     return isinstance(result, Awaitable) and not isinstance(result, (NoImplicitAwait, AwaitableResponse, asyncio.Task))
 
 
+def is_unmanaged_awaitable(result: Any) -> bool:
+    """Return True if *result* is an awaitable that should be scheduled as a background task.
+
+    This combines the cheap None/__await__ guard with ``should_await`` so callers
+    avoid two separate conditionals at every dispatch site.
+    """
+    return result is not None and hasattr(result, '__await__') and should_await(result)
+
+
 async def await_with_context(awaitable: Awaitable[_T], context: AbstractContextManager) -> _T:
     """Await an awaitable within a context manager."""
     with context:

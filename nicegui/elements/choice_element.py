@@ -75,7 +75,7 @@ class ChoiceElement(ValueElement[Any]):
         for option in options_snapshot:
             if type(option) not in _IMMUTABLE_OPTION_TYPES:
                 break
-        else:
+        else:  # all options are immutable -> the shallow copy is a valid snapshot
             return options_snapshot
         try:
             return deepcopy(options_snapshot)

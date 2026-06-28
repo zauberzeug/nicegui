@@ -4,7 +4,9 @@ from typing import Any
 
 from fastapi import Request
 
+# Vue event modifiers that change listener registration semantics (not DOM event behavior).
 _SPECIAL_EVENT_MODIFIERS = {'capture', 'once', 'passive'}
+# Vue key / mouse / system modifiers for conditional event handling.
 _EVENT_MODIFIERS = {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}
 
 

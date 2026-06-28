@@ -36,24 +36,30 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def _handle_change(self) -> None:
         self.last_modified = time()
-        handlers = self._change_handlers
-        if self._parent is None:
-            if not handlers:
-                return
-            if len(handlers) == 1:
-                # Single handler: try the direct hook before building event arguments.
-                # Subclasses override it to intercept their own _update handler.
-                handler = handlers[0]
-                try:
-                    if self._handle_direct_change_handler(handler):
-                        return
-                except Exception as e:
-                    core.app.handle_exception(e)
-                    return  # Don't fall through to generic dispatch after a hook failure
+        # Skip dispatch when a root collection has no registered change handlers.
+        if self._parent is None and not self._change_handlers:
+            return
+        # Parent-chained collections or multiple handlers: use full dispatch for every handler.
+        if self._parent is not None or len(self._change_handlers) != 1:
+            for handler in self.change_handlers:
                 events.handle_observable_change(handler, self)
+            return
+        # Optimised path: single handler on a root collection (no parent delegation).
+        self._handle_single_root_change()
+
+    def _handle_single_root_change(self) -> None:
+        """Dispatch to the sole root-level handler, trying the direct hook first."""
+        handlers = self._change_handlers
+        if not handlers:
+            return
+        handler = handlers[0]
+        try:
+            if self._handle_direct_change_handler(handler):
                 return
-        for handler in self.change_handlers:
-            events.handle_observable_change(handler, self)
+        except Exception as e:
+            core.app.handle_exception(e)
+            return
+        events.handle_observable_change(handler, self)
 
     def _handle_direct_change_handler(self, handler: Callable) -> bool:
         """Subclass hook: process a known change handler without argument dispatch.

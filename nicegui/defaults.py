@@ -138,13 +138,15 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
     @functools.wraps(original_func)
     def decorated(*args: P.args, **kwargs: P.kwargs) -> R:
         # Common constructor calls can resolve omitted sentinels without normalizing every argument.
-        if has_positional_only_default_props or (not args and 'self' not in kwargs):
+        needs_full_signature_bind = has_positional_only_default_props or (not args and 'self' not in kwargs)
+        if needs_full_signature_bind:
             return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params, args, kwargs)
 
         element: Element = args[0] if args else kwargs['self']  # type: ignore[assignment]
         default_props = element._default_props  # pylint: disable=protected-access
         arg_count = len(args)
-        if not default_props and not kwargs and arg_count < len(fallback_kwargs_by_arg_count):
+        can_skip_resolution = not default_props and not kwargs
+        if can_skip_resolution and arg_count < len(fallback_kwargs_by_arg_count):
             for supplied_arg_index in positional_default_prop_indices:
                 if supplied_arg_index < arg_count and isinstance(args[supplied_arg_index], SentinelValue):
                     return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params,
