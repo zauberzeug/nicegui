@@ -28,6 +28,12 @@ class Slot:
         self.template = template
         self.children: list[Element] = []
 
+    @staticmethod
+    def _get_cached_slot_entry(task_id: int) -> tuple[int, list[Slot] | None] | None:
+        """Return the cached (task_id, stack_or_None) tuple if valid for *task_id*, else None."""
+        cached = _slot_stack_cache.get()
+        return cached if cached is not None and cached[0] == task_id else None
+
     @property
     def parent(self) -> Element:
         """The parent element this slot belongs to."""
@@ -58,9 +64,8 @@ class Slot:
     def peek_stack(cls) -> list[Slot] | None:
         """Return the current task's slot stack without creating one."""
         task_id = get_task_id()
-        cached = _slot_stack_cache.get()
-        if cached is not None and cached[0] == task_id:
-            return cached[1]
+        if (entry := cls._get_cached_slot_entry(task_id)) is not None:
+            return entry[1]
         stack = cls.stacks.get(task_id)
         _slot_stack_cache.set((task_id, stack))
         return stack
@@ -69,9 +74,8 @@ class Slot:
     def _get_or_create_stack(cls) -> tuple[int, list[Slot]]:
         """Return (task_id, stack) for the current task."""
         task_id = get_task_id()
-        cached = _slot_stack_cache.get()
-        if cached is not None and cached[0] == task_id:
-            stack = cached[1]
+        if (entry := cls._get_cached_slot_entry(task_id)) is not None:
+            stack = entry[1]
             if stack is not None:
                 return task_id, stack
         stack = cls.stacks.get(task_id)
@@ -89,8 +93,7 @@ class Slot:
         stack = cls.stacks.get(task_id)
         if stack is not None and not stack:
             del cls.stacks[task_id]
-            cached = _slot_stack_cache.get()
-            if cached is not None and cached[0] == task_id:
+            if cls._get_cached_slot_entry(task_id) is not None:
                 _slot_stack_cache.set(None)
 
     @classmethod

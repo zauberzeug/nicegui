@@ -164,7 +164,8 @@ def _collect_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[Bin
     The reverse index stores the source binding key for both endpoints. For target-only removals, remove() still needs
     the source key so it can prune the corresponding entry from that source's binding list.
     """
-    # Stay at None until the first hit so ghost removals avoid allocating a set.
+    # Stay at None until the first hit so remove() calls for objects with no active
+    # bindings ("ghost removals") skip the set allocation and traversal entirely.
     binding_keys: set[BindingKey] | None = None
     get_object_binding_keys = _binding_keys_by_object.get
     for obj_id in object_ids:

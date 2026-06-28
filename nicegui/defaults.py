@@ -132,7 +132,9 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
     has_positional_only_default_props = any(param.positional_only for param in default_prop_params)
     fallback_kwargs_by_arg_count = _fallback_kwargs_by_arg_count(signature, default_prop_params)
     positional_default_prop_indices: tuple[int, ...] = tuple(
-        index for param in default_prop_params if (index := param.positional_arg_index) is not None
+        param.positional_arg_index
+        for param in default_prop_params
+        if param.positional_arg_index is not None
     )
 
     @functools.wraps(original_func)
@@ -145,6 +147,8 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
         element: Element = args[0] if args else kwargs['self']  # type: ignore[assignment]
         default_props = element._default_props  # pylint: disable=protected-access
         arg_count = len(args)
+        # Fast path: when no custom default_props or kwargs exist and no positional arg
+        # is itself a SentinelValue, use the precomputed fallback table (no Signature.bind).
         can_skip_resolution = not default_props and not kwargs
         if can_skip_resolution and arg_count < len(fallback_kwargs_by_arg_count):
             for supplied_arg_index in positional_default_prop_indices:

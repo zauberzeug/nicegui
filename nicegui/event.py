@@ -4,6 +4,7 @@ import asyncio
 import sys
 import weakref
 from collections.abc import Awaitable, Callable
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic
 from weakref import WeakSet
@@ -27,37 +28,35 @@ class Callback(Generic[P]):
     line: int
     slot: weakref.ref[Slot] | None = None
 
+    @contextmanager
+    def _resolved_slot(self):
+        """Yield after resolving and pushing this callback's slot onto the stack, if any."""
+        slot_ref = self.slot
+        if slot_ref is None:
+            yield
+            return
+        slot = slot_ref()
+        if slot is None:
+            yield
+            return
+        _, stack = Slot._get_or_create_stack()  # pylint: disable=protected-access
+        stack.append(slot)
+        try:
+            yield
+        finally:
+            stack.pop()
+
     def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
         """Run the callback."""
         func = self.func
         expect_args = self.expect_args
-        slot_ref = self.slot
-        if slot_ref is None:
+        with self._resolved_slot():
             return func(*args, **kwargs) if expect_args else func()  # type: ignore[call-arg]
-        slot = slot_ref()
-        if slot is None:
-            return func(*args, **kwargs) if expect_args else func()  # type: ignore[call-arg]
-        _, stack = Slot._get_or_create_stack()  # pylint: disable=protected-access
-        stack.append(slot)
-        try:
-            return func(*args, **kwargs) if expect_args else func()  # type: ignore[call-arg]
-        finally:
-            stack.pop()
 
     async def await_result(self, awaitable: Awaitable) -> Any:
         """Await the result of the callback."""
-        slot_ref = self.slot
-        if slot_ref is None:
+        with self._resolved_slot():
             return await awaitable
-        slot = slot_ref()
-        if slot is None:
-            return await awaitable
-        _, stack = Slot._get_or_create_stack()  # pylint: disable=protected-access
-        stack.append(slot)
-        try:
-            return await awaitable
-        finally:
-            stack.pop()
 
 
 class Event(Generic[P]):

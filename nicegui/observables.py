@@ -10,6 +10,7 @@ from typing_extensions import Self
 
 from . import core, events
 
+# Deeply-immutable types that never need ObservableDict/List/Set wrapping overhead.
 _OBSERVABLE_UNCHANGED_TYPES = frozenset({str, int, float, bool, type(None), tuple, bytes, frozenset})
 
 
@@ -49,10 +50,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def _handle_single_root_change(self) -> None:
         """Dispatch to the sole root-level handler, trying the direct hook first."""
-        handlers = self._change_handlers
-        if not handlers:
-            return
-        handler = handlers[0]
+        handler = self._change_handlers[0]
         try:
             if self._handle_direct_change_handler(handler):
                 return
@@ -70,6 +68,9 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
         Props, Classes, and Style override this to intercept their own _update
         handler and skip event-argument overhead on every mutation.
+
+        See: ``Props._handle_direct_change_handler``, ``Classes._handle_direct_change_handler``,
+        and ``Style._handle_direct_change_handler``.
         """
         return False
 

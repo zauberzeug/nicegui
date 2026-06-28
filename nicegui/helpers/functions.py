@@ -68,10 +68,13 @@ def _expects_arguments_from_python_callable(func: Callable) -> bool | None:
         return None
 
     code = function.__code__
+    # co_argcount is total positional+keyword parameter count; co_varnames lists them first.
+    # Subtract defaults and bound positional args to find how many args lack a default value.
     required_positional = code.co_argcount - len(function.__defaults__ or ()) - bound_positional_count
     if required_positional > 0:
         return True
     if code.co_kwonlyargcount:
+        # Keyword-only parameter names sit in co_varnames after the positional+keyword args.
         keyword_only_names = code.co_varnames[code.co_argcount:code.co_argcount + code.co_kwonlyargcount]
         keyword_defaults = function.__kwdefaults__ or {}
         return any(name not in keyword_defaults for name in keyword_only_names)
