@@ -6,7 +6,7 @@ import weakref
 from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from typing_extensions import Self
 
@@ -37,6 +37,16 @@ if TYPE_CHECKING:
 TAG_START_CHAR = r':|[A-Z]|_|[a-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\U00010000-\U000EFFFF]'
 TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]'
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
+# Element tags repeat heavily; validate each distinct tag only once.
+_VALIDATED_TAGS: set[str] = set()
+
+
+def _validate_tag(tag: str) -> None:
+    if tag in _VALIDATED_TAGS:
+        return
+    if not TAG_PATTERN.match(tag):
+        raise ValueError(f'Invalid HTML tag: {tag}')
+    _VALIDATED_TAGS.add(tag)
 
 
 class Element(Visibility):
@@ -46,7 +56,7 @@ class Element(Visibility):
     _default_classes: ClassVar[list[str]] = []
     _default_style: ClassVar[dict[str, str]] = {}
 
-    def __init__(self, tag: str | None = None, *, _client: Client | None = None) -> None:
+    def __init__(self: Self, tag: str | None = None, *, _client: Client | None = None) -> None:
         """Generic Element
 
         This class is the base class for all other UI elements.
@@ -56,16 +66,25 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
-        client = _client or context.client
+        slot_stack = Slot.peek_stack() if _client is not None else context.slot_stack
+        parent_slot = slot_stack[-1] if slot_stack else None
+        parent_element = parent_slot.parent if parent_slot is not None else None
+        if _client is not None:
+            client = _client
+        elif parent_element is not None:
+            client = parent_element.client
+        else:
+            client = context.client
         self._client = weakref.ref(client)
-        self.id = client.next_element_id
-        client.next_element_id += 1
-        self.tag = tag if tag else self.component.tag if self.component else 'div'
-        if not TAG_PATTERN.match(self.tag):
-            raise ValueError(f'Invalid HTML tag: {self.tag}')
-        self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
-        self._style: Style[Self] = Style(self._default_style, element=cast(Self, self))
-        self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
+        element_id = client.next_element_id
+        client.next_element_id = element_id + 1
+        self.id = element_id
+        component = self.component
+        self.tag = tag if tag else component.tag if component else 'div'
+        _validate_tag(self.tag)
+        self._classes: Classes[Self] = Classes(self._default_classes, element=self)
+        self._style: Style[Self] = Style(self._default_style, element=self)
+        self._props: Props[Self] = Props(self._default_props, element=self)
         self._markers: list[str] = []
         self._event_listeners: dict[str, EventListener] = {}
         self._text: str | None = None
@@ -74,17 +93,16 @@ class Element(Visibility):
         self._update_method: str | None = None
         self._deleted: bool = False
 
-        client.elements[self.id] = self
+        client.elements[element_id] = self
         self._parent_slot: weakref.ref[Slot] | None = None
-        slot_stack = context.slot_stack
-        if slot_stack:
-            parent_slot = slot_stack[-1]
+        if parent_slot is not None:
             parent_slot.children.append(self)
             self._parent_slot = weakref.ref(parent_slot)
 
-        client.outbox.enqueue_update(self)
-        if self._parent_slot:
-            client.outbox.enqueue_update(parent_slot.parent)
+        outbox = client.outbox
+        outbox.enqueue_update(self)
+        if parent_element is not None:
+            outbox.enqueue_update(parent_element)
 
         self._props.add_rename('resource_path', 'resource-path')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('dynamic_resource_path', 'dynamic-resource-path')  # DEPRECATED: remove in NiceGUI 4.0
@@ -188,8 +206,9 @@ class Element(Visibility):
         :param template: Vue template of the slot
         :return: the slot
         """
-        self.slots[name] = Slot(self, name, template)
-        return self.slots[name]
+        slot = Slot(self, name, template)
+        self.slots[name] = slot
+        return slot
 
     def __enter__(self) -> Self:
         self.default_slot.__enter__()
@@ -225,27 +244,28 @@ class Element(Visibility):
                 **({'template': slot.template} if slot.template is not None else {}),
             }
             for name, slot in self.slots.items()
-            if slot != self.default_slot
+            if slot is not self.default_slot
         }
 
     def _to_dict(self) -> dict[str, Any]:
-        return {
-            'tag': self.tag,
-            **({'text': self._text} if self._text is not None else {}),
-            **{
-                key: value
-                for key, value in {
-                    'class': self._classes,
-                    'style': self._style,
-                    'props': self._props,
-                    'slots': self._collect_slot_dict(),
-                    'children': [child.id for child in self.default_slot.children],
-                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
-                    'update_method': self._update_method,
-                }.items()
-                if value
-            },
-        }
+        result: dict[str, Any] = {'tag': self.tag}
+        if self._text is not None:
+            result['text'] = self._text
+        if self._classes:
+            result['class'] = self._classes
+        if self._style:
+            result['style'] = self._style
+        if self._props:
+            result['props'] = self._props
+        if len(self.slots) > 1 and (slots := self._collect_slot_dict()):
+            result['slots'] = slots
+        if self.default_slot.children:
+            result['children'] = [child.id for child in self.default_slot.children]
+        if self._event_listeners:
+            result['events'] = [listener.to_dict() for listener in self._event_listeners.values()]
+        if self._update_method:
+            result['update_method'] = self._update_method
+        return result
 
     @property
     def classes(self) -> Classes[Self]:
@@ -389,9 +409,15 @@ class Element(Visibility):
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         """
         if handler or js_handler:
+            event_type = helpers.event_type_to_camel_case(type) if '-' in type else type
+            element_id = self.id
+            event_listeners = self._event_listeners
+            listener_id = f'{element_id}:{len(event_listeners)}'
             listener = EventListener(
-                element_id=self.id,
-                type=helpers.event_type_to_camel_case(type),
+                # The frontend uses listener IDs as throttle keys, so they must be client-wide unique.
+                id=listener_id,
+                element_id=element_id,
+                type=event_type,
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 js_handler=None if js_handler == '(...args) => emit(...args)' else js_handler,
@@ -400,7 +426,7 @@ class Element(Visibility):
                 trailing_events=trailing_events,
                 request=storage.request_contextvar.get(),
             )
-            self._event_listeners[listener.id] = listener
+            event_listeners[listener_id] = listener
             self.update()
         return self
 
@@ -431,9 +457,16 @@ class Element(Visibility):
 
     def update(self) -> None:
         """Update the element on the client side."""
-        if not self._is_safe_to_interact():
+        client = self._client()
+        if client is None or client.is_deleted:
             return
-        self.client.outbox.enqueue_update(self)
+        if self._deleted:
+            helpers.warn_once('An element has been deleted but is still being used. '
+                              'This is most likely a bug in your application code. '
+                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
+                              stack_info=True)
+            return
+        client.outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
         """Run a method on the client side.
@@ -483,8 +516,9 @@ class Element(Visibility):
         """
         if include_self:
             yield self
-        for child in self:
-            yield from child.descendants(include_self=True)
+        for slot in self.slots.values():
+            for child in slot.children:
+                yield from child.descendants(include_self=True)
 
     def clear(self) -> Self:
         """Remove all child elements."""

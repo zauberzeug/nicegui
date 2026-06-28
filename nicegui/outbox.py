@@ -36,7 +36,7 @@ class Outbox:
 
     def __init__(self, client: Client) -> None:
         self._client = weakref.ref(client)
-        self.updates: weakref.WeakValueDictionary[ElementId, Element | Deleted] = weakref.WeakValueDictionary()
+        self.updates: dict[ElementId, Element | Deleted] = {}
         self.messages: deque[Message] = deque()
         self.message_history: deque[HistoryEntry] = deque()
         self.next_message_id: int = 0
@@ -98,9 +98,9 @@ class Outbox:
 
                 self._enqueue_event.clear()
 
-                coros = []
+                emit_coroutines = []
                 if self.updates:
-                    data = {
+                    update_payload = {
                         element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
@@ -112,19 +112,19 @@ class Outbox:
                         and component.name not in self._loaded_components
                     ]
                     if js_components:
-                        coros.append(self._emit((client.id, 'load_js_components', {
+                        emit_coroutines.append(self._emit((client.id, 'load_js_components', {
                             'components': [{'key': c.key, 'tag': c.tag} for c in js_components],
                         })))
                         self._loaded_components.update(c.name for c in js_components)
-                    coros.append(self._emit((client.id, 'update', data)))
+                    emit_coroutines.append(self._emit((client.id, 'update', update_payload)))
                     self.updates.clear()
 
                 if self.messages:
                     for message in self.messages:
-                        coros.append(self._emit(message))
+                        emit_coroutines.append(self._emit(message))
                     self.messages.clear()
 
-                for coro in coros:
+                for coro in emit_coroutines:
                     try:
                         await coro
                     except Exception as e:

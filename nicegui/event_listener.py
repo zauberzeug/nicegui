@@ -1,6 +1,5 @@
-import uuid
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from fastapi import Request
@@ -8,7 +7,7 @@ from fastapi import Request
 
 @dataclass(kw_only=True, slots=True)
 class EventListener:
-    id: str = field(init=False)
+    id: str
     element_id: int
     type: str
     args: Sequence[Sequence[str] | None]
@@ -19,16 +18,20 @@ class EventListener:
     trailing_events: bool
     request: Request | None
 
-    def __post_init__(self) -> None:
-        self.id = str(uuid.uuid4())
-
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the event listener."""
-        words = self.type.split('.')
-        type_ = words.pop(0)
-        specials = [w for w in words if w in {'capture', 'once', 'passive'}]
-        modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
-        keys = [w for w in words if w not in specials + modifiers]
+        type_, _, words = self.type.partition('.')
+        specials: list[str] = []
+        modifiers: list[str] = []
+        keys: list[str] = []
+        if words:
+            for word in words.split('.'):
+                if word in {'capture', 'once', 'passive'}:
+                    specials.append(word)
+                elif word in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}:
+                    modifiers.append(word)
+                else:
+                    keys.append(word)
         return {
             'listener_id': self.id,
             'type': type_,
