@@ -6,17 +6,14 @@ import webbrowser
 
 def is_port_open(host: str, port: int) -> bool:
     """Check if the port is open by checking if a TCP connection can be established."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.connect((host, port))
-    except (ConnectionRefusedError, TimeoutError):
-        return False
-    except Exception:
-        return False
-    else:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        try:
+            sock.connect((host, port))
+        except (ConnectionRefusedError, TimeoutError):
+            return False
+        except Exception:
+            return False
         return True
-    finally:
-        sock.close()
 
 
 def find_free_port() -> int:
@@ -52,16 +49,16 @@ def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[th
 
     :return: A tuple consisting of the actual thread object and an event for stopping the thread.
     """
-    cancel = threading.Event()
+    cancel_event = threading.Event()
 
-    def in_thread(protocol: str, host: str, port: int, path: str) -> None:
+    def in_thread() -> None:
         while not is_port_open(host, port):
-            if cancel.is_set():
+            if cancel_event.is_set():
                 return
             time.sleep(0.1)
-        webbrowser.open(f'{format_url(protocol, host, port)}/{path.lstrip("/")}')
+        webbrowser.open(f"{format_url(protocol, host, port)}/{path.lstrip('/')}")
 
     host = host if host != '0.0.0.0' else '127.0.0.1'
-    thread = threading.Thread(target=in_thread, args=(protocol, host, port, path), daemon=True)
+    thread = threading.Thread(target=in_thread, daemon=True)
     thread.start()
-    return thread, cancel
+    return thread, cancel_event

@@ -1,7 +1,9 @@
 import contextlib
+import functools
 import socket
 import time
 import webbrowser
+from inspect import Parameter, Signature
 from pathlib import Path
 
 from nicegui import helpers
@@ -22,8 +24,8 @@ def test_is_port_open():
         assert helpers.is_port_open(host, port), 'after opening the socket, the port should be detected'
 
 
-def test_is_port_open_on_bad_ip():
-    assert not helpers.is_port_open('1.2', 0), 'should not be able to connect to a bad IP'
+def test_is_port_open_on_invalid_endpoint():
+    assert not helpers.is_port_open('0.0.0.0', 0), 'should not be able to connect to an invalid endpoint'
 
 
 def test_format_url():
@@ -36,13 +38,8 @@ def test_format_url():
 
 
 def test_schedule_browser(monkeypatch):
-    called_with_url = None
-
-    def mock_webbrowser_open(url):
-        nonlocal called_with_url
-        called_with_url = url
-
-    monkeypatch.setattr(webbrowser, 'open', mock_webbrowser_open)
+    opened_urls: list[str] = []
+    monkeypatch.setattr(webbrowser, 'open', opened_urls.append)
 
     with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         sock.bind(('127.0.0.1', 0))
@@ -52,24 +49,19 @@ def test_schedule_browser(monkeypatch):
 
         try:
             # port bound, but not opened yet
-            assert called_with_url is None
+            assert not opened_urls
 
             sock.listen()
             # port opened
             time.sleep(1)
-            assert called_with_url == f'http://{host}:{port}/my-path'
+            assert opened_urls == [f'http://{host}:{port}/my-path']
         finally:
             cancel_event.set()
 
 
 def test_canceling_schedule_browser(monkeypatch):
-    called_with_url = None
-
-    def mock_webbrowser_open(url):
-        nonlocal called_with_url
-        called_with_url = url
-
-    monkeypatch.setattr(webbrowser, 'open', mock_webbrowser_open)
+    opened_urls: list[str] = []
+    monkeypatch.setattr(webbrowser, 'open', opened_urls.append)
 
     # find a free port ...
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -84,7 +76,7 @@ def test_canceling_schedule_browser(monkeypatch):
     cancel_event.set()
     time.sleep(0.2)
     assert not thread.is_alive()
-    assert called_with_url is None
+    assert not opened_urls
 
 
 def test_is_file():
@@ -105,3 +97,44 @@ def test_event_type_to_camel_case():
     assert helpers.event_type_to_camel_case('keydown.enter') == 'keydown.enter'
     assert helpers.event_type_to_camel_case('keydown.+') == 'keydown.+'
     assert helpers.event_type_to_camel_case('keydown.-') == 'keydown.-'
+
+
+def test_expects_arguments():
+    def no_args():
+        pass
+
+    def optional_arg(value=None):
+        pass
+
+    def one_arg(value):
+        pass
+
+    def var_args(*args, **kwargs):
+        pass
+
+    def keyword_only(*, value):
+        pass
+
+    class Example:
+        def method(self):
+            pass
+
+        def method_with_arg(self, value):
+            pass
+
+    assert not helpers.expects_arguments(no_args)
+    assert not helpers.expects_arguments(optional_arg)
+    assert helpers.expects_arguments(one_arg)
+    assert not helpers.expects_arguments(var_args)
+    assert helpers.expects_arguments(keyword_only)
+    assert not helpers.expects_arguments(Example().method)
+    assert helpers.expects_arguments(Example().method_with_arg)
+    assert not helpers.expects_arguments(functools.partial(one_arg, 1))
+
+    def with_custom_signature():
+        pass
+
+    with_custom_signature.__signature__ = Signature([  # type: ignore[attr-defined]
+        Parameter('value', Parameter.POSITIONAL_OR_KEYWORD),
+    ])
+    assert helpers.expects_arguments(with_custom_signature)
