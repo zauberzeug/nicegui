@@ -6,9 +6,8 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from collections.abc import Callable, Iterable, Mapping, MutableMapping
-from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 from typing_extensions import dataclass_transform
 
@@ -18,18 +17,97 @@ from .logging import log
 if TYPE_CHECKING:
     from _typeshed import DataclassInstance, IdentityFunction
 
+ObjectId = int
+NamePath = tuple[str, ...]
+NameBucket = NamePath | set[NamePath]
+BindingKey = tuple[ObjectId, NamePath]
+BindingKeyBucket = BindingKey | set[BindingKey]
+Transform = Callable[[Any], Any] | None
+Binding = tuple[Any, Any, NamePath, Transform]
+ActiveLink = tuple[Any, NamePath, Any, NamePath, Transform]
+BindableEntry = tuple[weakref.ref[Any], NameBucket]
+
+
+class _BindablePropertyRegistry:
+    """Weak bindable-property registry keyed by object ID with name-path buckets.
+
+    Most bindable objects expose one bindable property, so the common case stores a single NamePath and upgrades to a
+    set only when the same object has multiple bindable properties. This keeps weakref cleanup cheap without allocating
+    a set for every entry.
+    """
+
+    def __init__(self) -> None:
+        self._entries_by_object_id: dict[ObjectId, BindableEntry] = {}
+
+    def _discard_object_id(self, obj_id: ObjectId) -> None:
+        self._entries_by_object_id.pop(obj_id, None)
+
+    def __setitem__(self, key: BindingKey, obj: Any) -> None:
+        obj_id, name_path = key
+        entry = self._entries_by_object_id.get(obj_id)
+        if entry is None:
+            def discard(_: weakref.ref[Any], obj_id: ObjectId = obj_id) -> None:
+                self._discard_object_id(obj_id)
+            self._entries_by_object_id[obj_id] = (weakref.ref(obj, discard), name_path)
+            return
+        ref, name_bucket = entry
+        if isinstance(name_bucket, set):
+            name_bucket.add(name_path)
+        elif name_bucket != name_path:
+            self._entries_by_object_id[obj_id] = (ref, {name_bucket, name_path})
+
+    def contains_key(self, key: BindingKey) -> bool:
+        """Return whether a validated binding key is registered."""
+        obj_id, name_path = key
+        entry = self._entries_by_object_id.get(obj_id)
+        if entry is None:
+            return False
+        ref, name_bucket = entry
+        if ref() is None:
+            self._discard_object_id(obj_id)
+            return False
+        return name_path in name_bucket if isinstance(name_bucket, set) else name_bucket == name_path
+
+    def __contains__(self, key: object) -> bool:
+        if not isinstance(key, tuple) or len(key) != 2:
+            return False
+        obj_id, name_path = key
+        if not isinstance(obj_id, int) or not isinstance(name_path, tuple):
+            return False
+        return self.contains_key((obj_id, cast(NamePath, name_path)))
+
+    def __iter__(self) -> Iterator[BindingKey]:
+        # Copy before iterating because weakref callbacks can mutate this dictionary.
+        for obj_id, (ref, name_bucket) in list(self._entries_by_object_id.items()):
+            if ref() is None:
+                self._discard_object_id(obj_id)
+                continue
+            if isinstance(name_bucket, set):
+                for name_path in name_bucket:
+                    yield obj_id, name_path
+            else:
+                yield obj_id, name_bucket
+
+    def clear(self) -> None:
+        self._entries_by_object_id.clear()
+
+    def discard_object_ids(self, object_ids: Iterable[int]) -> None:
+        pop = self._entries_by_object_id.pop
+        for obj_id in object_ids:
+            pop(obj_id, None)
+
+
 MAX_PROPAGATION_TIME = 0.01
 
-propagation_visited: ContextVar[set[tuple[int, tuple[str, ...]]] | None] = \
-    ContextVar('propagation_visited', default=None)
-
 bindings: defaultdict[
-    tuple[int, tuple[str, ...]],
-    list[tuple[Any, Any, tuple[str, ...], Callable[[Any], Any] | None]]
+    BindingKey,
+    list[Binding]
 ] = defaultdict(list)
-bindable_properties: weakref.WeakValueDictionary[tuple[int, tuple[str, ...]], Any] = weakref.WeakValueDictionary()
-active_links: list[tuple[Any, tuple[str, ...], Any, tuple[str, ...], Callable[[Any], Any] | None]] = []
+bindable_properties: _BindablePropertyRegistry = _BindablePropertyRegistry()
+active_links: list[ActiveLink] = []
 _active_links_added = asyncio.Event()
+# Maps object IDs to binding keys that reference them, so remove() avoids scanning all bindings.
+_binding_keys_by_object: dict[ObjectId, BindingKeyBucket] = {}
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -37,7 +115,95 @@ T = TypeVar('T')
 _MISSING = object()
 
 
-def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
+def _discard_binding_key_from_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
+    """Remove one binding key from the reverse index used by remove()."""
+    bucket = _binding_keys_by_object.get(obj_id)
+    if bucket is None:
+        return
+    if not isinstance(bucket, set):
+        if bucket == binding_key:
+            del _binding_keys_by_object[obj_id]
+        return
+    bucket.discard(binding_key)
+    if not bucket:
+        del _binding_keys_by_object[obj_id]
+
+
+def _index_binding(source_obj: Any, target_obj: Any, binding_key: BindingKey) -> None:
+    """Index both endpoints so remove() can find affected binding lists without a full scan."""
+    source_obj_id = id(source_obj)
+    source_bucket = _binding_keys_by_object.get(source_obj_id)
+    if source_bucket is None:
+        _binding_keys_by_object[source_obj_id] = binding_key
+    elif isinstance(source_bucket, set):
+        source_bucket.add(binding_key)
+    elif source_bucket != binding_key:
+        _binding_keys_by_object[source_obj_id] = {source_bucket, binding_key}
+
+    target_obj_id = id(target_obj)
+    target_bucket = _binding_keys_by_object.get(target_obj_id)
+    if target_bucket is None:
+        _binding_keys_by_object[target_obj_id] = binding_key
+    elif isinstance(target_bucket, set):
+        target_bucket.add(binding_key)
+    elif target_bucket != binding_key:
+        _binding_keys_by_object[target_obj_id] = {target_bucket, binding_key}
+
+
+def _bind_one_way(source_obj: Any, source_name: NamePath, target_obj: Any, target_name: NamePath,
+                  transform: Transform) -> None:
+    """Register a one-way binding and run its initial propagation."""
+    binding_key = (id(source_obj), source_name)
+    bindings[binding_key].append((source_obj, target_obj, target_name, transform))
+    _index_binding(source_obj, target_obj, binding_key)
+    if not bindable_properties.contains_key(binding_key):
+        active_links.append((source_obj, source_name, target_obj, target_name, transform))
+        _active_links_added.set()
+    _propagate(source_obj, source_name)
+
+
+def _collect_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[BindingKey] | None:
+    """Return binding keys whose source or target may reference the given objects.
+
+    The reverse index stores the source binding key for both endpoints. For target-only removals, remove() still needs
+    the source key so it can prune the corresponding entry from that source's binding list.
+    """
+    # Stay at None until the first hit so ghost removals avoid allocating a set.
+    binding_keys: set[BindingKey] | None = None
+    get_object_binding_keys = _binding_keys_by_object.get
+    for obj_id in object_ids:
+        bucket = get_object_binding_keys(obj_id)
+        if bucket is None:
+            continue
+        if binding_keys is None:
+            binding_keys = set()
+        if isinstance(bucket, set):
+            binding_keys.update(bucket)
+        else:
+            binding_keys.add(bucket)
+    return binding_keys
+
+
+def _remove_active_links_for_objects(object_ids: set[ObjectId]) -> None:
+    """Drop polling fallback links that reference any removed object.
+
+    Bindable-property links propagate through bindings directly; active_links only contains links that need periodic
+    polling because their source is not a BindableProperty.
+    """
+    active_links[:] = [
+        (source_obj, source_name, target_obj, target_name, transform)
+        for source_obj, source_name, target_obj, target_name, transform in active_links
+        if id(source_obj) not in object_ids and id(target_obj) not in object_ids
+    ]
+
+
+def _get_attribute(obj: object | Mapping, name: NamePath) -> Any:
+    if len(name) == 1:
+        key = name[0]
+        try:
+            return obj[key] if isinstance(obj, Mapping) else getattr(obj, key)
+        except (KeyError, AttributeError):
+            return _MISSING
     try:
         for key in name:
             obj = obj[key] if isinstance(obj, Mapping) else getattr(obj, key)
@@ -46,7 +212,14 @@ def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
     return obj
 
 
-def _set_attribute(obj: object | Mapping, name: tuple[str, ...], value: Any) -> None:
+def _set_attribute(obj: object | Mapping, name: NamePath, value: Any) -> None:
+    if len(name) == 1:
+        key = name[0]
+        if isinstance(obj, MutableMapping):
+            obj[key] = value
+        else:
+            setattr(obj, key, value)
+        return
     for key in name[:-1]:
         if isinstance(obj, MutableMapping):
             obj = obj.setdefault(key, {})
@@ -92,37 +265,31 @@ def _refresh_step() -> None:
         log.warning(f'binding propagation for {len(active_links)} active links took {time.time() - t:.3f} s')
 
 
-def _propagate(source_obj: Any, source_name: tuple[str, ...]) -> None:
-    token = propagation_visited.set(set())
-    try:
-        _propagate_recursively(source_obj, source_name)
-    finally:
-        propagation_visited.reset(token)
+def _propagate(source_obj: Any, source_name: NamePath) -> None:
+    _propagate_recursively(source_obj, source_name, set())
 
 
-def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> None:
-    visited = propagation_visited.get()
-    assert visited is not None, 'propagation_visited is not set'
-
-    source_obj_id = id(source_obj)
-    if (source_obj_id, source_name) in visited:
+def _propagate_recursively(source_obj: Any, source_name: NamePath, visited: set[BindingKey]) -> None:
+    source_key = (id(source_obj), source_name)
+    if source_key in visited:
         return
-    visited.add((source_obj_id, source_name))
+    visited.add(source_key)
 
     if (source_value := _get_attribute(source_obj, source_name)) is _MISSING:
         return
 
-    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
-        if (id(target_obj), target_name) in visited:
+    for _, target_obj, target_name, transform in bindings.get(source_key, []):
+        target_key = (id(target_obj), target_name)
+        if target_key in visited:
             continue
 
         target_value = transform(source_value) if transform else source_value
         if (current := _get_attribute(target_obj, target_name)) is _MISSING or current != target_value:
             _set_attribute(target_obj, target_name, target_value)
-            _propagate_recursively(target_obj, target_name)
+            _propagate_recursively(target_obj, target_name, visited)
 
 
-def _check_attribute_exists(obj: Any, name: tuple[str, ...], *, role: Literal['self', 'other']) -> None:
+def _check_attribute_exists(obj: Any, name: NamePath, *, role: Literal['self', 'other']) -> None:
     if _get_attribute(obj, name) is not _MISSING:
         return
     for key in name:
@@ -142,12 +309,12 @@ def _check_attribute_exists(obj: Any, name: tuple[str, ...], *, role: Literal['s
         )
 
 
-def _check_self_and_other_attribute(self_obj: Any, self_name: tuple[str, ...], other_obj: Any,
-                                    other_name: tuple[str, ...],
+def _check_self_and_other_attribute(self_obj: Any, self_name: NamePath, other_obj: Any,
+                                    other_name: NamePath,
                                     self_strict: bool | None, other_strict: bool | None) -> None:
-    if self_strict or (self_strict is None and not _path_contains_dict(self_obj, self_name)):
+    if self_strict or (self_strict is None and not _path_contains_mapping(self_obj, self_name)):
         _check_attribute_exists(self_obj, self_name, role='self')
-    if other_strict or (other_strict is None and not _path_contains_dict(other_obj, other_name)):
+    if other_strict or (other_strict is None and not _path_contains_mapping(other_obj, other_name)):
         _check_attribute_exists(other_obj, other_name, role='other')
 
 
@@ -173,11 +340,7 @@ def bind_to(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, oth
     self_name_tuple = _normalize_name(self_name)
     other_name_tuple = _normalize_name(other_name)
     _check_self_and_other_attribute(self_obj, self_name_tuple, other_obj, other_name_tuple, self_strict, other_strict)
-    bindings[(id(self_obj), self_name_tuple)].append((self_obj, other_obj, other_name_tuple, forward))
-    if (id(self_obj), self_name_tuple) not in bindable_properties:
-        active_links.append((self_obj, self_name_tuple, other_obj, other_name_tuple, forward))
-        _active_links_added.set()
-    _propagate(self_obj, self_name_tuple)
+    _bind_one_way(self_obj, self_name_tuple, other_obj, other_name_tuple, forward)
 
 
 def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...],
@@ -202,11 +365,7 @@ def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, o
     self_name_tuple = _normalize_name(self_name)
     other_name_tuple = _normalize_name(other_name)
     _check_self_and_other_attribute(self_obj, self_name_tuple, other_obj, other_name_tuple, self_strict, other_strict)
-    bindings[(id(other_obj), other_name_tuple)].append((other_obj, self_obj, self_name_tuple, backward))
-    if (id(other_obj), other_name_tuple) not in bindable_properties:
-        active_links.append((other_obj, other_name_tuple, self_obj, self_name_tuple, backward))
-        _active_links_added.set()
-    _propagate(other_obj, other_name_tuple)
+    _bind_one_way(other_obj, other_name_tuple, self_obj, self_name_tuple, backward)
 
 
 def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...], *,
@@ -241,7 +400,7 @@ def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_
             forward=forward, self_strict=False, other_strict=False)
 
 
-def _normalize_name(name: str | tuple[str, ...]) -> tuple[str, ...]:
+def _normalize_name(name: str | NamePath) -> NamePath:
     """Convert property name to normalized tuple format."""
     assert name, 'Property name cannot be empty'
     if isinstance(name, tuple):
@@ -249,14 +408,14 @@ def _normalize_name(name: str | tuple[str, ...]) -> tuple[str, ...]:
     return name if isinstance(name, tuple) else (name,)
 
 
-def _path_contains_dict(obj: Any, name: tuple[str, ...]) -> bool:
+def _path_contains_mapping(obj: Any, name: NamePath) -> bool:
     """Check if the nested path traverses through any dict/Mapping."""
     for key in name:
         if isinstance(obj, Mapping):
             return True
-        if not hasattr(obj, key):
+        obj = getattr(obj, key, _MISSING)
+        if obj is _MISSING:
             return False
-        obj = getattr(obj, key)
     return False
 
 
@@ -267,20 +426,28 @@ class BindableProperty:
 
     def __set_name__(self, _, name: str) -> None:
         self.name = name  # pylint: disable=attribute-defined-outside-init
+        self.name_tuple = (name,)  # pylint: disable=attribute-defined-outside-init
+        self.private_name = '___' + name  # pylint: disable=attribute-defined-outside-init
 
     def __get__(self, owner: Any, _=None) -> Any:
-        return getattr(owner, '___' + self.name)
+        return getattr(owner, self.private_name)
 
     def __set__(self, owner: Any, value: Any) -> None:
-        has_attr = hasattr(owner, '___' + self.name)
-        if not has_attr:
+        private_name = self.private_name
+        old_value = getattr(owner, private_name, _MISSING)
+        if old_value is _MISSING:
             _make_copyable(type(owner))
-        value_changed = has_attr and getattr(owner, '___' + self.name) != value
-        if has_attr and not value_changed:
-            return
-        setattr(owner, '___' + self.name, value)
-        bindable_properties[(id(owner), (self.name,))] = owner
-        _propagate(owner, (self.name,))
+            value_changed = False
+        else:
+            if old_value == value:
+                return
+            value_changed = True
+        setattr(owner, private_name, value)
+        name_tuple = self.name_tuple
+        binding_key = (id(owner), name_tuple)
+        bindable_properties[binding_key] = owner
+        if binding_key in bindings:
+            _propagate(owner, name_tuple)
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
 
@@ -290,23 +457,53 @@ def remove(objects: Iterable[Any]) -> None:
 
     :param objects: The objects to remove.
     """
-    object_ids = set(map(id, objects))
-    active_links[:] = [
-        (source_obj, source_name, target_obj, target_name, transform)
-        for source_obj, source_name, target_obj, target_name, transform in active_links
-        if id(source_obj) not in object_ids and id(target_obj) not in object_ids
-    ]
-    for key, binding_list in list(bindings.items()):
-        binding_list[:] = [
-            (source_obj, target_obj, target_name, transform)
-            for source_obj, target_obj, target_name, transform in binding_list
-            if id(source_obj) not in object_ids and id(target_obj) not in object_ids
-        ]
-        if not binding_list:
+    # Keep IDs as a list until membership checks are needed; ghost removals only do dict pop/get by ID.
+    object_ids = [id(obj) for obj in objects]
+    if not object_ids:
+        return
+
+    # Phase 1: remove bindable-property ownership for the deleted objects.
+    bindable_properties.discard_object_ids(object_ids)
+
+    # Phase 2: use the reverse index to limit cleanup to binding lists that may reference the deleted objects.
+    binding_keys = _collect_binding_keys_for_objects(object_ids)
+    if not binding_keys:
+        return
+
+    object_id_set = set(object_ids)
+
+    # Phase 3: active links are polling fallback links; keep only links unrelated to the removed objects.
+    _remove_active_links_for_objects(object_id_set)
+
+    # Phase 4: remove source-owned binding lists, or prune target references from surviving source lists.
+    for key in binding_keys:
+        binding_list = bindings.get(key)
+        if binding_list is None:
+            continue
+        source_obj_id = key[0]
+        # Binding keys are source IDs; target-only removals only prune entries from the binding list.
+        if source_obj_id in object_id_set:
+            for _, target_obj, _, _ in binding_list:
+                target_obj_id = id(target_obj)
+                if target_obj_id not in object_id_set:
+                    _discard_binding_key_from_object_index(target_obj_id, key)
             del bindings[key]
-    for obj_id, name in list(bindable_properties):
-        if obj_id in object_ids:
-            del bindable_properties[(obj_id, name)]
+            continue
+        if len(binding_list) == 1:
+            if id(binding_list[0][1]) in object_id_set:
+                del bindings[key]
+                _discard_binding_key_from_object_index(source_obj_id, key)
+            continue
+        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in object_id_set]
+        if remaining_bindings:
+            binding_list[:] = remaining_bindings
+        else:
+            del bindings[key]
+            _discard_binding_key_from_object_index(source_obj_id, key)
+
+    # Phase 5: the removed objects no longer need reverse-index buckets.
+    for obj_id in object_ids:
+        _binding_keys_by_object.pop(obj_id, None)
 
 
 def reset() -> None:
@@ -317,6 +514,7 @@ def reset() -> None:
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
+    _binding_keys_by_object.clear()
 
 
 @dataclass_transform()
