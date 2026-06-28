@@ -1,5 +1,5 @@
 import weakref
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Generic, TypeVar
 
@@ -15,6 +15,7 @@ class Style(ObservableDict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, on_change=self._update, **kwargs)
+        self._update_handler = self._change_handlers[0]
         self._element = weakref.ref(element)
         self._suspend_count = 0
 
@@ -26,6 +27,21 @@ class Style(ObservableDict, Generic[T]):
             yield
         finally:
             self._suspend_count -= 1
+
+    def _handle_direct_change_handler(self, handler: Callable) -> bool:
+        """Run _update directly, skipping ObservableChangeEventArguments dispatch.
+
+        Generic dispatch builds event arguments and checks expects_arguments.
+        Skip both when the handler is our own _update. Claim the handler even
+        when suspended: suspended mutations should not fall through to generic dispatch.
+        """
+        if handler is self._update_handler:
+            if self._suspend_count == 0:
+                element = self._element()
+                if element is not None:
+                    element.update()
+            return True
+        return False
 
     @property
     def element(self) -> T:
@@ -69,9 +85,9 @@ class Style(ObservableDict, Generic[T]):
     def parse(text: str | None) -> dict[str, str]:
         """Parse a string of styles into a dictionary."""
         result = {}
-        for word in (text or '').split(';'):
-            word = word.strip()  # noqa: PLW2901
-            if word:
-                key, value = word.split(':', 1)
+        for declaration in (text or '').split(';'):
+            declaration_text = declaration.strip()
+            if declaration_text:
+                key, value = declaration_text.split(':', 1)
                 result[key.strip()] = value.strip()
         return result

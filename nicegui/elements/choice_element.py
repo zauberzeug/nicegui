@@ -1,9 +1,12 @@
+from copy import deepcopy
 from typing import Any
 
 from typing_extensions import Self
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
+
+_IMMUTABLE_OPTION_TYPES = frozenset({str, int, float, bool, type(None)})
 
 
 class ChoiceElement(ValueElement[Any]):
@@ -15,13 +18,15 @@ class ChoiceElement(ValueElement[Any]):
                  on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  ) -> None:
         self.options = options
-        self._values: list[str] = []
-        self._labels: list[str] = []
+        self._values: list[Any] = []
+        self._labels: list[Any] = []
         self._update_values_and_labels()
+        self._options_snapshot = self._create_options_snapshot()
         if not isinstance(value, list) and value is not None and value not in self._values:
             raise ValueError(f'Invalid value: {value}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
-        self._update_options()
+        with self._props.suspend_updates():
+            self._update_options()
 
     def _render_markdown(self) -> str:
         if self.value is None:
@@ -38,20 +43,54 @@ class ChoiceElement(ValueElement[Any]):
         return f'{form_label}: {display}' if form_label else display
 
     def _update_values_and_labels(self) -> None:
-        self._values = self.options if isinstance(self.options, list) else list(self.options.keys())
+        self._values = self.options if isinstance(self.options, list) else list(self.options)
         self._labels = self.options if isinstance(self.options, list) else list(self.options.values())
+
+    def _options_have_changed(self) -> bool:
+        """Return whether options need to be rebuilt for the client."""
+        values_snapshot, labels_snapshot = self._options_snapshot
+        if isinstance(self.options, list):
+            return self.options != values_snapshot
+        return list(self.options) != values_snapshot or list(self.options.values()) != labels_snapshot
+
+    def _create_options_snapshot(self) -> tuple[list[Any], list[Any]]:
+        """Capture the option state represented in client props.
+
+        List options are both values and labels. Dict labels are client-visible and may be mutable; dict keys are copied
+        shallowly because mutating keys in place would violate Python's hash contract.
+        """
+        if isinstance(self.options, list):
+            values_snapshot = self._copy_client_visible_options(self._values)
+            return values_snapshot, values_snapshot
+        return list(self._values), self._copy_client_visible_options(self._labels)
+
+    @staticmethod
+    def _copy_client_visible_options(options: list[Any]) -> list[Any]:
+        """Deep-copy options when possible without rejecting valid non-copyable values."""
+        copied_options = list(options)
+        for option in copied_options:
+            if type(option) not in _IMMUTABLE_OPTION_TYPES:
+                break
+        else:
+            return copied_options
+        try:
+            return deepcopy(copied_options)
+        except Exception:  # some valid option objects are not deepcopy-able
+            return copied_options
 
     def _update_options(self) -> None:
         before_value = self.value
         self._props['options'] = [{'value': index, 'label': option} for index, option in enumerate(self._labels)]
         self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
+        self._options_snapshot = self._create_options_snapshot()
         if not isinstance(before_value, list):  # no need to update value in case of multi-select
             self.value = before_value if before_value in self._values else None
 
     def update(self) -> None:
-        with self._props.suspend_updates():
-            self._update_values_and_labels()
-            self._update_options()
+        if self._options_have_changed():
+            with self._props.suspend_updates():
+                self._update_values_and_labels()
+                self._update_options()
         super().update()
 
     def set_options(self, options: list | dict, *, value: Any = ...) -> Self:

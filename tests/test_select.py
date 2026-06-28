@@ -93,6 +93,64 @@ def test_changing_options(screen: Screen):
     screen.should_contain('value = None')
 
 
+async def test_update_after_mutating_list_option_label(user: User):
+    option = ['A']
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select([option], value=option)
+
+    await user.open('/')
+    assert select is not None
+
+    option[0] = 'B'
+    select.update()
+
+    assert select._props['options'][0]['label'] == ['B']  # pylint: disable=protected-access
+
+
+async def test_update_after_mutating_dict_option_label(user: User):
+    label = ['A']
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select({'value': label}, value='value')
+
+    await user.open('/')
+    assert select is not None
+
+    label[0] = 'B'
+    select.update()
+
+    assert select._props['options'][0]['label'] == ['B']  # pylint: disable=protected-access
+
+
+async def test_update_with_non_deepcopyable_list_option(user: User):
+    class Option(list):
+
+        def __deepcopy__(self, memo):  # pylint: disable=unused-argument
+            raise RuntimeError('not copyable')
+
+    option = Option(['A'])
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select([option], value=option)
+
+    await user.open('/')
+    assert select is not None
+
+    select.update()
+
+    assert select._props['options'][0]['label'] == ['A']  # pylint: disable=protected-access
+
+
 def test_set_options(screen:  Screen):
     @ui.page('/')
     def page():

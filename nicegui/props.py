@@ -1,7 +1,7 @@
 import ast
 import re
 import weakref
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
@@ -59,6 +59,7 @@ class Props(ObservableDict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, on_change=self._update, **kwargs)
+        self._update_handler = self._change_handlers[0]
         self._element = weakref.ref(element)
         self._warnings: dict[str, str] = {}
         self._renames: dict[str, str] = {}
@@ -66,17 +67,17 @@ class Props(ObservableDict, Generic[T]):
 
     def set_optional(self, key: str, value: Any) -> None:
         """Set a prop value or remove it if None is provided."""
-        if value is None:
-            self.pop(key, None)
-        else:
+        if value is not None:
             self[key] = value
+        elif key in self:
+            self.pop(key)
 
     def set_bool(self, key: str, value: Any) -> None:
         """Set a boolean prop value or remove it if falsy value is provided."""
         if value:
             self[key] = value
-        else:
-            self.pop(key, None)
+        elif key in self:
+            self.pop(key)
 
     @contextmanager
     def suspend_updates(self) -> Iterator[None]:
@@ -86,6 +87,27 @@ class Props(ObservableDict, Generic[T]):
             yield
         finally:
             self._suspend_count -= 1
+
+    def _handle_direct_change_handler(self, handler: Callable) -> bool:
+        """Run _update directly, skipping ObservableChangeEventArguments dispatch.
+
+        Generic dispatch builds event arguments and checks expects_arguments.
+        Skip both when the handler is our own _update. Claim the handler even
+        when suspended: suspended mutations should not fall through to generic dispatch.
+        """
+        if handler is self._update_handler:
+            if self._suspend_count == 0:
+                for name, message in self._warnings.items():
+                    self._check_warning(name, message)
+
+                for name, replacement in self._renames.items():
+                    self._check_rename(name, replacement)
+
+                element = self._element()
+                if element is not None:
+                    element.update()
+            return True
+        return False
 
     @property
     def element(self) -> T:
@@ -102,8 +124,8 @@ class Props(ObservableDict, Generic[T]):
         for name, message in self._warnings.items():
             self._check_warning(name, message)
 
-        for name, rename in self._renames.items():
-            self._check_rename(name, rename)
+        for name, replacement in self._renames.items():
+            self._check_rename(name, replacement)
 
         element = self._element()
         if element is not None:
@@ -112,12 +134,14 @@ class Props(ObservableDict, Generic[T]):
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""
         self._warnings[prop] = message
-        self._check_warning(prop, message)
+        if prop in self:
+            self._check_warning(prop, message)
 
     def add_rename(self, prop: str, replacement: str) -> None:
         """Add a rename warning for a prop."""
         self._renames[prop] = replacement
-        self._check_rename(prop, replacement)
+        if prop in self:
+            self._check_rename(prop, replacement)
 
     def _check_warning(self, name: str, message: str) -> None:
         if name in self:
@@ -125,11 +149,11 @@ class Props(ObservableDict, Generic[T]):
                 del self[name]
             helpers.warn_once(message)
 
-    def _check_rename(self, name: str, rename: str) -> None:
+    def _check_rename(self, name: str, replacement: str) -> None:
         if name in self:
             with self.suspend_updates():
-                self[rename] = self[name]
-            helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
+                self[replacement] = self[name]
+            helpers.warn_once(f'The prop "{name}" is deprecated. Use "{replacement}" instead.')
 
     def __call__(self,
                  add: str | None = None, *,
