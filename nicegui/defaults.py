@@ -2,7 +2,8 @@ import functools
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, TypeVar
+from inspect import Parameter
+from typing import Any, NamedTuple, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -38,6 +39,84 @@ DEFAULT_PROPS = SentinelFactory()
 DEFAULT_PROP = Sentinel(key=None)
 
 
+class _DefaultPropParam(NamedTuple):
+    name: str
+    prop_key: str
+    fallback_value: Any
+    positional_arg_index: int | None
+    positional_only: bool
+
+
+def _resolve_sentinel_value(default_props: dict[str, Any], parameter_name: str, value: SentinelValue) -> Any:
+    key = value.key or parameter_name.replace('_', '-')
+    return default_props.get(key, value.default)
+
+
+def _default_prop_params(signature: inspect.Signature) -> tuple[_DefaultPropParam, ...]:
+    default_prop_params: list[_DefaultPropParam] = []
+    positional_index = 0
+
+    for parameter in signature.parameters.values():
+        if parameter.kind in (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD):
+            parameter_positional_index = positional_index
+            positional_index += 1
+        else:
+            parameter_positional_index = None
+
+        default = parameter.default
+        if not isinstance(default, SentinelValue):
+            continue
+
+        default_prop_params.append(_DefaultPropParam(
+            name=parameter.name,
+            prop_key=default.key or parameter.name.replace('_', '-'),
+            fallback_value=default.default,
+            positional_arg_index=parameter_positional_index,
+            positional_only=parameter.kind is Parameter.POSITIONAL_ONLY,
+        ))
+
+    return tuple(default_prop_params)
+
+
+def _fallback_kwargs_by_arg_count(
+    signature: inspect.Signature,
+    default_prop_params: tuple[_DefaultPropParam, ...],
+) -> tuple[dict[str, Any], ...]:
+    """Precompute fallback kwargs for calls without custom default props.
+
+    The tuple index is the number of positional arguments supplied to the decorated function.
+    """
+    positional_parameter_count = sum(
+        1
+        for parameter in signature.parameters.values()
+        if parameter.kind in (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD)
+    )
+    return tuple(
+        {
+            param.name: param.fallback_value
+            for param in default_prop_params
+            if param.positional_arg_index is None or param.positional_arg_index >= arg_count
+        }
+        for arg_count in range(positional_parameter_count + 1)
+    )
+
+
+def _resolve_defaults_via_signature_bind(original_func: Callable[P, R], signature: inspect.Signature,
+                                         default_prop_params: tuple[_DefaultPropParam, ...],
+                                         args: tuple[Any, ...], kwargs: dict[str, Any]) -> R:
+    bound_arguments = signature.bind(*args, **kwargs)
+    bound_arguments.apply_defaults()
+
+    element: Element = bound_arguments.arguments['self']
+    default_props = element._default_props  # pylint: disable=protected-access
+
+    for param in default_prop_params:
+        value = bound_arguments.arguments[param.name]
+        if isinstance(value, SentinelValue):
+            bound_arguments.arguments[param.name] = _resolve_sentinel_value(default_props, param.name, value)
+    return original_func(*bound_arguments.args, **bound_arguments.kwargs)
+
+
 def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
     """This decorator makes the function resolve default properties set via ``default_props``.
 
@@ -49,18 +128,42 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
     the dictionary key will be inferred from the parameter name (converting snake_case to kebab-case).
     """
     signature = inspect.signature(original_func)
+    default_prop_params = _default_prop_params(signature)
+    requires_signature_bind = any(param.positional_only for param in default_prop_params)
+    fallback_kwargs_by_arg_count = _fallback_kwargs_by_arg_count(signature, default_prop_params)
+    positional_default_prop_indices: tuple[int, ...] = tuple(
+        index for param in default_prop_params if (index := param.positional_arg_index) is not None
+    )
 
     @functools.wraps(original_func)
     def decorated(*args: P.args, **kwargs: P.kwargs) -> R:
-        bound = signature.bind(*args, **kwargs)
-        bound.apply_defaults()
+        # Common constructor calls can resolve omitted sentinels without normalizing every argument.
+        if requires_signature_bind or (not args and 'self' not in kwargs):
+            return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params, args, kwargs)
 
-        el: Element = bound.arguments['self']
+        element: Element = args[0] if args else kwargs['self']  # type: ignore[assignment]
+        default_props = element._default_props  # pylint: disable=protected-access
+        if not default_props and not kwargs and len(args) < len(fallback_kwargs_by_arg_count):
+            for supplied_arg_index in positional_default_prop_indices:
+                if supplied_arg_index < len(args) and isinstance(args[supplied_arg_index], SentinelValue):
+                    return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params,
+                                                                args, kwargs)
+            return original_func(*args, **fallback_kwargs_by_arg_count[len(args)])
 
-        for param_name, value in bound.arguments.items():
-            if isinstance(value, SentinelValue):
-                key = value.key or param_name.replace('_', '-')
-                kwargs[param_name] = el._default_props.get(key, value.default)  # pylint: disable=protected-access
+        for parameter_name, prop_key, fallback_value, positional_arg_index, _positional_only in default_prop_params:
+            if parameter_name in kwargs:
+                value = kwargs[parameter_name]
+                if isinstance(value, SentinelValue):
+                    kwargs[parameter_name] = (_resolve_sentinel_value(default_props, parameter_name, value)
+                                              if default_props else value.default)
+                continue
+            if positional_arg_index is not None and positional_arg_index < len(args):
+                if isinstance(args[positional_arg_index], SentinelValue):
+                    # Explicit positional sentinels need Signature.bind() so the rebuilt call uses resolved values.
+                    return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params,
+                                                                args, kwargs)
+                continue
+            kwargs[parameter_name] = default_props.get(prop_key, fallback_value) if default_props else fallback_value
         return original_func(*args, **kwargs)
 
     return decorated
