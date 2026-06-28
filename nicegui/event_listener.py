@@ -4,6 +4,9 @@ from typing import Any
 
 from fastapi import Request
 
+_SPECIAL_EVENT_MODIFIERS = {'capture', 'once', 'passive'}
+_EVENT_MODIFIERS = {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}
+
 
 @dataclass(kw_only=True, slots=True)
 class EventListener:
@@ -26,9 +29,9 @@ class EventListener:
         keys: list[str] = []
         if words:
             for word in words.split('.'):
-                if word in {'capture', 'once', 'passive'}:
+                if word in _SPECIAL_EVENT_MODIFIERS:
                     specials.append(word)
-                elif word in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}:
+                elif word in _EVENT_MODIFIERS:
                     modifiers.append(word)
                 else:
                     keys.append(word)

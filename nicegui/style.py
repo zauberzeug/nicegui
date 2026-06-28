@@ -36,10 +36,7 @@ class Style(ObservableDict, Generic[T]):
         when suspended: suspended mutations should not fall through to generic dispatch.
         """
         if handler is self._update_handler:
-            if self._suspend_count == 0:
-                element = self._element()
-                if element is not None:
-                    element.update()
+            self._update()
             return True
         return False
 

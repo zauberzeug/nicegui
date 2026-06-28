@@ -184,7 +184,7 @@ def _collect_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[Bin
     return binding_keys
 
 
-def _remove_active_links_for_objects(object_ids: set[ObjectId]) -> None:
+def _remove_active_links_for_objects(removed_object_ids: set[ObjectId]) -> None:
     """Drop polling fallback links that reference any removed object.
 
     Bindable-property links propagate through bindings directly; active_links only contains links that need periodic
@@ -193,7 +193,7 @@ def _remove_active_links_for_objects(object_ids: set[ObjectId]) -> None:
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links
-        if id(source_obj) not in object_ids and id(target_obj) not in object_ids
+        if id(source_obj) not in removed_object_ids and id(target_obj) not in removed_object_ids
     ]
 
 
@@ -458,43 +458,43 @@ def remove(objects: Iterable[Any]) -> None:
     :param objects: The objects to remove.
     """
     # Keep IDs as a list until membership checks are needed; ghost removals only do dict pop/get by ID.
-    object_ids = [id(obj) for obj in objects]
-    if not object_ids:
+    removed_object_ids = [id(obj) for obj in objects]
+    if not removed_object_ids:
         return
 
     # Phase 1: remove bindable-property ownership for the deleted objects.
-    bindable_properties.discard_object_ids(object_ids)
+    bindable_properties.discard_object_ids(removed_object_ids)
 
     # Phase 2: use the reverse index to limit cleanup to binding lists that may reference the deleted objects.
-    binding_keys = _collect_binding_keys_for_objects(object_ids)
-    if not binding_keys:
+    affected_binding_keys = _collect_binding_keys_for_objects(removed_object_ids)
+    if not affected_binding_keys:
         return
 
-    object_id_set = set(object_ids)
+    removed_object_id_set = set(removed_object_ids)
 
     # Phase 3: active links are polling fallback links; keep only links unrelated to the removed objects.
-    _remove_active_links_for_objects(object_id_set)
+    _remove_active_links_for_objects(removed_object_id_set)
 
     # Phase 4: remove source-owned binding lists, or prune target references from surviving source lists.
-    for key in binding_keys:
+    for key in affected_binding_keys:
         binding_list = bindings.get(key)
         if binding_list is None:
             continue
         source_obj_id = key[0]
         # Binding keys are source IDs; target-only removals only prune entries from the binding list.
-        if source_obj_id in object_id_set:
+        if source_obj_id in removed_object_id_set:
             for _, target_obj, _, _ in binding_list:
                 target_obj_id = id(target_obj)
-                if target_obj_id not in object_id_set:
+                if target_obj_id not in removed_object_id_set:
                     _discard_binding_key_from_object_index(target_obj_id, key)
             del bindings[key]
             continue
         if len(binding_list) == 1:
-            if id(binding_list[0][1]) in object_id_set:
+            if id(binding_list[0][1]) in removed_object_id_set:
                 del bindings[key]
                 _discard_binding_key_from_object_index(source_obj_id, key)
             continue
-        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in object_id_set]
+        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in removed_object_id_set]
         if remaining_bindings:
             binding_list[:] = remaining_bindings
         else:
@@ -502,7 +502,7 @@ def remove(objects: Iterable[Any]) -> None:
             _discard_binding_key_from_object_index(source_obj_id, key)
 
     # Phase 5: the removed objects no longer need reverse-index buckets.
-    for obj_id in object_ids:
+    for obj_id in removed_object_ids:
         _binding_keys_by_object.pop(obj_id, None)
 
 

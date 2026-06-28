@@ -96,16 +96,7 @@ class Props(ObservableDict, Generic[T]):
         when suspended: suspended mutations should not fall through to generic dispatch.
         """
         if handler is self._update_handler:
-            if self._suspend_count == 0:
-                for name, message in self._warnings.items():
-                    self._check_warning(name, message)
-
-                for name, replacement in self._renames.items():
-                    self._check_rename(name, replacement)
-
-                element = self._element()
-                if element is not None:
-                    element.update()
+            self._update()
             return True
         return False
 

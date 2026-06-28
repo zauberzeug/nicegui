@@ -143,12 +143,13 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
 
         element: Element = args[0] if args else kwargs['self']  # type: ignore[assignment]
         default_props = element._default_props  # pylint: disable=protected-access
-        if not default_props and not kwargs and len(args) < len(fallback_kwargs_by_arg_count):
+        arg_count = len(args)
+        if not default_props and not kwargs and arg_count < len(fallback_kwargs_by_arg_count):
             for supplied_arg_index in positional_default_prop_indices:
-                if supplied_arg_index < len(args) and isinstance(args[supplied_arg_index], SentinelValue):
+                if supplied_arg_index < arg_count and isinstance(args[supplied_arg_index], SentinelValue):
                     return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params,
                                                                 args, kwargs)
-            return original_func(*args, **fallback_kwargs_by_arg_count[len(args)])
+            return original_func(*args, **fallback_kwargs_by_arg_count[arg_count])
 
         for parameter_name, prop_key, fallback_value, positional_arg_index, _positional_only in default_prop_params:
             if parameter_name in kwargs:
@@ -157,7 +158,7 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
                     kwargs[parameter_name] = (_resolve_sentinel_value(default_props, parameter_name, value)
                                               if default_props else value.default)
                 continue
-            if positional_arg_index is not None and positional_arg_index < len(args):
+            if positional_arg_index is not None and positional_arg_index < arg_count:
                 if isinstance(args[positional_arg_index], SentinelValue):
                     # Explicit positional sentinels need Signature.bind() so the rebuilt call uses resolved values.
                     return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params,

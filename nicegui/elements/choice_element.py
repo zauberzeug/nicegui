@@ -43,8 +43,12 @@ class ChoiceElement(ValueElement[Any]):
         return f'{form_label}: {display}' if form_label else display
 
     def _update_values_and_labels(self) -> None:
-        self._values = self.options if isinstance(self.options, list) else list(self.options)
-        self._labels = self.options if isinstance(self.options, list) else list(self.options.values())
+        if isinstance(self.options, list):
+            self._values = self.options
+            self._labels = self.options
+        else:
+            self._values = list(self.options)
+            self._labels = list(self.options.values())
 
     def _options_have_changed(self) -> bool:
         """Return whether options need to be rebuilt for the client."""

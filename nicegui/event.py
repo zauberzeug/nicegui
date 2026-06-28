@@ -92,17 +92,9 @@ class Event(Generic[P]):
             (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
         frame = sys._getframe(1)  # pylint: disable=protected-access
-        if expect_args is None:
-            # Event.emit/call accept *args, so signature inspection alone cannot tell they forward payloads.
-            expect_args = helpers.expects_arguments(callback)
-            if not expect_args:
-                expect_args = (
-                    isinstance(getattr(callback, '__self__', None), Event)
-                    and getattr(callback, '__name__', None) in {'emit', 'call'}
-                )
         callback_entry = Callback[P](
             func=callback,
-            expect_args=expect_args,
+            expect_args=_should_forward_event_args(callback, expect_args),
             filepath=frame.f_code.co_filename,
             line=frame.f_lineno,
         )
@@ -187,6 +179,18 @@ async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kw
     if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
         result = await callback.await_result(result)
     return result
+
+
+def _should_forward_event_args(callback: Callable[P, Any] | Callable[[], Any], expect_args: bool | None) -> bool:
+    if expect_args is not None:
+        return expect_args
+    if helpers.expects_arguments(callback):
+        return True
+    # Event.emit/call accept *args, so signature inspection alone cannot tell they forward payloads.
+    return (
+        isinstance(getattr(callback, '__self__', None), Event)
+        and getattr(callback, '__name__', None) in {'emit', 'call'}
+    )
 
 
 def reset() -> None:
