@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import asyncio
 import multiprocessing as mp
-import os
 import pickle
 import queue
 import socket
@@ -173,20 +171,6 @@ def _warn_if_esm_unsupported(window: webview.Window) -> None:
     window.events.loaded += check
 
 
-def hard_exit_after_shutdown() -> None:
-    """Run the app's ``on_shutdown`` callbacks, then hard-exit, skipping uvicorn's connection drain.
-
-    The drain runs before lifespan shutdown and can hang forever on a ghost Windows connection (#5443).
-    """
-    if core.loop is not None and core.loop.is_running() and not core.app.is_stopped:
-        future = asyncio.run_coroutine_threadsafe(core.app.stop(), core.loop)
-        with suppress(Exception):
-            future.result(timeout=30)
-    sys.stdout.flush()
-    sys.stderr.flush()
-    os._exit(0)
-
-
 def activate(protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
              shutdown_event: MultiprocessingEvent | None = None,
              favicon: str | Path | None = None) -> None:
@@ -196,7 +180,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
             time.sleep(0.1)
         if shutdown_event is not None:
             shutdown_event.set()
-        hard_exit_after_shutdown()
+        core.stop_and_exit()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
