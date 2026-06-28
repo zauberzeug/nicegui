@@ -61,7 +61,7 @@ def add_sass(content: str | Path, *, shared: bool = False) -> None:  # DEPRECATE
 def _add_javascript(code: str, *, shared: bool = False) -> None:
     script_html = f'<script>{code}</script>'
     if shared:
-        client = context.client if Slot.get_stack() else None  # don't auto-create a client if shared=True
+        client = context.client if Slot.peek_stack() else None  # don't auto-create a client if shared=True
         Client.shared_head_html += script_html + '\n'
     else:
         client = context.client

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
+import sys
 import weakref
 from collections.abc import Awaitable, Callable
-from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic
 from weakref import WeakSet
@@ -13,7 +12,6 @@ from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .client import Client
-from .context import context
 from .slot import Slot
 
 P = ParamSpec('P')
@@ -29,13 +27,35 @@ class Callback(Generic[P]):
 
     def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
         """Run the callback."""
-        with (self.slot and self.slot()) or nullcontext():
-            return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
+        func = self.func
+        expect_args = self.expect_args
+        slot_ref = self.slot
+        if slot_ref is None:
+            return func(*args, **kwargs) if expect_args else func()  # type: ignore[call-arg]
+        slot = slot_ref()
+        if slot is None:
+            return func(*args, **kwargs) if expect_args else func()  # type: ignore[call-arg]
+        _, stack = Slot._get_or_create_stack()  # pylint: disable=protected-access
+        stack.append(slot)
+        try:
+            return func(*args, **kwargs) if expect_args else func()  # type: ignore[call-arg]
+        finally:
+            stack.pop()
 
-    async def await_result(self, result: Awaitable) -> Any:
+    async def await_result(self, awaitable: Awaitable) -> Any:
         """Await the result of the callback."""
-        with (self.slot and self.slot()) or nullcontext():
-            return await result
+        slot_ref = self.slot
+        if slot_ref is None:
+            return await awaitable
+        slot = slot_ref()
+        if slot is None:
+            return await awaitable
+        _, stack = Slot._get_or_create_stack()  # pylint: disable=protected-access
+        stack.append(slot)
+        try:
+            return await awaitable
+        finally:
+            stack.pop()
 
 
 class Event(Generic[P]):
@@ -71,29 +91,33 @@ class Event(Generic[P]):
         :param unsubscribe_on_delete: whether to unsubscribe the callback when the current client is deleted
             (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
-        frame = inspect.currentframe()
-        assert frame is not None
-        frame = frame.f_back
-        assert frame is not None
-        callback_ = Callback[P](
+        frame = sys._getframe(1)  # pylint: disable=protected-access
+        if expect_args is None:
+            # Event.emit/call accept *args, so signature inspection alone cannot tell they forward payloads.
+            expect_args = helpers.expects_arguments(callback)
+            if not expect_args:
+                expect_args = (
+                    isinstance(getattr(callback, '__self__', None), Event)
+                    and getattr(callback, '__name__', None) in {'emit', 'call'}
+                )
+        callback_entry = Callback[P](
             func=callback,
-            expect_args=helpers.expects_arguments(callback) or (
-                isinstance(getattr(callback, '__self__', None), Event) and
-                getattr(callback, '__name__', None) in {'emit', 'call'}
-            ) if expect_args is None else expect_args,
+            expect_args=expect_args,
             filepath=frame.f_code.co_filename,
             line=frame.f_lineno,
         )
         client: Client | None = None
-        if Slot.get_stack():  # additional check before accessing `context.slot` which would enter script mode
-            callback_.slot = weakref.ref(context.slot)
-            client = context.client
-        if callback_.slot is None and unsubscribe_on_delete is True:
+        slot_stack = Slot.peek_stack()  # avoids creating a slot stack when there is no UI context
+        if slot_stack:
+            slot = slot_stack[-1]
+            callback_entry.slot = weakref.ref(slot)
+            client = slot.parent.client
+        if callback_entry.slot is None and unsubscribe_on_delete is True:
             raise RuntimeError('Calling `subscribe` with `unsubscribe_on_delete=True` outside of a UI context '
                                'is not supported.')
         if client is not None and unsubscribe_on_delete is not False and not core.is_script_mode_preflight():
             client.on_delete(lambda: self.unsubscribe(callback))
-        self.callbacks.append(callback_)
+        self.callbacks.append(callback_entry)
 
     def unsubscribe(self, callback: Callable[P, Any] | Callable[[], Any]) -> None:
         """Unsubscribe a callback from the event.
@@ -104,8 +128,32 @@ class Event(Generic[P]):
 
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
+        # A synchronous emit runs in one task; resolve its slot stack once for all callbacks.
+        slot_stack: list[Slot] | None = None
         for callback in self.callbacks:
-            _invoke_and_forget(callback, *args, **kwargs)
+            try:
+                expect_args = callback.expect_args
+                func = callback.func
+                slot_ref = callback.slot
+                slot = slot_ref() if slot_ref is not None else None
+                if slot is not None:
+                    if slot_stack is None:
+                        _, slot_stack = Slot._get_or_create_stack()  # pylint: disable=protected-access
+                    slot_stack.append(slot)
+                    try:
+                        result = func(*args, **kwargs) if expect_args else func()  # type: ignore[call-arg]
+                    finally:
+                        slot_stack.pop()
+                elif expect_args:
+                    result = func(*args, **kwargs)
+                else:
+                    result = func()  # type: ignore[call-arg]
+                # Most handlers return None or self; only run the heavier awaitable checks for possible awaitables.
+                if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
+                    name = f'{callback.filepath}:{callback.line}'
+                    background_tasks.create_or_defer(callback.await_result(result), name=name)
+            except Exception as e:
+                core.app.handle_exception(e)
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
@@ -134,18 +182,9 @@ class Event(Generic[P]):
         return self.emitted().__await__()
 
 
-def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
-    try:
-        result = callback.run(*args, **kwargs)
-        if helpers.should_await(result):
-            background_tasks.create_or_defer(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
-    except Exception as e:
-        core.app.handle_exception(e)
-
-
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
     result = callback.run(*args, **kwargs)
-    if helpers.should_await(result):
+    if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
         result = await callback.await_result(result)
     return result
 

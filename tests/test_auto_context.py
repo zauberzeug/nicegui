@@ -3,7 +3,7 @@ import asyncio
 from selenium.webdriver.common.by import By
 
 from nicegui import background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_adding_element_to_shared_index_page(screen: Screen):
@@ -153,3 +153,26 @@ def test_adding_elements_from_different_tasks(screen: Screen):
     c1.find_element(By.XPATH, './/*[contains(text(), "Label 1")]')
     c2 = screen.find_element(card2)
     c2.find_element(By.XPATH, './/*[contains(text(), "Label 2")]')
+
+
+async def test_background_task_does_not_inherit_slot_context(user: User):
+    done = asyncio.Event()
+    errors: list[str] = []
+
+    @ui.page('/')
+    def page():
+        with ui.card():
+            async def add_without_context() -> None:
+                try:
+                    ui.label('unexpected')
+                except RuntimeError as e:
+                    errors.append(str(e))
+                finally:
+                    done.set()
+
+            background_tasks.create(add_without_context(), name='add without context')
+
+    await user.open('/')
+    await asyncio.wait_for(done.wait(), timeout=1.0)
+    assert errors
+    assert 'current slot cannot be determined' in errors[0]

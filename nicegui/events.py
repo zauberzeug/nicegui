@@ -456,19 +456,34 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
     if handler is None:
         return
     try:
-        parent_slot: Slot | nullcontext
+        handler_context: Slot | nullcontext
         if isinstance(arguments, UiEventArguments):
-            parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
+            handler_context = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
         else:
-            parent_slot = nullcontext()
+            handler_context = nullcontext()
 
-        with parent_slot:
+        with handler_context:
             if helpers.expects_arguments(handler):
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()
-        if helpers.should_await(result):
-            background_tasks.create_or_defer(_await_and_handle_in_context(result, parent_slot), name=str(handler))
+        if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
+            background_tasks.create_or_defer(_await_and_handle_in_context(result, handler_context), name=str(handler))
+    except Exception as e:
+        core.app.handle_exception(e)
+
+
+def handle_observable_change(handler: Handler[ObservableChangeEventArguments], sender: ObservableCollection) -> None:
+    """Call an observable change handler without allocating event arguments unless needed."""
+    try:
+        if helpers.expects_arguments(handler):
+            result = cast(Callable[[ObservableChangeEventArguments], Any], handler)(
+                ObservableChangeEventArguments(sender=sender),
+            )
+        else:
+            result = cast(Callable[[], Any], handler)()
+        if result is not None and hasattr(result, '__await__') and helpers.should_await(result):
+            background_tasks.create_or_defer(_await_and_handle_in_context(result, nullcontext()), name=str(handler))
     except Exception as e:
         core.app.handle_exception(e)
 
