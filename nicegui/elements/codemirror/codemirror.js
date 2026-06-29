@@ -53,6 +53,7 @@ export default {
     indent: String,
     highlightWhitespace: Boolean,
     lineAnchors: Object,
+    keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
     id: String,
@@ -75,6 +76,9 @@ export default {
       handler(newAnchors) {
         this.applyLineAnchors(newAnchors);
       },
+    },
+    keymap() {
+      this.setKeymap();
     },
     lineTooltips(newTooltips) {
       this.setLineTooltips(newTooltips);
@@ -222,6 +226,36 @@ export default {
       }
       this.$emit("anchor-positions", { anchors: positions });
     },
+    buildUserKeymap() {
+      return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
+        key,
+        mac, // unset mac will fall back to key
+        linux, // unset linux will fall back to key
+        win, // unset win will fall back to key
+        run: () => {
+          this.$emit("keybinding", { key });
+          return preventDefault;
+        },
+      }));
+    },
+    setKeymap() {
+      if (!this.editor) return;
+      this.editor.dispatch({
+        effects: this.userKeymapConfig.reconfigure(CM.keymap.of(this.buildUserKeymap())),
+      });
+      this.validateUserKeymap();
+    },
+    validateUserKeymap() {
+      if (!this.editor || !(this.keymap || []).length) return;
+      try {
+        // Force CodeMirror to build its combined keymap now instead of lazily on the first keydown:
+        // a chord whose prefix is also a standalone binding (incl. basicSetup's, e.g. "Mod-a Mod-b"
+        // vs. the built-in Mod-a) throws here rather than silently killing every keybinding later.
+        CM.runScopeHandlers(this.editor, new KeyboardEvent("keydown", { key: "Unidentified" }), "editor");
+      } catch (error) {
+        logAndEmit("error", `ui.codemirror: ${error.message}`);
+      }
+    },
     setLineTooltips(tooltips) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
@@ -306,6 +340,8 @@ export default {
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
+        // User keymap: Prec.high so they win over basicSetup defaults like Mod-z.
+        CM.Prec.high(this.userKeymapConfig.of(CM.keymap.of(this.buildUserKeymap()))),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
         CM.indentUnit.of(this.indent),
         // We will set these Compartments later and dynamically through props
@@ -336,6 +372,7 @@ export default {
     this.editableConfig = new CM.Compartment();
     this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
     this.lineWrappingConfig = new CM.Compartment();
+    this.userKeymapConfig = new CM.Compartment();
 
     const extensions = this.setupExtensions();
 
@@ -355,5 +392,6 @@ export default {
       this.applyLineAnchors(this.lineAnchors);
     }
     this.setLineTooltips(this.lineTooltips);
+    this.validateUserKeymap();
   },
 };

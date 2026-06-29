@@ -386,10 +386,11 @@ def test_warning_if_response_takes_too_long(screen: Screen):
         await asyncio.sleep(1)
         ui.label('all done')
 
-    screen.start_server()
-    # using httpx instead of screen.open to avoid Selenium script timeout on incomplete page responses
-    httpx.get(f'http://localhost:{Screen.PORT}/', timeout=5)
-    screen.wait(1)
+    screen.allowed_js_errors.append('/ - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('500')
+    screen.should_contain('Server error')
+    screen.should_contain('The page took longer than the response_timeout of 0.5 seconds to build.')
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))
 
 
