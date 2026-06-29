@@ -29,40 +29,26 @@ def preserve_cursor_demo() -> None:
 
 @doc.demo('Line Anchors', '''
     Line anchors give you a more stable reference to specific lines than line numbers.
-    The browser tracks each anchor's position through every change — insertions, deletions,
-    reformatting — and reading ``line_anchors`` back returns the current line on the Python side.
-    The example below attaches anchor "A" and "B" to the two lines and lets you rewrite either
-    one in place: edit the code freely (add blank lines, indent, reorder), then click "Update"
-    — the right line gets rewritten because the anchor followed the line.
+    The browser tracks each anchor's position through every change — insertions, deletions, reformatting
+    — and reading ``line_anchors`` back returns the current line on the Python side.
+    The example below anchors the first line and rewrites it in place when you click "Update argument":
+    edit the code freely (add blank lines above, indent, reorder) and the anchor still points at the right line.
+
+    *Added in NiceGUI 3.14.0*
 ''')
 def line_anchors_demo() -> None:
-    code = (
-        'rbt.move_l([100.0, 0.0, 200.0])\n'
-        'rbt.move_l([100.0, 100.0, 200.0])\n'
-    )
-    editor = ui.codemirror(code, language='Python',
-                           line_anchors={'A': 1, 'B': 2}).classes('h-40')
-    status = ui.label()
+    editor = ui.codemirror('answer: 42', line_anchors={'answer': 1}) \
+        .on_anchor_change(lambda e: ui.notify(e.anchors)) \
+        .classes('h-40')
 
-    def show_positions(_=None) -> None:
-        pos = editor.line_anchors
-        status.set_text(f'target A is on line {pos.get("A", "?")}, target B is on line {pos.get("B", "?")}')
-
-    editor.on_anchor_change(show_positions)
-    show_positions()
-
-    def update_target(target_id: str, new_pose: str) -> None:
-        line_no = editor.line_anchors.get(target_id)
-        if not line_no:
-            return
-        lines = (editor.value or '').split('\n')
-        if 0 < line_no <= len(lines):
-            lines[line_no - 1] = f'rbt.move_l([{new_pose}])'
+    def update_argument() -> None:
+        lines = editor.value.split('\n')
+        if (line_no := editor.line_anchors.get('answer')) and line_no <= len(lines):
+            answer = int(lines[line_no - 1].split()[-1])
+            lines[line_no - 1] = f'answer: {answer + 1}'
             editor.value = '\n'.join(lines)
 
-    with ui.row():
-        ui.button('Update target A', on_click=lambda: update_target('A', '50.0, -50.0, 150.0'))
-        ui.button('Update target B', on_click=lambda: update_target('B', '150.0, 200.0, 250.0'))
+    ui.button('Update argument', on_click=update_argument)
 
 
 @doc.demo('Custom Keybindings', '''
@@ -75,6 +61,8 @@ def line_anchors_demo() -> None:
     or to provide per-platform shortcut overrides (`mac=`, `linux=`, `win=`).
 
     Use `unmap_key(key)` to remove a mapping at runtime.
+
+    *Added in NiceGUI 3.14.0*
 ''')
 def keymap_demo() -> None:
     editor = ui.codemirror(
