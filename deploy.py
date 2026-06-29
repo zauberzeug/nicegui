@@ -72,7 +72,7 @@ for region, count in instances.items():
     run(['fly', 'scale', 'count', f'app={count}', '--region', region, '-y'])
     time.sleep(2)
 
-# NOTE: wait for machines to become healthy before pinning
+# wait for machines to become healthy before pinning
 print('waiting for machines to become healthy...')
 HEALTH_TIMEOUT = 60
 HEALTH_INTERVAL = 5
@@ -90,7 +90,7 @@ else:
     missing = expected_regions - healthy_regions
     print(f'  timed out waiting for: {", ".join(sorted(missing))}')
 
-# NOTE: pin first machine per region to avoid cold-start latency
+# pin first machine per region to avoid cold-start latency
 print('pinning machines...')
 machines_json = run(['fly', 'machines', 'list', '--json'], capture=True)
 machines = json.loads(machines_json)

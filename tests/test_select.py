@@ -200,6 +200,23 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
         screen.should_contain('B2')
 
 
+@pytest.mark.parametrize('option_dict', [False, True])
+def test_changing_options_in_input_value_handler(option_dict: bool, screen: Screen):
+    @ui.page('/')
+    def page():
+        def handle_input(e):
+            keys = [o for o in ['A1', 'A2'] if str(e.args) in o]
+            select.set_options({o: f'Option {o}' for o in keys} if option_dict else keys)
+        select = ui.select({} if option_dict else [], with_input=True).on('input-value', handle_input)
+        ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+
+    screen.open('/')
+    screen.find_by_tag('input').send_keys('A')
+    screen.click('Option A2' if option_dict else 'A2')
+    screen.wait(0.5)  # wait for a potential deferred "input-value" event clearing the value
+    screen.should_contain('value = A2')
+
+
 @pytest.mark.parametrize('auto_validation', [True, False])
 def test_select_validation(auto_validation: bool, screen: Screen):
     @ui.page('/')
