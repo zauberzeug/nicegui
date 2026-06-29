@@ -4,6 +4,7 @@ from contextlib import suppress
 from .. import background_tasks, core, json, optional_features
 from ..logging import log
 from .persistent_dict import PersistentDict
+from .serialization import dumps
 
 with suppress(ImportError):
     import redis as redis_sync
@@ -88,7 +89,7 @@ class RedisPersistentDict(PersistentDict):
             if not await self.redis_client.exists(self.key) and not self:
                 return
             pipeline = self.redis_client.pipeline()
-            data = json.dumps(self)
+            data = dumps(self, self.key)
             pipeline.set(self.key, data, ex=self.ttl)
             pipeline.publish(self.key + 'changes', data)
             await pipeline.execute()
