@@ -75,7 +75,7 @@ class Classes(ObservableList, Generic[T]):
         class_list = [c for c in class_list if c not in (remove or '').split()]
         class_list += (add or '').split()
         class_list += (replace or '').split()
-        class_list = list(dict.fromkeys(class_list))  # NOTE: remove duplicates while preserving order
+        class_list = list(dict.fromkeys(class_list))  # remove duplicates while preserving order
         if toggle is not None:
             for class_ in toggle.split():
                 if class_ in class_list:

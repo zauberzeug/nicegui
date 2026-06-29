@@ -442,8 +442,8 @@ async def test_typing(user: User) -> None:
         ui.button('World!')
 
     await user.open('/')
-    # NOTE we have not yet found a way to test the typing suggestions automatically
-    # to test, hover over the variable and verify that your IDE inferres the correct type
+    # We have not yet found a way to test the typing suggestions automatically.
+    # To test, hover over the variable and verify that your IDE inferres the correct type.
     _ = user.find(kind=ui.label).elements  # Set[ui.label]
     _ = user.find(ui.label).elements  # Set[ui.label]
     _ = user.find('World').elements  # Set[ui.element]

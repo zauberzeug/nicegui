@@ -62,7 +62,7 @@ class Skeleton(Element):
         self._props.set_optional('type', type if type != 'rect' else None)
         self._props.set_optional('tag', tag if tag != 'div' else None)
         self._props.set_optional('animation', animation if animation != 'wave' else None)
-        self._props.set_optional('animation-speed', animation_speed if animation_speed != 1.5 else None)
+        self._props.set_optional('animation-speed', animation_speed * 1000 if animation_speed != 1.5 else None)
         self._props.set_bool('square', square)
         self._props.set_bool('bordered', bordered)
         self._props.set_optional('size', size)

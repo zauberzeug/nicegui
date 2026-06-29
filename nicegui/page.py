@@ -11,6 +11,7 @@ from fastapi import Request, Response
 
 from . import background_tasks, binding, core, helpers
 from .client import Client, ClientConnectionTimeout
+from .error import error_content
 from .favicon import create_favicon_route
 from .language import Language
 from .logging import log
@@ -27,7 +28,7 @@ class page:
                  viewport: str | None = None,
                  favicon: str | Path | None = None,
                  dark: bool | None = ...,  # type: ignore
-                 language: Language = ...,  # type: ignore
+                 language: Language | None = ...,  # type: ignore
                  response_timeout: float = 3.0,
                  reconnect_timeout: float | None = None,
                  markdown: bool | None = None,
@@ -55,7 +56,8 @@ class page:
         :param viewport: optional viewport meta tag content
         :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
-        :param language: language of the page (defaults to `language` argument of `run` command)
+        :param language: language of the page, used for Quasar elements and the ``lang`` attribute of the ``html`` tag
+            (defaults to ``language`` argument of ``run`` command, *updated in version 3.14.0*: can be ``None`` to omit the ``lang`` attribute)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
         :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
         :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
@@ -109,7 +111,7 @@ class page:
         """Return whether the page should use dark mode."""
         return self.dark if self.dark is not ... else core.app.config.dark
 
-    def resolve_language(self) -> Language:
+    def resolve_language(self) -> Language | None:
         """Return the language of the page."""
         return self.language if self.language is not ... else core.app.config.language
 
@@ -125,7 +127,7 @@ class page:
         return self.markdown if self.markdown is not None else core.app.config.markdown
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        core.app.remove_route(self.path)  # NOTE make sure only the latest route definition is used
+        core.app.remove_route(self.path)  # make sure only the latest route definition is used
 
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
@@ -176,7 +178,7 @@ class page:
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
-            # NOTE cleaning up the keyword args so the signature is consistent with "func" again
+            # cleaning up the keyword args so the signature is consistent with "func" again
             dec_kwargs = {k: v for k, v in dec_kwargs.items() if k in parameters_of_decorated_func}
             with Client(self, request=request) as client:
                 if any(p.name == 'client' for p in inspect.signature(func).parameters.values()):
@@ -209,6 +211,12 @@ class page:
                     task.cancel()
                     log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
                     client.delete()
+                    # The client is gone, so serving the normal page would only handshake-fail and reload-loop (#6126).
+                    # Serve a terminal error page through a fresh, alive client whose handshake succeeds.
+                    with Client(page(''), request=request) as error_client:
+                        error_content(500, f'The page took longer than the response_timeout of {self.response_timeout} seconds to build. '
+                                      'Await ui.context.client.connected() before long-running setup or increase response_timeout.')
+                    return error_client.build_response(request, 500)
                 if not task_wait_for_connection.done():
                     task_wait_for_connection.cancel()
                 if task.done():
@@ -221,13 +229,13 @@ class page:
                 log.warning(f'{request.url} not found')
                 return client.build_response(request, 404)
 
-            if isinstance(result, Response):  # NOTE if setup returns a response, we don't need to render the page
+            if isinstance(result, Response):  # if setup returns a response, we don't need to render the page
                 return result
             binding._refresh_step()  # pylint: disable=protected-access
             return client.build_response(request, client.status_code)
 
         parameters = [p for p in inspect.signature(func).parameters.values() if p.name != 'client']
-        # NOTE adding request as a parameter so we can pass it to the client in the decorated function
+        # adding request as a parameter so we can pass it to the client in the decorated function
         if 'request' not in {p.name for p in parameters}:
             request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
             parameters.insert(0, request)

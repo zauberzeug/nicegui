@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import _thread
 import multiprocessing as mp
 import pickle
 import queue
@@ -18,7 +17,6 @@ from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
-from ..server import Server
 from . import native, window_icon
 from .event_manager import event_manager
 
@@ -112,7 +110,7 @@ def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> 
     window.events.resized += lambda width, height: send('resized', width=width, height=height)
     window.events.moved += lambda x, y: send('moved', x=x, y=y)
     window.events.closed += lambda: send('closed')
-    # NOTE: 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
+    # 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -153,7 +151,7 @@ def _start_window_method_executor(window: webview.Window,
                     else:
                         log.error(f'window.{method_name} is not callable')
             except queue.Empty:
-                time.sleep(0.016)  # NOTE: avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
+                time.sleep(0.016)  # avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
             except Exception:
                 log.exception(f'error in window.{method_name}')
 
@@ -182,12 +180,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
             time.sleep(0.1)
         if shutdown_event is not None:
             shutdown_event.set()
-        Server.instance.should_exit = True
-        while not core.app.is_stopped:
-            time.sleep(0.1)
-        _thread.interrupt_main()
-        event_manager.stop()
-        native.remove_queues()
+        core.stop_and_exit()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'

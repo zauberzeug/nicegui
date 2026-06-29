@@ -7,6 +7,7 @@ from starlette.routing import Route
 
 from .. import app, binding, core, dependencies, event, run, ui
 from ..client import Client
+from ..helpers import warnings
 
 
 def prepare_simulation() -> None:
@@ -17,7 +18,7 @@ def prepare_simulation() -> None:
         viewport='',
         favicon=None,
         dark=False,
-        language='en-US',
+        language=None,
         binding_refresh_interval=0.1,
         reconnect_timeout=3.0,
         message_history_length=1000,
@@ -51,6 +52,7 @@ def nicegui_reset_globals():
     default_classes = {t: copy(t._default_classes) for t in element_types}  # pylint: disable=protected-access
     default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
     default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
+    default_markdown_extras = ui.markdown.default_extras[:]
 
     dependencies.importmap_overrides.clear()
     Client.instances.clear()
@@ -59,6 +61,7 @@ def nicegui_reset_globals():
     Client.shared_body_html = ''
     app.reset()
     binding.reset()
+    warnings.reset()
 
     gc.collect()
 
@@ -75,6 +78,7 @@ def nicegui_reset_globals():
             t._default_classes = default_classes[t]  # pylint: disable=protected-access
             t._default_style = default_styles[t]  # pylint: disable=protected-access
             t._default_props = default_props[t]  # pylint: disable=protected-access
+        ui.markdown.default_extras = default_markdown_extras
 
         for func in Client.page_routes:
             if not func.__module__.startswith('tests.'):

@@ -12,20 +12,20 @@ async def run_command(command: str) -> None:
     """Run a command in the background and display the output in the pre-created dialog."""
     dialog.open()
     result.content = ''
-    command = command.replace('python3', sys.executable)  # NOTE replace with machine-independent Python path (#1240)
+    command = command.replace('python3', sys.executable)  # replace with machine-independent Python path (#1240)
     process = await asyncio.create_subprocess_exec(
         *shlex.split(command, posix='win' not in sys.platform.lower()),
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
         cwd=os.path.dirname(os.path.abspath(__file__))
     )
-    # NOTE we need to read the output in chunks, otherwise the process will block
+    # we need to read the output in chunks, otherwise the process will block
     output = ''
     while True:
         new = await process.stdout.read(4096)
         if not new:
             break
         output += new.decode()
-        # NOTE the content of the markdown element is replaced every time we have new output
+        # the content of the markdown element is replaced every time we have new output
         result.content = f'```\n{output}\n```'
 
 with ui.dialog() as dialog, ui.card():
@@ -38,5 +38,5 @@ with ui.row().classes('items-center'):
         .props('no-caps')
     message = ui.input('message', value='NiceGUI')
 
-# NOTE: On Windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
+# On Windows reload must be disabled to make asyncio.create_subprocess_exec work (see https://github.com/zauberzeug/nicegui/issues/486)
 ui.run(reload=platform.system() != 'Windows')

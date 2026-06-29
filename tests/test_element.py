@@ -471,6 +471,7 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
             ui.time_input(),
             ui.color_input(),
             ui.select([]),
+            ui.select([], with_input=True),  # #6114: with_input select dropped its html_id
             ui.input_chips(),
             ui.toggle([]),
             ui.radio([]),
