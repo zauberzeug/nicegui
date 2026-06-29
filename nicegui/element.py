@@ -440,38 +440,35 @@ class Element(Visibility):
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
         events.handle_event(listener.handler, args)
 
-    def _is_safe_to_interact(self) -> bool:
-        """Return True if it is safe to send messages to this element's client.
+    def _safe_client(self) -> Client | None:
+        """Return the client if the element is safe to interact with, or ``None`` otherwise.
 
-        Silent when the *client* has been deleted (e.g. browser reload race past ``reconnect_timeout``)
-        or already garbage-collected: an async callback resuming after the teardown is not a user bug.
-        Emits a one-shot warning when the *element* has been explicitly deleted but the client is still alive:
-        that is a real use-after-free in user code and worth surfacing.
+        Returns ``None`` silently when the *client* has been deleted (e.g. browser reload race past
+        ``reconnect_timeout``) or already garbage-collected: an async callback resuming after the
+        teardown is not a user bug.
+
+        Emits a one-shot warning when the *element* has been explicitly deleted but the client is
+        still alive: that is a real use-after-free in user code and worth surfacing.
         """
         client = self._client()
         if client is None or client.is_deleted:
-            return False
-        if self.is_deleted:
-            helpers.warn_once('An element has been deleted but is still being used. '
-                              'This is most likely a bug in your application code. '
-                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
-                              stack_info=True)
-            return False
-        return True
-
-    def update(self) -> None:
-        """Update the element on the client side."""
-        # NOTE: This method intentionally duplicates _is_safe_to_interact() inline so it can
-        # reuse the resolved `client` for the outbox call below (avoiding a second attribute
-        # and weakref dereference on every update). Keep the two in sync.
-        client = self._client()
-        if client is None or client.is_deleted:
-            return
+            return None
         if self._deleted:
             helpers.warn_once('An element has been deleted but is still being used. '
                               'This is most likely a bug in your application code. '
                               'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
                               stack_info=True)
+            return None
+        return client
+
+    def _is_safe_to_interact(self) -> bool:
+        """Return True if it is safe to send messages to this element's client."""
+        return self._safe_client() is not None
+
+    def update(self) -> None:
+        """Update the element on the client side."""
+        client = self._safe_client()
+        if client is None:
             return
         client.outbox.enqueue_update(self)
 
