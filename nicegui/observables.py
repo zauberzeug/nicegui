@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import abc
-from collections.abc import Callable, Collection, Iterable
+import weakref
+from collections.abc import Callable, Collection, Iterable, Iterator
+from contextlib import contextmanager
 from copy import deepcopy
 from time import time
-from typing import Any, SupportsIndex
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, SupportsIndex, TypeVar
 
 from typing_extensions import Self
 
 from . import core, events
+
+if TYPE_CHECKING:
+    from .element import Element
+
+T = TypeVar('T', bound='Element')
 
 # Deeply-immutable types that never need ObservableDict/List/Set wrapping overhead.
 _OBSERVABLE_UNCHANGED_TYPES = frozenset({str, int, float, bool, type(None), tuple, bytes, frozenset})
@@ -66,11 +73,8 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         and running expects_arguments checks. Return True to claim the handler and
         stop normal dispatch. Return False (the default) to let normal dispatch proceed.
 
-        Props, Classes, and Style override this to intercept their own _update
+        Props, Classes, and Style use ElementBoundObservableMixin to intercept their own _update
         handler and skip event-argument overhead on every mutation.
-
-        See: ``Props._handle_direct_change_handler``, ``Classes._handle_direct_change_handler``,
-        and ``Style._handle_direct_change_handler``.
         """
         return False
 
@@ -80,6 +84,13 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             self._change_handlers.append(handler)
 
     def _observe(self, data: Any) -> Any:
+        """Wrap *data* in an observable collection, or register a change handler if it is already one.
+
+        Uses ``type(data) is`` for the exact built-in types (avoids ``isinstance``
+        MRO overhead), then :class:`ObservableCollection` so subclasses like
+        ``ObservableDict`` register rather than re-wrap, then ``isinstance`` for
+        any remaining dict/list/set subclasses.
+        """
         data_type = type(data)
         if data_type in _OBSERVABLE_UNCHANGED_TYPES:
             return data
@@ -117,6 +128,59 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         if isinstance(self, set):
             return ObservableSet({deepcopy(item) for item in self}, _parent=self._parent)
         raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
+
+
+class ElementBoundObservableMixin(Generic[T]):
+    """Observable collection behavior shared by Props, Classes, and Style.
+
+    Concrete classes still initialize their ObservableDict/ObservableList base with
+    ``on_change=self._update``; this mixin binds that handler to the owning element
+    and provides the shared hot-path dispatch and update-suspension behavior.
+    """
+
+    _element_kind: ClassVar[str]
+    _change_handlers: list[Callable]
+    _element: weakref.ReferenceType[T]
+    _update_handler: Callable
+    _suspend_count: int
+
+    def _bind_element(self, element: T) -> None:
+        self._update_handler = self._change_handlers[0]
+        self._element = weakref.ref(element)
+        self._suspend_count = 0
+
+    def _update(self) -> None:
+        """Update the bound element after a collection change."""
+        raise NotImplementedError
+
+    @contextmanager
+    def suspend_updates(self) -> Iterator[None]:
+        """Suspend updates."""
+        self._suspend_count += 1
+        try:
+            yield
+        finally:
+            self._suspend_count -= 1
+
+    def _handle_direct_change_handler(self, handler: Callable) -> bool:
+        """Run _update directly, skipping ObservableChangeEventArguments dispatch.
+
+        Generic dispatch builds event arguments and checks expects_arguments.
+        Skip both when the handler is our own _update. Claim the handler even
+        when suspended: suspended mutations should not fall through to generic dispatch.
+        """
+        if handler is self._update_handler:
+            self._update()
+            return True
+        return False
+
+    @property
+    def element(self) -> T:
+        """The element this observable collection belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError(f'The element this {self._element_kind} object belongs to has been deleted.')
+        return element
 
 
 class ObservableDict(ObservableCollection, dict):

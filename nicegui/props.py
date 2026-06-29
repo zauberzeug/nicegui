@@ -1,12 +1,9 @@
 import ast
 import re
-import weakref
-from collections.abc import Callable, Iterator
-from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from . import helpers
-from .observables import ObservableDict
+from .observables import ElementBoundObservableMixin, ObservableDict
 
 if TYPE_CHECKING:
     from .element import Element
@@ -55,15 +52,14 @@ PROPS_PATTERN = re.compile(r'''
 T = TypeVar('T', bound='Element')
 
 
-class Props(ObservableDict, Generic[T]):
+class Props(ElementBoundObservableMixin[T], ObservableDict):
+    _element_kind = 'props'
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, on_change=self._update, **kwargs)
-        self._update_handler = self._change_handlers[0]
-        self._element = weakref.ref(element)
+        self._bind_element(element)
         self._warnings: dict[str, str] = {}
         self._renames: dict[str, str] = {}
-        self._suspend_count = 0
 
     def set_optional(self, key: str, value: Any) -> None:
         """Set a prop value or remove it if None is provided."""
@@ -78,35 +74,6 @@ class Props(ObservableDict, Generic[T]):
             self[key] = value
         elif key in self:
             self.pop(key)
-
-    @contextmanager
-    def suspend_updates(self) -> Iterator[None]:
-        """Suspend updates."""
-        self._suspend_count += 1
-        try:
-            yield
-        finally:
-            self._suspend_count -= 1
-
-    def _handle_direct_change_handler(self, handler: Callable) -> bool:
-        """Run _update directly, skipping ObservableChangeEventArguments dispatch.
-
-        Generic dispatch builds event arguments and checks expects_arguments.
-        Skip both when the handler is our own _update. Claim the handler even
-        when suspended: suspended mutations should not fall through to generic dispatch.
-        """
-        if handler is self._update_handler:
-            self._update()
-            return True
-        return False
-
-    @property
-    def element(self) -> T:
-        """The element this props object belongs to."""
-        element = self._element()
-        if element is None:
-            raise RuntimeError('The element this props object belongs to has been deleted.')
-        return element
 
     def _update(self) -> None:
         if self._suspend_count > 0:

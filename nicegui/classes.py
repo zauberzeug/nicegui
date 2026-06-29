@@ -1,9 +1,6 @@
-import weakref
-from collections.abc import Callable, Iterator
-from contextlib import contextmanager
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
-from .observables import ObservableList
+from .observables import ElementBoundObservableMixin, ObservableList
 
 if TYPE_CHECKING:
     from .element import Element
@@ -11,42 +8,12 @@ if TYPE_CHECKING:
 T = TypeVar('T', bound='Element')
 
 
-class Classes(ObservableList, Generic[T]):
+class Classes(ElementBoundObservableMixin[T], ObservableList):
+    _element_kind = 'classes'
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, on_change=self._update, **kwargs)
-        self._update_handler = self._change_handlers[0]
-        self._element = weakref.ref(element)
-        self._suspend_count = 0
-
-    @contextmanager
-    def suspend_updates(self) -> Iterator[None]:
-        """Suspend updates."""
-        self._suspend_count += 1
-        try:
-            yield
-        finally:
-            self._suspend_count -= 1
-
-    def _handle_direct_change_handler(self, handler: Callable) -> bool:
-        """Run _update directly, skipping ObservableChangeEventArguments dispatch.
-
-        Generic dispatch builds event arguments and checks expects_arguments.
-        Skip both when the handler is our own _update. Claim the handler even
-        when suspended: suspended mutations should not fall through to generic dispatch.
-        """
-        if handler is self._update_handler:
-            self._update()
-            return True
-        return False
-
-    @property
-    def element(self) -> T:
-        """The element this classes object belongs to."""
-        element = self._element()
-        if element is None:
-            raise RuntimeError('The element this classes object belongs to has been deleted.')
-        return element
+        self._bind_element(element)
 
     def _update(self) -> None:
         if self._suspend_count > 0:
