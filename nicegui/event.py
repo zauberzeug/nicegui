@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-import sys
+import inspect
 import weakref
 from collections.abc import Awaitable, Callable
 from contextlib import contextmanager
@@ -92,7 +92,13 @@ class Event(Generic[P]):
         :param unsubscribe_on_delete: whether to unsubscribe the callback when the current client is deleted
             (default: ``None`` meaning the callback is automatically unsubscribed if subscribed from within a UI context)
         """
-        frame = sys._getframe(1)  # pylint: disable=protected-access
+        frame = inspect.currentframe()
+        if frame is not None:
+            frame = frame.f_back
+        if frame is None:
+            raise RuntimeError(
+                'Event.subscribe() must be called from within a function, not at module level'
+            )
         callback_entry = Callback[P](
             func=callback,
             expect_args=_should_forward_event_args(callback, expect_args),
