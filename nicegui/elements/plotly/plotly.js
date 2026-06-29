@@ -1,3 +1,5 @@
+import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+
 export default {
   template: "<div></div>",
   async mounted() {
@@ -37,6 +39,16 @@ export default {
 
       // store last options
       this.last_options = options;
+    },
+    async run_plot_method(name, ...args) {
+      if (typeof this.Plotly === "undefined") {
+        logAndEmit("error", "Plotly is not loaded yet.");
+        return;
+      }
+      convertDynamicProperties(args, true);
+      const result = await runMethod(this.Plotly, name, [this.$el, ...args]);
+      // most plotly.js functions resolve to the graph element, which cannot be serialized back to the server
+      return result === this.$el ? undefined : result;
     },
     set_handlers() {
       // forward events

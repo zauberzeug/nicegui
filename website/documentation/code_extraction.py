@@ -8,7 +8,7 @@ UNCOMMENT_PATTERN = re.compile(r'^(\s*)# ?')
 
 
 def _uncomment(text: str) -> str:
-    return UNCOMMENT_PATTERN.sub(r'\1', text)  # NOTE: non-executed lines should be shown in the code examples
+    return UNCOMMENT_PATTERN.sub(r'\1', text)  # non-executed lines should be shown in the code examples
 
 
 def get_full_code(f: Callable) -> str:

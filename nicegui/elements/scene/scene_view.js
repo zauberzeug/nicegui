@@ -140,7 +140,7 @@ export default {
         )
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
-          this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
+          this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
         })

@@ -1,6 +1,12 @@
+import asyncio
+import io
+import struct
+from collections.abc import AsyncGenerator
 from pathlib import Path
 
 import pytest
+from fastapi.responses import StreamingResponse
+from PIL import Image
 from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import app, ui
@@ -119,6 +125,49 @@ def test_add_layer(screen: Screen):
     with screen.implicitly_wait(0.5):
         assert len(screen.find_all_by_tag('rect')) == 1
         assert len(screen.find_all_by_tag('circle')) == 1
+
+
+def test_resync_on_stream_resolution_change(screen: Screen):
+    """https://github.com/zauberzeug/nicegui/issues/6122"""
+    def jpeg(width: int, height: int) -> bytes:
+        buffer = io.BytesIO()
+        Image.new('RGB', (width, height)).save(buffer, format='JPEG')
+        data = buffer.getvalue()
+        # Browsers won't paint a multipart frame until enough bytes have arrived, so a tiny JPEG can stall.
+        # Bulk it up by inserting a JPEG comment segment (0xFFFE marker + 2-byte length) padded with spaces after the SOI marker.
+        return data[:2] + b'\xff\xfe' + struct.pack('>H', 40_002) + b' ' * 40_000 + data[2:]
+
+    frame = {'data': jpeg(300, 200)}
+    clicks = []
+
+    async def generate() -> AsyncGenerator[bytes, None]:
+        for _ in range(600):
+            yield b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame['data'] + b'\r\n'
+            await asyncio.sleep(0.05)
+
+    @app.get('/stream')
+    def stream():
+        return StreamingResponse(generate(), media_type='multipart/x-mixed-replace; boundary=frame')
+
+    @ui.page('/')
+    def page():
+        ui.interactive_image('/stream', events=['mousedown'], on_mouse=lambda e: clicks.append((e.image_x, e.image_y)))
+        ui.button('Change', on_click=lambda: frame.update(data=jpeg(600, 400)))
+
+    screen.open('/')
+
+    def click_when_width(width: int):
+        for _ in range(100):
+            if screen.selenium.execute_script('return document.querySelector("img").naturalWidth') == width:
+                break
+            screen.wait(0.1)
+        ActionChains(screen.selenium).move_to_element(screen.find_by_tag('img')).click().perform()
+        screen.wait(0.5)
+        return clicks[-1]
+
+    assert click_when_width(300) == pytest.approx((150, 100), abs=2)
+    screen.click('Change')  # the <img> resolution changes in place, without firing a new "load" event
+    assert click_when_width(600) == pytest.approx((300, 200), abs=2)
 
 
 def test_xss_sanitization(screen: Screen):

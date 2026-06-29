@@ -57,7 +57,7 @@ def create() -> None:
 
 def _card(icon: str, title: str, items: list[str]) -> None:
     """Render a single feature card with icon, title, and bullet list."""
-    with ui.column().classes(f'relative rounded-2xl p-7 gap-0 group transition-all duration-200 cursor-default hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'):
+    with ui.column().classes(f'relative rounded-2xl p-7 gap-0 group transition-transform duration-200 cursor-default hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'):
         ui.label('ui.card()') \
             .classes(f'absolute top-2.5 right-3 font-mono {d.TEXT_13PX} {d.TEXT_BLUE} opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none')
         phosphor_icon(icon) \

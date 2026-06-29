@@ -3,7 +3,7 @@ import { loadResource } from "../../static/utils/resources.js";
 export default {
   template: `<div></div>`,
   async mounted() {
-    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
+    await this.$nextTick(); // wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.dynamicResourcePath}/${this.resourceName}`);
     this.renderContent();
     if (this.useMermaid) {

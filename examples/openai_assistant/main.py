@@ -50,6 +50,6 @@ async def root():
             .classes('w-full self-center mt-4').props('hint="Ask your question" dense') \
             .on('keydown.enter', send)
         response = ui.markdown().classes('mx-4 mt-2')
-        ui.timer(0, send, once=True)  # NOTE: we send the prepared demo question immediately
+        ui.timer(0, send, once=True)  # we send the prepared demo question immediately
 
 ui.run(root=root)
