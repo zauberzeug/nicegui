@@ -79,20 +79,20 @@ def test_to_xml_preserves_priority_precision():
 
 
 @pytest.mark.parametrize('value, expected', [(5.0, '1.0'), (-1.0, '0.0')])
-def test_to_xml_clamps_out_of_range_priority(value, expected, caplog):
+def test_add_clamps_out_of_range_priority(value, expected, caplog):
     s = Sitemap()
-    s.add('/a', priority=value)
     with caplog.at_level(logging.WARNING, logger='nicegui'):
-        root = ET.fromstring(s.to_xml('https://example.com'))
+        s.add('/a', priority=value)
+    root = ET.fromstring(s.to_xml('https://example.com'))
     assert root.findtext(f'{NS}url/{NS}priority') == expected
     assert 'Clamping out-of-range sitemap priority' in caplog.text
 
 
-def test_to_xml_omits_non_numeric_priority_with_warning(caplog):
+def test_add_omits_non_numeric_priority_with_warning(caplog):
     s = Sitemap()
-    s.add('/a', priority='high')  # type: ignore[arg-type]
     with caplog.at_level(logging.WARNING, logger='nicegui'):
-        root = ET.fromstring(s.to_xml('https://example.com'))
+        s.add('/a', priority='high')  # type: ignore[arg-type]
+    root = ET.fromstring(s.to_xml('https://example.com'))
     url = root.find(f'{NS}url')
     assert url is not None
     assert url.find(f'{NS}priority') is None
@@ -100,11 +100,11 @@ def test_to_xml_omits_non_numeric_priority_with_warning(caplog):
 
 
 @pytest.mark.parametrize('value', [float('nan'), float('inf'), float('-inf')])
-def test_to_xml_omits_non_finite_priority_with_warning(value, caplog):
+def test_add_omits_non_finite_priority_with_warning(value, caplog):
     s = Sitemap()
-    s.add('/a', priority=value)
     with caplog.at_level(logging.WARNING, logger='nicegui'):
-        root = ET.fromstring(s.to_xml('https://example.com'))
+        s.add('/a', priority=value)
+    root = ET.fromstring(s.to_xml('https://example.com'))
     url = root.find(f'{NS}url')
     assert url is not None
     assert url.find(f'{NS}priority') is None  # NaN/inf must not become a misleading 0.0/1.0

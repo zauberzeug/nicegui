@@ -68,6 +68,7 @@ class Sitemap:
         :param lastmod: ISO-8601 date or datetime of last modification
         :param changefreq: ``always``, ``hourly``, ``daily``, ``weekly``, ``monthly``, ``yearly``, or ``never``
         :param priority: relative importance from ``0.0`` to ``1.0``
+            (out-of-range values are clamped, non-numeric values are ignored with a warning)
         """
         if '{' in path:
             raise ValueError(
@@ -79,7 +80,7 @@ class Sitemap:
                 f'Unknown sitemap field(s) for {path!r}: {sorted(unknown)}. '
                 f'Supported: {list(_VALID_FIELDS)}. See https://www.sitemaps.org/protocol.html'
             )
-        self._entries[path] = SitemapEntry(path, lastmod, changefreq, priority)
+        self._entries[path] = SitemapEntry(path, lastmod, changefreq, self._normalize_priority(path, priority))
         self._decorator_opted_in.discard(path)  # a manual add() (re)claims the path from decorator provenance
 
     def remove(self, path: str) -> None:
@@ -116,12 +117,14 @@ class Sitemap:
         yield from self._entries.values()
 
     @staticmethod
-    def _format_priority(path: str, value: Any) -> str | None:
-        """Validate, clamp and render a priority value, warning instead of emitting bad XML.
+    def _normalize_priority(path: str, value: Any) -> float | None:
+        """Validate and clamp a priority value at registration time, warning instead of storing a bad value.
 
-        Returns ``None`` (priority omitted) for non-numeric values; otherwise clamps to
-        ``[0.0, 1.0]`` and renders without precision loss (e.g. ``0.85`` stays ``0.85``).
+        Returns ``None`` (priority omitted) for unset, non-numeric, or non-finite values; otherwise clamps to ``[0.0, 1.0]``.
+        Validating here in :meth:`add` means a bad value warns once at registration rather than on every ``/sitemap.xml`` request.
         """
+        if value is None:
+            return None
         try:
             priority = float(value)
         except (TypeError, ValueError):
@@ -129,14 +132,13 @@ class Sitemap:
                         value, path)
             return None
         if not math.isfinite(priority):  # NaN/inf would clamp to a misleading 0.0/1.0 — omit instead
-            log.warning('Ignoring non-finite sitemap priority %r for %r; expected a number in [0.0, 1.0].',
-                        value, path)
+            log.warning('Ignoring non-finite sitemap priority %r for %r; expected a number in [0.0, 1.0].', value, path)
             return None
         clamped = max(0.0, min(1.0, priority))
         if clamped != priority:
             log.warning('Clamping out-of-range sitemap priority %s for %r to %s (valid range [0.0, 1.0]).',
                         priority, path, clamped)
-        return str(clamped)
+        return clamped
 
     def to_xml(self, base_url: str) -> str:
         """Render the sitemap as XML rooted at ``base_url`` (e.g. ``https://example.com``)."""
@@ -151,7 +153,5 @@ class Sitemap:
             if entry.changefreq is not None:
                 ET.SubElement(url, 'changefreq').text = entry.changefreq
             if entry.priority is not None:
-                priority_text = self._format_priority(entry.path, entry.priority)
-                if priority_text is not None:
-                    ET.SubElement(url, 'priority').text = priority_text
+                ET.SubElement(url, 'priority').text = str(entry.priority)
         return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(urlset, encoding='unicode')
