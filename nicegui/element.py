@@ -516,16 +516,12 @@ class Element(Visibility):
     def descendants(self, *, include_self: bool = False) -> Iterator[Element]:
         """Iterate over the descendants of the element.
 
-        Iterates over *all* slots' children (not just the default slot), so elements
-        in named slots are included in the traversal.
-
         :param include_self: whether to include the element itself in the iteration
         """
         if include_self:
             yield self
-        for slot in self.slots.values():
-            for child in slot.children:
-                yield from child.descendants(include_self=True)
+        for child in self:
+            yield from child.descendants(include_self=True)
 
     def clear(self) -> Self:
         """Remove all child elements."""
