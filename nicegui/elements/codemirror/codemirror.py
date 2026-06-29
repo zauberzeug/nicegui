@@ -133,7 +133,7 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
-        self._props['decorations'] = list(decorations or [])
+        self._props['decorations'] = decorations or []
         self._props['decoration-text-html'] = decoration_text_html
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
@@ -210,7 +210,8 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         For mark and line decorations the ``class`` field produces the visible styling, so the host
         application is responsible for shipping CSS for whatever class names it passes here.
         The ``attributes`` field is applied as raw DOM attributes (including event handlers like
-        ``onclick``) and is not sanitized; do not pass untrusted input through it.
+        ``onclick``) and is not sanitized.
+        Do not pass untrusted input through it.
 
         *Added in version X.Y.Z*
         """
@@ -218,7 +219,7 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
 
     @decorations.setter
     def decorations(self, decorations: list[DecorationSpec] | None) -> None:
-        self._props['decorations'] = list(decorations or [])
+        self._props['decorations'] = decorations or []
 
     @property
     def line_tooltips(self) -> dict[int, str]:
