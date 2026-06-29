@@ -66,6 +66,8 @@ class Element(Visibility):
         :param _client: client for this element (for internal use only)
         """
         super().__init__()
+        # When a client is injected externally, peek the slot stack without side effects;
+        # otherwise use context.slot_stack which may lazily create a client:
         slot_stack = Slot.peek_stack() if _client is not None else context.slot_stack
         parent_slot = slot_stack[-1] if slot_stack else None
         parent_element = parent_slot.parent if parent_slot is not None else None
@@ -257,8 +259,10 @@ class Element(Visibility):
             result['style'] = self._style
         if self._props:
             result['props'] = self._props
-        if len(self.slots) > 1 and (slots := self._collect_slot_dict()):
-            result['slots'] = slots
+        if len(self.slots) > 1:
+            slots = self._collect_slot_dict()
+            if slots:
+                result['slots'] = slots
         if self.default_slot.children:
             result['children'] = [child.id for child in self.default_slot.children]
         if self._event_listeners:
