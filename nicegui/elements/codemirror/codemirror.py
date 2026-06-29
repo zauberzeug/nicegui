@@ -171,8 +171,8 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         self.on('selection-change', lambda e: handle_event(callback, CodeMirrorSelectionChangeEventArguments(
             sender=self,
             client=self.client,
-            line=int(e.args['line']),
-            column=int(e.args['column']),
+            line=e.args['line'],
+            column=e.args['column'],
         )))
         self._props['selection-tracking-enabled'] = True
         if debounce_ms is not None:
@@ -189,7 +189,7 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         self.on('focus-change', lambda e: handle_event(callback, CodeMirrorFocusChangeEventArguments(
             sender=self,
             client=self.client,
-            focused=bool(e.args['focused']),
+            focused=e.args['focused'],
         )))
         self._props['focus-tracking-enabled'] = True
         if debounce_ms is not None:
@@ -206,8 +206,8 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         self.on('viewport-change', lambda e: handle_event(callback, CodeMirrorViewportChangeEventArguments(
             sender=self,
             client=self.client,
-            from_line=int(e.args['from_line']),
-            to_line=int(e.args['to_line']),
+            from_line=e.args['from_line'],
+            to_line=e.args['to_line'],
         )))
         self._props['viewport-tracking-enabled'] = True
         if debounce_ms is not None:
@@ -224,9 +224,9 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         self.on('geometry-change', lambda e: handle_event(callback, CodeMirrorGeometryChangeEventArguments(
             sender=self,
             client=self.client,
-            width=int(e.args['width']),
-            height=int(e.args['height']),
-            content_height=int(e.args['content_height']),
+            width=e.args['width'],
+            height=e.args['height'],
+            content_height=e.args['content_height'],
         )))
         self._props['geometry-tracking-enabled'] = True
         if debounce_ms is not None:

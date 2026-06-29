@@ -281,7 +281,7 @@ export default {
               this._maybeEmit("geometry-change", self.geometryDebounceMs, {
                 width: u.view.dom.clientWidth,
                 height: u.view.dom.clientHeight,
-                content_height: u.view.contentHeight,
+                content_height: Math.round(u.view.contentHeight),
               });
             }
           }
