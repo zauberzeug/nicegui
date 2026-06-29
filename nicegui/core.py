@@ -30,27 +30,6 @@ def is_loop_running() -> bool:
     return loop is not None and loop.is_running()
 
 
-def stop_and_exit() -> None:
-    """Run the app's ``on_shutdown`` callbacks and ``atexit`` handlers, then hard-exit.
-
-    Skips uvicorn's connection drain, which runs before lifespan shutdown and can hang forever
-    on a ghost Windows connection (#5443). ``os._exit`` skips normal interpreter teardown, so
-    ``atexit`` handlers are run explicitly first. Code after ``ui.run()`` (e.g. a trailing
-    ``finally``) still does not run — a documented limitation.
-    """
-    current_loop = loop
-    if current_loop is not None and current_loop.is_running() and not app.is_stopped:  # pylint: disable=undefined-variable # noqa: F821
-        try:
-            future = asyncio.run_coroutine_threadsafe(app.stop(), current_loop)  # pylint: disable=undefined-variable # noqa: F821
-            future.result(timeout=30)
-        except Exception:
-            log.exception('Error or timeout awaiting graceful shutdown before hard exit')
-    atexit._run_exitfuncs()  # pylint: disable=protected-access
-    sys.stdout.flush()
-    sys.stderr.flush()
-    os._exit(0)
-
-
 def is_script_mode_preflight() -> bool:
     """Return whether this is the preflight run of the script mode."""
     return script_mode and not app.is_started  # pylint: disable=undefined-variable # noqa: F821
@@ -59,6 +38,25 @@ def is_script_mode_preflight() -> bool:
 def is_script_mode_re_execution() -> bool:
     """Return whether the script is being re-executed for a per-client connection in script mode."""
     return script_mode and app.is_started  # pylint: disable=undefined-variable # noqa: F821
+
+
+def stop_and_exit() -> None:
+    """Run the app's ``on_shutdown`` callbacks and ``atexit`` handlers, then hard-exit.
+
+    Skips uvicorn's connection drain, which runs before lifespan shutdown and can hang forever on a ghost Windows
+    connection (#5443). ``os._exit`` skips normal interpreter teardown, so ``atexit`` handlers are run explicitly first.
+    Code after ``ui.run()`` (e.g. a trailing ``finally``) still does not run — a documented limitation.
+    """
+    if loop is not None and loop.is_running() and not app.is_stopped:  # pylint: disable=undefined-variable # noqa: F821
+        try:
+            future = asyncio.run_coroutine_threadsafe(app.stop(), loop)  # pylint: disable=undefined-variable # noqa: F821
+            future.result(timeout=30)
+        except Exception:
+            log.exception('Error or timeout awaiting graceful shutdown before hard exit')
+    atexit._run_exitfuncs()  # pylint: disable=protected-access
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(0)
 
 
 def reset() -> None:
