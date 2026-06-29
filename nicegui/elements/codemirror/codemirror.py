@@ -16,9 +16,10 @@ from .keybindings import KeyBindingElement
 class Diagnostic(TypedDict):
     """Single linting diagnostic entry.
 
-    ``severity`` defaults to ``'error'`` if omitted; ``source`` is shown next to the message.
-    ``column`` and ``end_column`` (1-indexed; ``end_column`` is exclusive) narrow the mark
-    to a sub-line range; if both are omitted the mark spans the whole line.
+    ``severity`` defaults to ``'error'`` if omitted.
+    ``source`` is shown next to the message.
+    ``column`` and ``end_column`` (1-indexed; ``end_column`` is exclusive) narrow the mark to a sub-line range.
+    If both are omitted the mark spans the whole line.
     """
     line: int
     message: str
@@ -107,7 +108,7 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
-        self._props['diagnostics'] = list(diagnostics or [])
+        self._props['diagnostics'] = diagnostics or []
         self._props['diagnostic-message-html'] = diagnostic_message_html
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
@@ -178,7 +179,8 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
     def diagnostics(self) -> list[Diagnostic]:
         """List of linting diagnostics rendered as inline marks with hover tooltips.
 
-        Each entry is a ``Diagnostic`` dict. Mutations sync to the client.
+        Each entry is a ``Diagnostic`` dict.
+        Mutations sync to the client.
 
         *Added in version X.Y.0*
         """
@@ -186,7 +188,7 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
 
     @diagnostics.setter
     def diagnostics(self, diagnostics: list[Diagnostic] | None) -> None:
-        self._props['diagnostics'] = list(diagnostics or [])
+        self._props['diagnostics'] = diagnostics or []
 
     def open_lint_panel(self) -> None:
         """Show CodeMirror's lint panel listing all current diagnostics.
