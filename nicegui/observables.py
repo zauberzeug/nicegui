@@ -150,8 +150,15 @@ class ElementBoundObservableMixin(Generic[T]):
         self._suspend_count = 0
 
     def _update(self) -> None:
-        """Update the bound element after a collection change."""
-        raise NotImplementedError
+        """Propagate a collection change to the bound element.
+
+        Subclasses must override this to call ``element.update()``
+        after the observable collection is mutated.
+        """
+        raise NotImplementedError(
+            f'{type(self).__name__} must override _update() '
+            'to propagate changes to the bound element.'
+        )
 
     @contextmanager
     def suspend_updates(self) -> Iterator[None]:
