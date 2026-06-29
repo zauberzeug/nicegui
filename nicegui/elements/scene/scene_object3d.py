@@ -246,8 +246,8 @@ class Object3D:
     def set_clipping_planes(self, planes: list[SceneClipPlane]) -> Self:
         """Apply clipping planes to this object and all of its mesh descendants.
 
-        Each :class:`~nicegui.events.SceneClipPlane` defines a plane ``nx*x + ny*y + nz*z + d = 0``;
-        geometry on the negative side of any plane is hidden (clipping is the union of all planes).
+        Each :class:`~nicegui.events.SceneClipPlane` defines a plane ``nx*x + ny*y + nz*z + d = 0``.
+        Geometry on the negative side of any plane is hidden (clipping is the union of all planes).
         Call :meth:`clear_clipping_planes` to remove them.
 
         The planes are applied to every material under this object's subtree, so descendants
