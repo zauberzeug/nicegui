@@ -41,14 +41,14 @@ def line_anchors_demo() -> None:
         .on_anchor_change(lambda e: ui.notify(e.anchors)) \
         .classes('h-40')
 
-    def update_argument() -> None:
+    def increment() -> None:
         lines = editor.value.split('\n')
         if (line_no := editor.line_anchors.get('answer')) and line_no <= len(lines):
             answer = int(lines[line_no - 1].split()[-1])
             lines[line_no - 1] = f'answer: {answer + 1}'
             editor.value = '\n'.join(lines)
 
-    ui.button('Update argument', on_click=update_argument)
+    ui.button('Increment', on_click=increment)
 
 
 @doc.demo('Custom Keybindings', '''
