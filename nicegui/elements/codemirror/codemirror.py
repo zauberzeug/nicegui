@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import accumulate, chain, repeat
-from typing import Any, get_args
+from typing import get_args
 
 from typing_extensions import Self
 
@@ -14,13 +14,13 @@ from ...events import (
     GenericEventArguments,
     Handler,
     ValueChangeEventArguments,
-    handle_event,
 )
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
 from .keybindings import KeyBindingElement
+from .line_anchors import LineAnchorElement
 
 
-class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
+class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
@@ -81,24 +81,18 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
-        super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap)
+        super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap,
+                         line_anchors=line_anchors, on_anchor_change=on_anchor_change)
         self._codepoints = b''
         self._update_codepoints()
         if on_change is not None:
             super().on_value_change(on_change)
-
-        self._anchor_positions: dict[str, int] = {}
-        self._apply_anchors = True
-        self.on('anchor-positions', self._update_anchor_mirror)
-        if on_anchor_change is not None:
-            self.on_anchor_change(on_anchor_change)
 
         self._props['language'] = language
         self._props['theme'] = theme
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
-        self._props['line-anchors'] = line_anchors or {}
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
@@ -163,50 +157,6 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
         return self
-
-    @property
-    def line_anchors(self) -> dict[str, int]:
-        """Anchors tracking document positions through edits.
-
-        Assign a ``{id: 1-indexed line}`` dict to declare anchors; reading returns their current positions
-        as last reported by the browser, which is the source of truth.
-        Maps a caller-chosen ``id`` to its 1-indexed ``line``.
-        CodeMirror remaps the underlying position when the document changes,
-        so a read briefly lags an assignment until the JS round-trip completes
-        and updates asynchronously as later edits remap positions.
-        An anchor is dropped only when a deletion spans across its position —
-        a full-line delete that starts at the anchor slides it to the following line.
-
-        Lines exceeding the current document length are clamped to the last line on the JS side
-        (a warning is emitted via NiceGUI's logger).
-
-        *Added in version 3.14.0*
-        """
-        return dict(self._anchor_positions)
-
-    @line_anchors.setter
-    def line_anchors(self, anchors: dict[str, int] | None) -> None:
-        self._props['line-anchors'] = anchors or {}
-        self._apply_anchors = True
-
-    def _to_dict(self) -> dict[str, Any]:
-        dict_ = super()._to_dict()
-        if not self._apply_anchors:
-            dict_.setdefault('preserved_props', []).append('line-anchors')
-        self._apply_anchors = False
-        return dict_
-
-    def on_anchor_change(self, handler: Handler[CodeMirrorAnchorChangeEventArguments]) -> Self:
-        """Register a callback to be invoked whenever tracked anchor positions change.
-
-        *Added in version 3.14.0*
-        """
-        self.on('anchor-positions', lambda e: handle_event(handler,
-                CodeMirrorAnchorChangeEventArguments(sender=self, client=self.client, anchors=e.args['anchors'])))
-        return self
-
-    def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
-        self._anchor_positions = e.args['anchors']
 
     @property
     def line_tooltips(self) -> dict[int, str]:
