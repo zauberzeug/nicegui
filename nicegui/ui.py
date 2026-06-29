@@ -97,6 +97,7 @@ _LAZY_IMPORTS = {
     'select': ('.elements.select', 'Select'),
     'separator': ('.elements.separator', 'Separator'),
     'skeleton': ('.elements.skeleton', 'Skeleton'),
+    'skip_link': ('.elements.skip_link', 'SkipLink'),
     'slide_item': ('.elements.slide_item', 'SlideItem'),
     'slider': ('.elements.slider', 'Slider'),
     'space': ('.elements.space', 'Space'),
@@ -258,6 +259,7 @@ __all__ = [
     'select',
     'separator',
     'skeleton',
+    'skip_link',
     'slide_item',
     'slider',
     'space',
@@ -383,6 +385,7 @@ if TYPE_CHECKING:
     from .elements.select import Select as select
     from .elements.separator import Separator as separator
     from .elements.skeleton import Skeleton as skeleton
+    from .elements.skip_link import SkipLink as skip_link
     from .elements.slide_item import SlideItem as slide_item
     from .elements.slider import Slider as slider
     from .elements.space import Space as space

@@ -148,8 +148,9 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 
   - Follow **PEP 8** with a 120 character line length
   - Use single quotes in Python, double quotes in JavaScript
-  - Use f-strings wherever possible (mark performance-critical exceptions with `# NOTE:`)
-  - Use `# NOTE:` prefix for important implementation details and non-obvious code
+  - Use f-strings wherever possible (mark performance-critical exceptions with a comment)
+  - Explain important implementation details and non-obvious code with comments
+  - Use `# NOTE:` only to draw special attention, e.g. to changes that need to be mirrored elsewhere or hidden cross-file coupling
   - No mutable defaults (`[]`, `{}`) without `# noqa: B006` and a justification — prefer `None`
   - Put high-level/interesting code at the top of files; helper functions go below their usage
   - Each sentence in documentation goes on a new line ([why](https://nick.groenen.me/notes/one-sentence-per-line/))

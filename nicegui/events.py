@@ -462,6 +462,11 @@ class SortableEventArguments(UiEventArguments):
     new_index: int
 
 
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorKeyBindingEventArguments(UiEventArguments):
+    key: str
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 

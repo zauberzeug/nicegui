@@ -193,7 +193,11 @@ def test_clearing_scene(screen: Screen):
     assert len(scene.objects) == 0
 
 
-def test_gltf(screen: Screen):
+@pytest.mark.parametrize('set_material, color', [
+    (False, 'e70000'),  # without material(), box.glb keeps its own red material (baseColorFactor 0.8 -> "e70000")
+    (True, 'ff0000'),  # explicit material() overrides the model's own material
+])
+def test_gltf(screen: Screen, set_material: bool, color: str):
     scene = None
 
     @ui.page('/')
@@ -201,14 +205,16 @@ def test_gltf(screen: Screen):
         nonlocal scene
         app.add_static_file(local_file=TEST_DIR / 'media' / 'box.glb', url_path='/box.glb')
         with ui.scene() as scene:
-            scene.gltf('/box.glb').material('#ff0000')
+            gltf = scene.gltf('/box.glb')
+            if set_material:
+                gltf.material(f'#{color}')
 
     screen.open('/')
     screen.wait(1.0)
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
     assert screen.selenium.execute_script(
         f'return scene_{scene.html_id}.children[4].getObjectByProperty("isMesh", true).material.color.getHexString()'
-    ) == 'ff0000'
+    ) == color
 
 
 def test_no_cyclic_references(screen: Screen):
