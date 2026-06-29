@@ -122,6 +122,8 @@ class Event(Generic[P]):
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
         # A synchronous emit runs in one task; resolve its slot stack once for all callbacks.
+        # This is intentionally inlined (rather than using Callback._resolved_slot) so the
+        # _get_or_create_stack() call is hoisted out of the per-callback loop.
         slot_stack: list[Slot] | None = None
         for callback in self.callbacks:
             try:

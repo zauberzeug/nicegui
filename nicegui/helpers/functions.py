@@ -20,7 +20,11 @@ _T = TypeVar('_T')
 
 
 class _CallableCache:
-    """Cache by callable identity without keeping user callables alive."""
+    """Weak-ref identity cache: maps callable id() → result without keeping callables alive.
+
+    Entries are evicted automatically when the callable is garbage-collected (via the weakref
+    callback), so the cache stays proportional to live callables rather than total historical calls.
+    """
 
     def __init__(self) -> None:
         self._cache: dict[int, tuple[weakref.ref[Any], bool]] = {}

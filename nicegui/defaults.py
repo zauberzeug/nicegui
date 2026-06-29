@@ -139,7 +139,18 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
 
     @functools.wraps(original_func)
     def decorated(*args: P.args, **kwargs: P.kwargs) -> R:
-        # Common constructor calls can resolve omitted sentinels without normalizing every argument.
+        """Resolve default property sentinels efficiently.
+
+        Common constructor calls can resolve omitted sentinels without normalizing every argument.
+        Two cases require the slower ``Signature.bind`` path:
+
+        1. Positional-only default-prop params can't be injected via kwargs.
+        2. No positional args and no explicit ``self`` kwarg — we can't locate the element to read ``_default_props``.
+
+        :param args: positional arguments forwarded to the original function
+        :param kwargs: keyword arguments forwarded to the original function
+        :return: return value of the original function with resolved defaults
+        """
         needs_full_signature_bind = has_positional_only_default_props or (not args and 'self' not in kwargs)
         if needs_full_signature_bind:
             return _resolve_defaults_via_signature_bind(original_func, signature, default_prop_params, args, kwargs)
