@@ -30,7 +30,7 @@ def preserve_cursor_demo() -> None:
 @doc.demo('Line Anchors', '''
     Line anchors give you a more stable reference to specific lines than line numbers.
     The browser tracks each anchor's position through every change — insertions, deletions,
-    reformatting — and ``line_anchor_positions`` mirrors the current line on the Python side.
+    reformatting — and reading ``line_anchors`` back returns the current line on the Python side.
     The example below attaches anchor "A" and "B" to the two lines and lets you rewrite either
     one in place: edit the code freely (add blank lines, indent, reorder), then click "Update"
     — the right line gets rewritten because the anchor followed the line.
@@ -45,14 +45,14 @@ def line_anchors_demo() -> None:
     status = ui.label()
 
     def show_positions(_=None) -> None:
-        pos = editor.line_anchor_positions
+        pos = editor.line_anchors
         status.set_text(f'target A is on line {pos.get("A", "?")}, target B is on line {pos.get("B", "?")}')
 
     editor.on_anchor_change(show_positions)
     show_positions()
 
     def update_target(target_id: str, new_pose: str) -> None:
-        line_no = editor.line_anchor_positions.get(target_id)
+        line_no = editor.line_anchors.get(target_id)
         if not line_no:
             return
         lines = (editor.value or '').split('\n')

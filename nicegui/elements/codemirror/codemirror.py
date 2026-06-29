@@ -1,5 +1,5 @@
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import Any, Literal, get_args
 
 from typing_extensions import Self
 
@@ -294,7 +294,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         *Since version 3.14.0:*
         Line anchors that track document positions through edits can be attached via the ``line_anchors`` dict
-        (read back via :attr:`line_anchor_positions`).
+        (assign to declare, read back for the current positions).
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
@@ -315,6 +315,7 @@ class CodeMirror(ValueElement[str], DisableableElement,
             super().on_value_change(on_change)
 
         self._anchor_positions: dict[str, int] = {}
+        self._apply_anchors = True
         self.on('anchor-positions', self._update_anchor_mirror)
         if on_anchor_change is not None:
             self.on_anchor_change(on_anchor_change)
@@ -392,11 +393,14 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
     @property
     def line_anchors(self) -> dict[str, int]:
-        """Anchors tracking document positions through edits; assigning this dict syncs to the client.
+        """Anchors tracking document positions through edits.
 
-        Maps a caller-chosen ``id`` to its 1-indexed initial ``line``.
-        CodeMirror remaps the underlying position when the document changes;
-        read the current line for each anchor via :attr:`line_anchor_positions`.
+        Assign a ``{id: 1-indexed line}`` dict to declare anchors; reading returns their current positions
+        as last reported by the browser, which is the source of truth.
+        Maps a caller-chosen ``id`` to its 1-indexed ``line``.
+        CodeMirror remaps the underlying position when the document changes,
+        so a read briefly lags an assignment until the JS round-trip completes
+        and updates asynchronously as later edits remap positions.
         An anchor is dropped only when a deletion spans across its position —
         a full-line delete that starts at the anchor slides it to the following line.
 
@@ -405,23 +409,19 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         *Added in version 3.14.0*
         """
-        return self._props['line-anchors']
+        return dict(self._anchor_positions)
 
     @line_anchors.setter
     def line_anchors(self, anchors: dict[str, int] | None) -> None:
         self._props['line-anchors'] = anchors or {}
+        self._apply_anchors = True
 
-    @property
-    def line_anchor_positions(self) -> dict[str, int]:
-        """Current anchor positions, as last reported by the browser.
-
-        Returns a flat ``{anchor_id: 1-indexed line}`` mapping.
-        The browser is the source of truth, so this property briefly lags assignments to :attr:`line_anchors`
-        until the JS round-trip completes, and updates asynchronously when document edits remap anchor positions.
-
-        *Added in version 3.14.0*
-        """
-        return dict(self._anchor_positions)
+    def _to_dict(self) -> dict[str, Any]:
+        dict_ = super()._to_dict()
+        if not self._apply_anchors:
+            dict_.setdefault('preserved_props', []).append('line-anchors')
+        self._apply_anchors = False
+        return dict_
 
     def on_anchor_change(self, handler: Handler[CodeMirrorAnchorChangeEventArguments]) -> Self:
         """Register a callback to be invoked whenever tracked anchor positions change.

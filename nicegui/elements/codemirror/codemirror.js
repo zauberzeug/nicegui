@@ -184,13 +184,9 @@ export default {
       });
     },
     async applyLineAnchors(anchors) {
-      // Every server-side prop change re-broadcasts all props and re-fires this deep watcher. Re-applying
-      // from the original declared lines would discard the live positions that anchorField has remapped
-      // through edits, so no-op when the declared anchors are unchanged. A genuine reassignment (different
-      // ids or lines) still applies; an identical re-broadcast leaves the remapped positions intact.
-      const snapshot = JSON.stringify(Object.entries(anchors || {}).sort());
-      if (snapshot === this._lastAppliedAnchors) return;
-      this._lastAppliedAnchors = snapshot;
+      // The server marks `line-anchors` as a preserved prop on unrelated updates, so the deep watcher
+      // only fires on a deliberate (re)assignment — re-applying from the declared lines is then intended,
+      // snapping anchors back to their declared positions (and restoring any dropped by a delete-across).
       if (!this.editor) await this.editorPromise;
       clearTimeout(this._anchorTimer);
       this._anchorTimer = null;
