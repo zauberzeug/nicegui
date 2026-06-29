@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import _thread
 import multiprocessing as mp
 import pickle
 import queue
@@ -18,7 +17,6 @@ from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
-from ..server import Server
 from . import native, window_icon
 from .event_manager import event_manager
 
@@ -182,12 +180,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
             time.sleep(0.1)
         if shutdown_event is not None:
             shutdown_event.set()
-        Server.instance.should_exit = True
-        while not core.app.is_stopped:
-            time.sleep(0.1)
-        _thread.interrupt_main()
-        event_manager.stop()
-        native.remove_queues()
+        core.stop_and_exit()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
