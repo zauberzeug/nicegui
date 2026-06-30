@@ -212,7 +212,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return {} if pattern == path else None
 
         regex_pattern = re.escape(pattern)
-        for match in re.finditer(r'\\{(\w+)\\}', regex_pattern):
+        for match in re.finditer(r'\\{(.*?)\\}', regex_pattern):
             param_name = match.group(1)
             regex_pattern = regex_pattern.replace(f'\\{{{param_name}\\}}', f'(?P<{param_name}>[^/]+)')
 

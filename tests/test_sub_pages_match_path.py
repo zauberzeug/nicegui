@@ -147,22 +147,34 @@ def test_special_characters_in_patterns():
 
 
 def test_invalid_parameter_names():
-    """Test handling of invalid parameter names in patterns."""
-    # Numbers are not valid parameter names - cause regex errors
-    with pytest.raises(re.error):
-        ui.sub_pages._match_path('/path{123}', '/path{123}')
+    """Parameter names that are not valid Python identifiers cannot form regex group names.
 
-    with pytest.raises(re.error):
-        ui.sub_pages._match_path('/path{123abc}', '/path{123abc}')
+    Such names never reach `_match_path` in practice: `_validate_route` rejects them at registration
+    because they fail `isidentifier()`. `_match_path`'s extraction regex `\\{(.*?)\\}` deliberately
+    mirrors `_validate_route`'s, so the two agree on what a valid parameter name is and there is no
+    "passes validation but silently 404s" gap. Calling `_match_path` directly on an unvalidated,
+    non-identifier name raises `re.error` (loudly) rather than silently mis-matching.
+    """
+    for pattern in ['/path{123}', '/path{123abc}', '/path{param-name}',
+                    '/path{param.name}', '/path{param space}']:
+        with pytest.raises(ValueError, match='not supported'):
+            ui.sub_pages._validate_route(pattern)
+        with pytest.raises(re.error):
+            ui.sub_pages._match_path(pattern, '/path/value')
 
-    # Patterns that don't match \w+ are treated as literal text
-    assert ui.sub_pages._match_path('/path{param-name}', '/path{param-name}') == {}
-    assert ui.sub_pages._match_path('/path{param.name}', '/path{param.name}') == {}
-    assert ui.sub_pages._match_path('/path{param space}', '/path{param space}') == {}
 
-    # These should not match if the path is different
-    assert ui.sub_pages._match_path('/path{param-name}', '/path{different}') is None
-    assert ui.sub_pages._match_path('/path{param.name}', '/path{other.name}') is None
+def test_validation_and_matching_agree_on_non_ascii_identifiers():
+    """A name that is a valid Python identifier but contains characters outside regex `\\w`
+    (e.g. middle dot U+00B7) must both pass validation AND be matchable.
+
+    These previously diverged: `_validate_route`'s `isidentifier()` accepted `{a·b}`, but
+    `_match_path`'s old `\\w+` extraction silently dropped the group, so every navigation fell
+    through to 404 with no error. Broadening the extraction regex aligns them (PR #6134).
+    """
+    pattern = '/u/{a·b}'  # 'a·b' — '·' is a valid identifier char but not a regex \w char
+    ui.sub_pages._validate_route(pattern)  # must not raise
+    assert ui.sub_pages._match_path(pattern, '/u/foo') == {'a·b': 'foo'}
+    assert ui.sub_pages._match_path(pattern, '/u/foo/bar') is None
 
 
 def test_validate_route_accepts_supported_patterns():
