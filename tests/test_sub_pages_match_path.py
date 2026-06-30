@@ -147,16 +147,8 @@ def test_special_characters_in_patterns():
 
 
 def test_invalid_parameter_names():
-    """Parameter names that are not valid Python identifiers cannot form regex group names.
-
-    Such names never reach `_match_path` in practice: `_validate_route` rejects them at registration
-    because they fail `isidentifier()`. `_match_path`'s extraction regex `\\{(.*?)\\}` deliberately
-    mirrors `_validate_route`'s, so the two agree on what a valid parameter name is and there is no
-    "passes validation but silently 404s" gap. Calling `_match_path` directly on an unvalidated,
-    non-identifier name raises `re.error` (loudly) rather than silently mis-matching.
-    """
-    for pattern in ['/path{123}', '/path{123abc}', '/path{param-name}',
-                    '/path{param.name}', '/path{param space}']:
+    """Non-identifier parameter names are rejected at registration and raise re.error if matched directly."""
+    for pattern in ['/path{123}', '/path{123abc}', '/path{param-name}', '/path{param.name}', '/path{param space}']:
         with pytest.raises(ValueError, match='not supported'):
             ui.sub_pages._validate_route(pattern)
         with pytest.raises(re.error):
@@ -164,13 +156,7 @@ def test_invalid_parameter_names():
 
 
 def test_validation_and_matching_agree_on_non_ascii_identifiers():
-    """A name that is a valid Python identifier but contains characters outside regex `\\w`
-    (e.g. middle dot U+00B7) must both pass validation AND be matchable.
-
-    These previously diverged: `_validate_route`'s `isidentifier()` accepted `{a·b}`, but
-    `_match_path`'s old `\\w+` extraction silently dropped the group, so every navigation fell
-    through to 404 with no error. Broadening the extraction regex aligns them (PR #6134).
-    """
+    """Identifiers with characters outside regex \\w (e.g. middle dot) must both validate and match."""
     pattern = '/u/{a·b}'  # 'a·b' — '·' is a valid identifier char but not a regex \w char
     ui.sub_pages._validate_route(pattern)  # must not raise
     assert ui.sub_pages._match_path(pattern, '/u/foo') == {'a·b': 'foo'}
@@ -185,8 +171,6 @@ def test_validate_route_accepts_supported_patterns():
 
 def test_validate_route_rejects_unsupported_patterns():
     """Starlette-style converters and other non-{name} parameters are rejected at registration time."""
-    # digit-leading names like {1a}/{2} are not valid regex group names and would otherwise crash _match_path at
-    # navigation time, so they must be rejected here at registration.
     for pattern in ['/{_:path}', '/{name:path}', '/{id:int}', '/{}', '/item/{a-b}', '/{1a}', '/{2}', '/user/{1}']:
         with pytest.raises(ValueError, match='not supported'):
             ui.sub_pages._validate_route(pattern)
