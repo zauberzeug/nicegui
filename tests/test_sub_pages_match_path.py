@@ -173,7 +173,9 @@ def test_validate_route_accepts_supported_patterns():
 
 def test_validate_route_rejects_unsupported_patterns():
     """Starlette-style converters and other non-{name} parameters are rejected at registration time."""
-    for pattern in ['/{_:path}', '/{name:path}', '/{id:int}', '/{}', '/item/{a-b}']:
+    # digit-leading names like {1a}/{2} are not valid regex group names and would otherwise crash _match_path at
+    # navigation time, so they must be rejected here at registration.
+    for pattern in ['/{_:path}', '/{name:path}', '/{id:int}', '/{}', '/item/{a-b}', '/{1a}', '/{2}', '/user/{1}']:
         with pytest.raises(ValueError, match='not supported'):
             ui.sub_pages._validate_route(pattern)
 
