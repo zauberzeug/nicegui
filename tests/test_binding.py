@@ -232,7 +232,8 @@ def test_remove_prunes_indexed_target_binding(nicegui_reset_globals: Any) -> Non
 
     assert binding.bindings[source_key] == [(source, target2, ('text',), None)]
     assert id(target1) not in binding._binding_keys_by_object  # pylint: disable=protected-access
-    binding_keys = binding._collect_binding_keys_for_objects([id(source), id(target2)])  # pylint: disable=protected-access
+    binding_keys = binding._collect_binding_keys_for_objects(
+        [id(source), id(target2)])  # pylint: disable=protected-access
     assert binding_keys is not None
     assert source_key in binding_keys
 
