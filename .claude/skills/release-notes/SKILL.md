@@ -1,10 +1,25 @@
-Write release notes for milestone "$ARGUMENTS" to `release.md` and a Reddit post to `reddit.md`.
+---
+name: release-notes
+description: Write NiceGUI release notes for a milestone to release.md and a Reddit post to reddit.md. Use when asked to draft release notes or a release announcement for a given milestone/version (e.g. "write release notes for 3.14").
+---
+
+Write release notes for the milestone passed as an argument (e.g. `3.14`) to `release.md` and a Reddit post to `reddit.md`.
 
 ## How to gather data
 
+**Start with the helper script** [`release-notes.sh`](release-notes.sh) (in this skill's directory), which collects the deterministic data so nothing is forgotten:
+
+- `release-notes.sh dossier "<milestone>"` → one JSON dossier: every milestone issue/PR with labels, author, committers, reviewers, commenters, and extracted cross-reference `#`s; each cross-reference resolved to issue/PR/**discussion** with its author (discussions are the easiest contributor to miss); plus the sponsors dump sorted by monthly amount.
+- `release-notes.sh verify "<milestone>" release.md` → milestone tickets missing from the draft (and `#`s in the draft that aren't milestone tickets — expected for cross-refs).
+- `release-notes.sh check-docs <slug> [slug...]` → HTTP status per docs page, to verify links before using them.
+
+The dossier gives you the raw facts; you still apply judgment for grouping tickets into stories, writing descriptions, and deciding which commenters are substantive. The manual `gh` recipes below remain valid as a fallback or for spot-checks.
+
 1. Use `gh` to list all issues and PRs in the milestone with their labels, linked PRs, authors, and participants.
 2. For each issue/PR, inspect the timeline and comments to identify contributors (see contributor rules below).
-3. Check if any PRs reference a GHSA (GitHub Security Advisory) — these go into a separate Security section.
+3. For each merged PR, also fetch its reviewers and committers explicitly — `gh pr view <n> --json reviews,commits` — and fold them into the contributor list. Comment scraping alone misses reviewers who only left a formal review. (Do not credit the merger; see Contributors.)
+4. Resolve cross-referenced numbers that are **discussions**, not issues/PRs. `gh issue view <n>` / `gh pr view <n>` fail on a discussion number; query it via GraphQL instead, e.g. `gh api graphql -f query='{repository(owner:"zauberzeug",name:"nicegui"){discussion(number:N){title author{login}}}}'`, and credit the discussion author.
+5. Check if any PRs reference a GHSA (GitHub Security Advisory) — these go into a separate Security section.
 
 ## Structure
 
@@ -42,6 +57,8 @@ Mention sponsors by name (linked to their GitHub profile) if they meet either th
 - Monthly sponsor: $150/month or more
 - One-time sponsor: $50 or more
 
+The threshold is a starting point, not the final word: the named set is curated and may carry forward a long-standing sponsor that now sits below the threshold (e.g. a recurring sponsor named in the previous release). So **always surface the computed candidate set and confirm the final "top sponsors" line with the user before writing the footer** — list each candidate with its monthly/one-time amount, and cross-check against the previous release's footer at https://github.com/zauberzeug/nicegui/releases so a previously-named sponsor isn't silently dropped.
+
 Use the existing footer format:
 
 ```
@@ -61,7 +78,7 @@ If no sponsors meet the threshold, omit the "Special thanks" line and just keep 
 When an item mentions a UI element or concept that has a documentation page, link it.
 For example: [`ui.parallax`](https://nicegui.io/documentation/parallax), [`ui.scene`](https://nicegui.io/documentation/scene).
 
-**Important:** Do not guess URLs. Verify each link exists by fetching it.
+**Important:** Do not guess URLs. Verify each link exists by fetching it (the `check-docs` helper does this in bulk).
 The typical pattern is `https://nicegui.io/documentation/<element_name_without_ui_prefix>`,
 but sections like `section_configuration_deployment` or `section_security` also exist.
 If a page doesn't exist yet (e.g. new elements added in this release), ask the user whether to include the link anyway (it will go live after deployment).
@@ -96,18 +113,21 @@ Each line follows this pattern:
 For each item, mention all involved contributors in the `by @...` list:
 
 - Issue author
+- **The author of any feature request / discussion that led to the change** (often referenced in the PR description), plus anyone who contributed substantively to that discussion — not only the issue/PR participants
 - Users with relevant contributions to discussions (substantive comments, reproductions, debugging - not just "me too" comments)
-- Reviewers who provided relevant feedback (not just approvals without comments or own commits)
-- Committers
+- **Reviewers** who provided relevant feedback — include both review submissions (`gh pr view <n> --json reviews`) **and** inline review comments, not just top-level issue/PR comments. A formal review with no top-level comment is easy to miss with comment scraping alone.
+- Committers (anyone who pushed commits to the PR), ignoring AI/bot co-author logins such as `claude`
 
-**Make sure no contributor is forgotten**, but ignore:
+Do **not** credit the merger as such — merging a PR is not, on its own, a contribution worth listing.
 
-- Simple "me too" comments
+**Make sure no contributor is forgotten** — when a borderline commenter is genuinely engaged (offered to help, attempted a fix, added environment detail), lean toward including them rather than filtering them out. Only ignore:
+
+- Simple "me too" comments with no added information
 - Review approvals without valuable comments or own commits
 
 ## Verification
 
-After writing `release.md`, verify completeness:
+After writing `release.md`, verify completeness — `release-notes.sh verify "<milestone>" release.md` does steps 1-3:
 
 1. Use `gh` to list all issue and PR numbers in the milestone.
 2. Extract all `#nnn` ticket numbers from the generated `release.md`.
