@@ -37,6 +37,8 @@ def preserve_cursor_demo() -> None:
     or to provide per-platform shortcut overrides (`mac=`, `linux=`, `win=`).
 
     Use `unmap_key(key)` to remove a mapping at runtime.
+
+    *Added in NiceGUI 3.14.0*
 ''')
 def keymap_demo() -> None:
     editor = ui.codemirror(
