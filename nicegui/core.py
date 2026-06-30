@@ -47,12 +47,14 @@ def stop_and_exit() -> None:
     connection (#5443). ``os._exit`` skips normal interpreter teardown, so ``atexit`` handlers are run explicitly first.
     Code after ``ui.run()`` (e.g. a trailing ``finally``) still does not run — a documented limitation.
     """
+    from . import run  # pylint: disable=import-outside-toplevel,cyclic-import
     if loop is not None and loop.is_running() and not app.is_stopped:  # pylint: disable=undefined-variable # noqa: F821
         try:
             future = asyncio.run_coroutine_threadsafe(app.stop(), loop)  # pylint: disable=undefined-variable # noqa: F821
             future.result(timeout=30)
         except Exception:
             log.exception('Error or timeout awaiting graceful shutdown before hard exit')
+    run.tear_down()  # kill the process/thread pools before atexit, so multiprocessing's atexit join can't block
     atexit._run_exitfuncs()  # pylint: disable=protected-access
     sys.stdout.flush()
     sys.stderr.flush()
