@@ -213,6 +213,50 @@ def test_automatic_cleanup(screen: Screen):
     assert is_alive(ref2) and has_bindable_property(model_id2)
 
 
+def test_remove_prunes_indexed_target_binding(nicegui_reset_globals: Any) -> None:  # pylint: disable=unused-argument
+    class Source:
+        value = 'initial'
+
+    class Target:
+        text = ''
+
+    source = Source()
+    target1 = Target()
+    target2 = Target()
+
+    binding.bind_to(source, 'value', target1, 'text')
+    binding.bind_to(source, 'value', target2, 'text')
+    source_key = (id(source), ('value',))
+
+    binding.remove([target1])
+
+    assert binding.bindings[source_key] == [(source, target2, ('text',), None)]
+    assert id(target1) not in binding._binding_keys_by_object  # pylint: disable=protected-access
+    binding_keys = binding._collect_binding_keys_for_objects([id(source), id(target2)])  # pylint: disable=protected-access
+    assert binding_keys is not None
+    assert source_key in binding_keys
+
+
+def test_remove_clears_index_for_source_binding(nicegui_reset_globals: Any) -> None:  # pylint: disable=unused-argument
+    class Source:
+        value = 'initial'
+
+    class Target:
+        text = ''
+
+    source = Source()
+    target = Target()
+
+    binding.bind_to(source, 'value', target, 'text')
+    source_key = (id(source), ('value',))
+
+    binding.remove([source])
+
+    assert source_key not in binding.bindings
+    assert id(source) not in binding._binding_keys_by_object  # pylint: disable=protected-access
+    assert id(target) not in binding._binding_keys_by_object  # pylint: disable=protected-access
+
+
 async def test_nested_propagation(user: User):
     class Demo:
         a = binding.BindableProperty()
