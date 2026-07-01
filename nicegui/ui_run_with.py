@@ -41,6 +41,7 @@ def run_with(
     session_middleware_kwargs: dict[str, Any] | None = None,
     show_welcome_message: bool = True,
     markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
+    distributed: bool | list[str] | dict | None = None,
 ) -> None:
     """Run NiceGUI with FastAPI.
 
@@ -67,6 +68,9 @@ def run_with(
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
         (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
+    :param distributed: enable :class:`~nicegui.DistributedEvent` synchronisation across instances - ``True`` for
+        Zenoh's defaults (UDP-multicast peer scout), a list of ``"host"`` / ``"host:port"`` peers for explicit
+        unicast, or a raw Zenoh config dict for full control (default: ``None``, requires the ``distributed`` extra)
     """
     if app is core.app:
         raise ValueError(
@@ -104,6 +108,15 @@ def run_with(
     )
     core.root = root
     storage.set_storage_secret(storage_secret, session_middleware_kwargs, parent_app=app)
+
+    if distributed is not None:
+        from .distributed import ZENOH_AVAILABLE, DistributedSession  # pylint: disable=import-outside-toplevel
+        if not ZENOH_AVAILABLE:
+            log.warning('zenoh is not installed. Distributed events disabled. '
+                        'Install with: pip install "nicegui[distributed]"')
+        else:
+            DistributedSession.initialize(distributed, storage_secret=storage_secret)
+
     if not helpers.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)

@@ -74,6 +74,7 @@ matplotlib = [
 ]
 highcharts = ["nicegui-highcharts>=3.2.1,<4"]
 redis = ["redis>=4.0.0"]
+distributed = ["eclipse-zenoh>=1.0.0", "cryptography>=43.0.0"]
 
 [dependency-groups]
 dev = [
@@ -87,6 +88,8 @@ dev = [
     "pillow>=12.2.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/245, for matplotlib
     "nicegui-highcharts>=3.2.1,<4",  # extra: highcharts
     "redis>=4.0.0",  # extra: redis
+    "eclipse-zenoh>=1.0.0",  # extra: distributed
+    "cryptography>=43.0.0",  # extra: distributed
     {include-group = "types"},
     {include-group = "website"},
     "autopep8>=1.5.7,<3.0.0",
