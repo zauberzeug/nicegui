@@ -55,7 +55,7 @@ class _BindablePropertyRegistry(MutableMapping[BindingKey, Any]):
         object_id, name_path = key
         entry = self._entries_by_object_id.get(object_id)
         if entry is None:
-            def discard(discarded_ref: weakref.ref[Any], object_id: ObjectId = object_id) -> None:
+            def discard(_discarded_ref: weakref.ref[Any], object_id: ObjectId = object_id) -> None:
                 self._discard_object_id(object_id)
             self._entries_by_object_id[object_id] = (weakref.ref(obj, discard), name_path)
             return
