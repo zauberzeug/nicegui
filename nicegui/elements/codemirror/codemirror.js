@@ -1,5 +1,30 @@
 import * as CM from "nicegui-codemirror";
 
+class TextWidget extends CM.WidgetType {
+  constructor(text, cls, html) {
+    super();
+    this.text = text;
+    this.cls = cls || "";
+    this.html = !!html;
+  }
+  eq(other) {
+    return other.text === this.text && other.cls === this.cls && other.html === this.html;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    if (this.cls) span.className = this.cls;
+    if (this.html) {
+      span.setHTML(this.text);
+    } else {
+      span.textContent = this.text;
+    }
+    return span;
+  }
+  ignoreEvent() {
+    return false;
+  }
+}
+
 // Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
 class TooltipValue extends CM.RangeValue {
   constructor(content) {
@@ -37,6 +62,8 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    decorations: Array,
+    decorationTextHtml: Boolean,
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
@@ -54,6 +81,12 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    decorations: {
+      deep: true,
+      handler(newDecorations) {
+        this.setDecorations(newDecorations);
+      },
     },
     keymap() {
       this.setKeymap();
@@ -164,6 +197,76 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setDecorations(decorations) {
+      if (!this.editor || !this.decorationsConfig) return;
+      const all = [];
+      for (const spec of decorations || []) {
+        const dec = this._createDecoration(spec);
+        if (dec) all.push(dec);
+      }
+      const decorationSet = CM.Decoration.set(all, true);
+      this.editor.dispatch({
+        effects: this.decorationsConfig.reconfigure([CM.EditorView.decorations.of(decorationSet)]),
+      });
+    },
+    _createDecoration(spec) {
+      const doc = this.editor.state.doc;
+      if (spec.kind === "mark") {
+        if (spec.from > spec.to) {
+          console.error("codemirror: mark decoration has from > to", spec);
+          return null;
+        }
+        const from = Math.max(0, Math.min(spec.from, doc.length));
+        const to = Math.max(from, Math.min(spec.to, doc.length));
+        const markSpec = {};
+        if (spec.class) markSpec.class = spec.class;
+        if (spec.attributes) markSpec.attributes = spec.attributes;
+        if (spec.inclusiveStart !== undefined) markSpec.inclusiveStart = spec.inclusiveStart;
+        if (spec.inclusiveEnd !== undefined) markSpec.inclusiveEnd = spec.inclusiveEnd;
+        return CM.Decoration.mark(markSpec).range(from, to);
+      }
+      if (spec.kind === "line") {
+        const lineNum = Math.max(1, Math.min(spec.line, doc.lines));
+        const line = doc.line(lineNum);
+        const lineSpec = {};
+        if (spec.class) lineSpec.class = spec.class;
+        if (spec.attributes) lineSpec.attributes = spec.attributes;
+        return CM.Decoration.line(lineSpec).range(line.from);
+      }
+      if (spec.kind === "replace") {
+        if (spec.from > spec.to) {
+          console.error("codemirror: replace decoration has from > to", spec);
+          return null;
+        }
+        const from = Math.max(0, Math.min(spec.from, doc.length));
+        const to = Math.max(from, Math.min(spec.to, doc.length));
+        if (spec.block) {
+          // CodeMirror requires block-replace ranges to span full lines; otherwise it throws
+          // out of editor.dispatch and breaks the editor for the rest of the page.
+          const fromLine = doc.lineAt(from);
+          const toLine = doc.lineAt(to);
+          if (from !== fromLine.from || to !== toLine.to) {
+            console.error("codemirror: block replace decoration must cover full lines", spec);
+            return null;
+          }
+        }
+        const replaceSpec = {};
+        if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
+        if (spec.block) replaceSpec.block = true;
+        if (spec.text !== undefined) replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
+        else if (spec.class) replaceSpec.class = spec.class;
+        return CM.Decoration.replace(replaceSpec).range(from, to);
+      }
+      if (spec.kind === "widget") {
+        const pos = Math.max(0, Math.min(spec.position, doc.length));
+        return CM.Decoration.widget({
+          widget: new TextWidget(spec.text, spec.class, this.decorationTextHtml),
+          side: spec.side ?? 1,
+        }).range(pos);
+      }
+      console.error("codemirror: unknown decoration kind", spec);
+      return null;
+    },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
         key,
@@ -265,6 +368,7 @@ export default {
         this.languageConfig.of([]),
         this.editableConfig.of([]),
         this.lineWrappingConfig.of([]),
+        this.decorationsConfig.of([]),
         CM.EditorView.theme({
           "&": { height: "100%" },
           ".cm-scroller": { overflow: "auto" },
@@ -288,6 +392,7 @@ export default {
     this.editableConfig = new CM.Compartment();
     this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
     this.lineWrappingConfig = new CM.Compartment();
+    this.decorationsConfig = new CM.Compartment();
     this.userKeymapConfig = new CM.Compartment();
 
     const extensions = this.setupExtensions();
@@ -304,6 +409,9 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.decorations && this.decorations.length > 0) {
+      this.setDecorations(this.decorations);
+    }
     this.setLineTooltips(this.lineTooltips);
     this.validateUserKeymap();
   },

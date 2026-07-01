@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from itertools import accumulate, chain, repeat
-from typing import get_args
+from typing import Literal, TypedDict, get_args
 
-from typing_extensions import Self
+from typing_extensions import NotRequired, Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
@@ -11,6 +11,56 @@ from ...elements.mixins.value_element import ValueElement
 from ...events import CodeMirrorKeyBindingEventArguments, GenericEventArguments, Handler, ValueChangeEventArguments
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
 from .keybindings import KeyBindingElement
+
+# Functional TypedDict syntax because `from` and `class` are Python keywords.
+MarkDecorationSpec = TypedDict(
+    'MarkDecorationSpec',
+    {
+        'kind': Literal['mark'],
+        'from': int,
+        'to': int,
+        'class': NotRequired[str],
+        'attributes': NotRequired[dict[str, str]],
+        'inclusiveStart': NotRequired[bool],
+        'inclusiveEnd': NotRequired[bool],
+    },
+)
+
+LineDecorationSpec = TypedDict(
+    'LineDecorationSpec',
+    {
+        'kind': Literal['line'],
+        'line': int,
+        'class': NotRequired[str],
+        'attributes': NotRequired[dict[str, str]],
+    },
+)
+
+ReplaceDecorationSpec = TypedDict(
+    'ReplaceDecorationSpec',
+    {
+        'kind': Literal['replace'],
+        'from': int,
+        'to': int,
+        'text': NotRequired[str],
+        'class': NotRequired[str],
+        'inclusive': NotRequired[bool],
+        'block': NotRequired[bool],
+    },
+)
+
+WidgetDecorationSpec = TypedDict(
+    'WidgetDecorationSpec',
+    {
+        'kind': Literal['widget'],
+        'position': int,
+        'text': str,
+        'class': NotRequired[str],
+        'side': NotRequired[Literal[-1, 1]],
+    },
+)
+
+DecorationSpec = MarkDecorationSpec | LineDecorationSpec | ReplaceDecorationSpec | WidgetDecorationSpec
 
 
 class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
@@ -32,6 +82,8 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        decorations: list[DecorationSpec] | None = None,
+        decoration_text_html: bool = False,
         line_tooltips: dict[int, str] | None = None,
         line_tooltip_html: bool = False,
     ) -> None:
@@ -65,6 +117,8 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param decorations: initial list of decoration specs applied to the editor (default: ``None``)
+        :param decoration_text_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``)
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
@@ -79,6 +133,8 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['decorations'] = decorations or []
+        self._props['decoration-text-html'] = decoration_text_html
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
@@ -143,6 +199,27 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
         return self
+
+    @property
+    def decorations(self) -> list[DecorationSpec]:
+        """Decoration specs applied to the editor; mutating this list syncs to the client.
+
+        Decorations style or modify the editor's rendering without changing the underlying document.
+        Each entry is a :class:`MarkDecorationSpec`, :class:`LineDecorationSpec`,
+        :class:`ReplaceDecorationSpec`, or :class:`WidgetDecorationSpec` dict.
+        For mark and line decorations the ``class`` field produces the visible styling, so the host
+        application is responsible for shipping CSS for whatever class names it passes here.
+        The ``attributes`` field is applied as raw DOM attributes (including event handlers like
+        ``onclick``) and is not sanitized.
+        Do not pass untrusted input through it.
+
+        *Added in version X.Y.Z*
+        """
+        return self._props['decorations']
+
+    @decorations.setter
+    def decorations(self, decorations: list[DecorationSpec] | None) -> None:
+        self._props['decorations'] = decorations or []
 
     @property
     def line_tooltips(self) -> dict[int, str]:
