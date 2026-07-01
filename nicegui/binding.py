@@ -8,7 +8,7 @@ import weakref
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from typing_extensions import dataclass_transform
 
@@ -71,10 +71,7 @@ class _BindablePropertyRegistry:
     def __contains__(self, key: object) -> bool:
         if not isinstance(key, tuple) or len(key) != 2:
             return False
-        obj_id, name_path = key
-        if not isinstance(obj_id, int) or not isinstance(name_path, tuple):
-            return False
-        return self.contains_key((obj_id, cast(NamePath, name_path)))
+        return self.contains_key(key)  # type: ignore[arg-type]
 
     def __iter__(self) -> Iterator[BindingKey]:
         # Copy before iterating because weakref callbacks can mutate this dictionary.
@@ -120,29 +117,43 @@ T = TypeVar('T')
 _MISSING = object()
 
 
-def _discard_binding_key_from_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
-    """Remove one binding key from the reverse index used by remove()."""
-    bucket = _binding_keys_by_object.get(obj_id)
+def _bucket_add(bucket_dict: dict[Any, Any], key: Any, value: Any) -> None:
+    """Add value to a scalar-or-set bucket in a dict.
+
+    Most objects have a single entry, so the common case stores a bare value
+    and upgrades to a set only when a second distinct value is added.
+    """
+    bucket = bucket_dict.get(key)
+    if bucket is None:
+        bucket_dict[key] = value
+    elif isinstance(bucket, set):
+        bucket.add(value)
+    elif bucket != value:
+        bucket_dict[key] = {bucket, value}
+
+
+def _bucket_discard(bucket_dict: dict[Any, Any], key: Any, value: Any) -> None:
+    """Remove value from a scalar-or-set bucket in a dict; delete bucket if empty."""
+    bucket = bucket_dict.get(key)
     if bucket is None:
         return
     if not isinstance(bucket, set):
-        if bucket == binding_key:
-            del _binding_keys_by_object[obj_id]
+        if bucket == value:
+            del bucket_dict[key]
         return
-    bucket.discard(binding_key)
+    bucket.discard(value)
     if not bucket:
-        del _binding_keys_by_object[obj_id]
+        del bucket_dict[key]
+
+
+def _discard_binding_key_from_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
+    """Remove one binding key from the reverse index used by remove()."""
+    _bucket_discard(_binding_keys_by_object, obj_id, binding_key)
 
 
 def _add_binding_key_to_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
     """Add one endpoint reference to the reverse index used by remove()."""
-    bucket = _binding_keys_by_object.get(obj_id)
-    if bucket is None:
-        _binding_keys_by_object[obj_id] = binding_key
-    elif isinstance(bucket, set):
-        bucket.add(binding_key)
-    elif bucket != binding_key:
-        _binding_keys_by_object[obj_id] = {bucket, binding_key}
+    _bucket_add(_binding_keys_by_object, obj_id, binding_key)
 
 
 def _index_binding(source_obj: Any, target_obj: Any, binding_key: BindingKey) -> None:
