@@ -499,11 +499,11 @@ def remove(objects: Iterable[Any]) -> None:
     if not removed_object_ids:
         return
 
-    bindable_properties.discard_object_ids(removed_object_ids)
-
     affected_binding_keys = _collect_binding_keys_for_objects(removed_object_ids)
     if not affected_binding_keys:
         return
+
+    bindable_properties.discard_object_ids(removed_object_ids)
 
     removed_object_id_set = set(removed_object_ids)
     _remove_active_links_for_objects(removed_object_id_set)
