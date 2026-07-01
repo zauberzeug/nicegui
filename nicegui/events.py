@@ -163,6 +163,30 @@ class TableSelectionEventArguments(UiEventArguments):
 
 
 @dataclass(kw_only=True, slots=True)
+class CodeMirrorSelectionChangeEventArguments(UiEventArguments):
+    line: int
+    column: int
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorFocusChangeEventArguments(UiEventArguments):
+    focused: bool
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorViewportChangeEventArguments(UiEventArguments):
+    from_line: int
+    to_line: int
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorGeometryChangeEventArguments(UiEventArguments):
+    width: int
+    height: int
+    content_height: int
+
+
+@dataclass(kw_only=True, slots=True)
 class KeyboardAction:
     keydown: bool
     keyup: bool
