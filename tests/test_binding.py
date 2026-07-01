@@ -258,6 +258,35 @@ def test_remove_clears_index_for_source_binding(nicegui_reset_globals: Any) -> N
     assert id(target) not in binding._binding_keys_by_object  # pylint: disable=protected-access
 
 
+def test_bindable_properties_keeps_dict_compatible_surface(nicegui_reset_globals: Any) -> None:  # pylint: disable=unused-argument
+    class Model:
+        value = binding.BindableProperty()
+        text = binding.BindableProperty()
+
+        def __init__(self) -> None:
+            self.value = 1
+            self.text = 'hello'
+
+    model = Model()
+    value_key = (id(model), ('value',))
+    text_key = (id(model), ('text',))
+
+    assert len(binding.bindable_properties) == 2
+    assert binding.bindable_properties[value_key] is model
+    assert binding.bindable_properties.get(value_key) is model
+    assert binding.bindable_properties.get((id(model), ('missing',)), 'fallback') == 'fallback'
+    assert binding.bindable_properties.get('missing', 'fallback') == 'fallback'
+    assert set(binding.bindable_properties.keys()) == {value_key, text_key}
+    assert set(binding.bindable_properties.items()) == {(value_key, model), (text_key, model)}
+    assert list(binding.bindable_properties.values()) == [model, model]
+
+    assert binding.bindable_properties.pop('missing', 'fallback') == 'fallback'
+    assert binding.bindable_properties.pop(value_key) is model
+    assert value_key not in binding.bindable_properties
+    del binding.bindable_properties[text_key]
+    assert len(binding.bindable_properties) == 0
+
+
 async def test_nested_propagation(user: User):
     class Demo:
         a = binding.BindableProperty()

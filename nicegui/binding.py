@@ -29,7 +29,7 @@ ActiveLink = tuple[Any, NamePath, Any, NamePath, Transform]
 BindableEntry = tuple[weakref.ref[Any], NameBucket]
 
 
-class _BindablePropertyRegistry:
+class _BindablePropertyRegistry(MutableMapping[BindingKey, Any]):
     """Weak bindable-property registry keyed by object ID with name-path buckets.
 
     Most bindable objects expose one bindable property, so the common case stores a single name path and upgrades to a
@@ -39,34 +39,81 @@ class _BindablePropertyRegistry:
     def __init__(self) -> None:
         self._entries_by_object_id: dict[ObjectId, BindableEntry] = {}
 
-    def _discard_object_id(self, obj_id: ObjectId) -> None:
-        self._entries_by_object_id.pop(obj_id, None)
+    def _discard_object_id(self, object_id: ObjectId) -> None:
+        self._entries_by_object_id.pop(object_id, None)
+
+    @staticmethod
+    def _key_or_raise(key: object) -> tuple[ObjectId, tuple[Any, ...]]:
+        if not isinstance(key, tuple) or len(key) != 2:
+            raise KeyError(key)
+        requested_object_id, requested_name_path = key
+        if not isinstance(requested_object_id, int) or not isinstance(requested_name_path, tuple):
+            raise KeyError(key)
+        return requested_object_id, requested_name_path
 
     def __setitem__(self, key: BindingKey, obj: Any) -> None:
-        obj_id, name_path = key
-        entry = self._entries_by_object_id.get(obj_id)
+        object_id, name_path = key
+        entry = self._entries_by_object_id.get(object_id)
         if entry is None:
-            def discard(_: weakref.ref[Any], obj_id: ObjectId = obj_id) -> None:
-                self._discard_object_id(obj_id)
-            self._entries_by_object_id[obj_id] = (weakref.ref(obj, discard), name_path)
+            def discard(discarded_ref: weakref.ref[Any], object_id: ObjectId = object_id) -> None:
+                self._discard_object_id(object_id)
+            self._entries_by_object_id[object_id] = (weakref.ref(obj, discard), name_path)
             return
-        ref, name_bucket = entry
-        if isinstance(name_bucket, set):
-            name_bucket.add(name_path)
-        elif name_bucket != name_path:
-            self._entries_by_object_id[obj_id] = (ref, {name_bucket, name_path})
+        object_ref, registered_name_paths = entry
+        if isinstance(registered_name_paths, set):
+            registered_name_paths.add(name_path)
+        elif registered_name_paths != name_path:
+            self._entries_by_object_id[object_id] = (object_ref, {registered_name_paths, name_path})
+
+    def __getitem__(self, key: object) -> Any:
+        requested_object_id, requested_name_path = self._key_or_raise(key)
+        entry = self._entries_by_object_id.get(requested_object_id)
+        if entry is None:
+            raise KeyError(key)
+        object_ref, registered_name_paths = entry
+        registered_object = object_ref()
+        if registered_object is None:
+            self._discard_object_id(requested_object_id)
+            raise KeyError(key)
+        if (requested_name_path in registered_name_paths
+                if isinstance(registered_name_paths, set)
+                else registered_name_paths == requested_name_path):
+            return registered_object
+        raise KeyError(key)
+
+    def __delitem__(self, key: object) -> None:
+        requested_object_id, requested_name_path = self._key_or_raise(key)
+        entry = self._entries_by_object_id.get(requested_object_id)
+        if entry is None:
+            raise KeyError(key)
+        _object_ref, registered_name_paths = entry
+        if isinstance(registered_name_paths, set):
+            if requested_name_path not in registered_name_paths:
+                raise KeyError(key)
+            registered_name_paths.discard(requested_name_path)
+            if not registered_name_paths:
+                self._discard_object_id(requested_object_id)
+            return
+        if registered_name_paths != requested_name_path:
+            raise KeyError(key)
+        self._discard_object_id(requested_object_id)
+
+    def __len__(self) -> int:
+        return sum(1 for key in self)
 
     def contains_key(self, key: BindingKey) -> bool:
         """Return whether a validated binding key is registered."""
-        obj_id, name_path = key
-        entry = self._entries_by_object_id.get(obj_id)
+        object_id, name_path = key
+        entry = self._entries_by_object_id.get(object_id)
         if entry is None:
             return False
-        ref, name_bucket = entry
-        if ref() is None:
-            self._discard_object_id(obj_id)
+        object_ref, registered_name_paths = entry
+        if object_ref() is None:
+            self._discard_object_id(object_id)
             return False
-        return name_path in name_bucket if isinstance(name_bucket, set) else name_bucket == name_path
+        return (name_path in registered_name_paths
+                if isinstance(registered_name_paths, set)
+                else registered_name_paths == name_path)
 
     def __contains__(self, key: object) -> bool:
         if not isinstance(key, tuple) or len(key) != 2:
@@ -75,15 +122,15 @@ class _BindablePropertyRegistry:
 
     def __iter__(self) -> Iterator[BindingKey]:
         # Copy before iterating because weakref callbacks can mutate this dictionary.
-        for obj_id, (ref, name_bucket) in list(self._entries_by_object_id.items()):
-            if ref() is None:
-                self._discard_object_id(obj_id)
+        for object_id, (object_ref, registered_name_paths) in list(self._entries_by_object_id.items()):
+            if object_ref() is None:
+                self._discard_object_id(object_id)
                 continue
-            if isinstance(name_bucket, set):
-                for name_path in name_bucket:
-                    yield obj_id, name_path
+            if isinstance(registered_name_paths, set):
+                for name_path in registered_name_paths:
+                    yield object_id, name_path
             else:
-                yield obj_id, name_bucket
+                yield object_id, registered_name_paths
 
     def clear(self) -> None:
         """Remove all registered bindable-property entries."""
@@ -92,8 +139,8 @@ class _BindablePropertyRegistry:
     def discard_object_ids(self, object_ids: Iterable[int]) -> None:
         """Remove registered bindable-property entries for the given object IDs."""
         pop = self._entries_by_object_id.pop
-        for obj_id in object_ids:
-            pop(obj_id, None)
+        for object_id in object_ids:
+            pop(object_id, None)
 
 
 MAX_PROPAGATION_TIME = 0.01
