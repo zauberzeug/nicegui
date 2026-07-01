@@ -1,0 +1,23 @@
+{
+  "name": "nicegui-uplot-bundle",
+  "version": "1.0.0",
+  "description": "uPlot bundling for NiceGUI",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs --validate",
+    "clean": "rimraf ./dist/*"
+  },
+  "dependencies": {
+    "uplot": "^1.6.32"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "patch-package": "^8.0.1",
+    "rimraf": "^6.1.3",
+    "rollup": "^4.60.0",
+    "rollup-plugin-postcss": "^4.0.2"
+  }
+}
