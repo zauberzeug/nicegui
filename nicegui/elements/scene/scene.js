@@ -15,6 +15,12 @@ const {
   Stats,
 } = SceneLib;
 
+const INTERSECTION_AXIS_NORMALS = {
+  x: new THREE.Vector3(1, 0, 0),
+  y: new THREE.Vector3(0, 1, 0),
+  z: new THREE.Vector3(0, 0, 1),
+};
+
 function texture_geometry(coords) {
   const geometry = new THREE.BufferGeometry();
   const nI = coords[0].length;
@@ -170,9 +176,26 @@ export default {
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
 
-    const gridSize = this.grid[0] || 100;
-    const gridDivisions = this.grid[1] || 100;
-    if (this.grid) {
+    if (this.polarGrid) {
+      const radius = this.polarGrid[0] || 1.0;
+      const sectors = this.polarGrid[1] || 10;
+      const rings = this.polarGrid[2] || 10;
+      const divisions = this.polarGrid[3] || 64;
+      const ground = new THREE.Mesh(
+        new THREE.CircleGeometry(radius, divisions),
+        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
+      );
+      ground.translateZ(-0.01);
+      ground.object_id = "ground";
+      this.scene.add(ground);
+      const polarGrid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+      polarGrid.material.transparent = true;
+      polarGrid.material.opacity = 0.3;
+      polarGrid.rotateX(Math.PI / 2);
+      this.scene.add(polarGrid);
+    } else if (this.grid) {
+      const gridSize = this.grid[0] || 100;
+      const gridDivisions = this.grid[1] || 100;
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(gridSize, gridSize),
         new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
@@ -213,10 +236,23 @@ export default {
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
+    // Pre-compute THREE.Plane objects for the configured intersection planes (rebuilt by setter).
+    // Clone the normal so the per-axis singleton in INTERSECTION_AXIS_NORMALS is never mutated
+    // (intersectPlane doesn't mutate today, but normalize/applyMatrix4 in a future caller would).
+    this._buildIntersectionPlanes = () => {
+      const specs = this.intersectionPlanes || [];
+      this._intersectionPlanes = specs.map((spec) => {
+        const normal = (INTERSECTION_AXIS_NORMALS[spec.axis] || INTERSECTION_AXIS_NORMALS.z).clone();
+        return { name: spec.name, plane: new THREE.Plane(normal, -(spec.offset || 0)) };
+      });
+    };
+    this._buildIntersectionPlanes();
+
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
-      this.controls.update(this.clock.getDelta());
+      const delta = this.clock.getDelta();
+      this.controls.update(delta);
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -225,10 +261,19 @@ export default {
     render();
 
     const raycaster = new THREE.Raycaster();
+    raycaster.params.Line.threshold = this.raycasterThreshold ?? 1.0;
+    raycaster.params.Points.threshold = this.raycasterThreshold ?? 1.0;
+    this._raycaster = raycaster;
+    const _intersection = new THREE.Vector3();
     const click_handler = (mouseEvent) => {
-      let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
-      let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
-      raycaster.setFromCamera({ x: x, y: y }, this.camera);
+      const x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
+      const y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
+      raycaster.setFromCamera({ x, y }, this.camera);
+      const intersections = {};
+      for (const { name, plane } of this._intersectionPlanes) {
+        const hit = raycaster.ray.intersectPlane(plane, _intersection);
+        intersections[name] = hit ? { x: _intersection.x, y: _intersection.y, z: _intersection.z } : null;
+      }
       this.$emit("click3d", {
         hits: raycaster
           .intersectObjects(this.scene.children, true)
@@ -238,6 +283,7 @@ export default {
             object_name: o.object.name,
             point: o.point,
           })),
+        intersections,
         click_type: mouseEvent.type,
         button: mouseEvent.button,
         alt_key: mouseEvent.altKey,
@@ -331,20 +377,92 @@ export default {
               delete mesh.userData.pendingMaterialInfo;
               this.material(id, color, opacity, side);
             }
+            if (mesh.userData.pendingClippingPlanes) {
+              const planes = mesh.userData.pendingClippingPlanes;
+              delete mesh.userData.pendingClippingPlanes;
+              this.set_clipping_planes(id, planes);
+            }
           },
           undefined,
           (error) => console.error(error),
         );
+      } else if (type == "stl") {
+        const url = args[0];
+        const wireframe = args[1];
+        mesh = new THREE.Group();
+        mesh.userData.isStl = true;
+        mesh.userData.loaded = false;
+        mesh.userData.wireframe = wireframe;
+        this.stl_loader.load(
+          url,
+          (geometry) => {
+            const child = wireframe
+              ? new THREE.LineSegments(
+                  new THREE.EdgesGeometry(geometry),
+                  new THREE.LineBasicMaterial({ transparent: true }),
+                )
+              : new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true }));
+            mesh.add(child);
+            mesh.userData.loaded = true;
+            if (mesh.userData.pendingMaterialInfo) {
+              const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
+              delete mesh.userData.pendingMaterialInfo;
+              this.material(id, color, opacity, side);
+            }
+            if (mesh.userData.pendingClippingPlanes) {
+              const planes = mesh.userData.pendingClippingPlanes;
+              delete mesh.userData.pendingClippingPlanes;
+              this.set_clipping_planes(id, planes);
+            }
+          },
+          undefined,
+          (error) => console.error("STL load error:", error),
+        );
       } else if (type == "axes_helper") {
         mesh = new THREE.AxesHelper(args[0]);
         mesh.material.transparent = true;
+      } else if (type == "polyline") {
+        const pts = args[0].map((p) => new THREE.Vector3(p[0], p[1], p[2]));
+        const geometry = new THREE.BufferGeometry().setFromPoints(pts);
+        const colors = args[1];
+        const dashed = args[2];
+        const useVertexColors = !!colors;
+        if (useVertexColors) {
+          const flat = new Float32Array(colors.length * 3);
+          for (let i = 0; i < colors.length; i++) {
+            flat[i * 3] = colors[i][0];
+            flat[i * 3 + 1] = colors[i][1];
+            flat[i * 3 + 2] = colors[i][2];
+          }
+          geometry.setAttribute("color", new THREE.BufferAttribute(flat, 3));
+        }
+        if (dashed) {
+          const mat = new THREE.LineDashedMaterial({
+            transparent: true,
+            dashSize: args[3],
+            gapSize: args[4],
+            vertexColors: useVertexColors,
+          });
+          mesh = new THREE.Line(geometry, mat);
+          mesh.computeLineDistances();
+        } else {
+          const mat = new THREE.LineBasicMaterial({
+            transparent: true,
+            vertexColors: useVertexColors,
+          });
+          mesh = new THREE.Line(geometry, mat);
+        }
       } else {
         let geometry;
         const wireframe = args.pop();
         if (type == "box") geometry = new THREE.BoxGeometry(...args);
         if (type == "sphere") geometry = new THREE.SphereGeometry(...args);
         if (type == "cylinder") geometry = new THREE.CylinderGeometry(...args);
+        if (type == "cone") geometry = new THREE.ConeGeometry(...args);
         if (type == "ring") geometry = new THREE.RingGeometry(...args);
+        if (type == "plane") geometry = new THREE.PlaneGeometry(...args);
+        if (type == "torus") geometry = new THREE.TorusGeometry(...args);
+        if (type == "capsule") geometry = new THREE.CapsuleGeometry(...args);
         if (type == "quadratic_bezier_tube") {
           const curve = new THREE.QuadraticBezierCurve3(
             new THREE.Vector3(...args[0]),
@@ -352,6 +470,10 @@ export default {
             new THREE.Vector3(...args[2]),
           );
           geometry = new THREE.TubeGeometry(curve, ...args.slice(3));
+        }
+        if (type == "lathe") {
+          const pts = args[0].map((p) => new THREE.Vector2(p[0], p[1]));
+          geometry = new THREE.LatheGeometry(pts, ...args.slice(1));
         }
         if (type == "extrusion") {
           const shape = new THREE.Shape();
@@ -364,11 +486,6 @@ export default {
           }
           const settings = { depth: height, bevelEnabled: false };
           geometry = new THREE.ExtrudeGeometry(shape, settings);
-        }
-        if (type == "stl") {
-          const url = args[0];
-          geometry = new THREE.BufferGeometry();
-          this.stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
         }
         let material;
         if (wireframe) {
@@ -392,7 +509,7 @@ export default {
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
       if (!object) return;
-      if (object.userData.isGltf && !object.userData.loaded) {
+      if ((object.userData.isGltf || object.userData.isStl) && !object.userData.loaded) {
         object.userData.pendingMaterialInfo = { color, opacity, side };
         return;
       }
@@ -408,8 +525,8 @@ export default {
           else m.side = THREE.DoubleSide;
         });
       };
-      if (object.userData.isGltf) {
-        object.traverse((child) => child.isMesh && child.material && apply(child.material));
+      if (object.userData.isGltf || object.userData.isStl) {
+        object.traverse((child) => (child.isMesh || child.isLine) && child.material && apply(child.material));
       } else if (object.material) {
         apply(object.material);
       }
@@ -443,6 +560,33 @@ export default {
         const index = this.draggable_objects.indexOf(object);
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
+    },
+    set_clipping_planes(object_id, planes) {
+      if (!this.objects.has(object_id)) return;
+      const object = this.objects.get(object_id);
+      // GLTF and STL groups have no children until the loader callback fires, so
+      // traverse() walks an empty group and the planes silently vanish.
+      // Stash them and replay from the loader.
+      if ((object.userData.isGltf || object.userData.isStl) && !object.userData.loaded) {
+        object.userData.pendingClippingPlanes = planes;
+        return;
+      }
+      // An empty `planes` array (Object3D.clear_clipping_planes / fresh Object3D in init_objects)
+      // disables clipping for this subtree — three.js treats `mat.clippingPlanes = []` the same
+      // as `null` on the shader side.
+      const clipPlanes = planes.map((p) =>
+        new THREE.Plane(new THREE.Vector3(p.nx, p.ny, p.nz).normalize(), p.d));
+      object.traverse((child) => {
+        if (!child.material) return;
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach((mat) => {
+          mat.clippingPlanes = clipPlanes;
+          mat.clipIntersection = false; // union: clip where ANY plane clips
+          mat.needsUpdate = true;
+        });
+      });
+      // Local clipping is opt-in on the renderer; flip it the first time anyone sets clipping planes.
+      if (clipPlanes.length) this.renderer.localClippingEnabled = true;
     },
     delete(object_id) {
       if (!this.objects.has(object_id)) return;
@@ -586,6 +730,7 @@ export default {
         sz,
         visible,
         draggable,
+        clipping_planes,
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
@@ -596,6 +741,7 @@ export default {
         this.scale(id, sx, sy, sz);
         this.visible(id, visible);
         this.draggable(id, draggable);
+        if (clipping_planes && clipping_planes.length) this.set_clipping_planes(id, clipping_planes);
       }
     },
   },
@@ -604,6 +750,7 @@ export default {
     width: Number,
     height: Number,
     grid: Object,
+    polarGrid: Array,
     cameraType: String,
     cameraParams: Object,
     clickEvents: Array,
@@ -612,5 +759,18 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    raycasterThreshold: Number,
+    intersectionPlanes: Array,
+  },
+  watch: {
+    raycasterThreshold(value) {
+      if (!this._raycaster) return;
+      const t = value ?? 1.0;
+      this._raycaster.params.Line.threshold = t;
+      this._raycaster.params.Points.threshold = t;
+    },
+    intersectionPlanes() {
+      if (this._buildIntersectionPlanes) this._buildIntersectionPlanes();
+    },
   },
 };

@@ -339,4 +339,81 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo('New geometry primitives and polar grid', '''
+    ``polyline`` connects a sequence of points with optional per-vertex colors and dashing,
+    ``lathe`` revolves a 2D profile to make a vase or bowl,
+    and ``plane`` / ``cone`` / ``torus`` / ``capsule`` wrap the corresponding Three.js geometries.
+    The ``polar_grid=(radius, sectors, rings)`` scene argument replaces the rectangular grid
+    with a circular one (and overrides ``grid``).
+''')
+def new_primitives_and_polar_grid() -> None:
+    import math
+    with ui.scene(grid=False, polar_grid=(4, 12, 6)).classes('w-full h-64') as scene:
+        radius = 2.5
+        for angle, color, builder in [
+            (0, '#cc6633', lambda: scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]])),
+            (60, '#ff3333', lambda: scene.cone(radius=0.5, height=1.0)),
+            (120, '#ffcc33', lambda: scene.torus(radius=0.4, tube=0.15)),
+            (180, '#33ccff', lambda: scene.plane(width=1.0, height=1.0).rotate(math.pi / 2, 0, 0)),
+            (240, '#cc66ff', lambda: scene.capsule(radius=0.3, length=0.8)),
+        ]:
+            x = radius * math.cos(math.radians(angle))
+            y = radius * math.sin(math.radians(angle))
+            builder().material(color).move(x, y, 0.5)
+        scene.polyline(
+            points=[[-2, 0, 2.5], [-1, 0, 3.0], [0, 0, 2.5], [1, 0, 3.0], [2, 0, 2.5]],
+            colors=[[1, 0, 0], [1, 0.5, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]],
+        )
+
+
+@doc.demo('Rotate with a different Euler order', '''
+    ``rotate`` accepts an optional intrinsic Euler ``order``
+    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``).
+    The default ``'XYZ'`` keeps the same behavior as before.
+''')
+def rotate_with_order() -> None:
+    import math
+    with ui.scene().classes('w-full h-64') as scene:
+        scene.box().move(-1).rotate(math.pi / 4, math.pi / 4, 0, order='XYZ')
+        scene.box().move(1).rotate(math.pi / 4, math.pi / 4, 0, order='ZYX')
+
+
+@doc.demo('Clipping planes', '''
+    `Object3D.set_clipping_planes` lets you hide part of an object's geometry by clipping
+    it against arbitrary plane equations `nx*x + ny*y + nz*z + d = 0`.
+    The plane normal points toward the *kept* side; geometry on the negative side is hidden.
+    Useful for "see inside" views in articulated meshes.
+''')
+def clipping_planes() -> None:
+    from nicegui import events
+    with ui.scene().classes('w-full h-64') as scene:
+        sphere = scene.sphere(1.0).material('SteelBlue')
+    ui.button('Clip top half', on_click=lambda: sphere.set_clipping_planes(
+        [events.SceneClipPlane(nx=0, ny=0, nz=-1, d=0)]))
+    ui.button('Show whole', on_click=sphere.clear_clipping_planes)
+
+
+@doc.demo('Click intersections with named planes', '''
+    Configure named planes via `intersection_planes` and read the ray's intersection
+    with each plane on every click via `e.intersections[name]`. Each entry is a
+    `ScenePoint` (with `.x/.y/.z`) when the ray hits the plane, or `None` when it doesn't.
+''')
+def click_intersections() -> None:
+    from nicegui import events
+
+    label = ui.label('click somewhere in the scene')
+
+    def show(e: events.SceneClickEventArguments):
+        ground = e.intersections.get('ground')
+        if ground is None:
+            label.set_text('ray missed the ground plane')
+        else:
+            label.set_text(f'ground hit at ({ground.x:.2f}, {ground.y:.2f}, {ground.z:.2f})')
+
+    ui.scene(
+        on_click=show,
+        intersection_planes=[events.SceneIntersectionPlane(name='ground', axis='z', offset=0)],
+    ).classes('w-full h-64')
+
+
 doc.reference(ui.scene)
