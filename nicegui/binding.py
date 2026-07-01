@@ -20,21 +20,15 @@ if TYPE_CHECKING:
 
 ObjectId = int
 NamePath = tuple[str, ...]
-NameBucket = NamePath | set[NamePath]
 BindingKey = tuple[ObjectId, NamePath]
-BindingKeyBucket = BindingKey | set[BindingKey]
 Transform = Callable[[Any], Any] | None
 Binding = tuple[Any, Any, NamePath, Transform]
 ActiveLink = tuple[Any, NamePath, Any, NamePath, Transform]
-BindableEntry = tuple[weakref.ref[Any], NameBucket]
+BindableEntry = tuple[weakref.ref[Any], set[NamePath]]
 
 
 class _BindablePropertyRegistry(MutableMapping[BindingKey, Any]):
-    """Weak bindable-property registry keyed by object ID with name-path buckets.
-
-    Most bindable objects expose one bindable property, so the common case stores a single name path and upgrades to a
-    set only when the same object has multiple bindable properties.
-    """
+    """Weak bindable-property registry keyed by object ID with name-path buckets."""
 
     def __init__(self) -> None:
         self._entries_by_object_id: dict[ObjectId, BindableEntry] = {}
@@ -53,50 +47,40 @@ class _BindablePropertyRegistry(MutableMapping[BindingKey, Any]):
 
     def __setitem__(self, key: BindingKey, obj: Any) -> None:
         object_id, name_path = key
-        entry = self._entries_by_object_id.get(object_id)
-        if entry is None:
+        bindable_entry = self._entries_by_object_id.get(object_id)
+        if bindable_entry is None:
             def discard(_discarded_ref: weakref.ref[Any], object_id: ObjectId = object_id) -> None:
                 self._discard_object_id(object_id)
-            self._entries_by_object_id[object_id] = (weakref.ref(obj, discard), name_path)
+            self._entries_by_object_id[object_id] = (weakref.ref(obj, discard), {name_path})
             return
-        object_ref, registered_name_paths = entry
-        if isinstance(registered_name_paths, set):
-            registered_name_paths.add(name_path)
-        elif registered_name_paths != name_path:
-            self._entries_by_object_id[object_id] = (object_ref, {registered_name_paths, name_path})
+        registered_name_paths = bindable_entry[1]
+        registered_name_paths.add(name_path)
 
     def __getitem__(self, key: object) -> Any:
         requested_object_id, requested_name_path = self._key_or_raise(key)
-        entry = self._entries_by_object_id.get(requested_object_id)
-        if entry is None:
+        bindable_entry = self._entries_by_object_id.get(requested_object_id)
+        if bindable_entry is None:
             raise KeyError(key)
-        object_ref, registered_name_paths = entry
+        object_ref, registered_name_paths = bindable_entry
         registered_object = object_ref()
         if registered_object is None:
             self._discard_object_id(requested_object_id)
             raise KeyError(key)
-        if (requested_name_path in registered_name_paths
-                if isinstance(registered_name_paths, set)
-                else registered_name_paths == requested_name_path):
+        if requested_name_path in registered_name_paths:
             return registered_object
         raise KeyError(key)
 
     def __delitem__(self, key: object) -> None:
         requested_object_id, requested_name_path = self._key_or_raise(key)
-        entry = self._entries_by_object_id.get(requested_object_id)
-        if entry is None:
+        bindable_entry = self._entries_by_object_id.get(requested_object_id)
+        if bindable_entry is None:
             raise KeyError(key)
-        _object_ref, registered_name_paths = entry
-        if isinstance(registered_name_paths, set):
-            if requested_name_path not in registered_name_paths:
-                raise KeyError(key)
-            registered_name_paths.discard(requested_name_path)
-            if not registered_name_paths:
-                self._discard_object_id(requested_object_id)
-            return
-        if registered_name_paths != requested_name_path:
+        registered_name_paths = bindable_entry[1]
+        if requested_name_path not in registered_name_paths:
             raise KeyError(key)
-        self._discard_object_id(requested_object_id)
+        registered_name_paths.discard(requested_name_path)
+        if not registered_name_paths:
+            self._discard_object_id(requested_object_id)
 
     def __len__(self) -> int:
         return sum(1 for key in self)
@@ -104,16 +88,14 @@ class _BindablePropertyRegistry(MutableMapping[BindingKey, Any]):
     def contains_key(self, key: BindingKey) -> bool:
         """Return whether a validated binding key is registered."""
         object_id, name_path = key
-        entry = self._entries_by_object_id.get(object_id)
-        if entry is None:
+        bindable_entry = self._entries_by_object_id.get(object_id)
+        if bindable_entry is None:
             return False
-        object_ref, registered_name_paths = entry
+        object_ref, registered_name_paths = bindable_entry
         if object_ref() is None:
             self._discard_object_id(object_id)
             return False
-        return (name_path in registered_name_paths
-                if isinstance(registered_name_paths, set)
-                else registered_name_paths == name_path)
+        return name_path in registered_name_paths
 
     def __contains__(self, key: object) -> bool:
         if not isinstance(key, tuple) or len(key) != 2:
@@ -126,11 +108,8 @@ class _BindablePropertyRegistry(MutableMapping[BindingKey, Any]):
             if object_ref() is None:
                 self._discard_object_id(object_id)
                 continue
-            if isinstance(registered_name_paths, set):
-                for name_path in registered_name_paths:
-                    yield object_id, name_path
-            else:
-                yield object_id, registered_name_paths
+            for name_path in registered_name_paths:
+                yield object_id, name_path
 
     def clear(self) -> None:
         """Remove all registered bindable-property entries."""
@@ -156,7 +135,7 @@ bindable_properties: _BindablePropertyRegistry = _BindablePropertyRegistry()
 active_links: list[ActiveLink] = []
 _active_links_added = asyncio.Event()
 # Maps object IDs to binding keys that reference them, so remove() avoids scanning all bindings.
-_binding_keys_by_object: dict[ObjectId, BindingKeyBucket] = {}
+_binding_keys_by_object: dict[ObjectId, set[BindingKey]] = {}
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -164,49 +143,19 @@ T = TypeVar('T')
 _MISSING = object()
 
 
-def _bucket_add(bucket_dict: dict[Any, Any], key: Any, value: Any) -> None:
-    """Add value to a scalar-or-set bucket in a dict.
-
-    Most objects have a single entry, so the common case stores a bare value
-    and upgrades to a set only when a second distinct value is added.
-    """
-    bucket = bucket_dict.get(key)
-    if bucket is None:
-        bucket_dict[key] = value
-    elif isinstance(bucket, set):
-        bucket.add(value)
-    elif bucket != value:
-        bucket_dict[key] = {bucket, value}
-
-
-def _bucket_discard(bucket_dict: dict[Any, Any], key: Any, value: Any) -> None:
-    """Remove value from a scalar-or-set bucket in a dict; delete bucket if empty."""
-    bucket = bucket_dict.get(key)
-    if bucket is None:
-        return
-    if not isinstance(bucket, set):
-        if bucket == value:
-            del bucket_dict[key]
-        return
-    bucket.discard(value)
-    if not bucket:
-        del bucket_dict[key]
+def _index_binding(source_obj: Any, target_obj: Any, binding_key: BindingKey) -> None:
+    """Index both endpoints so remove() can find affected binding lists without a full scan."""
+    _binding_keys_by_object.setdefault(id(source_obj), set()).add(binding_key)
+    _binding_keys_by_object.setdefault(id(target_obj), set()).add(binding_key)
 
 
 def _discard_binding_key_from_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
-    """Remove one binding key from the reverse index used by remove()."""
-    _bucket_discard(_binding_keys_by_object, obj_id, binding_key)
-
-
-def _add_binding_key_to_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
-    """Add one endpoint reference to the reverse index used by remove()."""
-    _bucket_add(_binding_keys_by_object, obj_id, binding_key)
-
-
-def _index_binding(source_obj: Any, target_obj: Any, binding_key: BindingKey) -> None:
-    """Index both endpoints so remove() can find affected binding lists without a full scan."""
-    _add_binding_key_to_object_index(id(source_obj), binding_key)
-    _add_binding_key_to_object_index(id(target_obj), binding_key)
+    indexed_binding_keys = _binding_keys_by_object.get(obj_id)
+    if indexed_binding_keys is None:
+        return
+    indexed_binding_keys.discard(binding_key)
+    if not indexed_binding_keys:
+        del _binding_keys_by_object[obj_id]
 
 
 def _bind_one_way(source_obj: Any, source_name: NamePath, target_obj: Any, target_name: NamePath,
@@ -228,15 +177,12 @@ def _collect_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[Bin
     binding_keys: set[BindingKey] | None = None
     get_object_binding_keys = _binding_keys_by_object.get
     for obj_id in object_ids:
-        bucket = get_object_binding_keys(obj_id)
-        if bucket is None:
+        indexed_binding_keys = get_object_binding_keys(obj_id)
+        if indexed_binding_keys is None:
             continue
         if binding_keys is None:
             binding_keys = set()
-        if isinstance(bucket, set):
-            binding_keys.update(bucket)
-        else:
-            binding_keys.add(bucket)
+        binding_keys.update(indexed_binding_keys)
     return binding_keys
 
 
@@ -324,7 +270,7 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
     if (source_value := _get_attribute(source_obj, source_name)) is _MISSING:
         return
 
-    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+    for _source_obj, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
         if (id(target_obj), target_name) in visited:
             continue
 
@@ -469,10 +415,10 @@ class BindableProperty:
     def __init__(self, on_change: Callable[..., Any] | None = None) -> None:
         self._change_handler = on_change
 
-    def __set_name__(self, _, name: str) -> None:
+    def __set_name__(self, _owner_type: type[Any], name: str) -> None:
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
-    def __get__(self, owner: Any, _=None) -> Any:
+    def __get__(self, owner: Any, _owner_type: type[Any] | None = None) -> Any:
         return getattr(owner, '___' + self.name)
 
     def __set__(self, owner: Any, value: Any) -> None:
@@ -508,30 +454,30 @@ def remove(objects: Iterable[Any]) -> None:
     removed_object_id_set = set(removed_object_ids)
     _remove_active_links_for_objects(removed_object_id_set)
 
-    for key in affected_binding_keys:
-        binding_list = bindings.get(key)
+    for binding_key in affected_binding_keys:
+        binding_list = bindings.get(binding_key)
         if binding_list is None:
             continue
-        source_obj_id = key[0]
+        source_obj_id = binding_key[0]
         # Binding keys are source IDs; target-only removals only prune entries from the binding list.
         if source_obj_id in removed_object_id_set:
-            for _, target_obj, _, _ in binding_list:
+            for _source_obj, target_obj, _target_name, _transform in binding_list:
                 target_obj_id = id(target_obj)
                 if target_obj_id not in removed_object_id_set:
-                    _discard_binding_key_from_object_index(target_obj_id, key)
-            del bindings[key]
+                    _discard_binding_key_from_object_index(target_obj_id, binding_key)
+            del bindings[binding_key]
             continue
         if len(binding_list) == 1:
             if id(binding_list[0][1]) in removed_object_id_set:
-                del bindings[key]
-                _discard_binding_key_from_object_index(source_obj_id, key)
+                del bindings[binding_key]
+                _discard_binding_key_from_object_index(source_obj_id, binding_key)
             continue
         remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in removed_object_id_set]
         if remaining_bindings:
             binding_list[:] = remaining_bindings
         else:
-            del bindings[key]
-            _discard_binding_key_from_object_index(source_obj_id, key)
+            del bindings[binding_key]
+            _discard_binding_key_from_object_index(source_obj_id, binding_key)
 
     for obj_id in removed_object_ids:
         _binding_keys_by_object.pop(obj_id, None)
