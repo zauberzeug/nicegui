@@ -140,6 +140,31 @@ def test_anchor_positions_survive_unrelated_prop_update(screen: Screen):
         f'unrelated prop update reset anchors, got {editor.line_anchors}'
 
 
+def test_reassign_same_declared_value_snaps_back(screen: Screen):
+    """A deliberate reassignment must re-apply the declared lines even if the value is unchanged."""
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc\nd\ne')
+
+    screen.open('/')
+    _wait_for_editor(screen)
+    editor.line_anchors = {'mid': 3}
+    screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
+    # Remap the anchor by inserting a line at the top: mid moves from line 3 to line 4.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
+    )
+    screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
+    # Reassigning the identical declared dict is an intent signal (not detectable by value comparison):
+    # it must not be preserved like an unrelated re-broadcast, but snap the anchor back to line 3.
+    editor.line_anchors = {'mid': 3}
+    screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
+
+
 def test_last_anchor_deletion_notifies(screen: Screen):
     """Deleting the only anchor (field size 1 -> 0) still notifies Python."""
     editor = None

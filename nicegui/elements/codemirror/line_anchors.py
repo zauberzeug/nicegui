@@ -62,6 +62,7 @@ class LineAnchorElement(Element):
         dict_ = super()._to_dict()
         if not self._apply_anchors:
             dict_.setdefault('preserved_props', []).append('line-anchors')
+        # NOTE: resetting here relies on exactly one outgoing serialization per deliberate reassignment
         self._apply_anchors = False
         return dict_
 
