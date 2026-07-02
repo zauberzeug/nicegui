@@ -367,8 +367,9 @@ def new_primitives_and_polar_grid() -> None:
 
 
 @doc.demo('Rotate with a different Euler order', '''
-    ``rotate`` accepts an optional intrinsic Euler ``order``
-    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``).
+    ``rotate`` accepts an optional extrinsic Euler ``order``
+    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``);
+    the leftmost letter rotates first about the world frame.
     The default ``'XYZ'`` keeps the same behavior as before.
 ''')
 def rotate_with_order() -> None:
