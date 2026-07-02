@@ -215,6 +215,8 @@ class Notification(Element, component='notification.js'):
                    **kwargs: Any) -> Self:
         """Add an action button to the notification.
 
+        *Added in version 3.15.0*
+
         :param on_click: callback to be invoked when the action button is clicked
         :param no_dismiss: if True, the notification will not be dismissed when the action button is clicked (default: False)
         :param text: the label of the action button
@@ -222,6 +224,7 @@ class Notification(Element, component='notification.js'):
         :param icon: the name of an icon to be displayed on the action button (default: `None`)
 
         Note: You can pass additional keyword arguments according to `Quasar's QBtn API <https://quasar.dev/vue-components/button#qbtn-api>`_.
+        A ``class`` or ``style`` passed this way is combined with the one derived from ``color`` rather than replacing it.
         """
         actions = self._props['options'].setdefault('actions', [])
         index = len(actions)
@@ -239,7 +242,12 @@ class Notification(Element, component='notification.js'):
             action['class'] = f'text-{color}'
         elif color is not None:
             action['style'] = f'color: {color};'
-        action.update(kwargs)
+        for key, value in kwargs.items():
+            if key in ('class', 'style') and key in action and isinstance(value, str):
+                # compose with the color-derived class/style rather than overwrite it
+                action[key] = f'{action[key]} {value}'
+            else:
+                action[key] = value
         actions.append(action)
         self._action_handlers.append(on_click)
         self.update()

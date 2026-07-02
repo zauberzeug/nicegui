@@ -1,3 +1,5 @@
+from selenium.webdriver.common.by import By
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -13,6 +15,7 @@ def test_add_action_basic_structure(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Test')
+    screen.should_contain('Click me')  # the action button label is actually rendered
     actions = n._props['options']['actions']
     assert len(actions) == 1
     assert actions[0]['label'] == 'Click me'
@@ -117,19 +120,21 @@ def test_add_action_no_color(screen: Screen):
     assert 'style' not in action
 
 
-def test_add_action_kwargs_override_color(screen: Screen):
+def test_add_action_kwargs_compose_with_color(screen: Screen):
     n = None
 
     @ui.page('/')
     def page():
         nonlocal n
         n = ui.notification('Test', timeout=None)
-        n.add_action(lambda: None, text='Test', color='blue-500', **{'class': 'my-class'})
+        n.add_action(lambda: None, text='Class', color='blue-500', **{'class': 'my-class'})
+        n.add_action(lambda: None, text='Style', color='#ff0000', style='font-weight: bold')
 
     screen.open('/')
-    action = n._props['options']['actions'][0]
-    # explicit kwargs win: user's class clobbers the color-derived class
-    assert action['class'] == 'my-class'
+    actions = n._props['options']['actions']
+    # a class/style passed via kwargs composes with the color-derived one instead of clobbering it
+    assert actions[0]['class'] == 'text-blue-500 my-class'
+    assert actions[1]['style'] == 'color: #ff0000; font-weight: bold'
 
 
 def test_add_action_multiple_actions(screen: Screen):
@@ -199,3 +204,30 @@ def test_add_action_after_render_no_duplicate(screen: Screen):
     screen.click('Late')
     screen.wait(0.5)
     assert clicked == ['late']
+
+
+def test_add_action_no_dismiss_keeps_notification_open(screen: Screen):
+    clicked: list[str] = []
+
+    @ui.page('/')
+    def page():
+        n = ui.notification('Decide', timeout=None)
+        n.add_action(lambda: clicked.append('stay'), text='Stay', no_dismiss=True)
+
+    screen.open('/')
+    screen.should_contain('Decide')
+    screen.click('Stay')
+    screen.wait(0.5)
+    assert clicked == ['stay']  # the click actually fired the action...
+    screen.should_contain('Decide')  # ...yet no_dismiss=True kept the notification on screen
+
+
+def test_add_action_css_color_is_applied(screen: Screen):
+    @ui.page('/')
+    def page():
+        n = ui.notification('Test', timeout=None)
+        n.add_action(lambda: None, text='Custom', color='#ff0000')
+
+    screen.open('/')
+    button = screen.selenium.find_element(By.XPATH, "//button[contains(., 'Custom')]")
+    assert button.value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
