@@ -11,7 +11,7 @@ from typing import Any
 from .. import run
 from ..logging import log
 
-SPAWN_CONTEXT = run.SPAWN_CONTEXT  # shared with cpu_bound (#1841)
+SPAWN_CONTEXT = run.SPAWN_CONTEXT  # always-spawn context; the window subprocess must not fork (#1841)
 
 method_queue: Queue | None = None
 response_queue: Queue | None = None
