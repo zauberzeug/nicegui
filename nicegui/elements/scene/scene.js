@@ -341,7 +341,6 @@ export default {
         mesh = new THREE.Group();
         mesh.userData.isStl = true;
         mesh.userData.loaded = false;
-        mesh.userData.wireframe = wireframe;
         this.stl_loader.load(
           url,
           (geometry) => {
@@ -351,6 +350,8 @@ export default {
                   new THREE.LineBasicMaterial({ transparent: true }),
                 )
               : new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true }));
+            child.object_id = id; // NOTE: click intersections report the raycast-hit child, not the group
+            child.name = mesh.name;
             mesh.add(child);
             mesh.userData.loaded = true;
             if (mesh.userData.pendingMaterialInfo) {
@@ -431,7 +432,9 @@ export default {
         });
       };
       if (object.userData.isGltf || object.userData.isStl) {
-        object.traverse((child) => (child.isMesh || child.isLine) && child.material && apply(child.material));
+        object.traverse(
+          (child) => (child.isMesh || (object.userData.isStl && child.isLine)) && child.material && apply(child.material),
+        );
       } else if (object.material) {
         apply(object.material);
       }

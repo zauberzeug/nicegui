@@ -240,11 +240,13 @@ def test_stl_wireframe(screen: Screen):
         '  root_type: o.type,'
         '  child_geometry: child ? child.geometry.type : null,'
         '  edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,'
+        '  child_object_id: child ? child.object_id : null,'
         '};'
     )
     assert result['root_type'] == 'Group', f'expected a Group wrapper, got {result}'
     assert result['child_geometry'] == 'EdgesGeometry', f'expected EdgesGeometry child, got {result}'
     assert result['edge_count'] > 0, f'expected non-empty edges, got {result}'
+    assert result['child_object_id'] == obj.id, f'expected click-hittable child with object_id, got {result}'
 
 
 def test_no_cyclic_references(screen: Screen):
