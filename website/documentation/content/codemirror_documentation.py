@@ -34,7 +34,7 @@ def preserve_cursor_demo() -> None:
     The example below anchors the first line and rewrites it in place when you click "Update argument":
     edit the code freely (add blank lines above, indent, reorder) and the anchor still points at the right line.
 
-    *Added in NiceGUI 3.14.0*
+    *Added in version 3.14.0*
 ''')
 def line_anchors_demo() -> None:
     editor = ui.codemirror('answer: 42', line_anchors={'answer': 1}) \
@@ -62,7 +62,7 @@ def line_anchors_demo() -> None:
 
     Use `unmap_key(key)` to remove a mapping at runtime.
 
-    *Added in NiceGUI 3.14.0*
+    *Added in version 3.14.0*
 ''')
 def keymap_demo() -> None:
     editor = ui.codemirror(
@@ -84,7 +84,7 @@ def keymap_demo() -> None:
 @doc.demo('Hover tooltips on lines', '''
     `line_tooltips` maps 1-indexed line numbers to hover content.
 
-    *Added in NiceGUI 3.13.0*
+    *Added in version 3.13.0*
 ''')
 def line_tooltips_demo() -> None:
     editor = ui.codemirror(
@@ -100,7 +100,7 @@ def line_tooltips_demo() -> None:
     Pass `line_tooltip_html=True` to render tooltip content as HTML,
     sanitized via NiceGUI's DOMPurify-backed `setHTML` polyfill.
 
-    *Added in NiceGUI 3.13.0*
+    *Added in version 3.13.0*
 ''')
 def line_tooltip_html_demo() -> None:
     editor = ui.codemirror(
