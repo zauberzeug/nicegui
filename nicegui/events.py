@@ -454,7 +454,7 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT, *, expect_a
     :param arguments: the event arguments
     :param expect_args: whether the handler expects the arguments to be passed
         (default: ``None`` meaning auto-detected from the handler's signature;
-        pass a pre-resolved bool to skip the per-call signature introspection, *added in version 3.14.0*)
+        pass a pre-resolved bool to skip the per-call signature introspection, *added in version 3.15.0*)
     """
     if handler is None:
         return
