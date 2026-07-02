@@ -192,8 +192,6 @@ export default {
       // only fires on a deliberate (re)assignment — re-applying from the declared lines is then intended,
       // snapping anchors back to their declared positions (and restoring any dropped by a delete-across).
       if (!this.editor) await this.editorPromise;
-      clearTimeout(this._anchorTimer);
-      this._anchorTimer = null;
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const [id, line] of Object.entries(anchors || {})) {
@@ -211,6 +209,9 @@ export default {
         ranges.push(new AnchorValue(id).range(pos, pos));
       }
       this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
+      // The dispatch re-armed the debounced tracker; the immediate emit below supersedes that echo.
+      clearTimeout(this._anchorTimer);
+      this._anchorTimer = null;
       this.emitAnchorPositions();
     },
     emitAnchorPositions() {
