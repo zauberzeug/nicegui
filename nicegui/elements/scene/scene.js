@@ -348,7 +348,7 @@ export default {
     async visible(object_id, value) {
       const object = await get_object(this.objects, object_id)
       if (!object) return;
-      object.visible = value;
+      object.mesh.visible = value;
     },
     async draggable(object_id, value) {
       const object = await get_object(this.objects, object_id)
