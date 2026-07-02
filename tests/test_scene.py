@@ -230,7 +230,9 @@ def test_stl_wireframe(screen: Screen):
             obj = scene.stl('/cube.stl', wireframe=True)
 
     screen.open('/')
-    screen.wait(1.0)
+    screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
+        f'return !!window.getElement && getElement({scene.id})?.objects?.get("{obj.id}")?.children.length > 0'
+    ))
     result = screen.selenium.execute_script(
         f'const o = getElement({scene.id}).objects.get("{obj.id}");'
         'const child = o.children && o.children[0];'
