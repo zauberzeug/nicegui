@@ -217,6 +217,34 @@ def test_gltf(screen: Screen, set_material: bool, color: str):
     ) == color
 
 
+def test_stl_wireframe(screen: Screen):
+    """A wireframe STL must render as edges: a LineSegments whose geometry is EdgesGeometry."""
+    scene = None
+    obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, obj
+        app.add_static_file(local_file=TEST_DIR / 'media' / 'cube.stl', url_path='/cube.stl')
+        with ui.scene() as scene:
+            obj = scene.stl('/cube.stl', wireframe=True)
+
+    screen.open('/')
+    screen.wait(1.0)
+    result = screen.selenium.execute_script(
+        f'const o = getElement({scene.id}).objects.get("{obj.id}");'
+        'const child = o.children && o.children[0];'
+        'return {'
+        '  root_type: o.type,'
+        '  child_geometry: child ? child.geometry.type : null,'
+        '  edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,'
+        '};'
+    )
+    assert result['root_type'] == 'Group', f'expected a Group wrapper, got {result}'
+    assert result['child_geometry'] == 'EdgesGeometry', f'expected EdgesGeometry child, got {result}'
+    assert result['edge_count'] > 0, f'expected non-empty edges, got {result}'
+
+
 def test_no_cyclic_references(screen: Screen):
     objects: weakref.WeakSet = weakref.WeakSet()
     scene = None
