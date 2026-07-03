@@ -58,6 +58,12 @@ function texture_material(texture) {
   });
 }
 
+function mesh_from_geometry(geometry, wireframe) {
+  return wireframe
+    ? new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ transparent: true }))
+    : new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true }));
+}
+
 function set_point_cloud_data(position, color, geometry) {
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
   if (color === null) {
@@ -344,12 +350,7 @@ export default {
         this.stl_loader.load(
           url,
           (geometry) => {
-            const child = wireframe
-              ? new THREE.LineSegments(
-                  new THREE.EdgesGeometry(geometry),
-                  new THREE.LineBasicMaterial({ transparent: true }),
-                )
-              : new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true }));
+            const child = mesh_from_geometry(geometry, wireframe);
             child.object_id = id; // NOTE: click intersections report the raycast-hit child, not the group
             child.name = mesh.name;
             mesh.add(child);
@@ -393,16 +394,7 @@ export default {
           const settings = { depth: height, bevelEnabled: false };
           geometry = new THREE.ExtrudeGeometry(shape, settings);
         }
-        let material;
-        if (wireframe) {
-          mesh = new THREE.LineSegments(
-            new THREE.EdgesGeometry(geometry),
-            new THREE.LineBasicMaterial({ transparent: true }),
-          );
-        } else {
-          material = new THREE.MeshPhongMaterial({ transparent: true });
-          mesh = new THREE.Mesh(geometry, material);
-        }
+        mesh = mesh_from_geometry(geometry, wireframe);
       }
       mesh.object_id = id;
       this.objects.set(id, mesh);
