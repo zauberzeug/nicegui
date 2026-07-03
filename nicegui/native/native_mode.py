@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import _thread
 import multiprocessing as mp
+import pickle
 import queue
 import socket
 import sys
@@ -17,7 +17,6 @@ from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
-from ..server import Server
 from . import native, window_icon
 from .event_manager import event_manager
 
@@ -34,9 +33,28 @@ def _open_window(
     protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
     method_queue: mp.Queue, response_queue: mp.Queue, event_sender: Connection,
     favicon: str | Path | None = None,
+    window_args: dict[str, Any] | None = None,
+    settings: dict[str, Any] | None = None,
+    start_args: dict[str, Any] | None = None,
+    dropped_keys: dict[str, list[str]] | None = None,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
+
+    # Let re-imported values win over the parent's picklable subset, so previous behavior is preserved (#6082).
+    window_args = {**(window_args or {}), **core.app.native.window_args}
+    settings = {**(settings or {}), **core.app.native.settings}
+    start_args = {**(start_args or {}), **core.app.native.start_args}
+
+    # Warn only about keys the parent could not pickle AND re-import did not restore here, i.e. that are truly lost.
+    for name, merged in [('window_args', window_args), ('settings', settings), ('start_args', start_args)]:
+        for key in (dropped_keys or {}).get(name, []):
+            if key not in merged:
+                helpers.warn_once(
+                    f'Could not forward app.native.{name}["{key}"] to the native window process '
+                    'because it is not picklable, so it is ignored. '
+                    'See https://github.com/zauberzeug/nicegui/issues/6082 for details.'
+                )
 
     window_kwargs = {
         'url': helpers.format_url(protocol, host, port),
@@ -45,9 +63,9 @@ def _open_window(
         'height': height,
         'fullscreen': fullscreen,
         'frameless': frameless,
-        **core.app.native.window_args,
+        **window_args,
     }
-    webview.settings.update(**core.app.native.settings)
+    webview.settings.update(**settings)
     window = webview.create_window(**window_kwargs)
     assert window is not None
     closed = Event()
@@ -62,7 +80,7 @@ def _open_window(
 
     _start_window_method_executor(window, method_queue, response_queue, closed)
     _warn_if_esm_unsupported(window)
-    webview.start(**core.app.native.start_args)
+    webview.start(**start_args)
 
 
 def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> None:
@@ -92,7 +110,7 @@ def _bind_pywebview_events(window: webview.Window, event_sender: Connection) -> 
     window.events.resized += lambda width, height: send('resized', width=width, height=height)
     window.events.moved += lambda x, y: send('moved', x=x, y=y)
     window.events.closed += lambda: send('closed')
-    # NOTE: 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
+    # 'closing' is not bridged yet — it requires a synchronous round-trip to support vetoing the close
 
 
 def _start_window_method_executor(window: webview.Window,
@@ -133,7 +151,7 @@ def _start_window_method_executor(window: webview.Window,
                     else:
                         log.error(f'window.{method_name} is not callable')
             except queue.Empty:
-                time.sleep(0.016)  # NOTE: avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
+                time.sleep(0.016)  # avoid issue https://github.com/zauberzeug/nicegui/issues/2482 on Windows
             except Exception:
                 log.exception(f'error in window.{method_name}')
 
@@ -162,12 +180,7 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
             time.sleep(0.1)
         if shutdown_event is not None:
             shutdown_event.set()
-        Server.instance.should_exit = True
-        while not core.app.is_stopped:
-            time.sleep(0.1)
-        _thread.interrupt_main()
-        event_manager.stop()
-        native.remove_queues()
+        core.stop_and_exit()
 
     if not optional_features.has('webview'):
         log.error('Native mode is not supported in this configuration.\n'
@@ -177,12 +190,31 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
     mp.freeze_support()
     native.create_queues()
     event_manager.start()
+    window_args, dropped_window_args = _split_picklable(core.app.native.window_args)
+    settings, dropped_settings = _split_picklable(core.app.native.settings)
+    start_args, dropped_start_args = _split_picklable(core.app.native.start_args)
+    dropped_keys = {'window_args': dropped_window_args, 'settings': dropped_settings, 'start_args': dropped_start_args}
     args = (protocol, host, port, title, width, height, fullscreen, frameless,
-            native.method_queue, native.response_queue, native.event_sender, favicon)
+            native.method_queue, native.response_queue, native.event_sender, favicon,
+            window_args, settings, start_args, dropped_keys)
     process = native.SPAWN_CONTEXT.Process(target=_open_window, args=args, daemon=True)
     process.start()
 
     Thread(target=check_shutdown, daemon=True).start()
+
+
+def _split_picklable(config: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Split a native config dict into its picklable items and the keys that cannot cross the spawn boundary."""
+    picklable: dict[str, Any] = {}
+    dropped: list[str] = []
+    for key, value in config.items():
+        try:
+            pickle.dumps(value)
+        except Exception:  # pylint: disable=broad-except
+            dropped.append(key)
+        else:
+            picklable[key] = value
+    return picklable, dropped
 
 
 def find_open_port(start_port: int = 8000, end_port: int = 8999) -> int:

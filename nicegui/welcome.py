@@ -20,7 +20,7 @@ async def collect_urls() -> None:
     protocol = os.environ.get('NICEGUI_PROTOCOL')
     if not host or not port or not protocol:
         return
-    ips = set((await run.io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
+    ips = set((await run.io_bound(_get_all_ips) or []) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
     sorted_ips = ['localhost' if host == '0.0.0.0' else host, *sorted(ips)]
     urls = [format_url(protocol, ip, int(port)) for ip in sorted_ips]

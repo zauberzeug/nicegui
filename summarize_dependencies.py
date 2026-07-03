@@ -18,11 +18,12 @@ with (ROOT / 'DEPENDENCIES.md').open('w') as output_file:
 
     for p in [ROOT / 'package.json', *sorted(ROOT.glob('nicegui/elements/*/package.json'))]:
         package_lock = json.loads(p.with_stem('package-lock').read_text(encoding='utf-8'))
-        for name, version in json.loads(p.read_text(encoding='utf-8')).get('dependencies', {}).items():
+        for name in json.loads(p.read_text(encoding='utf-8')).get('dependencies', {}):
             assert isinstance(name, str)
+            package = package_lock['packages'][f'node_modules/{name}']
             try:
-                license_string = package_lock['packages'][f'node_modules/{name}']['license']
+                license_string = package['license']
             except KeyError:
                 with (p.with_name('node_modules') / name / 'LICENSE').open('r') as license_file:
                     license_string = license_file.readline().strip().removesuffix(' License')
-            output_file.write(f'- {name}: {version} ({LICENSE_LINKS[license_string]})\n')
+            output_file.write(f'- {name}: {package["version"]} ({LICENSE_LINKS[license_string]})\n')

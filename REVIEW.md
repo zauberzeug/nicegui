@@ -45,7 +45,7 @@ For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guid
 - **Cross-platform**
   - Windows path assumptions, locale/timezone hardcoding, reliance on system binaries without guards
 - **Readability**
-  - Complex logic without `# NOTE:` comments explaining intent; magic numbers
+  - Complex logic without comments explaining intent; magic numbers
 
 ## Severity vocabulary
 

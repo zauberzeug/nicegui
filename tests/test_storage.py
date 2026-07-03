@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import re
 import time
 
 import httpx
@@ -375,12 +376,23 @@ async def test_user_storage_is_pruned(screen: Screen):
     assert len(app.storage._users) == 0
 
 
+def test_storage_serialization_error_points_at_offending_key(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update', on_click=lambda: app.storage.general.update(X={'Y': {1, 2, 3}}))
+
+    screen.open('/')
+    screen.click('Update')
+    screen.wait(0.5)  # let the deferred backup task run
+    screen.assert_py_logger('ERROR', re.compile(r"storage-general.*\.json at \['X'\]\['Y'\]: value of type 'set'"))
+
+
 async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     @ui.page('/')
     def page():
         ui.label('ok')
 
-    await user.open('/')  # NOTE: needed to ensure NiceGUI's event loop is running
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
     path = tmp_path / 'storage.json'
     d = FilePersistentDict(path, encoding='utf-8')
     d['key'] = 'value'  # schedules async backup task tagged with await_on_shutdown
