@@ -279,3 +279,25 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_stl_name_after_load(screen: Screen):
+    """Renaming an STL after it has loaded must reach the raycast-hittable child (else click3d reports a stale name)."""
+    scene = None
+    obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, obj
+        app.add_static_file(local_file=TEST_DIR / 'media' / 'cube.stl', url_path='/cube.stl')
+        with ui.scene() as scene:
+            obj = scene.stl('/cube.stl')
+
+    screen.open('/')
+    screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
+        f'return !!window.getElement && getElement({scene.id})?.objects?.get("{obj.id}")?.children.length > 0'
+    ))
+    obj.with_name('renamed')  # rename AFTER the async load has completed
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).objects.get("{obj.id}").children[0].name === "renamed"'
+    ))

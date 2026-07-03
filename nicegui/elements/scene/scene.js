@@ -402,7 +402,9 @@ export default {
     },
     name(object_id, name) {
       if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id).name = name;
+      const object = this.objects.get(object_id);
+      object.name = name;
+      if (object.userData.isStl) object.children.forEach((child) => (child.name = name));
     },
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
