@@ -43,10 +43,11 @@ def dynamic_series() -> None:
     }).classes('w-full h-64')
 
     def toggle(name: str, value: bool) -> None:
+        series = chart.options['series']
         if value:
-            chart.options['series'].append({'id': name, 'name': name, 'data': [random() for _ in range(5)]})
+            series.append({'id': name, 'name': name, 'data': [random() for _ in range(5)]})
         else:
-            chart.options['series'][:] = [s for s in chart.options['series'] if s['id'] != name]
+            series.remove(next(s for s in series if s['id'] == name))
 
     with ui.row():
         ui.switch('Alpha', on_change=lambda e: toggle('Alpha', e.value))
