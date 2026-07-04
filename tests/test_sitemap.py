@@ -1,3 +1,4 @@
+import datetime
 import logging
 import xml.etree.ElementTree as ET
 
@@ -43,6 +44,26 @@ def test_add_rejects_parameterized_paths():
         s.add('/user/{user_id}')
 
 
+def test_add_rejects_path_without_leading_slash():
+    s = Sitemap()
+    with pytest.raises(ValueError, match=r'paths must start with'):
+        s.add('docs')  # would otherwise emit <loc>https://example.comdocs</loc>
+
+
+@pytest.mark.parametrize('path', ['/a\x00b', '/a\tb', '/a\x7f'])
+def test_add_rejects_control_characters_in_path(path):
+    s = Sitemap()
+    with pytest.raises(ValueError, match='control characters'):
+        s.add(path)  # control chars would produce invalid XML
+
+
+@pytest.mark.parametrize('field', ['lastmod', 'changefreq'])
+def test_add_rejects_non_string_metadata(field):
+    s = Sitemap()
+    with pytest.raises(ValueError, match=f'Sitemap {field} .* must be a string'):
+        s.add('/a', **{field: datetime.date(2026, 5, 14)})  # type: ignore[arg-type]  # non-str would 500 at render
+
+
 def test_to_xml_uses_sitemap_namespace_and_metadata():
     s = Sitemap()
     s.add('/a', lastmod='2026-05-14', changefreq='weekly', priority=0.8)
@@ -78,6 +99,15 @@ def test_to_xml_preserves_priority_precision():
     s.add('/a', priority=0.85)
     root = ET.fromstring(s.to_xml('https://example.com'))
     assert root.findtext(f'{NS}url/{NS}priority') == '0.85'
+
+
+@pytest.mark.parametrize('value, expected', [(1e-05, '0.00001'), (1e-07, '0.0000001'), (1.0, '1.0'), (0.0, '0.0')])
+def test_to_xml_priority_avoids_scientific_notation(value, expected):
+    """str(0.00001) is '1e-05' — scientific notation the sitemaps.org protocol rejects; emit a plain decimal."""
+    s = Sitemap()
+    s.add('/a', priority=value)
+    priority = ET.fromstring(s.to_xml('https://example.com')).findtext(f'{NS}url/{NS}priority')
+    assert priority == expected  # a plain decimal, never scientific notation like '1e-05'
 
 
 @pytest.mark.parametrize('value, expected', [(5.0, '1.0'), (-1.0, '0.0')])

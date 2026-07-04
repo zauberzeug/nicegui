@@ -70,8 +70,9 @@ class Sitemap:
         """Include ``path`` in the sitemap, replacing any prior entry for the same path.
 
         :param path: concrete route path starting with ``/`` (e.g. ``/docs/intro``).
-            Parameterized paths (containing ``{...}``) are rejected — add one entry per concrete URL instead.
-        :param lastmod: ISO-8601 date or datetime of last modification
+            Parameterized paths (containing ``{...}``), paths not starting with ``/``, and paths
+            with control characters are rejected — add one entry per concrete URL instead.
+        :param lastmod: ISO-8601 date or datetime of last modification, as a string
         :param changefreq: ``always``, ``hourly``, ``daily``, ``weekly``, ``monthly``, ``yearly``, or ``never``
         :param priority: relative importance from ``0.0`` to ``1.0``
             (out-of-range values are clamped, non-numeric values are ignored with a warning)
@@ -81,11 +82,20 @@ class Sitemap:
                 f'Cannot add parameterized path {path!r} to the sitemap: there is no enumerator. '
                 "Add a concrete path per URL instead (e.g. app.sitemap.add('/users/alice'))."
             )
+        if not path.startswith('/'):
+            raise ValueError(f'Cannot add path {path!r} to the sitemap: paths must start with "/" '
+                             f"(e.g. app.sitemap.add('/{path}')).")
+        if any(ord(char) < 0x20 or ord(char) == 0x7f for char in path):
+            raise ValueError(f'Cannot add path {path!r} to the sitemap: it contains control characters.')
         if unknown:
             raise ValueError(
                 f'Unknown sitemap field(s) for {path!r}: {sorted(unknown)}. '
                 f'Supported: {list(_VALID_FIELDS)}. See https://www.sitemaps.org/protocol.html'
             )
+        for name, value in (('lastmod', lastmod), ('changefreq', changefreq)):
+            if value is not None and not isinstance(value, str):
+                raise ValueError(f'Sitemap {name} for {path!r} must be a string, '
+                                 f'got {type(value).__name__}: {value!r}.')
         self._entries[path] = SitemapEntry(path, lastmod, changefreq, self._normalize_priority(path, priority))
         self._decorator_opted_in.discard(path)  # a manual add() (re)claims the path from decorator provenance
 
@@ -146,6 +156,17 @@ class Sitemap:
                         priority, path, clamped)
         return clamped
 
+    @staticmethod
+    def _format_priority(value: float) -> str:
+        """Render a priority as a plain decimal in ``[0.0, 1.0]``.
+
+        ``str(0.00001)`` would emit ``'1e-05'`` — scientific notation the sitemaps.org protocol
+        rejects. Fixed-point formatting (trimmed, but never below one decimal place) keeps ``1.0``
+        and ``0.85`` intact while avoiding sci-notation and bounding repeating decimals.
+        """
+        text = f'{value:.10f}'.rstrip('0')
+        return f'{text}0' if text.endswith('.') else text
+
     def to_xml(self, base_url: str) -> str:
         """Render the sitemap as XML rooted at ``base_url`` (e.g. ``https://example.com``)."""
         # Declare the namespace as a literal root attribute rather than ET.register_namespace(),
@@ -159,5 +180,5 @@ class Sitemap:
             if entry.changefreq is not None:
                 ET.SubElement(url, 'changefreq').text = entry.changefreq
             if entry.priority is not None:
-                ET.SubElement(url, 'priority').text = str(entry.priority)
+                ET.SubElement(url, 'priority').text = self._format_priority(entry.priority)
         return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(urlset, encoding='unicode')
