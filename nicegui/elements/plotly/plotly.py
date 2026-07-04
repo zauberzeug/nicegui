@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import suppress
 
 from ... import optional_features
+from ...awaitable_response import AwaitableResponse
 from ...element import Element
 
 with suppress(ImportError):
@@ -38,6 +39,26 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         """Overrides figure instance of this Plotly chart and updates chart on client side."""
         self.figure = figure
         self.update()
+
+    def run_plot_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
+        """Run a plotly.js library function against the chart's HTML element.
+
+        See the `plotly.js function reference <https://plotly.com/javascript/plotlyjs-function-reference/>`_ for a list of methods.
+        The chart's HTML element is passed as the first argument automatically.
+
+        If the function is awaited, the result of the method call is returned
+        (unless it resolves to the chart's HTML element, in which case ``None`` is returned).
+        Otherwise, the method is executed without waiting for a response.
+
+        *Added in version 3.13.0*
+
+        :param name: name of the plotly.js function (without the ``Plotly.`` prefix)
+        :param args: arguments to pass after the chart element
+        :param timeout: timeout in seconds (default: 1 second)
+
+        :return: AwaitableResponse that can be awaited to get the result of the method call
+        """
+        return self.run_method('run_plot_method', name, *args, timeout=timeout)
 
     def update(self) -> None:
         with self._props.suspend_updates():

@@ -23,7 +23,7 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 [![GitHub issues](https://img.shields.io/github/issues/zauberzeug/nicegui?color=blue)](https://github.com/zauberzeug/nicegui/issues)
 [![GitHub forks](https://img.shields.io/github/forks/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/network)
 [![GitHub stars](https://img.shields.io/github/stars/zauberzeug/nicegui)](https://github.com/zauberzeug/nicegui/stargazers)
-[![DOI](https://zenodo.org/badge/365250183.svg)](https://doi.org/10.5281/zenodo.7785516)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7785516.svg)](https://doi.org/10.5281/zenodo.7785516)
 
 ## Features
 
@@ -119,7 +119,6 @@ If you would like to support this project and have your avatar or company logo a
   <a href="https://github.com/whoulden"><img src="https://github.com/whoulden.png" width="50px" alt="Wayne Houlden" /></a>
   <a href="https://github.com/digiquip"><img src="https://github.com/digiquip.png" width="50px" alt="DigiQuip AS" /></a>
   <a href="https://github.com/aitech95"><img src="https://github.com/aitech95.png" width="50px" alt="JACOB SHI " /></a>
-  <a href="https://github.com/LambdaTest-Inc"><img src="https://github.com/LambdaTest-Inc.png" width="50px" alt="TestMu AI Open Source Office (Formerly LambdaTest)" /></a>
   <a href="https://github.com/Zaga-Solutions"><img src="https://github.com/Zaga-Solutions.png" width="50px" alt="Zaga Solutions" /></a>
   <a href="https://github.com/Discolike"><img src="https://github.com/Discolike.png" width="50px" alt="DiscoLike Inc." /></a>
 </p>

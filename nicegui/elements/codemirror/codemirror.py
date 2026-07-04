@@ -1,254 +1,19 @@
+from __future__ import annotations
+
 from itertools import accumulate, chain, repeat
-from typing import Literal, get_args
+from typing import get_args
 
 from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
-from ...events import GenericEventArguments, Handler, ValueChangeEventArguments
-
-SUPPORTED_LANGUAGES = Literal[
-    'Angular Template',
-    'APL',
-    'ASN.1',
-    'Asterisk',
-    'Brainfuck',
-    'C',
-    'C#',
-    'C++',
-    'Clojure',
-    'ClojureScript',
-    'Closure Stylesheets (GSS)',
-    'CMake',
-    'Cobol',
-    'CoffeeScript',
-    'Common Lisp',
-    'CQL',
-    'Crystal',
-    'CSS',
-    'Cypher',
-    'Cython',
-    'D',
-    'Dart',
-    'diff',
-    'Dockerfile',
-    'DTD',
-    'Dylan',
-    'EBNF',
-    'ECL',
-    'edn',
-    'Eiffel',
-    'Elm',
-    'Erlang',
-    'Esper',
-    'F#',
-    'Factor',
-    'FCL',
-    'Forth',
-    'Fortran',
-    'Gas',
-    'Gherkin',
-    'Go',
-    'Groovy',
-    'Haskell',
-    'Haxe',
-    'HTML',
-    'HTTP',
-    'HXML',
-    'IDL',
-    'Java',
-    'JavaScript',
-    'Jinja2',
-    'JSON',
-    'JSON-LD',
-    'JSX',
-    'Julia',
-    'Kotlin',
-    'LaTeX',
-    'LESS',
-    'Liquid',
-    'LiveScript',
-    'Lua',
-    'MariaDB SQL',
-    'Markdown',
-    'Mathematica',
-    'Mbox',
-    'mIRC',
-    'Modelica',
-    'MS SQL',
-    'MscGen',
-    'MsGenny',
-    'MUMPS',
-    'MySQL',
-    'Nginx',
-    'NSIS',
-    'NTriples',
-    'Objective-C',
-    'Objective-C++',
-    'OCaml',
-    'Octave',
-    'Oz',
-    'Pascal',
-    'Perl',
-    'PGP',
-    'PHP',
-    'Pig',
-    'PLSQL',
-    'PostgreSQL',
-    'PowerShell',
-    'Properties files',
-    'ProtoBuf',
-    'Pug',
-    'Puppet',
-    'Python',
-    'Q',
-    'R',
-    'RPM Changes',
-    'RPM Spec',
-    'Ruby',
-    'Rust',
-    'SAS',
-    'Sass',
-    'Scala',
-    'Scheme',
-    'SCSS',
-    'Shell',
-    'Sieve',
-    'Smalltalk',
-    'SML',
-    'Solr',
-    'SPARQL',
-    'Spreadsheet',
-    'SQL',
-    'SQLite',
-    'Squirrel',
-    'sTeX',
-    'Stylus',
-    'Swift',
-    'SystemVerilog',
-    'Tcl',
-    'Textile',
-    'TiddlyWiki',
-    'Tiki wiki',
-    'TOML',
-    'Troff',
-    'TSX',
-    'TTCN',
-    'TTCN_CFG',
-    'Turtle',
-    'TypeScript',
-    'VB.NET',
-    'VBScript',
-    'Velocity',
-    'Verilog',
-    'VHDL',
-    'Vue',
-    'Web IDL',
-    'WebAssembly',
-    'XML',
-    'XQuery',
-    'Xù',
-    'Yacas',
-    'YAML',
-    'Z80',
-]
+from ...events import CodeMirrorKeyBindingEventArguments, GenericEventArguments, Handler, ValueChangeEventArguments
+from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
+from .keybindings import KeyBindingElement
 
 
-SUPPORTED_THEMES = Literal[
-    'abcdef',
-    'abcdefDarkStyle',
-    'abyss',
-    'abyssDarkStyle',
-    'androidstudio',
-    'androidstudioDarkStyle',
-    'andromeda',
-    'andromedaDarkStyle',
-    'atomone',
-    'atomoneDarkStyle',
-    'aura',
-    'auraDarkStyle',
-    'basicDark',
-    'basicDarkStyle',
-    'basicLight',
-    'basicLightStyle',
-    'bbedit',
-    'bbeditLightStyle',
-    'bespin',
-    'bespinDarkStyle',
-    'consoleDark',
-    'consoleLight',
-    'copilot',
-    'copilotDarkStyle',
-    'darcula',
-    'darculaDarkStyle',
-    'douToneLightStyle',
-    'dracula',
-    'draculaDarkStyle',
-    'duotoneDark',
-    'duotoneDarkStyle',
-    'duotoneLight',
-    'eclipse',
-    'eclipseLightStyle',
-    'githubDark',
-    'githubDarkStyle',
-    'githubLight',
-    'githubLightStyle',
-    'gruvboxDark',
-    'gruvboxDarkStyle',
-    'gruvboxLight',
-    'kimbie',
-    'kimbieDarkStyle',
-    'material',
-    'materialDark',
-    'materialDarkStyle',
-    'materialLight',
-    'materialLightStyle',
-    'monokai',
-    'monokaiDarkStyle',
-    'monokaiDimmed',
-    'monokaiDimmedDarkStyle',
-    'noctisLilac',
-    'noctisLilacLightStyle',
-    'nord',
-    'nordDarkStyle',
-    'okaidia',
-    'okaidiaDarkStyle',
-    'oneDark',
-    'quietlight',
-    'quietlightStyle',
-    'red',
-    'redDarkStyle',
-    'solarizedDark',
-    'solarizedDarkStyle',
-    'solarizedLight',
-    'solarizedLightStyle',
-    'sublime',
-    'sublimeDarkStyle',
-    'tokyoNight',
-    'tokyoNightDay',
-    'tokyoNightDayStyle',
-    'tokyoNightStorm',
-    'tokyoNightStormStyle',
-    'tokyoNightStyle',
-    'tomorrowNightBlue',
-    'tomorrowNightBlueStyle',
-    'vscodeDark',
-    'vscodeDarkStyle',
-    'vscodeLight',
-    'vscodeLightStyle',
-    'whiteDark',
-    'whiteDarkStyle',
-    'whiteLight',
-    'whiteLightStyle',
-    'xcodeDark',
-    'xcodeDarkStyle',
-    'xcodeLight',
-    'xcodeLightStyle',
-]
-
-
-class CodeMirror(ValueElement[str], DisableableElement,
+class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
@@ -261,11 +26,14 @@ class CodeMirror(ValueElement[str], DisableableElement,
         value: str = '',
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
+        keymap: dict[str, Handler[CodeMirrorKeyBindingEventArguments] | CodeMirror.KeyBinding] | None = None,
         language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        line_tooltips: dict[int, str] | None = None,
+        line_tooltip_html: bool = False,
     ) -> None:
         """CodeMirror
 
@@ -279,15 +47,28 @@ class CodeMirror(ValueElement[str], DisableableElement,
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
 
+        *Since version 3.13.0:*
+        Per-line tooltips can be attached via the ``line_tooltips`` dict.
+
+        *Since version 3.14.0:*
+        The ``keymap`` maps keystrokes (CodeMirror key strings) to Python callbacks.
+        Pass a bare callable for the default config (prevents the browser default, no per-OS override).
+        Wrap with ``KeyBinding`` for per-key overrides such as ``prevent_default=False`` or platform-specific shortcuts (``mac=``, ``linux=``, ``win=``).
+        Use ``map_key`` to add keybindings at runtime and ``unmap_key`` to drop them.
+        Keybindings do not fire while the editor is disabled.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
+        :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
+        :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
-        super().__init__(value=value, on_value_change=self._update_codepoints)
+        super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap)
         self._codepoints = b''
         self._update_codepoints()
         if on_change is not None:
@@ -298,6 +79,8 @@ class CodeMirror(ValueElement[str], DisableableElement,
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['line-tooltips'] = line_tooltips or {}
+        self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
@@ -360,6 +143,18 @@ class CodeMirror(ValueElement[str], DisableableElement,
         """
         self._props['line-wrapping'] = value
         return self
+
+    @property
+    def line_tooltips(self) -> dict[int, str]:
+        """Mapping of 1-indexed line numbers to tooltip content.
+
+        *Added in version 3.13.0*
+        """
+        return self._props['line-tooltips']
+
+    @line_tooltips.setter
+    def line_tooltips(self, value: dict[int, str]) -> None:
+        self._props['line-tooltips'] = value
 
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""

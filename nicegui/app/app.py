@@ -1,7 +1,9 @@
+import asyncio
 import inspect
 import os
 import platform
 import signal
+import time
 import urllib
 from collections.abc import Callable, Iterator
 from enum import Enum
@@ -10,7 +12,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 
-from .. import background_tasks, core, helpers
+from .. import background_tasks, binding, core, helpers
 from ..client import Client
 from ..context import context
 from ..elements.mixins.color_elements import QUASAR_COLORS
@@ -18,8 +20,9 @@ from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
 from ..server import Server
+from ..slot import Slot
 from ..staticfiles import CacheControlledStaticFiles
-from ..storage import Storage
+from ..storage import PersistentDict, Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
@@ -79,6 +82,12 @@ class App(FastAPI):
             self.safe_invoke(t)
         self.on_shutdown(self.storage.on_shutdown)
         self.on_shutdown(background_tasks.teardown)
+        background_tasks.create(binding.refresh_loop(), name='refresh bindings')
+        self.timer(10, Client.prune_instances)
+        self.timer(10, Slot.prune_stacks)
+        self.timer(10, prune_tab_storage)
+        if self.storage.secret is not None:
+            self.timer(10, prune_user_storage)
         self._state = State.STARTED
 
     async def stop(self) -> None:
@@ -223,7 +232,7 @@ class App(FastAPI):
         handler = CacheControlledStaticFiles(
             directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
 
-        @self.get(url_path.rstrip('/') + '/{path:path}')  # NOTE: prevent double slashes in route pattern
+        @self.get(url_path.rstrip('/') + '/{path:path}')  # prevent double slashes in route pattern
         async def static_file(request: Request, path: str = '') -> Response:
             return await handler.get_response(path, request.scope)
 
@@ -278,7 +287,7 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
+        @self.get(url_path.rstrip('/') + '/{filename:path}')  # prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
             local_dir = Path(local_directory).resolve()
             filepath = (local_dir / filename).resolve()
@@ -393,3 +402,31 @@ class App(FastAPI):
         for client in Client.instances.values():
             if path is None or client.page.path == path:
                 yield client
+
+
+async def prune_tab_storage(*, force: bool = False) -> None:
+    """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
+    tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
+    for tab_id, tab in list(tab_storages.items()):
+        if force or time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
+            tab.clear()
+            if isinstance(tab, PersistentDict):
+                await tab.close()
+            del tab_storages[tab_id]
+
+
+async def prune_user_storage(*, force: bool = False) -> None:
+    """Remove user storage objects without a client session."""
+    client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
+    storages_to_close: list[PersistentDict] = []
+    now = time.time()
+    user_storages = core.app.storage._users  # pylint: disable=protected-access
+    for session_id in list(user_storages):
+        if session_id not in client_session_ids:
+            age = now - user_storages[session_id].last_modified
+            if force or age > 10.0:  # do not remove storages created by middleware and still wait for client
+                storages_to_close.append(user_storages.pop(session_id))
+    results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
+    for result in results:
+        if isinstance(result, Exception):
+            log.exception(result)

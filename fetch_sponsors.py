@@ -6,7 +6,6 @@ from pathlib import Path
 
 import httpx
 
-# NOTE:
 # requires a GitHub token with the necessary permissions read:org and read:user
 # call with `GITHUB_TOKEN=ghp_XXX ./fetch_sponsors.py`
 
@@ -99,7 +98,7 @@ special_sponsors = json.loads(json_path.read_text(encoding='utf-8'))['special']
 top_sponsors = [
     s['login']
     for s in sponsors
-    if s['tier_amount'] >= 100 and not s['tier_is_one_time'] and s['login'] not in {*special_sponsors, 'LambdaTest-Inc'}
+    if s['tier_amount'] >= 100 and not s['tier_is_one_time'] and s['login'] not in special_sponsors
 ]
 json_path.write_text(json.dumps({
     'special': special_sponsors,

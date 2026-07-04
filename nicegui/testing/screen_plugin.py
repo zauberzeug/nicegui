@@ -12,11 +12,7 @@ from selenium.webdriver.chrome.service import Service
 from nicegui import helpers
 
 from .filelock import FileLock
-from .general_fixtures import (  # noqa: F401  # pylint: disable=unused-import
-    nicegui_reset_globals,
-    pytest_addoption,
-    pytest_unconfigure,
-)
+from .general_fixtures import nicegui_reset_globals, pytest_addoption  # noqa: F401  # pylint: disable=unused-import
 from .general_fixtures import pytest_configure as _general_pytest_configure
 from .screen import Screen
 
@@ -30,7 +26,7 @@ def pytest_configure(config: pytest.Config) -> None:
     _general_pytest_configure(config)
     global DOWNLOAD_DIR  # pylint: disable=global-statement # noqa: PLW0603
     Screen.PORT = helpers.find_free_port()
-    Screen.SCREENSHOT_DIR = Path('screenshots') / str(os.getpid())
+    Screen.SCREENSHOT_DIR = (Path('screenshots') / str(os.getpid())).resolve()
     DOWNLOAD_DIR = Path(tempfile.mkdtemp(prefix='nicegui-test-download-'))
     atexit.register(shutil.rmtree, DOWNLOAD_DIR, ignore_errors=True)  # safety net for aborted session
 
@@ -72,7 +68,8 @@ def nicegui_chrome_options() -> webdriver.ChromeOptions:
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
     """Prune directories of finished concurrent runs and remove screenshots from previous runs."""
-    FileLock(Screen.SCREENSHOT_DIR / '.lock').acquire()
+    # The FileLock is intentionally not stored; the kernel fd keeps the flock until process exit.
+    assert FileLock(Screen.SCREENSHOT_DIR / '.lock').acquire(), 'should be able to lock own screenshot dir'
     if Screen.SCREENSHOT_DIR.parent.exists():
         for path in Screen.SCREENSHOT_DIR.parent.iterdir():
             if path.is_dir() and path.name.isdigit() and (probe := FileLock(path / '.lock')).acquire():
