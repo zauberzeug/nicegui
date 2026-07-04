@@ -34,8 +34,7 @@ def prepare_simulation() -> None:
 def nicegui_reset_globals():
     """Reset the global state of the NiceGUI package."""
     for route in list(app.routes):
-        # NOTE: /sitemap.xml is registered at module import time and not re-created per test; preserve it
-        if isinstance(route, Route) and route.path != '/sitemap.xml' and (
+        if isinstance(route, Route) and (
             not route.path.startswith('/_nicegui/')
             or route.path.startswith('/_nicegui/auto/static')
             or route.path.startswith('/_nicegui/client/')

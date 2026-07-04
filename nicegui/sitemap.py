@@ -46,6 +46,12 @@ class Sitemap:
     Set ``app.sitemap.base_url = 'https://example.com'`` to pin the canonical
     URL. If unset, the URL is derived from the incoming request (correct in dev
     and behind any reverse proxy configured to populate uvicorn's proxy headers).
+
+    The ``/sitemap.xml`` route is created at startup, and only when at least one entry
+    exists — an app that opts nothing in keeps its original ``404`` rather than serving
+    an empty sitemap. Define your own ``@ui.page('/sitemap.xml')`` (or ``@app.get(...)``)
+    to override NiceGUI's; yours takes precedence as long as it is registered before
+    startup (a route added dynamically *after* startup would be shadowed).
     """
 
     def __init__(self) -> None:

@@ -2,6 +2,8 @@ import logging
 import xml.etree.ElementTree as ET
 
 import pytest
+from fastapi import FastAPI
+from fastapi.responses import PlainTextResponse
 from fastapi.testclient import TestClient
 
 from nicegui import app, core, ui
@@ -196,6 +198,11 @@ def test_unknown_sitemap_field_raises_on_direct_add():
 
 
 # ------------------------------------------------- /sitemap.xml endpoint (FastAPI TestClient)
+#
+# The route is registered at startup (option A), so these tests enter the app's lifespan via
+# ``ui.run_with(FastAPI())`` + ``with TestClient(app) as client:`` — the same browser-free pattern
+# as tests/test_run_with.py. Set up opt-ins / manual adds BEFORE entering the context: the
+# registration decision runs once, at startup.
 
 
 def _locations(text: str) -> set[str]:
@@ -208,7 +215,10 @@ def test_endpoint_serves_xml_with_absolute_urls(nicegui_reset_globals):
     def _home():
         ui.label('home')
 
-    response = TestClient(core.app).get('/sitemap.xml')
+    fastapi_app = FastAPI()
+    ui.run_with(fastapi_app)
+    with TestClient(fastapi_app) as client:
+        response = client.get('/sitemap.xml')
     assert response.status_code == 200
     assert response.headers['content-type'].startswith('application/xml')
     locations = _locations(response.text)
@@ -223,7 +233,10 @@ def test_endpoint_honors_base_url_override(nicegui_reset_globals):
         ui.label('home')
 
     app.sitemap.base_url = 'https://nicegui.io'
-    response = TestClient(core.app).get('/sitemap.xml')
+    fastapi_app = FastAPI()
+    ui.run_with(fastapi_app)
+    with TestClient(fastapi_app) as client:
+        response = client.get('/sitemap.xml')
     assert all(loc.startswith('https://nicegui.io/') for loc in _locations(response.text))
 
 
@@ -232,7 +245,10 @@ def test_endpoint_honors_forwarded_prefix(nicegui_reset_globals):
     def _home():
         ui.label('home')
 
-    response = TestClient(core.app).get('/sitemap.xml', headers={'X-Forwarded-Prefix': '/app'})
+    fastapi_app = FastAPI()
+    ui.run_with(fastapi_app)
+    with TestClient(fastapi_app) as client:
+        response = client.get('/sitemap.xml', headers={'X-Forwarded-Prefix': '/app'})
     assert any('/app/' in loc for loc in _locations(response.text))
 
 
@@ -248,9 +264,63 @@ def test_endpoint_reflects_documentation_pattern(nicegui_reset_globals):
     for name in ['button', 'label']:
         app.sitemap.add(f'/documentation/{name}', changefreq='weekly')
 
-    locations = _locations(TestClient(core.app).get('/sitemap.xml').text)
+    fastapi_app = FastAPI()
+    ui.run_with(fastapi_app)
+    with TestClient(fastapi_app) as client:
+        locations = _locations(client.get('/sitemap.xml').text)
     assert any(loc.endswith('/examples') for loc in locations)
     assert any(loc.endswith('/documentation') for loc in locations)
     assert any(loc.endswith('/documentation/button') for loc in locations)
     assert any(loc.endswith('/documentation/label') for loc in locations)
     assert not any('{' in loc for loc in locations)
+
+
+def test_endpoint_404_when_nothing_opted_in(nicegui_reset_globals):
+    """An app that opted no page in keeps its original 404, not a misleading empty <urlset/> (finding 2a)."""
+    @ui.page('/')  # no sitemap opt-in
+    def _home():
+        ui.label('home')
+
+    fastapi_app = FastAPI()
+    ui.run_with(fastapi_app)
+    with TestClient(fastapi_app) as client:
+        assert client.get('/sitemap.xml').status_code == 404
+        assert not any(getattr(route, 'path', None) == '/sitemap.xml' for route in core.app.routes), \
+            'no /sitemap.xml route should be registered when nothing is opted in'
+
+
+def test_user_defined_sitemap_route_wins(nicegui_reset_globals):
+    """A user-defined /sitemap.xml route takes precedence; NiceGUI does not register its own (skip-if-exists)."""
+    @ui.page('/', sitemap=True)  # opted in, yet the user's own route must still win
+    def _home():
+        ui.label('home')
+
+    @app.get('/sitemap.xml')
+    def _user_sitemap():
+        return PlainTextResponse('user-owned')
+
+    fastapi_app = FastAPI()
+    ui.run_with(fastapi_app)
+    with TestClient(fastapi_app) as client:
+        response = client.get('/sitemap.xml')
+    assert response.status_code == 200
+    assert response.text == 'user-owned'
+    paths = [route for route in core.app.routes if getattr(route, 'path', None) == '/sitemap.xml']
+    assert len(paths) == 1, "exactly one /sitemap.xml route should exist — the user's"
+
+
+def test_registration_is_idempotent_across_startups(nicegui_reset_globals):
+    """Each startup re-decides: a route left by a prior startup must not survive an emptied registry."""
+    @ui.page('/', sitemap=True)
+    def _home():
+        ui.label('home')
+
+    fastapi_app = FastAPI()
+    ui.run_with(fastapi_app)
+    with TestClient(fastapi_app) as client:
+        assert client.get('/sitemap.xml').status_code == 200  # first startup registers ours
+
+    app.sitemap.reset()  # nothing opted in anymore
+    with TestClient(fastapi_app) as client:
+        assert client.get('/sitemap.xml').status_code == 404, 'stale route must not survive an emptied registry'
+    assert not any(getattr(route, 'path', None) == '/sitemap.xml' for route in core.app.routes)
