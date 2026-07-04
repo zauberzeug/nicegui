@@ -232,10 +232,8 @@ def test_remove_prunes_indexed_target_binding(nicegui_reset_globals: Any) -> Non
 
     assert binding.bindings[source_key] == [(source, target2, ('text',), None)]
     assert id(target1) not in binding._binding_keys_by_object  # pylint: disable=protected-access
-    binding_keys = binding._collect_binding_keys_for_objects(
-        [id(source), id(target2)])  # pylint: disable=protected-access
-    assert binding_keys is not None
-    assert source_key in binding_keys
+    assert source_key in binding._binding_keys_by_object[id(source)]  # pylint: disable=protected-access
+    assert source_key in binding._binding_keys_by_object[id(target2)]  # pylint: disable=protected-access
 
 
 def test_remove_clears_index_for_source_binding(nicegui_reset_globals: Any) -> None:  # pylint: disable=unused-argument
@@ -258,7 +256,9 @@ def test_remove_clears_index_for_source_binding(nicegui_reset_globals: Any) -> N
     assert id(target) not in binding._binding_keys_by_object  # pylint: disable=protected-access
 
 
-def test_bindable_properties_keeps_dict_compatible_surface(nicegui_reset_globals: Any) -> None:  # pylint: disable=unused-argument
+def test_bindable_properties_keeps_useful_mapping_operations(  # pylint: disable=unused-argument
+    nicegui_reset_globals: Any,
+) -> None:
     class Model:
         value = binding.BindableProperty()
         text = binding.BindableProperty()
@@ -272,19 +272,41 @@ def test_bindable_properties_keeps_dict_compatible_surface(nicegui_reset_globals
     text_key = (id(model), ('text',))
 
     assert len(binding.bindable_properties) == 2
-    assert binding.bindable_properties[value_key] is model
-    assert binding.bindable_properties.get(value_key) is model
-    assert binding.bindable_properties.get((id(model), ('missing',)), 'fallback') == 'fallback'
-    assert binding.bindable_properties.get('missing', 'fallback') == 'fallback'
-    assert set(binding.bindable_properties.keys()) == {value_key, text_key}
     assert set(binding.bindable_properties.items()) == {(value_key, model), (text_key, model)}
-    assert list(binding.bindable_properties.values()) == [model, model]
+    del binding.bindable_properties[value_key]
+    assert len(binding.bindable_properties) == 1
+    assert set(binding.bindable_properties.items()) == {(text_key, model)}
 
-    assert binding.bindable_properties.pop('missing', 'fallback') == 'fallback'
-    assert binding.bindable_properties.pop(value_key) is model
-    assert value_key not in binding.bindable_properties
-    del binding.bindable_properties[text_key]
-    assert len(binding.bindable_properties) == 0
+
+def test_remove_rebind_preserves_bindable_property_semantics(  # pylint: disable=unused-argument
+    nicegui_reset_globals: Any,
+) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self, value: list[int]) -> None:
+            self.value = value
+
+    class Target:
+        value: list[int] | None = None
+
+    source = Model([1])
+    target = Target()
+    source_key = (id(source), ('value',))
+
+    binding.bind_to(source, 'value', target, 'value', forward=list)
+    assert len(binding.active_links) == 0
+    assert target.value == [1]
+
+    binding.remove([source])
+    assert source_key in binding.bindable_properties
+
+    binding.bind_to(source, 'value', target, 'value', forward=list)
+    source.value.append(2)
+    binding._refresh_step()  # pylint: disable=protected-access
+
+    assert len(binding.active_links) == 0
+    assert target.value == [1]
 
 
 async def test_nested_propagation(user: User):
