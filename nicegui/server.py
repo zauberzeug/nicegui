@@ -4,6 +4,7 @@ import multiprocessing
 import multiprocessing.synchronize
 import socket
 import threading
+import time
 from typing import Any
 
 import uvicorn
@@ -37,8 +38,11 @@ class Server(uvicorn.Server):
             native.response_queue = self.config.response_queue
             if (event := self.config.shutdown_event) is not None:
                 def monitor_shutdown_event() -> None:
-                    event.wait()
-                    self.should_exit = True
+                    # Poll instead of `event.wait()`: a blocking wait leaves a stale waiter if the reloader
+                    # kills the process mid-wait, making a later `event.set()` hang forever (#5845).
+                    while not event.is_set():
+                        time.sleep(0.1)
+                    core.stop_and_exit()
                 threading.Thread(target=monitor_shutdown_event, daemon=True).start()
 
         storage.set_storage_secret(self.config.storage_secret, self.config.session_middleware_kwargs)

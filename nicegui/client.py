@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import inspect
-import re
 import time
 import uuid
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
+from urllib.parse import quote
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -33,6 +33,22 @@ if TYPE_CHECKING:
     from .page import page
 
 templates = Jinja2Templates(Path(__file__).parent / 'templates')
+
+AI_AGENT_TOKENS = (
+    'claudebot',
+    'claude-user',
+    'claude-searchbot',
+    'claude-code',
+    'gptbot',
+    'oai-searchbot',
+    'chatgpt-user',
+    'perplexitybot',
+    'perplexity-user',
+    'google-cloudvertexbot',
+    'google-agent',
+    'gemini-deep-research',
+    'modelcontextprotocol',
+)
 
 HTML_ESCAPE_TABLE = str.maketrans({
     '&': '&amp;',
@@ -172,7 +188,15 @@ class Client:
                 background=BackgroundTask(self.delete),
             )
         self.outbox.updates.clear()
-        prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
+        # Defense in depth: `prefix` is reflected into the page (importmap, <script src>, JS `prefix:`, CSS @import)
+        # via `| safe`, and the X-Forwarded-Prefix part is client-controllable on a directly-exposed app or a
+        # pass-through proxy. Percent-encode it with the RFC 3986 path-legal characters as the safe set (unreserved +
+        # sub-delims + ":" "@" "/", plus "%" so an already-encoded prefix isn't double-encoded): quote() then only
+        # touches characters illegal in a URL path (`"` `<` `>` `\` space, non-ASCII), so nothing can break out of a
+        # sink, yet it's a no-op for any well-formed ASCII prefix. Non-ASCII is always encoded (never raw) but can't
+        # round-trip cleanly, since headers are latin-1.
+        prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$&'()*+,;=%") \
+            + request.scope.get('root_path', '')
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
@@ -184,6 +208,12 @@ class Client:
         }
         vue_html, vue_styles, vue_scripts, imports, js_imports, js_imports_urls = \
             generate_resources(prefix, self.elements.values())
+        html_lang = self.page.resolve_language()
+        language = html_lang or 'en-US'
+        quasar_config = core.app.config.quasar_config
+        if html_lang is None:
+            # keep Quasar's lang plugin from adding a lang attribute to the html tag when no language is configured
+            quasar_config = {**quasar_config, 'lang': {'noHtmlAttrs': True, **quasar_config.get('lang', {})}}
         return templates.TemplateResponse(
             request=request,
             name='index.html',
@@ -197,14 +227,15 @@ class Client:
                 'imports': json.dumps(imports),
                 'js_imports': '\n'.join(js_imports),
                 'js_imports_urls': js_imports_urls,
-                'vue_config': json.dumps(core.app.config.quasar_config),
+                'vue_config': json.dumps(quasar_config),
                 'vue_config_script': core.app.config.vue_config_script,
                 'title': self.resolve_title(),
                 'viewport': self.page.resolve_viewport(),
                 'favicon_url': get_favicon_url(self.page, prefix),
                 'dark': str(self.page.resolve_dark()),
-                'language': self.page.resolve_language(),
-                'translations': translations.get(self.page.resolve_language(), translations['en-US']),
+                'language': language,
+                'html_lang': html_lang,
+                'translations': translations.get(language, translations['en-US']),
                 'prefix': prefix,
                 'tailwind': core.app.config.tailwind,
                 'unocss': core.app.config.unocss,
@@ -473,18 +504,9 @@ def _is_prefetch(request: Request) -> bool:
 
 
 def _did_user_request_markdown(request: Request) -> bool:
-    """Whether the request prefers a markdown response over HTML (page opt-in checked separately)."""
+    """Check whether the request has text/markdown in its Accept header or is a known agentic user agent."""
     accept = request.headers.get('accept', '').strip().lower()
-    if 'text/html' in accept and 'text/markdown' not in accept:
-        return False
-    if 'text/markdown' in accept and 'text/html' not in accept:
+    if 'text/markdown' in accept:
         return True
-    AI_AGENT_PATTERNS = [
-        r'claude-?(bot|user|searchbot)',
-        r'gptbot|oai-searchbot',
-        r'chatgpt-user',
-        r'perplexity(bot|-user)',
-        r'google-(cloudvertexbot|agent)',
-        r'gemini-deep-research',
-    ]
-    return bool(re.search('|'.join(AI_AGENT_PATTERNS), request.headers.get('user-agent', ''), re.IGNORECASE))
+    user_agent = request.headers.get('user-agent', '').lower()
+    return any(token in user_agent for token in AI_AGENT_TOKENS)

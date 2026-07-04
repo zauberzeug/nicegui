@@ -18,7 +18,7 @@ def prepare_simulation() -> None:
         viewport='',
         favicon=None,
         dark=False,
-        language='en-US',
+        language=None,
         binding_refresh_interval=0.1,
         reconnect_timeout=3.0,
         message_history_length=1000,

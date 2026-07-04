@@ -27,25 +27,6 @@ def create_queues() -> None:
     event_receiver, event_sender = SPAWN_CONTEXT.Pipe(duplex=False)
 
 
-def remove_queues() -> None:
-    """Remove the message queues and event pipe. (For internal use only.)"""
-    global method_queue, response_queue, event_receiver, event_sender  # pylint: disable=global-statement # noqa: PLW0603
-    if method_queue is not None:
-        method_queue.close()
-        method_queue.join_thread()
-        method_queue = None
-    if response_queue is not None:
-        response_queue.close()
-        response_queue.join_thread()
-        response_queue = None
-    if event_receiver is not None:
-        event_receiver.close()
-        event_receiver = None
-    if event_sender is not None:
-        event_sender.close()
-        event_sender = None
-
-
 try:
     with warnings.catch_warnings():
         # webview depends on bottle which uses the deprecated CGI function (https://github.com/bottlepy/bottle/issues/1403)

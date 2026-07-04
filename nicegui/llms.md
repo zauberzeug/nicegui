@@ -5,7 +5,7 @@ The single most important rule: **everything is Python**. Reach for `ui.*` befor
 
 **Where this file lives:** it ships with the `nicegui` PyPI package as `nicegui/llms.md`, so the copy bundled with the user's installed version matches the API they actually have. For the current `main`, fetch <https://nicegui.io/llms.txt>.
 
-**Fetching docs:** every page on <https://nicegui.io> returns Markdown when requested with `Accept: text/markdown`; as of NiceGUI 3.13 recognized AI-agent user-agents also receive Markdown when their `Accept` header is ambiguous (e.g. a wildcard `*/*`), so agents can read the full documentation without parsing HTML.
+**Fetching docs:** Every page on <https://nicegui.io> returns Markdown when requested with Accept: text/markdown. Commonly used AI agents (Claude, ChatGPT, GPTBot, Perplexity, Gemini, etc.) also receive Markdown via User-Agent detection, so most tools can read the documentation without parsing HTML. If you need to pull documentation related to a specific function or implementation family, use your `web_fetch` tool on the page that semantically matches, i.e `https://nicegui.io/documentation/section_text_elements`, `https://nicegui.io/documentation/label`, `https://nicegui.io/documentation/section_testing`, `https://nicegui.io/documentation/user`, and it will return formatted documentation.
 
 ---
 
@@ -334,6 +334,7 @@ ui.label('Hello World')
 ui.markdown('**Bold** and *italic*')
 ui.markdown('```mermaid\ngraph TD; A-->B\n```',
             extras=['fenced-code-blocks', 'tables', 'mermaid'])  # `extras` REPLACES the default ['fenced-code-blocks', 'tables']
+ui.markdown.default_extras = ['fenced-code-blocks', 'tables', 'mermaid']  # change the default for all ui.markdown (since 3.14)
 ui.code('print("hello")', language='python')
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
