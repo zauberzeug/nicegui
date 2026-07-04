@@ -25,21 +25,20 @@ def main_demo() -> None:
 
 @doc.demo('Adding and removing series', '''
     The ``options`` dictionary is the single source of truth for the chart:
-    when it changes, series and axes are added, updated and removed so that the chart always matches the options.
+    when it changes, series and axes are added, updated and removed so that these always match the options.
     State added on the client, e.g. via JavaScript, does not survive updates.
 
     When adding and removing series dynamically, it is recommended to give each series an explicit ``id``.
     Otherwise series are matched by position and user state like legend-click visibility
     can end up attached to the wrong series.
 
-    *Note: Server updates while a user is drilled into a chart (``extras=['drilldown']``) reset the drill view.*
+    **Note:** Server updates while a user is drilled into a chart (``extras=['drilldown']``) reset the drill view.
 ''')
 def dynamic_series() -> None:
     from random import random
 
     chart = ui.highchart({
         'title': False,
-        'chart': {'type': 'line'},
         'series': [],
     }).classes('w-full h-64')
 
