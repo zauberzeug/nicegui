@@ -1,4 +1,3 @@
-from nicegui import ElementFilter, ui
 from nicegui.testing import User
 
 # pylint: disable=missing-function-docstring
@@ -34,13 +33,13 @@ async def test_navigation(user: User) -> None:
 
 async def test_scoped_search_for_elements(user: User) -> None:
     await user.open('/scoped_user')
+    # Both cards are on the page, so an unscoped search sees the duplicated markers and content.
     await user.should_see(marker='duplicate-button', content='Shared Action Left')
     await user.should_see(marker='duplicate-button', content='Shared Action Right')
 
-    with user:
-        left_card = next(iter(ElementFilter(marker='scope-card left', kind=ui.card, local_scope=True)))
-
-    with left_card:
+    # `user.scope(...)` enters the single matching element, so every assertion inside the block
+    # is limited to it -- ideal for pages that intentionally reuse markers or content.
+    with user.scope(marker='scope-card left'):
         await user.should_see(marker='duplicate-button', content='Shared Action Left')
         await user.should_see(marker='scope-title left')
         await user.should_not_see(marker='duplicate-button', content='Shared Action Right')

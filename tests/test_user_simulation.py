@@ -1,3 +1,4 @@
+import asyncio
 import csv
 import re
 import sys
@@ -921,20 +922,95 @@ async def test_scoped_search_for_elements(user: User) -> None:
             ui.input('duplicated').mark('duplicated-marker')
 
     await user.open('/')
+    # Without a scope, both cards are searched, so the duplicated markers and content are all visible.
     await user.should_see(marker='duplicate-button', content='Shared Action Left')
     await user.should_see(marker='duplicate-button', content='Shared Action Right')
-    with user:
-        left_card = next(iter(ElementFilter(marker='scope-card left', kind=ui.card, local_scope=True)))
+    assert len(user.find(marker='duplicated-marker').elements) == 2
 
-    with left_card:
+    # `user.scope(...)` limits every lookup inside the block to the entered element.
+    with user.scope(marker='scope-card left'):
         await user.should_see(marker='duplicate-button', content='Shared Action Left')
-        await user.should_see(marker='duplicate-button', content='Shared Action Right')
         await user.should_see(marker='scope-title left')
-        await user.should_see(marker='scope-title right')
-        await user.should_not_see(marker='duplicate-button', content='Shared Action Right', scoped=True)
-        await user.should_not_see(marker='scope-title right', scoped=True)
-        assert len(user.find(marker='duplicated-marker').elements) == 2
-        assert len(user.find(marker='duplicated-marker', scoped=True).elements) == 1
+        await user.should_not_see(marker='duplicate-button', content='Shared Action Right')
+        await user.should_not_see(marker='scope-title right')
+        assert len(user.find(marker='duplicated-marker').elements) == 1
+
+    # Outside the block the search is global again.
+    assert len(user.find(marker='duplicated-marker').elements) == 2
+
+
+async def test_scope_requires_exactly_one_match(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.button('A').mark('dup')
+        ui.button('B').mark('dup')
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        with user.scope(marker='dup'):
+            pass
+
+
+async def test_scope_restored_after_exception(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('card'):
+            ui.button('inside').mark('dup')
+        ui.button('outside').mark('dup')
+
+    await user.open('/')
+    with pytest.raises(RuntimeError):
+        with user.scope(marker='card'):
+            raise RuntimeError('boom')
+    # The scope must be restored even when the block raises: the search is global again.
+    assert len(user.find(marker='dup').elements) == 2
+
+
+async def test_nested_scope(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('outer'):
+            ui.button('outer button').mark('btn')
+            with ui.card().mark('inner'):
+                ui.button('inner button').mark('btn')
+
+    await user.open('/')
+    with user.scope(marker='outer'):
+        assert len(user.find(marker='btn').elements) == 2
+        with user.scope(marker='inner'):
+            await user.should_see(content='inner button')
+            await user.should_not_see(content='outer button')
+            assert len(user.find(marker='btn').elements) == 1
+        # Back in the outer scope, both buttons are visible again.
+        assert len(user.find(marker='btn').elements) == 2
+
+
+async def test_scope_is_task_local(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('left'):
+            ui.button('L').mark('dup')
+        with ui.card().mark('right'):
+            ui.button('R').mark('dup')
+
+    await user.open('/')
+
+    parent_in_scope = asyncio.Event()
+
+    async def other() -> int:
+        await parent_in_scope.wait()  # run while the sibling task is inside its scope
+        (right,) = user.find(marker='right').elements
+        with right:
+            # This task never entered `user.scope()`, so even though the sibling task is
+            # currently scoped to the left card, its lookups must still cover the whole page.
+            return len(user.find(marker='dup').elements)
+
+    task = asyncio.create_task(other())
+    with user.scope(marker='left'):
+        assert len(user.find(marker='dup').elements) == 1
+        parent_in_scope.set()
+        other_count = await task  # awaited inside the scope, so the scope is still active
+    assert other_count == 2
 
 
 async def test_switching_between_sub_pages(user: User) -> None:
