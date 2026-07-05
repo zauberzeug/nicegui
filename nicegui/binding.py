@@ -269,6 +269,8 @@ class BindableProperty:
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
     def __get__(self, owner: Any, _=None) -> Any:
+        if owner is not None:
+            _track_read(owner, (self.name,))  # PROTOTYPE: dependency capture for computed()/effect()
         return getattr(owner, '___' + self.name)
 
     def __set__(self, owner: Any, value: Any) -> None:
@@ -281,8 +283,115 @@ class BindableProperty:
         setattr(owner, '___' + self.name, value)
         bindable_properties[(id(owner), (self.name,))] = owner
         _propagate(owner, (self.name,))
+        _notify_subscribers(owner, (self.name,))  # PROTOTYPE: wake computed()/effect() that read this
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
+
+
+# =============================================================================
+# PROTOTYPE: reactive layer (computed / effect) on top of BindableProperty
+# -----------------------------------------------------------------------------
+# This is a proof-of-concept for zauberzeug/nicegui#4758, NOT a finished API.
+# It shows that `Computed` and `Effect` can be built directly on the existing
+# BindableProperty read/write hooks, with automatic dependency tracking, and no
+# 0.1 s refresh loop. Known open questions are documented in the discussion.
+# =============================================================================
+
+Dependency = tuple[int, tuple[str, ...]]
+
+_active_computation: ContextVar[_Computation | None] = ContextVar('active_computation', default=None)
+_subscribers: defaultdict[Dependency, weakref.WeakSet[_Computation]] = defaultdict(weakref.WeakSet)
+
+
+def _track_read(owner: Any, name: tuple[str, ...]) -> None:
+    """Record that the currently-running computation read this bindable property."""
+    computation = _active_computation.get()
+    if computation is not None:
+        computation._collecting.add((id(owner), name))  # pylint: disable=protected-access
+
+
+def _notify_subscribers(owner: Any, name: tuple[str, ...]) -> None:
+    """Re-run every computation that depends on the property that just changed."""
+    for computation in list(_subscribers.get((id(owner), name), ())):
+        computation._run()  # pylint: disable=protected-access
+
+
+class _Computation:
+    """Runs a function while recording which bindable properties it reads, then re-runs on change.
+
+    Dependencies are re-captured on every run, so branching reactive code subscribes only to the
+    properties it actually touched this time (dynamic dependency tracking).
+    """
+
+    def __init__(self, fn: Callable[[], Any]) -> None:
+        self._fn = fn
+        self._deps: set[Dependency] = set()
+        self._collecting: set[Dependency] = set()
+        self._run()
+
+    def _run(self) -> Any:
+        self._collecting = set()
+        token = _active_computation.set(self)
+        try:
+            result = self._fn()
+        finally:
+            _active_computation.reset(token)
+        for stale in self._deps - self._collecting:
+            _subscribers[stale].discard(self)
+        for fresh in self._collecting - self._deps:
+            _subscribers[fresh].add(self)
+        self._deps = self._collecting
+        return result
+
+    def dispose(self) -> None:
+        """Unsubscribe from all dependencies so this computation stops re-running."""
+        for dep in self._deps:
+            _subscribers[dep].discard(self)
+        self._deps = set()
+
+
+class Computed:
+    """A derived value that recomputes automatically when any bindable property it reads changes.
+
+    The result is exposed as a bindable ``value``, so it plugs straight into ``bind_*`` and elements::
+
+        total = binding.computed(lambda: state.price * state.qty)
+        ui.label().bind_text_from(total, 'value')
+    """
+    value = BindableProperty()
+
+    def __init__(self, fn: Callable[[], Any]) -> None:
+        self._fn = fn
+        self._computation = _Computation(lambda: setattr(self, 'value', self._fn()))
+
+    def dispose(self) -> None:
+        """Stop recomputing (dispose the underlying computation)."""
+        self._computation.dispose()
+
+
+class Effect:
+    """Runs a side-effecting function whenever any bindable property it reads changes.
+
+    Keep a reference to the returned ``Effect`` for as long as you need it; call ``dispose()``
+    (e.g. on client disconnect) to stop it and release its subscriptions.
+    """
+
+    def __init__(self, fn: Callable[[], Any]) -> None:
+        self._computation = _Computation(fn)
+
+    def dispose(self) -> None:
+        """Stop running and release all dependency subscriptions."""
+        self._computation.dispose()
+
+
+def computed(fn: Callable[[], T]) -> Computed:
+    """Create a `Computed` derived value from a function of other bindable properties (*PROTOTYPE*)."""
+    return Computed(fn)
+
+
+def effect(fn: Callable[[], Any]) -> Effect:
+    """Create an `Effect` that re-runs whenever the bindable properties it reads change (*PROTOTYPE*)."""
+    return Effect(fn)
 
 
 def remove(objects: Iterable[Any]) -> None:
@@ -317,6 +426,7 @@ def reset() -> None:
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
+    _subscribers.clear()  # PROTOTYPE: also drop reactive computed()/effect() subscriptions
 
 
 @dataclass_transform()

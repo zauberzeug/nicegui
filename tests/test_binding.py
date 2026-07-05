@@ -333,3 +333,74 @@ async def test_nested_binding(data_type: str, initialize: bool, user: User):
             assert data['config'].volume == 50
         else:
             assert data == {'config': {'volume': 50}}
+
+
+# --- PROTOTYPE: reactive computed()/effect() on top of BindableProperty (see discussion #4758) ---
+
+@binding.bindable_dataclass
+class _Order:
+    price: float = 10.0
+    quantity: int = 2
+    tax_rate: float = 0.0
+
+
+def test_computed_derives_and_updates():
+    binding.reset()
+    order = _Order()
+    subtotal = binding.computed(lambda: order.price * order.quantity)
+    assert subtotal.value == 20
+    order.price = 15
+    assert subtotal.value == 30
+    order.quantity = 4
+    assert subtotal.value == 60
+    assert binding.active_links == []  # no 0.1s refresh loop involved
+
+
+def test_computed_chains_on_other_computed():
+    binding.reset()
+    order = _Order(tax_rate=0.1)
+    subtotal = binding.computed(lambda: order.price * order.quantity)
+    total = binding.computed(lambda: subtotal.value * (1 + order.tax_rate))
+    assert total.value == 22
+    order.price = 20
+    assert subtotal.value == 40
+    assert total.value == 44
+
+
+def test_effect_runs_on_dependency_change_and_disposes():
+    binding.reset()
+    order = _Order()
+    seen: list[float] = []
+    handle = binding.effect(lambda: seen.append(order.price))
+    assert seen == [10.0]
+    order.price = 12
+    assert seen == [10.0, 12.0]
+    handle.dispose()
+    order.price = 99
+    assert seen == [10.0, 12.0]  # no longer reacting
+
+
+@binding.bindable_dataclass
+class _Toggle:
+    on: bool = True
+    a: int = 1
+    b: int = 2
+
+
+def test_effect_dependencies_are_dynamic():
+    binding.reset()
+    t = _Toggle()
+    seen: list[int] = []
+    handle = binding.effect(lambda: seen.append(t.a if t.on else t.b))  # retain: effects must be kept alive
+    assert seen == [1]  # first run reads t.on and t.a (not t.b)
+    t.b = 99  # t.b is not a dependency yet -> no re-run
+    assert seen == [1]
+    t.on = False  # re-run; now reads t.on and t.b -> switches dependency set
+    assert seen == [1, 99]
+    t.a = 5  # t.a is no longer a dependency -> no re-run
+    assert seen == [1, 99]
+    t.b = 7  # t.b is a dependency now -> re-run
+    assert seen == [1, 99, 7]
+    handle.dispose()
+    t.b = 123  # disposed -> no re-run
+    assert seen == [1, 99, 7]
