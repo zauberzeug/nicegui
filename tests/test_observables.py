@@ -1,6 +1,7 @@
 import asyncio
 import copy
 import gc
+import pickle
 import weakref
 
 from nicegui import ui
@@ -274,3 +275,16 @@ def test_discarded_collections_are_garbage_collected():
     gc.collect()
     assert [ref() for ref in refs] == [None, None, None, None], 'discarded collections should be garbage-collected'
     assert child == {}
+
+
+def test_nested_observables_are_picklable():
+    reset_counter()
+    data = ObservableList([{'id': 1, 'tags': ['a', 'b']}, {'id': 2}])
+    restored = pickle.loads(pickle.dumps(data))
+    assert restored == [{'id': 1, 'tags': ['a', 'b']}, {'id': 2}]
+    assert isinstance(restored, ObservableList)
+    assert isinstance(restored[0], ObservableDict)
+    assert isinstance(restored[0]['tags'], ObservableList)
+    root = ObservableList(restored, on_change=increment_counter)
+    root[0]['x'] = 1
+    assert count == 1, 'a restored tree should wire up freshly and notify exactly once'

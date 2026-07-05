@@ -118,6 +118,17 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             return ObservableSet({deepcopy(item) for item in self}, _parent=self._parent)
         raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
 
+    def __reduce__(self) -> tuple[Any, tuple]:
+        # NOTE: reconstruct from plain contents so that the observer wiring (weak references, which are not
+        # picklable) is rebuilt by __init__ instead of being pickled; a freshly loaded tree has no observers yet.
+        if isinstance(self, dict):
+            return ObservableDict, (dict(self),)
+        if isinstance(self, list):
+            return ObservableList, (list(self),)
+        if isinstance(self, set):
+            return ObservableSet, (set(self),)
+        raise NotImplementedError(f'ObservableCollection.__reduce__ not implemented for {type(self)}')
+
 
 class ObservableDict(ObservableCollection, dict):
 
