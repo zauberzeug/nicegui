@@ -6,7 +6,8 @@ import dataclasses
 import time
 import weakref
 from collections import defaultdict
-from collections.abc import Callable, Iterable, Mapping, MutableMapping
+from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping
+from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
@@ -269,8 +270,21 @@ class BindableProperty:
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
     def __get__(self, owner: Any, _=None) -> Any:
-        if owner is not None:
-            _track_read(owner, (self.name,))  # PROTOTYPE: dependency capture for computed()/effect()
+        # PROTOTYPE: reactive read hook. Skip while propagating (those reads are the binding system's
+        # own bookkeeping, not user dependencies) and when no computation is collecting.
+        if owner is not None and propagation_visited.get() is None:
+            computation = _active_computation.get()
+            if computation is not None:
+                name = (self.name,)
+                dep = (id(owner), name)
+                producer = _producers.get(dep)
+                if producer is not None and producer is not computation:
+                    _pull_readers.append((computation, dep))  # our fresh read of exactly this dep is in flight
+                    try:
+                        _ensure_current(producer)  # pull a dirty producer up-to-date before it is read
+                    finally:
+                        _pull_readers.pop()
+                _track_read(owner, name)  # dependency capture for computed()/effect()
         return getattr(owner, '___' + self.name)
 
     def __set__(self, owner: Any, value: Any) -> None:
@@ -282,8 +296,8 @@ class BindableProperty:
             return
         setattr(owner, '___' + self.name, value)
         bindable_properties[(id(owner), (self.name,))] = owner
-        _propagate(owner, (self.name,))
-        _notify_subscribers(owner, (self.name,))  # PROTOTYPE: wake computed()/effect() that read this
+        _notify_subscribers(owner, (self.name,))  # PROTOTYPE: settle reactive computed()/effect() first,
+        _propagate(owner, (self.name,))  # so legacy bindings that read a derived value propagate it fresh
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
 
@@ -299,21 +313,65 @@ class BindableProperty:
 
 Dependency = tuple[int, tuple[str, ...]]
 
+_MAX_FLUSH_ITERATIONS = 1000
+
 _active_computation: ContextVar[_Computation | None] = ContextVar('active_computation', default=None)
 _subscribers: defaultdict[Dependency, weakref.WeakSet[_Computation]] = defaultdict(weakref.WeakSet)
+_producers: weakref.WeakValueDictionary[Dependency, _Computation] = weakref.WeakValueDictionary()
+_pending: set[_Computation] = set()
+# (computation, dep) pairs currently pulling that exact producer up-to-date as a fresh read:
+_pull_readers: list[tuple[_Computation, Dependency]] = []
+_batch_depth = 0
+_flushing = False
 
 
 def _track_read(owner: Any, name: tuple[str, ...]) -> None:
-    """Record that the currently-running computation read this bindable property."""
+    """Record that the currently-running computation read this bindable property, and subscribe now.
+
+    Subscribing at read time (not at end of run) means a write to a dependency *during* the same run
+    -- e.g. an effect that writes state it just read -- still notifies the computation.
+    """
     computation = _active_computation.get()
     if computation is not None:
-        computation._collecting.add((id(owner), name))  # pylint: disable=protected-access
+        dep = (id(owner), name)
+        computation._collecting.add(dep)  # pylint: disable=protected-access
+        _subscribers[dep].add(computation)
 
 
 def _notify_subscribers(owner: Any, name: tuple[str, ...]) -> None:
-    """Re-run every computation that depends on the property that just changed."""
-    for computation in list(_subscribers.get((id(owner), name), ())):
-        computation._run()  # pylint: disable=protected-access
+    """Mark every computation that read this property dirty, then flush.
+
+    Marking is cheap and synchronous; actual recomputation is deferred to :func:`_flush` so a single
+    logical change settles the whole graph once, in dependency order -- rather than re-running
+    dependents eagerly and depth-first, which double-runs diamonds and lets effects observe
+    half-updated state.
+    """
+    dep = (id(owner), name)
+    subscribers = _subscribers.get(dep)
+    if not subscribers:
+        if subscribers is not None:
+            del _subscribers[dep]  # reap a key left empty by a garbage-collected computation
+        return
+    for computation in list(subscribers):
+        if (computation, dep) in _pull_readers:
+            continue  # it is pulling THIS dep as a fresh read in this very run: no re-enqueue needed
+        computation._dirty = True  # pylint: disable=protected-access
+        _pending.add(computation)
+    _flush()
+
+
+def _unsubscribe(dep: Dependency, computation: _Computation) -> None:
+    """Drop a computation's subscription, pruning the entry entirely when its last subscriber leaves.
+
+    (This keeps churn -- re-subscription on every run, plus ``dispose()`` -- from growing
+    ``_subscribers`` without bound. Computations garbage-collected *without* ``dispose()`` still leave
+    an empty entry behind; reaping those is part of the lifecycle work a production version must add.)
+    """
+    subscribers = _subscribers.get(dep)
+    if subscribers is not None:
+        subscribers.discard(computation)
+        if not subscribers:
+            del _subscribers[dep]
 
 
 class _Computation:
@@ -327,27 +385,93 @@ class _Computation:
         self._fn = fn
         self._deps: set[Dependency] = set()
         self._collecting: set[Dependency] = set()
+        self._dirty = False
+        self._running = False
         self._run()
 
     def _run(self) -> Any:
         self._collecting = set()
+        self._dirty = False
+        self._running = True
         token = _active_computation.set(self)
         try:
             result = self._fn()
         finally:
             _active_computation.reset(token)
-        for stale in self._deps - self._collecting:
-            _subscribers[stale].discard(self)
-        for fresh in self._collecting - self._deps:
-            _subscribers[fresh].add(self)
-        self._deps = self._collecting
+            self._running = False
+            # Reconcile deps even if fn() raised, so dispose() can unsubscribe what was read before the error
+            # (fresh deps are subscribed incrementally in _track_read; drop ones not read this run).
+            for stale in self._deps - self._collecting:
+                _unsubscribe(stale, self)
+            self._deps = self._collecting
+        if self._dirty:  # re-invalidated during our own run (e.g. we wrote a dependency we had read)
+            _pending.add(self)
+            _flush()  # converge; a genuinely unbounded feedback loop trips the _flush cycle guard
         return result
 
     def dispose(self) -> None:
         """Unsubscribe from all dependencies so this computation stops re-running."""
         for dep in self._deps:
-            _subscribers[dep].discard(self)
+            _unsubscribe(dep, self)
         self._deps = set()
+        self._dirty = False
+        _pending.discard(self)
+
+
+def _ensure_current(computation: _Computation) -> None:
+    """Recompute a dirty computation now. Used by the flush loop and by pull-on-read in ``__get__``."""
+    _pending.discard(computation)
+    if computation._dirty and not computation._running:  # pylint: disable=protected-access
+        computation._run()  # pylint: disable=protected-access
+
+
+def _flush() -> None:
+    """Recompute all pending computations, once each, in dependency order.
+
+    Ordering falls out of two mechanisms rather than an explicit topological sort: recomputing a
+    producer re-enters :func:`_notify_subscribers`, enqueueing its dependents; and a dependent that
+    happens to run first pulls any still-dirty producer it reads up-to-date via
+    :meth:`BindableProperty.__get__` before using it. So a diamond's sink recomputes exactly once,
+    after both sources have settled -- never on a half-updated intermediate.
+    """
+    global _flushing  # pylint: disable=global-statement # noqa: PLW0603
+    if _flushing or _batch_depth:
+        return
+    _flushing = True
+    try:
+        iterations = 0
+        while _pending:
+            iterations += 1
+            if iterations > _MAX_FLUSH_ITERATIONS:
+                _pending.clear()  # drop the poisoned graph state so a later unrelated write isn't re-poisoned
+                raise RuntimeError('Reactive cycle detected: the computed()/effect() graph did not '
+                                   'settle. A computation likely depends (transitively) on its own output.')
+            _ensure_current(next(iter(_pending)))
+    finally:
+        _flushing = False
+
+
+@contextmanager
+def batch() -> Iterator[None]:
+    """Coalesce multiple bindable-property writes into a single reactive flush (*PROTOTYPE*).
+
+    Without a batch, every write settles the reactive graph immediately, so reads see fresh values
+    synchronously. Inside a batch, writes only mark dependents dirty; the flush runs once when the
+    outermost batch exits, so a dependent recomputes at most once regardless of how many of its
+    sources changed::
+
+        with binding.batch():
+            order.price = 5
+            order.quantity = 9   # a subtotal computed from both recomputes once, not twice
+    """
+    global _batch_depth  # pylint: disable=global-statement # noqa: PLW0603
+    _batch_depth += 1
+    try:
+        yield
+    finally:
+        _batch_depth -= 1
+        if _batch_depth == 0:
+            _flush()
 
 
 class Computed:
@@ -363,9 +487,11 @@ class Computed:
     def __init__(self, fn: Callable[[], Any]) -> None:
         self._fn = fn
         self._computation = _Computation(lambda: setattr(self, 'value', self._fn()))
+        _producers[(id(self), ('value',))] = self._computation  # so dependents can pull us up-to-date
 
     def dispose(self) -> None:
         """Stop recomputing (dispose the underlying computation)."""
+        _producers.pop((id(self), ('value',)), None)
         self._computation.dispose()
 
 
@@ -423,10 +549,16 @@ def reset() -> None:
 
     This function is intended for testing purposes only.
     """
+    global _batch_depth, _flushing  # pylint: disable=global-statement # noqa: PLW0603
     bindings.clear()
     bindable_properties.clear()
     active_links.clear()
-    _subscribers.clear()  # PROTOTYPE: also drop reactive computed()/effect() subscriptions
+    _subscribers.clear()  # PROTOTYPE: also drop reactive computed()/effect() state
+    _producers.clear()
+    _pending.clear()
+    _pull_readers.clear()
+    _batch_depth = 0
+    _flushing = False
 
 
 @dataclass_transform()
