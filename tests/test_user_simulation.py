@@ -1032,6 +1032,21 @@ async def test_scope_ignores_manual_element_context(user: User) -> None:
             assert len(user.find(marker='btn').elements) == 1
 
 
+async def test_scope_excludes_global_notifications(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('card'):
+            ui.button('Save', on_click=lambda: ui.notify('Saved'))
+
+    await user.open('/')
+    user.find('Save').click()
+    with user.scope(marker='card'):
+        # The notification is page-level, not a descendant of the card, so a scoped search
+        # must not match it -- even though a global `should_see('Saved')` would.
+        await user.should_not_see('Saved')
+    await user.should_see('Saved')
+
+
 async def test_switching_between_sub_pages(user: User) -> None:
     calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
 

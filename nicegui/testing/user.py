@@ -142,9 +142,11 @@ class User:
 
         To limit the search to one part of a page that reuses markers or content, wrap the
         assertion in a ``with user.scope(...):`` block (see ``User.scope``).
+        Notifications are page-level and are not matched inside a scope.
         """
         for _ in range(retries):
-            if self.notify.contains(target) or self._gather_elements(target=target, kind=kind, marker=marker, content=content):
+            if (not self._is_scoped() and self.notify.contains(target)) or \
+                    self._gather_elements(target=target, kind=kind, marker=marker, content=content):
                 return
             await asyncio.sleep(0.1)
         raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
@@ -179,9 +181,11 @@ class User:
 
         To limit the search to one part of a page that reuses markers or content, wrap the
         assertion in a ``with user.scope(...):`` block (see ``User.scope``).
+        Notifications are page-level and are not matched inside a scope.
         """
         for _ in range(retries):
-            if not self.notify.contains(target) and not self._gather_elements(target=target, kind=kind, marker=marker, content=content):
+            if (self._is_scoped() or not self.notify.contains(target)) and \
+                    not self._gather_elements(target=target, kind=kind, marker=marker, content=content):
                 return
             await asyncio.sleep(0.05)
         raise AssertionError('expected not to see any ' + self._build_error_message(target, kind, marker, content))
@@ -273,6 +277,9 @@ class User:
     def current_layout(self) -> ui.element:
         """Return the root layout element of the current page."""
         return self._client.layout
+
+    def _is_scoped(self) -> bool:
+        return bool(self._scope_stack.get(get_task_id()))
 
     def _gather_elements(
         self,
