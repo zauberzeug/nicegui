@@ -2,14 +2,16 @@ import asyncio
 import copy
 import re
 import time
+from types import SimpleNamespace
 
 import httpx
 import pytest
+from starlette.responses import Response
 
 from nicegui import Client, app, background_tasks, context, core, ui
 from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
-from nicegui.storage import Storage
+from nicegui.storage import RequestTrackingMiddleware, Storage
 from nicegui.testing import Screen, User
 
 
@@ -374,6 +376,78 @@ async def test_user_storage_is_pruned(screen: Screen):
     await prune_user_storage(force=True)
     assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
+
+
+async def test_user_storage_survives_prune_during_request():
+    """Prune must not remove user storage out from under an in-flight request (regression for #6145).
+
+    A session with no connected WebSocket client whose storage is older than 10 s is eligible for
+    pruning; if the prune timer fires while a request for that session is still being handled, the
+    storage would be removed before the handler reads ``app.storage.user``, raising an AssertionError.
+    """
+    Storage.secret = 'just a test'
+    session_id = 'in-flight-session'
+    request = SimpleNamespace(session={'id': session_id}, state=SimpleNamespace())
+    read: dict[str, str] = {}
+
+    async def call_next(_request) -> Response:
+        # simulate the prune timer firing mid-request: aged, unmodified, no connected client
+        app.storage._users[session_id].last_modified -= 20
+        await prune_user_storage()
+        read['value'] = app.storage.user.get('greeting', 'default')  # must not raise
+        return Response()
+
+    await RequestTrackingMiddleware(app=None).dispatch(request, call_next)  # type: ignore[arg-type]
+    assert read['value'] == 'default', 'in-flight request should still read its user storage'
+
+    # control: once the request has completed, the same idle aged session is pruned as before
+    await prune_user_storage()
+    assert session_id not in app.storage._users, 'idle aged session should still be pruned'
+
+
+async def test_active_request_marker_is_cleared_when_handler_raises():
+    """A request whose handler raises must still clear its in-flight marker (no leak, regression for #6145)."""
+    Storage.secret = 'just a test'
+    session_id = 'raising-session'
+    request = SimpleNamespace(session={'id': session_id}, state=SimpleNamespace())
+
+    async def call_next(_request) -> Response:
+        raise RuntimeError('boom')
+
+    with pytest.raises(RuntimeError, match='boom'):
+        await RequestTrackingMiddleware(app=None).dispatch(request, call_next)  # type: ignore[arg-type]
+    assert session_id not in app.storage._active_request_sessions, 'in-flight marker must be cleared on error'
+
+
+async def test_concurrent_requests_keep_shared_session_pinned():
+    """Overlapping requests for the same session must both pin it against pruning (why a Counter, not a set)."""
+    Storage.secret = 'just a test'
+    session_id = 'shared-session'
+    both_in_flight = asyncio.Event()
+    release = asyncio.Event()
+    entered = 0
+
+    async def call_next(_request) -> Response:
+        nonlocal entered
+        entered += 1
+        if entered == 2:
+            both_in_flight.set()
+        await release.wait()
+        return Response()
+
+    middleware = RequestTrackingMiddleware(app=None)  # type: ignore[arg-type]
+    requests = [SimpleNamespace(session={'id': session_id}, state=SimpleNamespace()) for _ in range(2)]
+    tasks = [asyncio.ensure_future(middleware.dispatch(r, call_next)) for r in requests]  # type: ignore[arg-type]
+    await both_in_flight.wait()
+
+    assert app.storage._active_request_sessions[session_id] == 2
+    app.storage._users[session_id].last_modified -= 20  # aged, no connected client
+    await prune_user_storage()
+    assert session_id in app.storage._users, 'a session with in-flight requests must not be pruned'
+
+    release.set()
+    await asyncio.gather(*tasks)
+    assert session_id not in app.storage._active_request_sessions, 'marker cleared once both requests complete'
 
 
 def test_storage_serialization_error_points_at_offending_key(screen: Screen):

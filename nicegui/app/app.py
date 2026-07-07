@@ -418,14 +418,16 @@ async def prune_tab_storage(*, force: bool = False) -> None:
 async def prune_user_storage(*, force: bool = False) -> None:
     """Remove user storage objects without a client session."""
     client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
+    active_request_sessions = core.app.storage._active_request_sessions  # pylint: disable=protected-access
     storages_to_close: list[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access
     for session_id in list(user_storages):
-        if session_id not in client_session_ids:
-            age = now - user_storages[session_id].last_modified
-            if force or age > 10.0:  # do not remove storages created by middleware and still wait for client
-                storages_to_close.append(user_storages.pop(session_id))
+        if session_id in client_session_ids or session_id in active_request_sessions:
+            continue  # keep storage for connected clients and in-flight requests (avoid pruning mid-request)
+        age = now - user_storages[session_id].last_modified
+        if force or age > 10.0:  # do not remove storages created by middleware and still wait for client
+            storages_to_close.append(user_storages.pop(session_id))
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:
         if isinstance(result, Exception):
