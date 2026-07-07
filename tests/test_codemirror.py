@@ -328,6 +328,73 @@ def test_widget_decoration_inserts_text(screen: Screen):
     assert editor.value == 'alpha\nbeta\ngamma'
 
 
+def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    # A type-invalid spec (missing 'line') and an out-of-range spec must each be skipped with a
+    # warning rather than throwing and voiding the whole batch or silently retargeting another line.
+    editor.decorations = [
+        {'kind': 'line'},
+        {'kind': 'line', 'line': 9999, 'class': 'out-of-range'},
+        {'kind': 'line', 'line': 2, 'class': 'valid'},
+    ]
+    screen.wait_for(lambda: _line_decoration_count(screen, 'valid') == 1)
+    assert _line_decoration_count(screen, 'out-of-range') == 0
+
+
+def test_decorations_track_document_edits(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-track'}]
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-track') == 1)
+    assert screen.selenium.execute_script(
+        'return document.querySelector(".cm-content span.cm-test-track").textContent;') == 'beta'
+    # Insert two characters before the mark; a mapped decoration follows "beta" instead of
+    # staying at the now-stale absolute offsets 6..10.
+    editor.value = 'XX' + editor.value
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelector(".cm-content").innerText.startsWith("XXalpha");'))
+    marked = screen.selenium.execute_script(
+        'const s = document.querySelector(".cm-content span.cm-test-track"); return s ? s.textContent : null;')
+    assert marked == 'beta'
+
+
+def test_decoration_inclusive_end_extends_mark(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    screen.open('/')
+    _wait_for_cm_mount(screen)
+    editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'inclusiveEnd': True, 'class': 'cm-test-incl'}]
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-incl') == 1)
+    # Insert exactly at the mark's right edge (offset 10). Only a live inclusiveEnd grows the mark
+    # over the new character; a plain mapped mark (default exclusive end) would still read "beta".
+    editor.value = editor.value[:10] + 'Z' + editor.value[10:]
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelector(".cm-content").innerText.includes("betaZ");'))
+    grown = screen.selenium.execute_script(
+        'const s = document.querySelector(".cm-content span.cm-test-incl"); return s ? s.textContent : null;')
+    assert grown == 'betaZ'
+
+
 def test_line_tooltip_api(screen: Screen):
     @ui.page('/')
     def page():
