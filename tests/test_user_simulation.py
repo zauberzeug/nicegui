@@ -1047,6 +1047,19 @@ async def test_scope_excludes_global_notifications(user: User) -> None:
     await user.should_see('Saved')
 
 
+async def test_scope_enters_the_element_for_building(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.card().mark('card')
+
+    await user.open('/')
+    with user.scope(marker='card'):
+        ui.label('added inside').mark('added')
+        # The label is created while the card's slot is active, so it lands inside the card
+        # and the scoped lookup finds it (it would not if `scope()` stopped entering the element).
+        await user.should_see(marker='added')
+
+
 async def test_switching_between_sub_pages(user: User) -> None:
     calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
 

@@ -264,14 +264,16 @@ class User:
             raise AssertionError(f'expected exactly one element to scope to, but found {len(elements)}: ' +
                                  self._build_error_message(target, kind, marker, content))
         (element,) = elements
-        stack = self._scope_stack.setdefault(get_task_id(), [])
+        task_id = get_task_id()
+        stack = self._scope_stack.setdefault(task_id, [])
         stack.append(element)
         try:
-            yield element
+            with element:
+                yield element
         finally:
             stack.pop()
             if not stack:
-                del self._scope_stack[get_task_id()]
+                del self._scope_stack[task_id]
 
     @property
     def current_layout(self) -> ui.element:
