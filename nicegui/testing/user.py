@@ -10,7 +10,7 @@ from uuid import uuid4
 import httpx
 import socketio
 
-from nicegui import Client, ElementFilter, context, ui
+from nicegui import Client, ElementFilter, ui
 from nicegui.nicegui import _on_handshake
 from nicegui.outbox import Message
 from nicegui.slot import get_task_id
@@ -39,24 +39,13 @@ class User:
         self.notify = UserNotify()
         self.download = UserDownload(self)
         self.tab_id = str(uuid4())
-        # Per-task nesting depth of active `with user.scope(...):` blocks. Keyed by asyncio task id
+        # Per-task stack of elements entered via `with user.scope(...):`. Keyed by asyncio task id
         # (like `Slot.stacks`) so a scope entered in one task never narrows lookups in another.
-        self._scope_depth: dict[int, int] = {}
+        # The innermost scope is the last element; an empty/absent stack means no active scope.
+        self._scope_stack: dict[int, list[ui.element]] = {}
         self.javascript_rules: dict[re.Pattern, Callable[[re.Match], Any]] = {
             re.compile('.*__IS_DRAWER_OPEN__'): lambda _: True,  # see https://github.com/zauberzeug/nicegui/issues/4508
         }
-
-    @property
-    def _scope(self) -> ui.element | Client:
-        if not context.slot_stack:
-            return self._client
-        if context.client is not self._client:
-            # fall back to the bound client if the slot stack belongs to a different page
-            return self._client
-        if context.slot.parent is context.client.content:
-            # fall back to the bound client's layout when the current slot is the page content for backward compatibility
-            return self._client
-        return context.slot.parent
 
     @property
     def _client(self) -> Client:
@@ -256,7 +245,8 @@ class User:
 
         This is the recommended way to write assertions against pages that intentionally reuse
         markers or content in different parts of the layout. Inside the block, ``should_see``,
-        ``should_not_see`` and ``find`` only search within the entered element::
+        ``should_not_see`` and ``find`` only search the descendants of the entered element
+        (the element itself is not matched)::
 
             with user.scope(marker='left-card'):
                 await user.should_see('Button')  # only the button inside the left card
@@ -270,16 +260,14 @@ class User:
             raise AssertionError(f'expected exactly one element to scope to, but found {len(elements)}: ' +
                                  self._build_error_message(target, kind, marker, content))
         (element,) = elements
-        task_id = get_task_id()
-        self._scope_depth[task_id] = self._scope_depth.get(task_id, 0) + 1
+        stack = self._scope_stack.setdefault(get_task_id(), [])
+        stack.append(element)
         try:
-            with element:
-                yield element
+            yield element
         finally:
-            if self._scope_depth[task_id] > 1:
-                self._scope_depth[task_id] -= 1
-            else:
-                del self._scope_depth[task_id]
+            stack.pop()
+            if not stack:
+                del self._scope_stack[get_task_id()]
 
     @property
     def current_layout(self) -> ui.element:
@@ -294,25 +282,28 @@ class User:
         marker: str | list[str] | None = None,
         content: str | list[str] | None = None,
     ) -> set[T]:
-        scope = self._scope
-        # Narrow the search only while the current task is inside a `with user.scope(...):` block,
-        # where the scope resolves to a real sub-element. The `not isinstance(scope, Client)` guard
-        # is a safety net so that page-level lookups never narrow to the client content root, which
-        # would drop the layout shells (header, drawer, footer, notifications).
-        local_scope = self._scope_depth.get(get_task_id(), 0) > 0 and not isinstance(scope, Client)
-        with scope:
+        stack = self._scope_stack.get(get_task_id())
+        # When the current task is inside a `with user.scope(...):` block, restrict the search to the
+        # innermost entered element via `ElementFilter.within(instance=...)`. This searches the whole
+        # page and keeps only descendants of the scope, independent of the ambient slot stack and of
+        # `ElementFilter.DEFAULT_LOCAL_SCOPE`. Without a scope the search covers the whole layout
+        # (header, drawer, footer, notifications), exactly as before.
+        scope = stack[-1] if stack else None
+
+        def scoped(element_filter: ElementFilter[Any]) -> ElementFilter[Any]:
+            return element_filter.within(instance=scope) if scope is not None else element_filter
+
+        with self._client:
             if target is None:
                 if kind is None:
-                    elements = set(ElementFilter(marker=marker, content=content,
-                                                 only_visible=True, local_scope=local_scope))
+                    elements = set(scoped(ElementFilter(marker=marker, content=content, only_visible=True)))
                 else:
-                    elements = set(ElementFilter(kind=kind, marker=marker,
-                                                 content=content, only_visible=True, local_scope=local_scope))
+                    elements = set(scoped(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True)))
             elif isinstance(target, str):
-                elements = set(ElementFilter(marker=target, only_visible=True, local_scope=local_scope)) \
-                    .union(ElementFilter(content=target, only_visible=True, local_scope=local_scope))
+                elements = set(scoped(ElementFilter(marker=target, only_visible=True))) \
+                    .union(scoped(ElementFilter(content=target, only_visible=True)))
             else:
-                elements = set(ElementFilter(kind=target, only_visible=True, local_scope=local_scope))
+                elements = set(scoped(ElementFilter(kind=target, only_visible=True)))
         return elements  # type: ignore
 
     def _build_error_message(self,

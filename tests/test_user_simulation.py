@@ -1013,6 +1013,25 @@ async def test_scope_is_task_local(user: User) -> None:
     assert other_count == 2
 
 
+async def test_scope_ignores_manual_element_context(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('scoped'):
+            ui.button('inside scoped').mark('btn')
+        with ui.card().mark('other'):
+            ui.button('inside other').mark('btn')
+
+    await user.open('/')
+    (other,) = user.find(marker='other').elements
+    with user.scope(marker='scoped'):
+        with other:
+            # A manual `with other:` inside the scope block must not retarget lookups: the scope
+            # stays the 'scoped' card (the element `scope()` entered), independent of the slot stack.
+            await user.should_see(content='inside scoped')
+            await user.should_not_see(content='inside other')
+            assert len(user.find(marker='btn').elements) == 1
+
+
 async def test_switching_between_sub_pages(user: User) -> None:
     calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
 
