@@ -1,10 +1,10 @@
+import asyncio
 import hashlib
 import mimetypes
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from pathlib import Path
 
-import aiofiles
 from fastapi import Request
 from fastapi.responses import Response, StreamingResponse
 
@@ -52,15 +52,18 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
     })
 
     async def content_reader(file: Path, start: int, end: int) -> AsyncGenerator[bytes, None]:
-        async with aiofiles.open(file, 'rb') as data:
-            await data.seek(start)
+        data = open(file, 'rb')  # pylint: disable=consider-using-with  # closed synchronously in the `finally` below
+        try:
+            await asyncio.to_thread(data.seek, start)
             remaining_bytes = end - start + 1
             while remaining_bytes > 0:
-                chunk = await data.read(min(chunk_size, remaining_bytes))
+                chunk = await asyncio.to_thread(data.read, min(chunk_size, remaining_bytes))
                 if not chunk:
                     break
                 yield chunk
                 remaining_bytes -= len(chunk)
+        finally:
+            data.close()
     return StreamingResponse(
         content_reader(file, start, end),
         media_type=media_type,

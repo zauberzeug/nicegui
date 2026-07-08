@@ -1,9 +1,13 @@
+import asyncio
+import gc
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
 
 from nicegui import __version__, app, ui
+from nicegui.app.range_response import get_range_response
 from nicegui.testing import Screen
 
 from .test_helpers import TEST_DIR
@@ -214,3 +218,37 @@ def test_cache_control_header_of_static_files(screen: Screen):
     # static resources are _not_ served with cache-control headers from `ui.run`
     response3 = httpx.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg', timeout=5)
     assert 'immutable' not in response3.headers.get('Cache-Control', '')
+
+
+def test_streamed_media_file_handle_is_released_on_teardown(monkeypatch: pytest.MonkeyPatch):
+    """Abandoning a range stream must close the file handle even if the event loop is already gone.
+
+    A client (e.g. a browser playing a video) can disconnect mid-stream. Starlette does not
+    ``aclose()`` the response body iterator on disconnect, so the generator is only finalized by the
+    garbage collector. If that happens once the event loop is gone, an *async* close cannot run and
+    the handle leaks, surfacing as a sporadic ``PytestUnraisableExceptionWarning`` at teardown.
+    """
+    opened_files = []
+    real_open = open
+
+    def tracking_open(*args, **kwargs):
+        file = real_open(*args, **kwargs)
+        opened_files.append(file)
+        return file
+
+    monkeypatch.setattr('builtins.open', tracking_open)
+
+    generator = get_range_response(VIDEO_FILE, SimpleNamespace(headers={'range': 'bytes=0-1999'}),
+                                   chunk_size=64).body_iterator
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(generator.__anext__())  # open the file and yield once, then suspend
+    finally:
+        loop.close()  # tear down without aclose(), as Starlette does on a client disconnect
+
+    del generator
+    gc.collect()
+
+    media_files = [f for f in opened_files if f.name == str(VIDEO_FILE)]
+    assert media_files, 'the media file was never opened'
+    assert all(f.closed for f in media_files), 'file handle was not closed on teardown'
