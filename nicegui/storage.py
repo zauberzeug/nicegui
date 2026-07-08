@@ -35,18 +35,18 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
             request.session['id'] = str(uuid.uuid4())
         request.state.responded = False
         session_id = request.session['id']
-        storage = core.app.storage
-        storage._active_request_sessions[session_id] += 1  # pylint: disable=protected-access
+        active_request_sessions = core.app.storage._active_request_sessions  # pylint: disable=protected-access
+        active_request_sessions[session_id] += 1
         try:
-            if session_id not in storage._users:  # pylint: disable=protected-access
-                await storage._create_user_storage(session_id)  # pylint: disable=protected-access
+            if session_id not in core.app.storage._users:  # pylint: disable=protected-access
+                await core.app.storage._create_user_storage(session_id)  # pylint: disable=protected-access
             response = await call_next(request)
             request.state.responded = True
             return response
         finally:
-            storage._active_request_sessions[session_id] -= 1  # pylint: disable=protected-access
-            if storage._active_request_sessions[session_id] <= 0:  # pylint: disable=protected-access
-                del storage._active_request_sessions[session_id]  # pylint: disable=protected-access
+            active_request_sessions[session_id] -= 1
+            if active_request_sessions[session_id] <= 0:
+                del active_request_sessions[session_id]
 
 
 def set_storage_secret(storage_secret: str | None = None,
