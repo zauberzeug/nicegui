@@ -114,6 +114,7 @@ class Client:
 
         self.title: str | None = None
         self.status_code: int = 200
+        self._response_built = False
 
         self._head_html = ''
         self._body_html = ''
@@ -174,6 +175,8 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        # After this point the initial HTML (incl. title/head/body) is emitted; later changes must be pushed via JS.
+        self._response_built = True
         if self.page.resolve_markdown() and _did_user_request_markdown(request):
             parts = []
             if title := self.resolve_title():

@@ -12,7 +12,7 @@ def add_head_html(code: str, *, shared: bool = False) -> None:
         Client.shared_head_html += code + '\n'
     else:
         client = context.client
-        if client.has_socket_connection:
+        if client._response_built:  # pylint: disable=protected-access
             client.run_javascript(f'document.head.insertAdjacentHTML("beforeend", {code!r});')
         client._head_html += code + '\n'  # pylint: disable=protected-access
 
@@ -27,6 +27,6 @@ def add_body_html(code: str, *, shared: bool = False) -> None:
         Client.shared_body_html += code + '\n'
     else:
         client = context.client
-        if client.has_socket_connection:
+        if client._response_built:  # pylint: disable=protected-access
             client.run_javascript(f'document.querySelector("#app").insertAdjacentHTML("beforebegin", {code!r});')
         client._body_html += code + '\n'  # pylint: disable=protected-access

@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from nicegui import ui
@@ -83,6 +85,39 @@ def test_sass(screen: Screen, shared: bool, delayed: bool):
     label = screen.find('This is purple on yellow with SASS.')
     screen.wait(0.5)
     assert label.value_of_css_property('color') == 'rgba(128, 0, 128, 1)'
+
+
+def test_add_body_html_after_await_in_async_sub_page(screen: Screen):
+    """add_body_html must survive a page load when called after an await in an async sub page builder,
+    without being injected twice on a normal load (#6147)."""
+    async def sub():
+        await asyncio.sleep(0)  # resumes after the response is built, before the socket connects
+        ui.add_body_html('<div id="injected-marker">injected</div>')
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': sub})
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('return document.querySelectorAll("#injected-marker").length') == 1
+
+
+def test_add_css_after_await_in_async_sub_page(screen: Screen):
+    """add_css must survive a page load when called after an await in an async sub page builder (#6147)."""
+    async def sub():
+        await asyncio.sleep(0)  # resumes after the response is built, before the socket connects
+        ui.add_css('.late { color: rgb(255, 0, 0); }')
+        ui.label('late css').classes('late')
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': sub})
+
+    screen.open('/')
+    label = screen.find('late css')
+    screen.wait(0.5)
+    assert label.value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
 
 
 def test_add_css_with_script(screen: Screen):
