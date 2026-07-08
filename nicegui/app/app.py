@@ -26,6 +26,8 @@ from ..storage import PersistentDict, Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
+USER_STORAGE_PRUNE_INTERVAL = 10.0
+
 
 class State(Enum):
     STOPPED = 0
@@ -87,7 +89,7 @@ class App(FastAPI):
         self.timer(10, Slot.prune_stacks)
         self.timer(10, prune_tab_storage)
         if self.storage.secret is not None:
-            self.timer(10, prune_user_storage)
+            self.timer(USER_STORAGE_PRUNE_INTERVAL, prune_user_storage)
         self._state = State.STARTED
 
     async def stop(self) -> None:
@@ -425,7 +427,7 @@ async def prune_user_storage(*, force: bool = False) -> None:
     for session_id in list(user_storages):
         if session_id not in client_session_ids and session_id not in active_request_sessions:  # avoid pruning mid-request
             age = now - user_storages[session_id].last_modified
-            if force or age > 10.0:  # do not remove storages created by middleware and still wait for client
+            if force or age > USER_STORAGE_PRUNE_INTERVAL:  # do not remove storages created by middleware and still wait for client
                 storages_to_close.append(user_storages.pop(session_id))
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:
