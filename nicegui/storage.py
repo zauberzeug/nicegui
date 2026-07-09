@@ -1,6 +1,7 @@
 import contextvars
 import os
 import uuid
+from collections import Counter
 from datetime import timedelta
 from pathlib import Path
 from typing import Any
@@ -34,11 +35,18 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
             request.session['id'] = str(uuid.uuid4())
         request.state.responded = False
         session_id = request.session['id']
-        if session_id not in core.app.storage._users:  # pylint: disable=protected-access
-            await core.app.storage._create_user_storage(session_id)  # pylint: disable=protected-access
-        response = await call_next(request)
-        request.state.responded = True
-        return response
+        active_request_sessions = core.app.storage._active_request_sessions  # pylint: disable=protected-access
+        active_request_sessions[session_id] += 1
+        try:
+            if session_id not in core.app.storage._users:  # pylint: disable=protected-access
+                await core.app.storage._create_user_storage(session_id)  # pylint: disable=protected-access
+            response = await call_next(request)
+            request.state.responded = True
+            return response
+        finally:
+            active_request_sessions[session_id] -= 1
+            if active_request_sessions[session_id] <= 0:
+                del active_request_sessions[session_id]
 
 
 def set_storage_secret(storage_secret: str | None = None,
@@ -88,6 +96,9 @@ class Storage:
         self._general = Storage._create_persistent_dict(GENERAL_ID)
         self._users: dict[str, PersistentDict] = {}
         self._tabs: dict[str, ObservableDict] = {}
+        self._active_request_sessions: Counter[str] = Counter()
+        '''Number of in-flight HTTP requests per session id, so prune_user_storage does not remove
+        user storage out from under a request that has not yet accessed app.storage.user.'''
 
     @staticmethod
     def _create_persistent_dict(id: str) -> PersistentDict:  # pylint: disable=redefined-builtin

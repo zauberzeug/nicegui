@@ -200,7 +200,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         (unless it resolves to the chart's HTML element, in which case ``None`` is returned).
         Otherwise, the method is executed without waiting for a response.
 
-        *Added in NiceGUI 3.13.0*
+        *Added in version 3.13.0*
 
         :param name: name of the plotly.js function (without the ``Plotly.`` prefix)
         :param args: arguments to pass after the chart element
