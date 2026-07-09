@@ -37,6 +37,8 @@ def preserve_cursor_demo() -> None:
     or to provide per-platform shortcut overrides (`mac=`, `linux=`, `win=`).
 
     Use `unmap_key(key)` to remove a mapping at runtime.
+
+    *Added in version 3.14.0*
 ''')
 def keymap_demo() -> None:
     editor = ui.codemirror(
@@ -58,7 +60,7 @@ def keymap_demo() -> None:
 @doc.demo('Hover tooltips on lines', '''
     `line_tooltips` maps 1-indexed line numbers to hover content.
 
-    *Added in NiceGUI 3.13.0*
+    *Added in version 3.13.0*
 ''')
 def line_tooltips_demo() -> None:
     editor = ui.codemirror(
@@ -74,7 +76,7 @@ def line_tooltips_demo() -> None:
     Pass `line_tooltip_html=True` to render tooltip content as HTML,
     sanitized via NiceGUI's DOMPurify-backed `setHTML` polyfill.
 
-    *Added in NiceGUI 3.13.0*
+    *Added in version 3.13.0*
 ''')
 def line_tooltip_html_demo() -> None:
     editor = ui.codemirror(
