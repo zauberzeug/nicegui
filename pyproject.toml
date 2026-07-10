@@ -74,6 +74,7 @@ matplotlib = [
 ]
 highcharts = ["nicegui-highcharts>=3.3.0,<4"]
 redis = ["redis>=4.0.0"]
+crdt = ["pycrdt>=0.10.0,<0.13"]
 
 [dependency-groups]
 dev = [
@@ -87,6 +88,7 @@ dev = [
     "pillow>=12.2.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/245, for matplotlib
     "nicegui-highcharts>=3.3.0,<4",  # extra: highcharts
     "redis>=4.0.0",  # extra: redis
+    "pycrdt>=0.10.0,<0.13",  # extra: crdt
     {include-group = "types"},
     {include-group = "website"},
     "autopep8>=1.5.7,<3.0.0",
