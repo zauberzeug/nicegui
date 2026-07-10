@@ -24,12 +24,15 @@ class CrdtElement(Element):
         shared state will diverge. Cross-process room sync is out of scope.
 
         Seed initial content via ``yjs_room.get_doc(doc_id)`` before any
-        client connects. The Y.Text key the element binds to is element-specific.
+        client connects. The Y.Text key the element binds to is element-specific
+        (``'codemirror'`` for ``ui.codemirror``); a mismatched key or shared type
+        is silently ignored rather than raised.
 
         Requires the ``[crdt]`` extra: ``pip install "nicegui[crdt]"``.
 
-        :param doc_id: room name; treat as a soft secret or supply ``access_check``
-        :param access_check: ``(doc_id, sid) -> bool``, sync or async; ``False`` denies
+        :param doc_id: room name, fixed for the element's lifetime; treat as a soft secret or supply ``access_check``
+        :param access_check: ``(doc_id, sid) -> bool``, sync or async; ``False`` denies joining;
+            checked at join only and replacing any previously registered check for this ``doc_id``
         """
         self._props['crdt-doc-id'] = doc_id
         if access_check is not None:

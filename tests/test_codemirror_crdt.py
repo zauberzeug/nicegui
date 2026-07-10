@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from selenium.webdriver.common.by import By
 
@@ -35,6 +37,62 @@ def test_seeded_room_propagates_to_first_client(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     screen.should_contain('preseeded content')
+
+
+def test_collaboration_survives_socket_reconnect(screen: Screen):
+    from pycrdt import Text  # pylint: disable=import-outside-toplevel
+
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('reconnect-doc')
+
+    screen.open('/')
+    editor = screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content')
+    editor.click()
+    editor.send_keys('before ')
+    screen.wait(0.5)
+    screen.selenium.execute_script('window.socket.io.engine.close();')  # simulate a network blip
+    screen.wait(2)  # Socket.IO auto-reconnects with a new sid; the client must re-join
+    editor.send_keys('after')
+    screen.wait(0.5)
+    doc = yjs_room.get_doc('reconnect-doc')
+    assert str(doc.get('codemirror', type=Text)) == 'before after'
+
+
+def test_room_evicts_after_client_is_deleted(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('evict-doc')
+
+    @ui.page('/other')
+    def other():
+        ui.label('elsewhere')
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert 'evict-doc' in yjs_room._rooms  # pylint: disable=protected-access
+    screen.open('/other')  # disconnects the editor's client, which is deleted after the reconnect timeout
+    deadline = time.time() + 10
+    while 'evict-doc' in yjs_room._rooms and time.time() < deadline:  # pylint: disable=protected-access
+        screen.wait(0.5)
+    assert 'evict-doc' not in yjs_room._rooms  # pylint: disable=protected-access
+
+
+def test_async_access_check_denies_unauthorized_editor(screen: Screen):
+    async def deny(_doc_id: str, _sid: str) -> bool:
+        return False
+
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('async-gated', access_check=deny).classes('blocked')
+        ui.codemirror().with_crdt('async-open').classes('open')
+
+    screen.open('/')
+    blocked = screen.selenium.find_element(By.CSS_SELECTOR, '.blocked .cm-content')
+    blocked.click()
+    blocked.send_keys('should-not-sync')
+    screen.wait(0.5)
+    assert 'async-gated' not in yjs_room._rooms  # pylint: disable=protected-access
 
 
 def test_large_update_from_client_is_chunked(screen: Screen):

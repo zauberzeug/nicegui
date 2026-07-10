@@ -352,7 +352,17 @@ export default {
             if (data.doc_id !== docId) return;
             reassemble(room.rx, "yjs_init", data, (update) => {
               if (update.length > 0) Y.applyUpdate(ydoc, update, YJS_REMOTE);
+              // Send back whatever the server is missing (edits made while disconnected);
+              // an empty diff encodes as 2 bytes.
+              const serverStateVector = update.length > 0 ? Y.encodeStateVectorFromUpdate(update) : undefined;
+              const diff = Y.encodeStateAsUpdate(ydoc, serverStateVector);
+              if (diff.length > 2) emitChunked("yjs_update", docId, diff);
             });
+          },
+          onSocketConnect: () => {
+            // A transient reconnect mints a new server-side sid; re-join to restore
+            // room membership (the server replies with yjs_init, which resyncs both ways).
+            window.socket.emit("yjs_join", { doc_id: docId });
           },
           onUpdate: (data) => {
             if (data.doc_id !== docId) return;
@@ -379,11 +389,16 @@ export default {
           window.socket.on("yjs_init", room.handlers.onInit);
           window.socket.on("yjs_update", room.handlers.onUpdate);
           window.socket.on("yjs_awareness", room.handlers.onAwareness);
+          window.socket.on("connect", room.handlers.onSocketConnect);
           ydoc.on("update", room.handlers.onDocUpdate);
           awareness.on("update", room.handlers.onAwarenessUpdate);
           window.socket.emit("yjs_join", { doc_id: docId });
         };
-        const tryWire = () => (window.socket && window.did_handshake) ? wireSocket() : setTimeout(tryWire, 10);
+        const tryWire = () => {
+          if (room.cancelled) return;
+          if (window.socket && window.did_handshake) wireSocket();
+          else setTimeout(tryWire, 10);
+        };
         tryWire();
       }
       room.refs++;
@@ -397,11 +412,13 @@ export default {
       if (!room) return;
       room.refs--;
       if (room.refs > 0) return;
+      room.cancelled = true;
       if (window.socket) {
         window.socket.emit("yjs_leave", { doc_id: docId });
         window.socket.off("yjs_init", room.handlers.onInit);
         window.socket.off("yjs_update", room.handlers.onUpdate);
         window.socket.off("yjs_awareness", room.handlers.onAwareness);
+        window.socket.off("connect", room.handlers.onSocketConnect);
       }
       room.ydoc.off("update", room.handlers.onDocUpdate);
       room.awareness.off("update", room.handlers.onAwarenessUpdate);

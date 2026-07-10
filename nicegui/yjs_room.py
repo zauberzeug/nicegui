@@ -3,8 +3,12 @@
 The four ``yjs_*`` events are registered as raw ``@sio.on`` handlers (not via
 NiceGUI's element-level event tunnel) so that binary Yjs update payloads can stay
 binary; routing them through ``this.$emit`` would JSON-stringify each Uint8Array
-and inflate the wire ~5x per keystroke. Disconnect cleanup uses
-``Client.on_disconnect`` instead — that's the proper NiceGUI tunnel for lifecycle.
+and inflate the wire ~5x per keystroke.
+
+Lifecycle follows NiceGUI's client model, not Socket.IO's: sids are ephemeral
+(every transient reconnect mints a new one), so live sids are tracked only for
+relaying, while room membership and eviction are keyed to the ``Client`` —
+sids drop on ``on_disconnect``, rooms evict once their last client is deleted.
 """
 from __future__ import annotations
 
@@ -18,6 +22,7 @@ from typing import Any
 from . import core, optional_features
 from .client import Client
 from .dependencies import register_esm
+from .logging import log
 
 try:
     from pycrdt import Doc as _PycrdtDoc
@@ -35,17 +40,14 @@ if _YJS_DIST.is_dir():
 
 AccessCheck = Callable[[str, str], bool | Awaitable[bool]]
 
-# Apply binary Yjs updates above this size in a worker thread so a large paste
-# doesn't stall the event loop.
-_OFFLOAD_BYTES = 32 * 1024
-
 # Engine.IO rejects incoming messages above ~1 MB (`max_http_buffer_size`), so both
 # directions split larger updates into parts which the receiver reassembles in order.
 _CHUNK_BYTES = 500 * 1024
 _MAX_CHUNKS = 256
 
 _rooms: dict[str, _Room] = {}
-_access_checks: dict[str, list[AccessCheck]] = {}
+_access_checks: dict[str, AccessCheck] = {}
+_client_sids: dict[str, set[str]] = {}
 _clients_with_hook: set[str] = set()
 _handlers_installed = False
 
@@ -56,7 +58,8 @@ class _Room:
         assert _PycrdtDoc is not None
         self.doc_id = doc_id
         self.doc: Any = _PycrdtDoc()
-        self.sids: set[str] = set()
+        self.sids: set[str] = set()  # live sockets to relay to (ephemeral across reconnects)
+        self.clients: set[str] = set()  # client ids keeping the room alive
         # pycrdt.Doc isn't thread-safe; serialize all apply_update / get_update calls.
         # The lock also serializes chunked emits so parts of two transfers never interleave.
         self.lock = asyncio.Lock()
@@ -71,27 +74,28 @@ def ensure_handlers_installed() -> None:
 def get_doc(doc_id: str) -> Any:
     """Return (creating if needed) the server-side ``pycrdt.Doc`` for ``doc_id``.
 
-    Use this to seed initial content before any client connects. Hold
-    ``_rooms[doc_id].lock`` when mutating from outside an ``@sio.on`` handler.
+    Use this to seed initial content before any client connects;
+    once clients are connected, mutations must happen on the event loop
+    (e.g. in an event handler), never from a worker thread.
     """
     ensure_handlers_installed()
     return _rooms.setdefault(doc_id, _Room(doc_id)).doc
 
 
 def register_access_check(doc_id: str, check: AccessCheck) -> None:
-    """Register an access check (AND-combined). No checks = open room."""
+    """Register the access check for a room, replacing any previous one. No check = open room."""
     ensure_handlers_installed()
-    _access_checks.setdefault(doc_id, []).append(check)
+    _access_checks[doc_id] = check
 
 
 async def _check_access(doc_id: str, sid: str) -> bool:
-    for check in _access_checks.get(doc_id, ()):
-        result = check(doc_id, sid)
-        if inspect.isawaitable(result):
-            result = await result
-        if not result:
-            return False
-    return True
+    check = _access_checks.get(doc_id)
+    if check is None:
+        return True
+    result = check(doc_id, sid)
+    if inspect.isawaitable(result):
+        result = await result
+    return bool(result)
 
 
 def _client_id_from_sid(sid: str) -> str | None:
@@ -103,23 +107,47 @@ def _client_id_from_sid(sid: str) -> str | None:
         return None
 
 
-def _register_client_cleanup(sid: str) -> None:
-    """On first sid-join from a NiceGUI client, hook its disconnect lifecycle."""
-    client_id = _client_id_from_sid(sid)
-    if client_id is None or client_id in _clients_with_hook:
-        return
-    client = Client.instances.get(client_id)
-    if client is None:
-        return
-    _clients_with_hook.add(client_id)
-    client.on_disconnect(lambda: asyncio.create_task(_cleanup_sid(sid)))
+def _hook_client_lifecycle(client: Client, client_id: str) -> None:
+    """Track room membership per client: sids drop on disconnect, rooms evict on delete.
+
+    ``on_disconnect`` also fires on transient reconnects (new sid incoming),
+    so it must never evict; the browser re-joins with its new sid right after.
+    """
+    async def handle_disconnect() -> None:
+        # This handler runs as a background task, possibly AFTER the browser has already
+        # re-joined with a new sid — so only drop sids whose socket is actually gone.
+        sids = _client_sids.get(client_id, set())
+        for sid in [s for s in sids if not core.sio.manager.is_connected(s, '/')]:
+            sids.discard(sid)
+            await _drop_sid(sid)
+
+    async def handle_delete() -> None:
+        _clients_with_hook.discard(client_id)
+        for sid in _client_sids.pop(client_id, set()):
+            await _drop_sid(sid)
+        for doc_id, room in list(_rooms.items()):
+            if client_id in room.clients:
+                room.clients.discard(client_id)
+                _evict_if_abandoned(doc_id)
+
+    client.on_disconnect(handle_disconnect)
+    client.on_delete(handle_delete)
 
 
-async def _cleanup_sid(sid: str) -> None:
-    for doc_id in list(_rooms):
-        room = _rooms.get(doc_id)
-        if room is not None and sid in room.sids:
-            await _drop_client(sid, doc_id)
+async def _drop_sid(sid: str) -> None:
+    for doc_id, room in list(_rooms.items()):
+        if sid in room.sids:
+            room.sids.discard(sid)
+            room.rx.pop(sid, None)
+            await core.sio.leave_room(sid, _sio_room(doc_id))
+
+
+def _evict_if_abandoned(doc_id: str) -> None:
+    room = _rooms.get(doc_id)
+    # Awareness removal is left to y-protocols' 30 s heartbeat — mapping sid to
+    # Yjs clientID would need separate tracking and isn't worth it for an MVP.
+    if room is not None and not room.clients:
+        _rooms.pop(doc_id, None)
 
 
 def _install_handlers_once() -> None:
@@ -137,11 +165,19 @@ def _install_handlers_once() -> None:
         doc_id = data.get('doc_id')
         if not isinstance(doc_id, str):
             return
+        client_id = _client_id_from_sid(sid)
+        client = Client.instances.get(client_id) if client_id is not None else None
+        if client_id is None or client is None:
+            return  # only sockets belonging to a live NiceGUI client may join (and get cleaned up)
         if not await _check_access(doc_id, sid):
             return
         room = _rooms.setdefault(doc_id, _Room(doc_id))
         room.sids.add(sid)
-        _register_client_cleanup(sid)
+        room.clients.add(client_id)
+        _client_sids.setdefault(client_id, set()).add(sid)
+        if client_id not in _clients_with_hook:
+            _clients_with_hook.add(client_id)
+            _hook_client_lifecycle(client, client_id)
         await sio.enter_room(sid, _sio_room(doc_id))
         async with room.lock:
             state: bytes = room.doc.get_update()
@@ -162,10 +198,11 @@ def _install_handlers_once() -> None:
         if update_bytes is None:
             return
         async with room.lock:
-            if len(update_bytes) > _OFFLOAD_BYTES:
-                await asyncio.to_thread(room.doc.apply_update, update_bytes)
-            else:
+            try:
                 room.doc.apply_update(update_bytes)
+            except ValueError:
+                log.warning('dropping malformed Yjs update for room "%s"', doc_id)
+                return
             await _emit_chunked('yjs_update', doc_id, update_bytes, room=_sio_room(doc_id), skip_sid=sid)
 
     @sio.on('yjs_awareness')
@@ -187,8 +224,19 @@ def _install_handlers_once() -> None:
         if not isinstance(data, dict):
             return
         doc_id = data.get('doc_id')
-        if isinstance(doc_id, str):
-            await _drop_client(sid, doc_id)
+        if not isinstance(doc_id, str):
+            return
+        room = _rooms.get(doc_id)
+        if room is None:
+            return
+        room.sids.discard(sid)
+        room.rx.pop(sid, None)
+        await sio.leave_room(sid, _sio_room(doc_id))
+        client_id = _client_id_from_sid(sid)
+        if client_id is not None:
+            room.clients.discard(client_id)
+            # NOTE: the sid stays in _client_sids — it may still be a member of other rooms.
+        _evict_if_abandoned(doc_id)
 
     _handlers_installed = True
 
@@ -224,19 +272,6 @@ def _reassemble(room: _Room, sid: str, update: bytes, data: dict[str, Any]) -> b
         return None
     room.rx.pop(sid, None)
     return b''.join(buffer[i] for i in range(parts))
-
-
-async def _drop_client(sid: str, doc_id: str) -> None:
-    room = _rooms.get(doc_id)
-    if room is None:
-        return
-    room.sids.discard(sid)
-    room.rx.pop(sid, None)
-    await core.sio.leave_room(sid, _sio_room(doc_id))
-    # Awareness removal is left to y-protocols' 30 s heartbeat — mapping sid to
-    # Yjs clientID would need separate tracking and isn't worth it for an MVP.
-    if not room.sids:
-        _rooms.pop(doc_id, None)
 
 
 def _sio_room(doc_id: str) -> str:
