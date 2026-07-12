@@ -7,6 +7,7 @@ import httpx
 import pytest
 
 from nicegui import Client, app, background_tasks, context, core, ui
+from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
 from nicegui.storage import Storage
@@ -374,6 +375,24 @@ async def test_user_storage_is_pruned(screen: Screen):
     await prune_user_storage(force=True)
     assert len(Client.instances) == 0
     assert len(app.storage._users) == 0
+
+
+def test_user_storage_survives_prune_during_request(screen: Screen, monkeypatch: pytest.MonkeyPatch):
+    """Prune must not remove user storage out from under an in-flight request (regression for #6145).
+
+    The endpoint has no connected WebSocket client and stays in flight for several prune intervals,
+    so a prune tick is guaranteed to fire while its storage is old enough to be eligible for pruning.
+    """
+    monkeypatch.setattr(app_module, 'USER_STORAGE_PRUNE_INTERVAL', 0.1)
+
+    @app.get('/data')
+    async def data():
+        await asyncio.sleep(0.5)  # keep the request in flight while the prune timer fires
+        return {'value': app.storage.user.get('value', 'default')}
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    screen.open('/data')
+    screen.should_contain('default')
 
 
 def test_storage_serialization_error_points_at_offending_key(screen: Screen):

@@ -42,7 +42,7 @@ class Server(uvicorn.Server):
                     # kills the process mid-wait, making a later `event.set()` hang forever (#5845).
                     while not event.is_set():
                         time.sleep(0.1)
-                    self.should_exit = True
+                    core.stop_and_exit()
                 threading.Thread(target=monitor_shutdown_event, daemon=True).start()
 
         storage.set_storage_secret(self.config.storage_secret, self.config.session_middleware_kwargs)

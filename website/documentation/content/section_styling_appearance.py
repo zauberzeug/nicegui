@@ -193,7 +193,7 @@ def tailwind_layers():
     However, full compatibility with Tailwind CSS is not guaranteed.
     For example, Tailwind CSS Layers (see above) do not work with UnoCSS.
 
-    *Added in NiceGUI 3.7.0*
+    *Added in version 3.7.0*
 ''')
 def unocss_demo():
     label = ui.label('This label becomes red dynamically.')
@@ -264,7 +264,7 @@ doc.intro(add_style_documentation)
     To do so, you need to add the framework's JavaScript and CSS file to the head of your HTML document
     and configure NiceGUI accordingly by extending or replacing `app.config.vue_config_script`.
 
-    *Added in NiceGUI 2.21.0*
+    *Added in version 2.21.0*
 ''')
 def other_vue_ui_frameworks_demo():
     from nicegui import app
