@@ -257,6 +257,7 @@ export default {
         resolve_ready = resolve;
         reject_ready = reject;
       });
+      ready_promise.catch(() => {}); // suppress unhandled rejection if no method ever accesses this object
       let object = {
         id, ready_promise
       }

@@ -1,3 +1,7 @@
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
 from typing_extensions import Self
 
 from nicegui import ui
@@ -53,3 +57,34 @@ def test_custom_type_module_loads_once_for_multiple_instances(screen: Screen):
     created = screen.selenium.execute_script('return window.__tracer.created')
     assert created is not None and len(created) == 2
     assert [c['label'] for c in created] == ['a', 'b']
+
+
+def test_component_glob_matching_multiple_files_raises():
+    """component= must resolve to exactly one file; a multi-file glob raises ValueError at class-definition time."""
+    with patch('nicegui.elements.scene.scene_object3d.resolve_glob', return_value=[Path('a.js'), Path('b.js')]):
+        with pytest.raises(ValueError, match='exactly one file'):
+            class MultiMatch(Object3D, component='widgets/*.js'):
+                pass
+
+
+def test_subclass_without_component_still_registers_dependencies_and_esm():
+    """Inheriting component= from a parent must not silently skip dependencies= and esm=."""
+    with patch('nicegui.elements.scene.scene_object3d.resolve_glob', return_value=[Path('base.js')]), \
+            patch('nicegui.elements.scene.scene_object3d.register_library_glob') as mock_lib, \
+            patch('nicegui.elements.scene.scene_object3d.register_esm_glob') as mock_esm:
+
+        class Base(Object3D, component='base.js'):
+            pass
+
+        mock_lib.reset_mock()
+        mock_esm.reset_mock()
+
+        class Child(Base, dependencies=['helper.js'], esm={'mykey': 'helper.esm.js'}):
+            pass
+
+        mock_lib.assert_called_once()
+        assert mock_lib.call_args.args[0] == 'helper.js'
+        assert mock_lib.call_args.kwargs.get('import_name') is None
+
+        mock_esm.assert_called_once()
+        assert mock_esm.call_args.args == ('mykey', 'helper.esm.js')

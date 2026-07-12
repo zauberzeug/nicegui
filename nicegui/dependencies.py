@@ -194,6 +194,42 @@ def setup_esm_package(package_file: str, package_name: str, esm_name: str, expor
     return __getattr__, __dir__
 
 
+def register_vue_component_glob(file: str | Path, *, base: Path) -> Component | None:
+    """Resolve a glob pattern and register every matched file as a Vue component under a shared max_time.
+
+    Returns the last registered component, or None if no files matched.
+    """
+    paths = resolve_glob(file, base=base)
+    max_time = max((p.stat().st_mtime for p in paths), default=None)
+    component = None
+    for path in paths:
+        component = register_vue_component(path, max_time=max_time)
+    return component
+
+
+def resolve_glob(file: str | Path, *, base: Path) -> list[Path]:
+    """Resolve a (possibly relative, possibly glob) path against base and return all matches sorted by stem."""
+    path = Path(file)
+    if not path.is_absolute():
+        path = base / path
+    return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
+
+
+def register_library_glob(file: str | Path, *, base: Path, import_name: str | None = None) -> list[Library]:
+    """Resolve a glob pattern and register every matched file as a library under a shared max_time."""
+    paths = resolve_glob(file, base=base)
+    max_time = max((p.stat().st_mtime for p in paths), default=None)
+    return [register_library(p, import_name=import_name, max_time=max_time) for p in paths]
+
+
+def register_esm_glob(key: str, file: str | Path, *, base: Path) -> None:
+    """Resolve a glob pattern and register every matched file as an ESM module under a shared max_time."""
+    paths = resolve_glob(file, base=base)
+    max_time = max((p.stat().st_mtime for p in paths), default=None)
+    for path in paths:
+        register_esm(key, path, max_time=max_time)
+
+
 def register_importmap_override(import_name: str, url: str) -> None:
     """Register an importmap override."""
     importmap_overrides[import_name] = url

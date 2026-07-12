@@ -3,13 +3,14 @@ from __future__ import annotations
 import inspect
 import math
 import uuid
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import Self
 
 from nicegui.awaitable_response import AwaitableResponse
-from nicegui.dependencies import register_esm, register_library
+from nicegui.dependencies import register_esm_glob, register_library_glob, resolve_glob
 from nicegui.helpers import warn_once
 
 if TYPE_CHECKING:
@@ -21,36 +22,32 @@ class Object3D:
     _component_import_name: ClassVar[str | None] = None
 
     def __init_subclass__(
-        cls, *, component: str | Path | None = None, dependencies: list[str | Path] | None = None, esm: dict[str, str] | None = None,
+        cls, *, component: str | Path | None = None, dependencies: Iterable[str | Path] | None = None, esm: Mapping[str, str] | None = None,
     ):
         super().__init_subclass__()
-        if not component:
+        base = Path(inspect.getfile(cls)).parent
+
+        if component:
+            paths = resolve_glob(component, base=base)
+            if len(paths) != 1:
+                raise ValueError(
+                    f"'component' must resolve to exactly one file, "
+                    f'but {str(component)!r} matched {len(paths)} file(s)'
+                )
+            cls._component_import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
+            register_library_glob(component, base=base, import_name=cls._component_import_name)
+        else:
             # Fallback to parent's component to ease inheriting from Object3D classes
             for base_cls in cls.__mro__[1:]:
                 if getattr(base_cls, '_component_import_name', False):
-                    return
-            raise TypeError("parameter 'component' must be supplied as a class named argument")
+                    break
+            else:
+                raise TypeError("parameter 'component' must be supplied as a class named argument")
 
-        base = Path(inspect.getfile(cls)).parent
-
-        def glob_absolute_paths(file: str | Path) -> list[Path]:
-            path = Path(file)
-            if not path.is_absolute():
-                path = base / path
-            return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
-
-        cls._component_import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
-        for library, import_name in {component: cls._component_import_name, **dict.fromkeys(dependencies or [])}.items():
-            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
-            for path in glob_absolute_paths(library):
-                register_library(path, import_name=import_name, max_time=max_time)
-
+        for dependency in dependencies or []:
+            register_library_glob(dependency, base=base)
         for key, esm_path in (esm or {}).items():
-            path = Path(esm_path)
-            if not path.is_absolute():
-                path = base / path
-            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(path)), default=None)
-            register_esm(key, path, max_time=max_time)
+            register_esm_glob(key, esm_path, base=base)
 
     def __init__(self, *args: Any) -> None:
         self.id = str(uuid.uuid4())

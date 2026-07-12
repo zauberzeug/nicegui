@@ -101,7 +101,6 @@ export default class DynamicRoad {
   }
 
   set_arrow_color(color) {
-    console.log("YAY")
     this.latestArrowColor = color
     this.directionLine.material.color.set(color);
     for (const a of this.arrows) a.setColor(new THREE.Color(color));
