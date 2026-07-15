@@ -87,37 +87,23 @@ def test_sass(screen: Screen, shared: bool, delayed: bool):
     assert label.value_of_css_property('color') == 'rgba(128, 0, 128, 1)'
 
 
-def test_add_body_html_after_await_in_async_sub_page(screen: Screen):
-    """add_body_html must survive a page load when called after an await in an async sub page builder,
-    without being injected twice on a normal load (#6147)."""
+def test_add_body_html_and_css_after_await_in_async_sub_page(screen: Screen):
     async def sub():
-        await asyncio.sleep(0)  # resumes after the response is built, before the socket connects
-        ui.add_body_html('<div id="injected-marker">injected</div>')
-
-    @ui.page('/')
-    def index():
-        ui.sub_pages({'/': sub})
-
-    screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script('return document.querySelectorAll("#injected-marker").length') == 1
-
-
-def test_add_css_after_await_in_async_sub_page(screen: Screen):
-    """add_css must survive a page load when called after an await in an async sub page builder (#6147)."""
-    async def sub():
+        ui.add_body_html('<div>early body html</div>')
         await asyncio.sleep(0)  # resumes after the response is built, before the socket connects
         ui.add_css('.late { color: rgb(255, 0, 0); }')
-        ui.label('late css').classes('late')
+        ui.label('late label').classes('late')
+        ui.add_body_html('<div>late body html</div>')
 
     @ui.page('/')
     def index():
         ui.sub_pages({'/': sub})
 
     screen.open('/')
-    label = screen.find('late css')
-    screen.wait(0.5)
-    assert label.value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
+    screen.should_contain('late body html')  # enqueued last, so the CSS has been applied once this arrives
+    assert len(screen.find_all('early body html')) == 1, 'build-time HTML should not be injected a second time via JS'
+    assert len(screen.find_all('late body html')) == 1, 'late HTML should be injected exactly once'
+    assert screen.find('late label').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
 
 
 def test_add_css_with_script(screen: Screen):
