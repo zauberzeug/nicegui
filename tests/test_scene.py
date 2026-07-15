@@ -218,7 +218,7 @@ def test_gltf(screen: Screen, set_material: bool, color: str):
 
 
 def test_stl_wireframe(screen: Screen):
-    """A wireframe STL must render as edges: a LineSegments whose geometry is EdgesGeometry."""
+    """A wireframe STL must render as edges (a LineSegments with EdgesGeometry) and follow renames after loading."""
     scene = None
     obj = None
 
@@ -228,25 +228,31 @@ def test_stl_wireframe(screen: Screen):
         app.add_static_file(local_file=TEST_DIR / 'media' / 'cube.stl', url_path='/cube.stl')
         with ui.scene() as scene:
             obj = scene.stl('/cube.stl', wireframe=True)
+        ui.button('Rename', on_click=lambda: obj.with_name('renamed'))
 
     screen.open('/')
     screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
         f'return !!window.getElement && getElement({scene.id})?.objects?.get("{obj.id}")?.children.length > 0'
     ))
-    result = screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{obj.id}");'
-        'const child = o.children && o.children[0];'
-        'return {'
-        '  root_type: o.type,'
-        '  child_geometry: child ? child.geometry.type : null,'
-        '  edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,'
-        '  child_object_id: child ? child.object_id : null,'
-        '};'
-    )
+    result = screen.selenium.execute_script(f'''
+        const obj = getElement({scene.id}).objects.get("{obj.id}");
+        const child = obj.children && obj.children[0];
+        return {{
+            root_type: obj.type,
+            child_geometry: child ? child.geometry.type : null,
+            edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,
+            child_object_id: child ? child.object_id : null,
+        }};
+    ''')
     assert result['root_type'] == 'Group', f'expected a Group wrapper, got {result}'
     assert result['child_geometry'] == 'EdgesGeometry', f'expected EdgesGeometry child, got {result}'
     assert result['edge_count'] > 0, f'expected non-empty edges, got {result}'
     assert result['child_object_id'] == obj.id, f'expected click-hittable child with object_id, got {result}'
+
+    screen.click('Rename')  # rename AFTER the async load has completed
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return getElement({scene.id}).objects.get("{obj.id}").children[0].name === "renamed"'
+    ))
 
 
 def test_no_cyclic_references(screen: Screen):
@@ -279,25 +285,3 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
-
-
-def test_stl_name_after_load(screen: Screen):
-    """Renaming an STL after it has loaded must reach the raycast-hittable child (else click3d reports a stale name)."""
-    scene = None
-    obj = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, obj
-        app.add_static_file(local_file=TEST_DIR / 'media' / 'cube.stl', url_path='/cube.stl')
-        with ui.scene() as scene:
-            obj = scene.stl('/cube.stl')
-
-    screen.open('/')
-    screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
-        f'return !!window.getElement && getElement({scene.id})?.objects?.get("{obj.id}")?.children.length > 0'
-    ))
-    obj.with_name('renamed')  # rename AFTER the async load has completed
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).objects.get("{obj.id}").children[0].name === "renamed"'
-    ))
