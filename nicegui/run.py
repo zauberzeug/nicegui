@@ -10,7 +10,7 @@ from contextlib import suppress
 from functools import partial
 from multiprocessing.context import BaseContext
 from pickle import PicklingError
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -27,7 +27,7 @@ thread_pool = ThreadPoolExecutor()
 #              be picklable -- already the contract on macOS/Windows. Also avoids the fork deadlock.
 #   'fork'  -> opt out, keep fork, silent. You own the fork-safety risk.
 # TODO(4.0): flip the None default to 'spawn' (keeping the explicit 'fork' opt-out). See #6117.
-process_pool_start_method: str | None = None
+process_pool_start_method: Literal['spawn', 'fork'] | None = None
 
 # Always-spawn context, also shared with native.py's window subprocess (#1841). This is the context
 # used when process_pool_start_method == 'spawn'; it is independent of the global default.
