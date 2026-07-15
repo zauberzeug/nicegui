@@ -66,7 +66,8 @@ def _warn_if_implicit_fork() -> None:
             'fork is unsafe in a threaded process and its workers inherit process state (module globals, '
             'caches, preloaded objects) that spawn workers do not, so switching can change behavior. '
             "NiceGUI 4.0 will default to 'spawn'. Set nicegui.run.process_pool_start_method to 'spawn' to "
-            "opt in now (recommended) or to 'fork' to keep fork and silence this heads-up. "
+            "opt in now (recommended) or to 'fork' to keep fork and silence this heads-up; "
+            'the setting must be applied before the app starts up (i.e. before ui.run()). '
             'See https://github.com/zauberzeug/nicegui/pull/6117'
         )
 
@@ -131,6 +132,9 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     For this it needs to transfer the whole state of the passed function to the process (which is done with pickle).
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
+
+    The pool's multiprocessing start method can be configured via ``run.process_pool_start_method``
+    (``'spawn'``, ``'fork'`` or ``None`` to inherit the platform default) before the app starts up.
 
     Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
     This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
