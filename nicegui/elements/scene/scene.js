@@ -426,9 +426,7 @@ export default {
         });
       };
       if (object.userData.isGltf || object.userData.isStl) {
-        object.traverse(
-          (child) => (child.isMesh || (object.userData.isStl && child.isLine)) && child.material && apply(child.material),
-        );
+        object.traverse((child) => child.material && apply(child.material));
       } else if (object.material) {
         apply(object.material);
       }
