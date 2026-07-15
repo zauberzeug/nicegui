@@ -25,8 +25,11 @@ thread_pool = ThreadPoolExecutor()
 #   'spawn' -> opt in to spawn, silent. Workers start from a fresh import: they do NOT inherit
 #              process state (module globals, caches, preloaded objects), and callables + args must
 #              be picklable -- already the contract on macOS/Windows. Also avoids the fork deadlock.
-#   'fork'  -> opt out, keep fork, silent. You own the fork-safety risk.
-# DEPRECATED: the default will change to 'spawn' in NiceGUI 4.0 (keeping the explicit 'fork' opt-out). See #6117.
+#   'fork'  -> opt out, keep fork, silent. You own the fork-safety risk; note that Python itself has
+#              deprecated forking a multi-threaded process (3.12+), so this option can only survive
+#              for as long as CPython keeps supporting it.
+# DEPRECATED: the default will change to 'spawn' in NiceGUI 4.0 (keeping the explicit 'fork' opt-out
+#             as long as Python supports it). See #6117.
 process_pool_start_method: Literal['spawn', 'fork'] | None = None
 
 # Always-spawn context, also shared with native.py's window subprocess (#1841). This is the context
