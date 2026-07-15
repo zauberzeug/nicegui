@@ -339,7 +339,7 @@ export default {
             }
           },
           undefined,
-          (error) => console.error(error),
+          (error) => console.error("GLTF load error:", error),
         );
       } else if (type == "stl") {
         const url = args[0];
