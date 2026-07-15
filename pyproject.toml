@@ -72,7 +72,7 @@ matplotlib = [
     "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
     "pillow>=12.2.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/245, for matplotlib
 ]
-highcharts = ["nicegui-highcharts>=3.2.1,<4"]
+highcharts = ["nicegui-highcharts>=3.3.0,<4"]
 redis = ["redis>=4.0.0"]
 
 [dependency-groups]
@@ -85,7 +85,7 @@ dev = [
     "matplotlib>=3.5.0,<4",  # extra: matplotlib
     "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
     "pillow>=12.2.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/245, for matplotlib
-    "nicegui-highcharts>=3.2.1,<4",  # extra: highcharts
+    "nicegui-highcharts>=3.3.0,<4",  # extra: highcharts
     "redis>=4.0.0",  # extra: redis
     {include-group = "types"},
     {include-group = "website"},

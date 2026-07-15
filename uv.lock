@@ -2240,7 +2240,7 @@ requires-dist = [
     { name = "lxml-html-clean", specifier = ">=0.4.4" },
     { name = "markdown2", specifier = ">=2.4.7,!=2.4.11" },
     { name = "matplotlib", marker = "extra == 'matplotlib'", specifier = ">=3.5.0,<4" },
-    { name = "nicegui-highcharts", marker = "extra == 'highcharts'", specifier = ">=3.2.1,<4" },
+    { name = "nicegui-highcharts", marker = "extra == 'highcharts'", specifier = ">=3.3.0,<4" },
     { name = "orjson", marker = "platform_machine != 'i386' and platform_machine != 'i686' and platform_python_implementation != 'PyPy'", specifier = ">=3.11.5" },
     { name = "pillow", marker = "extra == 'matplotlib'", specifier = ">=12.2.0" },
     { name = "plotly", marker = "extra == 'plotly'", specifier = ">=5.13,<7.0" },
@@ -2275,7 +2275,7 @@ dev = [
     { name = "latex2mathml", specifier = ">=3.78.1,<4.0.0" },
     { name = "matplotlib", specifier = ">=3.5.0,<4" },
     { name = "mypy", specifier = ">=1.13.0,<2" },
-    { name = "nicegui-highcharts", specifier = ">=3.2.1,<4" },
+    { name = "nicegui-highcharts", specifier = ">=3.3.0,<4" },
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "pandas", marker = "python_full_version < '3.13'", specifier = ">=2.0.0,<3" },
     { name = "pandas", marker = "python_full_version == '3.13.*'", specifier = ">=2.2.3,<3" },
@@ -2334,14 +2334,14 @@ website = [
 
 [[package]]
 name = "nicegui-highcharts"
-version = "3.2.1"
+version = "3.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nicegui" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5a/49/e5b2fc4df76cea0356c76360fa11cdfe160e1af2b885019fb50aec3550bc/nicegui_highcharts-3.2.1.tar.gz", hash = "sha256:ab2d634b399c4a23a63209bdc459300193b9cd3c5a0d35119d92e3f67c537ac0", size = 2073203, upload-time = "2026-03-10T09:36:58.06Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/28/87/4495760fed63f113361e5ff52507460fbb39d7ab63375b1dce72b47e33e1/nicegui_highcharts-3.3.0.tar.gz", hash = "sha256:84848fe15c54bd7a8ff491a96f4627cf0db1b44a2da89611100237046337125d", size = 2073111, upload-time = "2026-07-04T16:31:40.385Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/4b/dbe3bd3a323b621891af8bdcc0c046e59abed6b7f285a6351e3c3cf75078/nicegui_highcharts-3.2.1-py3-none-any.whl", hash = "sha256:bf5af947dc456ef6387a5a59ca3da30fa46a4aca050708a593b5d4757b40b094", size = 2189887, upload-time = "2026-03-10T09:36:59.766Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/4a/a0525c4bf3d8361cbb6fbe5c2d7b446cc6734dd9a0e7040e846c4961b79a/nicegui_highcharts-3.3.0-py3-none-any.whl", hash = "sha256:13fb5865f441efd200c874b1d40ae5679425fd732ea09ae634c6e5f930e2d920", size = 2189802, upload-time = "2026-07-04T16:31:39.011Z" },
 ]
 
 [[package]]
@@ -4094,11 +4094,11 @@ wheels = [
 
 [[package]]
 name = "soupsieve"
-version = "2.8.3"
+version = "2.8.4"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7b/ae/2d9c981590ed9999a0d91755b47fc74f74de286b0f5cee14c9269041e6c4/soupsieve-2.8.3.tar.gz", hash = "sha256:3267f1eeea4251fb42728b6dfb746edc9acaffc4a45b27e19450b676586e8349", size = 118627, upload-time = "2026-01-20T04:27:02.457Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/2c/0a5f6f8ee0d5589e48c7640213ed5175d52cf540a06725b628cc1a45d6ce/soupsieve-2.8.4.tar.gz", hash = "sha256:e121fd02e975c695e4e9e8774a5ee35d74714b59307868dcc5319ad2d9e3328e", size = 121110, upload-time = "2026-05-24T13:55:57.154Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl", hash = "sha256:ed64f2ba4eebeab06cc4962affce381647455978ffc1e36bb79a545b91f45a95", size = 37016, upload-time = "2026-01-20T04:27:01.012Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/f5/0c41cb68dcae6b7de4fac4188a3a9589e21fb31df21ea3a2e888db95e6c9/soupsieve-2.8.4-py3-none-any.whl", hash = "sha256:e7e6b0769c8f51ed59acab6e994b00621096cfb1c640a7509295987388fbaf65", size = 37304, upload-time = "2026-05-24T13:55:55.406Z" },
 ]
 
 [[package]]
