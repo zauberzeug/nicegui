@@ -1,9 +1,11 @@
 import asyncio
 import hashlib
 import mimetypes
+import weakref
 from collections.abc import AsyncGenerator
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import BinaryIO
 
 from fastapi import Request
 from fastapi.responses import Response, StreamingResponse
@@ -51,8 +53,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
         'Accept-Ranges': 'bytes',
     })
 
-    async def content_reader(file: Path, start: int, end: int) -> AsyncGenerator[bytes, None]:
-        data = open(file, 'rb')  # pylint: disable=consider-using-with  # closed synchronously in the `finally` below
+    async def content_reader(data: BinaryIO, start: int, end: int) -> AsyncGenerator[bytes, None]:
         try:
             await asyncio.to_thread(data.seek, start)
             remaining_bytes = end - start + 1
@@ -64,8 +65,12 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
                 remaining_bytes -= len(chunk)
         finally:
             data.close()
+    data = open(file, 'rb')  # pylint: disable=consider-using-with  # closed via the `finally` above or the finalizer below
+    generator = content_reader(data, start, end)
+    # backstop: Starlette may abandon the iterator without aclose() (client disconnect)
+    weakref.finalize(generator, data.close)
     return StreamingResponse(
-        content_reader(file, start, end),
+        generator,
         media_type=media_type,
         headers=headers,
         status_code=status_code,

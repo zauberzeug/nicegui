@@ -238,11 +238,17 @@ def test_streamed_media_file_handle_is_released_on_teardown(monkeypatch: pytest.
 
     monkeypatch.setattr('builtins.open', tracking_open)
 
+    async def _first_chunk(gen):
+        return await gen.__anext__()  # created inside the loop so the finalizer hook is captured
+
     generator = get_range_response(VIDEO_FILE, SimpleNamespace(headers={'range': 'bytes=0-1999'}),
                                    chunk_size=64).body_iterator
     loop = asyncio.new_event_loop()
     try:
-        loop.run_until_complete(generator.__anext__())  # open the file and yield once, then suspend
+        # First-iterate *inside* the running loop, as uvicorn/Starlette does: this captures the asyncio
+        # finalizer hook on the generator, so a later GC on the closed loop cannot run its `finally:`
+        # (the only path that reproduces the CI leak; iterating from outside the loop hides it).
+        loop.run_until_complete(_first_chunk(generator))  # open the file and yield once, then suspend
     finally:
         loop.close()  # tear down without aclose(), as Starlette does on a client disconnect
 
