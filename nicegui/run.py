@@ -41,7 +41,7 @@ R = TypeVar('R')
 def _resolve_cpu_bound_context() -> BaseContext:
     """Resolve the multiprocessing context for the cpu_bound pool from `process_pool_start_method`."""
     if process_pool_start_method is None:
-        return multiprocessing.get_context()  # global default -> byte-for-byte today's behavior
+        return multiprocessing.get_context()
     if process_pool_start_method == 'spawn':
         return SPAWN_CONTEXT
     try:
@@ -55,11 +55,11 @@ def _warn_if_implicit_fork() -> None:
     """Warn once if the live pool fell back to plain fork because the start method was never chosen."""
     if _pool_uses_implicit_fork:
         helpers.warn_once(
-            "run.cpu_bound is using the 'fork' start method (the platform default on Linux/Docker). "
+            'run.cpu_bound is using the "fork" start method (the platform default on Linux/Docker). '
             'fork is unsafe in a threaded process and its workers inherit process state (module globals, '
             'caches, preloaded objects) that spawn workers do not, so switching can change behavior. '
-            "NiceGUI 4.0 will default to 'spawn'. Set nicegui.run.process_pool_start_method to 'spawn' to "
-            "opt in now (recommended) or to 'fork' to keep fork and silence this heads-up; "
+            'NiceGUI 4.0 will default to "spawn". Set nicegui.run.process_pool_start_method to "spawn" to '
+            'opt in now (recommended) or to "fork" to keep fork and silence this heads-up; '
             'the setting must be applied before the app starts up (i.e. before ui.run()). '
             'See https://github.com/zauberzeug/nicegui/pull/6117'
         )
