@@ -115,82 +115,63 @@ async def test_returns_none_when_app_is_stopping(user: User, func: Callable):
 
 
 @pytest.fixture
-def restore_start_method() -> Generator[None, None, None]:
-    """Restore run.process_pool_start_method after a test that mutates it."""
-    original = run.process_pool_start_method
-    yield
-    run.process_pool_start_method = original
-
-
-@pytest.fixture
 def isolate_pool_state() -> Generator[None, None, None]:
-    """Save/restore the knob + latched pool state and clear shown warnings around the test."""
-    original_method = run.process_pool_start_method
-    original_context = run._pool_context  # pylint: disable=protected-access
-    original_implicit_fork = run._pool_uses_implicit_fork  # pylint: disable=protected-access
+    """Restore run.process_pool_start_method, drop the test's pool and forget shown warnings."""
+    original = run.process_pool_start_method
     nicegui_warnings.reset()
     try:
         yield
     finally:
+        run.process_pool_start_method = original
         run.reset()
-        run.process_pool_start_method = original_method
-        run._pool_context = original_context  # pylint: disable=protected-access
-        run._pool_uses_implicit_fork = original_implicit_fork  # pylint: disable=protected-access
         nicegui_warnings.reset()
 
 
 @pytest.mark.parametrize('method', [None, 'spawn', 'fork', 'forkserver'])
-def test_cpu_bound_context_resolution(restore_start_method, method):
-    """The start-method setting resolves to the expected multiprocessing start method."""
+def test_pool_uses_configured_start_method(isolate_pool_state, method):
+    """setup() builds the pool with the configured start method (or the platform default for None)."""
     if method is not None and method not in multiprocessing.get_all_start_methods():
         pytest.skip(f'{method} is not available on this platform')
     run.process_pool_start_method = method
+    run.setup()
     expected = multiprocessing.get_start_method() if method is None else method
-    assert run._resolve_cpu_bound_context().get_start_method() == expected  # pylint: disable=protected-access
+    assert run.process_pool is not None
+    assert run.process_pool._mp_context is not None  # pylint: disable=protected-access
+    assert run.process_pool._mp_context.get_start_method() == expected  # pylint: disable=protected-access
 
 
-def test_cpu_bound_spawn_reuses_shared_spawn_context(restore_start_method):
-    """'spawn' reuses the module-level SPAWN_CONTEXT shared with native.py (no duplicate context)."""
+def test_spawn_pool_reuses_shared_spawn_context(isolate_pool_state):
+    """A "spawn" pool reuses the module-level SPAWN_CONTEXT shared with native.py (no duplicate context)."""
     run.process_pool_start_method = 'spawn'
-    assert run._resolve_cpu_bound_context() is run.SPAWN_CONTEXT  # pylint: disable=protected-access
+    run.setup()
+    assert run.process_pool is not None
+    assert run.process_pool._mp_context is run.SPAWN_CONTEXT  # pylint: disable=protected-access
 
 
-def test_cpu_bound_invalid_start_method_raises(restore_start_method):
-    """An unknown value (or one the platform lacks, e.g. "fork" on Windows) fails fast with a clear message."""
+def test_invalid_start_method_fails_at_setup(isolate_pool_state):
+    """An unknown value (or one the platform lacks, e.g. "fork" on Windows) makes setup() fail fast."""
     run.process_pool_start_method = 'bogus'  # type: ignore[assignment]
     with pytest.raises(ValueError, match=r'Invalid run\.process_pool_start_method'):
-        run._resolve_cpu_bound_context()  # pylint: disable=protected-access
+        run.setup()
 
 
-@pytest.mark.parametrize('method', [None, 'spawn', 'fork'])
-def test_setup_latches_implicit_fork(isolate_pool_state, method):
-    """setup() latches "implicit fork" iff the user never chose a method AND the pool resolves to fork."""
-    if method == 'fork' and 'fork' not in multiprocessing.get_all_start_methods():
-        pytest.skip('fork is not available on this platform')
-    expected = method is None and multiprocessing.get_start_method() == 'fork'
+@pytest.mark.parametrize('method,expect_warning', [(None, True), ('spawn', False), ('fork', False)])
+async def test_fork_heads_up_warning(isolate_pool_state, caplog, method, expect_warning):
+    """The one-time heads-up fires iff the start method was never chosen and the pool falls back to fork."""
+    if method != 'spawn' and multiprocessing.get_start_method() != 'fork':
+        pytest.skip('needs a platform with a fork default (e.g. Linux)')
     run.process_pool_start_method = method
     run.setup()
-    assert run._pool_uses_implicit_fork is expected  # pylint: disable=protected-access
+    assert await run.cpu_bound(good_function)
+    assert ('process_pool_start_method' in caplog.text) is expect_warning
 
 
-@pytest.mark.parametrize('implicit_fork,expect_warn', [(True, True), (False, False)])
-def test_warn_fires_only_when_pool_uses_implicit_fork(isolate_pool_state, caplog, implicit_fork, expect_warn):
-    """The heads-up is gated purely on the latched pool state, so it always describes the live pool."""
-    run._pool_uses_implicit_fork = implicit_fork  # pylint: disable=protected-access
-    run._warn_if_implicit_fork()  # pylint: disable=protected-access
-    assert ('process_pool_start_method' in caplog.text) is expect_warn
-
-
-def test_warn_reflects_pool_not_later_setting_change(isolate_pool_state):
-    """Mutating the knob after setup() must not silence the heads-up about the still-fork live pool."""
+async def test_warning_reflects_pool_not_later_setting_change(isolate_pool_state, caplog):
+    """Flipping the setting after startup must not silence the heads-up about the still-fork live pool."""
     if multiprocessing.get_start_method() != 'fork':
-        pytest.skip('needs a fork default to build an implicit-fork pool')
+        pytest.skip('needs a platform with a fork default (e.g. Linux)')
     run.process_pool_start_method = None
     run.setup()
-    assert run._pool_uses_implicit_fork is True  # pylint: disable=protected-access
-    run.process_pool_start_method = 'spawn'  # user flips the knob AFTER the pool is already built
-    run._warn_if_implicit_fork()  # pylint: disable=protected-access
-    # the latch (and therefore the heads-up) still describes the live pool, which is still fork:
-    assert run._pool_uses_implicit_fork is True  # pylint: disable=protected-access
-    assert any('process_pool_start_method' in m
-               for m in nicegui_warnings._shown_warnings)  # pylint: disable=protected-access
+    run.process_pool_start_method = 'spawn'  # too late, the pool is already built
+    assert await run.cpu_bound(good_function)
+    assert 'process_pool_start_method' in caplog.text
