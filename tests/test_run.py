@@ -139,11 +139,11 @@ def isolate_pool_state() -> Generator[None, None, None]:
         nicegui_warnings.reset()
 
 
-@pytest.mark.parametrize('method', [None, 'spawn', 'fork'])
+@pytest.mark.parametrize('method', [None, 'spawn', 'fork', 'forkserver'])
 def test_cpu_bound_context_resolution(restore_start_method, method):
-    """The tri-state setting resolves to the expected multiprocessing start method."""
-    if method == 'fork' and 'fork' not in multiprocessing.get_all_start_methods():
-        pytest.skip('fork is not available on this platform')
+    """The start-method setting resolves to the expected multiprocessing start method."""
+    if method is not None and method not in multiprocessing.get_all_start_methods():
+        pytest.skip(f'{method} is not available on this platform')
     run.process_pool_start_method = method
     expected = multiprocessing.get_start_method() if method is None else method
     assert run._resolve_cpu_bound_context().get_start_method() == expected  # pylint: disable=protected-access
@@ -156,24 +156,9 @@ def test_cpu_bound_spawn_reuses_shared_spawn_context(restore_start_method):
 
 
 def test_cpu_bound_invalid_start_method_raises(restore_start_method):
-    """An unsupported value fails fast with a clear message rather than deep inside pool setup."""
-    run.process_pool_start_method = 'forkserver'  # a real mp method, but not a supported tri-state value
+    """An unknown value (or one the platform lacks, e.g. "fork" on Windows) fails fast with a clear message."""
+    run.process_pool_start_method = 'bogus'  # type: ignore[assignment]
     with pytest.raises(ValueError, match=r'Invalid run\.process_pool_start_method'):
-        run._resolve_cpu_bound_context()  # pylint: disable=protected-access
-
-
-def test_cpu_bound_fork_unavailable_gives_clear_error(restore_start_method, monkeypatch):
-    """An explicit 'fork' on a platform without it (e.g. Windows) gives a clear error, not a raw ValueError."""
-    real_get_context = multiprocessing.get_context
-
-    def fake_get_context(method=None):
-        if method == 'fork':
-            raise ValueError("cannot find context for 'fork'")  # what multiprocessing raises on Windows
-        return real_get_context(method)
-
-    monkeypatch.setattr(multiprocessing, 'get_context', fake_get_context)
-    run.process_pool_start_method = 'fork'
-    with pytest.raises(ValueError, match='not available on this platform'):
         run._resolve_cpu_bound_context()  # pylint: disable=protected-access
 
 

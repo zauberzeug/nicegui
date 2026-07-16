@@ -65,7 +65,9 @@ doc.intro(generic_events_documentation)
 
     By default, the process pool uses the platform's multiprocessing start method — "fork" on Linux, which is unsafe in threaded processes.
     Set `run.process_pool_start_method = 'spawn'` before `ui.run()` to opt into the safer "spawn" method (the default in NiceGUI 4.0),
-    or to `'fork'` to keep fork and silence the corresponding warning. *Added in version 3.15.0*
+    or to "fork" to keep fork and silence the corresponding warning.
+    Note that spawned workers start from a fresh import and do not inherit module globals or other process state,
+    so switching from fork can change behavior. *Added in version 3.15.0*
 ''')
 def cpu_bound_demo():
     import time

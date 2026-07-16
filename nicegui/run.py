@@ -19,18 +19,11 @@ from . import core, helpers
 process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
 
-# Start method for the run.cpu_bound process pool (tri-state, see #6117):
-#   None    -> inherit the global multiprocessing default (byte-for-byte today's behavior); a
-#              one-time heads-up is logged on first use if that resolves to plain 'fork' (Linux).
-#   'spawn' -> opt in to spawn, silent. Workers start from a fresh import: they do NOT inherit
-#              process state (module globals, caches, preloaded objects), and callables + args must
-#              be picklable -- already the contract on macOS/Windows. Also avoids the fork deadlock.
-#   'fork'  -> opt out, keep fork, silent. You own the fork-safety risk; note that Python itself has
-#              deprecated forking a multi-threaded process (3.12+), so this option can only survive
-#              for as long as CPython keeps supporting it.
-# DEPRECATED: the default will change to 'spawn' in NiceGUI 4.0 (keeping the explicit 'fork' opt-out
-#             as long as Python supports it). See #6117.
-process_pool_start_method: Literal['spawn', 'fork'] | None = None
+# Start method for the run.cpu_bound process pool (None inherits the global multiprocessing default);
+# see the multiprocessing docs for the trade-offs between the methods. A one-time heads-up is logged
+# if the pool implicitly ends up on plain "fork", which is unsafe in a threaded process (#6117).
+# DEPRECATED: the None default will change to "spawn" in 4.0 (keeping the "fork" opt-out as long as Python supports it).
+process_pool_start_method: Literal['spawn', 'fork', 'forkserver'] | None = None
 
 # Always-spawn context, also shared with native.py's window subprocess (#1841). This is the context
 # used when process_pool_start_method == 'spawn'; it is independent of the global default.
@@ -51,14 +44,11 @@ def _resolve_cpu_bound_context() -> BaseContext:
         return multiprocessing.get_context()  # global default -> byte-for-byte today's behavior
     if process_pool_start_method == 'spawn':
         return SPAWN_CONTEXT
-    if process_pool_start_method == 'fork':
-        try:
-            return multiprocessing.get_context('fork')
-        except ValueError as e:  # e.g. Windows, where 'fork' does not exist
-            raise ValueError("run.process_pool_start_method='fork' is not available on this platform "
-                             "(e.g. Windows); use 'spawn' or None instead.") from e
-    raise ValueError(f'Invalid run.process_pool_start_method {process_pool_start_method!r}; '
-                     "expected None, 'spawn' or 'fork'.")
+    try:
+        return multiprocessing.get_context(process_pool_start_method)
+    except ValueError as e:  # unknown method, or a method this platform lacks (e.g. "fork" on Windows)
+        raise ValueError(f'Invalid run.process_pool_start_method {process_pool_start_method!r}; '
+                         f'this platform supports {multiprocessing.get_all_start_methods()}.') from e
 
 
 def _warn_if_implicit_fork() -> None:
@@ -137,7 +127,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     and return the result (instead of writing it in class properties or global variables).
 
     The pool's multiprocessing start method can be configured via ``run.process_pool_start_method``
-    (``'spawn'``, ``'fork'`` or ``None`` to inherit the platform default) before the app starts up.
+    ("spawn", "fork", "forkserver", or ``None`` to inherit the platform default) before the app starts up.
 
     Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
     This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
