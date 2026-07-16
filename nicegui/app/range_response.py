@@ -65,10 +65,9 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
                 remaining_bytes -= len(chunk)
         finally:
             data.close()
-    data = open(file, 'rb')  # pylint: disable=consider-using-with  # closed via the `finally` above or the finalizer below
+    data = open(file, 'rb')  # pylint: disable=consider-using-with
     generator = content_reader(data, start, end)
-    # backstop: Starlette may abandon the iterator without aclose() (client disconnect)
-    weakref.finalize(generator, data.close)
+    weakref.finalize(generator, data.close)  # close if the iterator is abandoned without aclose()
     return StreamingResponse(
         generator,
         media_type=media_type,
