@@ -16,7 +16,7 @@ from . import (
     notification_documentation,
     notify_documentation,
     pagination_documentation,
-    popup_edit_documentation,
+    popup_documentation,
     row_documentation,
     scroll_area_documentation,
     separator_documentation,
@@ -107,7 +107,7 @@ doc.intro(carousel_documentation)
 doc.intro(pagination_documentation)
 doc.intro(menu_documentation)
 doc.intro(context_menu_documentation)
-doc.intro(popup_edit_documentation)
+doc.intro(popup_documentation)
 doc.intro(tooltip_documentation)
 doc.intro(notify_documentation)
 doc.intro(notification_documentation)
