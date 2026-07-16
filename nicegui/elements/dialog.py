@@ -8,10 +8,10 @@ from ..context import context
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
 from ..helpers import NoImplicitAwait
-from .mixins.value_element import ValueElement
+from .mixins.openable_element import OpenableElement
 
 
-class Dialog(ValueElement[bool], NoImplicitAwait, component='dialog.js'):
+class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
 
     @resolve_defaults
     def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
@@ -47,15 +47,12 @@ class Dialog(ValueElement[bool], NoImplicitAwait, component='dialog.js'):
             self._submitted = asyncio.Event()
         return self._submitted
 
-    def open(self) -> Self:
-        """Open the dialog."""
-        self.value = True
-        return self
+    def toggle(self) -> Self:  # pylint: disable=useless-parent-delegation
+        """Toggle the dialog.
 
-    def close(self) -> Self:
-        """Close the dialog."""
-        self.value = False
-        return self
+        *Added in version 3.15.0*
+        """
+        return super().toggle()
 
     def __await__(self):
         self._result = None
@@ -70,9 +67,6 @@ class Dialog(ValueElement[bool], NoImplicitAwait, component='dialog.js'):
         """Submit the dialog with the given result."""
         self._result = result
         self.submitted.set()
-
-    def _render_markdown(self) -> str:
-        return self._children_to_markdown() if self.value else ''
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
