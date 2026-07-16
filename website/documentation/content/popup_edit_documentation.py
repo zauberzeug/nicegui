@@ -12,7 +12,7 @@ def main_demo() -> None:
         with ui.popup_edit(on_show=lambda _: ui.notify('Shown!'),
                            on_hide=lambda _: ui.notify('Hidden!')) as popup:
             ui.input().bind_value(app.storage.client, 'name')
-    ui.button('Force show popup edit', on_click=popup.show)
+    ui.button('Force open popup edit', on_click=popup.open)
 
 
 doc.reference(ui.popup_edit)

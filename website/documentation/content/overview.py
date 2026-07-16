@@ -263,6 +263,7 @@ def map_of_nicegui():
             - [`ui.pagination`](/documentation/pagination)
             - [`ui.parallax`](/documentation/parallax)
             - [`ui.plotly`](/documentation/plotly)
+            - [`ui.popup_edit`](/documentation/popup_edit)
             - [`ui.pyplot`](/documentation/pyplot)
             - [`ui.radio`](/documentation/radio)
             - [`ui.rating`](/documentation/rating)
