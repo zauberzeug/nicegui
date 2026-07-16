@@ -55,7 +55,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
 
     async def content_reader(data: BinaryIO, start: int, end: int) -> AsyncGenerator[bytes, None]:
         try:
-            await asyncio.to_thread(data.seek, start)
+            data.seek(start)
             remaining_bytes = end - start + 1
             while remaining_bytes > 0:
                 chunk = await asyncio.to_thread(data.read, min(chunk_size, remaining_bytes))
