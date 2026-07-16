@@ -81,6 +81,7 @@ _LAZY_IMPORTS = {
     'pagination': ('.elements.pagination', 'Pagination'),
     'parallax': ('.elements.parallax', 'Parallax'),
     'plotly': ('.elements.plotly', 'Plotly'),
+    'popup': ('.elements.popup', 'Popup'),
     'circular_progress': ('.elements.progress', 'CircularProgress'),
     'linear_progress': ('.elements.progress', 'LinearProgress'),
     'matplotlib': ('.elements.pyplot', 'Matplotlib'),
@@ -240,6 +241,7 @@ __all__ = [
     'pagination',
     'parallax',
     'plotly',
+    'popup',
     'pyplot',
     'query',
     'radio',
@@ -369,6 +371,7 @@ if TYPE_CHECKING:
     from .elements.pagination import Pagination as pagination
     from .elements.parallax import Parallax as parallax
     from .elements.plotly import Plotly as plotly
+    from .elements.popup import Popup as popup
     from .elements.progress import CircularProgress as circular_progress
     from .elements.progress import LinearProgress as linear_progress
     from .elements.pyplot import Matplotlib as matplotlib
