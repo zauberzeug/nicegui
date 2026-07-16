@@ -145,7 +145,8 @@ class Element(Visibility):
             return None
         parent_slot = self._parent_slot()
         if parent_slot is None:
-            raise RuntimeError('The parent slot of the element has been deleted.')
+            markers = f' markers={",".join(self._markers)}' if self._markers else ''
+            raise RuntimeError(f'The parent slot of {type(self).__name__}(id={self.id}){markers} has been deleted.')
         return parent_slot
 
     @parent_slot.setter
