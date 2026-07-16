@@ -55,7 +55,7 @@ def _warn_if_implicit_fork() -> None:
     """Warn once if the live pool fell back to plain fork because the start method was never chosen."""
     if _pool_uses_implicit_fork:
         helpers.warn_once(
-            'run.cpu_bound is using the "fork" start method (the platform default on Linux/Docker). '
+            'run.cpu_bound is using the "fork" start method (the platform default on Linux/Docker up to Python 3.13). '
             'fork is unsafe in a threaded process and its workers inherit process state (module globals, '
             'caches, preloaded objects) that spawn workers do not, so switching can change behavior. '
             'NiceGUI 4.0 will default to "spawn". Set nicegui.run.process_pool_start_method to "spawn" to '
