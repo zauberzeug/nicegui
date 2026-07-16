@@ -62,6 +62,12 @@ doc.intro(generic_events_documentation)
     The function needs to transfer the whole state of the passed function to the process, which is done with pickle.
     It is encouraged to create free functions or static methods which get all the data as simple parameters (i.e. no class or UI logic)
     and return the result, instead of writing it in class properties or global variables.
+
+    By default, the process pool uses the platform's multiprocessing start method — "fork" on Linux up to Python 3.13, which is unsafe in threaded processes.
+    Set `run.process_pool_start_method = 'spawn'` before `ui.run()` to opt into the safer "spawn" method (the default in NiceGUI 4.0),
+    to "fork" to keep fork and silence the corresponding warning, or to "forkserver" if you prefer it.
+    Note that spawned workers start from a fresh import and do not inherit module globals or other process state,
+    so switching from fork can change behavior. *Added in version 3.15.0*
 ''')
 def cpu_bound_demo():
     import time
