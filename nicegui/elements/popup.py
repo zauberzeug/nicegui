@@ -18,7 +18,7 @@ class Popup(ValueElement[bool]):
 
         *Added in version 3.15.0*
 
-        :param value: whether the popup is already opened (default: `False`)
+        :param value: whether the popup is already opened (default: ``False``)
         """
         super().__init__(tag='q-popup-proxy', value=value)
 
