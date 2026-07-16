@@ -14,7 +14,7 @@ def create() -> None:
         with ui.grid().classes('reveal w-full grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1'):
             _card('ph-arrows-left-right', 'Interaction', [
                 '[Buttons](/documentation/button), [switches](/documentation/switch), '
-                '[sliders](/documentation/slider), [inputs](/documentation/input), ...',
+                '[sliders](/documentation/slider), [inputs](/documentation/input), …',
                 '[Notifications](/documentation/notification), [dialogs](/documentation/dialog) '
                 'and [menus](/documentation/menu)',
                 '[Interactive images](/documentation/interactive_image) with SVG overlays',
@@ -60,8 +60,9 @@ def _card(icon: str, title: str, items: list[str]) -> None:
     with ui.column().classes(f'relative rounded-2xl p-7 gap-0 group transition-transform duration-200 cursor-default hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'):
         ui.label('ui.card()') \
             .classes(f'absolute top-2.5 right-3 font-mono {d.TEXT_13PX} {d.TEXT_BLUE} opacity-0 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none')
-        phosphor_icon(icon) \
-            .classes(f'{d.TEXT_32PX} {d.TEXT_BLUE} [&_i::before]:text-[{d.ACCENT}] [&_i::before]:!opacity-40 [&_i::after]:relative')
-        ui.label(title).classes(f'{d.TEXT_19PX} font-semibold mb-3 tracking-tight')
+        with ui.row(align_items='center').classes('gap-2.5 mb-3'):
+            phosphor_icon(icon) \
+                .classes(f'{d.TEXT_32PX} {d.TEXT_BLUE} [&_i::before]:text-[{d.ACCENT}] [&_i::before]:!opacity-40 [&_i::after]:relative')
+            ui.label(title).classes(f'{d.TEXT_19PX} font-semibold tracking-tight').props('role=heading aria-level=3')
         ui.markdown('\n'.join(f'- {item}' for item in items)) \
             .classes(f'{d.TEXT_15PX} leading-7 {d.TEXT_SECONDARY} [&_ul]:pl-4 [&_li]:pl-1 [&_li]:marker:{d.TEXT_BLUE}/50')

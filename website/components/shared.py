@@ -24,7 +24,8 @@ def section_label(text: str) -> ui.label:
 def section_title(text: str) -> ui.label:
     """Large section title."""
     return ui.label(text) \
-        .classes(f'{d.TEXT_SECTION_TITLE} font-semibold tracking-tight leading-tight mb-3 {d.TEXT_PRIMARY}')
+        .classes(f'{d.TEXT_SECTION_TITLE} font-semibold tracking-tight leading-tight mb-3 {d.TEXT_PRIMARY}') \
+        .props('role=heading aria-level=2')
 
 
 def section_desc(text: str) -> ui.label:
