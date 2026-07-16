@@ -7,8 +7,8 @@ from .mixins.disableable_element import DisableableElement
 class PopupEdit(DisableableElement):
 
     def __init__(self, *,
-                 on_show: Handler[UiEventArguments] | None = None,
-                 on_hide: Handler[UiEventArguments] | None = None,
+                 on_open: Handler[UiEventArguments] | None = None,
+                 on_close: Handler[UiEventArguments] | None = None,
                  ) -> None:
         """Popup Edit
 
@@ -16,22 +16,25 @@ class PopupEdit(DisableableElement):
         It provides a popup editor that can be used to edit text or other content in a popup dialog.
 
         This element only serves as a container for other elements; its own JavaScript value is not used.
-        Value handling is done by the child elements using `NiceGUI's data binding <https://nicegui.io/documentation/section_binding_properties>`_.
+        Value handling is done by the child elements using
+        `NiceGUI's data binding <https://nicegui.io/documentation/section_binding_properties>`_.
 
         *Added in version 3.15.0*
 
-        :param on_show: callback to execute when the popup editor is shown
-        :param on_hide: callback to execute when the popup editor is hidden
+        :param on_open: callback to execute when the popup editor is opened
+        :param on_close: callback to execute when the popup editor is closed
         """
         super().__init__(tag='q-popup-edit')
         for prop in ('buttons', 'auto-save', 'validate', 'label-set', 'label-cancel'):
-            self._props.add_warning(prop,
-                                    f'The prop "{prop}" operates on QPopupEdit\'s own model value, which `ui.popup_edit` does not use. '
-                                    'Use data binding on the child elements instead.')
-        if on_show:
-            self.on_show(on_show)
-        if on_hide:
-            self.on_hide(on_hide)
+            self._props.add_warning(
+                prop,
+                f'The prop "{prop}" operates on QPopupEdit\'s own model value, which `ui.popup_edit` does not use. '
+                'Use data binding on the child elements instead.'
+            )
+        if on_open:
+            self.on_open(on_open)
+        if on_close:
+            self.on_close(on_close)
 
     def open(self) -> Self:
         """Open the popup editor."""
@@ -43,18 +46,18 @@ class PopupEdit(DisableableElement):
         self.run_method('hide')
         return self
 
-    def on_show(self, callback: Handler[UiEventArguments]) -> Self:
-        """Register a handler to be called when the popup editor is shown.
+    def on_open(self, callback: Handler[UiEventArguments]) -> Self:
+        """Register a handler to be called when the popup editor is opened.
 
-        :param callback: callback to execute when the popup editor is shown
+        :param callback: callback to execute when the popup editor is opened
         """
         self.on('show', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
         return self
 
-    def on_hide(self, callback: Handler[UiEventArguments]) -> Self:
-        """Register a handler to be called when the popup editor is hidden.
+    def on_close(self, callback: Handler[UiEventArguments]) -> Self:
+        """Register a handler to be called when the popup editor is closed.
 
-        :param callback: callback to execute when the popup editor is hidden
+        :param callback: callback to execute when the popup editor is closed
         """
         self.on('hide', lambda: handle_event(callback, UiEventArguments(sender=self, client=self.client)), args=[])
         return self

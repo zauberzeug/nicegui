@@ -12,8 +12,8 @@ def test_popup_edit(screen: Screen):
     @ui.page('/')
     def page():
         with ui.label().bind_text_from(data, 'name'):
-            with ui.popup_edit(on_show=lambda _: events.append('show'),
-                               on_hide=lambda _: events.append('hide')):
+            with ui.popup_edit(on_open=lambda: events.append('show'),
+                               on_close=lambda: events.append('hide')):
                 ui.input('Name').bind_value(data, 'name')
 
     screen.open('/')
