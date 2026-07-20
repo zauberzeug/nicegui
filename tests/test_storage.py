@@ -1,6 +1,7 @@
 import asyncio
 import copy
 import re
+import threading
 import time
 
 import httpx
@@ -419,6 +420,22 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+async def test_clear_waits_out_transiently_held_storage_file(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    app.storage.general['key'] = 'value'  # schedules an async backup task
+    await asyncio.sleep(0.1)  # let the backup write the file
+    filepath = Storage.path / 'storage-general.json'
+    assert filepath.exists()
+    handle = filepath.open(encoding='utf-8')  # stands in for a backup write still holding the file
+    threading.Timer(0.2, handle.close).start()
+    app.storage.clear()  # used to raise PermissionError (WinError 32) on Windows while the handle is open
+    assert not filepath.exists()
 
 
 @pytest.mark.parametrize('custom_cookie_headers', [False, True])
