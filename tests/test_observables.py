@@ -218,6 +218,10 @@ def test_removed_dict_values_are_detached():
     assert count == n, 'detached items should not fire change events anymore'
     data['c']['x'] = 1
     assert count == n + 1, 'items which are still contained should fire change events'
+    item = data['c']
+    data.clear()
+    item['y'] = 2
+    assert count == n + 2, 'items removed by clearing the dict should not fire change events anymore'
 
 
 def test_removed_list_items_are_detached():
