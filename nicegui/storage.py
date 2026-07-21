@@ -1,6 +1,5 @@
 import contextvars
 import os
-import time
 import uuid
 from collections import Counter
 from datetime import timedelta
@@ -211,7 +210,7 @@ class Storage:
             context.client.storage.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
-            _unlink_with_retry(filepath)
+            helpers.unlink_with_retry(filepath)
         if self.path.exists():
             self.path.rmdir()
 
@@ -220,20 +219,3 @@ class Storage:
         for user in self._users.values():
             await user.close()
         await self._general.close()
-
-
-def _unlink_with_retry(filepath: Path, *, timeout: float = 1.0) -> None:
-    """Unlink a file, waiting out transient ``PermissionError`` on Windows.
-
-    A lazily scheduled backup may still hold a storage file open;
-    Windows cannot delete open files, so retry briefly until the handle is released.
-    """
-    deadline = time.monotonic() + timeout
-    while True:
-        try:
-            filepath.unlink()
-            return
-        except PermissionError:
-            if time.monotonic() > deadline:
-                raise
-            time.sleep(0.02)

@@ -438,6 +438,26 @@ async def test_clear_waits_out_transiently_held_storage_file(user: User):
     assert not filepath.exists()
 
 
+async def test_backup_of_emptied_dict_waits_out_held_storage_file(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    app.storage.general['key'] = 'value'  # schedules an async backup task
+    await asyncio.sleep(0.1)  # let the backup write the file
+    filepath = Storage.path / 'storage-general.json'
+    assert filepath.exists()
+    handle = filepath.open(encoding='utf-8')  # stands in for another writer still holding the file
+    threading.Timer(0.2, handle.close).start()
+    app.storage.general.clear()  # schedules an async backup which deletes the now-empty file
+    deadline = time.monotonic() + 2.0
+    while filepath.exists() and time.monotonic() < deadline:
+        await asyncio.sleep(0.05)
+    # used to raise PermissionError (WinError 32) on Windows in the backup task (logged as ERROR)
+    assert not filepath.exists()
+
+
 @pytest.mark.parametrize('custom_cookie_headers', [False, True])
 def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
     @ui.page('/')

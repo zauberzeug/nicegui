@@ -1,7 +1,7 @@
 import os
 
 from .elements import require_top_level_layout
-from .files import hash_file_path, is_file
+from .files import hash_file_path, is_file, unlink_with_retry, unlink_with_retry_async
 from .functions import (
     NoImplicitAwait,
     await_with_context,
@@ -33,6 +33,8 @@ __all__ = [
     'require_top_level_layout',
     'schedule_browser',
     'should_await',
+    'unlink_with_retry',
+    'unlink_with_retry_async',
     'warn_once',
 ]
 
