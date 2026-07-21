@@ -30,8 +30,7 @@ bindings: defaultdict[BindingKey, list[Binding]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[BindingKey, Any] = weakref.WeakValueDictionary()
 active_links: list[ActiveLink] = []
 _active_links_added = asyncio.Event()
-# Maps object IDs to binding keys that reference them, so remove() avoids scanning all bindings.
-_binding_keys_by_object: dict[int, set[BindingKey]] = {}
+_binding_keys_by_object: defaultdict[int, set[BindingKey]] = defaultdict(set)
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -39,16 +38,8 @@ T = TypeVar('T')
 _MISSING = object()
 
 
-def _index_binding(source_obj: Any, target_obj: Any, binding_key: BindingKey) -> None:
-    """Index both endpoints so remove() can find affected binding lists without a full scan."""
-    _binding_keys_by_object.setdefault(id(source_obj), set()).add(binding_key)
-    _binding_keys_by_object.setdefault(id(target_obj), set()).add(binding_key)
-
-
 def _discard_binding_key_from_object_index(obj_id: int, binding_key: BindingKey) -> None:
-    indexed_binding_keys = _binding_keys_by_object.get(obj_id)
-    if indexed_binding_keys is None:
-        return
+    indexed_binding_keys = _binding_keys_by_object[obj_id]
     indexed_binding_keys.discard(binding_key)
     if not indexed_binding_keys:
         del _binding_keys_by_object[obj_id]
@@ -59,7 +50,8 @@ def _bind_one_way(source_obj: Any, source_name: tuple[str, ...], target_obj: Any
     """Register a one-way binding and run its initial propagation."""
     binding_key = (id(source_obj), source_name)
     bindings[binding_key].append((source_obj, target_obj, target_name, transform))
-    _index_binding(source_obj, target_obj, binding_key)
+    _binding_keys_by_object[id(source_obj)].add(binding_key)
+    _binding_keys_by_object[id(target_obj)].add(binding_key)
     if binding_key not in bindable_properties:
         active_links.append((source_obj, source_name, target_obj, target_name, transform))
         _active_links_added.set()
