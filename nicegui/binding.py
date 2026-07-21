@@ -38,36 +38,6 @@ T = TypeVar('T')
 _MISSING = object()
 
 
-def _discard_binding_key_from_object_index(obj_id: int, binding_key: BindingKey) -> None:
-    indexed_binding_keys = _binding_keys_by_object[obj_id]
-    indexed_binding_keys.discard(binding_key)
-    if not indexed_binding_keys:
-        del _binding_keys_by_object[obj_id]
-
-
-def _bind_one_way(source_obj: Any, source_name: tuple[str, ...], target_obj: Any, target_name: tuple[str, ...],
-                  transform: Callable[[Any], Any] | None) -> None:
-    """Register a one-way binding and run its initial propagation."""
-    binding_key = (id(source_obj), source_name)
-    bindings[binding_key].append((source_obj, target_obj, target_name, transform))
-    _binding_keys_by_object[id(source_obj)].add(binding_key)
-    _binding_keys_by_object[id(target_obj)].add(binding_key)
-    if binding_key not in bindable_properties:
-        active_links.append((source_obj, source_name, target_obj, target_name, transform))
-        _active_links_added.set()
-    _propagate(source_obj, source_name)
-
-
-def _pop_binding_keys_for_objects(object_ids: Iterable[int]) -> set[BindingKey]:
-    """Pop and return binding keys whose source or target may reference the given objects."""
-    binding_keys: set[BindingKey] = set()
-    for obj_id in object_ids:
-        indexed_binding_keys = _binding_keys_by_object.pop(obj_id, None)
-        if indexed_binding_keys is not None:
-            binding_keys.update(indexed_binding_keys)
-    return binding_keys
-
-
 def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
     try:
         for key in name:
@@ -180,6 +150,19 @@ def _check_self_and_other_attribute(self_obj: Any, self_name: tuple[str, ...], o
         _check_attribute_exists(self_obj, self_name, role='self')
     if other_strict or (other_strict is None and not _path_contains_dict(other_obj, other_name)):
         _check_attribute_exists(other_obj, other_name, role='other')
+
+
+def _bind_one_way(source_obj: Any, source_name: tuple[str, ...], target_obj: Any, target_name: tuple[str, ...],
+                  transform: Callable[[Any], Any] | None) -> None:
+    """Register a one-way binding and run its initial propagation."""
+    binding_key = (id(source_obj), source_name)
+    bindings[binding_key].append((source_obj, target_obj, target_name, transform))
+    _binding_keys_by_object[id(source_obj)].add(binding_key)
+    _binding_keys_by_object[id(target_obj)].add(binding_key)
+    if binding_key not in bindable_properties:
+        active_links.append((source_obj, source_name, target_obj, target_name, transform))
+        _active_links_added.set()
+    _propagate(source_obj, source_name)
 
 
 def bind_to(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...],
@@ -308,16 +291,22 @@ class BindableProperty:
             self._change_handler(owner, value)
 
 
+def _discard_binding_key_from_object_index(obj_id: int, binding_key: BindingKey) -> None:
+    keys = _binding_keys_by_object[obj_id]
+    keys.discard(binding_key)
+    if not keys:
+        del _binding_keys_by_object[obj_id]
+
+
 def remove(objects: Iterable[Any]) -> None:
     """Remove all bindings that involve the given objects.
 
     :param objects: The objects to remove.
     """
     object_ids = set(map(id, objects))
-    affected_binding_keys = _pop_binding_keys_for_objects(object_ids)
+    affected_binding_keys = {key for obj_id in object_ids for key in _binding_keys_by_object.pop(obj_id, ())}
     if not affected_binding_keys:
-        # remove() only deletes binding links; weak bindable-property markers expire when their objects are collected.
-        return
+        return  # only delete binding links; weak bindable-property markers expire when their objects are collected
 
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
