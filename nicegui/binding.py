@@ -18,28 +18,20 @@ from .logging import log
 if TYPE_CHECKING:
     from _typeshed import DataclassInstance, IdentityFunction
 
-ObjectId = int
-NamePath = tuple[str, ...]
-BindingKey = tuple[ObjectId, NamePath]
-Transform = Callable[[Any], Any] | None
-Binding = tuple[Any, Any, NamePath, Transform]
-ActiveLink = tuple[Any, NamePath, Any, NamePath, Transform]
-
-
 MAX_PROPAGATION_TIME = 0.01
 
-propagation_visited: ContextVar[set[BindingKey] | None] = \
-    ContextVar('propagation_visited', default=None)
+BindingKey = tuple[int, tuple[str, ...]]
+Binding = tuple[Any, Any, tuple[str, ...], Callable[[Any], Any] | None]
+ActiveLink = tuple[Any, tuple[str, ...], Any, tuple[str, ...], Callable[[Any], Any] | None]
 
-bindings: defaultdict[
-    BindingKey,
-    list[Binding]
-] = defaultdict(list)
+propagation_visited: ContextVar[set[BindingKey] | None] = ContextVar('propagation_visited', default=None)
+
+bindings: defaultdict[BindingKey, list[Binding]] = defaultdict(list)
 bindable_properties: weakref.WeakValueDictionary[BindingKey, Any] = weakref.WeakValueDictionary()
 active_links: list[ActiveLink] = []
 _active_links_added = asyncio.Event()
 # Maps object IDs to binding keys that reference them, so remove() avoids scanning all bindings.
-_binding_keys_by_object: dict[ObjectId, set[BindingKey]] = {}
+_binding_keys_by_object: dict[int, set[BindingKey]] = {}
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
@@ -53,7 +45,7 @@ def _index_binding(source_obj: Any, target_obj: Any, binding_key: BindingKey) ->
     _binding_keys_by_object.setdefault(id(target_obj), set()).add(binding_key)
 
 
-def _discard_binding_key_from_object_index(obj_id: ObjectId, binding_key: BindingKey) -> None:
+def _discard_binding_key_from_object_index(obj_id: int, binding_key: BindingKey) -> None:
     indexed_binding_keys = _binding_keys_by_object.get(obj_id)
     if indexed_binding_keys is None:
         return
@@ -62,8 +54,8 @@ def _discard_binding_key_from_object_index(obj_id: ObjectId, binding_key: Bindin
         del _binding_keys_by_object[obj_id]
 
 
-def _bind_one_way(source_obj: Any, source_name: NamePath, target_obj: Any, target_name: NamePath,
-                  transform: Transform) -> None:
+def _bind_one_way(source_obj: Any, source_name: tuple[str, ...], target_obj: Any, target_name: tuple[str, ...],
+                  transform: Callable[[Any], Any] | None) -> None:
     """Register a one-way binding and run its initial propagation."""
     binding_key = (id(source_obj), source_name)
     bindings[binding_key].append((source_obj, target_obj, target_name, transform))
@@ -74,7 +66,7 @@ def _bind_one_way(source_obj: Any, source_name: NamePath, target_obj: Any, targe
     _propagate(source_obj, source_name)
 
 
-def _pop_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[BindingKey]:
+def _pop_binding_keys_for_objects(object_ids: Iterable[int]) -> set[BindingKey]:
     """Pop and return binding keys whose source or target may reference the given objects."""
     binding_keys: set[BindingKey] = set()
     for obj_id in object_ids:
@@ -84,7 +76,7 @@ def _pop_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[Binding
     return binding_keys
 
 
-def _remove_active_links_for_objects(removed_object_ids: set[ObjectId]) -> None:
+def _remove_active_links_for_objects(removed_object_ids: set[int]) -> None:
     """Drop polling fallback links that reference any removed object."""
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
