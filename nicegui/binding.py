@@ -314,9 +314,7 @@ def remove(objects: Iterable[Any]) -> None:
         if id(source_obj) not in object_ids and id(target_obj) not in object_ids
     ]
     for binding_key in affected_binding_keys:
-        binding_list = bindings.get(binding_key)
-        if binding_list is None:
-            continue
+        binding_list = bindings[binding_key]
         source_obj_id = binding_key[0]
         # Binding keys are source IDs; target-only removals only prune entries from the binding list.
         if source_obj_id in object_ids:
