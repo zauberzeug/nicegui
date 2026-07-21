@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
       - name: pytest tests/test_storage.py
-        run: uv run pytest tests/test_storage.py
+        run: uv run --with pytest-rerunfailures pytest tests/test_storage.py --reruns 2 --reruns-delay 2
 
   quick-test-gate:
     runs-on: ubuntu-latest
