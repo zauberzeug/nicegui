@@ -76,15 +76,6 @@ def _pop_binding_keys_for_objects(object_ids: Iterable[int]) -> set[BindingKey]:
     return binding_keys
 
 
-def _remove_active_links_for_objects(removed_object_ids: set[int]) -> None:
-    """Drop polling fallback links that reference any removed object."""
-    active_links[:] = [
-        (source_obj, source_name, target_obj, target_name, transform)
-        for source_obj, source_name, target_obj, target_name, transform in active_links
-        if id(source_obj) not in removed_object_ids and id(target_obj) not in removed_object_ids
-    ]
-
-
 def _get_attribute(obj: object | Mapping, name: tuple[str, ...]) -> Any:
     try:
         for key in name:
@@ -330,28 +321,31 @@ def remove(objects: Iterable[Any]) -> None:
 
     :param objects: The objects to remove.
     """
-    removed_object_ids = set(map(id, objects))
-    affected_binding_keys = _pop_binding_keys_for_objects(removed_object_ids)
+    object_ids = set(map(id, objects))
+    affected_binding_keys = _pop_binding_keys_for_objects(object_ids)
     if not affected_binding_keys:
         # remove() only deletes binding links; weak bindable-property markers expire when their objects are collected.
         return
 
-    _remove_active_links_for_objects(removed_object_ids)
-
+    active_links[:] = [
+        (source_obj, source_name, target_obj, target_name, transform)
+        for source_obj, source_name, target_obj, target_name, transform in active_links
+        if id(source_obj) not in object_ids and id(target_obj) not in object_ids
+    ]
     for binding_key in affected_binding_keys:
         binding_list = bindings.get(binding_key)
         if binding_list is None:
             continue
         source_obj_id = binding_key[0]
         # Binding keys are source IDs; target-only removals only prune entries from the binding list.
-        if source_obj_id in removed_object_ids:
+        if source_obj_id in object_ids:
             for _source_obj, target_obj, _target_name, _transform in binding_list:
                 target_obj_id = id(target_obj)
-                if target_obj_id not in removed_object_ids:
+                if target_obj_id not in object_ids:
                     _discard_binding_key_from_object_index(target_obj_id, binding_key)
             del bindings[binding_key]
             continue
-        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in removed_object_ids]
+        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in object_ids]
         if remaining_bindings:
             binding_list[:] = remaining_bindings
         else:
