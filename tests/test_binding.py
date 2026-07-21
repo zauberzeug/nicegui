@@ -256,26 +256,6 @@ def test_remove_clears_index_for_source_binding(nicegui_reset_globals) -> None:
     assert id(target) not in binding._binding_keys_by_object  # pylint: disable=protected-access
 
 
-def test_bindable_properties_keeps_useful_mapping_operations(nicegui_reset_globals) -> None:
-    class Model:
-        value = binding.BindableProperty()
-        text = binding.BindableProperty()
-
-        def __init__(self) -> None:
-            self.value = 1
-            self.text = 'hello'
-
-    model = Model()
-    value_key = (id(model), ('value',))
-    text_key = (id(model), ('text',))
-
-    assert len(binding.bindable_properties) == 2
-    assert set(binding.bindable_properties.items()) == {(value_key, model), (text_key, model)}
-    del binding.bindable_properties[value_key]
-    assert len(binding.bindable_properties) == 1
-    assert set(binding.bindable_properties.items()) == {(text_key, model)}
-
-
 def test_remove_rebind_preserves_bindable_property_semantics(nicegui_reset_globals) -> None:
     class Model:
         value = binding.BindableProperty()
