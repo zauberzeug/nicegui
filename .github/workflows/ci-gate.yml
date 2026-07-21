@@ -27,6 +27,24 @@ jobs:
       python-versions: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
       scope: '["pytest", "startup"]'
 
+  windows-test:
+    if: github.event_name != 'merge_group'
+    name: windows / storage
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: pytest tests/test_storage.py
+        run: uv run pytest tests/test_storage.py
+
   quick-test-gate:
     runs-on: ubuntu-latest
     needs: [check, quick-test]
