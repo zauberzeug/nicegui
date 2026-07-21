@@ -131,7 +131,7 @@ def test_create_all_object_types(screen: Screen, tmp_path):
     wait_for_object(screen, scene, 'text3d')
     assert query(screen, scene, 'text3d', 'o.isCSS3DObject') is True
     assert query(screen, scene, 'point_cloud', 'o.geometry.attributes.position.count') == 2
-    wait_until(screen, scene, 'stl', 'o.geometry?.attributes.position.count', 3)
+    wait_until(screen, scene, 'stl', 'o.children[0]?.geometry.attributes.position.count', 3)
 
 
 def test_visible(screen: Screen):
