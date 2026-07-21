@@ -213,47 +213,51 @@ def test_automatic_cleanup(screen: Screen):
     assert is_alive(ref2) and has_bindable_property(model_id2)
 
 
-def test_remove_prunes_indexed_target_binding(nicegui_reset_globals) -> None:
-    class Source:
-        value = 'initial'
+def test_remove_target_keeps_remaining_target_bound(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self) -> None:
+            self.value = 'initial'
 
     class Target:
         text = ''
 
-    source = Source()
+    source = Model()
     target1 = Target()
     target2 = Target()
 
     binding.bind_to(source, 'value', target1, 'text')
     binding.bind_to(source, 'value', target2, 'text')
-    source_key = (id(source), ('value',))
 
     binding.remove([target1])
+    source.value = 'changed'
 
-    assert binding.bindings[source_key] == [(source, target2, ('text',), None)]
-    assert id(target1) not in binding._binding_keys_by_object  # pylint: disable=protected-access
-    assert source_key in binding._binding_keys_by_object[id(source)]  # pylint: disable=protected-access
-    assert source_key in binding._binding_keys_by_object[id(target2)]  # pylint: disable=protected-access
+    assert target1.text == 'initial'
+    assert target2.text == 'changed'
 
 
-def test_remove_clears_index_for_source_binding(nicegui_reset_globals) -> None:
-    class Source:
-        value = 'initial'
+def test_remove_source_unbinds_all_targets(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self) -> None:
+            self.value = 'initial'
 
     class Target:
         text = ''
 
-    source = Source()
+    source = Model()
     target = Target()
 
     binding.bind_to(source, 'value', target, 'text')
-    source_key = (id(source), ('value',))
 
     binding.remove([source])
+    source.value = 'changed'
 
-    assert source_key not in binding.bindings
-    assert id(source) not in binding._binding_keys_by_object  # pylint: disable=protected-access
-    assert id(target) not in binding._binding_keys_by_object  # pylint: disable=protected-access
+    assert target.text == 'initial'
+    assert not binding.bindings
+    assert not binding._binding_keys_by_object  # pylint: disable=protected-access
 
 
 def test_remove_rebind_preserves_bindable_property_semantics(nicegui_reset_globals) -> None:
