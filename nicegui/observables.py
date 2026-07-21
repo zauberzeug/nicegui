@@ -33,9 +33,8 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     @_parent.setter
     def _parent(self, parent: ObservableCollection | None) -> None:
-        # NOTE: the reference is weak so that items don't keep discarded parent collections alive
-        self._parent_ref: weakref.ref[ObservableCollection] | None = \
-            weakref.ref(parent) if parent is not None else None
+        # the reference is weak so that items don't keep discarded parent collections alive
+        self._parent_ref = weakref.ref(parent) if parent is not None else None
 
     @property
     def change_handlers(self) -> list[Callable]:
@@ -44,8 +43,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     @property
     def _change_handlers_with_args(self) -> list[tuple[Callable, bool]]:
-        """Return all change handlers and their pre-resolved `expect_args` flag,
-        including those of parents and observers."""
+        """Return change handlers with pre-resolved ``expect_args`` flag, including those of parents and observers."""
         change_handlers = self._change_handlers[:]
         observers = [ref() for ref in self._observer_refs]
         change_handlers.extend((observer._handle_change, False)  # pylint: disable=protected-access
@@ -65,12 +63,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             self._change_handlers.append((handler, helpers.expects_arguments(handler)))
 
     def _register_observer(self, observer: ObservableCollection) -> None:
-        """Register a collection which contains this collection and should be notified about changes.
-
-        Registrations are idempotent: a collection which already observes this collection
-        (directly or as its parent) is not registered again.
-        The observer is referenced weakly so that it can be garbage-collected when it is discarded.
-        """
+        """Register a collection which contains this collection and should be notified about changes."""
         if observer is self or observer is self._parent:
             return
         alive_refs = [ref for ref in self._observer_refs if ref() is not None]
@@ -97,7 +90,6 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         return data
 
     def _unobserve(self, *items: Any) -> None:
-        """Detach removed items so that they no longer notify this collection about changes."""
         removed = [item for item in items if isinstance(item, ObservableCollection)]
         if not removed:
             return
@@ -126,8 +118,8 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
 
     def __reduce__(self) -> tuple[Any, tuple]:
-        # NOTE: reconstruct from plain contents so that the observer wiring (weak references, which are not
-        # picklable) is rebuilt by __init__ instead of being pickled; a freshly loaded tree has no observers yet.
+        # reconstruct from plain contents so that the observer wiring (weak references, which are not picklable)
+        # is rebuilt by __init__ instead of being pickled; a freshly loaded tree has no observers yet.
         if isinstance(self, dict):
             return ObservableDict, (dict(self),)
         if isinstance(self, list):
@@ -197,11 +189,7 @@ class ObservableDict(ObservableCollection, dict):
         return super().__or__(other)
 
     def __ior__(self, other: Any) -> Any:
-        new_items = dict(other)
-        old_values = [self[key] for key in new_items if key in self]
-        super().__ior__({key: self._observe(value) for key, value in new_items.items()})
-        self._unobserve(*old_values)
-        self._handle_change()
+        self.update(other)
         return self
 
 
@@ -230,9 +218,7 @@ class ObservableList(ObservableCollection, list):
         self._handle_change()
 
     def remove(self, value: Any) -> None:
-        item = super().pop(super().index(value))
-        self._unobserve(item)
-        self._handle_change()
+        self.pop(super().index(value))
 
     def pop(self, index: SupportsIndex = -1) -> Any:
         item = super().pop(index)
@@ -275,8 +261,7 @@ class ObservableList(ObservableCollection, list):
         return super().__add__(other)
 
     def __iadd__(self, other: Any) -> Any:
-        super().__iadd__([self._observe(item) for item in other])
-        self._handle_change()
+        self.extend(other)
         return self
 
     def __mul__(self, other: Any) -> Any:
@@ -329,8 +314,7 @@ class ObservableSet(ObservableCollection, set):
         self._handle_change()
 
     def update(self, *s: Iterable[Any]) -> None:
-        items: set = set(*s)
-        super().update({self._observe(item) for item in items})
+        super().update({self._observe(item) for item in set().union(*s)})
         self._handle_change()
 
     def intersection_update(self, *s: Iterable[Any]) -> None:
@@ -347,8 +331,7 @@ class ObservableSet(ObservableCollection, set):
 
     def symmetric_difference_update(self, *s: Iterable[Any]) -> None:
         old_items = list(self)
-        items: set = set(*s)
-        super().symmetric_difference_update({self._observe(item) for item in items})
+        super().symmetric_difference_update({self._observe(item) for item in set().union(*s)})
         self._unobserve(*old_items)
         self._handle_change()
 
@@ -356,36 +339,26 @@ class ObservableSet(ObservableCollection, set):
         return super().__or__(other)
 
     def __ior__(self, other: Any) -> Any:
-        super().__ior__({self._observe(item) for item in other})
-        self._handle_change()
+        self.update(other)
         return self
 
     def __and__(self, other: Any) -> set:
         return super().__and__(other)
 
     def __iand__(self, other: Any) -> Any:
-        old_items = list(self)
-        super().__iand__(other)
-        self._unobserve(*old_items)
-        self._handle_change()
+        self.intersection_update(other)
         return self
 
     def __sub__(self, other: Any) -> set:
         return super().__sub__(other)
 
     def __isub__(self, other: Any) -> Any:
-        old_items = list(self)
-        super().__isub__(other)
-        self._unobserve(*old_items)
-        self._handle_change()
+        self.difference_update(other)
         return self
 
     def __xor__(self, other: Any) -> set:
         return super().__xor__(other)
 
     def __ixor__(self, other: Any) -> Any:
-        old_items = list(self)
-        super().__ixor__({self._observe(item) for item in other})
-        self._unobserve(*old_items)
-        self._handle_change()
+        self.symmetric_difference_update(other)
         return self
