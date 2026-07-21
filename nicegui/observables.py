@@ -279,6 +279,16 @@ class ObservableList(ObservableCollection, list):
         self._handle_change()
         return self
 
+    def __mul__(self, other: Any) -> Any:
+        return super().__mul__(other)
+
+    def __imul__(self, other: Any) -> Any:
+        old_items = list(self)
+        super().__imul__(other)
+        self._unobserve(*old_items)
+        self._handle_change()
+        return self
+
 
 class ObservableSet(ObservableCollection, set):
 

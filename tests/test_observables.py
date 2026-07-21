@@ -235,6 +235,20 @@ def test_removed_list_items_are_detached():
     assert count == n, 'detached items should not fire change events anymore'
 
 
+def test_multiplying_list_in_place():
+    reset_counter()
+    data = ObservableList([{}], on_change=increment_counter)
+    item = data[0]
+    data *= 2
+    assert count == 1
+    item['x'] = 1
+    assert count == 2, 'items contained multiple times should fire only one change event'
+    data *= 0
+    assert count == 3
+    item['y'] = 2
+    assert count == 3, 'items removed by multiplying with zero should not fire change events anymore'
+
+
 def test_items_contained_multiple_times_are_detached_on_last_removal():
     reset_counter()
     data = ObservableList(on_change=increment_counter)
