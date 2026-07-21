@@ -168,7 +168,7 @@ def _propagate_recursively(source_obj: Any, source_name: tuple[str, ...]) -> Non
     if (source_value := _get_attribute(source_obj, source_name)) is _MISSING:
         return
 
-    for _source_obj, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
+    for _, target_obj, target_name, transform in bindings.get((source_obj_id, source_name), []):
         if (id(target_obj), target_name) in visited:
             continue
 
@@ -313,10 +313,10 @@ class BindableProperty:
     def __init__(self, on_change: Callable[..., Any] | None = None) -> None:
         self._change_handler = on_change
 
-    def __set_name__(self, _owner_type: type[Any], name: str) -> None:
+    def __set_name__(self, _, name: str) -> None:
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
-    def __get__(self, owner: Any, _owner_type: type[Any] | None = None) -> Any:
+    def __get__(self, owner: Any, _=None) -> Any:
         return getattr(owner, '___' + self.name)
 
     def __set__(self, owner: Any, value: Any) -> None:
