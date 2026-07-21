@@ -44,6 +44,7 @@ For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guid
   - Unclear problem statement or impact
 - **Cross-platform**
   - Windows path assumptions, locale/timezone hardcoding, reliance on system binaries without guards
+  - Tests asserting CPython-only semantics — immediate weakref cleanup via refcounting, exact CPython error-message wording — need a PyPy `skipif` or a tolerant match (PyPy compatibility is tracked externally, not promised)
 - **Readability**
   - Complex logic without comments explaining intent; magic numbers
 
