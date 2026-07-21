@@ -318,10 +318,8 @@ def remove(objects: Iterable[Any]) -> None:
         source_obj_id = binding_key[0]
         # Binding keys are source IDs; target-only removals only prune entries from the binding list.
         if source_obj_id in object_ids:
-            for _source_obj, target_obj, _target_name, _transform in binding_list:
-                target_obj_id = id(target_obj)
-                if target_obj_id not in object_ids:
-                    _discard_binding_key_from_object_index(target_obj_id, binding_key)
+            for target_obj_id in {id(target_obj) for _, target_obj, _, _ in binding_list} - object_ids:
+                _discard_binding_key_from_object_index(target_obj_id, binding_key)
             del bindings[binding_key]
             continue
         remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in object_ids]
