@@ -213,7 +213,7 @@ def test_automatic_cleanup(screen: Screen):
     assert is_alive(ref2) and has_bindable_property(model_id2)
 
 
-def test_remove_prunes_indexed_target_binding(nicegui_reset_globals: Any) -> None:  # pylint: disable=unused-argument
+def test_remove_prunes_indexed_target_binding(nicegui_reset_globals) -> None:
     class Source:
         value = 'initial'
 
@@ -236,7 +236,7 @@ def test_remove_prunes_indexed_target_binding(nicegui_reset_globals: Any) -> Non
     assert source_key in binding._binding_keys_by_object[id(target2)]  # pylint: disable=protected-access
 
 
-def test_remove_clears_index_for_source_binding(nicegui_reset_globals: Any) -> None:  # pylint: disable=unused-argument
+def test_remove_clears_index_for_source_binding(nicegui_reset_globals) -> None:
     class Source:
         value = 'initial'
 
@@ -256,9 +256,7 @@ def test_remove_clears_index_for_source_binding(nicegui_reset_globals: Any) -> N
     assert id(target) not in binding._binding_keys_by_object  # pylint: disable=protected-access
 
 
-def test_bindable_properties_keeps_useful_mapping_operations(  # pylint: disable=unused-argument
-    nicegui_reset_globals: Any,
-) -> None:
+def test_bindable_properties_keeps_useful_mapping_operations(nicegui_reset_globals) -> None:
     class Model:
         value = binding.BindableProperty()
         text = binding.BindableProperty()
@@ -278,9 +276,7 @@ def test_bindable_properties_keeps_useful_mapping_operations(  # pylint: disable
     assert set(binding.bindable_properties.items()) == {(text_key, model)}
 
 
-def test_remove_rebind_preserves_bindable_property_semantics(  # pylint: disable=unused-argument
-    nicegui_reset_globals: Any,
-) -> None:
+def test_remove_rebind_preserves_bindable_property_semantics(nicegui_reset_globals) -> None:
     class Model:
         value = binding.BindableProperty()
 
