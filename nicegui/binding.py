@@ -301,12 +301,14 @@ def _discard_binding_key_from_object_index(obj_id: int, binding_key: BindingKey)
 def remove(objects: Iterable[Any]) -> None:
     """Remove all bindings that involve the given objects.
 
+    This only deletes binding links; weak bindable-property markers expire when their objects are garbage-collected.
+
     :param objects: The objects to remove.
     """
     object_ids = set(map(id, objects))
     affected_binding_keys = {key for obj_id in object_ids for key in _binding_keys_by_object.pop(obj_id, ())}
     if not affected_binding_keys:
-        return  # only delete binding links; weak bindable-property markers expire when their objects are collected
+        return
 
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
