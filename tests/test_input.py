@@ -203,6 +203,24 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('nce')
 
 
+def test_removing_autocompletion_from_filled_input(screen: Screen):
+    input_ = None
+
+    @ui.page('/')
+    def page():
+        nonlocal input_
+        input_ = ui.input('Input', value='f', autocomplete=['foo'])
+
+    screen.open('/')
+    # used to raise a TypeError in the shadowText computed (rendered with a filled value and no autocomplete list)
+    input_.set_autocomplete(None)
+    screen.wait(0.5)
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
+    element.send_keys('x')
+    screen.wait(0.2)
+    assert input_.value == 'fx'
+
+
 def test_clearable_input(screen: Screen):
     @ui.page('/')
     def page():
