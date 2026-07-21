@@ -23,7 +23,7 @@ export default class GLTF {
         }
       },
       undefined,
-      (error) => console.error(error),
+      (error) => console.error("GLTF load error:", error),
     );
     return this.mesh;
   }
@@ -32,6 +32,6 @@ export default class GLTF {
       this.pendingMaterialInfo = { color, opacity, side };
       return;
     }
-    this.mesh.traverse((child) => child.isMesh && child.material && material_loader.apply(child.material, color, opacity, side));
+    this.mesh.traverse((child) => child.material && material_loader.apply(child.material, color, opacity, side));
   }
 }

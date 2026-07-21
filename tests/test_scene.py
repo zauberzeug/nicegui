@@ -217,6 +217,45 @@ def test_gltf(screen: Screen, set_material: bool, color: str):
     ) == color
 
 
+def test_stl_wireframe(screen: Screen):
+    """A wireframe STL must render as edges (a LineSegments with EdgesGeometry), be colorable, and follow renames."""
+    scene = None
+    obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, obj
+        app.add_static_file(local_file=TEST_DIR / 'media' / 'cube.stl', url_path='/cube.stl')
+        with ui.scene() as scene:
+            obj = scene.stl('/cube.stl', wireframe=True).material('#ff0000')
+        ui.button('Rename', on_click=lambda: obj.with_name('renamed'))
+
+    screen.open('/')
+    screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
+        f'return !!window.scene_{scene.html_id} && '
+        f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0'
+    ))
+    result = screen.selenium.execute_script(f'''
+        const group = scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}");
+        const child = group.children[0];
+        return {{
+            root_type: group.type,
+            child_geometry: child ? child.geometry.type : null,
+            edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,
+            child_color: (child && child.material) ? child.material.color.getHexString() : null,
+        }};
+    ''')
+    assert result['root_type'] == 'Group', f'expected a Group wrapper, got {result}'
+    assert result['child_geometry'] == 'EdgesGeometry', f'expected EdgesGeometry child, got {result}'
+    assert result['edge_count'] > 0, f'expected non-empty edges, got {result}'
+    assert result['child_color'] == 'ff0000', f'expected material to reach the wireframe lines, got {result}'
+
+    screen.click('Rename')  # rename AFTER the async load has completed
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'return scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}").name === "renamed"'
+    ))
+
+
 def test_no_cyclic_references(screen: Screen):
     objects: weakref.WeakSet = weakref.WeakSet()
     scene = None

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import multiprocessing
 import signal
 import traceback
 from collections.abc import Callable
@@ -7,8 +8,9 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 from contextlib import suppress
 from functools import partial
+from multiprocessing.context import BaseContext
 from pickle import PicklingError
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar
 
 from typing_extensions import ParamSpec
 
@@ -17,15 +19,59 @@ from . import core, helpers
 process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
 
+# Start method for the run.cpu_bound process pool (None inherits the global multiprocessing default);
+# see the multiprocessing docs for the trade-offs between the methods. A one-time heads-up is logged
+# if the pool implicitly ends up on plain "fork", which is unsafe in a threaded process (#6117).
+# DEPRECATED: the None default will change to "spawn" in 4.0 (keeping the "fork" opt-out as long as Python supports it).
+process_pool_start_method: Literal['spawn', 'fork', 'forkserver'] | None = None
+
+# Always-spawn context, also shared with native.py's window subprocess (#1841). This is the context
+# used when process_pool_start_method == 'spawn'; it is independent of the global default.
+SPAWN_CONTEXT = multiprocessing.get_context('spawn')
+
+# Resolved once in setup() so the live pool, the heads-up warning and the BrokenProcessPool restart
+# all agree, even if process_pool_start_method is mutated after startup.
+_pool_context: BaseContext | None = None
+_pool_uses_implicit_fork = False
+
 P = ParamSpec('P')
 R = TypeVar('R')
 
 
+def _resolve_cpu_bound_context() -> BaseContext:
+    """Resolve the multiprocessing context for the cpu_bound pool from `process_pool_start_method`."""
+    if process_pool_start_method is None:
+        return multiprocessing.get_context()
+    if process_pool_start_method == 'spawn':
+        return SPAWN_CONTEXT
+    try:
+        return multiprocessing.get_context(process_pool_start_method)
+    except ValueError as e:  # unknown method, or a method this platform lacks (e.g. "fork" on Windows)
+        raise ValueError(f'Invalid run.process_pool_start_method {process_pool_start_method!r}; '
+                         f'this platform supports {multiprocessing.get_all_start_methods()}.') from e
+
+
+def _warn_if_implicit_fork() -> None:
+    """Warn once if the live pool fell back to plain fork because the start method was never chosen."""
+    if _pool_uses_implicit_fork:
+        helpers.warn_once(
+            'run.cpu_bound is using the "fork" start method (the platform default on Linux/Docker up to Python 3.13). '
+            'fork is unsafe in a threaded process and its workers inherit process state (module globals, '
+            'caches, preloaded objects) that spawn workers do not, so switching can change behavior. '
+            'NiceGUI 4.0 will default to "spawn". Set nicegui.run.process_pool_start_method to "spawn" to '
+            'opt in now (recommended) or to "fork" to keep fork and silence this heads-up; '
+            'the setting must be applied before the app starts up (i.e. before ui.run()). '
+            'See https://github.com/zauberzeug/nicegui/pull/6117'
+        )
+
+
 def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
-    global process_pool  # pylint: disable=global-statement # noqa: PLW0603
+    global process_pool, _pool_context, _pool_uses_implicit_fork  # pylint: disable=global-statement # noqa: PLW0603
+    _pool_context = _resolve_cpu_bound_context()
+    _pool_uses_implicit_fork = process_pool_start_method is None and _pool_context.get_start_method() == 'fork'
     try:
-        process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
+        process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)
     except NotImplementedError:
         logging.warning('Failed to initialize ProcessPoolExecutor')
 
@@ -80,6 +126,9 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
 
+    The pool's multiprocessing start method can be configured via ``run.process_pool_start_method``
+    ("spawn", "fork", "forkserver", or ``None`` to inherit the platform default) before the app starts up.
+
     Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
     This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
     so ``if result is None: ...`` checks should be treated as temporary.
@@ -88,6 +137,8 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
 
     if process_pool is None:
         raise RuntimeError('Process pool not set up.')
+
+    _warn_if_implicit_fork()
 
     try:
         return await _run(process_pool, safe_callback, callback, *args, **kwargs)
@@ -99,7 +150,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
         try:
             await _run(process_pool, safe_callback, lambda: None)
         except BrokenProcessPool:
-            process_pool = ProcessPoolExecutor(initializer=_ignore_sigint)
+            process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)
         finally:
             raise e
 

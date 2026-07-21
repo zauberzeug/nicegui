@@ -83,5 +83,6 @@ def test_enable_disable(screen: Screen):
     assert events == [1]
 
     screen.click('Enable')
+    screen.wait_for(screen.find_by_tag('button').is_enabled)
     screen.click('Button')
     assert events == [1, 1]

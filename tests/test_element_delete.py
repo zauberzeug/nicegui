@@ -222,6 +222,22 @@ async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, 
     assert len([record for record in caplog.records if 'still being used' in record.message]) == expected_warnings
 
 
+async def test_parent_slot_error(user: User):
+    label = card = None
+
+    @ui.page('/')
+    def page():
+        nonlocal label, card
+        with ui.card() as card:
+            label = ui.label('hi').mark('my_label')
+
+    await user.open('/')
+    card.delete()
+    del card  # drop the last strong reference to the card and its slots
+    with pytest.raises(RuntimeError, match=r'The parent slot of Label\(id=5, markers=my_label\) has been deleted\.'):
+        _ = label.parent_slot
+
+
 def test_event_listeners_cleared_on_delete(screen: Screen):
     """Event listeners are cleared when element is deleted and no cyclic references are left behind (issue #5110)."""
     buttons = weakref.WeakSet[ui.button]()

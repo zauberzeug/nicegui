@@ -1,4 +1,5 @@
 import asyncio
+import multiprocessing
 import os
 import time
 from collections.abc import Callable, Generator
@@ -9,6 +10,7 @@ import pytest
 
 from nicegui import app, run, ui
 from nicegui.app.app import State
+from nicegui.helpers import warnings as nicegui_warnings
 from nicegui.testing import User
 
 
@@ -52,7 +54,7 @@ async def test_run_unpickable_exception_in_cpu_bound_callback(user: User):
 
     @ui.page('/')
     async def index():
-        with pytest.raises((AttributeError, PicklingError), match=r"Can't pickle local object|Can't get local object"):
+        with pytest.raises((AttributeError, PicklingError), match=r"Can't pickle (local object|<)|Can't get local object"):
             ui.label(await run.cpu_bound(raise_unpicklable_exception))
 
     await user.open('/')
@@ -110,3 +112,71 @@ async def test_returns_none_when_app_is_stopping(user: User, func: Callable):
 
     await user.open('/')
     await user.should_see('result=None')
+
+
+@pytest.fixture
+def isolate_pool_state() -> Generator[None, None, None]:
+    """Restore run.process_pool_start_method, drop the test's pool and forget shown warnings."""
+    original = run.process_pool_start_method
+    nicegui_warnings.reset()
+    try:
+        yield
+    finally:
+        run.process_pool_start_method = original
+        run.reset()
+        nicegui_warnings.reset()
+
+
+@pytest.mark.usefixtures('isolate_pool_state')
+@pytest.mark.parametrize('method', [None, 'spawn', 'fork', 'forkserver'])
+def test_pool_uses_configured_start_method(method):
+    """setup() builds the pool with the configured start method (or the platform default for None)."""
+    if method is not None and method not in multiprocessing.get_all_start_methods():
+        pytest.skip(f'{method} is not available on this platform')
+    run.process_pool_start_method = method
+    run.setup()
+    expected = multiprocessing.get_start_method() if method is None else method
+    assert run.process_pool is not None
+    assert run.process_pool._mp_context is not None  # pylint: disable=protected-access
+    assert run.process_pool._mp_context.get_start_method() == expected  # pylint: disable=protected-access
+
+
+@pytest.mark.usefixtures('isolate_pool_state')
+def test_spawn_pool_reuses_shared_spawn_context():
+    """A "spawn" pool reuses the module-level SPAWN_CONTEXT shared with native.py (no duplicate context)."""
+    run.process_pool_start_method = 'spawn'
+    run.setup()
+    assert run.process_pool is not None
+    assert run.process_pool._mp_context is run.SPAWN_CONTEXT  # pylint: disable=protected-access
+
+
+@pytest.mark.usefixtures('isolate_pool_state')
+def test_invalid_start_method_fails_at_setup():
+    """An unknown value (or one the platform lacks, e.g. "fork" on Windows) makes setup() fail fast."""
+    run.process_pool_start_method = 'bogus'  # type: ignore[assignment]
+    with pytest.raises(ValueError, match=r'Invalid run\.process_pool_start_method'):
+        run.setup()
+
+
+@pytest.mark.usefixtures('isolate_pool_state')
+@pytest.mark.parametrize('method,expect_warning', [(None, True), ('spawn', False), ('fork', False)])
+async def test_fork_heads_up_warning(caplog, method, expect_warning):
+    """The one-time heads-up fires iff the start method was never chosen and the pool falls back to fork."""
+    if method != 'spawn' and multiprocessing.get_start_method() != 'fork':
+        pytest.skip('needs a platform with a fork default (e.g. Linux)')
+    run.process_pool_start_method = method
+    run.setup()
+    assert await run.cpu_bound(good_function)
+    assert ('process_pool_start_method' in caplog.text) is expect_warning
+
+
+@pytest.mark.usefixtures('isolate_pool_state')
+async def test_warning_reflects_pool_not_later_setting_change(caplog):
+    """Flipping the setting after startup must not silence the heads-up about the still-fork live pool."""
+    if multiprocessing.get_start_method() != 'fork':
+        pytest.skip('needs a platform with a fork default (e.g. Linux)')
+    run.process_pool_start_method = None
+    run.setup()
+    run.process_pool_start_method = 'spawn'  # too late, the pool is already built
+    assert await run.cpu_bound(good_function)
+    assert 'process_pool_start_method' in caplog.text

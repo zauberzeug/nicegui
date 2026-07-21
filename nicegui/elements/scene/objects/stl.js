@@ -1,25 +1,40 @@
 import SceneLib from "nicegui-scene";
-const {
-  THREE,
-  STLLoader
-} = SceneLib;
+const { THREE, STLLoader, SimpleMaterialLoader } = SceneLib;
 
 const stl_loader = new STLLoader();
+const material_loader = new SimpleMaterialLoader();
 
 export default class STL {
+  mesh
+  loaded = false
+  pendingMaterialInfo = null
+
   create_mesh(url, wireframe) {
-    const geometry = new THREE.BufferGeometry();
-    let mesh;
-    if (wireframe) {
-      mesh = new THREE.LineSegments(
-        new THREE.EdgesGeometry(geometry),
-        new THREE.LineBasicMaterial({ transparent: true }),
-      );
-    } else {
-      const material = new THREE.MeshPhongMaterial({ transparent: true });
-      mesh = new THREE.Mesh(geometry, material);
+    this.mesh = new THREE.Group();
+    stl_loader.load(
+      url,
+      (geometry) => {
+        const child = wireframe
+          ? new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ transparent: true }))
+          : new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true }));
+        this.mesh.add(child);
+        this.loaded = true;
+        if (this.pendingMaterialInfo != null) {
+          const { color, opacity, side } = this.pendingMaterialInfo;
+          this.pendingMaterialInfo = null;
+          this.apply_material(color, opacity, side);
+        }
+      },
+      undefined,
+      (error) => console.error("STL load error:", error),
+    );
+    return this.mesh;
+  }
+  apply_material(color, opacity, side) {
+    if (!this.loaded) {
+      this.pendingMaterialInfo = { color, opacity, side };
+      return;
     }
-    stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
-    return mesh
+    this.mesh.traverse((child) => child.material && material_loader.apply(child.material, color, opacity, side));
   }
 }

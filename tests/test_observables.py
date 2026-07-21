@@ -1,5 +1,8 @@
 import asyncio
 import copy
+import gc
+import pickle
+import weakref
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
@@ -178,3 +181,128 @@ async def test_no_infinite_recursion(user: User):
 
     await user.open('/')
     await user.should_see('[1, 2, 3, 1, 2, 3]')
+
+
+def test_rebuilding_list_in_place_does_not_accumulate_handlers():
+    reset_counter()
+    data = ObservableList([{}], on_change=increment_counter)
+    for _ in range(3):
+        data[:] = list(data)
+    assert count == 3
+    data[0]['x'] = 1
+    assert count == 4, 'mutating a surviving item should fire exactly one change event'
+
+
+def test_replacing_list_does_not_accumulate_handlers():
+    reset_counter()
+    data = ObservableDict({'items': [{}]}, on_change=increment_counter)
+    for _ in range(3):
+        data['items'] = list(data['items'])
+    assert count == 3
+    data['items'][0]['x'] = 1
+    assert count == 4, 'mutating a surviving item should fire exactly one change event'
+
+
+def test_removed_dict_values_are_detached():
+    reset_counter()
+    data = ObservableDict({'a': {}, 'b': {}, 'c': {}, 'd': {}}, on_change=increment_counter)
+    detached = [data.pop('a'), data.popitem()[1], data['b'], data['c']]
+    del data['b']
+    data['c'] = {'new': True}
+    data.update(e={})
+    detached.append(data['e'])
+    data.update(e={})
+    n = count
+    for item in detached:
+        item['x'] = 1
+    assert count == n, 'detached items should not fire change events anymore'
+    data['c']['x'] = 1
+    assert count == n + 1, 'items which are still contained should fire change events'
+    item = data['c']
+    data.clear()
+    item['y'] = 2
+    assert count == n + 2, 'items removed by clearing the dict should not fire change events anymore'
+
+
+def test_removed_list_items_are_detached():
+    reset_counter()
+    data = ObservableList([{}, {}, {}, {}, {}, {}, {}], on_change=increment_counter)
+    detached = [data.pop(), data[0], data[1], data[2], *data[3:5]]
+    data.remove(data[0])
+    del data[0]
+    data[0] = {'new': True}
+    del data[1:3]
+    data.clear()
+    n = count
+    for item in detached:
+        item['x'] = 1
+    assert count == n, 'detached items should not fire change events anymore'
+
+
+def test_multiplying_list_in_place():
+    reset_counter()
+    data = ObservableList([{}], on_change=increment_counter)
+    item = data[0]
+    data *= 2
+    assert count == 1
+    item['x'] = 1
+    assert count == 2, 'items contained multiple times should fire only one change event'
+    data *= 0
+    assert count == 3
+    item['y'] = 2
+    assert count == 3, 'items removed by multiplying with zero should not fire change events anymore'
+
+
+def test_items_contained_multiple_times_are_detached_on_last_removal():
+    reset_counter()
+    data = ObservableList(on_change=increment_counter)
+    item = ObservableDict()
+    data.append(item)
+    data.append(item)
+    item['x'] = 1
+    assert count == 3, 'items contained multiple times should fire only one change event'
+    data.pop()
+    item['y'] = 2
+    assert count == 5, 'items which are still contained once should fire change events'
+    data.pop()
+    item['z'] = 3
+    assert count == 6, 'items removed completely should not fire change events anymore'
+
+
+def test_items_shared_between_collections():
+    counts = {'a': 0, 'b': 0}
+    item = ObservableDict()
+    a = ObservableList([item], on_change=lambda: counts.update(a=counts['a'] + 1))
+    b = ObservableList([item], on_change=lambda: counts.update(b=counts['b'] + 1))
+    item['x'] = 1
+    assert counts == {'a': 1, 'b': 1}
+    a.clear()
+    item['y'] = 2
+    assert counts == {'a': 2, 'b': 2}, 'item should only notify the collection which still contains it'
+    assert b == [item]
+
+
+def test_discarded_collections_are_garbage_collected():
+    data = ObservableDict({'items': [{}]})
+    refs = [weakref.ref(data['items'])]
+    for _ in range(3):
+        data['items'] = list(data['items'])
+        refs.append(weakref.ref(data['items']))
+    child = data['items'][0]
+    del data
+    gc.collect()
+    assert [ref() for ref in refs] == [None, None, None, None], 'discarded collections should be garbage-collected'
+    assert child == {}
+
+
+def test_nested_observables_are_picklable():
+    reset_counter()
+    data = ObservableList([{'id': 1, 'tags': ['a', 'b']}, {'id': 2}])
+    restored = pickle.loads(pickle.dumps(data))
+    assert restored == [{'id': 1, 'tags': ['a', 'b']}, {'id': 2}]
+    assert isinstance(restored, ObservableList)
+    assert isinstance(restored[0], ObservableDict)
+    assert isinstance(restored[0]['tags'], ObservableList)
+    root = ObservableList(restored, on_change=increment_counter)
+    root[0]['x'] = 1
+    assert count == 1, 'a restored tree should wire up freshly and notify exactly once'
