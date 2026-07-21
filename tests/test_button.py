@@ -83,6 +83,6 @@ def test_enable_disable(screen: Screen):
     assert events == [1]
 
     screen.click('Enable')
-    screen.wait(0.5)  # PyPy: let the re-enable reach the browser before clicking
+    screen.wait_for(screen.find_by_tag('button').is_enabled)
     screen.click('Button')
     assert events == [1, 1]
