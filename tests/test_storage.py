@@ -429,8 +429,10 @@ async def test_clear_waits_out_transiently_held_storage_file(user: User):
 
     await user.open('/')  # needed to ensure NiceGUI's event loop is running
     app.storage.general['key'] = 'value'  # schedules an async backup task
-    await asyncio.sleep(0.1)  # let the backup write the file
     filepath = Storage.path / 'storage-general.json'
+    deadline = time.monotonic() + 2.0
+    while not filepath.exists() and time.monotonic() < deadline:
+        await asyncio.sleep(0.01)  # let the backup write the file
     assert filepath.exists()
     handle = filepath.open(encoding='utf-8')  # stands in for a backup write still holding the file
     threading.Timer(0.2, handle.close).start()
@@ -445,8 +447,10 @@ async def test_backup_of_emptied_dict_waits_out_held_storage_file(user: User):
 
     await user.open('/')  # needed to ensure NiceGUI's event loop is running
     app.storage.general['key'] = 'value'  # schedules an async backup task
-    await asyncio.sleep(0.1)  # let the backup write the file
     filepath = Storage.path / 'storage-general.json'
+    deadline = time.monotonic() + 2.0
+    while not filepath.exists() and time.monotonic() < deadline:
+        await asyncio.sleep(0.01)  # let the backup write the file
     assert filepath.exists()
     handle = filepath.open(encoding='utf-8')  # stands in for another writer still holding the file
     threading.Timer(0.2, handle.close).start()
