@@ -74,18 +74,13 @@ def _bind_one_way(source_obj: Any, source_name: NamePath, target_obj: Any, targe
     _propagate(source_obj, source_name)
 
 
-def _pop_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[BindingKey] | None:
+def _pop_binding_keys_for_objects(object_ids: Iterable[ObjectId]) -> set[BindingKey]:
     """Pop and return binding keys whose source or target may reference the given objects."""
-    # Stay at None until the first hit so remove() calls for objects with no active
-    # bindings ("ghost removals") skip the set allocation and traversal entirely.
-    binding_keys: set[BindingKey] | None = None
+    binding_keys: set[BindingKey] = set()
     for obj_id in object_ids:
         indexed_binding_keys = _binding_keys_by_object.pop(obj_id, None)
-        if indexed_binding_keys is None:
-            continue
-        if binding_keys is None:
-            binding_keys = set()
-        binding_keys.update(indexed_binding_keys)
+        if indexed_binding_keys is not None:
+            binding_keys.update(indexed_binding_keys)
     return binding_keys
 
 
@@ -343,18 +338,13 @@ def remove(objects: Iterable[Any]) -> None:
 
     :param objects: The objects to remove.
     """
-    # Keep IDs as a list until membership checks are needed; ghost removals only do dict pop/get by ID.
-    removed_object_ids = [id(obj) for obj in objects]
-    if not removed_object_ids:
-        return
-
+    removed_object_ids = set(map(id, objects))
     affected_binding_keys = _pop_binding_keys_for_objects(removed_object_ids)
     if not affected_binding_keys:
         # remove() only deletes binding links; weak bindable-property markers expire when their objects are collected.
         return
 
-    removed_object_id_set = set(removed_object_ids)
-    _remove_active_links_for_objects(removed_object_id_set)
+    _remove_active_links_for_objects(removed_object_ids)
 
     for binding_key in affected_binding_keys:
         binding_list = bindings.get(binding_key)
@@ -362,14 +352,14 @@ def remove(objects: Iterable[Any]) -> None:
             continue
         source_obj_id = binding_key[0]
         # Binding keys are source IDs; target-only removals only prune entries from the binding list.
-        if source_obj_id in removed_object_id_set:
+        if source_obj_id in removed_object_ids:
             for _source_obj, target_obj, _target_name, _transform in binding_list:
                 target_obj_id = id(target_obj)
-                if target_obj_id not in removed_object_id_set:
+                if target_obj_id not in removed_object_ids:
                     _discard_binding_key_from_object_index(target_obj_id, binding_key)
             del bindings[binding_key]
             continue
-        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in removed_object_id_set]
+        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in removed_object_ids]
         if remaining_bindings:
             binding_list[:] = remaining_bindings
         else:
