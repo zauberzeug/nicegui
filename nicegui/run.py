@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import multiprocessing
+import multiprocessing.forkserver
 import signal
 import traceback
 from collections.abc import Callable
@@ -70,8 +71,11 @@ def setup() -> None:
     global process_pool, _pool_context, _pool_uses_implicit_fork  # pylint: disable=global-statement # noqa: PLW0603
     _pool_context = _resolve_cpu_bound_context()
     if _pool_context.get_start_method() == 'forkserver':
-        # let the workers re-import __main__, where the MainProcess guard catches it, not the daemon (#6166)
-        _pool_context.set_forkserver_preload([])
+        # drop __main__ from the preload so the workers re-import it, where the MainProcess guard catches it,
+        # not the daemon (#6166); other (user-configured) preload modules are kept
+        fork_server = multiprocessing.forkserver._forkserver  # pylint: disable=protected-access
+        preload = fork_server._preload_modules  # type: ignore[attr-defined]  # pylint: disable=protected-access
+        _pool_context.set_forkserver_preload([module for module in preload if module != '__main__'])
     _pool_uses_implicit_fork = process_pool_start_method is None and _pool_context.get_start_method() == 'fork'
     try:
         process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)

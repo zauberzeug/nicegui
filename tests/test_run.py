@@ -147,12 +147,13 @@ def test_pool_uses_configured_start_method(method):
 
 @pytest.mark.usefixtures('isolate_pool_state')
 async def test_forkserver_pool_does_not_preload_main():
-    """A "forkserver" pool must not re-import __main__, which would re-run the user's ui.run() (#6166)."""
+    """A "forkserver" pool must drop the __main__ preload (it would re-run ui.run()) but keep user modules (#6166)."""
     if 'forkserver' not in multiprocessing.get_all_start_methods():
         pytest.skip('forkserver is not available on this platform')
+    multiprocessing.set_forkserver_preload(['json', '__main__'])
     run.process_pool_start_method = 'forkserver'
     run.setup()
-    assert multiprocessing.forkserver._forkserver._preload_modules == []  # pylint: disable=protected-access
+    assert multiprocessing.forkserver._forkserver._preload_modules == ['json']  # pylint: disable=protected-access
     assert await run.cpu_bound(good_function)
 
 
