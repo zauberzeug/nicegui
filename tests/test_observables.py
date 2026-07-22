@@ -320,4 +320,5 @@ def test_pop_missing_key_raises_keyerror():
     assert count == 0, 'popping a missing key with a default must not fire a change event'
     assert data.pop('a') == 1
     assert count == 1, 'popping an existing key fires exactly one change event'
-    assert data.pop('a', None) is None and count == 1, 'default is returned without an event when key is gone'
+    assert data.pop('a', None) is None, 'the default is returned when the key is gone'
+    assert count == 1, 'popping a now-missing key with a default must not fire another change event'
