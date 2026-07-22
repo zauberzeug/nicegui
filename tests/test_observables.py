@@ -4,6 +4,8 @@ import gc
 import pickle
 import weakref
 
+import pytest
+
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
 from nicegui.testing import Screen, User
@@ -306,3 +308,16 @@ def test_nested_observables_are_picklable():
     root = ObservableList(restored, on_change=increment_counter)
     root[0]['x'] = 1
     assert count == 1, 'a restored tree should wire up freshly and notify exactly once'
+
+
+def test_pop_missing_key_raises_keyerror():
+    reset_counter()
+    data = ObservableDict({'a': 1}, on_change=increment_counter)
+    with pytest.raises(KeyError):
+        data.pop('missing')  # like dict.pop, a missing key without default raises
+    assert count == 0, 'a failed pop must not fire a change event'
+    assert data.pop('missing', 'default') == 'default'
+    assert count == 0, 'popping a missing key with a default must not fire a change event'
+    assert data.pop('a') == 1
+    assert count == 1, 'popping an existing key fires exactly one change event'
+    assert data.pop('a', None) is None and count == 1, 'default is returned without an event when key is gone'

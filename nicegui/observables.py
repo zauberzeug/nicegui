@@ -11,6 +11,8 @@ from typing_extensions import Self
 
 from . import events, helpers
 
+_MISSING = object()
+
 
 class ObservableCollection(abc.ABC):  # noqa: B024
 
@@ -141,8 +143,13 @@ class ObservableDict(ObservableCollection, dict):
         for key, value in self.items():
             super().__setitem__(key, self._observe(value))
 
-    def pop(self, k: Any, d: Any = None) -> Any:
-        item = super().pop(k, d)
+    def pop(self, k: Any, d: Any = _MISSING) -> Any:
+        try:
+            item = super().pop(k)
+        except KeyError:  # nothing was removed, so skip _unobserve/_handle_change below
+            if d is _MISSING:
+                raise
+            return d
         self._unobserve(item)
         self._handle_change()
         return item
