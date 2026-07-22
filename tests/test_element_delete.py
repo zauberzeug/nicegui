@@ -201,7 +201,7 @@ def test_slot_children_cleared_on_delete(screen: Screen):
 
 @pytest.mark.parametrize('deletion_method', ['client_delete', 'element_delete'])
 async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, deletion_method: str):
-    """Using an element after deletion is silent when the client is gone (benign reload race)
+    """Using an element or head functions after deletion is silent when the client is gone (benign reload race)
     but warns once when only the element was deleted (a user bug). See issue #6058."""
     label = None
 
@@ -219,33 +219,14 @@ async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, 
     label.run_method('foo')
     label.update()
     label.get_computed_prop('bar')
-    expected_warnings = 0 if deletion_method == 'client_delete' else 1
-    assert len([record for record in caplog.records if 'still being used' in record.message]) == expected_warnings
-
-
-async def test_head_functions_after_client_delete(user: User, caplog: pytest.LogCaptureFixture):
-    """Patching head or body of a disconnected and deleted client stays silent (benign reload race)."""
-    label = None
-
-    @ui.page('/')
-    def page():
-        nonlocal label
-        label = ui.label('hi')
-
-    await user.open('/')
-    assert isinstance(label, ui.label)
-    client = label.client
-    client.tab_id = None  # what handle_disconnect() does before the delayed delete()
-    client.delete()
-    assert client.is_deleted
-
-    with client:
+    with label.client:
         ui.page_title('late title')
         ui.add_head_html('<meta name="late">')
         ui.add_body_html('<span>late</span>')
         ui.add_css('body {color: red}')
     await asyncio.sleep(0)  # let the fire-and-forget tasks of run_javascript run
-    assert not [record for record in caplog.records if 'still being used' in record.message]
+    expected_warnings = 0 if deletion_method == 'client_delete' else 1
+    assert len([record for record in caplog.records if 'still being used' in record.message]) == expected_warnings
 
 
 async def test_parent_slot_error(user: User):
