@@ -1,5 +1,6 @@
 import asyncio
 import multiprocessing
+import multiprocessing.forkserver
 import os
 import time
 from collections.abc import Callable, Generator
@@ -116,13 +117,16 @@ async def test_returns_none_when_app_is_stopping(user: User, func: Callable):
 
 @pytest.fixture
 def isolate_pool_state() -> Generator[None, None, None]:
-    """Restore run.process_pool_start_method, drop the test's pool and forget shown warnings."""
+    """Restore run.process_pool_start_method and the forkserver preload, drop the pool and forget warnings."""
     original = run.process_pool_start_method
+    forkserver = multiprocessing.forkserver._forkserver  # pylint: disable=protected-access
+    original_preload = forkserver._preload_modules  # pylint: disable=protected-access
     nicegui_warnings.reset()
     try:
         yield
     finally:
         run.process_pool_start_method = original
+        forkserver.set_forkserver_preload(original_preload)
         run.reset()
         nicegui_warnings.reset()
 
@@ -139,6 +143,17 @@ def test_pool_uses_configured_start_method(method):
     assert run.process_pool is not None
     assert run.process_pool._mp_context is not None  # pylint: disable=protected-access
     assert run.process_pool._mp_context.get_start_method() == expected  # pylint: disable=protected-access
+
+
+@pytest.mark.usefixtures('isolate_pool_state')
+async def test_forkserver_pool_does_not_preload_main():
+    """A "forkserver" pool must not re-import __main__, which would re-run the user's ui.run() (#6166)."""
+    if 'forkserver' not in multiprocessing.get_all_start_methods():
+        pytest.skip('forkserver is not available on this platform')
+    run.process_pool_start_method = 'forkserver'
+    run.setup()
+    assert multiprocessing.forkserver._forkserver._preload_modules == []  # pylint: disable=protected-access
+    assert await run.cpu_bound(good_function)
 
 
 @pytest.mark.usefixtures('isolate_pool_state')

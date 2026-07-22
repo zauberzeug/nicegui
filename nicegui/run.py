@@ -69,6 +69,9 @@ def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
     global process_pool, _pool_context, _pool_uses_implicit_fork  # pylint: disable=global-statement # noqa: PLW0603
     _pool_context = _resolve_cpu_bound_context()
+    if _pool_context.get_start_method() == 'forkserver':
+        # let the workers re-import __main__, where the MainProcess guard catches it, not the daemon (#6166)
+        _pool_context.set_forkserver_preload([])
     _pool_uses_implicit_fork = process_pool_start_method is None and _pool_context.get_start_method() == 'fork'
     try:
         process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)
