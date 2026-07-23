@@ -36,24 +36,23 @@ def unlink_with_retry(filepath: Path, *, missing_ok: bool = False, timeout: floa
     on the very loop that is calling this function) cannot proceed while we sleep and exhausts the timeout.
     """
     deadline = time.monotonic() + timeout
-    while True:
-        try:
-            filepath.unlink(missing_ok=missing_ok)
-            return
-        except PermissionError as e:
-            if getattr(e, 'winerror', None) is None or time.monotonic() > deadline:
-                raise  # only Windows PermissionErrors can be transient (winerror does not exist on POSIX)
-            time.sleep(0.02)
+    while not _try_unlink(filepath, missing_ok=missing_ok, deadline=deadline):
+        time.sleep(0.02)
 
 
 async def unlink_with_retry_async(filepath: Path, *, missing_ok: bool = False, timeout: float = 1.0) -> None:
     """Async variant of :func:`unlink_with_retry` which does not block the event loop while waiting."""
     deadline = time.monotonic() + timeout
-    while True:
-        try:
-            filepath.unlink(missing_ok=missing_ok)
-            return
-        except PermissionError as e:
-            if getattr(e, 'winerror', None) is None or time.monotonic() > deadline:
-                raise  # only Windows PermissionErrors can be transient (winerror does not exist on POSIX)
-            await asyncio.sleep(0.02)
+    while not _try_unlink(filepath, missing_ok=missing_ok, deadline=deadline):
+        await asyncio.sleep(0.02)
+
+
+def _try_unlink(filepath: Path, *, missing_ok: bool, deadline: float) -> bool:
+    """Attempt a single unlink, returning whether it succeeded or should be retried (raising otherwise)."""
+    try:
+        filepath.unlink(missing_ok=missing_ok)
+        return True
+    except PermissionError as e:
+        if getattr(e, 'winerror', None) is None or time.monotonic() > deadline:
+            raise  # only Windows PermissionErrors can be transient (winerror does not exist on POSIX)
+        return False
