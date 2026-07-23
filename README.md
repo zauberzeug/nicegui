@@ -120,7 +120,7 @@ If you would like to support this project and have your avatar or company logo a
   <a href="https://github.com/digiquip"><img src="https://github.com/digiquip.png" width="50px" alt="DigiQuip AS" /></a>
   <a href="https://github.com/aitech95"><img src="https://github.com/aitech95.png" width="50px" alt="JACOB SHI " /></a>
   <a href="https://github.com/Zaga-Solutions"><img src="https://github.com/Zaga-Solutions.png" width="50px" alt="Zaga Solutions" /></a>
-  <a href="https://github.com/Discolike"><img src="https://github.com/Discolike.png" width="50px" alt="DiscoLike Inc." /></a>
+  <a href="https://github.com/discolike"><img src="https://github.com/discolike.png" width="50px" alt="DiscoLike Inc." /></a>
 </p>
 <!-- SPONSORS -->
 
