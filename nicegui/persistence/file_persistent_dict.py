@@ -1,3 +1,4 @@
+import contextlib
 from pathlib import Path
 
 import aiofiles
@@ -45,17 +46,24 @@ class FilePersistentDict(PersistentDict):
                 return
             self.filepath.parent.mkdir(exist_ok=True)
 
+        tmp_filepath = self.filepath.with_name(self.filepath.name + '.tmp')
+
         @background_tasks.await_on_shutdown
         async def async_backup() -> None:
             if not self:
+                tmp_filepath.unlink(missing_ok=True)
                 await unlink_with_retry_async(self.filepath, missing_ok=True)
                 return
-            async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
+            async with aiofiles.open(tmp_filepath, 'w', encoding=self.encoding) as f:
                 await f.write(dumps(self, str(self.filepath), indent=self.indent))
+            with contextlib.suppress(FileNotFoundError):  # a concurrent Storage.clear() may have swept the temp file
+                tmp_filepath.replace(self.filepath)
 
         if core.is_loop_running():
             background_tasks.create_lazy(async_backup(), name=self.filepath.stem)
         elif not self:
+            tmp_filepath.unlink(missing_ok=True)
             unlink_with_retry(self.filepath, missing_ok=True)
         else:
-            self.filepath.write_text(dumps(self, str(self.filepath), indent=self.indent), encoding=self.encoding)
+            tmp_filepath.write_text(dumps(self, str(self.filepath), indent=self.indent), encoding=self.encoding)
+            tmp_filepath.replace(self.filepath)
