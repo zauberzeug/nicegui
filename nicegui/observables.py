@@ -170,6 +170,8 @@ class ObservableDict(ObservableCollection, dict):
         self._handle_change()
 
     def clear(self) -> None:
+        if not self:
+            return
         values = list(self.values())
         super().clear()
         self._unobserve(*values)
@@ -239,6 +241,8 @@ class ObservableList(ObservableCollection, list):
         return item
 
     def clear(self) -> None:
+        if not self:
+            return
         items = list(self)
         super().clear()
         self._unobserve(*items)
@@ -323,6 +327,8 @@ class ObservableSet(ObservableCollection, set):
         return item
 
     def clear(self) -> None:
+        if not self:
+            return
         items = list(self)
         super().clear()
         self._unobserve(*items)
@@ -339,7 +345,7 @@ class ObservableSet(ObservableCollection, set):
         old_items = list(self)
         super().intersection_update(*s)
         if len(self) == len(old_items):
-            return
+            return  # an equal-but-not-identical element may have replaced its counterpart, which is invisible by value
         self._unobserve(*old_items)
         self._handle_change()
 

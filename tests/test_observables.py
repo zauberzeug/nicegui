@@ -43,9 +43,9 @@ def test_observable_dict():
     assert count == 4
     data.popitem()
     assert count == 5
-    data.clear()
-    assert count == 6
     data.setdefault('a', 1)
+    assert count == 6
+    data.clear()
     assert count == 7
     data |= {'b': 2}
     assert count == 8
@@ -334,6 +334,20 @@ def test_no_op_dict_mutations_do_not_fire_change_events():
     assert data.setdefault('b', 2) == 2
     data.update({'c': 3})
     assert count == 2, 'real mutations still fire exactly one change event each'
+    data.clear()
+    assert count == 3, 'clearing a non-empty dict fires a change event'
+    data.clear()
+    assert count == 3, 'clearing an empty dict must not fire a change event'
+
+
+def test_no_op_mutations_of_nested_dict_do_not_fire_parent_change_events():
+    reset_counter()
+    data = ObservableDict({'child': {'a': 1}}, on_change=increment_counter)
+    assert data['child'].setdefault('a', 2) == 1
+    data['child'].update({})
+    assert count == 0, 'no-op mutations of a nested dict must not fire the parent change handler'
+    data['child'].setdefault('b', 2)
+    assert count == 1, 'a real mutation of a nested dict still fires the parent change handler'
 
 
 def test_no_op_list_mutations_do_not_fire_change_events():
@@ -345,6 +359,10 @@ def test_no_op_list_mutations_do_not_fire_change_events():
     assert count == 0, 'no-op mutations must not fire a change event'
     data.extend([2])
     assert count == 1, 'a real mutation still fires exactly one change event'
+    data.clear()
+    assert count == 2, 'clearing a non-empty list fires a change event'
+    data.clear()
+    assert count == 2, 'clearing an empty list must not fire a change event'
 
 
 def test_no_op_set_mutations_do_not_fire_change_events():
@@ -360,3 +378,7 @@ def test_no_op_set_mutations_do_not_fire_change_events():
     data.add(3)
     data.discard(3)
     assert count == 2, 'real mutations still fire exactly one change event each'
+    data.clear()
+    assert count == 3, 'clearing a non-empty set fires a change event'
+    data.clear()
+    assert count == 3, 'clearing an empty set must not fire a change event'
