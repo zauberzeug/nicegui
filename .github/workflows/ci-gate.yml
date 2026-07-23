@@ -27,6 +27,29 @@ jobs:
       python-versions: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
       scope: '["pytest", "startup"]'
 
+  windows-test:
+    name: windows / storage
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+      - name: Install Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: pytest tests/test_storage.py
+        run: uv run --with pytest-rerunfailures==16.4 pytest tests/test_storage.py --reruns 2 --reruns-delay 2 --only-rerun TimeoutException --only-rerun PytestUnraisableExceptionWarning
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: screenshots-windows
+          path: screenshots/**/*.failed.png
+          retention-days: 14
+
   quick-test-gate:
     runs-on: ubuntu-latest
     needs: [check, quick-test]
