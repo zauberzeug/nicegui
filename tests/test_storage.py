@@ -3,6 +3,7 @@ import copy
 import re
 import threading
 import time
+from collections.abc import Callable
 
 import httpx
 import pytest
@@ -422,43 +423,33 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
 
 
-async def test_clear_waits_out_transiently_held_storage_file(user: User):
+async def test_unlinking_storage_files_waits_out_transient_holders(user: User):
     @ui.page('/')
     def page():
         ui.label('ok')
 
     await user.open('/')  # needed to ensure NiceGUI's event loop is running
-    app.storage.general['key'] = 'value'  # schedules an async backup task
     filepath = Storage.path / 'storage-general.json'
-    deadline = time.monotonic() + 2.0
-    while not filepath.exists() and time.monotonic() < deadline:
-        await asyncio.sleep(0.01)  # let the backup write the file
-    assert filepath.exists()
-    handle = filepath.open(encoding='utf-8')  # stands in for a backup write still holding the file
-    threading.Timer(0.2, handle.close).start()
-    app.storage.clear()  # used to raise PermissionError (WinError 32) on Windows while the handle is open
-    assert not filepath.exists()
 
+    async def wait_until(condition: Callable[[], bool], *, timeout: float = 2.0) -> None:
+        deadline = time.monotonic() + timeout
+        while not condition() and time.monotonic() < deadline:
+            await asyncio.sleep(0.01)
 
-async def test_backup_of_emptied_dict_waits_out_held_storage_file(user: User):
-    @ui.page('/')
-    def page():
-        ui.label('ok')
+    async def write_and_hold_file() -> None:
+        app.storage.general['key'] = 'value'  # schedules an async backup task
+        await wait_until(filepath.exists)  # let the backup write the file
+        assert filepath.exists()
+        handle = filepath.open(encoding='utf-8')  # stands in for a backup write still holding the file
+        threading.Timer(0.2, handle.close).start()
 
-    await user.open('/')  # needed to ensure NiceGUI's event loop is running
-    app.storage.general['key'] = 'value'  # schedules an async backup task
-    filepath = Storage.path / 'storage-general.json'
-    deadline = time.monotonic() + 2.0
-    while not filepath.exists() and time.monotonic() < deadline:
-        await asyncio.sleep(0.01)  # let the backup write the file
-    assert filepath.exists()
-    handle = filepath.open(encoding='utf-8')  # stands in for another writer still holding the file
-    threading.Timer(0.2, handle.close).start()
+    await write_and_hold_file()
     app.storage.general.clear()  # schedules an async backup which deletes the now-empty file
-    deadline = time.monotonic() + 2.0
-    while filepath.exists() and time.monotonic() < deadline:
-        await asyncio.sleep(0.05)
-    # used to raise PermissionError (WinError 32) on Windows in the backup task (logged as ERROR)
+    await wait_until(lambda: not filepath.exists())
+    assert not filepath.exists()  # used to log ERROR (WinError 32) on Windows while the handle was open
+
+    await write_and_hold_file()
+    app.storage.clear()  # used to raise PermissionError (WinError 32) on Windows while the handle was open
     assert not filepath.exists()
 
 
