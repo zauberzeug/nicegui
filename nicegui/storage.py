@@ -1,3 +1,4 @@
+import contextlib
 import contextvars
 import os
 import uuid
@@ -211,6 +212,9 @@ class Storage:
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
             helpers.unlink_with_retry(filepath, missing_ok=True)
+        for tmp_path in self.path.glob('storage-*.json.tmp'):
+            with contextlib.suppress(OSError):  # never wait: only an in-flight backup on this loop can hold it
+                tmp_path.unlink()
         if self.path.exists():
             self.path.rmdir()
 
