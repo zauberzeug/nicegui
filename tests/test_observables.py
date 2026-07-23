@@ -85,7 +85,7 @@ def test_observable_list():
 def test_observable_set():
     reset_counter()
     data = ObservableSet({1, 2, 3, 4, 5}, on_change=increment_counter)
-    data.add(1)
+    data.add(6)
     assert count == 1
     data.remove(1)
     assert count == 2
@@ -322,3 +322,41 @@ def test_pop_missing_key_raises_keyerror():
     assert count == 1, 'popping an existing key fires exactly one change event'
     assert data.pop('a', None) is None, 'the default is returned when the key is gone'
     assert count == 1, 'popping a now-missing key with a default must not fire another change event'
+
+
+def test_no_op_dict_mutations_do_not_fire_change_events():
+    reset_counter()
+    data = ObservableDict({'a': 1}, on_change=increment_counter)
+    assert data.setdefault('a', 2) == 1, 'setdefault must not overwrite an existing key'
+    data.update({})
+    data |= {}
+    assert count == 0, 'no-op mutations must not fire a change event'
+    assert data.setdefault('b', 2) == 2
+    data.update({'c': 3})
+    assert count == 2, 'real mutations still fire exactly one change event each'
+
+
+def test_no_op_list_mutations_do_not_fire_change_events():
+    reset_counter()
+    data = ObservableList([1], on_change=increment_counter)
+    data.extend([])
+    data += []
+    data *= 1
+    assert count == 0, 'no-op mutations must not fire a change event'
+    data.extend([2])
+    assert count == 1, 'a real mutation still fires exactly one change event'
+
+
+def test_no_op_set_mutations_do_not_fire_change_events():
+    reset_counter()
+    data = ObservableSet({1, 2}, on_change=increment_counter)
+    data.add(1)
+    data.discard(3)
+    data.update({1})
+    data.intersection_update({1, 2, 3})
+    data.difference_update({4})
+    data.symmetric_difference_update(set())
+    assert count == 0, 'no-op mutations must not fire a change event'
+    data.add(3)
+    data.discard(3)
+    assert count == 2, 'real mutations still fire exactly one change event each'
