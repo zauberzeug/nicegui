@@ -65,6 +65,38 @@ static_files = CacheControlledStaticFiles(
 app.mount(f'/_nicegui/{__version__}/static', static_files, name='static')
 
 
+def _get_sitemap(request: Request) -> Response:
+    if app.sitemap.base_url is not None:
+        base_url = app.sitemap.base_url
+    else:
+        prefix = request.headers.get('X-Forwarded-Prefix', '') + request.scope.get('root_path', '')
+        base_url = f'{request.url.scheme}://{request.url.netloc}{prefix}'
+    return Response(content=app.sitemap.to_xml(base_url), media_type='application/xml')
+
+
+def _register_sitemap_route() -> None:
+    """Register ``/sitemap.xml`` at startup, mirroring how ``/favicon.ico`` is set up.
+
+    Registering here rather than at import time gives a single steady-state invariant: there is at
+    most one ``/sitemap.xml`` route, and it is the user's if they defined one. Two things fall out:
+
+    * a user-defined ``@ui.page('/sitemap.xml')`` / ``@app.get('/sitemap.xml')`` — already in place
+      by the time startup runs — wins, because we skip registering ours when one exists;
+    * an app that opted no page in keeps its original ``404`` instead of serving an empty ``<urlset/>``.
+
+    Only routes present before startup are detected; a ``/sitemap.xml`` added dynamically after
+    startup would still be shadowed by ours.
+    """
+    # Drop a route left by an earlier startup so each startup re-decides from scratch (idempotent):
+    # otherwise a second startup with an emptied registry would keep serving a stale empty sitemap.
+    app.routes[:] = [route for route in app.routes if getattr(route, 'endpoint', None) is not _get_sitemap]
+    if next(app.sitemap.entries(), None) is None:
+        return  # nothing opted in → keep the app's pre-existing 404 rather than an empty sitemap
+    if any(getattr(route, 'path', None) == '/sitemap.xml' for route in app.routes):
+        return  # a user-defined route already claims the path → let theirs win
+    app.add_route('/sitemap.xml', _get_sitemap, include_in_schema=False)
+
+
 @app.get(f'/_nicegui/{__version__}' + '/libraries/{key:path}')
 def _get_library(key: str) -> FileResponse:
     is_map = key.endswith('.map')
@@ -144,6 +176,7 @@ async def _startup() -> None:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
         app.add_route('/favicon.ico', lambda _: FileResponse(Path(__file__).parent / 'static' / 'favicon.ico'))
+    _register_sitemap_route()
     core.loop = asyncio.get_running_loop()
     run.setup()
     app.start()
