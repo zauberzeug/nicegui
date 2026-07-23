@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import aiofiles
@@ -54,7 +53,7 @@ class FilePersistentDict(PersistentDict):
             tmp = self.filepath.with_name(self.filepath.name + '.tmp')
             async with aiofiles.open(tmp, 'w', encoding=self.encoding) as f:
                 await f.write(dumps(self, str(self.filepath), indent=self.indent))
-            os.replace(tmp, self.filepath)
+            tmp.replace(self.filepath)
 
         if core.is_loop_running():
             background_tasks.create_lazy(async_backup(), name=self.filepath.stem)
