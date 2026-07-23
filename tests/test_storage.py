@@ -453,6 +453,18 @@ async def test_unlinking_storage_files_waits_out_transient_holders(user: User):
     assert not filepath.exists()
 
 
+async def test_clearing_storage_removes_leftover_temp_files(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    Storage.path.mkdir(exist_ok=True)
+    (Storage.path / 'storage-general.json.tmp').touch()  # stands in for a temp file left behind by an interrupted backup
+    app.storage.clear()
+    assert not Storage.path.exists(), 'temp files should be swept so the storage directory can be removed'
+
+
 @pytest.mark.parametrize('custom_cookie_headers', [False, True])
 def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
     @ui.page('/')
