@@ -3,6 +3,7 @@ from pathlib import Path
 import aiofiles
 
 from .. import background_tasks, core, json
+from ..helpers import unlink_with_retry, unlink_with_retry_async
 from ..logging import log
 from .persistent_dict import PersistentDict
 from .serialization import dumps
@@ -47,7 +48,7 @@ class FilePersistentDict(PersistentDict):
         @background_tasks.await_on_shutdown
         async def async_backup() -> None:
             if not self:
-                self.filepath.unlink(missing_ok=True)
+                await unlink_with_retry_async(self.filepath, missing_ok=True)
                 return
             async with aiofiles.open(self.filepath, 'w', encoding=self.encoding) as f:
                 await f.write(dumps(self, str(self.filepath), indent=self.indent))
@@ -55,6 +56,6 @@ class FilePersistentDict(PersistentDict):
         if core.is_loop_running():
             background_tasks.create_lazy(async_backup(), name=self.filepath.stem)
         elif not self:
-            self.filepath.unlink(missing_ok=True)
+            unlink_with_retry(self.filepath, missing_ok=True)
         else:
             self.filepath.write_text(dumps(self, str(self.filepath), indent=self.indent), encoding=self.encoding)
