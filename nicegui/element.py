@@ -18,10 +18,10 @@ from .dependencies import (
     Component,
     Library,
     register_dynamic_resource,
-    register_esm,
-    register_library,
+    register_esm_glob,
+    register_library_glob,
     register_resource,
-    register_vue_component,
+    register_vue_component_glob,
 )
 from .elements.mixins.visibility import Visibility
 from .event_listener import EventListener
@@ -100,28 +100,16 @@ class Element(Visibility):
         super().__init_subclass__()
         base = Path(inspect.getfile(cls)).parent
 
-        def glob_absolute_paths(file: str | Path) -> list[Path]:
-            path = Path(file)
-            if not path.is_absolute():
-                path = base / path
-            return sorted(path.parent.glob(path.name), key=lambda p: p.stem)
-
         cls.component = copy(cls.component)
         cls.exposed_libraries = copy(cls.exposed_libraries)
         if component:
-            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(component)), default=None)
-            for path in glob_absolute_paths(component):
-                cls.component = register_vue_component(path, max_time=max_time)
+            registered = register_vue_component_glob(component, base=base)
+            if registered is not None:
+                cls.component = registered
         for library in dependencies:
-            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(library)), default=None)
-            for path in glob_absolute_paths(library):
-                cls.exposed_libraries.append(register_library(path, max_time=max_time))
+            cls.exposed_libraries.extend(register_library_glob(library, base=base))
         for key, esm_path in (esm or {}).items():
-            path = Path(esm_path)
-            if not path.is_absolute():
-                path = base / path
-            max_time = max((path.stat().st_mtime for path in glob_absolute_paths(path)), default=None)
-            register_esm(key, path, max_time=max_time)
+            register_esm_glob(key, esm_path, base=base)
 
         cls._default_props = copy(cls._default_props)
         cls._default_classes = copy(cls._default_classes)

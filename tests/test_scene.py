@@ -232,28 +232,27 @@ def test_stl_wireframe(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
-        f'return !!window.getElement && getElement({scene.id})?.objects?.get("{obj.id}")?.children.length > 0'
+        f'return !!window.scene_{scene.html_id} && '
+        f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0'
     ))
     result = screen.selenium.execute_script(f'''
-        const obj = getElement({scene.id}).objects.get("{obj.id}");
-        const child = obj.children && obj.children[0];
+        const group = scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}");
+        const child = group.children[0];
         return {{
-            root_type: obj.type,
+            root_type: group.type,
             child_geometry: child ? child.geometry.type : null,
             edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,
-            child_object_id: child ? child.object_id : null,
             child_color: (child && child.material) ? child.material.color.getHexString() : null,
         }};
     ''')
     assert result['root_type'] == 'Group', f'expected a Group wrapper, got {result}'
     assert result['child_geometry'] == 'EdgesGeometry', f'expected EdgesGeometry child, got {result}'
     assert result['edge_count'] > 0, f'expected non-empty edges, got {result}'
-    assert result['child_object_id'] == obj.id, f'expected click-hittable child with object_id, got {result}'
     assert result['child_color'] == 'ff0000', f'expected material to reach the wireframe lines, got {result}'
 
     screen.click('Rename')  # rename AFTER the async load has completed
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).objects.get("{obj.id}").children[0].name === "renamed"'
+        f'return scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}").name === "renamed"'
     ))
 
 

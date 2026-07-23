@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+import inspect
 import math
 import uuid
-from typing import TYPE_CHECKING, Any, Literal
+from collections.abc import Iterable, Mapping
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import Self
+
+from nicegui.awaitable_response import AwaitableResponse
+from nicegui.dependencies import register_esm_glob, register_library_glob, resolve_glob
+from nicegui.helpers import warn_once
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
@@ -12,9 +19,37 @@ if TYPE_CHECKING:
 
 class Object3D:
     current_scene: Scene | None = None
+    _component_import_name: ClassVar[str | None] = None
 
-    def __init__(self, type_: str, *args: Any) -> None:
-        self.type = type_
+    def __init_subclass__(
+        cls, *, component: str | Path | None = None, dependencies: Iterable[str | Path] | None = None, esm: Mapping[str, str] | None = None,
+    ):
+        super().__init_subclass__()
+        base = Path(inspect.getfile(cls)).parent
+
+        if component:
+            paths = resolve_glob(component, base=base)
+            if len(paths) != 1:
+                raise ValueError(
+                    f"'component' must resolve to exactly one file, "
+                    f'but {str(component)!r} matched {len(paths)} file(s)'
+                )
+            cls._component_import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
+            register_library_glob(component, base=base, import_name=cls._component_import_name)
+        else:
+            # Fallback to parent's component to ease inheriting from Object3D classes
+            for base_cls in cls.__mro__[1:]:
+                if getattr(base_cls, '_component_import_name', False):
+                    break
+            else:
+                raise TypeError("parameter 'component' must be supplied as a class named argument")
+
+        for dependency in dependencies or []:
+            register_library_glob(dependency, base=base)
+        for key, esm_path in (esm or {}).items():
+            register_esm_glob(key, esm_path, base=base)
+
+    def __init__(self, *args: Any) -> None:
         self.id = str(uuid.uuid4())
         self.name: str | None = None
         assert self.current_scene is not None
@@ -45,9 +80,18 @@ class Object3D:
 
     @property
     def data(self) -> list[Any]:
-        """Data to be sent to the frontend."""
+        """Data to be sent to the frontend.
+
+        **Note: This property is deprecated and will be removed in NiceGUI 4.0.
+        It's a public method meant for internal use and is no longer needed.**
+        """
+        warn_once(
+            'The `data` property of `Object3D` is deprecated and will be '
+            "removed in NiceGUI 4.0. It's a public method meant for internal use "
+            'and is no longer needed.'
+        )
         return [
-            self.type, self.id, self.parent.id, self.args,
+            self._component_import_name, self.id, self.parent.id, self.args,
             self.name,
             self.color, self.opacity, self.side_, self.material_is_set,
             self.x, self.y, self.z,
@@ -65,7 +109,7 @@ class Object3D:
         self.scene.stack.pop()
 
     def _create(self) -> None:
-        self.scene.run_method('create', self.type, self.id, self.parent.id, *self.args)
+        self.scene.run_method('create', self._component_import_name, self.id, self.parent.id, *self.args)
 
     def _name(self) -> None:
         self.scene.run_method('name', self.id, self.name)
@@ -348,3 +392,15 @@ class Object3D:
             child.delete()
         del self.scene.objects[self.id]
         self._delete()
+
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        """Run a method on the JS component on the client side.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        :param name: name of the method
+        :param args: arguments to pass to the method
+        :param timeout: maximum time to wait for a response (default: 1 second)
+        """
+        return self.scene.run_method('run_method_on_component', self.id, name, *args, timeout=timeout)
