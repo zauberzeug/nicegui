@@ -30,15 +30,19 @@ def unlink_with_retry(filepath: Path, *, missing_ok: bool = False, timeout: floa
 
     A concurrent writer (e.g. a lazily scheduled storage backup) may still hold the file open;
     Windows cannot delete open files, so retry briefly until the handle is released.
+
+    Note: The blocking wait can only help if the holder releases the file independently of the current thread.
+    A writer that needs this thread's event loop to close its file (e.g. an ``aiofiles`` coroutine suspended
+    on the very loop that is calling this function) cannot proceed while we sleep and exhausts the timeout.
     """
     deadline = time.monotonic() + timeout
     while True:
         try:
             filepath.unlink(missing_ok=missing_ok)
             return
-        except PermissionError:
-            if time.monotonic() > deadline:
-                raise
+        except PermissionError as e:
+            if getattr(e, 'winerror', None) is None or time.monotonic() > deadline:
+                raise  # only Windows PermissionErrors can be transient (winerror does not exist on POSIX)
             time.sleep(0.02)
 
 
@@ -49,7 +53,7 @@ async def unlink_with_retry_async(filepath: Path, *, missing_ok: bool = False, t
         try:
             filepath.unlink(missing_ok=missing_ok)
             return
-        except PermissionError:
-            if time.monotonic() > deadline:
-                raise
+        except PermissionError as e:
+            if getattr(e, 'winerror', None) is None or time.monotonic() > deadline:
+                raise  # only Windows PermissionErrors can be transient (winerror does not exist on POSIX)
             await asyncio.sleep(0.02)

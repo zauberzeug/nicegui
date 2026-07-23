@@ -210,7 +210,7 @@ class Storage:
             context.client.storage.clear()
         self._tabs.clear()
         for filepath in self.path.glob('storage-*.json'):
-            helpers.unlink_with_retry(filepath)
+            helpers.unlink_with_retry(filepath, missing_ok=True)
         if self.path.exists():
             self.path.rmdir()
 
