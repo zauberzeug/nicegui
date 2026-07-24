@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from nicegui import background_tasks, ui
 from nicegui.props import Props
 from nicegui.style import Style
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_classes(screen: Screen):
@@ -222,6 +222,29 @@ def test_move_slots(screen: Screen):
     screen.click('Move X to B')
     screen.wait(0.5)
     assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
+
+
+async def test_move_to_invalid_slot_keeps_element_in_place(user: User):
+    card = label = other = None
+
+    @ui.page('/')
+    def page():
+        nonlocal card, label, other
+        card = ui.card()
+        with card:
+            label = ui.label('X')
+        other = ui.card()
+
+    await user.open('/')
+    assert isinstance(card, ui.card) and isinstance(label, ui.label) and isinstance(other, ui.card)
+
+    with pytest.raises(ValueError, match='does not exist'):
+        label.move(other, target_slot='does-not-exist')
+
+    assert label in card.default_slot.children, 'a failed move must not detach the element'
+    assert label.parent_slot is card.default_slot
+    label.delete()  # used to raise ValueError('list.remove(x): x not in list')
+    assert label not in card.default_slot.children
 
 
 def test_xss(screen: Screen):
