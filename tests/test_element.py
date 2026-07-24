@@ -241,10 +241,10 @@ async def test_move_to_invalid_slot_keeps_element_in_place(user: User):
     with pytest.raises(ValueError, match='does not exist'):
         label.move(other, target_slot='does-not-exist')
 
-    assert label in card.default_slot.children, 'a failed move must not detach the element'
-    assert label.parent_slot is card.default_slot
+    assert label in card.default_slot.children, 'a failed move must keep the element in its original slot'
+    await user.should_see('X')
     label.delete()  # used to raise ValueError('list.remove(x): x not in list')
-    assert label not in card.default_slot.children
+    await user.should_not_see('X')
 
 
 def test_xss(screen: Screen):
