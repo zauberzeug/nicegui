@@ -259,6 +259,10 @@ export default {
             for (const t of Object.values(this._timers)) clearTimeout(t);
           }
           update(u) {
+            // A focus transition makes selection state meaningful again: hosts that
+            // ignore unfocused selection events (programmatic echoes) must still hear
+            // about the first post-focus selection even if it matches the last payload.
+            if (u.focusChanged) delete this._last["selection-change"];
             if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
               const head = u.state.selection.main.head;
               const line = u.state.doc.lineAt(head);

@@ -120,6 +120,44 @@ def test_selection_change_event(screen: Screen):
     screen.wait_for(lambda: (2, 4) in events)
 
 
+def test_selection_reemits_after_focus_change(screen: Screen):
+    """The first post-focus selection emits even when it matches the last payload.
+
+    Hosts that ignore unfocused selection events (programmatic echoes) would
+    otherwise never hear about a click landing on the previously echoed position:
+    the dedupe cache is cleared on every focus transition.
+    """
+    events: list[tuple[int, int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(
+            'Line 1\nLine 2\nLine 3',
+            on_selection_change=lambda e: events.append((e.line, e.column)),
+        )
+
+    screen.open('/')
+    screen.should_contain('Line 2')
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
+    )
+    screen.wait_for(lambda: (2, 1) in events)
+
+    # Blur, then refocus and select the identical position: without the
+    # focus-transition cache clear the identical payload would be deduped away.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.contentDOM.blur();'
+    )
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.focus();'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
+    )
+    screen.wait_for(lambda: events.count((2, 1)) >= 2)
+
+
 def test_focus_change_event(screen: Screen):
     events: list[bool] = []
     editor = None
