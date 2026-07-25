@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from nicegui import background_tasks, ui
 from nicegui.props import Props
 from nicegui.style import Style
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_classes(screen: Screen):
@@ -222,6 +222,27 @@ def test_move_slots(screen: Screen):
     screen.click('Move X to B')
     screen.wait(0.5)
     assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
+
+
+async def test_move_into_descendant_is_rejected(user: User):
+    a = b = x = p2 = None
+
+    @ui.page('/')
+    def page():
+        nonlocal a, b, x, p2
+        with ui.card() as a:
+            with ui.card() as b:
+                x = ui.label('X')
+        p2 = ui.card()
+
+    await user.open('/')
+    with pytest.raises(ValueError):
+        a.move(b)
+    with pytest.raises(ValueError):
+        a.move(a)
+    assert list(a.descendants()) == [b, x]
+    x.move(p2)
+    assert list(p2.descendants()) == [x]
 
 
 def test_xss(screen: Screen):
