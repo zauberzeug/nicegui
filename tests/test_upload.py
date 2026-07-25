@@ -183,29 +183,27 @@ def test_upload_filename_sanitization(input_name: str | None, expected: str):
 
 
 async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyPatch):
-    created_paths: list[str] = []
-    real_tempfile = aiofiles.tempfile.NamedTemporaryFile
+    monkeypatch.setattr(MultiPartParser, 'spool_max_size', 8)  # spill to a temp file after the first chunk
 
-    class WriteFailsTempFile:
-        def __init__(self, inner) -> None:
-            self._inner = inner
-            self.name = inner.name
-            created_paths.append(inner.name)
+    paths: list[str] = []
+    real = aiofiles.tempfile.NamedTemporaryFile
 
-        async def write(self, data) -> None:
-            raise OSError('No space left on device')
+    async def track(*args, **kwargs):
+        temp = await real(*args, **kwargs)
+        paths.append(temp.name)
+        return temp
+    monkeypatch.setattr(aiofiles.tempfile, 'NamedTemporaryFile', track)
 
-        async def close(self) -> None:
-            await self._inner.close()
+    class FlakyUpload(UploadFile):  # one chunk (triggers the spill), then errors mid-upload
+        _read = False
 
-    async def patched(*args, **kwargs):
-        return WriteFailsTempFile(await real_tempfile(*args, **kwargs))
-
-    monkeypatch.setattr(aiofiles.tempfile, 'NamedTemporaryFile', patched)
-    monkeypatch.setattr(MultiPartParser, 'spool_max_size', 8)
+        async def read(self, size: int = -1) -> bytes:
+            if self._read:
+                raise OSError('No space left on device')
+            self._read = True
+            return b'x' * 16
 
     with pytest.raises(OSError):
-        await create_file_upload(UploadFile(BytesIO(b'x' * 64), filename='big.bin'), chunk_size=16)
+        await create_file_upload(FlakyUpload(BytesIO(b''), filename='big.bin'), chunk_size=16)
 
-    assert created_paths, 'expected a temp file to be spilled'
-    assert not Path(created_paths[0]).exists(), 'spilled temp file leaked on disk'
+    assert paths and not Path(paths[0]).exists(), 'spilled temp file leaked on disk'
