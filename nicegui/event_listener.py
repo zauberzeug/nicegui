@@ -27,7 +27,10 @@ class EventListener:
         words = self.type.split('.')
         type_ = words.pop(0)
         specials = [w for w in words if w in {'capture', 'once', 'passive'}]
-        modifiers = [w for w in words if w in {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta'}]
+        modifier_names = {'stop', 'prevent', 'self', 'ctrl', 'shift', 'alt', 'meta', 'exact', 'middle'}
+        if type_ not in {'keydown', 'keyup', 'keypress'}:
+            modifier_names |= {'left', 'right'}
+        modifiers = [w for w in words if w in modifier_names]
         keys = [w for w in words if w not in specials + modifiers]
         return {
             'listener_id': self.id,

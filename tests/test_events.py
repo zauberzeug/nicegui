@@ -5,7 +5,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import events, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def click_sync_no_args():
@@ -106,6 +106,24 @@ def test_event_modifiers(screen: Screen):
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="C"]').send_keys('xx')
     screen.selenium.find_element(By.XPATH, '//*[@aria-label="D"]').send_keys('Xx')
     assert events == ['A', 'B', 'C', 'D']
+
+
+async def test_mouse_button_and_exact_modifier_routing(user: User) -> None:
+    listeners = {}
+
+    @ui.page('/')
+    def page():
+        for spec in ['click.left', 'mousedown.middle', 'keydown.enter.exact', 'keyup.left']:
+            listeners[spec] = next(iter(ui.button('X').on(spec, lambda: None)._event_listeners.values()))
+
+    await user.open('/')
+    assert listeners['click.left'].to_dict()['modifiers'] == ['left']
+    assert listeners['click.left'].to_dict()['keys'] == []
+    assert listeners['mousedown.middle'].to_dict()['modifiers'] == ['middle']
+    assert listeners['keydown.enter.exact'].to_dict()['modifiers'] == ['exact']
+    assert listeners['keydown.enter.exact'].to_dict()['keys'] == ['enter']
+    assert listeners['keyup.left'].to_dict()['modifiers'] == []
+    assert listeners['keyup.left'].to_dict()['keys'] == ['left']
 
 
 def test_throttling(screen: Screen):
