@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 example_data = ('data:image/png;base64,'
@@ -131,3 +131,20 @@ def test_pil_image_cleanup(screen: Screen):
 
     screen.click('Delete')
     screen.wait_for(lambda: not Path(temp_path_str).exists())
+
+
+async def test_removal_of_generated_route_when_switching_to_non_file(user: User) -> None:
+    holder: dict = {}
+
+    @ui.page('/')
+    def page():
+        holder['img'] = ui.image(example_file)
+
+    await user.open('/')
+    img = holder['img']
+    assert img.auto_route is not None
+    assert any('/_nicegui/auto/static/' in getattr(route, 'path', '') for route in app.routes)
+
+    img.set_source('https://example.com/x.png')
+    assert img.auto_route is None
+    assert not any('/_nicegui/auto/static/' in getattr(route, 'path', '') for route in app.routes)

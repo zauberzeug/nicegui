@@ -118,6 +118,9 @@ class SourceElement(Element):
             self.auto_route = source
         else:
             self._temp_path = None
+            if self.auto_route:
+                core.app.remove_route(self.auto_route)
+                self.auto_route = None
         if isinstance(source, Path) and not source.exists():
             raise FileNotFoundError(f'File not found: {source}')
         self._props['src'] = source
