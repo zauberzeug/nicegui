@@ -61,6 +61,15 @@ def test_data_url(screen: Screen):
     assert_favicon(bytes_)
 
 
+def test_url_encoded_data_url():
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/></svg>'
+    data_url = favicon._svg_to_data_url(svg)
+    assert ';base64' not in data_url
+    media_type, bytes_ = favicon._data_url_to_bytes(data_url)
+    assert media_type == 'image/svg+xml'
+    assert bytes_ == svg.encode()
+
+
 def test_custom_file(screen: Screen):
     @ui.page('/')
     def page():
