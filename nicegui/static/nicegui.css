@@ -367,11 +367,13 @@ h6.q-timeline__title {
 }
 .nicegui-error-popup:dir(ltr) > span:first-child::before {
   content: "⚠️";
+  font-family: sans-serif; /* anything but Roboto, whose symbol subset would be fetched just for this glyph */
   position: absolute;
   left: 1.5em;
 }
 .nicegui-error-popup:dir(rtl) > span:first-child::before {
   content: "⚠️";
+  font-family: sans-serif; /* anything but Roboto, whose symbol subset would be fetched just for this glyph */
   position: absolute;
   right: 1.5em;
 }
