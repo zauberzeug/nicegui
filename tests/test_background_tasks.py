@@ -99,6 +99,31 @@ async def test_inner_async_function_is_awaited_on_shutdown(user: User, create: C
     assert events == ['inner ran']
 
 
+async def test_coalesced_lazy_task_is_awaited_on_shutdown(user: User):
+    events: list[str] = []
+
+    @background_tasks.await_on_shutdown
+    async def backup(value: str):
+        try:
+            await asyncio.sleep(0.05)
+            events.append(value)
+        except asyncio.CancelledError:
+            events.append(f'{value} cancelled')
+
+    @ui.page('/')
+    def page():
+        pass
+
+    await user.open('/')
+
+    background_tasks.create_lazy(backup('A'), name='backup')
+    background_tasks.create_lazy(backup('B'), name='backup')  # coalesced while A is running
+    await asyncio.sleep(0.02)  # let A start so B stays waiting
+
+    await background_tasks.teardown()
+    assert events == ['A', 'B']
+
+
 def test_create_tasks(screen: Screen) -> None:
     events: list[str] = []
 
