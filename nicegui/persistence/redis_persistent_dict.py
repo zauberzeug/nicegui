@@ -64,6 +64,8 @@ class RedisPersistentDict(PersistentDict):
                     if t == 'message':
                         new_data = json.loads(message['data'])
                         if new_data != self:
+                            for key in set(self) - new_data.keys():
+                                del self[key]
                             self.update(new_data)
                     elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
                         break
