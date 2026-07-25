@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
+from ... import binding
+
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
 
@@ -347,4 +349,5 @@ class Object3D:
         for child in self.children:
             child.delete()
         del self.scene.objects[self.id]
+        binding.remove([self])
         self._delete()

@@ -5,9 +5,9 @@ import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
 
-from nicegui import app, ui
+from nicegui import app, binding, ui
 from nicegui.elements.scene import Object3D
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
 
@@ -287,3 +287,19 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+async def test_delete_removes_bindings(user: User):
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+        label = ui.label()
+        for _ in range(50):
+            box = scene.box()
+            label.bind_text_from(box, 'x')
+            box.delete()
+        assert not scene.objects
+        assert not binding.active_links
+        assert not binding.bindings
+
+    await user.open('/')
