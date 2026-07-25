@@ -440,6 +440,23 @@ def test_fullscreen_scroll_behavior(screen: Screen):
     assert screen.selenium.execute_script('return window.scrollY') == position
 
 
+def test_client_side_fullscreen_syncs_back(screen: Screen):
+    table = None
+
+    @ui.page('/')
+    def page():
+        nonlocal table
+        table = ui.table(rows=[{'name': 'Alice'}])
+        table.add_slot('top', '<q-btn dense flat label="FS" @click="props.toggleFullscreen" />')
+
+    screen.open('/')
+    assert table.is_fullscreen is False
+
+    screen.click('FS')
+    screen.wait(0.5)
+    assert table.is_fullscreen is True
+
+
 @pytest.mark.parametrize('index,expected,unexpected', [
     (pd.Index([100, 200], name='id'), ['id', '100', '200'], []),
     (pd.RangeIndex(start=100, stop=102, name='index'), ['index', '100', '101'], []),
