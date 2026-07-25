@@ -1,9 +1,13 @@
+from io import BytesIO
 from pathlib import Path
 
+import aiofiles.tempfile
 import pytest
+from starlette.datastructures import UploadFile
+from starlette.formparsers import MultiPartParser
 
 from nicegui import events, ui
-from nicegui.elements.upload_files import _sanitize_filename
+from nicegui.elements.upload_files import _sanitize_filename, create_file_upload
 from nicegui.testing import Screen
 
 test_path1 = Path('tests/test_upload.py').resolve()
@@ -176,3 +180,32 @@ async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
 ])
 def test_upload_filename_sanitization(input_name: str | None, expected: str):
     assert _sanitize_filename(input_name) == expected
+
+
+async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyPatch):
+    created_paths: list[str] = []
+    real_tempfile = aiofiles.tempfile.NamedTemporaryFile
+
+    class WriteFailsTempFile:
+        def __init__(self, inner) -> None:
+            self._inner = inner
+            self.name = inner.name
+            created_paths.append(inner.name)
+
+        async def write(self, data) -> None:
+            raise OSError('No space left on device')
+
+        async def close(self) -> None:
+            await self._inner.close()
+
+    async def patched(*args, **kwargs):
+        return WriteFailsTempFile(await real_tempfile(*args, **kwargs))
+
+    monkeypatch.setattr(aiofiles.tempfile, 'NamedTemporaryFile', patched)
+    monkeypatch.setattr(MultiPartParser, 'spool_max_size', 8)
+
+    with pytest.raises(OSError):
+        await create_file_upload(UploadFile(BytesIO(b'x' * 64), filename='big.bin'), chunk_size=16)
+
+    assert created_paths, 'expected a temp file to be spilled'
+    assert not Path(created_paths[0]).exists(), 'spilled temp file leaked on disk'
