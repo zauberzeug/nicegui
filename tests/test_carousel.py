@@ -1,5 +1,5 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_carousel(screen: Screen):
@@ -24,3 +24,16 @@ def test_carousel(screen: Screen):
 
     screen.click('chevron_left')
     screen.should_contain('Alice')
+
+
+async def test_no_done_prop_on_slides(user: User):
+    slides = []
+
+    @ui.page('/')
+    def page():
+        with ui.carousel() as carousel:
+            slides.extend([ui.carousel_slide('a'), ui.carousel_slide('b'), ui.carousel_slide('c')])
+        carousel.value = 'b'
+
+    await user.open('/')
+    assert not any(':done' in slide._props for slide in slides)
