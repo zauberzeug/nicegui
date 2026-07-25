@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 from selenium.webdriver import Keys
 
@@ -326,3 +328,26 @@ def test_popup_scroll_behavior(screen: Screen):
     screen.type(Keys.ESCAPE)
     screen.wait(0.2)
     assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+async def test_multiple_new_value_with_key_generator(user: User):
+    single = multiple = None
+
+    @ui.page('/')
+    def page():
+        nonlocal single, multiple
+        single = ui.select({'a': 'A'}, multiple=False, new_value_mode='add', key_generator=itertools.count(100))
+        multiple = ui.select({'a': 'A'}, multiple=True, new_value_mode='add', key_generator=itertools.count(200))
+
+    await user.open('/')
+
+    def listener_id(select):
+        return next(x.id for x in select._event_listeners.values() if x.type == 'update:modelValue')
+
+    single._handle_event({'listener_id': listener_id(single), 'args': 'Banana'})
+    assert single.value == 100
+    assert single.options == {'a': 'A', 100: 'Banana'}
+
+    multiple._handle_event({'listener_id': listener_id(multiple), 'args': [{'value': 0, 'label': 'A'}, 'Banana']})
+    assert multiple.value == ['a', 200]
+    assert multiple.options == {'a': 'A', 200: 'Banana'}

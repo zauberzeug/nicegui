@@ -106,9 +106,9 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                                 e.args.remove(arg1)
                                 break
                 args = [self._values[arg['value']] if isinstance(arg, dict) else arg for arg in e.args]
-                for arg in e.args:
+                for i, arg in enumerate(e.args):
                     if isinstance(arg, str):
-                        self._handle_new_value(arg)
+                        args[i] = self._handle_new_value(arg)
                 return [arg for arg in args if arg in self._values]
         else:  # noqa: PLR5501
             if e.args is None:
