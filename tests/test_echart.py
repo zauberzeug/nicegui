@@ -204,3 +204,30 @@ def test_click(screen: Screen):
         ('component', 'legend', None),
         ('component', 'radar', 'C'),
     ]
+
+
+def test_resize_observer_disconnected_on_unmount(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.add_head_html('''
+            <script>
+            window.__ro = [];
+            const Orig = window.ResizeObserver;
+            window.ResizeObserver = class extends Orig {
+                constructor(cb) { super(cb); this.__rec = {disconnected: false}; window.__ro.push(this.__rec); }
+                disconnect() { this.__rec.disconnected = true; return super.disconnect(); }
+            };
+            </script>
+        ''')
+        chart = ui.echart({'xAxis': {'type': 'category', 'data': ['a']},
+                           'yAxis': {'type': 'value'},
+                           'series': [{'type': 'bar', 'data': [1]}]})
+        ui.button('kill', on_click=chart.delete)
+
+    screen.open('/')
+    screen.wait(0.5)
+    before = screen.selenium.execute_script('return window.__ro.filter(r => r.disconnected).length;')
+    screen.click('kill')
+    screen.wait(0.5)
+    after = screen.selenium.execute_script('return window.__ro.filter(r => r.disconnected).length;')
+    assert after > before, 'echart ResizeObserver was not disconnected when the chart was removed (leak)'
