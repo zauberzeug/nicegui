@@ -152,6 +152,8 @@ requires = [
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
+exclude = ["nicegui/**/*.map"]
+include = [{ path = "nicegui/**/*.map", format = "sdist" }]
 version = "0.0.0"
 
 [tool.poetry-dynamic-versioning]
