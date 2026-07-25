@@ -47,6 +47,8 @@ def test_observable_dict():
     assert count == 6
     data.setdefault('a', 1)
     assert count == 7
+    data.setdefault('a', 999)
+    assert count == 7
     data |= {'b': 2}
     assert count == 8
 
