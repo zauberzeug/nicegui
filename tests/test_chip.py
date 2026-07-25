@@ -1,5 +1,5 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_removable_chip(screen: Screen):
@@ -30,3 +30,15 @@ def test_selectable_chip(screen: Screen):
 
     screen.click('Chip')
     screen.should_contain('Selected: False')
+
+
+async def test_selectable_chip_props(user: User):
+    chips: list[ui.chip] = []
+
+    @ui.page('/')
+    def page():
+        chips.append(ui.chip('x', selectable=True))
+
+    await user.open('/')
+    assert 'selected' in chips[0]._props
+    assert 'selectable' not in chips[0]._props
