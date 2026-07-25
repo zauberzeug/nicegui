@@ -423,6 +423,33 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
 
 
+async def test_failing_backup_does_not_truncate_existing_data(user: User, tmp_path, caplog: pytest.LogCaptureFixture):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    async def wait_until(condition: Callable[[], bool], *, timeout: float = 2.0) -> None:
+        deadline = time.monotonic() + timeout
+        while not condition() and time.monotonic() < deadline:
+            await asyncio.sleep(0.01)
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    path = tmp_path / 'storage.json'
+    d = FilePersistentDict(path, encoding='utf-8')
+
+    d['a'] = 1
+    d['b'] = 2
+    await wait_until(lambda: path.exists() and path.read_text(encoding='utf-8') == '{"a":1,"b":2}')
+    assert path.read_text(encoding='utf-8') == '{"a":1,"b":2}'
+
+    d['bad'] = {1, 2, 3}  # non-serializable value must not wipe the already-persisted data
+    await wait_until(lambda: any(record.levelname == 'ERROR' for record in caplog.records))
+    assert path.read_text(encoding='utf-8') == '{"a":1,"b":2}'
+
+    caplog.records[:] = [record for record in caplog.records if record.levelname !=
+                         'ERROR']  # expected serialization error
+
+
 async def test_unlinking_storage_files_waits_out_transient_holders(user: User):
     @ui.page('/')
     def page():
