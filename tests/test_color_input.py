@@ -22,7 +22,7 @@ async def test_none_value_with_preview(user: User):
     def page():
         color_input = ui.color_input(value=None, preview=True)
         color_input.set_value(None)
-        ui.label('background: ' + color_input.button._style.get('background-color', ''))
+        ui.label('background: ' + color_input.button.style.get('background-color', ''))
 
     await user.open('/')
     await user.should_see('background: transparent')
