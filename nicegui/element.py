@@ -508,22 +508,22 @@ class Element(Visibility):
         """
         parent_slot = self.parent_slot
         assert parent_slot is not None
-        parent_slot.children.remove(self)
-        parent_slot.parent.update()
         target_container = target_container or parent_slot.parent
 
         if target_slot is None:
-            parent_slot = target_container.default_slot
-            self.parent_slot = parent_slot
+            new_slot = target_container.default_slot
         elif target_slot in target_container.slots:
-            parent_slot = target_container.slots[target_slot]
-            self.parent_slot = parent_slot
+            new_slot = target_container.slots[target_slot]
         else:
             raise ValueError(f'Slot "{target_slot}" does not exist in the target container. '
                              f'Add it first using `add_slot("{target_slot}")`.')
 
-        target_index = target_index if target_index >= 0 else len(parent_slot.children)
-        parent_slot.children.insert(target_index, self)
+        parent_slot.children.remove(self)
+        parent_slot.parent.update()
+        self.parent_slot = new_slot
+
+        target_index = target_index if target_index >= 0 else len(new_slot.children)
+        new_slot.children.insert(target_index, self)
 
         target_container.update()
         return self
