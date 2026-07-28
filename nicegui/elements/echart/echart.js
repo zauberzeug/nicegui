@@ -77,7 +77,8 @@ export default {
         }
       }
       this.chart.resize();
-    }).observe(this.$el);
+    });
+    this.resizeObserver.observe(this.$el);
 
     this.update_chart();
   },
