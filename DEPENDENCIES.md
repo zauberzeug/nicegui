@@ -15,7 +15,7 @@
 - @uiw/codemirror-themes-all: 4.25.2 ([MIT](https://opensource.org/licenses/MIT))
 - @babel/runtime: 7.28.4 ([MIT](https://opensource.org/licenses/MIT))
 - echarts: 6.1.0 ([Apache-2.0](https://opensource.org/licenses/Apache-2.0))
-- echarts-gl: 2.0.9 ([BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause))
+- echarts-gl: 2.1.0 ([MIT](https://opensource.org/licenses/MIT))
 - nipplejs: 0.10.2 ([MIT](https://opensource.org/licenses/MIT))
 - ajv-formats: 3.0.1 ([MIT](https://opensource.org/licenses/MIT))
 - vanilla-jsoneditor: 3.10.0 ([ISC](https://opensource.org/licenses/ISC))
