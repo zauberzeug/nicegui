@@ -219,7 +219,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             y=e.args['y'],
             z=e.args['z'],
         )
-        if arguments.type == 'dragend':
+        if arguments.type == 'dragend' and arguments.object_id in self.objects:
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
         for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):

@@ -9,7 +9,7 @@ def main_demo() -> None:
 
     app.storage.client['name'] = 'NiceGUI User'
 
-    with ui.label().bind_text_from(app.storage.client, 'name'):
+    with ui.label().bind_text_from(app.storage.client, 'name').classes('cursor-pointer'):
         with ui.popup() as popup:
             ui.input().props('autofocus') \
                 .bind_value(app.storage.client, 'name') \
