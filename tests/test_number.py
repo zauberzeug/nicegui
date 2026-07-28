@@ -3,7 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_number_input(screen: Screen):
@@ -87,6 +87,19 @@ def test_out_of_limits(screen: Screen):
 
     number.max = 15
     screen.should_contain('out_of_limits: False')
+
+
+async def test_out_of_limits_without_value(user: User):
+    number = None
+
+    @ui.page('/')
+    def page():
+        nonlocal number
+        number = ui.number('Number', min=0, max=10)
+
+    await user.open('/')
+    assert number.value is None
+    assert number.out_of_limits is False
 
 
 @pytest.mark.parametrize('precision', [None, 1, -1])
