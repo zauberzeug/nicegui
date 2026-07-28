@@ -1,3 +1,5 @@
+import asyncio
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -23,3 +25,17 @@ def test_page_title(screen: Screen):
     screen.open('/test')
     screen.wait(0.5)
     screen.should_contain('Title: test')
+
+
+def test_page_title_after_await_in_async_sub_page(screen: Screen):
+    async def sub():
+        ui.page_title('before')
+        await asyncio.sleep(0)  # resumes after the response is built, before the socket connects
+        ui.page_title('after')
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': sub})
+
+    screen.open('/')
+    screen.wait_for(lambda: screen.selenium.title == 'after')

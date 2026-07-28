@@ -1,12 +1,15 @@
 import asyncio
 import copy
 import re
+import threading
 import time
+from collections.abc import Callable
 
 import httpx
 import pytest
 
 from nicegui import Client, app, background_tasks, context, core, ui
+from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
 from nicegui.storage import Storage
@@ -376,6 +379,24 @@ async def test_user_storage_is_pruned(screen: Screen):
     assert len(app.storage._users) == 0
 
 
+def test_user_storage_survives_prune_during_request(screen: Screen, monkeypatch: pytest.MonkeyPatch):
+    """Prune must not remove user storage out from under an in-flight request (regression for #6145).
+
+    The endpoint has no connected WebSocket client and stays in flight for several prune intervals,
+    so a prune tick is guaranteed to fire while its storage is old enough to be eligible for pruning.
+    """
+    monkeypatch.setattr(app_module, 'USER_STORAGE_PRUNE_INTERVAL', 0.1)
+
+    @app.get('/data')
+    async def data():
+        await asyncio.sleep(0.5)  # keep the request in flight while the prune timer fires
+        return {'value': app.storage.user.get('value', 'default')}
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    screen.open('/data')
+    screen.should_contain('default')
+
+
 def test_storage_serialization_error_points_at_offending_key(screen: Screen):
     @ui.page('/')
     def page():
@@ -400,6 +421,48 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+async def test_unlinking_storage_files_waits_out_transient_holders(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    filepath = Storage.path / 'storage-general.json'
+
+    async def wait_until(condition: Callable[[], bool], *, timeout: float = 2.0) -> None:
+        deadline = time.monotonic() + timeout
+        while not condition() and time.monotonic() < deadline:
+            await asyncio.sleep(0.01)
+
+    async def write_and_hold_file() -> None:
+        app.storage.general['key'] = 'value'  # schedules an async backup task
+        await wait_until(filepath.exists)  # let the backup write the file
+        assert filepath.exists()
+        handle = filepath.open(encoding='utf-8')  # stands in for a backup write still holding the file
+        threading.Timer(0.2, handle.close).start()
+
+    await write_and_hold_file()
+    app.storage.general.clear()  # schedules an async backup which deletes the now-empty file
+    await wait_until(lambda: not filepath.exists())
+    assert not filepath.exists()  # used to log ERROR (WinError 32) on Windows while the handle was open
+
+    await write_and_hold_file()
+    app.storage.clear()  # used to raise PermissionError (WinError 32) on Windows while the handle was open
+    assert not filepath.exists()
+
+
+async def test_clearing_storage_removes_leftover_temp_files(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    Storage.path.mkdir(exist_ok=True)
+    (Storage.path / 'storage-general.json.tmp').touch()  # stands in for a temp file left behind by an interrupted backup
+    app.storage.clear()
+    assert not Storage.path.exists(), 'temp files should be swept so the storage directory can be removed'
 
 
 @pytest.mark.parametrize('custom_cookie_headers', [False, True])
