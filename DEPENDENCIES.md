@@ -4,7 +4,7 @@
 - @unocss/reset: 66.6.0 ([MIT](https://opensource.org/licenses/MIT))
 - @unocss/runtime: 66.6.0 ([MIT](https://opensource.org/licenses/MIT))
 - dompurify: 3.4.12 ([MPL-2.0](https://opensource.org/licenses/MPL-2.0) or [Apache-2.0](https://opensource.org/licenses/Apache-2.0))
-- quasar: 2.18.5 ([MIT](https://opensource.org/licenses/MIT))
+- quasar: 2.22.0 ([MIT](https://opensource.org/licenses/MIT))
 - sass: 1.94.0 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.8.1 ([MIT](https://opensource.org/licenses/MIT))
 - vue: 3.5.22 ([MIT](https://opensource.org/licenses/MIT))

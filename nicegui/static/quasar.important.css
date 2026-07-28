@@ -2841,7 +2841,15 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
   background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.12) 51%, rgba(0, 0, 0, 0.04)) !important;
 }
 
-.q-body--fullscreen-mixin, .q-body--prevent-scroll {
+.q-document--prevent-scroll {
+  overscroll-behavior: none !important;
+}
+
+.q-document--prevent-scroll body {
+  position: fixed !important;
+}
+
+.q-body--fullscreen-mixin {
   position: fixed !important;
 }
 
@@ -2850,7 +2858,6 @@ body.platform-ios:not(.native-mobile) .q-dialog__inner--top .q-select__dialog--f
 }
 
 .non-selectable {
-  -webkit-user-select: none !important;
   user-select: none !important;
 }
 
