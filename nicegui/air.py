@@ -211,7 +211,7 @@ class Air:
             self.log.debug('Already connecting.')
             return
         if self.relay.connected:
-            if self.relay.eio.state == 'connected':
+            if self.relay.eio.state != 'disconnected':  # "disconnecting" means a deliberate disconnect is running
                 return
             self.log.warning('Socket.IO claims to be connected while Engine.IO is not. Replacing the client.')
             self.relay = self._create_relay()  # a stale "connected" flag cannot be cleared via disconnect()
