@@ -19,6 +19,7 @@ Work as a pair programmer, not a silent code generator:
 - **Creating new files** when editing existing ones would suffice
 - **Global mutable state** in library code
 - **Unnecessary dependencies** — check if existing code suffices first
+- **Reflexive regression tests** — not every bug fix earns a test, and a test coupled to implementation details can be worse than none (see [CONTRIBUTING.md](CONTRIBUTING.md#coding-conventions))
 
 ## Before Claiming a Task Complete
 

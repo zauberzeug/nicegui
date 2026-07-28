@@ -200,7 +200,18 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 
 - **Dataclasses**: Prefer `@dataclass(kw_only=True, slots=True)`
 
-- **Tests**: Include tests for new features and bug fixes. Prefer the `User` fixture (fast, runs in the same async context as NiceGUI, no browser); use the `Screen` fixture only when testing browser/JavaScript interactions.
+- **Tests**
+
+  - Include tests for new features and bug fixes — but test observable behavior, not implementation.
+    A test should read like a small demo of the public API: create elements, interact, assert what a user would see.
+    Avoid tests that reach into internals — private attributes, call counts, monkeypatched browser or library APIs, hand-built fake objects.
+    They break when the implementation changes (so they get rewritten along with it, guarding nothing) and they are hard to read for anyone who doesn't know the internals.
+  - Prefer the `User` fixture (fast, runs in the same async context as NiceGUI, no browser); use the `Screen` fixture only when testing browser/JavaScript interactions.
+  - Not every change needs a test.
+    We have over a thousand tests and the browser-based ones dominate the runtime, so each new test is a permanent cost for every contributor.
+    If a fix can only be covered by an elaborate test that mirrors the implementation, skipping the test can be the better choice — say so in the pull request, so it reads as a deliberate decision and not as an oversight.
+    A small, obviously correct fix with a clear explanation is often worth more than an unreadable regression test.
+  - If you find yourself building scaffolding to observe an internal mechanism (e.g. patching `ResizeObserver` to check that `disconnect()` was called), that is the signal to stop and either find the user-visible effect to assert on, or skip the test.
 
 ### Before submitting a pull request
 
