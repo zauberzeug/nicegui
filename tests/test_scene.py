@@ -7,7 +7,8 @@ from selenium.common.exceptions import JavascriptException
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
-from nicegui.testing import Screen
+from nicegui.events import GenericEventArguments
+from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
 
@@ -287,3 +288,23 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+async def test_dragend_after_object_deleted(user: User):
+    events: list[str] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(on_drag_end=lambda e: events.append(e.object_id)) as scene:
+            box = scene.box().draggable()
+
+    await user.open('/')
+    box.delete()
+    assert box.id not in scene.objects
+    scene._handle_drag(GenericEventArguments(sender=scene, client=scene.client, args={
+        'type': 'dragend', 'object_id': box.id, 'object_name': None, 'x': 1.0, 'y': 2.0, 'z': 3.0,
+    }))
+    assert events == [box.id]
