@@ -162,6 +162,8 @@ class ObservableDict(ObservableCollection, dict):
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         new_items = dict(*args, **kwargs)
+        if not new_items:
+            return
         old_values = [self[key] for key in new_items if key in self]
         super().update({key: self._observe(value) for key, value in new_items.items()})
         self._unobserve(*old_values)
@@ -174,9 +176,9 @@ class ObservableDict(ObservableCollection, dict):
         self._handle_change()
 
     def setdefault(self, __key: Any, __default: Any = None) -> Any:
-        if __key not in self:
-            __default = self._observe(__default)
-        item = super().setdefault(__key, __default)
+        if __key in self:
+            return super().__getitem__(__key)
+        item = super().setdefault(__key, self._observe(__default))
         self._handle_change()
         return item
 
@@ -217,7 +219,10 @@ class ObservableList(ObservableCollection, list):
         self._handle_change()
 
     def extend(self, iterable: Iterable) -> None:
-        super().extend([self._observe(item) for item in iterable])
+        items = [self._observe(item) for item in iterable]
+        if not items:
+            return
+        super().extend(items)
         self._handle_change()
 
     def insert(self, index: SupportsIndex, obj: Any) -> None:
@@ -277,6 +282,8 @@ class ObservableList(ObservableCollection, list):
     def __imul__(self, other: Any) -> Any:
         old_items = list(self)
         super().__imul__(other)
+        if len(self) == len(old_items):
+            return self
         self._unobserve(*old_items)
         self._handle_change()
         return self
@@ -295,6 +302,8 @@ class ObservableSet(ObservableCollection, set):
             super().add(self._observe(item))
 
     def add(self, item: Any) -> None:
+        if item in self:
+            return
         super().add(self._observe(item))
         self._handle_change()
 
@@ -304,9 +313,8 @@ class ObservableSet(ObservableCollection, set):
         self._handle_change()
 
     def discard(self, item: Any) -> None:
-        super().discard(item)
-        self._unobserve(item)
-        self._handle_change()
+        if item in self:
+            self.remove(item)
 
     def pop(self) -> Any:
         item = super().pop()
@@ -321,24 +329,34 @@ class ObservableSet(ObservableCollection, set):
         self._handle_change()
 
     def update(self, *s: Iterable[Any]) -> None:
-        super().update({self._observe(item) for item in set().union(*s)})
+        items = set().union(*s)
+        if items <= self:
+            return
+        super().update({self._observe(item) for item in items})
         self._handle_change()
 
     def intersection_update(self, *s: Iterable[Any]) -> None:
         old_items = list(self)
         super().intersection_update(*s)
+        if len(self) == len(old_items):
+            return
         self._unobserve(*old_items)
         self._handle_change()
 
     def difference_update(self, *s: Iterable[Any]) -> None:
         old_items = list(self)
         super().difference_update(*s)
+        if len(self) == len(old_items):
+            return
         self._unobserve(*old_items)
         self._handle_change()
 
     def symmetric_difference_update(self, *s: Iterable[Any]) -> None:
+        items = set().union(*s)
+        if not items:
+            return
         old_items = list(self)
-        super().symmetric_difference_update({self._observe(item) for item in set().union(*s)})
+        super().symmetric_difference_update({self._observe(item) for item in items})
         self._unobserve(*old_items)
         self._handle_change()
 
