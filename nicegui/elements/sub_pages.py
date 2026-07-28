@@ -197,10 +197,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     @staticmethod
     def _validate_route(path: str) -> None:
         for parameter in re.findall(r'\{(.*?)\}', path):
-            if not re.fullmatch(r'\w+', parameter):
+            if not parameter.isidentifier():
                 raise ValueError(
                     f'Invalid route "{path}": the parameter "{{{parameter}}}" is not supported. '
-                    'ui.sub_pages only supports single-segment "{name}" parameters, '
+                    'ui.sub_pages only supports single-segment "{name}" parameters that are valid Python identifiers, '
                     'not Starlette-style converters like "{name:path}". '
                     'For wildcard routing, use show_404=False and read PageArguments.remaining_path '
                     '(see https://nicegui.io/documentation/sub_pages).'
@@ -212,7 +212,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return {} if pattern == path else None
 
         regex_pattern = re.escape(pattern)
-        for match in re.finditer(r'\\{(\w+)\\}', regex_pattern):
+        for match in re.finditer(r'\\{(.*?)\\}', regex_pattern):
             param_name = match.group(1)
             regex_pattern = regex_pattern.replace(f'\\{{{param_name}\\}}', f'(?P<{param_name}>[^/]+)')
 
