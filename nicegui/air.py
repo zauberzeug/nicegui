@@ -37,16 +37,21 @@ class Air:
 
         self.log = logging.getLogger('nicegui.air')
         self.token = token
-        self.relay = socketio.AsyncClient()
         self.streaming_client = httpx.AsyncClient()
         self.connecting = False
         self.streams: dict[str, Stream] = {}
         self.remote_url: str | None = None
         self._host_unreachable_warning = f'On Air host "{RELAY_HOST}" is not reachable. Please check your internet connection.'
+        self.relay = self._create_relay()
 
         timer(5, self.connect)  # ensure we stay connected
 
-        @self.relay.on('http')
+    def _create_relay(self) -> socketio.AsyncClient:
+        import httpx  # pylint: disable=import-outside-toplevel
+
+        relay = socketio.AsyncClient(reconnection=False)  # we reconnect via our own timer
+
+        @relay.on('http')
         async def _handle_http(data: dict[str, Any]) -> dict[str, Any]:
             headers: dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
@@ -88,7 +93,7 @@ class Air:
 
             return result
 
-        @self.relay.on('range-request')
+        @relay.on('range-request')
         async def _handle_range_request(data: dict[str, Any]) -> dict[str, Any]:
             headers: dict[str, Any] = data['headers']
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
@@ -104,10 +109,10 @@ class Air:
                 'stream_id': stream_id,
             }
 
-        @self.relay.on('read-stream')
+        @relay.on('read-stream')
         async def _handle_read_stream(stream_id: str) -> bytes | None:
             try:
-                return await self.streams[stream_id].data.__anext__()
+                return await anext(self.streams[stream_id].data)
             except StopAsyncIteration:
                 await _handle_close_stream(stream_id)
                 return None
@@ -115,23 +120,23 @@ class Air:
                 await _handle_close_stream(stream_id)
                 raise
 
-        @self.relay.on('close-stream')
+        @relay.on('close-stream')
         async def _handle_close_stream(stream_id: str) -> None:
             await self.streams[stream_id].response.aclose()
             del self.streams[stream_id]
 
-        @self.relay.on('ready')
+        @relay.on('ready')
         def _handle_ready(data: dict[str, Any]) -> None:
             core.app.urls.add(data['device_url'])
             self.remote_url = data['device_url']
             if core.app.config.show_welcome_message:
                 print(f'NiceGUI is on air at {data["device_url"]}', flush=True)
 
-        @self.relay.on('error')
+        @relay.on('error')
         def _handleerror(data: dict[str, Any]) -> None:
             print('Error:', data['message'], flush=True)
 
-        @self.relay.on('handshake')
+        @relay.on('handshake')
         def _handle_handshake(data: dict[str, Any]) -> bool:
             if client := Client.instances.get(data['client_id']):
                 client.environ = data['environ']
@@ -143,32 +148,32 @@ class Air:
                 return True
             return False
 
-        @self.relay.on('client_disconnect')
+        @relay.on('client_disconnect')
         def _handle_client_disconnect(data: dict[str, Any]) -> None:
             self.log.debug('client disconnected.')
             if client := Client.instances.get(data['client_id']):
                 client.handle_disconnect(data['sid'])
 
-        @self.relay.on('connect')
+        @relay.on('connect')
         async def _handle_connect() -> None:
             self.log.debug('connected.')
             # reset the warning so it can be shown again if connection breaks in the future
             helpers.warnings._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
-        @self.relay.on('disconnect')
+        @relay.on('disconnect')
         async def _handle_disconnect() -> None:
             self.log.debug('disconnected.')
 
-        @self.relay.on('connect_error')
+        @relay.on('connect_error')
         async def _handle_connect_error(data) -> None:
             message = data.get('message', 'Unknown error') if isinstance(data, dict) else data
             if message == 'Connection error':
                 helpers.warn_once(self._host_unreachable_warning)
             else:
                 self.log.warning(f'Connection error: {message}')
-            await self.relay.disconnect()
+            await relay.disconnect()
 
-        @self.relay.on('event')
+        @relay.on('event')
         def _handle_event(data: dict[str, Any]) -> None:
             if client := Client.instances.get(data['client_id']):
                 args = data['msg']['args']
@@ -178,25 +183,27 @@ class Air:
                     args[0] = json.dumps(arg0)
                 client.handle_event(data['msg'])
 
-        @self.relay.on('log')
+        @relay.on('log')
         def _handle_log(data: dict[str, Any]) -> None:
             if client := Client.instances.get(data['client_id']):
                 client.handle_log_message(data['msg'])
 
-        @self.relay.on('javascript_response')
+        @relay.on('javascript_response')
         def _handle_javascript_response(data: dict[str, Any]) -> None:
             if client := Client.instances.get(data['client_id']):
                 client.handle_javascript_response(data['msg'])
 
-        @self.relay.on('ack')
+        @relay.on('ack')
         def _handle_ack(data: dict[str, Any]) -> None:
             if client := Client.instances.get(data['client_id']):
                 client.outbox.prune_history(data['msg']['next_message_id'])
 
-        @self.relay.on('out_of_time')
+        @relay.on('out_of_time')
         async def _handle_out_of_time() -> None:
             print('Sorry, you have reached the time limit of this NiceGUI On Air preview.', flush=True)
             await self.connect()
+
+        return relay
 
     async def connect(self) -> None:
         """Connect to the NiceGUI On Air server."""
@@ -204,7 +211,11 @@ class Air:
             self.log.debug('Already connecting.')
             return
         if self.relay.connected:
-            return
+            if self.relay.eio.state == 'connected':
+                return
+            self.log.warning('Socket.IO claims to be connected while Engine.IO is not. Replacing the client.')
+            self.relay = self._create_relay()  # a stale "connected" flag cannot be cleared via disconnect()
+            await self._close_streams()  # the discarded client can no longer deliver "close-stream"
         self.log.debug('Going to connect...')
         self.connecting = True
         try:
@@ -233,10 +244,13 @@ class Air:
         self.log.debug('Disconnecting...')
         if self.relay.connected:
             await self.relay.disconnect()
+        await self._close_streams()
+        self.log.debug('Disconnected.')
+
+    async def _close_streams(self) -> None:
         for stream in self.streams.values():
             await stream.response.aclose()
         self.streams.clear()
-        self.log.debug('Disconnected.')
 
     async def emit(self, message_type: str, data: dict[str, Any], room: str) -> None:
         """Emit a message to the NiceGUI On Air server."""
