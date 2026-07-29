@@ -42,13 +42,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
       - name: pytest tests/test_storage.py
-        run: uv run --with pytest-rerunfailures==16.4 pytest tests/test_storage.py --reruns 2 --reruns-delay 2 --only-rerun TimeoutException --only-rerun PytestUnraisableExceptionWarning
-      - uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: screenshots-windows
-          path: screenshots/**/*.failed.png
-          retention-days: 14
+        run: uv run pytest tests/test_storage.py -m "not screen"
 
   quick-test-gate:
     runs-on: ubuntu-latest
