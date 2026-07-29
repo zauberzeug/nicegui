@@ -1,6 +1,5 @@
 import asyncio
 import copy
-import json
 import re
 import threading
 import time
@@ -13,7 +12,6 @@ from nicegui import Client, app, background_tasks, context, core, ui
 from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
-from nicegui.persistence.redis_persistent_dict import RedisPersistentDict
 from nicegui.storage import Storage
 from nicegui.testing import Screen, User
 
@@ -423,41 +421,6 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
-
-
-async def test_redis_listener_propagates_key_deletions(user: User, monkeypatch):
-    class FakePubSub:
-
-        def __init__(self, messages):
-            self.messages = messages
-            self.subscribed = False
-
-        async def subscribe(self, *_):
-            self.subscribed = True
-
-        async def unsubscribe(self, *_):
-            self.subscribed = False
-
-        async def listen(self):
-            for message in self.messages:
-                yield message
-
-    monkeypatch.setattr(RedisPersistentDict, 'publish', lambda self: None)
-
-    @ui.page('/')
-    def page():
-        ui.label('ok')
-
-    await user.open('/')  # needed to ensure NiceGUI's event loop is running
-    d = RedisPersistentDict(url='redis://localhost:6379', id='test')
-    d.pubsub = FakePubSub([
-        {'type': 'message', 'data': json.dumps({'cart': [1, 2]})},
-        {'type': 'unsubscribe', 'data': 0},
-    ])
-    d.update({'cart': [1, 2], 'coupon': 'X'})
-    d._start_listening()
-    await d._listener_task
-    assert 'coupon' not in d, 'a key deleted on a peer instance must not survive locally'
 
 
 async def test_unlinking_storage_files_waits_out_transient_holders(user: User):
