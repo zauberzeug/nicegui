@@ -259,10 +259,12 @@ async def test_move_into_descendant_is_rejected(user: User):
         p2 = ui.card()
 
     await user.open('/')
+    root = a.parent_slot
     with pytest.raises(ValueError):
         a.move(b)
     with pytest.raises(ValueError):
         a.move(a)
+    assert a in root.children, 'a rejected move must keep the element in its original slot'
     assert list(a.descendants()) == [b, x]
     x.move(p2)
     assert list(p2.descendants()) == [x]
