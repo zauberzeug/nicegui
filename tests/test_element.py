@@ -224,6 +224,29 @@ def test_move_slots(screen: Screen):
     assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
 
 
+async def test_move_to_invalid_slot_keeps_element_in_place(user: User):
+    card = label = other = None
+
+    @ui.page('/')
+    def page():
+        nonlocal card, label, other
+        card = ui.card()
+        with card:
+            label = ui.label('X')
+        other = ui.card()
+
+    await user.open('/')
+    assert isinstance(card, ui.card) and isinstance(label, ui.label) and isinstance(other, ui.card)
+
+    with pytest.raises(ValueError, match='does not exist'):
+        label.move(other, target_slot='does-not-exist')
+
+    assert label in card.default_slot.children, 'a failed move must keep the element in its original slot'
+    await user.should_see('X')
+    label.delete()  # used to raise ValueError('list.remove(x): x not in list')
+    await user.should_not_see('X')
+
+
 async def test_move_into_descendant_is_rejected(user: User):
     a = b = x = p2 = None
 
