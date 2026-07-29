@@ -28,7 +28,7 @@ jobs:
       scope: '["pytest", "startup"]'
 
   windows-test:
-    name: windows / storage
+    name: windows / storage (non-browser)
     runs-on: windows-2022
     timeout-minutes: 15
     steps:
