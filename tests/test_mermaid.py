@@ -2,6 +2,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import events, ui
+from nicegui.elements.mermaid.mermaid import _extract_node_id
 from nicegui.testing import Screen
 
 
@@ -179,6 +180,24 @@ def test_node_click_handler(screen: Screen):
 
     screen.click('Node With Hyphen')
     screen.should_contain('clicked [Node-With-Hyphen]')  # make sure our ID extraction works even with hyphens
+
+
+@pytest.mark.parametrize(('svg_id', 'html_id', 'node_id'), [
+    ('c4_mermaid', 'c4_mermaid-flowchart-A-0', 'A'),
+    ('c4_mermaid', 'c4_mermaid-flowchart-Node-With-Hyphen-1', 'Node-With-Hyphen'),
+    ('c7_mermaid', 'c7_mermaid-state-s1-0', 's1'),
+    ('c8_mermaid', 'c8_mermaid-classId-Animal-0', 'Animal'),
+    ('c9_mermaid', 'c9_mermaid-entity-CUSTOMER-ORDER-0', 'CUSTOMER-ORDER'),
+    ('c13_mermaid', 'c13_mermaid-A', 'A'),  # block, mindmap and requirement: no type token, no index
+    ('c10_mermaid', 'c10_mermaid-node_0', 'node_0'),
+    ('c11_mermaid', 'c11_mermaid-test_req', 'test_req'),
+    ('c4_mermaid', 'c4_mermaid-flowchart-A-123-0', 'A-123'),  # a node ID may end in digits: the index is still last
+    ('c13_mermaid', 'c13_mermaid-A-B-123', 'B'),  # known limit: indistinguishable from <type>-<node_id>-<index>
+    # an unknown prefix must yield the raw ID, never a positional guess that recreates the old bug
+    ('c4_mermaid', 'custom_mermaid-flowchart-A-0', 'custom_mermaid-flowchart-A-0'),
+])
+def test_extract_node_id(svg_id: str, html_id: str, node_id: str):
+    assert _extract_node_id(html_id, svg_id) == node_id
 
 
 @pytest.mark.parametrize(('content', 'label', 'node_id'), [
