@@ -164,9 +164,12 @@ class Screen:
         """Assert that the page contains an input with the given value."""
         deadline = time.time() + self.IMPLICIT_WAIT
         while time.time() < deadline:
-            for input_element in self.find_all_by_tag('input'):
-                if input_element.get_attribute('value') == text:
-                    return
+            try:
+                for input_element in self.find_all_by_tag('input'):
+                    if input_element.get_attribute('value') == text:
+                        return
+            except StaleElementReferenceException:
+                pass  # elements were re-rendered while iterating, retry
             self.wait(0.1)
         raise AssertionError(f'Could not find input with value "{text}"')
 

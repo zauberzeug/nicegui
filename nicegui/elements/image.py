@@ -61,7 +61,7 @@ def pil_to_tempfile(pil_image: PIL_Image, image_format: str) -> _TempPath:
         return _TempPath(temp_file.name)
 
 
-class _TempPath(type(Path())):  # type: ignore[misc]  # NOTE: Path is not subclassable before Python 3.12
+class _TempPath(type(Path())):  # type: ignore[misc]  # Path is not subclassable before Python 3.12
     """A Path subclass that deletes itself when garbage collected."""
 
     def __del__(self) -> None:

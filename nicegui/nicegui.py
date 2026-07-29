@@ -1,6 +1,8 @@
 import asyncio
 import inspect
 import mimetypes
+import multiprocessing
+import sys
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -119,6 +121,11 @@ def _get_esm(key: str, path: str) -> FileResponse:
 async def _startup() -> None:
     """Handle the startup event."""
     if not app.config.has_run_config:
+        argv0 = Path(sys.argv[0]) if sys.argv else Path()
+        is_dash_m_package = argv0.name == '__main__.py' and (argv0.parent / '__init__.py').is_file()
+        if multiprocessing.current_process().name != 'MainProcess' and is_dash_m_package:
+            raise RuntimeError('\n\nAuto-reload is not supported when running a package with `python -m`.\n'
+                               'Pass `reload=False` to ui.run() to start the server.')
         raise RuntimeError('\n\n'
                            'You must call ui.run() to start the server.\n'
                            'If ui.run() is behind a main guard\n'
@@ -127,7 +134,7 @@ async def _startup() -> None:
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
     await welcome.collect_urls()
-    # NOTE ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
+    # ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
     sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)
     sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:
@@ -156,8 +163,8 @@ async def _shutdown() -> None:
 async def _exception_handler_404(request: Request, exception: Exception) -> Response:
     if (endpoint := request.scope.get('endpoint')) is not None and endpoint is not app and not request.scope.get('nicegui_page_path') and isinstance(exception, StarletteHTTPException):
         # non-page endpoints raising 404 should get JSON, not our HTML error page
-        # NOTE: match Starlette's HTTPException (the base class) so e.g. auth dependencies that raise it directly are covered
-        # NOTE: when mounted via ui.run_with(), the parent's Mount sets endpoint=app even if no inner route matched — exclude that case
+        # match Starlette's HTTPException (the base class) so e.g. auth dependencies that raise it directly are covered
+        # when mounted via ui.run_with(), the parent's Mount sets endpoint=app even if no inner route matched — exclude that case
         return await http_exception_handler(request, exception)
     root = core.root
     if root is not None:

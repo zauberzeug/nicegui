@@ -26,6 +26,8 @@ from ..storage import PersistentDict, Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
+USER_STORAGE_PRUNE_INTERVAL = 10.0
+
 
 class State(Enum):
     STOPPED = 0
@@ -87,7 +89,7 @@ class App(FastAPI):
         self.timer(10, Slot.prune_stacks)
         self.timer(10, prune_tab_storage)
         if self.storage.secret is not None:
-            self.timer(10, prune_user_storage)
+            self.timer(USER_STORAGE_PRUNE_INTERVAL, prune_user_storage)
         self._state = State.STARTED
 
     async def stop(self) -> None:
@@ -232,7 +234,7 @@ class App(FastAPI):
         handler = CacheControlledStaticFiles(
             directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
 
-        @self.get(url_path.rstrip('/') + '/{path:path}')  # NOTE: prevent double slashes in route pattern
+        @self.get(url_path.rstrip('/') + '/{path:path}')  # prevent double slashes in route pattern
         async def static_file(request: Request, path: str = '') -> Response:
             return await handler.get_response(path, request.scope)
 
@@ -287,7 +289,7 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(url_path.rstrip('/') + '/{filename:path}')  # NOTE: prevent double slashes in route pattern
+        @self.get(url_path.rstrip('/') + '/{filename:path}')  # prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
             local_dir = Path(local_directory).resolve()
             filepath = (local_dir / filename).resolve()
@@ -418,13 +420,14 @@ async def prune_tab_storage(*, force: bool = False) -> None:
 async def prune_user_storage(*, force: bool = False) -> None:
     """Remove user storage objects without a client session."""
     client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
+    active_request_sessions = core.app.storage._active_request_sessions  # pylint: disable=protected-access
     storages_to_close: list[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access
     for session_id in list(user_storages):
-        if session_id not in client_session_ids:
+        if session_id not in client_session_ids and session_id not in active_request_sessions:  # avoid pruning mid-request
             age = now - user_storages[session_id].last_modified
-            if force or age > 10.0:  # NOTE: do not remove storages created by middleware and still wait for client
+            if force or age > USER_STORAGE_PRUNE_INTERVAL:  # do not remove storages created by middleware and still wait for client
                 storages_to_close.append(user_storages.pop(session_id))
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:

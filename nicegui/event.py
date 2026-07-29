@@ -85,7 +85,7 @@ class Event(Generic[P]):
             line=frame.f_lineno,
         )
         client: Client | None = None
-        if Slot.get_stack():  # NOTE: additional check before accessing `context.slot` which would enter script mode
+        if Slot.get_stack():  # additional check before accessing `context.slot` which would enter script mode
             callback_.slot = weakref.ref(context.slot)
             client = context.client
         if callback_.slot is None and unsubscribe_on_delete is True:

@@ -219,7 +219,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             y=e.args['y'],
             z=e.args['z'],
         )
-        if arguments.type == 'dragend':
+        if arguments.type == 'dragend' and arguments.object_id in self.objects:
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
         for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):
@@ -284,7 +284,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param predicate: function which returns `True` for objects which should be deleted
         """
         for obj in list(self.objects.values()):
-            if predicate(obj) and obj.id in self.objects:  # NOTE: object might have been deleted already by its parent
+            if predicate(obj) and obj.id in self.objects:  # object might have been deleted already by its parent
                 obj.delete()
 
     def clear(self) -> Self:

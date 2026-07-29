@@ -1,3 +1,4 @@
+import platform
 import weakref
 
 import pytest
@@ -6,7 +7,7 @@ from selenium.webdriver.common.by import By
 from nicegui import background_tasks, ui
 from nicegui.props import Props
 from nicegui.style import Style
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_classes(screen: Screen):
@@ -223,6 +224,29 @@ def test_move_slots(screen: Screen):
     assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
 
 
+async def test_move_to_invalid_slot_keeps_element_in_place(user: User):
+    card = label = other = None
+
+    @ui.page('/')
+    def page():
+        nonlocal card, label, other
+        card = ui.card()
+        with card:
+            label = ui.label('X')
+        other = ui.card()
+
+    await user.open('/')
+    assert isinstance(card, ui.card) and isinstance(label, ui.label) and isinstance(other, ui.card)
+
+    with pytest.raises(ValueError, match='does not exist'):
+        label.move(other, target_slot='does-not-exist')
+
+    assert label in card.default_slot.children, 'a failed move must keep the element in its original slot'
+    await user.should_see('X')
+    label.delete()  # used to raise ValueError('list.remove(x): x not in list')
+    await user.should_not_see('X')
+
+
 def test_xss(screen: Screen):
     @ui.page('/')
     def page():
@@ -426,6 +450,7 @@ def test_update_before_client_connection(screen: Screen):
     screen.should_contain('Hello again!')
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy has no reference counting')
 def test_no_cyclic_references_when_deleting_elements(screen: Screen):
     elements: weakref.WeakSet = weakref.WeakSet()
 
@@ -444,6 +469,7 @@ def test_no_cyclic_references_when_deleting_elements(screen: Screen):
     assert len(elements) == 0, 'all elements should be deleted immediately'
 
 
+@pytest.mark.skipif(platform.python_implementation() == 'PyPy', reason='PyPy has no reference counting')
 def test_no_cyclic_references_when_deleting_clients(screen: Screen):
     labels = weakref.WeakSet()
 
@@ -471,6 +497,7 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
             ui.time_input(),
             ui.color_input(),
             ui.select([]),
+            ui.select([], with_input=True),  # #6114: with_input select dropped its html_id
             ui.input_chips(),
             ui.toggle([]),
             ui.radio([]),

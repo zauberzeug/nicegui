@@ -147,22 +147,33 @@ def test_special_characters_in_patterns():
 
 
 def test_invalid_parameter_names():
-    """Test handling of invalid parameter names in patterns."""
-    # Numbers are not valid parameter names - cause regex errors
-    with pytest.raises(re.error):
-        ui.sub_pages._match_path('/path{123}', '/path{123}')
+    """Non-identifier parameter names are rejected at registration and raise re.error if matched directly."""
+    for pattern in ['/path{123}', '/path{123abc}', '/path{param-name}', '/path{param.name}', '/path{param space}']:
+        with pytest.raises(ValueError, match='not supported'):
+            ui.sub_pages._validate_route(pattern)
+        with pytest.raises(re.error):
+            ui.sub_pages._match_path(pattern, '/path/value')
 
-    with pytest.raises(re.error):
-        ui.sub_pages._match_path('/path{123abc}', '/path{123abc}')
 
-    # Patterns that don't match \w+ are treated as literal text
-    assert ui.sub_pages._match_path('/path{param-name}', '/path{param-name}') == {}
-    assert ui.sub_pages._match_path('/path{param.name}', '/path{param.name}') == {}
-    assert ui.sub_pages._match_path('/path{param space}', '/path{param space}') == {}
+def test_validation_and_matching_agree_on_non_ascii_identifiers():
+    """Identifiers with characters outside regex \\w (e.g. middle dot) must both validate and match."""
+    pattern = '/u/{a·b}'  # 'a·b' — '·' is a valid identifier char but not a regex \w char
+    ui.sub_pages._validate_route(pattern)  # must not raise
+    assert ui.sub_pages._match_path(pattern, '/u/foo') == {'a·b': 'foo'}
+    assert ui.sub_pages._match_path(pattern, '/u/foo/bar') is None
 
-    # These should not match if the path is different
-    assert ui.sub_pages._match_path('/path{param-name}', '/path{different}') is None
-    assert ui.sub_pages._match_path('/path{param.name}', '/path{other.name}') is None
+
+def test_validate_route_accepts_supported_patterns():
+    """Single-segment {name} parameters and plain paths are valid route patterns."""
+    for pattern in ['/', '/item', '/user/{id}', '/{a}/{b}', '/{user_id}', '/blog/{year}/{month}/{slug}']:
+        ui.sub_pages._validate_route(pattern)  # should not raise
+
+
+def test_validate_route_rejects_unsupported_patterns():
+    """Starlette-style converters and other non-{name} parameters are rejected at registration time."""
+    for pattern in ['/{_:path}', '/{name:path}', '/{id:int}', '/{}', '/item/{a-b}', '/{1a}', '/{2}', '/user/{1}']:
+        with pytest.raises(ValueError, match='not supported'):
+            ui.sub_pages._validate_route(pattern)
 
 
 def test_adjacent_parameters():

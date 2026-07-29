@@ -68,7 +68,7 @@ def nicegui_chrome_options() -> webdriver.ChromeOptions:
 @pytest.fixture(scope='session')
 def nicegui_remove_all_screenshots() -> None:
     """Prune directories of finished concurrent runs and remove screenshots from previous runs."""
-    # NOTE: the FileLock is intentionally not stored; the kernel fd keeps the flock until process exit.
+    # The FileLock is intentionally not stored; the kernel fd keeps the flock until process exit.
     assert FileLock(Screen.SCREENSHOT_DIR / '.lock').acquire(), 'should be able to lock own screenshot dir'
     if Screen.SCREENSHOT_DIR.parent.exists():
         for path in Screen.SCREENSHOT_DIR.parent.iterdir():

@@ -74,7 +74,7 @@ class Air:
                 'content': compressed,
             }
 
-            # NOTE: chunk large responses to stay within the SocketIO limit
+            # chunk large responses to stay within the SocketIO limit
             if total_size > 1_000_000:
                 async def chunk_iterator() -> AsyncIterator[bytes]:
                     chunk_size = 512 * 1024
@@ -152,7 +152,7 @@ class Air:
         @self.relay.on('connect')
         async def _handle_connect() -> None:
             self.log.debug('connected.')
-            # NOTE: reset the warning so it can be shown again if connection breaks in the future
+            # reset the warning so it can be shown again if connection breaks in the future
             helpers.warnings._shown_warnings.discard(self._host_unreachable_warning)  # pylint: disable=protected-access
 
         @self.relay.on('disconnect')
@@ -221,7 +221,7 @@ class Air:
             return
         except socketio.exceptions.ConnectionError:
             self.log.debug('Connection error.', stack_info=True)
-        except ValueError:  # NOTE this sometimes happens when the internal socketio client is not yet ready
+        except ValueError:  # this sometimes happens when the internal socketio client is not yet ready
             self.log.debug('ValueError while connecting.', stack_info=True)
         except Exception:
             log.exception('Could not connect to NiceGUI On Air server.')

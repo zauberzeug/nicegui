@@ -3,7 +3,7 @@ from collections.abc import Callable
 from nicegui import helpers, ui
 
 from .. import design as d
-from ..design import phosphor_icon
+from ..design import override_markdown, phosphor_icon
 from .intersection_observer import IntersectionObserver as intersection_observer
 
 ICONS = {
@@ -69,7 +69,8 @@ def browser_window(content: Callable, *, tab: str | Callable | None = None, lazy
                 if callable(result):
                     inner_result = result()
                     assert not helpers.should_await(inner_result), 'async functions are not supported in non-lazy demos'
-    return window
+    # Skip in markdown: the lazy preview never hydrates server-side, leaking `localhost:8080` and the loading spinner.
+    return override_markdown(window, '')
 
 
 def _header_row() -> ui.row:

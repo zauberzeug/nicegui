@@ -58,6 +58,12 @@ function texture_material(texture) {
   });
 }
 
+function mesh_from_geometry(geometry, wireframe) {
+  return wireframe
+    ? new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ transparent: true }))
+    : new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true }));
+}
+
 function set_point_cloud_data(position, color, geometry) {
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
   if (color === null) {
@@ -333,7 +339,30 @@ export default {
             }
           },
           undefined,
-          (error) => console.error(error),
+          (error) => console.error("GLTF load error:", error),
+        );
+      } else if (type == "stl") {
+        const url = args[0];
+        const wireframe = args[1];
+        mesh = new THREE.Group();
+        mesh.userData.isStl = true;
+        mesh.userData.loaded = false;
+        this.stl_loader.load(
+          url,
+          (geometry) => {
+            const child = mesh_from_geometry(geometry, wireframe);
+            child.object_id = id; // NOTE: click intersections report the raycast-hit child, not the group
+            child.name = mesh.name;
+            mesh.add(child);
+            mesh.userData.loaded = true;
+            if (mesh.userData.pendingMaterialInfo) {
+              const { color, opacity, side } = mesh.userData.pendingMaterialInfo;
+              delete mesh.userData.pendingMaterialInfo;
+              this.material(id, color, opacity, side);
+            }
+          },
+          undefined,
+          (error) => console.error("STL load error:", error),
         );
       } else if (type == "axes_helper") {
         mesh = new THREE.AxesHelper(args[0]);
@@ -365,21 +394,7 @@ export default {
           const settings = { depth: height, bevelEnabled: false };
           geometry = new THREE.ExtrudeGeometry(shape, settings);
         }
-        if (type == "stl") {
-          const url = args[0];
-          geometry = new THREE.BufferGeometry();
-          this.stl_loader.load(url, (geometry) => (mesh.geometry = geometry));
-        }
-        let material;
-        if (wireframe) {
-          mesh = new THREE.LineSegments(
-            new THREE.EdgesGeometry(geometry),
-            new THREE.LineBasicMaterial({ transparent: true }),
-          );
-        } else {
-          material = new THREE.MeshPhongMaterial({ transparent: true });
-          mesh = new THREE.Mesh(geometry, material);
-        }
+        mesh = mesh_from_geometry(geometry, wireframe);
       }
       mesh.object_id = id;
       this.objects.set(id, mesh);
@@ -387,12 +402,14 @@ export default {
     },
     name(object_id, name) {
       if (!this.objects.has(object_id)) return;
-      this.objects.get(object_id).name = name;
+      const object = this.objects.get(object_id);
+      object.name = name;
+      if (object.userData.isStl) object.children.forEach((child) => (child.name = name));
     },
     material(object_id, color, opacity, side) {
       const object = this.objects.get(object_id);
       if (!object) return;
-      if (object.userData.isGltf && !object.userData.loaded) {
+      if ((object.userData.isGltf || object.userData.isStl) && !object.userData.loaded) {
         object.userData.pendingMaterialInfo = { color, opacity, side };
         return;
       }
@@ -408,8 +425,8 @@ export default {
           else m.side = THREE.DoubleSide;
         });
       };
-      if (object.userData.isGltf) {
-        object.traverse((child) => child.isMesh && child.material && apply(child.material));
+      if (object.userData.isGltf || object.userData.isStl) {
+        object.traverse((child) => child.material && apply(child.material));
       } else if (object.material) {
         apply(object.material);
       }
@@ -519,7 +536,7 @@ export default {
         )
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
-          this.camera.up.set(p[3], p[4], p[5]); // NOTE: before calling lookAt
+          this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
           this.controls.target.set(p[6], p[7], p[8]);
@@ -576,6 +593,7 @@ export default {
         color,
         opacity,
         side,
+        material_is_set,
         x,
         y,
         z,
@@ -588,7 +606,8 @@ export default {
       ] of data) {
         this.create(type, id, parent_id, ...args);
         this.name(id, name);
-        this.material(id, color, opacity, side);
+        // For GLTF models, only override the model's own materials when the user explicitly set one (#6118).
+        if (type != "gltf" || material_is_set) this.material(id, color, opacity, side);
         this.move(id, x, y, z);
         this.rotate(id, R);
         this.scale(id, sx, sy, sz);

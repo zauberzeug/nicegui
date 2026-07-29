@@ -6,7 +6,6 @@ from pathlib import Path
 
 import httpx
 
-# NOTE:
 # requires a GitHub token with the necessary permissions read:org and read:user
 # call with `GITHUB_TOKEN=ghp_XXX ./fetch_sponsors.py`
 

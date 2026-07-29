@@ -54,7 +54,7 @@ class User:
         return self._client.__exit__(exc_type, exc_val, exc_tb)
 
     def __getattribute__(self, name: str) -> Any:
-        if name not in {'notify', 'navigate', 'download'}:  # NOTE: avoid infinite recursion
+        if name not in {'notify', 'navigate', 'download'}:  # avoid infinite recursion
             ui.navigate = self.navigate
             ui.notify = self.notify
             ui.download = self.download
