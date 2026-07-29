@@ -47,10 +47,20 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         self.on('node_click', lambda e: handle_event(callback, MermaidNodeClickEventArguments(
             sender=self,
             client=self.client,
-            node_id='-'.join(e.args.split('-')[2:-1])  # extract from HTML ID (<svg_id>-<type>-<node_id>-<index>)
+            node_id=self._extract_node_id(e.args),
         )))
         self._props['clickable'] = True
         return self
+
+    def _extract_node_id(self, html_id: str) -> str:
+        """Extract the Mermaid node ID from a clicked node's HTML ID.
+
+        Mermaid prefixes every node ID with the SVG ID. Most diagram types add a type token and a
+        trailing index (``<svg_id>-<type>-<node_id>-<index>``), but block, mindmap and requirement
+        diagrams emit ``<svg_id>-<node_id>`` verbatim.
+        """
+        parts = html_id.removeprefix(f'{self.html_id}_mermaid-').split('-')
+        return '-'.join(parts[1:-1] if len(parts) >= 3 and parts[-1].isdigit() else parts)
 
     def _handle_content_change(self, content: str) -> None:
         content = remove_indentation(content)
