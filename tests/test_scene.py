@@ -5,8 +5,9 @@ import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
 
-from nicegui import app, binding, ui
+from nicegui import app, ui
 from nicegui.elements.scene import Object3D
+from nicegui.events import GenericEventArguments
 from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
@@ -289,17 +290,37 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
 
 
-async def test_delete_removes_bindings(user: User):
+async def test_dragend_after_object_deleted(user: User):
+    events: list[str] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(on_drag_end=lambda e: events.append(e.object_id)) as scene:
+            box = scene.box().draggable()
+
+    await user.open('/')
+    box.delete()
+    assert box.id not in scene.objects
+    scene._handle_drag(GenericEventArguments(sender=scene, client=scene.client, args={
+        'type': 'dragend', 'object_id': box.id, 'object_name': None, 'x': 1.0, 'y': 2.0, 'z': 3.0,
+    }))
+    assert events == [box.id]
+
+
+async def test_bound_object_is_released_on_delete(user: User):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
     @ui.page('/')
     def page():
         scene = ui.scene()
         label = ui.label()
-        for _ in range(50):
-            box = scene.box()
-            label.bind_text_from(box, 'x')
-            box.delete()
-        assert not scene.objects
-        assert not binding.active_links
-        assert not binding.bindings
+        box = scene.box()
+        objects.add(box)
+        label.bind_text_from(box, 'x')
+        box.delete()
 
     await user.open('/')
+    assert len(objects) == 0

@@ -1,7 +1,7 @@
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_entering_color(screen: Screen):
@@ -15,6 +15,17 @@ def test_entering_color(screen: Screen):
     screen.should_contain('content: #001100')
     button = screen.find_by_class('q-btn')
     assert button.value_of_css_property('background-color') == 'rgba(0, 17, 0, 1)'
+
+
+async def test_none_value_with_preview(user: User):
+    @ui.page('/')
+    def page():
+        color_input = ui.color_input(value=None, preview=True)
+        color_input.set_value(None)
+        ui.label('background: ' + color_input.button.style.get('background-color', ''))
+
+    await user.open('/')
+    await user.should_see('background: transparent')
 
 
 def test_picking_color(screen: Screen):
