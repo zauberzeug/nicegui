@@ -47,7 +47,7 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         self.on('node_click', lambda e: handle_event(callback, MermaidNodeClickEventArguments(
             sender=self,
             client=self.client,
-            node_id='-'.join(e.args.split('-')[1:-1])  # extract Node ID from HTML ID (<type>-<node_id>-<index>)
+            node_id='-'.join(e.args.split('-')[2:-1])  # extract from HTML ID (<svg_id>-<type>-<node_id>-<index>)
         )))
         self._props['clickable'] = True
         return self
