@@ -330,24 +330,17 @@ def test_popup_scroll_behavior(screen: Screen):
     assert screen.selenium.execute_script('return window.scrollY') == position
 
 
-async def test_multiple_new_value_with_key_generator(user: User):
-    single = multiple = None
-
+def test_id_generator_multiple(screen: Screen):
     @ui.page('/')
     def page():
-        nonlocal single, multiple
-        single = ui.select({'a': 'A'}, multiple=False, new_value_mode='add', key_generator=itertools.count(100))
-        multiple = ui.select({'a': 'A'}, multiple=True, new_value_mode='add', key_generator=itertools.count(200))
+        select = ui.select({'a': 'A'}, value=['a'], multiple=True, new_value_mode='add',
+                           key_generator=itertools.count(100))
+        ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
 
-    await user.open('/')
-
-    def listener_id(select):
-        return next(x.id for x in select._event_listeners.values() if x.type == 'update:modelValue')
-
-    single._handle_event({'listener_id': listener_id(single), 'args': 'Banana'})
-    assert single.value == 100
-    assert single.options == {'a': 'A', 100: 'Banana'}
-
-    multiple._handle_event({'listener_id': listener_id(multiple), 'args': [{'value': 0, 'label': 'A'}, 'Banana']})
-    assert multiple.value == ['a', 200]
-    assert multiple.options == {'a': 'A', 200: 'Banana'}
+    screen.open('/')
+    screen.find_by_tag('input').send_keys('Banana')
+    screen.wait(0.5)
+    screen.find_by_tag('input').send_keys(Keys.ENTER)
+    screen.should_contain("value = ['a', 100]")
+    screen.should_contain("options = {'a': 'A', 100: 'Banana'}")
