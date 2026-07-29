@@ -181,14 +181,19 @@ def test_node_click_handler(screen: Screen):
     screen.should_contain('clicked [Node-With-Hyphen]')  # make sure our ID extraction works even with hyphens
 
 
-def test_node_click_handler_with_other_diagram_type(screen: Screen):
+@pytest.mark.parametrize(('content', 'label', 'node_id'), [
+    ('classDiagram\n class Animal', 'Animal', 'Animal'),  # type token is "classId", not "flowchart"
+    ('stateDiagram-v2\n s1 --> s2', 's1', 's1'),
+    ('erDiagram\n CUSTOMER-ORDER ||--o{ LINE-ITEM : has', 'CUSTOMER-ORDER', 'CUSTOMER-ORDER'),
+    # block, mindmap and requirement diagrams emit "<svg_id>-<node_id>": no type token, no index.
+    # Only block is exercised here because Selenium cannot click the other two's SVG labels.
+    ('block-beta\n columns 1\n A', 'A', 'A'),
+])
+def test_node_click_handler_with_other_diagram_types(screen: Screen, content: str, label: str, node_id: str):
     @ui.page('/')
     def page():
-        ui.mermaid('''
-            classDiagram
-                class Animal
-        ''', on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
+        ui.mermaid(content, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
 
     screen.open('/')
-    screen.click('Animal')
-    screen.should_contain('clicked [Animal]')  # the type prefix is "classId" here, not "flowchart"
+    screen.click(label)
+    screen.should_contain(f'clicked [{node_id}]')
