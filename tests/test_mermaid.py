@@ -168,17 +168,17 @@ def test_node_click_handler(screen: Screen):
                 A[Node A];
                 B[Node B];
                 Node-With-Hyphen[Node With Hyphen];
-        ''', on_node_click=lambda e: ui.notify(f'{e.node_id} clicked'))
+        ''', on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
 
     screen.open('/')
     screen.click('Node A')
-    screen.should_contain('A clicked')
+    screen.should_contain('clicked [A]')  # the brackets keep a partially stripped ID like "flowchart-A" from matching
 
     screen.click('Node B')
-    screen.should_contain('B clicked')
+    screen.should_contain('clicked [B]')
 
     screen.click('Node With Hyphen')
-    screen.should_contain('Node-With-Hyphen clicked')  # make sure our ID extraction works even with hyphens
+    screen.should_contain('clicked [Node-With-Hyphen]')  # make sure our ID extraction works even with hyphens
 
 
 def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
@@ -199,3 +199,16 @@ def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
     screen.should_contain('Database')
     ids = screen.selenium.execute_script('return Array.from(document.querySelectorAll("[id]"), e => e.id)')
     assert len(ids) == len(set(ids)), 'every id on the page should be unique'
+
+
+def test_node_click_handler_with_other_diagram_type(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            classDiagram
+                class Animal
+        ''', on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
+
+    screen.open('/')
+    screen.click('Animal')
+    screen.should_contain('clicked [Animal]')  # the type prefix is "classId" here, not "flowchart"
