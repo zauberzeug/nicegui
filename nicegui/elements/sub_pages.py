@@ -105,9 +105,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     self._set_match(None)
 
     def _render_page(self, match: RouteMatch) -> bool:
-        kwargs = PageArguments.build_kwargs(match, self, self._data)
         self._rendered_path = f'{self._root_path or ""}{match.path}'
         try:
+            kwargs = PageArguments.build_kwargs(match, self, self._data)
             result = match.builder(**kwargs)
         except Exception as e:
             self.clear()  # clear partial content created before the exception
