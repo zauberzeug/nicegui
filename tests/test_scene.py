@@ -1,3 +1,4 @@
+import gc
 import weakref
 from typing import Literal
 
@@ -323,4 +324,5 @@ async def test_bound_object_is_released_on_delete(user: User):
         box.delete()
 
     await user.open('/')
+    gc.collect()
     assert len(objects) == 0
