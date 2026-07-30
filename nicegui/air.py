@@ -121,8 +121,8 @@ class Air:
 
         @relay.on('close-stream')
         async def _handle_close_stream(stream_id: str) -> None:
-            await self.streams[stream_id].response.aclose()
-            del self.streams[stream_id]
+            if stream := self.streams.pop(stream_id, None):
+                await stream.response.aclose()
 
         @relay.on('ready')
         def _handle_ready(data: dict[str, Any]) -> None:
