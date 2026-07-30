@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import gzip
 import json
 import logging
@@ -210,17 +209,15 @@ class Air:
         if self.connecting:
             self.log.debug('Already connecting.')
             return
-        if self.relay.connected:
-            if self.relay.eio.state != 'disconnected':  # "disconnecting" means a deliberate disconnect is running
-                return
-            self.log.warning('Socket.IO claims to be connected while Engine.IO is not. Replacing the client.')
-            self.relay = self._create_relay()  # a stale "connected" flag cannot be cleared via disconnect()
-            await self._close_streams()  # the discarded client can no longer deliver "close-stream"
+        if self.relay.connected and self.relay.eio.state != 'disconnected':
+            return  # connected, or a deliberate disconnect is in progress
         self.log.debug('Going to connect...')
         self.connecting = True
         try:
-            if self.relay.connected:
-                await asyncio.wait_for(self.disconnect(), timeout=5)
+            if self.relay.connected:  # a stale flag cannot be cleared via disconnect(), so discard the client
+                self.log.warning('Socket.IO claims to be connected while Engine.IO is not. Replacing the client.')
+                self.relay = self._create_relay()
+                await self._close_streams()  # the discarded client can no longer deliver "close-stream"
             self.log.debug('Connecting...')
             await self.relay.connect(
                 f'{RELAY_HOST}?device_token={self.token}',
