@@ -1,3 +1,4 @@
+import gc
 import weakref
 from typing import Literal
 
@@ -308,3 +309,20 @@ async def test_dragend_after_object_deleted(user: User):
         'type': 'dragend', 'object_id': box.id, 'object_name': None, 'x': 1.0, 'y': 2.0, 'z': 3.0,
     }))
     assert events == [box.id]
+
+
+async def test_bound_object_is_released_on_delete(user: User):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+        label = ui.label()
+        box = scene.box()
+        objects.add(box)
+        label.bind_text_from(box, 'x')
+        box.delete()
+
+    await user.open('/')
+    gc.collect()
+    assert len(objects) == 0
