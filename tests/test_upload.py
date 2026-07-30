@@ -1,7 +1,7 @@
+import tempfile
 from io import BytesIO
 from pathlib import Path
 
-import aiofiles.tempfile
 import pytest
 from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartParser
@@ -182,23 +182,16 @@ def test_upload_filename_sanitization(input_name: str | None, expected: str):
     assert _sanitize_filename(input_name) == expected
 
 
-async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyPatch):
+async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     monkeypatch.setattr(MultiPartParser, 'spool_max_size', 8)  # spill to a temp file after the first chunk
-
-    paths: list[str] = []
-    real = aiofiles.tempfile.NamedTemporaryFile
-
-    async def track(*args, **kwargs):
-        temp = await real(*args, **kwargs)
-        paths.append(temp.name)
-        return temp
-    monkeypatch.setattr(aiofiles.tempfile, 'NamedTemporaryFile', track)
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
 
     class FlakyUpload(UploadFile):  # one chunk (triggers the spill), then errors mid-upload
         _read = False
 
         async def read(self, size: int = -1) -> bytes:
             if self._read:
+                assert any(tmp_path.iterdir()), 'first chunk should have been spilled to the temp directory'
                 raise OSError('No space left on device')
             self._read = True
             return b'x' * 16
@@ -206,4 +199,4 @@ async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyP
     with pytest.raises(OSError):
         await create_file_upload(FlakyUpload(BytesIO(b''), filename='big.bin'), chunk_size=16)
 
-    assert paths and not Path(paths[0]).exists(), 'spilled temp file leaked on disk'
+    assert not any(tmp_path.iterdir()), 'spilled temp file should be removed when the upload fails'
