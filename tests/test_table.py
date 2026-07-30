@@ -453,8 +453,10 @@ def test_client_side_fullscreen_syncs_back(screen: Screen):
     assert table.is_fullscreen is False
 
     screen.click('FS')
-    screen.wait(0.5)
-    assert table.is_fullscreen is True
+    screen.wait_for(lambda: table.is_fullscreen is True)
+
+    screen.click('FS')
+    screen.wait_for(lambda: table.is_fullscreen is False)
 
 
 @pytest.mark.parametrize('index,expected,unexpected', [
