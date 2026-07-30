@@ -245,9 +245,12 @@ class Air:
         self.log.debug('Disconnected.')
 
     async def _close_streams(self) -> None:
-        for stream in self.streams.values():
-            await stream.response.aclose()
-        self.streams.clear()
+        streams, self.streams = self.streams, {}
+        for stream in streams.values():
+            try:
+                await stream.response.aclose()
+            except Exception:
+                self.log.debug('Could not close stream.', exc_info=True)
 
     async def emit(self, message_type: str, data: dict[str, Any], room: str) -> None:
         """Emit a message to the NiceGUI On Air server."""
