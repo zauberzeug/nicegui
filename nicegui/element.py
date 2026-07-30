@@ -508,9 +508,9 @@ class Element(Visibility):
         """
         parent_slot = self.parent_slot
         assert parent_slot is not None
-        if target_container is not None and self in target_container.ancestors(include_self=True):
-            raise ValueError('Cannot move an element into itself or one of its descendants.')
         target_container = target_container or parent_slot.parent
+        if self in target_container.ancestors(include_self=True):
+            raise ValueError('Cannot move an element into itself or one of its descendants.')
 
         if target_slot is None:
             new_slot = target_container.default_slot
