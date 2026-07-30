@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 from nicegui import app, ui
@@ -133,18 +134,24 @@ def test_pil_image_cleanup(screen: Screen):
     screen.wait_for(lambda: not Path(temp_path_str).exists())
 
 
-async def test_removal_of_generated_route_when_switching_to_non_file(user: User) -> None:
+@pytest.mark.parametrize('element_class,route_prefix', [
+    (ui.image, '/_nicegui/auto/static/'),
+    (ui.video, '/_nicegui/auto/media/'),
+])
+async def test_removal_of_generated_route_when_switching_to_non_file(user: User,
+                                                                     element_class: type,
+                                                                     route_prefix: str) -> None:
     holder: dict = {}
 
     @ui.page('/')
     def page():
-        holder['img'] = ui.image(example_file)
+        holder['element'] = element_class(example_file)
 
     await user.open('/')
-    img = holder['img']
-    assert img.auto_route is not None
-    assert any('/_nicegui/auto/static/' in getattr(route, 'path', '') for route in app.routes)
+    element = holder['element']
+    assert element.auto_route is not None
+    assert any(route_prefix in getattr(route, 'path', '') for route in app.routes)
 
-    img.set_source('https://example.com/x.png')
-    assert img.auto_route is None
-    assert not any('/_nicegui/auto/static/' in getattr(route, 'path', '') for route in app.routes)
+    element.set_source('https://example.com/x.png')
+    assert element.auto_route is None
+    assert not any(route_prefix in getattr(route, 'path', '') for route in app.routes)
