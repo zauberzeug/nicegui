@@ -164,6 +164,7 @@ addopts = "--driver Chrome"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 main_file = ""
+markers = ["screen: uses the browser-based screen fixture"]
 testpaths = ["tests"]
 filterwarnings = [
   'error',
