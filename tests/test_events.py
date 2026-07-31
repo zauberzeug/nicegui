@@ -2,10 +2,14 @@ import asyncio
 from typing import Literal
 
 import pytest
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.mouse_button import MouseButton
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 from nicegui import events, ui
-from nicegui.testing import Screen, User
+from nicegui.testing import Screen
 
 
 def click_sync_no_args():
@@ -108,22 +112,30 @@ def test_event_modifiers(screen: Screen):
     assert events == ['A', 'B', 'C', 'D']
 
 
-async def test_mouse_button_and_exact_modifier_routing(user: User) -> None:
-    listeners = {}
+def test_mouse_button_and_exact_modifiers(screen: Screen):
+    events = []
 
     @ui.page('/')
     def page():
-        for spec in ['click.left', 'mousedown.middle', 'keydown.enter.exact', 'keyup.left']:
-            listeners[spec] = next(iter(ui.button('X').on(spec, lambda: None)._event_listeners.values()))
+        button = ui.button('Target')
+        button.on('mousedown.left', lambda: events.append('left'), [])
+        button.on('mousedown.right', lambda: events.append('right'), [])
+        button.on('mousedown.middle', lambda: events.append('middle'), [])
+        ui.input('A').on('keydown.enter.exact', lambda: events.append('exact'), [])
+        ui.input('B').on('keydown.left', lambda: events.append('arrow'), [])
 
-    await user.open('/')
-    assert listeners['click.left'].to_dict()['modifiers'] == ['left']
-    assert listeners['click.left'].to_dict()['keys'] == []
-    assert listeners['mousedown.middle'].to_dict()['modifiers'] == ['middle']
-    assert listeners['keydown.enter.exact'].to_dict()['modifiers'] == ['exact']
-    assert listeners['keydown.enter.exact'].to_dict()['keys'] == ['enter']
-    assert listeners['keyup.left'].to_dict()['modifiers'] == []
-    assert listeners['keyup.left'].to_dict()['keys'] == ['left']
+    screen.open('/')
+    target = screen.find('Target')
+    target.click()
+    ActionChains(screen.selenium).context_click(target).perform()
+    middle_click = ActionBuilder(screen.selenium)
+    middle_click.pointer_action.move_to(target).pointer_down(MouseButton.MIDDLE).pointer_up(MouseButton.MIDDLE)
+    middle_click.perform()
+    screen.selenium.find_element(By.XPATH, '//*[@aria-label="A"]').send_keys(Keys.ENTER)
+    ActionChains(screen.selenium).key_down(Keys.SHIFT).send_keys(Keys.ENTER).key_up(Keys.SHIFT).perform()
+    screen.selenium.find_element(By.XPATH, '//*[@aria-label="B"]').send_keys(Keys.ARROW_LEFT)
+    screen.wait_for(lambda: len(events) >= 5)
+    assert events == ['left', 'right', 'middle', 'exact', 'arrow']
 
 
 def test_throttling(screen: Screen):
