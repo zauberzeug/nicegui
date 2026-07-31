@@ -70,7 +70,13 @@ def test_url_encoded_data_url(screen: Screen):
     svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/></svg>'
     screen.ui_run_kwargs['favicon'] = 'data:image/svg+xml,' + urllib.parse.quote(svg)
     screen.open('/')
+    assert get_favicon_url(screen).startswith('data:image/svg+xml')
     assert_favicon(svg)
+
+
+def test_data_url_without_comma():
+    with pytest.raises(ValueError, match='invalid data URL'):
+        favicon._data_url_to_bytes('data:image/png')
 
 
 def test_custom_file(screen: Screen):
