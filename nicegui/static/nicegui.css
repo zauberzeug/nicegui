@@ -365,15 +365,15 @@ h6.q-timeline__title {
 .nicegui-error-popup > span:first-child {
   font-weight: bold;
 }
-.nicegui-error-popup:dir(ltr) > span:first-child::before {
+.nicegui-error-popup > span:first-child::before {
   content: "⚠️";
-  font-family: sans-serif; /* anything but Roboto, whose symbol subset would be fetched just for this glyph */
+  /* NOTE: the inherited stack minus Roboto, whose symbol subset would be fetched just for this glyph */
+  font-family: "-apple-system", "Helvetica Neue", Helvetica, Arial, sans-serif;
   position: absolute;
+}
+.nicegui-error-popup:dir(ltr) > span:first-child::before {
   left: 1.5em;
 }
 .nicegui-error-popup:dir(rtl) > span:first-child::before {
-  content: "⚠️";
-  font-family: sans-serif; /* anything but Roboto, whose symbol subset would be fetched just for this glyph */
-  position: absolute;
   right: 1.5em;
 }
