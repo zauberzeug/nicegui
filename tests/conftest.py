@@ -7,5 +7,5 @@ pytest_plugins = ['nicegui.testing.plugin']
 
 def pytest_collection_modifyitems(items) -> None:
     for item in items:
-        if 'screen' in getattr(item, 'fixturenames', ()):
+        if 'screen' in item.fixturenames:
             item.add_marker('screen')
