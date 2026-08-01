@@ -5,7 +5,7 @@ from nicegui import app, binding, logging
 
 @binding.bindable_dataclass
 class GitHubStars:
-    string: str = app.storage.general.get('github_stars', '0')
+    string: str = app.storage.general.get('github_stars', '')  # empty means "unknown", so we hide the count
 
 
 stars = GitHubStars()
