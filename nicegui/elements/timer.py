@@ -22,11 +22,13 @@ class Timer(BaseTimer, Element, component='timer.js'):
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.
 
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
-        Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
+        Returns True if the client is connected, False if the timer should not run (anymore).
         """
+        if self._should_stop():
+            return False
         try:
             await self.client.connected()
-            return True
+            return not self._should_stop()
         except ClientConnectionTimeout:
             self.cancel()
             log.debug('Timer cancelled because client connection timed out')
