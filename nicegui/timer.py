@@ -73,6 +73,10 @@ class Timer:
         try:
             if not await self._can_start():
                 return
+            # Check before entering context: Client.delete() can wake connected()
+            # waiters after the element/slot tree is already gone (#6226).
+            if self._should_stop():
+                return
             with self._get_context():
                 await asyncio.sleep(self.interval)
                 if self.active and not self._should_stop():
@@ -86,6 +90,10 @@ class Timer:
             if not self._immediate:
                 await asyncio.sleep(self.interval)
             if not await self._can_start():
+                return
+            # Check before entering context: Client.delete() can wake connected()
+            # waiters after the element/slot tree is already gone (#6226).
+            if self._should_stop():
                 return
             with self._get_context():
                 while not self._should_stop():

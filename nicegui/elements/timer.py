@@ -26,6 +26,9 @@ class Timer(BaseTimer, Element, component='timer.js'):
         """
         try:
             await self.client.connected()
+            # Client.delete() wakes connected() waiters after removing elements (#6226).
+            if self.is_deleted or self.client.id not in Client.instances:
+                return False
             return True
         except ClientConnectionTimeout:
             self.cancel()
