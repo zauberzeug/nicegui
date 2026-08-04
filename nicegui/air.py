@@ -229,7 +229,7 @@ class Air:
             return
         except socketio.exceptions.ConnectionError:
             self.log.debug('Connection error.', stack_info=True)
-        except ValueError:  # this sometimes happens when the internal socketio client is not yet ready
+        except ValueError:  # a tick can land while a disconnect is finishing (Engine.IO still "disconnecting")
             self.log.debug('ValueError while connecting.', stack_info=True)
         except Exception:
             log.exception('Could not connect to NiceGUI On Air server.')
