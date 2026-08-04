@@ -30,6 +30,11 @@ it keeps the advisory queue focused on real issues.
   Using them with unsanitized user data is an application bug, not a framework vulnerability.
 - **`ast.literal_eval` in the docs.**
   `literal_eval` only parses literals; it is the safe alternative to `eval` that the documentation demonstrates.
+- **Forging Socket.IO events with a known `client_id`** (`nicegui/nicegui.py`, the `event` / `javascript_response` / `ack` / `log` handlers).
+  The `client_id` is a per-session secret capability (an unguessable `uuid4`), and every attack of this shape presupposes the attacker already knows it.
+  Binding the socket `sid` to the client does not change this: the handshake is reached with the same `client_id`, so anyone holding it can bind their own socket.
+  A leaked `client_id` is treated like a leaked session token — protect it accordingly.
+  Cross-origin connections are a separate concern already addressed independently.
 
 If instead you have found a way **around** one of these protections —
 an escaping bypass, or a default `sanitize=True` path that still executes script —
