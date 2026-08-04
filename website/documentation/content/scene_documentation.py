@@ -1,12 +1,6 @@
-from nicegui.dependencies import register_library
 from nicegui import ui
 
 from . import doc
-from pathlib import Path
-
-path = Path(__file__).parent / Path('./static/torus_knot.js')
-max_time = path.stat().st_mtime
-register_library(path, import_name='website__documentation__content__scene_documentation__TorusKnot', max_time=max_time)
 
 
 @doc.demo(ui.scene)
@@ -331,10 +325,10 @@ def custom_composed_objects() -> None:
     The ["3D Scene Custom Objects" example](https://github.com/zauberzeug/nicegui/tree/main/examples/3d_scene_custom_objects)
     demonstrates a more sophisticated use-case and shows how to build this class and
     module, and what's the interface available to you.
-''')
+''', lazy=False)  # eager rendering makes the TorusKnot class register its component before the importmap is generated
 def custom_3d_scene_objects() -> None:
     from typing_extensions import Self
-    from nicegui.elements.scene.scene_object3d import Object3D
+    from nicegui.elements.scene import Object3D
 
     class TorusKnot(Object3D, component='static/torus_knot.js'):
         def __init__(self, radius: float = 1.0, tube: float = 0.4, p: int = 2, q: int = 3) -> None:
@@ -391,9 +385,6 @@ def custom_3d_scene_objects() -> None:
         }
     }
     """
-
-
-ui.run()
 
 
 @doc.demo('Attaching/detaching objects', '''

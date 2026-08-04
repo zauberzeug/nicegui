@@ -444,7 +444,7 @@ component instance.
 
 ```python
 # pulsing_sphere.py
-from nicegui.elements.scene.scene_object3d import Object3D
+from nicegui.elements.scene import Object3D
 
 class PulsingSphere(Object3D, component='pulsing_sphere.js'):
     def __init__(self, radius: float = 1.0) -> None:

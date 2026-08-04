@@ -5,7 +5,7 @@ import pytest
 from typing_extensions import Self
 
 from nicegui import ui
-from nicegui.elements.scene.scene_object3d import Object3D
+from nicegui.elements.scene import Object3D
 from nicegui.testing import Screen
 
 
