@@ -53,3 +53,27 @@ def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
     screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
     screen.wait(2.0)
     assert screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);') > 0
+
+
+def test_stale_socket_disconnect_does_not_wedge_a_reconnected_browser(screen: Screen):
+    """The server reaps the old socket only on its ping timeout, i.e. after the browser reconnected."""
+    events = {'clicks': 0, 'disconnects': 0}
+
+    @ui.page('/')
+    def page():
+        ui.context.client.on_disconnect(lambda: events.update(disconnects=events['disconnects'] + 1))
+        ui.button('Click me', on_click=lambda: events.update(clicks=events['clicks'] + 1))
+
+    screen.open('/')
+    document_id = screen.selenium.execute_script('return window.documentId;')
+
+    screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
+    screen.wait_for(lambda: screen.selenium.execute_script('return window.socket.connected;'))
+    assert screen.selenium.execute_script('return window.documentId;') == document_id
+    assert events['disconnects'] == 0, 'the server reaped the old socket before the browser reconnected'
+
+    screen.wait(9.0)  # > ping_interval + ping_timeout, floored at 4 s and 2 s, so the old socket is reaped by now
+    assert events['disconnects'] == 1, 'the server never reaped the old socket'
+    screen.click('Click me')
+    screen.wait(1.5)
+    assert events['clicks'] == 1, 'the click of a reconnected browser must still reach the server'
