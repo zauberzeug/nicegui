@@ -20,7 +20,7 @@ def create() -> None:
             .classes(f'self-center text-center {d.TEXT_SECONDARY}')
 
         with ui.row(align_items='center').classes('gap-12 justify-center my-10 w-full'):
-            with ui.column(align_items='center').classes('gap-0'):
+            with ui.column(align_items='center').classes('gap-0').bind_visibility_from(stars, 'string', bool):
                 phosphor_icon('ph-star').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
                 ui.label().classes(d.TEXT_24PX).bind_text_from(stars, 'string')
                 ui.label('GitHub Stars').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')

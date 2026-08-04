@@ -4,7 +4,8 @@ export default {
     if (this.addScrollPadding) {
       this.resizeObserver = new ResizeObserver(() => {
         document.documentElement.style.scrollPaddingTop = `${this.$el.offsetHeight}px`;
-      }).observe(this.$el);
+      });
+      this.resizeObserver.observe(this.$el);
     }
   },
   unmounted() {

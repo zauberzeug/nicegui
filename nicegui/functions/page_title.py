@@ -13,5 +13,5 @@ def page_title(title: str) -> None:
     client.title = title
     if core.app.native.main_window:
         core.app.native.main_window.set_title(title)
-    if client._response_built:  # pylint: disable=protected-access
+    if client._response_built and not client.is_deleted:  # pylint: disable=protected-access
         client.run_javascript(f'document.title = {json.dumps(title)}')

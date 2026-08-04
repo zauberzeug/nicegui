@@ -66,5 +66,5 @@ def _add_javascript(code: str, *, shared: bool = False) -> None:
     else:
         client = context.client
         client._head_html += script_html + '\n'
-    if client is not None and client._response_built:  # pylint: disable=protected-access
+    if client is not None and client._response_built and not client.is_deleted:  # pylint: disable=protected-access
         client.run_javascript(code)

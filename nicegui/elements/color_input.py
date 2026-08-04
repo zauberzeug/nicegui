@@ -63,7 +63,7 @@ class ColorInput(LabelElement, ValueElement[str | None], DisableableElement):
         if not self.preview:
             return
 
-        color = self.value.strip()
+        color = (self.value or '').strip()
         if HEX_COLOR_PATTERN_6.match(color):
             r = int(color[1:3], 16) / 255
             g = int(color[3:5], 16) / 255

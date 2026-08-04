@@ -13,6 +13,8 @@ from nicegui.awaitable_response import AwaitableResponse
 from nicegui.dependencies import register_esm_glob, register_library_glob, resolve_glob
 from nicegui.helpers import warn_once
 
+from ... import binding
+
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
 
@@ -391,6 +393,7 @@ class Object3D:
         for child in self.children:
             child.delete()
         del self.scene.objects[self.id]
+        binding.remove([self])
         self._delete()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
