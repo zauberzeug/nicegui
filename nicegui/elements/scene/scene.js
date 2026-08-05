@@ -26,17 +26,13 @@ async function get_object(objects, object_id) {
   return object
 }
 
-function get_managed_parent_and_fill_metadata(object) {
-  // Unmanaged objects created by custom components may have children that
-  // have an empty "object_id"; this will use the ID of parent for those objects
+function find_object_with_id(object) {
+  // Custom components can create children without an "object_id";
+  // hits on them are reported under their closest ancestor with an identity.
   let current_object = object;
   while (current_object) {
-    if (current_object.managed) {
-      object.object_id = current_object.object_id
-      object.name = current_object.name
-      return current_object;
-    }
-    current_object = current_object.parent
+    if (current_object.object_id) return current_object;
+    current_object = current_object.parent;
   }
 }
 
@@ -59,7 +55,6 @@ export default {
     this.objects = new Map();
     this.scene = new THREE.Scene();
     this.scene.object_id = "scene";
-    this.scene.managed = true;
     this.objects.set("scene", { id: "scene", mesh: this.scene });
 
     this.clock = new THREE.Clock();
@@ -179,11 +174,11 @@ export default {
     };
     const handleDrag = (event) => {
       this.dragConstraints.split(",").forEach((constraint) => applyConstraint(constraint, event.object.position));
-      get_managed_parent_and_fill_metadata(event.object)
+      const owner = find_object_with_id(event.object);
       this.$emit(event.type, {
         type: event.type,
-        object_id: event.object.object_id,
-        object_name: event.object.name,
+        object_id: owner?.object_id,
+        object_name: owner?.name,
         x: event.object.position.x,
         y: event.object.position.y,
         z: event.object.position.z,
@@ -214,13 +209,12 @@ export default {
       this.$emit("click3d", {
         hits: raycaster
           .intersectObjects(this.scene.children, true)
-          .filter((o) => {
-            return Boolean(get_managed_parent_and_fill_metadata(o.object))
-          })
-          .map((o) => ({
-            object_id: o.object.object_id,
-            object_name: o.object.name,
-            point: o.point,
+          .map((hit) => ({ hit, owner: find_object_with_id(hit.object) }))
+          .filter(({ owner }) => owner)
+          .map(({ hit, owner }) => ({
+            object_id: owner.object_id,
+            object_name: owner.name,
+            point: hit.point,
           })),
         click_type: mouseEvent.type,
         button: mouseEvent.button,
@@ -292,7 +286,6 @@ export default {
 
         // Update the references and notify about creation
         mesh.object_id = id;
-        mesh.managed = true;
         object.mesh = mesh
         object.component = component
         if (typeof object.component.created == "function") {
