@@ -2,7 +2,6 @@ import atexit
 import os
 import shutil
 import tempfile
-import traceback
 from collections.abc import Generator
 from pathlib import Path
 
@@ -83,18 +82,15 @@ def nicegui_remove_all_screenshots() -> None:
 @pytest.fixture(scope='session')
 def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
     """Create a new Chrome driver instance (reused across tests in the session)."""
-    exceptions = []
     for executable_path in (None, shutil.which('chromedriver'), 'chromedriver'):  # Required for ARM devcontainers
         try:
             s = Service(executable_path=executable_path)
             driver_ = webdriver.Chrome(service=s, options=nicegui_chrome_options)
             break
-        except Exception as exc:
-            exceptions.append(''.join(traceback.format_tb(exc.__traceback__)) + '\n' + str(exc))
+        except Exception:
             continue
     else:  # no break
-        exception_str = '\n'.join(exceptions)
-        raise RuntimeError(f'Could not start Chrome WebDriver.\nTried these executables:\n{exception_str}')
+        raise RuntimeError('Could not start Chrome WebDriver.')
     driver_.implicitly_wait(Screen.IMPLICIT_WAIT)
     driver_.set_page_load_timeout(4)
     yield driver_
