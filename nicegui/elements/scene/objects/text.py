@@ -2,11 +2,7 @@ from ..scene_object3d import Object3D
 
 
 class Text(Object3D, component='text.js'):
-    def __init__(
-        self,
-        text: str,
-        style: str = '',
-    ) -> None:
+    def __init__(self, text: str, style: str = '') -> None:
         """Text
 
         This element is used to add 2D text to the scene.

@@ -1,4 +1,3 @@
-
 from ..scene_object3d import Object3D
 
 

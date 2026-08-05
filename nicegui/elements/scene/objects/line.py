@@ -2,11 +2,7 @@ from ..scene_object3d import Object3D
 
 
 class Line(Object3D, component='line.js'):
-    def __init__(
-        self,
-        start: list[float],
-        end: list[float],
-    ) -> None:
+    def __init__(self, start: list[float], end: list[float]) -> None:
         """Line
 
         This element is based on Three.js' `Line <https://threejs.org/docs/index.html#api/en/objects/Line>`_ object.

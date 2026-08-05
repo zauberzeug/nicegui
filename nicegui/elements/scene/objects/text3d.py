@@ -2,11 +2,7 @@ from ..scene_object3d import Object3D
 
 
 class Text3d(Object3D, component='text3d.js'):
-    def __init__(
-        self,
-        text: str,
-        style: str = '',
-    ) -> None:
+    def __init__(self, text: str, style: str = '') -> None:
         """3D Text
 
         This element is used to add a 3D text mesh to the scene.

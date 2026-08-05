@@ -4,11 +4,7 @@ from ..scene_object3d import Object3D
 
 
 class Texture(Object3D, component='texture.js'):
-    def __init__(
-        self,
-        url: str,
-        coordinates: list[list[list[float] | None]],
-    ) -> None:
+    def __init__(self, url: str, coordinates: list[list[list[float] | None]]) -> None:
         """Texture
 
         This element is used to add a texture to a mesh.

@@ -27,6 +27,4 @@ class QuadraticBezierTube(Object3D, component='quadratic_bezier_tube.js'):
         :param closed: whether the tube should be closed (default: `False`)
         :param wireframe: whether to display the tube as a wireframe (default: `False`)
         """
-        super().__init__(
-            start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe=wireframe
-        )
+        super().__init__(start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe=wireframe)

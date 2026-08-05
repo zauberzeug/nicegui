@@ -2,12 +2,7 @@ from ..scene_object3d import Object3D
 
 
 class Extrusion(Object3D, component='extrusion.js'):
-    def __init__(
-        self,
-        outline: list[list[float]],
-        height: float,
-        wireframe: bool = False,
-    ) -> None:
+    def __init__(self, outline: list[list[float]], height: float, wireframe: bool = False) -> None:
         """Extrusion
 
         This element is based on Three.js' `ExtrudeGeometry <https://threejs.org/docs/index.html#api/en/geometries/ExtrudeGeometry>`_ object.
