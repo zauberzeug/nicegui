@@ -9,7 +9,7 @@ from nicegui.elements.scene import Object3D
 from nicegui.testing import Screen
 
 
-class Tracer(Object3D, component='tracer.js'):
+class Tracer(Object3D, component='test_scene_custom_types.js'):
     def __init__(self, label: str) -> None:
         super().__init__(label)
 
@@ -19,40 +19,26 @@ class Tracer(Object3D, component='tracer.js'):
 
 
 def test_custom_type_create_and_method_dispatch(screen: Screen):
+    scene: ui.scene = None  # type: ignore
     tracer: Tracer = None  # type: ignore
 
     @ui.page('/')
     def page():
-        nonlocal tracer
-        with ui.scene():
-            tracer = Tracer('hello')
+        nonlocal scene, tracer
+        with ui.scene() as scene:
+            tracer = Tracer('first').with_name('a')
+            Tracer('second').with_name('b')
 
     screen.open('/')
-    screen.wait_for_js('window.__tracer?.created.length', 1)
-    created = screen.selenium.execute_script('return window.__tracer.created')
-    assert created[0]['label'] == 'hello'
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("a")?.userData.label', 'first')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("b")?.userData.label', 'second')
+    assert screen.selenium.execute_script('return window.__tracer_load_count') == 1, \
+        'the module top-level should run only once for multiple instances'
 
-    assert tracer is not None
-    tracer.set_value(42)
-    screen.wait_for_js('window.__tracer.values.length', 1)
-    values = screen.selenium.execute_script('return window.__tracer.values')
-    assert values[-1]['value'] == 42
-    assert values[-1]['id'] == tracer.id
-
-
-def test_custom_type_module_loads_once_for_multiple_instances(screen: Screen):
-    @ui.page('/')
-    def page():
-        with ui.scene():
-            Tracer('a')
-            Tracer('b')
-
-    screen.open('/')
-    # Module top-level resets window.__tracer; two created entries proves the
-    # module ran exactly once even though the class was instantiated twice.
-    screen.wait_for_js('window.__tracer?.created.length', 2)
-    created = screen.selenium.execute_script('return window.__tracer.created')
-    assert [c['label'] for c in created] == ['a', 'b']
+    tracer.set_value(3)
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("a").scale.x', 3)
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.getObjectByName("b").scale.x') == 1, \
+        'the method dispatch should only reach the targeted instance'
 
 
 def test_component_file_must_exist():
