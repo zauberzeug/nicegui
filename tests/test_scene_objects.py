@@ -17,7 +17,6 @@ import math
 
 import numpy as np
 import pytest
-from selenium.common.exceptions import JavascriptException
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
@@ -43,18 +42,9 @@ def query(screen: Screen, scene: ui.scene, name: str, expression: str):
 
 def wait_until(screen: Screen, scene: ui.scene, name: str, expression: str, expected, *, timeout: float = 5.0):
     """Poll the JS expression on the named object until it equals the expected value."""
-    value = None
-    deadline = timeout
-    while deadline > 0:
-        try:
-            value = query(screen, scene, name, expression)
-            if value == expected:
-                return
-        except JavascriptException:
-            pass
-        screen.wait(0.1)
-        deadline -= 0.1
-    raise AssertionError(f'"{expression}" on "{name}" is {value!r}, expected {expected!r}')
+    lookup = f'scene_{scene.html_id}.getObjectByName("{name}")'
+    screen.wait_for_js(f'(() => {{ const o = {lookup}; return o ? ({expression}) : null; }})()',
+                       expected, timeout=timeout)
 
 
 def wait_for_object(screen: Screen, scene: ui.scene, name: str, *, timeout: float = 5.0):

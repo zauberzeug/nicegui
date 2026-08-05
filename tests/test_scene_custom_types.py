@@ -1,6 +1,5 @@
 import logging
 import sys
-import time
 from pathlib import Path
 from unittest.mock import patch
 
@@ -31,17 +30,15 @@ def test_custom_type_create_and_method_dispatch(screen: Screen):
             tracer = Tracer('hello')
 
     screen.open('/')
-    screen.wait(0.8)
-
+    screen.wait_for_js('window.__tracer?.created.length', 1)
     created = screen.selenium.execute_script('return window.__tracer.created')
-    assert created is not None and len(created) == 1
     assert created[0]['label'] == 'hello'
 
     assert tracer is not None
     tracer.set_value(42)
-    screen.wait(0.5)
+    screen.wait_for_js('window.__tracer.values.length', 1)
     values = screen.selenium.execute_script('return window.__tracer.values')
-    assert values and values[-1]['value'] == 42
+    assert values[-1]['value'] == 42
     assert values[-1]['id'] == tracer.id
 
 
@@ -53,12 +50,10 @@ def test_custom_type_module_loads_once_for_multiple_instances(screen: Screen):
             Tracer('b')
 
     screen.open('/')
-    screen.wait(0.8)
-
     # Module top-level resets window.__tracer; two created entries proves the
     # module ran exactly once even though the class was instantiated twice.
+    screen.wait_for_js('window.__tracer?.created.length', 2)
     created = screen.selenium.execute_script('return window.__tracer.created')
-    assert created is not None and len(created) == 2
     assert [c['label'] for c in created] == ['a', 'b']
 
 
@@ -97,15 +92,7 @@ def test_bare_subclass_with_legacy_type_string_creates_group(screen: Screen):
                 scene.box().with_name('child')
 
     screen.open('/')
-    child_type = None
-    deadline = time.time() + 5
-    while time.time() < deadline:
-        child_type = screen.selenium.execute_script(
-            f'return scene_{scene.html_id}.getObjectByName("legacy")?.getObjectByName("child")?.type ?? null')
-        if child_type is not None:
-            break
-        screen.wait(0.1)
-    assert child_type == 'Mesh', 'the legacy group and its child should appear in the scene graph'
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("legacy")?.getObjectByName("child")?.type', 'Mesh')
     group_type = screen.selenium.execute_script(f'return scene_{scene.html_id}.getObjectByName("legacy")?.type')
     assert group_type == 'Group'
 
