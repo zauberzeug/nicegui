@@ -23,7 +23,7 @@ async function get_object(objects, object_id) {
       return;
     }
   }
-  return object
+  return object;
 }
 
 function find_object_with_id(object) {
@@ -35,7 +35,6 @@ function find_object_with_id(object) {
     current_object = current_object.parent;
   }
 }
-
 
 export default {
   template: `
@@ -253,8 +252,9 @@ export default {
       });
       ready_promise.catch(() => {}); // suppress unhandled rejection if no method ever accesses this object
       let object = {
-        id, ready_promise
-      }
+        id,
+        ready_promise,
+      };
       this.objects.set(id, object);
       await this.init_promise;
 
@@ -267,7 +267,7 @@ export default {
         // Create the object
         let mesh;
         if (typeof component.create_geometry == "function") {
-          const geometry = await component.create_geometry(...args)
+          const geometry = await component.create_geometry(...args);
           if (wireframe) {
             mesh = new THREE.LineSegments(
               new THREE.EdgesGeometry(geometry),
@@ -277,17 +277,18 @@ export default {
             const material = new THREE.MeshPhongMaterial({ transparent: true });
             mesh = new THREE.Mesh(geometry, material);
           }
-        }
-        else if (typeof component.create_mesh == "function") {
+        } else if (typeof component.create_mesh == "function") {
           mesh = await component.create_mesh(...args);
         } else {
-          throw new Error(`The "${component_class}" 3D component doesn't export a "create_geometry" or "create_mesh" method.`)
+          throw new Error(
+            `The "${component_class}" 3D component doesn't export a "create_geometry" or "create_mesh" method.`,
+          );
         }
 
         // Update the references and notify about creation
         mesh.object_id = id;
-        object.mesh = mesh
-        object.component = component
+        object.mesh = mesh;
+        object.component = component;
         if (typeof object.component.created == "function") {
           await object.component.created();
         }
@@ -304,33 +305,33 @@ export default {
       parent.mesh.add(object.mesh);
     },
     async name(object_id, name) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.name = name;
     },
     async material(object_id, color, opacity, side) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       if (typeof object.component.apply_material === "function") {
-        await object.component.apply_material({ color, opacity, side })
+        await object.component.apply_material({ color, opacity, side });
       } else if (object.mesh.material) {
         this.material_loader.apply(object.mesh.material, color, opacity, side);
       } else {
-        console.warn(`A material change was requested for object ${object_id} but the mesh doesn't support materials`)
+        console.warn(`A material change was requested for object ${object_id} but the mesh doesn't support materials`);
       }
     },
     async move(object_id, x, y, z) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.position.set(x, y, z);
     },
     async scale(object_id, sx, sy, sz) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.scale.set(sx, sy, sz);
     },
     async rotate(object_id, R) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       const R4 = new THREE.Matrix4().makeBasis(
         new THREE.Vector3(...R[0]),
@@ -340,12 +341,12 @@ export default {
       object.mesh.rotation.setFromRotationMatrix(R4.transpose());
     },
     async visible(object_id, value) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.visible = value;
     },
     async draggable(object_id, value) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       if (value) this.draggable_objects.push(object.mesh);
       else {
@@ -362,24 +363,24 @@ export default {
       if (index != -1) this.draggable_objects.splice(index, 1);
     },
     async run_method_on_component(object_id, method_name, ...args) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       return await object.component[method_name](...args);
     },
     async attach(object_id, parent_id, x, y, z, R) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
-      const parent = await get_object(this.objects, parent_id)
+      const parent = await get_object(this.objects, parent_id);
       if (!parent) return;
       parent.mesh.add(object.mesh);
       this.move(object_id, x, y, z);
       this.rotate(object_id, R);
     },
     async detach(object_id, x, y, z, R) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.removeFromParent();
-      this.attach(object_id, this.scene.object_id, x, y, z, R)
+      this.attach(object_id, this.scene.object_id, x, y, z, R);
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();

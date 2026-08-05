@@ -4,17 +4,17 @@ const { THREE, SimpleMaterialLoader } = SceneLib;
 function buildCurve(spec) {
   const V = (p) => new THREE.Vector3(p[0], p[1], p[2]);
   switch (spec.type) {
-    case 'cubic':
+    case "cubic":
       return new THREE.CubicBezierCurve3(V(spec.v0), V(spec.v1), V(spec.v2), V(spec.v3));
-    case 'quadratic':
+    case "quadratic":
       return new THREE.QuadraticBezierCurve3(V(spec.v0), V(spec.v1), V(spec.v2));
-    case 'line':
+    case "line":
       return new THREE.LineCurve3(V(spec.v0), V(spec.v1));
-    case 'catmullrom':
+    case "catmullrom":
       return new THREE.CatmullRomCurve3(
         spec.points.map(V),
         spec.closed ?? false,
-        spec.curveType ?? 'centripetal',
+        spec.curveType ?? "centripetal",
         spec.tension ?? 0.5,
       );
     default:
@@ -26,8 +26,14 @@ function buildCurve(spec) {
 let material_loader = new SimpleMaterialLoader();
 
 export default class DynamicRoad {
-  group; road; directionLine; arrows;
-  width; thickness; latestMaterial; latestArrowColor;
+  group;
+  road;
+  directionLine;
+  arrows;
+  width;
+  thickness;
+  latestMaterial;
+  latestArrowColor;
 
   create_mesh(curves, width, thickness) {
     this.width = width;
@@ -52,10 +58,13 @@ export default class DynamicRoad {
     shape.lineTo(-halfT, halfW);
     shape.lineTo(-halfT, -halfW);
     const roadGeometry = new THREE.ExtrudeGeometry(shape, {
-      extrudePath: curvePath, steps: 200, bevelEnabled: false,
+      extrudePath: curvePath,
+      steps: 200,
+      bevelEnabled: false,
     });
     const roadMaterial = new THREE.MeshStandardMaterial({
-      roughness: 0.8, metalness: 0.1,
+      roughness: 0.8,
+      metalness: 0.1,
     });
     this.road = new THREE.Mesh(roadGeometry, roadMaterial);
 
@@ -77,10 +86,10 @@ export default class DynamicRoad {
     this.group.add(this.directionLine);
     for (const a of this.arrows) this.group.add(a);
     if (this.latestMaterial) {
-      this.apply_material(this.latestMaterial)
+      this.apply_material(this.latestMaterial);
     }
     if (this.latestArrowColor) {
-      this.set_arrow_color(this.latestArrowColor)
+      this.set_arrow_color(this.latestArrowColor);
     }
   }
 
@@ -100,13 +109,13 @@ export default class DynamicRoad {
   }
 
   set_arrow_color(color) {
-    this.latestArrowColor = color
+    this.latestArrowColor = color;
     this.directionLine.material.color.set(color);
     for (const a of this.arrows) a.setColor(new THREE.Color(color));
   }
 
   apply_material({ color, opacity, side }) {
-    this.latestMaterial = { color, opacity, side }
-    material_loader.apply(this.road.material, color, opacity, side)
+    this.latestMaterial = { color, opacity, side };
+    material_loader.apply(this.road.material, color, opacity, side);
   }
 }

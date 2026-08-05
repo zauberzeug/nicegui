@@ -1,7 +1,5 @@
 import SceneLib from "nicegui-scene";
-const {
-  THREE,
-} = SceneLib;
+const { THREE } = SceneLib;
 
 export default class Box {
   create_geometry(...args) {

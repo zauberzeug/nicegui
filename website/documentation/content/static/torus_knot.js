@@ -14,7 +14,7 @@ export default class TorusKnot {
     const material = new THREE.MeshStandardMaterial({
       color: 0xcc33ff,
       roughness: 0.1,
-      metalness: 0.8
+      metalness: 0.8,
     });
 
     this.mesh = new THREE.Mesh(geometry, material);

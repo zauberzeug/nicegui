@@ -5,9 +5,9 @@ const gltf_loader = new GLTFLoader();
 const material_loader = new SimpleMaterialLoader();
 
 export default class GLTF {
-  mesh
-  loaded = false
-  pendingMaterialInfo = null
+  mesh;
+  loaded = false;
+  pendingMaterialInfo = null;
 
   create_mesh(url) {
     this.mesh = new THREE.Group();

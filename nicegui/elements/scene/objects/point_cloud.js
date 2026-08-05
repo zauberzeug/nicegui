@@ -2,18 +2,18 @@ import SceneLib from "nicegui-scene";
 const { THREE } = SceneLib;
 
 export default class PointCloud {
-  mesh
+  mesh;
 
   create_mesh(points, colors, point_size) {
     const geometry = new THREE.BufferGeometry();
     const material = new THREE.PointsMaterial({ size: point_size, transparent: true });
     this.mesh = new THREE.Points(geometry, material);
     this.set_points(points, colors);
-    return this.mesh
+    return this.mesh;
   }
 
   set_points(position, color) {
-    const geometry = this.mesh.geometry
+    const geometry = this.mesh.geometry;
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(position.flat(), 3));
     if (color === null) {
       geometry.deleteAttribute("color");

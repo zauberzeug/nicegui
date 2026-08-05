@@ -5,9 +5,9 @@ const stl_loader = new STLLoader();
 const material_loader = new SimpleMaterialLoader();
 
 export default class STL {
-  mesh
-  loaded = false
-  pendingMaterialInfo = null
+  mesh;
+  loaded = false;
+  pendingMaterialInfo = null;
 
   create_mesh(url, wireframe) {
     this.mesh = new THREE.Group();
@@ -15,7 +15,10 @@ export default class STL {
       url,
       (geometry) => {
         const child = wireframe
-          ? new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ transparent: true }))
+          ? new THREE.LineSegments(
+              new THREE.EdgesGeometry(geometry),
+              new THREE.LineBasicMaterial({ transparent: true }),
+            )
           : new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ transparent: true }));
         this.mesh.add(child);
         this.loaded = true;

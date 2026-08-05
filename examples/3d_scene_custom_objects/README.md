@@ -62,14 +62,14 @@ import SceneLib from "nicegui-scene";
 const { THREE } = SceneLib;
 
 export default class CustomObject {
-    // Either
-    create_geometry(...args) {} // return a THREE.BufferGeometry
-    // Or:
-    create_mesh(...args) {} // return a THREE.Mesh
+  // Either
+  create_geometry(...args) {} // return a THREE.BufferGeometry
+  // Or:
+  create_mesh(...args) {} // return a THREE.Mesh
 
-    created() {}
+  created() {}
 
-    apply_material({ color, opacity, side }) {}
+  apply_material({ color, opacity, side }) {}
 }
 ```
 

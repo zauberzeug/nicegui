@@ -11,7 +11,7 @@ export default class Tracer {
     const material = new THREE.MeshBasicMaterial({ color: 0xff00ff });
     this.mesh = new THREE.Mesh(geometry, material);
     this.mesh.userData.label = label;
-    window.__tracer.created.push({ label });  // NOTE: for selenium
+    window.__tracer.created.push({ label }); // NOTE: for selenium
     return this.mesh;
   }
 

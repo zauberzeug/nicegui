@@ -47,13 +47,10 @@ function texture_material(texture) {
 }
 
 export default class Texture {
-  busy = false
+  busy = false;
 
   create_mesh(url, coords) {
-    this.mesh = new THREE.Mesh(
-      texture_geometry(coords),
-      texture_material(texture_loader.load(url))
-    );
+    this.mesh = new THREE.Mesh(texture_geometry(coords), texture_material(texture_loader.load(url)));
     return this.mesh;
   }
   set_url(url) {
