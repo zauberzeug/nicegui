@@ -317,7 +317,7 @@ The following scripts update various resources:
 - `fetch_google_fonts.py` — fetches the Google Fonts
 - `fetch_languages.py` — updates the list of supported languages in `language.py`
 - `fetch_milestone.py` — prepares the release notes for a given milestone
-- `fetch_sponsors.py` — updates the list of sponsors on the website and in `README.md`
+- `fetch_github_stats.py` — updates GitHub stats (sponsors, contributors, stars) on the website and the list of sponsors in `README.md`
 - `summarize_dependencies.py` — updates `DEPENDENCIES.md`
 - `set_scale.sh` — sets the Fly.io machine count per region for nicegui.io
 
