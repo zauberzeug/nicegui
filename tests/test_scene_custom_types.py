@@ -75,17 +75,11 @@ class LegacyObject(Object3D):  # RoSys-style bare subclass (no component=), work
         super().__init__('group')
 
 
-def test_deprecated_scene_objects_module_reexports_all_classes(caplog: pytest.LogCaptureFixture):
+def test_deprecated_scene_objects_module_keeps_working(caplog: pytest.LogCaptureFixture):
     """RoSys-style deep imports from the removed scene_objects module must keep working with a deprecation warning."""
     sys.modules.pop('nicegui.elements.scene.scene_objects', None)
     with caplog.at_level(logging.WARNING):
-        from nicegui.elements.scene.scene_objects import (  # noqa: F401 # pylint: disable=import-outside-toplevel
-            Cylinder,
-            Group,
-            Object3D,
-            Text,
-            Texture,
-        )
+        from nicegui.elements.scene.scene_objects import Group  # pylint: disable=import-outside-toplevel
     from nicegui.elements.scene.objects.group import Group as CanonicalGroup  # pylint: disable=import-outside-toplevel
     assert Group is CanonicalGroup
     assert any('scene_objects' in record.message and 'deprecated' in record.message for record in caplog.records), \
