@@ -434,7 +434,7 @@ with ui.scene() as scene:
     scene.box().material('#ff0000')
 ```
 
-### Custom 3D objects
+### Custom Three.js objects
 
 Subclass `Object3D` and pair it with a sibling JS module. The `component=` path
 is resolved relative to the Python file — no manual registration needed.
