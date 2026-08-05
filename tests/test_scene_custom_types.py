@@ -1,3 +1,6 @@
+import logging
+import sys
+import time
 from pathlib import Path
 from unittest.mock import patch
 
@@ -65,6 +68,67 @@ def test_component_glob_matching_multiple_files_raises():
         with pytest.raises(ValueError, match='exactly one file'):
             class MultiMatch(Object3D, component='widgets/*.js'):
                 pass
+
+
+class LegacyObject(Object3D):  # RoSys-style bare subclass (no component=), works via deprecation shims until 4.0
+    def __init__(self) -> None:
+        super().__init__('group')
+
+
+def test_deprecated_scene_objects_module_reexports_all_classes(caplog: pytest.LogCaptureFixture):
+    """RoSys-style deep imports from the removed scene_objects module must keep working with a deprecation warning."""
+    sys.modules.pop('nicegui.elements.scene.scene_objects', None)
+    with caplog.at_level(logging.WARNING):
+        from nicegui.elements.scene.scene_objects import (  # noqa: F401 # pylint: disable=import-outside-toplevel
+            Cylinder,
+            Group,
+            Object3D,
+            Text,
+            Texture,
+        )
+    from nicegui.elements.scene.objects.group import Group as CanonicalGroup  # pylint: disable=import-outside-toplevel
+    assert Group is CanonicalGroup
+    assert any('scene_objects' in record.message and 'deprecated' in record.message for record in caplog.records), \
+        'importing the legacy module should log a deprecation warning'
+
+
+def test_bare_subclass_with_legacy_type_string_creates_group(screen: Screen):
+    scene: ui.scene = None  # type: ignore
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            with LegacyObject().with_name('legacy'):
+                scene.box().with_name('child')
+
+    screen.open('/')
+    child_type = None
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        child_type = screen.selenium.execute_script(
+            f'return scene_{scene.html_id}.getObjectByName("legacy")?.getObjectByName("child")?.type ?? null')
+        if child_type is not None:
+            break
+        screen.wait(0.1)
+    assert child_type == 'Mesh', 'the legacy group and its child should appear in the scene graph'
+    group_type = screen.selenium.execute_script(f'return scene_{scene.html_id}.getObjectByName("legacy")?.type')
+    assert group_type == 'Group'
+
+
+def test_unknown_legacy_type_string_raises(screen: Screen):
+    errors: list[str] = []
+
+    @ui.page('/')
+    def page():
+        with ui.scene():
+            try:
+                Object3D('teapot')
+            except TypeError as e:
+                errors.append(str(e))
+
+    screen.open('/')
+    assert errors == ['Unknown object type "teapot".']
 
 
 def test_subclass_without_component_still_registers_dependencies_and_esm():

@@ -22,14 +22,15 @@ if TYPE_CHECKING:
 class Object3D:
     current_scene: Scene | None = None
     _component_import_name: ClassVar[str | None] = None
+    _component_file_stem: ClassVar[str | None] = None
 
     def __init_subclass__(
         cls, *, component: str | Path | None = None, dependencies: Iterable[str | Path] | None = None, esm: Mapping[str, str] | None = None,
     ):
         super().__init_subclass__()
-        base = Path(inspect.getfile(cls)).parent
 
         if component:
+            base = Path(inspect.getfile(cls)).parent
             paths = resolve_glob(component, base=base)
             if len(paths) != 1:
                 raise ValueError(
@@ -37,6 +38,7 @@ class Object3D:
                     f'but {str(component)!r} matched {len(paths)} file(s)'
                 )
             cls._component_import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
+            cls._component_file_stem = paths[0].stem
             register_library_glob(component, base=base, import_name=cls._component_import_name)
         else:
             # Fallback to parent's component to ease inheriting from Object3D classes
@@ -44,14 +46,20 @@ class Object3D:
                 if getattr(base_cls, '_component_import_name', False):
                     break
             else:
-                raise TypeError("parameter 'component' must be supplied as a class named argument")
+                warn_once("Subclassing Object3D without a 'component' parameter is deprecated "
+                          'and will raise a TypeError in NiceGUI 4.0. '
+                          "Pass 'component=' or inherit from a built-in scene object instead.")
 
-        for dependency in dependencies or []:
-            register_library_glob(dependency, base=base)
-        for key, esm_path in (esm or {}).items():
-            register_esm_glob(key, esm_path, base=base)
+        if dependencies or esm:
+            base = Path(inspect.getfile(cls)).parent
+            for dependency in dependencies or []:
+                register_library_glob(dependency, base=base)
+            for key, esm_path in (esm or {}).items():
+                register_esm_glob(key, esm_path, base=base)
 
     def __init__(self, *args: Any, wireframe: bool = False) -> None:
+        if self._component_import_name is None:
+            args = self._consume_legacy_type_string(args)
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
@@ -74,6 +82,30 @@ class Object3D:
         self.sy: float = 1
         self.sz: float = 1
         self._create()
+
+    def _consume_legacy_type_string(self, args: tuple) -> tuple:
+        """Support the legacy protocol of instantiating an `Object3D` with a leading type string (until NiceGUI 4.0)."""
+        if not args or not isinstance(args[0], str):
+            raise TypeError(f'Cannot create a {type(self).__name__} without a JS component. '
+                            "Pass 'component=' when subclassing Object3D.")
+        import_name = Object3D._find_import_name_by_file_stem(args[0])
+        if import_name is None:
+            raise TypeError(f'Unknown object type "{args[0]}".')
+        warn_once(f'Creating 3D objects by passing a type string like "{args[0]}" to Object3D is deprecated '
+                  'and will raise a TypeError in NiceGUI 4.0. '
+                  "Subclass a built-in scene object or pass 'component=' instead.")
+        self._component_import_name = import_name  # type: ignore[misc]
+        return args[1:]
+
+    @classmethod
+    def _find_import_name_by_file_stem(cls, stem: str) -> str | None:
+        for subclass in cls.__subclasses__():
+            if subclass._component_file_stem == stem and subclass._component_import_name:
+                return subclass._component_import_name
+            import_name = subclass._find_import_name_by_file_stem(stem)
+            if import_name is not None:
+                return import_name
+        return None
 
     def with_name(self, name: str) -> Self:
         """Set the name of the object."""
