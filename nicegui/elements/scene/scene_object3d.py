@@ -3,14 +3,13 @@ from __future__ import annotations
 import inspect
 import math
 import uuid
-from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import Self
 
 from nicegui.awaitable_response import AwaitableResponse
-from nicegui.dependencies import register_esm_glob, register_library_glob, resolve_glob
+from nicegui.dependencies import register_library
 from nicegui.helpers import warn_once
 
 from ... import binding
@@ -24,22 +23,18 @@ class Object3D:
     _component_import_name: ClassVar[str | None] = None
     _component_file_stem: ClassVar[str | None] = None
 
-    def __init_subclass__(
-        cls, *, component: str | Path | None = None, dependencies: Iterable[str | Path] | None = None, esm: Mapping[str, str] | None = None,
-    ):
+    def __init_subclass__(cls, *, component: str | Path | None = None):
         super().__init_subclass__()
 
         if component:
-            base = Path(inspect.getfile(cls)).parent
-            paths = resolve_glob(component, base=base)
-            if len(paths) != 1:
-                raise ValueError(
-                    f"'component' must resolve to exactly one file, "
-                    f'but {str(component)!r} matched {len(paths)} file(s)'
-                )
+            path = Path(component)
+            if not path.is_absolute():
+                path = Path(inspect.getfile(cls)).parent / path
+            if not path.is_file():
+                raise ValueError(f"'component' must be an existing file, but {str(component)!r} was not found")
             cls._component_import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
-            cls._component_file_stem = paths[0].stem
-            register_library_glob(component, base=base, import_name=cls._component_import_name)
+            cls._component_file_stem = path.stem
+            register_library(path, import_name=cls._component_import_name, max_time=path.stat().st_mtime)
         else:
             # Fallback to parent's component to ease inheriting from Object3D classes
             for base_cls in cls.__mro__[1:]:
@@ -49,13 +44,6 @@ class Object3D:
                 warn_once("Subclassing Object3D without a 'component' parameter is deprecated "
                           'and will raise a TypeError in NiceGUI 4.0. '
                           "Pass 'component=' or inherit from a built-in scene object instead.")
-
-        if dependencies or esm:
-            base = Path(inspect.getfile(cls)).parent
-            for dependency in dependencies or []:
-                register_library_glob(dependency, base=base)
-            for key, esm_path in (esm or {}).items():
-                register_esm_glob(key, esm_path, base=base)
 
     def __init__(self, *args: Any, wireframe: bool = False) -> None:
         if self._component_import_name is None:
