@@ -46,8 +46,10 @@ per scene object and calls one of two entry points to build the mesh:
 Optional hooks the framework will call if you define them:
 
 - `created()` — after the mesh is created by the scene
-- `apply_material(color, opacity, side)` — override the default material
-  handling. For composite objects, you can apply material selectively — in this
+- `apply_material({ color, opacity, side })` — override the default material
+  handling. The hook receives a single options object (destructure the fields
+  you need), so future NiceGUI versions can add fields without breaking your
+  component. For composite objects, you can apply material selectively — in this
   example `apply_material` only affects the road mesh, leaving the direction
   line and arrow helpers untouched. You can use the `SimpleMaterialLoader` class
   found in `SceneLib` to apply the material to your meshes.
@@ -66,7 +68,7 @@ export default class CustomObject {
 
     created() {}
 
-    apply_material(color, opacity, side) {}
+    apply_material({ color, opacity, side }) {}
 }
 ```
 

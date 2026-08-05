@@ -319,7 +319,7 @@ export default {
       const object = await get_object(this.objects, object_id)
       if (!object) return;
       if (typeof object.component.apply_material === "function") {
-        await object.component.apply_material(color, opacity, side)
+        await object.component.apply_material({ color, opacity, side })
       } else if (object.mesh.material) {
         this.material_loader.apply(object.mesh.material, color, opacity, side);
       } else {

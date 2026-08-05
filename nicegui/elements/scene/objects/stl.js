@@ -20,9 +20,9 @@ export default class STL {
         this.mesh.add(child);
         this.loaded = true;
         if (this.pendingMaterialInfo != null) {
-          const { color, opacity, side } = this.pendingMaterialInfo;
+          const material_info = this.pendingMaterialInfo;
           this.pendingMaterialInfo = null;
-          this.apply_material(color, opacity, side);
+          this.apply_material(material_info);
         }
       },
       undefined,
@@ -30,7 +30,7 @@ export default class STL {
     );
     return this.mesh;
   }
-  apply_material(color, opacity, side) {
+  apply_material({ color, opacity, side }) {
     if (!this.loaded) {
       this.pendingMaterialInfo = { color, opacity, side };
       return;

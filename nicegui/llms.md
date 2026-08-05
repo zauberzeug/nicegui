@@ -468,7 +468,7 @@ export default class PulsingSphere {
     return this.mesh;
   }
   set_scale(s) { this.mesh.scale.set(s, s, s); }
-  // optional hooks: apply_material(color, opacity, side), created()
+  // optional hooks: apply_material({ color, opacity, side }), created()
 }
 ```
 
@@ -478,7 +478,7 @@ framework wraps it in a `MeshPhongMaterial` and the built-in `material()` /
 `super().__init__()` renders it as line segments instead. Use `create_mesh(...args)`
 when you need to keep a handle on the mesh for your own methods.
 
-Optional lifecycle hooks (the framework calls them only if defined): `apply_material(color, opacity, side)` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes; the hook receives a single options object so future fields can be added without breaking existing components), `created()` runs after the mesh is created by the scene.
 
 ---
 

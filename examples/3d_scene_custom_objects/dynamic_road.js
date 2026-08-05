@@ -77,8 +77,7 @@ export default class DynamicRoad {
     this.group.add(this.directionLine);
     for (const a of this.arrows) this.group.add(a);
     if (this.latestMaterial) {
-      const { color, opacity, side } = this.latestMaterial
-      this.apply_material(color, opacity, side)
+      this.apply_material(this.latestMaterial)
     }
     if (this.latestArrowColor) {
       this.set_arrow_color(this.latestArrowColor)
@@ -106,7 +105,7 @@ export default class DynamicRoad {
     for (const a of this.arrows) a.setColor(new THREE.Color(color));
   }
 
-  apply_material(color, opacity, side) {
+  apply_material({ color, opacity, side }) {
     this.latestMaterial = { color, opacity, side }
     material_loader.apply(this.road.material, color, opacity, side)
   }
