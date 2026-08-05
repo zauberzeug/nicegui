@@ -325,3 +325,40 @@ async def test_bound_object_is_released_on_delete(user: User):
     await user.open('/')
     gc.collect()
     assert len(objects) == 0
+
+
+def test_context_loss_recovery_restores_objects(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().material('#ff0000').move(1, 2, 3).with_name('box')
+
+    screen.open('/')
+
+    def wait_for(expression: str, expected, *, timeout: float = 5.0) -> None:
+        value = None
+        deadline = timeout
+        while deadline > 0:
+            try:
+                value = screen.selenium.execute_script(f'return {expression}')
+                if value == expected:
+                    return
+            except JavascriptException:
+                pass
+            screen.wait(0.1)
+            deadline -= 0.1
+        raise AssertionError(f'"{expression}" is {value!r}, expected {expected!r}')
+
+    wait_for(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+    screen.selenium.execute_script(f'window.sceneBeforeRecovery = scene_{scene.html_id};'
+                                   'document.querySelector("canvas").getContext("webgl2")'
+                                   '.getExtension("WEBGL_lose_context").loseContext()')
+    wait_for('document.querySelector(".nicegui-scene").children[3].style.display', 'block')
+    # NOTE: click the overlay itself, not an ancestor: the click handler sits on the scene element and relies on bubbling
+    screen.selenium.execute_script('document.querySelector(".nicegui-scene").children[3].click()')
+    wait_for(f'scene_{scene.html_id} !== window.sceneBeforeRecovery', True)  # remounting replaces the scene
+    wait_for(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+    wait_for(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')

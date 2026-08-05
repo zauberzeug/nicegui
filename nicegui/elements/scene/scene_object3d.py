@@ -171,6 +171,21 @@ class Object3D:
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
 
+    def _resend(self) -> None:
+        """Re-send the object to the client, e.g. after the scene was re-initialized due to WebGL context loss."""
+        self._create()
+        self._move()
+        self._rotate()
+        self._scale()
+        if self.name:
+            self._name()
+        if self.material_is_set:
+            self._material()
+        if not self.visible_:
+            self._visible()
+        if self.draggable_:
+            self._draggable()
+
     def material(self,
                  color: str | None = '#ffffff',
                  opacity: float = 1.0,
