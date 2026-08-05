@@ -19,6 +19,7 @@ class DynamicRoad(Object3D, component='dynamic_road.js'):
         super().__init__(curves, width, thickness)
 
     def set_curves(self, curves: list[dict]) -> Self:
+        self.args[0] = curves  # keep constructor args in sync so a re-created object gets the latest curves
         self.run_method('set_curves', curves)
         return self
 
@@ -72,6 +73,8 @@ export default class CustomObject {
 }
 ```
 
-Run the example with: `uv run main.py`.
+Note that NiceGUI recovers from a lost WebGL context by re-creating every object from its constructor arguments (`self.args`) and built-in state (position, rotation, material, ...). State changed only via `run_method` is lost in that case — keep `self.args` up to date in mutating methods (like `set_curves` above) so re-created objects reflect the latest state.
+
+Run the example with: `python3 main.py`.
 
 ![Screenshot](screenshot.webp)

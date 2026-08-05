@@ -451,6 +451,10 @@ class Object3D:
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
+        Note that the client dispatches the call only once the object has been created.
+        When awaiting a result right after creating an object with a slow-loading component
+        (e.g. a large glTF model), you may need to increase the ``timeout``.
+
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)

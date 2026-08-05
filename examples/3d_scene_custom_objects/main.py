@@ -14,6 +14,7 @@ class DynamicRoad(Object3D, component='dynamic_road.js'):
         super().__init__(curves, width, thickness)
 
     def set_curves(self, curves: list[dict]) -> Self:
+        self.args[0] = curves  # keep constructor args in sync so a re-created object gets the latest curves
         self.run_method('set_curves', curves)
         return self
 
