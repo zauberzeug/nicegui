@@ -1,8 +1,7 @@
 import SceneLib from "nicegui-scene";
-const { THREE, GLTFLoader, SimpleMaterialLoader } = SceneLib;
+const { THREE, GLTFLoader } = SceneLib;
 
 const gltf_loader = new GLTFLoader();
-const material_loader = new SimpleMaterialLoader();
 
 export default class GLTF {
   mesh;
@@ -27,11 +26,11 @@ export default class GLTF {
     );
     return this.mesh;
   }
-  apply_material({ color, opacity, side }) {
+  apply_material(material_info) {
     if (!this.loaded) {
-      this.pendingMaterialInfo = { color, opacity, side };
+      this.pendingMaterialInfo = material_info;
       return;
     }
-    this.mesh.traverse((child) => child.material && material_loader.apply(child.material, color, opacity, side));
+    this.mesh.traverse((child) => child.material && SceneLib.apply_material(child.material, material_info));
   }
 }

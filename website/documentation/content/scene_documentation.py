@@ -386,15 +386,13 @@ def materials_for_composite_objects() -> None:
         to decide which parts the material applies to.
         The hook receives a single options object;
         destructure the fields you need, so future NiceGUI versions can add fields without breaking your component.
-        The `SimpleMaterialLoader` implements NiceGUI's material semantics
+        The `apply_material` function exported by the `nicegui-scene` module implements NiceGUI's material semantics
         (`color=None` enables vertex colors, `side` is "front", "back" or "both").
     ''')
 
     code_window(title='robot.js', language='js', code='''
         import SceneLib from "nicegui-scene";
-        const { THREE, SimpleMaterialLoader } = SceneLib;
-
-        const material_loader = new SimpleMaterialLoader();
+        const { THREE } = SceneLib;
 
         export default class Robot {
           create_mesh() {
@@ -404,8 +402,8 @@ def materials_for_composite_objects() -> None:
             return new THREE.Group().add(this.body, this.eyes);
           }
 
-          apply_material({ color, opacity, side }) {
-            material_loader.apply(this.body.material, color, opacity, side); // tint only the body, keep the eyes black
+          apply_material(options) {
+            SceneLib.apply_material(this.body.material, options); // tint only the body, keep the eyes black
           }
         }
     ''').classes('w-full')

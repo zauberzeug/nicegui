@@ -1,6 +1,6 @@
 import SceneLib from "nicegui-scene";
 const {
-  SimpleMaterialLoader,
+  apply_material,
   CSS2DRenderer,
   CSS3DRenderer,
   DragControls,
@@ -225,8 +225,6 @@ export default {
     };
     this.clickEvents.forEach((event) => this.$el.addEventListener(event, click_handler));
 
-    this.material_loader = new SimpleMaterialLoader();
-
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
       resolve_init();
@@ -315,7 +313,7 @@ export default {
       if (typeof object.component.apply_material === "function") {
         await object.component.apply_material({ color, opacity, side });
       } else if (object.mesh.material) {
-        this.material_loader.apply(object.mesh.material, color, opacity, side);
+        apply_material(object.mesh.material, { color, opacity, side });
       } else {
         console.warn(`A material change was requested for object ${object_id} but the mesh doesn't support materials`);
       }

@@ -1,8 +1,7 @@
 import SceneLib from "nicegui-scene";
-const { THREE, STLLoader, SimpleMaterialLoader } = SceneLib;
+const { THREE, STLLoader } = SceneLib;
 
 const stl_loader = new STLLoader();
-const material_loader = new SimpleMaterialLoader();
 
 export default class STL {
   mesh;
@@ -33,11 +32,11 @@ export default class STL {
     );
     return this.mesh;
   }
-  apply_material({ color, opacity, side }) {
+  apply_material(material_info) {
     if (!this.loaded) {
-      this.pendingMaterialInfo = { color, opacity, side };
+      this.pendingMaterialInfo = material_info;
       return;
     }
-    this.mesh.traverse((child) => child.material && material_loader.apply(child.material, color, opacity, side));
+    this.mesh.traverse((child) => child.material && SceneLib.apply_material(child.material, material_info));
   }
 }
