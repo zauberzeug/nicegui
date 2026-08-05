@@ -7,8 +7,12 @@ from pathlib import Path
 import httpx
 
 # requires a GitHub token with the necessary permissions read:org and read:user
-# call with `GITHUB_TOKEN=ghp_XXX ./fetch_sponsors.py`
+# call with `GITHUB_TOKEN=ghp_XXX ./fetch_github_stats.py`
 
+HEADERS = {
+    'Authorization': f'token {os.getenv("GITHUB_TOKEN")}',
+    'Accept': 'application/vnd.github.v3+json',
+}
 
 response = httpx.post(
     'https://api.github.com/graphql',
@@ -45,10 +49,7 @@ response = httpx.post(
         ''',
         'variables': {'organization': 'zauberzeug'},
     },
-    headers={
-        'Authorization': f'token {os.getenv("GITHUB_TOKEN")}',
-        'Accept': 'application/vnd.github.v3+json',
-    },
+    headers=HEADERS,
     timeout=10.0,
 )
 response.raise_for_status()
@@ -77,10 +78,7 @@ page = 1
 while True:
     contributors_response = httpx.get(
         f'https://api.github.com/repos/zauberzeug/nicegui/contributors?page={page}&per_page=100',
-        headers={
-            'Authorization': f'token {os.getenv("GITHUB_TOKEN")}',
-            'Accept': 'application/vnd.github.v3+json',
-        },
+        headers=HEADERS,
         timeout=10.0,
     )
     contributors_response.raise_for_status()
@@ -90,10 +88,15 @@ while True:
     contributors.extend(page_contributors)
     page += 1
 
+repo_response = httpx.get('https://api.github.com/repos/zauberzeug/nicegui', headers=HEADERS, timeout=10.0)
+repo_response.raise_for_status()
+stars = repo_response.json()['stargazers_count']
+
 print(f'Found {len(sponsors)} sponsors')
 print(f'Total contributors for NiceGUI: {len(contributors)}')
+print(f'Star count: {stars}')
 
-json_path = Path('website/sponsors.json')
+json_path = Path('website/github_stats.json')
 special_sponsors = json.loads(json_path.read_text(encoding='utf-8'))['special']
 top_sponsors = [
     s['login']
@@ -105,6 +108,7 @@ json_path.write_text(json.dumps({
     'top': top_sponsors,
     'total': len(sponsors),
     'contributors': len(contributors),
+    'stars': stars,
 }, indent=2) + '\n', encoding='utf-8')
 
 sponsor_html = '<p align="center">\n'
@@ -122,4 +126,4 @@ updated_content = re.sub(
 )
 readme_path.write_text(updated_content, encoding='utf-8')
 
-print('README.md and sponsors.json updated successfully.')
+print('README.md and github_stats.json updated successfully.')

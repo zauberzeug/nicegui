@@ -1,14 +1,11 @@
-import json
 from pathlib import Path
 
 from nicegui import ui
 
 from .. import design as d
 from ..design import phosphor_icon, themed_image
-from ..github_stars import stars
+from ..github_stats import STARS_STRING, STATS
 from .shared import cta_button, section, section_heading
-
-SPONSORS = json.loads((Path(__file__).parent.parent / 'sponsors.json').read_text(encoding='utf-8'))
 
 
 def create() -> None:
@@ -20,29 +17,29 @@ def create() -> None:
             .classes(f'self-center text-center {d.TEXT_SECONDARY}')
 
         with ui.row(align_items='center').classes('gap-12 justify-center my-10 w-full'):
-            with ui.column(align_items='center').classes('gap-0').bind_visibility_from(stars, 'string', bool):
+            with ui.column(align_items='center').classes('gap-0'):
                 phosphor_icon('ph-star').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
-                ui.label().classes(d.TEXT_24PX).bind_text_from(stars, 'string')
+                ui.label(STARS_STRING).classes(d.TEXT_24PX)
                 ui.label('GitHub Stars').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
             with ui.column(align_items='center').classes('gap-0'):
                 phosphor_icon('ph-github-logo').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
-                ui.label(str(SPONSORS['contributors'])).classes(d.TEXT_24PX)
+                ui.label(str(STATS['contributors'])).classes(d.TEXT_24PX)
                 ui.label('Contributors').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
             with ui.column(align_items='center').classes('gap-0'):
                 phosphor_icon('ph-heart').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
-                ui.label(str(SPONSORS['total'])).classes(d.TEXT_24PX)
+                ui.label(str(STATS['total'])).classes(d.TEXT_24PX)
                 ui.label('Sponsors').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
 
         with ui.row(align_items='center').classes('gap-10 justify-center my-5 w-full'):
-            for sponsor in SPONSORS['special']:
-                with ui.link(target=SPONSORS['special'][sponsor]):
+            for sponsor in STATS['special']:
+                with ui.link(target=STATS['special'][sponsor]):
                     img_path = Path(__file__).parent.parent / 'static' / 'sponsors' / f'{sponsor}.webp'
                     if img_path.exists():
                         ui.interactive_image(f'/static/sponsors/{sponsor}.webp').classes('h-12')
                     else:
                         themed_image(f'/static/sponsors/{sponsor}.THEME.webp', classes='h-12')
 
-            for sponsor in SPONSORS['top']:
+            for sponsor in STATS['top']:
                 with ui.link(target=f'https://github.com/{sponsor}').classes('row items-center gap-2'):
                     ui.image(f'https://github.com/{sponsor}.png').classes('size-12 border')
                     ui.label(f'@{sponsor}')
