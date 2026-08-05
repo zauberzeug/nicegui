@@ -250,7 +250,7 @@ export default {
   },
 
   methods: {
-    async create(import_name, id, parent_id, ...args) {
+    async create(import_name, id, parent_id, wireframe, ...args) {
       // Initial bootstrapping
       let resolve_ready, reject_ready;
       const ready_promise = new Promise((resolve, reject) => {
@@ -273,7 +273,6 @@ export default {
         // Create the object
         let mesh;
         if (typeof component.create_geometry == "function") {
-          const wireframe = args.pop()
           const geometry = await component.create_geometry(...args)
           if (wireframe) {
             mesh = new THREE.LineSegments(

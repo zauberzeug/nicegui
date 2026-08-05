@@ -51,8 +51,9 @@ class Object3D:
         for key, esm_path in (esm or {}).items():
             register_esm_glob(key, esm_path, base=base)
 
-    def __init__(self, *args: Any) -> None:
+    def __init__(self, *args: Any, wireframe: bool = False) -> None:
         self.id = str(uuid.uuid4())
+        self.wireframe = wireframe
         self.name: str | None = None
         assert self.current_scene is not None
         self.scene: Scene = self.current_scene
@@ -111,7 +112,8 @@ class Object3D:
         self.scene.stack.pop()
 
     def _create(self) -> None:
-        self.scene.run_method('create', self._component_import_name, self.id, self.parent.id, *self.args)
+        self.scene.run_method('create', self._component_import_name, self.id, self.parent.id, self.wireframe,
+                              *self.args)
 
     def _name(self) -> None:
         self.scene.run_method('name', self.id, self.name)

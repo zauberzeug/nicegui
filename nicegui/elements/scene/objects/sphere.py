@@ -19,4 +19,4 @@ class Sphere(Object3D, component='sphere.js'):
         :param height_segments: number of vertical segments (default: 16)
         :param wireframe: whether to display the sphere as a wireframe (default: `False`)
         """
-        super().__init__(radius, width_segments, height_segments, wireframe)
+        super().__init__(radius, width_segments, height_segments, wireframe=wireframe)

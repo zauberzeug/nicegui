@@ -474,7 +474,8 @@ export default class PulsingSphere {
 
 Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the
 framework wraps it in a `MeshPhongMaterial` and the built-in `material()` /
-`scale()` / `move()` controls work automatically. Use `create_mesh(...args)`
+`scale()` / `move()` controls work automatically; passing `wireframe=True` to
+`super().__init__()` renders it as line segments instead. Use `create_mesh(...args)`
 when you need to keep a handle on the mesh for your own methods.
 
 Optional lifecycle hooks (the framework calls them only if defined): `apply_material(color, opacity, side)` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.

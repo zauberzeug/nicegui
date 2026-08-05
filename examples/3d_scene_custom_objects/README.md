@@ -35,8 +35,9 @@ The JS module's default export is a class. The framework instantiates it once
 per scene object and calls one of two entry points to build the mesh:
 
 - `create_geometry(...args)` — return a `THREE.BufferGeometry`. The framework
-  wraps it in a `MeshPhongMaterial` (or a wireframe `LineSegments`) and feeds
-  the built-in `material()` / `scale()` / `move()` controls automatically.
+  wraps it in a `MeshPhongMaterial` (or a wireframe `LineSegments` if
+  `wireframe=True` is passed to `super().__init__()`) and feeds the built-in
+  `material()` / `scale()` / `move()` controls automatically.
 - `create_mesh(...args)` — return a `THREE.Object3D` outright. Use this when
   you need ongoing access to the mesh from your own methods (store it on
   `this.group`/`this.mesh`), or when the mesh is complex and cannot be

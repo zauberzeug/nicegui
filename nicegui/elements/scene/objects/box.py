@@ -19,4 +19,4 @@ class Box(Object3D, component='box.js'):
         :param depth: depth of the box (default: 1.0)
         :param wireframe: whether to display the box as a wireframe (default: `False`)
         """
-        super().__init__(width, height, depth, wireframe)
+        super().__init__(width, height, depth, wireframe=wireframe)
