@@ -179,24 +179,12 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
 
     def _handle_init(self) -> None:
         if self._initialized_event.is_set():
-            # a second init event implies a JS remount (e.g. after WebGL context loss) with an empty scene graph
-            self._resend_objects()
+            # a second init event implies a JS remount (e.g. after WebGL context loss) with an empty scene graph;
+            # re-send parents before children (dict order can deviate after attach())
+            for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
+                obj._resend()  # pylint: disable=protected-access
         self._initialized_event.set()
         self.move_camera(duration=0)
-
-    def _resend_objects(self) -> None:
-        resent: set[str] = set()
-
-        def resend(obj: Object3D) -> None:
-            if obj.id in resent:
-                return
-            resent.add(obj.id)
-            if isinstance(obj.parent, Object3D):
-                resend(obj.parent)  # create parents before children (dict order can deviate after attach())
-            obj._resend()  # pylint: disable=protected-access
-
-        for obj in self.objects.values():
-            resend(obj)
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""

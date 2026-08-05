@@ -437,6 +437,14 @@ class Object3D:
         """
         return [object for object in self.scene.objects.values() if object.parent == self]
 
+    @property
+    def ancestors(self) -> list[Object3D]:
+        """List of ancestors of the object, from the direct parent up to the root.
+
+        *Added in version 3.15.0*
+        """
+        return [self.parent, *self.parent.ancestors] if isinstance(self.parent, Object3D) else []
+
     def delete(self) -> None:
         """Delete the object."""
         for child in self.children:
