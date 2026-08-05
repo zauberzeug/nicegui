@@ -99,12 +99,12 @@ class Object3D:
 
     @classmethod
     def _find_import_name_by_file_stem(cls, stem: str) -> str | None:
-        for subclass in cls.__subclasses__():
+        # pylint: disable=protected-access
+        subclasses = list(cls.__subclasses__())
+        for subclass in subclasses:
+            subclasses.extend(subclass.__subclasses__())
             if subclass._component_file_stem == stem and subclass._component_import_name:
                 return subclass._component_import_name
-            import_name = subclass._find_import_name_by_file_stem(stem)
-            if import_name is not None:
-                return import_name
         return None
 
     def with_name(self, name: str) -> Self:
