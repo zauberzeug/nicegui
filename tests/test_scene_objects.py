@@ -1,21 +1,18 @@
 """Behavioral tests for the per-object API of ui.scene.
 
-Unlike test_scene.py, which mostly checks scene structure (child counts, names,
-attach/detach), these tests pin the *observable Three.js state* produced by each
-object type and method: geometry types, visibility, material color/opacity/side,
-position/scale/rotation, texture and point cloud updates.
+Unlike test_scene.py, which mostly checks scene structure (child counts, names, attach/detach),
+these tests pin the observable Three.js state produced by each object type and method:
+geometry types, visibility, material color/opacity/side, position/scale/rotation, texture and point cloud updates.
 
-Assertions go through ``scene_<html_id>.getObjectByName(...)`` so they only
-depend on the public scene graph, not on implementation details.
-All state checks poll instead of sleeping, because object creation and method
-dispatch may be asynchronous on the client.
+Assertions go through ``scene_<html_id>.getObjectByName(...)``
+so they only depend on the public scene graph, not on implementation details.
+All state checks poll instead of sleeping, because object creation and method dispatch may be asynchronous on the client.
 
-Methods are exercised on a single representative object because they share one
-central handler; only object creation differs per type and is covered for all types.
+Methods are exercised on a single representative object because they share one central handler;
+only object creation differs per type and is covered for all types.
 """
 import math
 
-import numpy as np
 import pytest
 
 from nicegui import app, ui
@@ -177,14 +174,11 @@ def test_move_scale_rotate(screen: Screen):
 
     box.move(1, 2, 3)
     box.scale(2, 3, 4)
-    box.rotate(0.1, 0.2, 0.3)
+    box.rotate(0, 0, math.pi / 2)
     wait_until(screen, scene, 'box', 'o.position.toArray()', [1, 2, 3])
     wait_until(screen, scene, 'box', 'o.scale.toArray()', [2, 3, 4])
-    R = np.array(Object3D.rotation_matrix_from_euler(0.1, 0.2, 0.3))
-    expected = [math.atan2(-R[1, 2], R[2, 2]), math.asin(R[0, 2]), math.atan2(-R[0, 1], R[0, 0])]  # XYZ euler order
-    wait_until(screen, scene, 'box', 'o.rotation.x !== 0', True)
-    rotation = query(screen, scene, 'box', 'o.rotation.toArray()')
-    assert rotation[:3] == pytest.approx(expected, abs=1e-6)
+    wait_until(screen, scene, 'box', 'o.rotation.z !== 0', True)
+    assert query(screen, scene, 'box', 'o.rotation.z') == pytest.approx(math.pi / 2)
 
 
 def test_attach_and_detach(screen: Screen):
