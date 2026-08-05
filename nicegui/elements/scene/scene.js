@@ -354,11 +354,12 @@ export default {
       }
     },
     async delete(object_id) {
-      const object = await get_object(this.objects, object_id)
+      const object = await get_object(this.objects, object_id);
+      this.objects.delete(object_id); // even if creation failed, the stale registry entry must go
       if (!object) return;
       object.mesh.removeFromParent();
-      this.draggable(object_id, false)
-      this.objects.delete(object_id);
+      const index = this.draggable_objects.indexOf(object.mesh);
+      if (index != -1) this.draggable_objects.splice(index, 1);
     },
     async run_method_on_component(object_id, method_name, ...args) {
       const object = await get_object(this.objects, object_id)
