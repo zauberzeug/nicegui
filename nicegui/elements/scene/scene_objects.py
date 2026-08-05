@@ -1,8 +1,5 @@
-"""Deprecated module kept for backwards compatibility.
-
-**This module is deprecated and will be removed in NiceGUI 4.0.
-Import scene objects from ``nicegui.elements.scene.objects`` instead.**
-"""
+"""Deprecated alias module — import scene objects from ``nicegui.elements.scene.objects`` instead."""
+# DEPRECATED: remove this module in NiceGUI 4.0
 from ...helpers import warn_once
 from .objects.axes_helper import AxesHelper
 from .objects.box import Box
@@ -44,7 +41,5 @@ __all__ = [
     'Texture',
 ]
 
-warn_once(
-    'The module `nicegui.elements.scene.scene_objects` is deprecated and will be '
-    'removed in NiceGUI 4.0. Import scene objects from `nicegui.elements.scene.objects` instead.'
-)
+warn_once('The module `nicegui.elements.scene.scene_objects` is deprecated and will be removed in NiceGUI 4.0. '
+          'Import scene objects from `nicegui.elements.scene.objects` instead.')
