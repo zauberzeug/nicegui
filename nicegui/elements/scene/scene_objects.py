@@ -311,7 +311,7 @@ class SpotLight(Object3D):
         :param distance: maximum distance of light (default: 0.0)
         :param angle: maximum angle of light (default: π/3)
         :param penumbra: penumbra (default: 0.0)
-        :param decay: decay (default: 2.0)
+        :param decay: decay (default: 1.0)
         """
         super().__init__('spot_light', color, intensity, distance, angle, penumbra, decay)
 
