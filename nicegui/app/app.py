@@ -20,6 +20,7 @@ from ..logging import log
 from ..native import NativeConfig
 from ..observables import ObservableSet
 from ..server import Server
+from ..sitemap import Sitemap
 from ..slot import Slot
 from ..staticfiles import CacheControlledStaticFiles
 from ..storage import PersistentDict, Storage
@@ -43,6 +44,7 @@ class App(FastAPI):
         super().__init__(**kwargs, docs_url=None, redoc_url=None, openapi_url=None)
         self.native = NativeConfig()
         self.storage = Storage()
+        self.sitemap = Sitemap()
         self.urls = ObservableSet()
         self._state: State = State.STOPPED
         self.config = AppConfig()
@@ -379,6 +381,7 @@ class App(FastAPI):
     def reset(self) -> None:
         """Reset app to its initial state. (Useful for testing.)"""
         self.storage.clear()
+        self.sitemap.reset()
         self._startup_handlers.clear()
         self._shutdown_handlers.clear()
         self._connect_handlers.clear()
