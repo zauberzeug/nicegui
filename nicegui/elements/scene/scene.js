@@ -508,7 +508,13 @@ export default {
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
-      const camera_up_changed = up_x !== null || up_y !== null || up_z !== null;
+      const target_up = new THREE.Vector3(
+        up_x === null ? this.camera.up.x : up_x,
+        up_y === null ? this.camera.up.y : up_y,
+        up_z === null ? this.camera.up.z : up_z,
+      );
+      // NOTE: the controls are only rebuilt if the up vector really changes, because that resets their configuration
+      const camera_up_changed = !this.camera.up.equals(target_up);
       this.camera_tween = new TWEEN.Tween([
         this.camera.position.x,
         this.camera.position.y,
@@ -525,9 +531,9 @@ export default {
             x === null ? this.camera.position.x : x,
             y === null ? this.camera.position.y : y,
             z === null ? this.camera.position.z : z,
-            up_x === null ? this.camera.up.x : up_x,
-            up_y === null ? this.camera.up.y : up_y,
-            up_z === null ? this.camera.up.z : up_z,
+            target_up.x,
+            target_up.y,
+            target_up.z,
             look_at_x === null ? this.look_at.x : look_at_x,
             look_at_y === null ? this.look_at.y : look_at_y,
             look_at_z === null ? this.look_at.z : look_at_z,
