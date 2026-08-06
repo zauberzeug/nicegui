@@ -291,6 +291,28 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
 
 
+def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+    enable_rotate = f'getElement({scene.id}).controls.enableRotate'
+    screen.selenium.execute_script(f'{enable_rotate} = false')
+
+    scene.move_camera(x=1, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return getElement({scene.id}).camera.position.x') == 1)
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is False, 'controls survive a plain camera move'
+
+    scene.move_camera(up_y=1, up_z=0, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return getElement({scene.id}).camera.up.y') == 1)
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is True, 'controls are rebuilt for a new up vector'
+
+
 async def test_dragend_after_object_deleted(user: User):
     events: list[str] = []
     scene = None
