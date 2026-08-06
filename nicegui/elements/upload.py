@@ -59,6 +59,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._props.set_bool('multiple', multiple)
         self._props.set_bool('auto-upload', auto_upload)
         self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
+        self._registered_url = self._props['url']
 
         self._props.set_optional('max-file-size', max_file_size)
         self._props.set_optional('max-total-size', max_total_size)
@@ -123,5 +124,5 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         return self
 
     def _handle_delete(self) -> None:
-        app.remove_route(self._props['url'])
+        app.remove_route(self._registered_url)
         super()._handle_delete()
