@@ -1,5 +1,30 @@
 import * as CM from "nicegui-codemirror";
 
+class TextWidget extends CM.WidgetType {
+  constructor(text, cls, html) {
+    super();
+    this.text = text;
+    this.cls = cls || "";
+    this.html = !!html;
+  }
+  eq(other) {
+    return other.text === this.text && other.cls === this.cls && other.html === this.html;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    if (this.cls) span.className = this.cls;
+    if (this.html) {
+      span.setHTML(this.text);
+    } else {
+      span.textContent = this.text;
+    }
+    return span;
+  }
+  ignoreEvent() {
+    return false;
+  }
+}
+
 // Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
 class TooltipValue extends CM.RangeValue {
   constructor(content) {
@@ -25,6 +50,30 @@ const tooltipField = CM.StateField.define({
   },
 });
 
+// Decorations live in a StateField (not a static facet) so `.map(tr.changes)` carries each
+// range through document edits — a mark on "beta" follows the text, and the mark/replace
+// inclusivity options actually affect how ranges grow at their edges. A new decoration list
+// from the server replaces the whole set via setDecorationsEffect.
+const setDecorationsEffect = CM.StateEffect.define();
+
+const decorationField = CM.StateField.define({
+  create() {
+    return CM.Decoration.none;
+  },
+  update(deco, tr) {
+    deco = deco.map(tr.changes);
+    for (const effect of tr.effects) {
+      if (effect.is(setDecorationsEffect)) {
+        deco = CM.Decoration.set(effect.value, true);
+      }
+    }
+    return deco;
+  },
+  // Providing decorations from a field (rather than a plugin) is also what CM6 requires for
+  // block replace/widget decorations to work.
+  provide: (field) => CM.EditorView.decorations.from(field),
+});
+
 export default {
   template: `
     <div></div>
@@ -37,6 +86,8 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    decorations: Array,
+    decorationTextHtml: Boolean,
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
@@ -54,6 +105,12 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    decorations: {
+      deep: true,
+      handler(newDecorations) {
+        this.setDecorations(newDecorations);
+      },
     },
     keymap() {
       this.setKeymap();
@@ -164,6 +221,105 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    setDecorations(decorations) {
+      if (!this.editor) return;
+      const all = [];
+      for (const spec of decorations || []) {
+        let dec = null;
+        try {
+          dec = this._createDecoration(spec);
+        } catch (error) {
+          // Backstop: a single malformed spec that slips past validation must not void the
+          // whole batch. _createDecoration warns-and-skips known-bad specs itself; this catches
+          // anything unforeseen that CodeMirror throws on.
+          logAndEmit("error", `decorations: skipping decoration that failed to build: ${error.message}`);
+        }
+        if (dec) all.push(dec);
+      }
+      this.editor.dispatch({ effects: setDecorationsEffect.of(all) });
+    },
+    _createDecoration(spec) {
+      const doc = this.editor.state.doc;
+      // Props arrive as user-supplied JSON; the Python TypedDicts enforce nothing at runtime, so
+      // every numeric field is validated here. Bad specs are warned-and-skipped (returning null)
+      // rather than thrown, so one malformed entry never voids the rest of the batch.
+      if (spec.kind === "mark") {
+        if (!Number.isInteger(spec.from) || !Number.isInteger(spec.to)) {
+          logAndEmit("warning", `decorations: mark requires integer 'from' and 'to' (got from=${spec.from}, to=${spec.to})`);
+          return null;
+        }
+        if (spec.from > spec.to) {
+          logAndEmit("warning", `decorations: mark has from > to (from=${spec.from}, to=${spec.to})`);
+          return null;
+        }
+        const from = Math.max(0, Math.min(spec.from, doc.length));
+        const to = Math.max(from, Math.min(spec.to, doc.length));
+        if (from === to) {
+          // CodeMirror rejects zero-length mark ranges; skip cleanly instead of letting it throw
+          // into the setDecorations backstop (which would log at error level).
+          logAndEmit("warning", `decorations: mark range is empty (from=${spec.from}, to=${spec.to})`);
+          return null;
+        }
+        const markSpec = {};
+        if (spec.class) markSpec.class = spec.class;
+        if (spec.attributes) markSpec.attributes = spec.attributes;
+        if (spec.inclusiveStart !== undefined) markSpec.inclusiveStart = spec.inclusiveStart;
+        if (spec.inclusiveEnd !== undefined) markSpec.inclusiveEnd = spec.inclusiveEnd;
+        return CM.Decoration.mark(markSpec).range(from, to);
+      }
+      if (spec.kind === "line") {
+        if (!Number.isInteger(spec.line) || spec.line < 1 || spec.line > doc.lines) {
+          logAndEmit("warning", `decorations: line ${spec.line} out of range [1, ${doc.lines}]`);
+          return null;
+        }
+        const line = doc.line(spec.line);
+        const lineSpec = {};
+        if (spec.class) lineSpec.class = spec.class;
+        if (spec.attributes) lineSpec.attributes = spec.attributes;
+        return CM.Decoration.line(lineSpec).range(line.from);
+      }
+      if (spec.kind === "replace") {
+        if (!Number.isInteger(spec.from) || !Number.isInteger(spec.to)) {
+          logAndEmit("warning", `decorations: replace requires integer 'from' and 'to' (got from=${spec.from}, to=${spec.to})`);
+          return null;
+        }
+        if (spec.from > spec.to) {
+          logAndEmit("warning", `decorations: replace has from > to (from=${spec.from}, to=${spec.to})`);
+          return null;
+        }
+        const from = Math.max(0, Math.min(spec.from, doc.length));
+        const to = Math.max(from, Math.min(spec.to, doc.length));
+        if (spec.block) {
+          // CodeMirror requires block-replace ranges to span full lines; otherwise it throws
+          // out of editor.dispatch and breaks the editor for the rest of the page.
+          const fromLine = doc.lineAt(from);
+          const toLine = doc.lineAt(to);
+          if (from !== fromLine.from || to !== toLine.to) {
+            logAndEmit("warning", `decorations: block replace must cover full lines (from=${spec.from}, to=${spec.to})`);
+            return null;
+          }
+        }
+        const replaceSpec = {};
+        if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
+        if (spec.block) replaceSpec.block = true;
+        if (spec.text !== undefined) replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
+        else if (spec.class) replaceSpec.class = spec.class;
+        return CM.Decoration.replace(replaceSpec).range(from, to);
+      }
+      if (spec.kind === "widget") {
+        if (!Number.isInteger(spec.position)) {
+          logAndEmit("warning", `decorations: widget requires integer 'position' (got ${spec.position})`);
+          return null;
+        }
+        const pos = Math.max(0, Math.min(spec.position, doc.length));
+        return CM.Decoration.widget({
+          widget: new TextWidget(spec.text, spec.class, this.decorationTextHtml),
+          side: spec.side ?? 1,
+        }).range(pos);
+      }
+      logAndEmit("warning", `decorations: unknown decoration kind ${JSON.stringify(spec.kind)}`);
+      return null;
+    },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
         key,
@@ -253,6 +409,7 @@ export default {
         CM.basicSetup,
         changeSender,
         tooltipField,
+        decorationField,
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
@@ -304,6 +461,9 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.decorations && this.decorations.length > 0) {
+      this.setDecorations(this.decorations);
+    }
     this.setLineTooltips(this.lineTooltips);
     this.validateUserKeymap();
   },
