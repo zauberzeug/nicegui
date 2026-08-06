@@ -333,12 +333,11 @@ def test_context_loss_recovery_restores_objects(screen: Screen):
 
     screen.open('/')
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
-    screen.selenium.execute_script(f'window.sceneBeforeRecovery = scene_{scene.html_id};'
-                                   'document.querySelector("canvas").getContext("webgl2")'
-                                   '.getExtension("WEBGL_lose_context").loseContext()')
-    screen.wait_for_js('document.querySelector(".nicegui-scene").children[3].style.display', 'block')
-    # NOTE: click the overlay itself, not an ancestor: the click handler sits on the scene element and relies on bubbling
-    screen.selenium.execute_script('document.querySelector(".nicegui-scene").children[3].click()')
+    screen.selenium.execute_script(f'''
+        window.sceneBeforeRecovery = scene_{scene.html_id};
+        document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();
+    ''')
+    screen.click('Click to re-initialize')
     screen.wait_for_js(f'scene_{scene.html_id} !== window.sceneBeforeRecovery', True)  # remounting replaces the scene
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
