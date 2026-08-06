@@ -436,11 +436,9 @@ with ui.scene() as scene:
 
 ### Custom Three.js objects
 
-Subclass `Object3D` and pair it with a sibling JS module. The `component=` path
-is resolved relative to the Python file — no manual registration needed.
-`super().__init__(...)` args are forwarded positionally to the JS factory;
-`self.run_method('<name>', *args)` dispatches to a same-named method on the
-component instance.
+Subclass `Object3D` and pair it with a sibling JS module.
+The `component=` path is resolved relative to the Python file — no manual registration needed.
+`super().__init__(...)` args are forwarded positionally to the JS factory; `self.run_method('<name>', *args)` dispatches to a same-named method on the component instance.
 
 ```python
 # pulsing_sphere.py
@@ -460,7 +458,8 @@ const { THREE } = SceneLib;
 
 export default class PulsingSphere {
   mesh;
-  create_mesh(radius) {                      // or: create_geometry(...) for a plain BufferGeometry
+  // or: create_geometry(...) for a plain BufferGeometry
+  create_mesh(radius) {
     this.mesh = new THREE.Mesh(
       new THREE.SphereGeometry(radius, 32, 16),
       new THREE.MeshPhongMaterial({ transparent: true }),
@@ -472,13 +471,10 @@ export default class PulsingSphere {
 }
 ```
 
-Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the
-framework wraps it in a `MeshPhongMaterial` and the built-in `material()` /
-`scale()` / `move()` controls work automatically; passing `wireframe=True` to
-`super().__init__()` renders it as line segments instead. Use `create_mesh(...args)`
-when you need to keep a handle on the mesh for your own methods.
+Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
+Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
 
-Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes; the hook receives a single options object so future fields can be added without breaking existing components), `created()` runs after the mesh is created by the scene.
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
 
 ---
 
@@ -1416,5 +1412,5 @@ ui.button('Click me') \
 ---
 
 _This file is intended for AI assistants working with NiceGUI projects._
-_For full API docs see <https://nicegui.io/documentation>._
-_Source: NiceGUI repository — <https://github.com/zauberzeug/nicegui>_
+_For full API docs see https://nicegui.io/documentation._
+_Source: NiceGUI repository — https://github.com/zauberzeug/nicegui_
