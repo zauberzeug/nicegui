@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from typing import Any, TypeVar, overload
 from uuid import uuid4
 
@@ -12,6 +13,7 @@ import socketio
 from nicegui import Client, ElementFilter, ui
 from nicegui.nicegui import _on_handshake
 from nicegui.outbox import Message
+from nicegui.slot import get_task_id
 
 from .user_download import UserDownload
 from .user_interaction import UserInteraction
@@ -37,6 +39,10 @@ class User:
         self.notify = UserNotify()
         self.download = UserDownload(self)
         self.tab_id = str(uuid4())
+        # Per-task stack of elements entered via `with user.scope(...):`. Keyed by asyncio task id
+        # (like `Slot.stacks`) so a scope entered in one task never narrows lookups in another.
+        # The innermost scope is the last element; an empty/absent stack means no active scope.
+        self._scope_stack: dict[int, list[ui.element]] = {}
         self.javascript_rules: dict[re.Pattern, Callable[[re.Match], Any]] = {
             re.compile('.*__IS_DRAWER_OPEN__'): lambda _: True,  # see https://github.com/zauberzeug/nicegui/issues/4508
         }
@@ -133,12 +139,16 @@ class User:
 
         By default `should_see` makes three attempts to find the element before failing.
         This can be adjusted with the `retries` parameter.
+
+        To limit the search to one part of a page that reuses markers or content, wrap the
+        assertion in a ``with user.scope(...):`` block (see ``User.scope``).
+        Notifications are page-level and are not matched inside a scope.
         """
         for _ in range(retries):
-            with self._client:
-                if self.notify.contains(target) or self._gather_elements(target, kind, marker, content):
-                    return
-                await asyncio.sleep(0.1)
+            if (not self._is_scoped() and self.notify.contains(target)) or \
+                    self._gather_elements(target=target, kind=kind, marker=marker, content=content):
+                return
+            await asyncio.sleep(0.1)
         raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
 
     @overload
@@ -167,12 +177,17 @@ class User:
                              content: str | list[str] | None = None,
                              retries: int = 3,
                              ) -> None:
-        """Assert that the page does not contain an input with the given value."""
+        """Assert that the page does not contain an element fulfilling certain filter rules.
+
+        To limit the search to one part of a page that reuses markers or content, wrap the
+        assertion in a ``with user.scope(...):`` block (see ``User.scope``).
+        Notifications are page-level and are not matched inside a scope.
+        """
         for _ in range(retries):
-            with self._client:
-                if not self.notify.contains(target) and not self._gather_elements(target, kind, marker, content):
-                    return
-                await asyncio.sleep(0.05)
+            if (self._is_scoped() or not self.notify.contains(target)) and \
+                    not self._gather_elements(target=target, kind=kind, marker=marker, content=content):
+                return
+            await asyncio.sleep(0.05)
         raise AssertionError('expected not to see any ' + self._build_error_message(target, kind, marker, content))
 
     @overload
@@ -211,36 +226,93 @@ class User:
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
              ) -> UserInteraction[T]:
-        """Select elements for interaction."""
-        with self._client:
-            elements = self._gather_elements(target, kind, marker, content)
-            if not elements:
-                raise AssertionError('expected to find at least one ' +
-                                     self._build_error_message(target, kind, marker, content))
+        """Select elements for interaction.
+
+        To limit the search to one part of a page that reuses markers or content, wrap the
+        call in a ``with user.scope(...):`` block (see ``User.scope``).
+        """
+        elements = self._gather_elements(target=target, kind=kind, marker=marker, content=content)
+        if not elements:
+            raise AssertionError('expected to find at least one ' +
+                                 self._build_error_message(target, kind, marker, content))
         return UserInteraction(self, elements, target)
+
+    @contextmanager
+    def scope(self,
+              target: str | type[T] | None = None,
+              *,
+              kind: type[T] | None = None,
+              marker: str | list[str] | None = None,
+              content: str | list[str] | None = None,
+              ) -> Iterator[T]:
+        """Enter the single element matching the given filter, scoping all lookups inside the block to it.
+
+        This is the recommended way to write assertions against pages that intentionally reuse
+        markers or content in different parts of the layout. Inside the block, ``should_see``,
+        ``should_not_see`` and ``find`` only search the descendants of the entered element
+        (the element itself is not matched)::
+
+            with user.scope(marker='left-card'):
+                await user.should_see('Button')  # only the button inside the left card
+                await user.should_not_see('Other')
+
+        The filter must match exactly one element; otherwise an ``AssertionError`` is raised,
+        because scoping to an ambiguous match would hide the very bugs this feature helps catch.
+        """
+        elements = self._gather_elements(target=target, kind=kind, marker=marker, content=content)
+        if len(elements) != 1:
+            raise AssertionError(f'expected exactly one element to scope to, but found {len(elements)}: ' +
+                                 self._build_error_message(target, kind, marker, content))
+        (element,) = elements
+        task_id = get_task_id()
+        stack = self._scope_stack.setdefault(task_id, [])
+        stack.append(element)
+        try:
+            with element:
+                yield element
+        finally:
+            stack.pop()
+            if not stack:
+                del self._scope_stack[task_id]
 
     @property
     def current_layout(self) -> ui.element:
         """Return the root layout element of the current page."""
         return self._client.layout
 
+    def _is_scoped(self) -> bool:
+        return bool(self._scope_stack.get(get_task_id()))
+
     def _gather_elements(
         self,
+        *,
         target: str | type[T] | None = None,
         kind: type[T] | None = None,
         marker: str | list[str] | None = None,
         content: str | list[str] | None = None,
     ) -> set[T]:
-        if target is None:
-            if kind is None:
-                elements = set(ElementFilter(marker=marker, content=content, only_visible=True))
+        stack = self._scope_stack.get(get_task_id())
+        # When the current task is inside a `with user.scope(...):` block, restrict the search to the
+        # innermost entered element via `ElementFilter.within(instance=...)`. This searches the whole
+        # page and keeps only descendants of the scope, independent of the ambient slot stack and of
+        # `ElementFilter.DEFAULT_LOCAL_SCOPE`. Without a scope the search covers the whole layout
+        # (header, drawer, footer, notifications), exactly as before.
+        scope = stack[-1] if stack else None
+
+        def scoped(element_filter: ElementFilter[Any]) -> ElementFilter[Any]:
+            return element_filter.within(instance=scope) if scope is not None else element_filter
+
+        with self._client:
+            if target is None:
+                if kind is None:
+                    elements = set(scoped(ElementFilter(marker=marker, content=content, only_visible=True)))
+                else:
+                    elements = set(scoped(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True)))
+            elif isinstance(target, str):
+                elements = set(scoped(ElementFilter(marker=target, only_visible=True))) \
+                    .union(scoped(ElementFilter(content=target, only_visible=True)))
             else:
-                elements = set(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True))
-        elif isinstance(target, str):
-            elements = set(ElementFilter(marker=target, only_visible=True)) \
-                .union(ElementFilter(content=target, only_visible=True))
-        else:
-            elements = set(ElementFilter(kind=target, only_visible=True))
+                elements = set(scoped(ElementFilter(kind=target, only_visible=True)))
         return elements  # type: ignore
 
     def _build_error_message(self,

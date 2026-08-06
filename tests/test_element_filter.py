@@ -328,6 +328,17 @@ async def test_typing(user: User):
     await user.open('/')
 
 
+async def test_local_scope_false_searches_entire_page_inside_element_context(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('outside')
+        with ui.row():
+            ui.label('inside')
+            assert sorted(texts(ElementFilter(kind=ui.label, local_scope=False))) == ['inside', 'outside']
+
+    await user.open('/')
+
+
 @pytest.mark.parametrize('default_local_scope', [True, False])
 async def test_default_local_scope(user: User, default_local_scope, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(ElementFilter, 'DEFAULT_LOCAL_SCOPE', default_local_scope)
