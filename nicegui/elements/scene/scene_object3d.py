@@ -19,8 +19,8 @@ if TYPE_CHECKING:
 
 class Object3D:
     current_scene: Scene | None = None
-    _component_import_name: ClassVar[str | None] = None
-    _component_file_stem: ClassVar[str | None] = None
+    _import_name: ClassVar[str | None] = None
+    _file_stem: ClassVar[str | None] = None
 
     def __init_subclass__(cls, *, component: str | Path | None = None):
         super().__init_subclass__()
@@ -31,13 +31,13 @@ class Object3D:
                 path = Path(inspect.getfile(cls)).parent / path
             if not path.is_file():
                 raise ValueError(f"'component' must be an existing file, but {str(component)!r} was not found")
-            cls._component_import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
-            cls._component_file_stem = path.stem
-            register_library(path, import_name=cls._component_import_name, max_time=path.stat().st_mtime)
+            cls._import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
+            cls._file_stem = path.stem
+            register_library(path, import_name=cls._import_name, max_time=path.stat().st_mtime)
         else:
             # Fallback to parent's component to ease inheriting from Object3D classes
             for base_cls in cls.__mro__[1:]:
-                if getattr(base_cls, '_component_import_name', False):
+                if getattr(base_cls, '_import_name', False):
                     break
             else:
                 warn_once("Subclassing Object3D without a 'component' parameter is deprecated "
@@ -45,7 +45,7 @@ class Object3D:
                           "Pass 'component=' or inherit from a built-in scene object instead.")
 
     def __init__(self, *args: Any, wireframe: bool = False) -> None:
-        if self._component_import_name is None:
+        if self._import_name is None:
             args = self._consume_legacy_type_string(args)
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
@@ -74,14 +74,14 @@ class Object3D:
         """Support the legacy protocol of instantiating an `Object3D` with a leading type string (until NiceGUI 4.0)."""
         if not args or not isinstance(args[0], str):
             raise TypeError(f'Cannot create a {type(self).__name__} without a JS component. '
-                            "Pass 'component=' when subclassing Object3D.")
+                            'Pass `component=` when subclassing Object3D.')
         import_name = Object3D._find_import_name_by_file_stem(args[0])
         if import_name is None:
             raise TypeError(f'Unknown object type "{args[0]}".')
         warn_once(f'Creating 3D objects by passing a type string like "{args[0]}" to Object3D is deprecated '
                   'and will raise a TypeError in NiceGUI 4.0. '
-                  "Subclass a built-in scene object or pass 'component=' instead.")
-        self._component_import_name = import_name  # type: ignore[misc]
+                  'Subclass a built-in scene object or pass `component=` instead.')
+        self._import_name = import_name  # type: ignore[misc]
         return args[1:]
 
     @classmethod
@@ -90,8 +90,8 @@ class Object3D:
         subclasses = list(cls.__subclasses__())
         for subclass in subclasses:
             subclasses.extend(subclass.__subclasses__())
-            if subclass._component_file_stem == stem and subclass._component_import_name:
-                return subclass._component_import_name
+            if subclass._file_stem == stem and subclass._import_name:
+                return subclass._import_name
         return None
 
     def with_name(self, name: str) -> Self:
@@ -105,15 +105,13 @@ class Object3D:
         """Data to be sent to the frontend.
 
         **Note: This property is deprecated and will be removed in NiceGUI 4.0.
-        It's a public method meant for internal use and is no longer needed.**
+        It is a public method meant for internal use and is no longer needed.**
         """
-        warn_once(
-            'The `data` property of `Object3D` is deprecated and will be '
-            "removed in NiceGUI 4.0. It's a public method meant for internal use "
-            'and is no longer needed.'
-        )
+        # DEPRECATED: remove this property in NiceGUI 4.0
+        warn_once('The `data` property of `Object3D` is deprecated and will be removed in NiceGUI 4.0. '
+                  'It is a public method meant for internal use and is no longer needed.')
         return [
-            self._component_import_name, self.id, self.parent.id, self.args,
+            self._import_name, self.id, self.parent.id, self.args,
             self.name,
             self.color, self.opacity, self.side_, self.material_is_set,
             self.x, self.y, self.z,
@@ -131,8 +129,7 @@ class Object3D:
         self.scene.stack.pop()
 
     def _create(self) -> None:
-        self.scene.run_method('create', self._component_import_name, self.id, self.parent.id, self.wireframe,
-                              *self.args)
+        self.scene.run_method('create', self._import_name, self.id, self.parent.id, self.wireframe, *self.args)
 
     def _name(self) -> None:
         self.scene.run_method('name', self.id, self.name)
