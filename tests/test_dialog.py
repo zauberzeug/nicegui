@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Callable
 
 import pytest
@@ -5,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_open_close_dialog(screen: Screen):
@@ -97,6 +98,35 @@ def test_dialog_in_menu(screen: Screen):
     screen.click('Delete menu')
     screen.wait(0.5)
     screen.should_not_contain('Dialog content')  # it has been deleted together with the menu
+
+
+async def test_awaited_dialog_resolves_when_client_is_deleted(user: User):
+    """The task awaiting a dialog must not wait forever when the client is deleted, e.g. after a disconnect."""
+    dialog = None
+    results = []
+
+    @ui.page('/')
+    def page():
+        nonlocal dialog
+        with ui.dialog() as dialog, ui.card():
+            ui.label('Content')
+
+        async def show() -> None:
+            results.append(await dialog)
+
+        ui.button('Open', on_click=show)
+
+    await user.open('/')
+    user.find('Open').click()
+    await asyncio.sleep(0.1)
+    assert not results  # the dialog is open and the button handler is awaiting it
+
+    assert isinstance(dialog, ui.dialog)
+    dialog.client.delete()
+    await asyncio.sleep(0.1)
+    assert results == [None]  # the handler resumed instead of waiting forever
+
+    assert await dialog is None  # awaiting a deleted dialog resolves immediately
 
 
 @pytest.mark.parametrize('element_factory,selector,text', [
