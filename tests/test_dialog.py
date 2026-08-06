@@ -118,21 +118,19 @@ async def test_awaited_dialog_resolves_when_client_is_deleted(user: User):
 
     await user.open('/')
     user.find('Open').click()
-    await asyncio.sleep(0.1)
-    assert not results  # the dialog is open and the button handler is awaiting it
+    await asyncio.sleep(0.1)  # let the button handler start awaiting the dialog
+    assert not results
 
     assert isinstance(dialog, ui.dialog)
     dialog.client.delete()
-    await asyncio.sleep(0.1)
-    assert results == [None]  # the handler resumed instead of waiting forever
+    await asyncio.sleep(0.1)  # let the handler resume
+    assert results == [None]  # the handler resumed with None instead of waiting forever
 
     assert await dialog is None  # awaiting a deleted dialog resolves immediately
 
 
 async def test_submit_and_delete_dialog_in_same_handler(user: User):
     """A result submitted right before the dialog is deleted must still reach the awaiting task."""
-    results = []
-
     @ui.page('/')
     def page():
         with ui.dialog() as dialog, ui.card():
@@ -142,16 +140,15 @@ async def test_submit_and_delete_dialog_in_same_handler(user: User):
             ui.button('Yes', on_click=confirm)
 
         async def show() -> None:
-            results.append(await dialog)
+            ui.notify(f'Result: {await dialog}')
 
         ui.button('Open', on_click=show)
 
     await user.open('/')
     user.find('Open').click()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.1)  # let the button handler start awaiting the dialog
     user.find('Yes').click()
-    await asyncio.sleep(0.1)
-    assert results == ['Yes']
+    await user.should_see('Result: Yes')
 
 
 @pytest.mark.parametrize('element_factory,selector,text', [

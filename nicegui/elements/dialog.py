@@ -65,7 +65,7 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         self.open()
         yield from self.submitted.wait().__await__()  # pylint: disable=no-member
         result = self._result
-        if not self.is_deleted:
+        if not self.is_deleted:  # closing a deleted dialog would warn about using a deleted element
             self.close()
         return result
 
