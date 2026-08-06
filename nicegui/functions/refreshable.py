@@ -28,22 +28,16 @@ class RefreshableTarget:
     locals: list[Any] = field(default_factory=list)
     next_index: int = 0
 
-    def run(self, func: Callable[..., _T], *, _refresh: bool = False) -> _T:
+    def run(self, func: Callable[..., _T]) -> _T:
         """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
 
         with self.container:
-            try:
-                if self.instance is None:
-                    result = func(*self.args, **self.kwargs)
-                else:
-                    result = func(self.instance, *self.args, **self.kwargs)
-            except Exception as e:
-                if _refresh:
-                    from .. import context
-                    context.client.handle_exception(e)
-                raise
+            if self.instance is None:
+                result = func(*self.args, **self.kwargs)
+            else:
+                result = func(self.instance, *self.args, **self.kwargs)
 
         if helpers.should_await(result):
             return cast(_T, helpers.await_with_context(result, self.container))
@@ -122,7 +116,7 @@ class refreshable(Generic[_P, _T]):
             target.args = args or target.args
             target.kwargs.update(kwargs)
             try:
-                result = target.run(self.func, _refresh=True)
+                result = target.run(self.func)
             except TypeError as e:
                 if 'got multiple values for argument' in str(e):
                     function = str(e).split()[0].split('.')[-1]
@@ -130,6 +124,12 @@ class refreshable(Generic[_P, _T]):
                     raise TypeError(f'{parameter} needs to be consistently passed to {function} '
                                     'either as positional or as keyword argument') from e
                 raise
+            except Exception as e:
+                from .. import context
+                with target.container:
+                    context.client.handle_exception(e)
+                raise
+
             if helpers.should_await(result):
                 awaitables.append(result)
 
