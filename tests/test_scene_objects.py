@@ -12,17 +12,14 @@ Methods are exercised on a single representative object because they share one c
 only object creation differs per type and is covered for all types.
 """
 import math
-
-import pytest
+from typing import Any
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
 from nicegui.testing import Screen
 
-RED_PIXEL_PNG = ('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ'
-                 'AAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
-TRANSPARENT_PIXEL_PNG = ('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ'
-                         'AAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=')
+RED_PIXEL_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+TRANSPARENT_PIXEL_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
 
 TEXTURE_COORDS_2X2: list[list[list[float] | None]] = [[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]],
                                                       [[0.0, 1.0, 0.0], [1.0, 1.0, 0.0]]]
@@ -31,22 +28,10 @@ TEXTURE_COORDS_3X3: list[list[list[float] | None]] = [[[0.0, 0.0, 0.0], [0.5, 0.
                                                       [[0.0, 1.0, 0.0], [0.5, 1.0, 0.0], [1.0, 1.0, 0.0]]]
 
 
-def query(screen: Screen, scene: ui.scene, name: str, expression: str):
-    """Evaluate a JS expression on the named object in the scene graph."""
-    return screen.selenium.execute_script(
-        f'const o = scene_{scene.html_id}.getObjectByName("{name}"); return o ? ({expression}) : null;')
-
-
-def wait_until(screen: Screen, scene: ui.scene, name: str, expression: str, expected, *, timeout: float = 5.0):
+def wait_until(screen: Screen, scene: ui.scene, name: str, expression: str, expected: Any):
     """Poll the JS expression on the named object until it equals the expected value."""
     lookup = f'scene_{scene.html_id}.getObjectByName("{name}")'
-    screen.wait_for_js(f'(() => {{ const o = {lookup}; return o ? ({expression}) : null; }})()',
-                       expected, timeout=timeout)
-
-
-def wait_for_object(screen: Screen, scene: ui.scene, name: str, *, timeout: float = 5.0):
-    """Wait until the named object exists in the scene graph (creation may be asynchronous)."""
-    wait_until(screen, scene, name, 'true', True, timeout=timeout)
+    screen.wait_for_js(f'(() => {{ const o = {lookup}; return o ? ({expression}) : null; }})()', expected, timeout=5.0)
 
 
 def test_create_all_object_types(screen: Screen, tmp_path):
@@ -89,35 +74,26 @@ def test_create_all_object_types(screen: Screen, tmp_path):
 
     for name, expected_type, expected_geometry in [
         ('box', 'Mesh', 'BoxGeometry'),
+        ('box_wireframe', 'LineSegments', 'EdgesGeometry'),
         ('sphere', 'Mesh', 'SphereGeometry'),
         ('cylinder', 'Mesh', 'CylinderGeometry'),
         ('ring', 'Mesh', 'RingGeometry'),
         ('tube', 'Mesh', 'TubeGeometry'),
         ('extrusion', 'Mesh', 'ExtrudeGeometry'),
+        ('line', 'Line', 'BufferGeometry'),
+        ('curve', 'Line', 'BufferGeometry'),
+        ('texture', 'Mesh', 'BufferGeometry'),
+        ('point_cloud', 'Points', 'BufferGeometry'),
+        ('group', 'Group', None),
+        ('axes_helper', 'AxesHelper', 'BufferGeometry'),
     ]:
-        wait_for_object(screen, scene, name)
-        assert query(screen, scene, name, 'o.type') == expected_type, f'{name} type'
-        assert query(screen, scene, name, 'o.geometry.type') == expected_geometry, f'{name} geometry'
+        wait_until(screen, scene, name, 'o.type', expected_type)
+        wait_until(screen, scene, name, 'o.geometry?.type ?? null', expected_geometry)
 
-    for name, expected_type in [
-        ('box_wireframe', 'LineSegments'),
-        ('line', 'Line'),
-        ('curve', 'Line'),
-        ('texture', 'Mesh'),
-        ('point_cloud', 'Points'),
-        ('group', 'Group'),
-        ('axes_helper', 'AxesHelper'),
-    ]:
-        wait_for_object(screen, scene, name)
-        assert query(screen, scene, name, 'o.type') == expected_type, f'{name} type'
-
-    wait_for_object(screen, scene, 'spot_light')
-    assert query(screen, scene, 'spot_light', 'o.children.some(c => c.isSpotLight)') is True
-    wait_for_object(screen, scene, 'text')
-    assert query(screen, scene, 'text', 'o.isCSS2DObject') is True
-    wait_for_object(screen, scene, 'text3d')
-    assert query(screen, scene, 'text3d', 'o.isCSS3DObject') is True
-    assert query(screen, scene, 'point_cloud', 'o.geometry.attributes.position.count') == 2
+    wait_until(screen, scene, 'spot_light', 'o.children.some(c => c.isSpotLight)', True)
+    wait_until(screen, scene, 'text', 'o.isCSS2DObject', True)
+    wait_until(screen, scene, 'text3d', 'o.isCSS3DObject', True)
+    wait_until(screen, scene, 'point_cloud', 'o.geometry.attributes.position.count', 2)
     wait_until(screen, scene, 'stl', 'o.children[0]?.geometry.attributes.position.count', 3)
 
 
@@ -132,10 +108,11 @@ def test_visible(screen: Screen):
             box = scene.box().with_name('box')
 
     screen.open('/')
-    wait_for_object(screen, scene, 'box')
-    assert query(screen, scene, 'box', 'o.visible') is True
+    wait_until(screen, scene, 'box', 'o.visible', True)
+
     box.visible(False)
     wait_until(screen, scene, 'box', 'o.visible', False)
+
     box.visible(True)
     wait_until(screen, scene, 'box', 'o.visible', True)
 
@@ -151,12 +128,10 @@ def test_material(screen: Screen):
             box = scene.box().with_name('box')
 
     screen.open('/')
-    wait_for_object(screen, scene, 'box')
-
     box.material('#00ff00', opacity=0.5, side='both')
     wait_until(screen, scene, 'box', 'o.material.color.getHexString()', '00ff00')
-    assert query(screen, scene, 'box', 'o.material.opacity') == 0.5
-    assert query(screen, scene, 'box', 'o.material.side') == 2  # THREE.DoubleSide
+    wait_until(screen, scene, 'box', 'o.material.opacity', 0.5)
+    wait_until(screen, scene, 'box', 'o.material.side', 2)  # THREE.DoubleSide
 
 
 def test_move_scale_rotate(screen: Screen):
@@ -170,15 +145,12 @@ def test_move_scale_rotate(screen: Screen):
             box = scene.box().with_name('box')
 
     screen.open('/')
-    wait_for_object(screen, scene, 'box')
-
     box.move(1, 2, 3)
     box.scale(2, 3, 4)
     box.rotate(0, 0, math.pi / 2)
     wait_until(screen, scene, 'box', 'o.position.toArray()', [1, 2, 3])
     wait_until(screen, scene, 'box', 'o.scale.toArray()', [2, 3, 4])
-    wait_until(screen, scene, 'box', 'o.rotation.z !== 0', True)
-    assert query(screen, scene, 'box', 'o.rotation.z') == pytest.approx(math.pi / 2)
+    wait_until(screen, scene, 'box', 'Math.abs(o.rotation.z - Math.PI / 2) < 1e-6', True)
 
 
 def test_attach_and_detach(screen: Screen):
@@ -194,9 +166,7 @@ def test_attach_and_detach(screen: Screen):
             box = scene.box().with_name('box')
 
     screen.open('/')
-    wait_for_object(screen, scene, 'group')
-    wait_for_object(screen, scene, 'box')
-    assert query(screen, scene, 'box', 'o.parent.type') == 'Scene'
+    wait_until(screen, scene, 'box', 'o.parent.type', 'Scene')
 
     box.attach(group)
     wait_until(screen, scene, 'box', 'o.parent.name', 'group')
@@ -209,7 +179,7 @@ def test_attach_and_detach(screen: Screen):
 
 def test_texture_set_url_and_coordinates(screen: Screen):
     scene: ui.scene = None  # type: ignore
-    texture = None
+    texture: ui.scene.texture = None  # type: ignore
 
     @ui.page('/')
     def page():
@@ -218,8 +188,7 @@ def test_texture_set_url_and_coordinates(screen: Screen):
             texture = scene.texture(RED_PIXEL_PNG, TEXTURE_COORDS_2X2).with_name('texture')
 
     screen.open('/')
-    wait_for_object(screen, scene, 'texture')
-    assert query(screen, scene, 'texture', 'o.geometry.attributes.position.count') == 4
+    wait_until(screen, scene, 'texture', 'o.geometry.attributes.position.count', 4)
 
     texture.set_coordinates(TEXTURE_COORDS_3X3)
     wait_until(screen, scene, 'texture', 'o.geometry.attributes.position.count', 9)
@@ -233,7 +202,7 @@ def test_texture_set_url_and_coordinates(screen: Screen):
 
 def test_point_cloud_set_points(screen: Screen):
     scene: ui.scene = None  # type: ignore
-    point_cloud = None
+    point_cloud: ui.scene.point_cloud = None  # type: ignore
 
     @ui.page('/')
     def page():
@@ -242,9 +211,8 @@ def test_point_cloud_set_points(screen: Screen):
             point_cloud = scene.point_cloud([[0, 0, 0], [1, 1, 1]]).with_name('point_cloud')
 
     screen.open('/')
-    wait_for_object(screen, scene, 'point_cloud')
-    assert query(screen, scene, 'point_cloud', 'o.geometry.attributes.position.count') == 2
+    wait_until(screen, scene, 'point_cloud', 'o.geometry.attributes.position.count', 2)
 
     point_cloud.set_points([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]], [[1, 0, 0]] * 4)
     wait_until(screen, scene, 'point_cloud', 'o.geometry.attributes.position.count', 4)
-    assert query(screen, scene, 'point_cloud', 'o.geometry.attributes.color.count') == 4
+    wait_until(screen, scene, 'point_cloud', 'o.geometry.attributes.color.count', 4)
