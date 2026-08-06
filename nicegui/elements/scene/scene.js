@@ -47,13 +47,11 @@ export default {
 
   mounted() {
     let resolve_init;
-    this.init_promise = new Promise((resolve) => {
-      resolve_init = resolve;
-    });
+    this.init_promise = new Promise((resolve) => (resolve_init = resolve));
 
-    this.objects = new Map();
     this.scene = new THREE.Scene();
     this.scene.object_id = "scene";
+    this.objects = new Map();
     this.objects.set("scene", { id: "scene", mesh: this.scene });
 
     this.clock = new THREE.Clock();
@@ -249,17 +247,13 @@ export default {
         reject_ready = reject;
       });
       ready_promise.catch(() => {}); // suppress unhandled rejection if no method ever accesses this object
-      let object = {
-        id,
-        ready_promise,
-      };
+      let object = { id, ready_promise };
       this.objects.set(id, object);
       await this.init_promise;
 
       try {
         // Find the component class
-        let component_class;
-        component_class = (await import(import_name)).default;
+        const component_class = (await import(import_name)).default;
         const component = new component_class();
 
         // Create the object
