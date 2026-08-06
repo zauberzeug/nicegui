@@ -233,10 +233,7 @@ def test_stl_wireframe(screen: Screen):
         ui.button('Rename', on_click=lambda: obj.with_name('renamed'))
 
     screen.open('/')
-    screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
-        f'return !!window.scene_{scene.html_id} && '
-        f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0'
-    ))
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0', True)
     result = screen.selenium.execute_script(f'''
         const group = scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}");
         const child = group.children[0];
@@ -253,9 +250,7 @@ def test_stl_wireframe(screen: Screen):
     assert result['child_color'] == 'ff0000', f'expected material to reach the wireframe lines, got {result}'
 
     screen.click('Rename')  # rename AFTER the async load has completed
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}").name === "renamed"'
-    ))
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}").name', 'renamed')
 
 
 def test_no_cyclic_references(screen: Screen):
