@@ -125,6 +125,7 @@ _LAZY_IMPORTS = {
     'tooltip': ('.elements.tooltip', 'Tooltip'),
     'tree': ('.elements.tree', 'Tree'),
     'upload': ('.elements.upload', 'Upload'),
+    'uplot': ('.elements.uplot', 'UPlot'),
     'video': ('.elements.video', 'Video'),
     'xterm': ('.elements.xterm', 'Xterm'),
     'clipboard': ('.functions.clipboard', None),
@@ -291,6 +292,7 @@ __all__ = [
     'tree',
     'update',
     'upload',
+    'uplot',
     'video',
     'xterm',
 ]
@@ -415,6 +417,7 @@ if TYPE_CHECKING:
     from .elements.tooltip import Tooltip as tooltip
     from .elements.tree import Tree as tree
     from .elements.upload import Upload as upload
+    from .elements.uplot import UPlot as uplot
     from .elements.video import Video as video
     from .elements.xterm import Xterm as xterm
     from .functions import clipboard
