@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE } = SceneLib;
+import { THREE } from "nicegui-scene";
 
 export default class SpotLight {
   create_mesh(color, intensity, distance, angle, penumbra, decay) {

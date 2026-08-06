@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const {
+import {
   apply_material,
   CSS2DRenderer,
   CSS3DRenderer,
@@ -10,7 +9,7 @@ const {
   THREE,
   TWEEN,
   Stats,
-} = SceneLib;
+} from "nicegui-scene";
 
 async function get_object(objects, object_id) {
   const object = objects.get(object_id);

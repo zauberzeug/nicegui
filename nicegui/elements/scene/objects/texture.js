@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE } = SceneLib;
+import { THREE } from "nicegui-scene";
 
 const texture_loader = new THREE.TextureLoader();
 

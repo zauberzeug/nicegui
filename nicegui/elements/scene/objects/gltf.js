@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE, GLTFLoader } = SceneLib;
+import SceneLib, { THREE, GLTFLoader } from "nicegui-scene";
 
 const gltf_loader = new GLTFLoader();
 

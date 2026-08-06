@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE, STLLoader } = SceneLib;
+import SceneLib, { THREE, STLLoader } from "nicegui-scene";
 
 const stl_loader = new STLLoader();
 

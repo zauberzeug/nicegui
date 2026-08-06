@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { CSS2DObject } = SceneLib;
+import { CSS2DObject } from "nicegui-scene";
 
 export default class Text {
   create_mesh(text, style) {

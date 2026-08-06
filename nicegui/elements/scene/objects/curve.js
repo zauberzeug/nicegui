@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE } = SceneLib;
+import { THREE } from "nicegui-scene";
 
 export default class Curve {
   create_mesh(start, control1, control2, end, num_points) {

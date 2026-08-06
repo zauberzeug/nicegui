@@ -24,6 +24,7 @@ export default {
     patchDragControls(),
     terser({
       mangle: true,
+      keep_classnames: true, // e.g. for checking `controls.constructor.name`
     }),
   ],
 };

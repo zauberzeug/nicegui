@@ -23,6 +23,24 @@ function apply_material(material, { color, opacity, side }) {
   });
 }
 
+export {
+  apply_material,
+  CSS2DObject,
+  CSS2DRenderer,
+  CSS3DObject,
+  CSS3DRenderer,
+  DragControls,
+  GLTFLoader,
+  MapControls,
+  OrbitControls,
+  TrackballControls,
+  STLLoader,
+  THREE,
+  TWEEN,
+  Stats,
+};
+
+// keep a default export so component modules can access the library as a whole, e.g. `SceneLib.apply_material`
 export default {
   apply_material,
   CSS2DObject,

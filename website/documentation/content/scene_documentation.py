@@ -393,8 +393,7 @@ def materials_for_composite_objects() -> None:
     ''')
 
     code_window(title='robot.js', language='js', code='''
-        import SceneLib from "nicegui-scene";
-        const { THREE } = SceneLib;
+        import SceneLib, { THREE } from "nicegui-scene";
 
         export default class Robot {
           create_mesh() {

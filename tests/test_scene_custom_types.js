@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE } = SceneLib;
+import { THREE } from "nicegui-scene";
 
 window.__tracer_load_count = (window.__tracer_load_count || 0) + 1;
 

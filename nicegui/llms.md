@@ -453,8 +453,7 @@ class PulsingSphere(Object3D, component='pulsing_sphere.js'):
 
 ```js
 // pulsing_sphere.js — default-export a class
-import SceneLib from "nicegui-scene";
-const { THREE } = SceneLib;
+import { THREE } from "nicegui-scene";
 
 export default class PulsingSphere {
   mesh;
