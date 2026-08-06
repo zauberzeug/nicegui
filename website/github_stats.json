@@ -1,10 +1,11 @@
 {
   "special": {
     "lechler-gmbh": "https://www.lechler.com/",
-    "discolike": "https://www.discolike.com/"
+    "discolike": "https://www.discolike.com/",
+    "testmu-ai": "https://www.testmu.ai/"
   },
   "top": [],
-  "total": 24,
-  "contributors": 210,
-  "stars": 16087
+  "total": 25,
+  "contributors": 211,
+  "stars": 16097
 }
