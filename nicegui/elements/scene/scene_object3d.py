@@ -30,7 +30,7 @@ class Object3D:
             if not path.is_absolute():
                 path = Path(inspect.getfile(cls)).parent / path
             if not path.is_file():
-                raise ValueError(f'`component` must be an existing file, but {str(component)!r} was not found')
+                raise ValueError(f'`component` must be an existing file, but "{component}" was not found')
             cls._import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
             cls._file_stem = path.stem
             register_library(path, import_name=cls._import_name, max_time=path.stat().st_mtime)
