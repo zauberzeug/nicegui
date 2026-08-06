@@ -361,3 +361,4 @@ class AxesHelper(Object3D):
         :param length: length of the the axes (default: 1.0)
         """
         super().__init__('axes_helper', length)
+        self.color = None
