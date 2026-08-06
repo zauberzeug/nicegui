@@ -129,6 +129,31 @@ async def test_awaited_dialog_resolves_when_client_is_deleted(user: User):
     assert await dialog is None  # awaiting a deleted dialog resolves immediately
 
 
+async def test_submit_and_delete_dialog_in_same_handler(user: User):
+    """A result submitted right before the dialog is deleted must still reach the awaiting task."""
+    results = []
+
+    @ui.page('/')
+    def page():
+        with ui.dialog() as dialog, ui.card():
+            def confirm() -> None:
+                dialog.submit('Yes')
+                dialog.delete()
+            ui.button('Yes', on_click=confirm)
+
+        async def show() -> None:
+            results.append(await dialog)
+
+        ui.button('Open', on_click=show)
+
+    await user.open('/')
+    user.find('Open').click()
+    await asyncio.sleep(0.1)
+    user.find('Yes').click()
+    await asyncio.sleep(0.1)
+    assert results == ['Yes']
+
+
 @pytest.mark.parametrize('element_factory,selector,text', [
     (lambda: ui.input('Input'), '//*[@aria-label="Input"]', 'input'),
     (lambda: ui.textarea('Textarea'), '//*[@aria-label="Textarea"]', 'textarea'),

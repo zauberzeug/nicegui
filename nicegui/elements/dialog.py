@@ -82,7 +82,7 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
 
     def _handle_delete(self) -> None:
         # resolve pending awaits so their tasks don't wait forever, e.g. when the client is deleted after a disconnect
+        # (keep self._result untouched: a result submitted just before deletion should still reach the awaiting task)
         if self._submitted is not None:
-            self._result = None
             self._submitted.set()
         super()._handle_delete()
