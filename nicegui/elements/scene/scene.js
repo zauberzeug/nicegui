@@ -194,7 +194,7 @@ export default {
       this.scene.add(grid);
     }
     this.controlClass = { trackball: TrackballControls, map: MapControls }[this.controlType] || OrbitControls;
-    this.controls = new this.controlClass(this.camera, this.renderer.domElement);
+    this.create_controls();
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -506,6 +506,12 @@ export default {
       this.move(object_id, x, y, z);
       this.rotate(object_id, R);
     },
+    create_controls() {
+      this.controls = new this.controlClass(this.camera, this.renderer.domElement);
+      // TrackballControls rotates the camera's up vector, so the vector the controls were created for
+      // must be remembered separately to tell a user rotation apart from an actual camera move
+      this.controls_up = this.camera.up.clone();
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       const target_up = new THREE.Vector3(
@@ -513,8 +519,9 @@ export default {
         up_y === null ? this.camera.up.y : up_y,
         up_z === null ? this.camera.up.z : up_z,
       );
-      // NOTE: the controls are only rebuilt if the up vector really changes, because that resets their configuration
-      const camera_up_changed = !this.camera.up.equals(target_up);
+      // the controls are only rebuilt if the up vector they were created for really changes,
+      // because rebuilding resets their configuration
+      const camera_up_changed = !this.controls_up.equals(target_up);
       this.camera_tween = new TWEEN.Tween([
         this.camera.position.x,
         this.camera.position.y,
@@ -549,8 +556,9 @@ export default {
         })
         .onComplete(() => {
           if (camera_up_changed) {
+            this.camera.up.copy(target_up); // remove interpolation residue, so the next comparison is exact
             this.controls.dispose();
-            this.controls = new this.controlClass(this.camera, this.renderer.domElement);
+            this.create_controls();
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
