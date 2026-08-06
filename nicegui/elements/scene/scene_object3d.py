@@ -22,7 +22,7 @@ class Object3D:
     _import_name: ClassVar[str | None] = None
     _file_stem: ClassVar[str | None] = None
 
-    def __init_subclass__(cls, *, component: str | Path | None = None):
+    def __init_subclass__(cls, *, component: str | Path | None = None) -> None:  # DEPRECATED: require `component` in NiceGUI 4.0
         super().__init_subclass__()
 
         if component:
@@ -30,7 +30,7 @@ class Object3D:
             if not path.is_absolute():
                 path = Path(inspect.getfile(cls)).parent / path
             if not path.is_file():
-                raise ValueError(f"'component' must be an existing file, but {str(component)!r} was not found")
+                raise ValueError(f'`component` must be an existing file, but {str(component)!r} was not found')
             cls._import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
             cls._file_stem = path.stem
             register_library(path, import_name=cls._import_name, max_time=path.stat().st_mtime)
@@ -40,9 +40,9 @@ class Object3D:
                 if getattr(base_cls, '_import_name', False):
                     break
             else:
-                warn_once("Subclassing Object3D without a 'component' parameter is deprecated "
+                warn_once('Subclassing Object3D without a `component` parameter is deprecated '
                           'and will raise a TypeError in NiceGUI 4.0. '
-                          "Pass 'component=' or inherit from a built-in scene object instead.")
+                          'Pass `component=` or inherit from a built-in scene object instead.')
 
     def __init__(self, *args: Any, wireframe: bool = False) -> None:
         if self._import_name is None:
@@ -70,29 +70,24 @@ class Object3D:
         self.sz: float = 1
         self._create()
 
-    def _consume_legacy_type_string(self, args: tuple) -> tuple:
+    def _consume_legacy_type_string(self, args: tuple) -> tuple:  # DEPRECATED: remove this method in NiceGUI 4.0
         """Support the legacy protocol of instantiating an `Object3D` with a leading type string (until NiceGUI 4.0)."""
+        # pylint: disable=protected-access
         if not args or not isinstance(args[0], str):
             raise TypeError(f'Cannot create a {type(self).__name__} without a JS component. '
                             'Pass `component=` when subclassing Object3D.')
-        import_name = Object3D._find_import_name_by_file_stem(args[0])
-        if import_name is None:
+        subclasses = list(Object3D.__subclasses__())
+        for subclass in subclasses:
+            subclasses.extend(subclass.__subclasses__())
+            if subclass._file_stem == args[0] and subclass._import_name:
+                break
+        else:
             raise TypeError(f'Unknown object type "{args[0]}".')
         warn_once(f'Creating 3D objects by passing a type string like "{args[0]}" to Object3D is deprecated '
                   'and will raise a TypeError in NiceGUI 4.0. '
                   'Subclass a built-in scene object or pass `component=` instead.')
-        self._import_name = import_name  # type: ignore[misc]
+        self._import_name = subclass._import_name  # type: ignore[misc]
         return args[1:]
-
-    @classmethod
-    def _find_import_name_by_file_stem(cls, stem: str) -> str | None:
-        # pylint: disable=protected-access
-        subclasses = list(cls.__subclasses__())
-        for subclass in subclasses:
-            subclasses.extend(subclass.__subclasses__())
-            if subclass._file_stem == stem and subclass._import_name:
-                return subclass._import_name
-        return None
 
     def with_name(self, name: str) -> Self:
         """Set the name of the object."""
