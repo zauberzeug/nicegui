@@ -306,3 +306,24 @@ def test_awaitable_refresh(screen: Screen):
     screen.click('Try 0')
     screen.should_contain('error handled')
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
+
+
+async def test_report_exception(screen: Screen):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        @ui.refreshable
+        def part(explode: bool = False):
+            if explode:
+                raise RuntimeError('boom')
+
+        part()
+        ui.button('fire', on_click=lambda: part.refresh(True))  # via refresh()
+
+    await screen.open('/')
+    screen.click('fire')
+    await asyncio.sleep(0.1)
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
