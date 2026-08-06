@@ -330,6 +330,8 @@ def custom_composed_objects() -> None:
     Additional Python methods can dispatch to same-named methods of the JavaScript class via `run_method`.
 
     The JavaScript module for this demo is shown below.
+
+    *Added in version 3.16.0*
 ''', lazy=False)  # eager rendering makes the TorusKnot class register its component before the importmap is generated
 def custom_3d_scene_objects() -> None:
     # from nicegui import app

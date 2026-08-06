@@ -8,11 +8,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import Self
 
-from nicegui.awaitable_response import AwaitableResponse
-from nicegui.dependencies import register_library
-from nicegui.helpers import warn_once
-
 from ... import binding
+from ...awaitable_response import AwaitableResponse
+from ...dependencies import register_library
+from ...helpers import warn_once
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
@@ -429,7 +428,7 @@ class Object3D:
     def ancestors(self) -> list[Object3D]:
         """List of ancestors of the object, from the direct parent up to the root.
 
-        *Added in version 3.15.0*
+        *Added in version 3.16.0*
         """
         return [self.parent, *self.parent.ancestors] if isinstance(self.parent, Object3D) else []
 
@@ -450,6 +449,8 @@ class Object3D:
         Note that the client dispatches the call only once the object has been created.
         When awaiting a result right after creating an object with a slow-loading component
         (e.g. a large glTF model), you may need to increase the ``timeout``.
+
+        *Added in version 3.16.0*
 
         :param name: name of the method
         :param args: arguments to pass to the method
