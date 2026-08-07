@@ -337,7 +337,6 @@ def custom_3d_scene_objects() -> None:
     # from nicegui import app
     from nicegui.elements.scene import Object3D
 
-    # app.add_static_files('/static', 'static')
     class TorusKnot(Object3D, component='static/torus_knot.js'):
         def __init__(self, *, radius: float, tube: float, p: int, q: int) -> None:
             super().__init__(radius, tube, p, q)
