@@ -29,6 +29,7 @@ from .general_fixtures import get_path_to_main_file
 class Screen:
     PORT = 3392
     IMPLICIT_WAIT = 4
+    PAGE_LOAD_TIMEOUT = 4
     SCREENSHOT_DIR = Path('screenshots')
     CATCH_JS_ERRORS = True
 
@@ -75,10 +76,13 @@ class Screen:
         if core.loop:
             assert core.loop.is_closed()
 
-    def open(self, path: str, timeout: float = 3.0) -> None:
+    def open(self, path: str, timeout: float = 3 * PAGE_LOAD_TIMEOUT) -> None:
         """Try to open the page until the server is ready or we time out.
 
         If the server is not yet running, start it.
+
+        The timeout must stay above ``PAGE_LOAD_TIMEOUT``: a single slow page load already
+        consumes that much, so a smaller budget would leave no room to retry.
         """
         if self.server_thread is None:
             self.start_server()
