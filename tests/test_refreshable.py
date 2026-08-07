@@ -1,9 +1,9 @@
 import asyncio
 
 import pytest
+
 from nicegui import ui
 from nicegui.testing import Screen, User
-
 
 
 def test_refreshable(screen: Screen) -> None:
