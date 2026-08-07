@@ -72,6 +72,20 @@ def test_bare_subclass_with_legacy_type_string_creates_group(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("legacy")?.getObjectByName("child")?.type', 'Mesh')
 
 
+async def test_deprecated_type_property_reports_the_legacy_type_string(user: User, caplog: pytest.LogCaptureFixture) -> None:
+    types: list[str | None] = []
+
+    @ui.page('/')
+    def page():
+        with ui.scene() as scene:
+            types.append(scene.box().type)
+            types.append(Object3D('group').type)
+
+    await user.open('/')
+    assert types == ['box', 'group']
+    assert any('The `type` property of `Object3D` is deprecated' in record.message for record in caplog.records)
+
+
 async def test_unknown_legacy_type_string_raises(user: User) -> None:
     errors: list[str] = []
 

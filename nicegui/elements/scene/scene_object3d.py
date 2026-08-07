@@ -87,6 +87,7 @@ class Object3D:
                   'and will raise a TypeError in NiceGUI 4.0. '
                   'Subclass a built-in scene object or pass `component=` instead.')
         self._import_name = subclass._import_name  # type: ignore[misc]
+        self._file_stem = subclass._file_stem  # type: ignore[misc]
         return args[1:]
 
     def with_name(self, name: str) -> Self:
@@ -94,6 +95,18 @@ class Object3D:
         self.name = name
         self._name()
         return self
+
+    @property
+    def type(self) -> str | None:
+        """Type of the object.
+
+        **Note: This property is deprecated and will be removed in NiceGUI 4.0.
+        Use `isinstance` checks instead.**
+        """
+        # DEPRECATED: remove this property in NiceGUI 4.0
+        warn_once('The `type` property of `Object3D` is deprecated and will be removed in NiceGUI 4.0. '
+                  'Use `isinstance` checks instead.')
+        return self._file_stem
 
     @property
     def data(self) -> list[Any]:
