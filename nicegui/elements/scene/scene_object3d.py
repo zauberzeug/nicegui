@@ -102,7 +102,7 @@ class Object3D:
 
         :param color: CSS color string (default: '#ffffff')
         :param opacity: opacity between 0.0 and 1.0 (default: 1.0)
-        :param side: 'front', 'back', or 'double' (default: 'front')
+        :param side: 'front', 'back', or 'both' (default: 'front')
         """
         if self.color != color or self.opacity != opacity or self.side_ != side or not self.material_is_set:
             self.color = color
