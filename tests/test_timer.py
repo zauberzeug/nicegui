@@ -275,3 +275,23 @@ def test_no_leak_when_client_deleted(screen: Screen):
     Client.prune_instances(client_age_threshold=0)
     screen.wait(1)
     assert not any(isinstance(obj, ui.timer) for obj in gc.get_objects())
+
+
+def test_no_parent_slot_error_when_pruned_before_connect(screen: Screen):
+    """HTTP-only load + prune must not raise parent-slot RuntimeError (#6226)."""
+    exceptions: list[Exception] = []
+    app.on_exception(exceptions.append)
+
+    @ui.page('/')
+    def page():
+        ui.timer(60, lambda: None)
+
+    screen.start_server()
+    httpx.get(screen.url)
+    screen.wait(0.2)
+    Client.prune_instances(client_age_threshold=0)
+    gc.collect()
+    screen.wait(0.5)
+
+    parent_slot_errors = [e for e in exceptions if 'parent slot' in str(e).lower()]
+    assert not parent_slot_errors, f'unexpected parent-slot errors: {parent_slot_errors}'
