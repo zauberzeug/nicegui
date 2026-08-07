@@ -284,6 +284,7 @@ export default {
           await object.component.created();
         }
         resolve_ready();
+        delete object.ready_promise; // subsequent lookups don't need to wait anymore
       } catch (reason) {
         console.error(`Failed to create object (component="${import_name}", id=${id}, args=${args}): ${reason}`);
         reject_ready();
