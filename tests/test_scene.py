@@ -124,6 +124,28 @@ def test_deleting_object_right_after_creation(screen: Screen):
     assert screen.selenium.execute_script(f'return scene_{scene.html_id}.getObjectByName("box")?.type ?? null') is None
 
 
+def test_moving_right_after_detaching(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+        def detach_and_move():
+            with scene, scene.group():
+                box = scene.box().with_name('box')
+            box.detach()
+            box.move(1, 2, 3)
+
+        ui.button('Detach and move', on_click=detach_and_move)
+
+    screen.open('/')
+    screen.click('Detach and move')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.parent?.type', 'Scene')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x', 1)
+
+
 def test_replace_scene(screen: Screen):
     scene = None
 

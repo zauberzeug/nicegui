@@ -26,6 +26,15 @@ async function get_object(objects, object_id) {
   return object;
 }
 
+function set_rotation(mesh, R) {
+  const R4 = new THREE.Matrix4().makeBasis(
+    new THREE.Vector3(...R[0]),
+    new THREE.Vector3(...R[1]),
+    new THREE.Vector3(...R[2]),
+  );
+  mesh.rotation.setFromRotationMatrix(R4.transpose());
+}
+
 export default {
   template: `
     <div style="position:relative" data-initializing>
@@ -281,9 +290,10 @@ export default {
         return;
       }
 
-      // Attach to scene (unless the object was deleted while waiting for its parent)
+      // Attach to scene (unless the object was deleted while waiting for its parent
+      // or an `attach`/`detach` overtook this initial attachment and already placed the mesh)
       const parent = await get_object(this.objects, parent_id);
-      if (!parent || this.objects.get(id) !== object) return;
+      if (!parent || this.objects.get(id) !== object || object.mesh.parent) return;
       parent.mesh.add(object.mesh);
     },
     async name(object_id, name) {
@@ -315,12 +325,7 @@ export default {
     async rotate(object_id, R) {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
-      const R4 = new THREE.Matrix4().makeBasis(
-        new THREE.Vector3(...R[0]),
-        new THREE.Vector3(...R[1]),
-        new THREE.Vector3(...R[2]),
-      );
-      object.mesh.rotation.setFromRotationMatrix(R4.transpose());
+      set_rotation(object.mesh, R);
     },
     async visible(object_id, value) {
       const object = await get_object(this.objects, object_id);
@@ -350,19 +355,18 @@ export default {
       return await object.component[method_name](...args);
     },
     async attach(object_id, parent_id, x, y, z, R) {
-      const object = await get_object(this.objects, object_id);
-      if (!object) return;
+      // Look up the parent first so that the object's ready_promise is the last await before mutating the mesh.
+      // This keeps FIFO order with subsequent calls on the same object (e.g. a `move` right after a `detach`).
       const parent = await get_object(this.objects, parent_id);
-      if (!parent || this.objects.get(object_id) !== object) return; // the object may have been deleted meanwhile
-      parent.mesh.add(object.mesh);
-      this.move(object_id, x, y, z);
-      this.rotate(object_id, R);
+      if (!parent) return;
+      const object = await get_object(this.objects, object_id);
+      if (!object || this.objects.get(object_id) !== object || this.objects.get(parent_id) !== parent) return; // deleted meanwhile
+      parent.mesh.add(object.mesh); // add() also removes the mesh from its previous parent
+      object.mesh.position.set(x, y, z);
+      set_rotation(object.mesh, R);
     },
     async detach(object_id, x, y, z, R) {
-      const object = await get_object(this.objects, object_id);
-      if (!object) return;
-      object.mesh.removeFromParent();
-      this.attach(object_id, "scene", x, y, z, R);
+      await this.attach(object_id, "scene", x, y, z, R);
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
