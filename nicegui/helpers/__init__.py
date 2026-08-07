@@ -1,6 +1,7 @@
 import os
 
 from .elements import require_top_level_layout
+from .events import link_events
 from .files import hash_file_path, is_file, unlink_with_retry, unlink_with_retry_async
 from .functions import (
     NoImplicitAwait,
@@ -28,6 +29,7 @@ __all__ = [
     'is_pytest',
     'is_user_simulation',
     'kebab_to_camel_case',
+    'link_events',
     'normalize_lifecycle_handler',
     'remove_indentation',
     'require_top_level_layout',
