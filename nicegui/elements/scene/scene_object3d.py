@@ -422,7 +422,12 @@ class Object3D:
 
         *Added in version 3.16.0*
         """
-        return [self.parent, *self.parent.ancestors] if isinstance(self.parent, Object3D) else []
+        ancestors: list[Object3D] = []
+        parent = self.parent
+        while isinstance(parent, Object3D):
+            ancestors.append(parent)
+            parent = parent.parent
+        return ancestors
 
     def delete(self) -> None:
         """Delete the object."""
