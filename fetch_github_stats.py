@@ -98,6 +98,12 @@ print(f'Star count: {stars}')
 
 json_path = Path('website/github_stats.json')
 special_sponsors = json.loads(json_path.read_text(encoding='utf-8'))['special']
+# NOTE: match against the directory listing instead of using Path.exists(),
+# which is case-insensitive on macOS and would miss a mismatch that breaks the logo on the Linux server
+logo_names = {path.name for path in Path('website/static/sponsors').iterdir()}
+for sponsor in special_sponsors:
+    assert f'{sponsor}.webp' in logo_names or {f'{sponsor}.light.webp', f'{sponsor}.dark.webp'} <= logo_names, \
+        f'Logo for special sponsor "{sponsor}" is missing in website/static/sponsors'
 top_sponsors = [
     s['login']
     for s in sponsors
