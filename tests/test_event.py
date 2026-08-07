@@ -204,3 +204,24 @@ async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
     await asyncio.sleep(0.1)
     assert len(exceptions) == 2 and 'sync error' in str(exceptions[0]) and 'async error' in str(exceptions[1])
     caplog.records.clear()
+
+
+async def test_ui_on_exception_from_async_subscriber(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        event: Event[[]] = Event()
+
+        async def subscriber():
+            raise RuntimeError('boom')
+
+        event.subscribe(subscriber)
+        ui.on_exception(seen.append)
+        ui.button('fire', on_click=lambda: event.emit())
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
