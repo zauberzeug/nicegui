@@ -10,6 +10,17 @@ import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import * as TWEEN from "@tweenjs/tween.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
+function find_object_with_id(object) {
+  // Custom components can create children without an "object_id";
+  // hits on them are reported under their closest ancestor with an identity.
+  // Untagged objects like the grid have no such ancestor, so their hits are dropped.
+  let current_object = object;
+  while (current_object) {
+    if (current_object.object_id) return current_object;
+    current_object = current_object.parent;
+  }
+}
+
 function apply_material(material, { color, opacity, side }) {
   const vertexColors = color === null;
   (Array.isArray(material) ? material : [material]).forEach((m) => {
@@ -30,6 +41,7 @@ export {
   CSS3DObject,
   CSS3DRenderer,
   DragControls,
+  find_object_with_id,
   GLTFLoader,
   MapControls,
   OrbitControls,

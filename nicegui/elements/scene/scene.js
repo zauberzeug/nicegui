@@ -3,6 +3,7 @@ import {
   CSS2DRenderer,
   CSS3DRenderer,
   DragControls,
+  find_object_with_id,
   MapControls,
   OrbitControls,
   TrackballControls,
@@ -23,17 +24,6 @@ async function get_object(objects, object_id) {
     }
   }
   return object;
-}
-
-function find_object_with_id(object) {
-  // Custom components can create children without an "object_id";
-  // hits on them are reported under their closest ancestor with an identity.
-  // Untagged objects like the grid have no such ancestor, so their hits are dropped.
-  let current_object = object;
-  while (current_object) {
-    if (current_object.object_id) return current_object;
-    current_object = current_object.parent;
-  }
 }
 
 export default {
