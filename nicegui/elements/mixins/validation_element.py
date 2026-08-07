@@ -3,7 +3,7 @@ from typing import Any, TypeAlias, cast
 
 from typing_extensions import Self
 
-from ... import background_tasks, helpers
+from ... import background_tasks, context, helpers
 from ...events import ValueT
 from .value_element import ValueElement
 
@@ -70,7 +70,12 @@ class ValidationElement(ValueElement[ValueT]):
             result = self._validation(self.value)
             if helpers.should_await(result):
                 async def await_error():
-                    self.error = await result
+                    try:
+                        self.error = await result
+                    except Exception as e:
+                        if not context.slot_stack:  #6233
+                            self.client.handle_exception(e)
+                        raise
                 background_tasks.create(await_error(), name=f'validate {self.id}')
                 return True
             self.error = cast(str | None, result)
