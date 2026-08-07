@@ -32,10 +32,17 @@ class Callback(Generic[P]):
         with (self.slot and self.slot()) or nullcontext():
             return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
 
-    async def await_result(self, result: Awaitable) -> Any:
-        """Await the result of the callback."""
+    async def await_and_handle_result(self, result: Awaitable) -> Any:
+        """Await the result of the callback reporting exceptions if necessary."""
+        empty_stack = not context.slot_stack  #6233
         with (self.slot and self.slot()) or nullcontext():
-            return await result
+            if not empty_stack:
+                return await result
+            try:
+                return await result
+            except Exception as e:
+                core.app.handle_exception(e)
+                raise
 
 
 class Event(Generic[P]):
@@ -138,7 +145,7 @@ def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs)
     try:
         result = callback.run(*args, **kwargs)
         if helpers.should_await(result):
-            background_tasks.create_or_defer(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
+            background_tasks.create_or_defer(callback.await_and_handle_result(result), name=f'{callback.filepath}:{callback.line}')
     except Exception as e:
         core.app.handle_exception(e)
 
@@ -146,7 +153,7 @@ def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs)
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
     result = callback.run(*args, **kwargs)
     if helpers.should_await(result):
-        result = await callback.await_result(result)
+        result = await callback.await_and_handle_result(result)
     return result
 
 
