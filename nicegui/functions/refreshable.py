@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
+from contextlib import AbstractContextManager
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, Concatenate, Generic, TypeVar, cast
 
 from typing_extensions import ParamSpec, Self
 
-from .. import background_tasks, helpers
+from .. import background_tasks, context, helpers
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
@@ -40,9 +41,17 @@ class RefreshableTarget:
                 result = func(self.instance, *self.args, **self.kwargs)
 
         if helpers.should_await(result):
-            return cast(_T, helpers.await_with_context(result, self.container))
+            return cast(_T, self._await_with_context(result, self.container))
 
         return result
+
+    async def _await_with_context(self, awaitable: Awaitable[_T], container: AbstractContextManager) -> _T:
+        try:
+            return await helpers.await_with_context(awaitable, container)
+        except Exception as e:
+            if not context.slot_stack:
+                container.client.handle_exception(e)
+            raise
 
 
 class RefreshableContainer(Element, component='refreshable.js'):
