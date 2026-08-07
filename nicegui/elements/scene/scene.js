@@ -51,7 +51,7 @@ export default {
     this.scene = new THREE.Scene();
     this.scene.object_id = "scene";
     this.objects = new Map();
-    this.objects.set("scene", { id: "scene", mesh: this.scene });
+    this.objects.set("scene", { mesh: this.scene });
 
     this.clock = new THREE.Clock();
     this.draggable_objects = [];
@@ -246,7 +246,7 @@ export default {
         reject_ready = reject;
       });
       ready_promise.catch(() => {}); // suppress unhandled rejection if no method ever accesses this object
-      let object = { id, ready_promise };
+      let object = { ready_promise };
       this.objects.set(id, object);
       await this.init_promise;
 
