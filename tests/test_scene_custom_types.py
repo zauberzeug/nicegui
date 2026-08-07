@@ -4,7 +4,7 @@ import pytest
 
 from nicegui import ui
 from nicegui.elements.scene import Object3D
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 class Tracer(Object3D, component='test_scene_custom_types.js'):
@@ -72,7 +72,7 @@ def test_bare_subclass_with_legacy_type_string_creates_group(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("legacy")?.getObjectByName("child")?.type', 'Mesh')
 
 
-def test_unknown_legacy_type_string_raises(screen: Screen):
+async def test_unknown_legacy_type_string_raises(user: User) -> None:
     errors: list[str] = []
 
     @ui.page('/')
@@ -83,5 +83,5 @@ def test_unknown_legacy_type_string_raises(screen: Screen):
             except TypeError as e:
                 errors.append(str(e))
 
-    screen.open('/')
+    await user.open('/')
     assert errors == ['Unknown object type "teapot".']
