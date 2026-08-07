@@ -341,3 +341,15 @@ def test_context_loss_recovery_restores_objects(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id} !== window.sceneBeforeRecovery', True)  # remounting replaces the scene
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
+
+
+def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
+    hits: list[str] = []
+
+    @ui.page('/')
+    def page():
+        ui.scene(on_click=lambda e: hits.extend(hit.object_id for hit in e.hits))
+
+    screen.open('/')
+    screen.find_by_tag('canvas').click()
+    screen.wait_for(lambda: hits == ['ground'])

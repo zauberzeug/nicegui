@@ -28,6 +28,7 @@ async function get_object(objects, object_id) {
 function find_object_with_id(object) {
   // Custom components can create children without an "object_id";
   // hits on them are reported under their closest ancestor with an identity.
+  // Untagged objects like the grid have no such ancestor, so their hits are dropped.
   let current_object = object;
   while (current_object) {
     if (current_object.object_id) return current_object;
@@ -49,7 +50,6 @@ export default {
     this.init_promise = new Promise((resolve) => (resolve_init = resolve));
 
     this.scene = new THREE.Scene();
-    this.scene.object_id = "scene";
     this.objects = new Map();
     this.objects.set("scene", { mesh: this.scene });
 
@@ -372,7 +372,7 @@ export default {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.removeFromParent();
-      this.attach(object_id, this.scene.object_id, x, y, z, R);
+      this.attach(object_id, "scene", x, y, z, R);
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
