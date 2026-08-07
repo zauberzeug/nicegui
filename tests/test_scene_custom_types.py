@@ -1,4 +1,7 @@
+import os
 import sys
+import time
+from pathlib import Path
 
 import pytest
 
@@ -154,3 +157,21 @@ async def test_unknown_legacy_type_string_raises(user: User) -> None:
 
     await user.open('/')
     assert errors == ['Unknown object type "teapot".']
+
+
+async def test_editing_a_component_file_keeps_its_page_working(user: User, tmp_path: Path) -> None:
+    """Editing a component's JS while the server runs must not break the page that defines the class."""
+    component = tmp_path / 'editable.js'
+    component.write_text('export default {create_geometry: (THREE) => new THREE.BoxGeometry(1, 1, 1)};')
+
+    @ui.page('/')
+    def page():
+        class Editable(Object3D, component=component):
+            pass
+        with ui.scene():
+            Editable().with_name('editable')
+
+    await user.open('/')
+    component.write_text('export default {create_geometry: (THREE) => new THREE.BoxGeometry(2, 2, 2)};')
+    os.utime(component, (time.time() + 1, time.time() + 1))
+    await user.open('/')

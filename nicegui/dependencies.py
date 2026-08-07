@@ -133,7 +133,7 @@ def register_library(path: Path, *, import_name: str | None = None, max_time: fl
             return libraries[key]
         if import_name is not None:
             for library in libraries.values():
-                if library.name == import_name:
+                if library.name == import_name and library.path != path:
                     raise ValueError(f'The import name "{import_name}" is already used for "{library.path}"')
         libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
