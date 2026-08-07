@@ -44,7 +44,6 @@ For Arch-based Linux distribution:
 sudo pacman -S chromium
 ```
 
-Note:
 If you are using a different distribution, the package manager and package names may differ.
 Please refer to the documentation for your distribution for more information.
 
