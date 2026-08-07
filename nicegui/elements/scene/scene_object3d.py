@@ -158,6 +158,7 @@ class Object3D:
         self._scale()
         if self.name:
             self._name()
+        # Only override a component's own materials, like the ones of a GLTF model, if the user set one (#6118).
         if self.material_is_set:
             self._material()
         if not self.visible_:
