@@ -201,6 +201,23 @@ doc.text('Client-Side Secrets', '''
     - **Do not expose `client_id`** in logs, URLs, or API responses visible to other users.
     - **Treat `client_id` like a session token**: anyone who knows it can send events on behalf of that client.
     - **Secure pages, not `/_nicegui/`**: protect where the credential is issued, not where it is consumed.
+
+    **Not every random ID is a secret.**
+
+    NiceGUI mints a random UUID for several different jobs, and they do not all carry the same authority:
+
+    - **Public by design**: event listener, Leaflet layer and scene object IDs travel to the browser in plain sight.
+      They only need to be unique, and knowing one grants nothing.
+    - **A bearer capability**: the `client_id` above,
+      and the tab ID that keys `app.storage.tab` (minted by the browser and sent with the connection, not issued by the server).
+      Anyone who knows one can act as that client or read and write that tab's storage,
+      so both need the protections listed above.
+    - **A storage key**: the `app.storage.user` ID lives in a session cookie signed with your `storage_secret`.
+      The signature is the access boundary there, not the ID,
+      so guessing the ID alone does not unlock another user's storage.
+
+    Only the second class needs protecting as a secret.
+    Randomness is not what fails in practice — leakage is, which is what the practices above guard against.
 ''')
 
 
