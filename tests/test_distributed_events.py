@@ -1,0 +1,229 @@
+import asyncio
+import json
+import threading
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from typing import Any
+
+import pytest
+
+from nicegui import Event, core, ui
+from nicegui.distributed import ZENOH_AVAILABLE, DistributedSession, _peer_to_endpoint
+from nicegui.distributed_event import DistributedEvent
+from nicegui.testing import User
+
+pytestmark = pytest.mark.skipif(not ZENOH_AVAILABLE, reason='eclipse-zenoh not installed')
+
+LOOPBACK_PORT = 17447  # uncommon port to reduce collision risk in CI
+LOOPBACK_ENDPOINT = f'tcp/127.0.0.1:{LOOPBACK_PORT}'
+
+
+@pytest.fixture
+def fresh_session():
+    """Reset the DistributedSession singleton around each test."""
+    DistributedSession._instance = None
+    yield
+    session = DistributedSession.get()
+    if session is not None:
+        session.shutdown()
+    DistributedSession._instance = None
+
+
+def shared_event() -> DistributedEvent[str]:
+    """Create the event at a fixed source location so that every instance derives the same topic."""
+    return DistributedEvent[str]()
+
+
+@contextmanager
+def wire_observer(observed: list[str]) -> Iterator[Any]:
+    """Watch the network like any other Zenoh node and record the topics NiceGUI publishes on."""
+    import zenoh  # local import: only reachable when ZENOH_AVAILABLE
+    sibling = zenoh.open(zenoh.Config.from_json5(json.dumps({'connect': {'endpoints': [LOOPBACK_ENDPOINT]}})))
+    try:
+        sibling.declare_subscriber('nicegui/events/**', lambda sample: observed.append(str(sample.key_expr)))
+        yield sibling
+    finally:
+        sibling.close()
+
+
+@contextmanager
+def remote_instance(storage_secret: str) -> Iterator[None]:
+    """Act as a second NiceGUI instance on the loopback network, emitting through its own session."""
+    local = DistributedSession.get()
+    remote = DistributedSession({'connect': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret=storage_secret)
+    DistributedSession._instance = remote
+    try:
+        yield
+    finally:
+        DistributedSession._instance = local
+        remote.shutdown()
+
+
+async def wait_for(condition: Callable[[], bool], *, retry: Callable[[], Any] | None = None) -> None:
+    """Wait for something to arrive over the network (same retry scheme as ``User.should_see``).
+
+    The ``retry`` action is repeated because a freshly declared subscription
+    only reaches the other node after a moment, dropping whatever is sent before.
+    """
+    for _ in range(50):
+        if condition():
+            return
+        if retry is not None:
+            retry()
+        await asyncio.sleep(0.1)
+
+
+def test_peer_to_endpoint_default_port():
+    assert _peer_to_endpoint('host.example.com') == 'tcp/host.example.com:7447'
+    assert _peer_to_endpoint('192.168.1.10') == 'tcp/192.168.1.10:7447'
+
+
+def test_peer_to_endpoint_explicit_port():
+    assert _peer_to_endpoint('host.example.com:9999') == 'tcp/host.example.com:9999'
+
+
+def test_session_rejects_without_storage_secret():
+    """Without a secret, unrelated deployments would silently cross-talk on the same network."""
+    with pytest.raises(ValueError, match='storage_secret'):
+        DistributedSession(True, storage_secret=None)
+    with pytest.raises(ValueError, match='storage_secret'):
+        DistributedSession(True, storage_secret='')
+
+
+def test_emit_raises_before_local_fire_on_non_json_payload(fresh_session):
+    """A non-JSON-serializable arg must raise BEFORE any local callback fires."""
+    DistributedSession.initialize(True, storage_secret='alpha')
+    fired: list = []
+    event = DistributedEvent[object]()
+    event.subscribe(fired.append)
+    with pytest.raises(TypeError, match='JSON'):
+        event.emit({'a', 'set'})
+    assert fired == []
+
+
+async def test_each_event_gets_a_portable_topic(user: User, fresh_session):
+    """Every event travels on its own topic, named after module and line so it is portable across hosts."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    observed: list[str] = []
+
+    @ui.page('/')
+    def page():
+        first = DistributedEvent[str]()
+        second = DistributedEvent[str]()
+        ui.button('first', on_click=lambda: first.emit('hello'))
+        ui.button('second', on_click=lambda: second.emit('hello'))
+
+    await user.open('/')
+    with wire_observer(observed):
+        await wait_for(lambda: len(set(observed)) == 1, retry=user.find('first').click)
+        await wait_for(lambda: len(set(observed)) == 2, retry=user.find('second').click)
+    assert len(set(observed)) == 2
+    for key in set(observed):
+        assert key.startswith('nicegui/events/')
+        assert key.split('/')[-1].startswith(f'event_{__name__}:')
+
+
+async def test_plain_events_stay_local(user: User, fresh_session):
+    """A plain Event must never reach the network, even while distributed mode is active."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    observed: list[str] = []
+
+    @ui.page('/')
+    def page():
+        plain = Event[str]()
+        distributed = DistributedEvent[str]()
+        ui.button('plain', on_click=lambda: plain.emit('hello'))
+        ui.button('distributed', on_click=lambda: distributed.emit('hello'))
+
+    await user.open('/')
+    with wire_observer(observed):
+        await wait_for(lambda: bool(observed), retry=user.find('distributed').click)
+        observed.clear()
+        user.find('plain').click()
+        await asyncio.sleep(0.5)
+    assert observed == []
+
+
+async def test_event_from_another_instance_arrives_on_the_loop_thread(user: User, fresh_session):
+    """Remote payloads trigger the callback ON the asyncio loop thread, not the Zenoh worker thread."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    received: list[tuple[str, threading.Thread]] = []
+
+    @ui.page('/')
+    def page():
+        shared_event().subscribe(lambda value: received.append((value, threading.current_thread())))
+
+    await user.open('/')
+    with remote_instance('alpha'):
+        shared_event().emit('hello')
+        await wait_for(lambda: bool(received))
+    assert [value for value, _ in received] == ['hello']
+    assert received[0][1] is threading.main_thread()
+
+
+async def test_instance_with_different_secret_is_ignored(user: User, fresh_session):
+    """Deployments that do not share the storage_secret must not cross-talk."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    received: list[str] = []
+
+    @ui.page('/')
+    def page():
+        shared_event().subscribe(received.append)
+
+    await user.open('/')
+    with remote_instance('beta'):
+        shared_event().emit('leak')
+        with remote_instance('alpha'):  # stays connected while a matching instance gets through
+            shared_event().emit('hello')
+            await wait_for(lambda: bool(received))
+    assert received == ['hello']
+
+
+async def test_payload_without_the_secret_is_rejected(user: User, fresh_session):
+    """Confidentiality boundary: seeing the topic on the wire is not enough to inject an event."""
+    from cryptography.fernet import Fernet  # local import: only reachable when ZENOH_AVAILABLE
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    observed: list[str] = []
+    received: list[str] = []
+
+    @ui.page('/')
+    def page():
+        event = shared_event()
+        event.subscribe(received.append)
+        ui.button('emit', on_click=lambda: event.emit('local'))
+
+    await user.open('/')
+    with wire_observer(observed) as sibling:
+        await wait_for(lambda: bool(observed), retry=user.find('emit').click)
+        received.clear()
+        forged = json.dumps({'instance_id': 'attacker', 'data': {'args': ['leak'], 'kwargs': {}}}).encode()
+        publisher = sibling.declare_publisher(observed[0])
+        publisher.put(forged)  # not encrypted at all
+        publisher.put(Fernet(Fernet.generate_key()).encrypt(forged))  # encrypted with a foreign key
+        with remote_instance('alpha'):
+            shared_event().emit('hello')
+            await wait_for(lambda: bool(received))
+    assert received == ['hello']
+
+
+async def test_session_is_released_on_app_shutdown(user: User, fresh_session):
+    """Resources must be released on app teardown, so remote events stop arriving once the app has stopped."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    received: list[str] = []
+
+    @ui.page('/')
+    def page():
+        shared_event().subscribe(received.append)
+
+    await user.open('/')
+    with remote_instance('alpha'):
+        shared_event().emit('before')
+        await wait_for(lambda: bool(received))
+    assert received == ['before']
+
+    await core.app.stop()
+
+    with remote_instance('alpha'):
+        shared_event().emit('after')
+        await asyncio.sleep(0.5)
+    assert received == ['before']

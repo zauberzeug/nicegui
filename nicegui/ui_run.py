@@ -80,6 +80,7 @@ def run(root: Callable | None = None, *,
         session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
         markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
+        distributed: bool | list[str] | dict | None = None,
         **kwargs: Any,
         ) -> None:
     """ui.run
@@ -123,6 +124,9 @@ def run(root: Callable | None = None, *,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
         (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
+    :param distributed: enable :class:`~nicegui.DistributedEvent` synchronisation across instances - ``True`` for
+        Zenoh's defaults (UDP-multicast peer scout), a list of ``"host"`` / ``"host:port"`` peers for explicit
+        unicast, or a raw Zenoh config dict for full control (default: ``None``, requires the ``distributed`` extra)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
@@ -212,8 +216,22 @@ def run(root: Callable | None = None, *,
         core.app.setup()
 
     if helpers.is_user_simulation():
+        if distributed is not None:
+            raise RuntimeError(
+                'ui.run(distributed=...) is not supported under user simulation. '
+                'Tests that need a DistributedSession should construct one explicitly '
+                'in the fixture via DistributedSession.initialize(...).'
+            )
         set_storage_secret(storage_secret, session_middleware_kwargs)
         return
+
+    if distributed is not None:
+        from .distributed import ZENOH_AVAILABLE, DistributedSession  # pylint: disable=import-outside-toplevel
+        if not ZENOH_AVAILABLE:
+            log.warning('zenoh is not installed. Distributed events disabled. '
+                        'Install with: pip install "nicegui[distributed]"')
+        else:
+            DistributedSession.initialize(distributed, storage_secret=storage_secret)
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
