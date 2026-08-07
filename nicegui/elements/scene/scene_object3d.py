@@ -46,7 +46,7 @@ class Object3D:
 
     def __init__(self, *args: Any, wireframe: bool = False) -> None:
         if self._import_name is None:
-            args = self._consume_legacy_type_string(args)
+            args, wireframe = self._consume_legacy_type_string(args, wireframe)
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
@@ -70,8 +70,12 @@ class Object3D:
         self.sz: float = 1
         self._create()
 
-    def _consume_legacy_type_string(self, args: tuple) -> tuple:  # DEPRECATED: remove this method in NiceGUI 4.0
-        """Support the legacy protocol of instantiating an `Object3D` with a leading type string (until NiceGUI 4.0)."""
+    # DEPRECATED: remove this method in NiceGUI 4.0
+    def _consume_legacy_type_string(self, args: tuple, wireframe: bool) -> tuple[tuple, bool]:
+        """Support the legacy protocol of instantiating an `Object3D` with a leading type string (until NiceGUI 4.0).
+
+        The legacy protocol also passed the wireframe flag as the last positional argument of geometry-based types.
+        """
         # pylint: disable=protected-access
         if not args or not isinstance(args[0], str):
             raise TypeError(f'Cannot create a {type(self).__name__} without a JS component. '
@@ -88,7 +92,12 @@ class Object3D:
                   'Subclass a built-in scene object or pass `component=` instead.')
         self._import_name = subclass._import_name  # type: ignore[misc]
         self._file_stem = subclass._file_stem  # type: ignore[misc]
-        return args[1:]
+        args = args[1:]
+        geometry_types = ('box', 'sphere', 'cylinder', 'ring', 'quadratic_bezier_tube', 'extrusion')
+        if self._file_stem in geometry_types and args and isinstance(args[-1], bool):
+            wireframe = args[-1]
+            args = args[:-1]
+        return args, wireframe
 
     def with_name(self, name: str) -> Self:
         """Set the name of the object."""

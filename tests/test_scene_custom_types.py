@@ -72,6 +72,21 @@ def test_bare_subclass_with_legacy_type_string_creates_group(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("legacy")?.getObjectByName("child")?.type', 'Mesh')
 
 
+def test_legacy_type_string_consumes_a_trailing_wireframe_flag(screen: Screen):
+    scene: ui.scene = None  # type: ignore
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            Object3D('box', 1, 2, 3, True).with_name('wireframe')
+            Object3D('box', 1, 2, 3).with_name('solid')
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("wireframe")?.type', 'LineSegments')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("solid")?.geometry.parameters.depth', 3)
+
+
 async def test_deprecated_type_property_reports_the_legacy_type_string(user: User, caplog: pytest.LogCaptureFixture) -> None:
     types: list[str | None] = []
 
