@@ -275,3 +275,26 @@ def test_no_leak_when_client_deleted(screen: Screen):
     Client.prune_instances(client_age_threshold=0)
     screen.wait(1)
     assert not any(isinstance(obj, ui.timer) for obj in gc.get_objects())
+
+
+@pytest.mark.parametrize('kwargs', [{}, {'once': True}, {'immediate': False}], ids=['repeating', 'once', 'delayed'])
+async def test_no_error_when_timer_is_deleted_while_waiting_for_connection(user: User, kwargs: dict):
+    containers: list[ui.column] = []
+
+    @ui.page('/')
+    def page():
+        with ui.column() as container:
+            ui.timer(0.2, lambda: None, **kwargs)
+        containers.append(container)
+
+    exceptions: list[Exception] = []
+    app.on_exception(lambda e: exceptions.append(e))
+
+    await user.http_client.get('/')  # request the page without ever opening the websocket
+    await asyncio.sleep(0)
+    containers.pop().delete()  # delete the timer and drop the last reference to its parent slot
+    Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
+    gc.collect()
+    await asyncio.sleep(0.5)
+
+    assert not exceptions
