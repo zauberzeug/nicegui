@@ -122,7 +122,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     try:
                         await result
                     except Exception as e:
-                        self.client.handle_exception(e)
+                        if not self.is_deleted:
+                            self.client.handle_exception(e)
                         raise
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
