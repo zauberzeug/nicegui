@@ -1,7 +1,9 @@
 import asyncio
 
+import pytest
+
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_refreshable(screen: Screen) -> None:
@@ -306,3 +308,26 @@ def test_awaitable_refresh(screen: Screen):
     screen.click('Try 0')
     screen.should_contain('error handled')
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
+
+
+async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    async def page():
+        ui.on_exception(seen.append)
+
+        @ui.refreshable
+        async def part(explode: bool = False):
+            await asyncio.sleep(0)
+            if explode:
+                raise RuntimeError('boom')
+
+        await part()
+        ui.button('fire', on_click=lambda: part.refresh(True))
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
