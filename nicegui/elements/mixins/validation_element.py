@@ -74,7 +74,7 @@ class ValidationElement(ValueElement[ValueT]):
                     try:
                         self.error = await result
                     except Exception as e:
-                        if not context.slot_stack:  #6233
+                        if not context.slot_stack:  # 6233
                             self.client.handle_exception(e)
                         raise
                 background_tasks.create(await_error(), name=f'validate {self.id}')
