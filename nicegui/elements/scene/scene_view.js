@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE, TWEEN, Stats } = SceneLib;
+import { THREE, TWEEN, Stats } from "nicegui-scene";
 
 export default {
   template: `

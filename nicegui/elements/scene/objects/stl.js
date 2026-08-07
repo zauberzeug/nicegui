@@ -1,4 +1,4 @@
-import SceneLib, { THREE, STLLoader } from "nicegui-scene";
+import { apply_material, THREE, STLLoader } from "nicegui-scene";
 
 const stl_loader = new STLLoader();
 
@@ -36,6 +36,6 @@ export default class STL {
       this.pendingMaterialInfo = material_info;
       return;
     }
-    this.mesh.traverse((child) => child.material && SceneLib.apply_material(child.material, material_info));
+    this.mesh.traverse((child) => child.material && apply_material(child.material, material_info));
   }
 }

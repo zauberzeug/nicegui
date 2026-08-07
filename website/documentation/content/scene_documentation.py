@@ -393,7 +393,7 @@ def materials_for_composite_objects() -> None:
     ''')
 
     code_window(title='robot.js', language='js', code='''
-        import SceneLib, { THREE } from "nicegui-scene";
+        import { apply_material, THREE } from "nicegui-scene";
 
         export default class Robot {
           create_mesh() {
@@ -404,7 +404,7 @@ def materials_for_composite_objects() -> None:
           }
 
           apply_material(options) {
-            SceneLib.apply_material(this.body.material, options); // tint only the body, keep the eyes black
+            apply_material(this.body.material, options); // tint only the body, keep the eyes black
           }
         }
     ''').classes('w-full')

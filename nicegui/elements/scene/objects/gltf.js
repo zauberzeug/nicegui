@@ -1,4 +1,4 @@
-import SceneLib, { THREE, GLTFLoader } from "nicegui-scene";
+import { apply_material, THREE, GLTFLoader } from "nicegui-scene";
 
 const gltf_loader = new GLTFLoader();
 
@@ -30,6 +30,6 @@ export default class GLTF {
       this.pendingMaterialInfo = material_info;
       return;
     }
-    this.mesh.traverse((child) => child.material && SceneLib.apply_material(child.material, material_info));
+    this.mesh.traverse((child) => child.material && apply_material(child.material, material_info));
   }
 }
