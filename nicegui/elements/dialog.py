@@ -25,6 +25,9 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         That means it is not removed when closed, but only hidden.
         You should either create it only once and then reuse it, or remove it with `.clear()` after dismissal.
 
+        *Updated in version 3.16.0: Awaiting a dialog resolves with ``None`` when the dialog is deleted,
+        e.g. because the client disconnected.*
+
         :param value: whether the dialog should be opened on creation (default: `False`)
         """
         with context.client.layout:
@@ -55,12 +58,15 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         return super().toggle()
 
     def __await__(self):
+        if self.is_deleted:
+            return None  # a deleted dialog can never be submitted or closed, so we resolve immediately
         self._result = None
         self.submitted.clear()
         self.open()
         yield from self.submitted.wait().__await__()  # pylint: disable=no-member
         result = self._result
-        self.close()
+        if not self.is_deleted:  # closing a deleted dialog would warn about using a deleted element
+            self.close()
         return result
 
     def submit(self, result: Any) -> None:
@@ -73,3 +79,10 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         if not self.value:
             self._result = None
             self.submitted.set()
+
+    def _handle_delete(self) -> None:
+        # resolve pending awaits so their tasks don't wait forever, e.g. when the client is deleted after a disconnect
+        # (keep self._result untouched: a result submitted just before deletion should still reach the awaiting task)
+        if self._submitted is not None:
+            self._submitted.set()
+        super()._handle_delete()
