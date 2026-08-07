@@ -7,7 +7,7 @@ from typing import Any, ClassVar, Concatenate, Generic, TypeVar, cast
 
 from typing_extensions import ParamSpec, Self
 
-from .. import background_tasks, helpers
+from .. import background_tasks, context, helpers
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
@@ -117,17 +117,14 @@ class refreshable(Generic[_P, _T]):
             target.kwargs.update(kwargs)
             try:
                 result = target.run(self.func)
-            except TypeError as e:
-                if 'got multiple values for argument' in str(e):
+            except Exception as e:
+                if not context.slot_stack:
+                    target.container.client.handle_exception(e)
+                if isinstance(e, TypeError) and 'got multiple values for argument' in str(e):
                     function = str(e).split()[0].split('.')[-1]
                     parameter = str(e).split()[-1]
                     raise TypeError(f'{parameter} needs to be consistently passed to {function} '
                                     'either as positional or as keyword argument') from e
-                raise
-            except Exception as e:
-                from .. import context
-                with target.container:
-                    context.client.handle_exception(e)
                 raise
 
             if helpers.should_await(result):
