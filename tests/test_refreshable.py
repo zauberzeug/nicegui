@@ -310,7 +310,8 @@ def test_awaitable_refresh(screen: Screen):
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
 
 
-async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixture):
+@pytest.mark.parametrize('awaited', [False, True])
+async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixture, awaited: bool):
     seen: list[Exception] = []
 
     @ui.page('/')
@@ -323,8 +324,11 @@ async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixtu
             if explode:
                 raise RuntimeError('boom')
 
+        async def refresh_awaited():
+            await part.refresh(True)
+
         await part()
-        ui.button('fire', on_click=lambda: part.refresh(True))
+        ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
 
     await user.open('/')
     user.find('fire').click()

@@ -7,7 +7,7 @@ from typing import Any, ClassVar, Concatenate, Generic, TypeVar, cast
 
 from typing_extensions import ParamSpec, Self
 
-from .. import background_tasks, context, helpers
+from .. import background_tasks, helpers
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
@@ -28,7 +28,7 @@ class RefreshableTarget:
     locals: list[Any] = field(default_factory=list)
     next_index: int = 0
 
-    def run(self, func: Callable[..., _T]) -> _T:
+    def run(self, func: Callable[..., _T], *, report_exceptions: bool = False) -> _T:
         """Run the function and return the result."""
         RefreshableTarget.current_target = self
         self.next_index = 0
@@ -40,16 +40,17 @@ class RefreshableTarget:
                 result = func(self.instance, *self.args, **self.kwargs)
 
         if helpers.should_await(result):
-            return cast(_T, self._await_with_context(result))
+            if report_exceptions:
+                return cast(_T, self._await_and_report(result))
+            return cast(_T, helpers.await_with_context(result, self.container))
 
         return result
 
-    async def _await_with_context(self, awaitable: Awaitable[_T]) -> _T:
+    async def _await_and_report(self, awaitable: Awaitable[_T]) -> _T:
         try:
             return await helpers.await_with_context(awaitable, self.container)
         except Exception as e:
-            if not context.slot_stack:
-                self.container.client.handle_exception(e)
+            self.container.client.handle_exception(e)
             raise
 
 
@@ -105,7 +106,7 @@ class refreshable(Generic[_P, _T]):
         instance = self.instance
 
         def fire_and_forget() -> None:
-            if awaitables := self._execute_refresh(args, kwargs, instance=instance):
+            if awaitables := self._execute_refresh(args, kwargs, instance=instance, report_exceptions=True):
                 background_tasks.create_or_defer(asyncio.gather(*awaitables), name=f'refresh {self.func.__name__}')
 
         async def wait_for_completion() -> None:
@@ -114,7 +115,8 @@ class refreshable(Generic[_P, _T]):
 
         return AwaitableResponse(fire_and_forget, wait_for_completion)
 
-    def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any], *, instance: Any) -> list[Awaitable[Any]]:
+    def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any], *,
+                         instance: Any, report_exceptions: bool = False) -> list[Awaitable[Any]]:
         """Execute the refresh and return a list of awaitables for async functions."""
         awaitables: list[Awaitable[Any]] = []
         for target in self.targets:
@@ -124,7 +126,7 @@ class refreshable(Generic[_P, _T]):
             target.args = args or target.args
             target.kwargs.update(kwargs)
             try:
-                result = target.run(self.func)
+                result = target.run(self.func, report_exceptions=report_exceptions)
             except TypeError as e:
                 if 'got multiple values for argument' in str(e):
                     function = str(e).split()[0].split('.')[-1]
