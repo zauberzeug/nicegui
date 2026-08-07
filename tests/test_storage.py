@@ -1,8 +1,11 @@
 import asyncio
+import contextlib
 import copy
+import gc
 import re
 import threading
 import time
+import warnings
 from collections.abc import Callable
 
 import httpx
@@ -421,6 +424,32 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+async def test_cancelled_backup_does_not_leak_a_file_handle(user: User, tmp_path):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    cancelled = 0
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always')
+        # the vulnerable window is while aiofiles' open() is in flight, a few dozen microseconds
+        # after the task starts; the spread keeps this reliable on slower machines too
+        for i, delay in enumerate([0.00002, 0.00005, 0.0001, 0.0002]):
+            for j in range(10):
+                d = FilePersistentDict(tmp_path / f'storage-{i}-{j}.json', encoding='utf-8')
+                d['key'] = 'value'  # schedules the async backup task
+                task = background_tasks.lazy_tasks_running[d.filepath.stem]
+                await asyncio.sleep(delay)  # let the task get partway through the write
+                cancelled += task.cancel()  # False if it already finished, i.e. nothing was exercised
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
+        gc.collect()
+        leaks = [str(w.message) for w in caught if issubclass(w.category, ResourceWarning)]
+    assert cancelled, 'no backup was still running when cancelled, so nothing was exercised'
+    assert not leaks, f'cancelling a backup left {len(leaks)} file(s) unclosed: {leaks[:1]}'
 
 
 async def test_unlinking_storage_files_waits_out_transient_holders(user: User):
