@@ -5,6 +5,8 @@ from typing import Literal
 import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
@@ -289,6 +291,54 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+    enable_rotate = f'getElement({scene.id}).controls.enableRotate'
+    screen.selenium.execute_script(f'{enable_rotate} = false')
+
+    camera_x = f'getElement({scene.id}).camera.position.x'
+    scene.move_camera(x=1, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_x}') == pytest.approx(1))
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is False, 'controls survive a plain camera move'
+
+    camera_up_y = f'getElement({scene.id}).camera.up.y'
+    scene.move_camera(up_y=1, up_z=0, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_up_y}') == pytest.approx(1))
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is True, 'controls are rebuilt for a new up vector'
+
+
+def test_moving_camera_keeps_trackball_controls_after_rotating(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(control_type='trackball')
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+    static_moving = f'getElement({scene.id}).controls.staticMoving'
+    screen.selenium.execute_script(f'{static_moving} = true')  # no rotation momentum after releasing the mouse
+
+    canvas = screen.selenium.find_element(By.CSS_SELECTOR, '.nicegui-scene canvas')
+    ActionChains(screen.selenium).click_and_hold(canvas).move_by_offset(50, 50).release().perform()
+    camera_up_z = f'getElement({scene.id}).camera.up.z'
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_up_z}') != 1)  # the user rotated the scene
+
+    camera_x = f'getElement({scene.id}).camera.position.x'
+    scene.move_camera(x=1, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_x}') == pytest.approx(1))
+    assert screen.selenium.execute_script(f'return {static_moving}') is True
 
 
 async def test_dragend_after_object_deleted(user: User):
