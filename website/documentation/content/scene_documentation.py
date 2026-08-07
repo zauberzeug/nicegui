@@ -332,7 +332,7 @@ def custom_composed_objects() -> None:
     The JavaScript module for this demo is shown below.
 
     *Added in version 3.16.0*
-''', lazy=False)  # eager rendering makes the TorusKnot class register its component before the importmap is generated
+''')
 def custom_3d_scene_objects() -> None:
     # from nicegui import app
     from nicegui.elements.scene import Object3D

@@ -55,6 +55,27 @@ def test_two_classes_sharing_one_component(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("b")?.userData.label', 'second')
 
 
+def test_class_registered_after_page_render(screen: Screen):
+    scene: ui.scene = None  # type: ignore
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+
+        def create_late_object():
+            class LateBox(Object3D, component='test_scene_custom_types_late.js'):
+                pass
+            with scene:
+                LateBox(0.5).with_name('late')
+
+        scene = ui.scene()
+        ui.button('Create', on_click=create_late_object)
+
+    screen.open('/')
+    screen.click('Create')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("late")?.geometry.parameters.width', 0.5)
+
+
 def test_component_file_must_exist():
     with pytest.raises(ValueError, match=r'`component` must be an existing file, but "missing\.js" was not found'):
         class Missing(Object3D, component='missing.js'):  # pylint: disable=unused-variable

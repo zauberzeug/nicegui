@@ -228,7 +228,7 @@ export default {
   },
 
   methods: {
-    async create(import_name, id, parent_id, wireframe, ...args) {
+    async create(component_url, id, parent_id, wireframe, ...args) {
       // Initial bootstrapping
       let resolve_ready, reject_ready;
       const ready_promise = new Promise((resolve, reject) => {
@@ -242,7 +242,7 @@ export default {
 
       try {
         // Find the component class
-        const component_class = (await import(import_name)).default;
+        const component_class = (await import(window.path_prefix + component_url)).default;
         const component = new component_class();
 
         // Create the object
@@ -276,7 +276,7 @@ export default {
         resolve_ready();
         delete object.ready_promise; // subsequent lookups don't need to wait anymore
       } catch (reason) {
-        console.error(`Failed to create object (component="${import_name}", id=${id}, args=${args}): ${reason}`);
+        console.error(`Failed to create object (component="${component_url}", id=${id}, args=${args}): ${reason}`);
         reject_ready();
         return;
       }
