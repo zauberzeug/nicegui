@@ -2,6 +2,7 @@ import asyncio
 
 from typing_extensions import Self
 
+from .. import helpers
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.color_elements import BackgroundColorElement
@@ -63,5 +64,6 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """Wait until the button is clicked."""
         event = asyncio.Event()
         self.on('click', event.set, [])
+        helpers.link_events(self.client._deleted_event, event)
         await self.client.connected()
         await event.wait()
