@@ -31,12 +31,20 @@ If you haven't, you can follow the instructions on https://chocolatey.org/instal
 
 ### Linux
 
+For Debian-based Linux distribution:
+
 ```bash
 sudo apt-get update
 sudo apt-get install chromium-chromedriver
 ```
 
-Note: The above instructions assume that you are using a Debian-based Linux distribution.
+For Arch-based Linux distribution:
+
+```bash
+sudo pacman -S chromium
+```
+
+Note:
 If you are using a different distribution, the package manager and package names may differ.
 Please refer to the documentation for your distribution for more information.
 
