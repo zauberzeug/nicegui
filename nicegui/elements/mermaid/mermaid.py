@@ -6,6 +6,20 @@ from ...helpers import remove_indentation
 from ..mixins.content_element import ContentElement
 
 
+def _extract_node_id(html_id: str, svg_id: str) -> str:
+    """Extract the Mermaid node ID from a clicked node's HTML ID.
+
+    Mermaid prefixes every node ID with the SVG ID. Most diagram types then add a type token and a
+    trailing index (``<svg_id>-<type>-<node_id>-<index>``), but block, mindmap and requirement
+    diagrams emit ``<svg_id>-<node_id>`` verbatim.
+    """
+    prefix = f'{svg_id}-'
+    if not html_id.startswith(prefix):
+        return html_id  # unexpected shape: hand back the raw ID rather than mis-parse it
+    parts = html_id[len(prefix):].split('-')
+    return '-'.join(parts[1:-1] if len(parts) >= 3 and parts[-1].isdigit() else parts)
+
+
 class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'dist'}):
     CONTENT_PROP = 'content'
 
@@ -47,7 +61,7 @@ class Mermaid(ContentElement, component='mermaid.js', esm={'nicegui-mermaid': 'd
         self.on('node_click', lambda e: handle_event(callback, MermaidNodeClickEventArguments(
             sender=self,
             client=self.client,
-            node_id='-'.join(e.args.split('-')[1:-1])  # extract Node ID from HTML ID (<type>-<node_id>-<index>)
+            node_id=_extract_node_id(e.args, f'{self.html_id}_mermaid'),
         )))
         self._props['clickable'] = True
         return self
