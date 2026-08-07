@@ -19,7 +19,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, core, ui
+from nicegui import app, core, helpers, ui
 from nicegui.server import Server
 
 from .general import prepare_simulation
@@ -43,8 +43,8 @@ class Screen:
         self.url = f'http://localhost:{self.PORT}'
         self.allowed_js_errors: list[str] = []
 
-    def start_server(self) -> None:
-        """Start the webserver in a separate thread."""
+    def start_server(self, timeout: float = 10.0) -> None:
+        """Start the webserver in a separate thread and wait until it accepts connections."""
         main_path = get_path_to_main_file(self.pytest_request) if self.pytest_request else None
         if main_path is None:
             prepare_simulation()
@@ -52,6 +52,13 @@ class Screen:
         else:
             self.server_thread = threading.Thread(target=lambda: runpy.run_path(str(main_path), run_name='__main__'))
         self.server_thread.start()
+        deadline = time.time() + timeout
+        while not helpers.is_port_open('localhost', self.PORT):
+            if not self.server_thread.is_alive():
+                raise RuntimeError('The NiceGUI server has stopped running')
+            if time.time() > deadline:
+                raise RuntimeError(f'The NiceGUI server did not start listening on port {self.PORT} within {timeout} s')
+            time.sleep(0.01)
 
     @property
     def is_open(self) -> bool:
