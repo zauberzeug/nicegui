@@ -281,9 +281,9 @@ export default {
         return;
       }
 
-      // Attach to scene
+      // Attach to scene (unless the object was deleted while waiting for its parent)
       const parent = await get_object(this.objects, parent_id);
-      if (!parent) return;
+      if (!parent || this.objects.get(id) !== object) return;
       parent.mesh.add(object.mesh);
     },
     async name(object_id, name) {
@@ -353,7 +353,7 @@ export default {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
       const parent = await get_object(this.objects, parent_id);
-      if (!parent) return;
+      if (!parent || this.objects.get(object_id) !== object) return; // the object may have been deleted meanwhile
       parent.mesh.add(object.mesh);
       this.move(object_id, x, y, z);
       this.rotate(object_id, R);

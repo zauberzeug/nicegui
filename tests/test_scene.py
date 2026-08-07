@@ -102,6 +102,28 @@ def test_deleting_group(screen: Screen):
     assert len(scene.objects) == 0
 
 
+def test_deleting_object_right_after_creation(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('warmup')  # when the button is clicked, box.js is already loaded but group.js is not
+
+        def create_and_delete():
+            with scene, scene.group().with_name('group'):
+                scene.box().with_name('box').delete()
+
+        ui.button('Create and delete', on_click=create_and_delete)
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("warmup")?.type', 'Mesh')
+    screen.click('Create and delete')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("group")?.type', 'Group')
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.getObjectByName("box")?.type ?? null') is None
+
+
 def test_replace_scene(screen: Screen):
     scene = None
 
