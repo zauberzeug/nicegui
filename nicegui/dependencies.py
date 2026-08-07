@@ -131,6 +131,10 @@ def register_library(path: Path, *, import_name: str | None = None, max_time: fl
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
+        if import_name is not None:
+            for library in libraries.values():
+                if library.name == import_name:
+                    raise ValueError(f'The import name "{import_name}" is already used for "{library.path}"')
         libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
     raise ValueError(f'Unsupported library type "{path.suffix}"')

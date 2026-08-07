@@ -31,9 +31,11 @@ class Object3D:
                 path = Path(inspect.getfile(cls)).parent / path
             if not path.is_file():
                 raise ValueError(f'`component` must be an existing file, but "{component}" was not found')
-            cls._import_name = f'{cls.__module__}.{cls.__name__}'.replace('.', '__')
+            qualname = cls.__qualname__.replace('<locals>.', '')  # keep classes of different scopes apart
+            import_name = f'{cls.__module__}.{qualname}'.replace('.', '__')
+            library = register_library(path, import_name=import_name, max_time=path.stat().st_mtime)
+            cls._import_name = library.name  # classes sharing a JS file also share its importmap entry
             cls._file_stem = path.stem
-            register_library(path, import_name=cls._import_name, max_time=path.stat().st_mtime)
         else:
             # Fallback to parent's component to ease inheriting from Object3D classes
             for base_cls in cls.__mro__[1:]:

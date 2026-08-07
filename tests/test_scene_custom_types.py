@@ -36,6 +36,25 @@ def test_custom_type_create_and_method_dispatch(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("b").scale.x', 1)  # dispatch only reaches instance "a"
 
 
+def test_two_classes_sharing_one_component(screen: Screen):
+    class Marker(Object3D, component='test_scene_custom_types.js'):
+        def __init__(self, label: str) -> None:
+            super().__init__(label)
+
+    scene: ui.scene = None  # type: ignore
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            Tracer('first').with_name('a')
+            Marker('second').with_name('b')
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("a")?.userData.label', 'first')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("b")?.userData.label', 'second')
+
+
 def test_component_file_must_exist():
     with pytest.raises(ValueError, match=r'`component` must be an existing file, but "missing\.js" was not found'):
         class Missing(Object3D, component='missing.js'):  # pylint: disable=unused-variable
