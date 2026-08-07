@@ -60,6 +60,24 @@ def test_query_multiple_divs(screen: Screen):
     assert screen.find('B').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
 
 
+def test_query_style_replace(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+        ui.query('body').style('color: rgb(255, 0, 0); font-size: 20px')
+        ui.button('Replace', on_click=lambda: ui.query('body').style(replace='font-size: 30px'))
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    assert screen.find_by_tag('body').value_of_css_property('font-size') == '20px'
+    assert '255, 0, 0' in screen.find_by_tag('body').value_of_css_property('color')
+
+    screen.click('Replace')
+    screen.wait(0.5)
+    assert screen.find_by_tag('body').value_of_css_property('font-size') == '30px'
+    assert '255, 0, 0' not in screen.find_by_tag('body').value_of_css_property('color')
+
+
 def test_query_with_css_variables(screen: Screen):
     @ui.page('/')
     def page():

@@ -84,15 +84,18 @@ class Query:
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
         element = self.element
-        old_style = Style.parse(remove)
-        for key in old_style:
-            element.props['style'].pop(key, None)
-        if old_style:
-            element.run_method('remove_style', list(old_style))
-        element.props['style'].update(Style.parse(add))
-        element.props['style'].update(Style.parse(replace))
-        if element.props['style']:
-            element.run_method('add_style', element.props['style'])
+        old_style = element.props['style']
+        new_style = {} if replace is not None else dict(old_style)
+        for key in Style.parse(remove):
+            new_style.pop(key, None)
+        new_style.update(Style.parse(add))
+        new_style.update(Style.parse(replace))
+        removed_keys = [key for key in old_style if key not in new_style]
+        if removed_keys:
+            element.run_method('remove_style', removed_keys)
+        if new_style:
+            element.run_method('add_style', new_style)
+        element.props['style'] = new_style
         return self
 
     def props(self, add: str | None = None, *, remove: str | None = None) -> Self:
