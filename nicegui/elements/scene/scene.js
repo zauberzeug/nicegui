@@ -368,6 +368,10 @@ export default {
     async detach(object_id, x, y, z, R) {
       await this.attach(object_id, "scene", x, y, z, R);
     },
+    run_methods(calls) {
+      // The calls are only started, not awaited, just like they would be if each of them arrived as its own message.
+      for (const [name, ...args] of calls) this[name](...args);
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       const camera_up_changed = up_x !== null || up_y !== null || up_z !== null;

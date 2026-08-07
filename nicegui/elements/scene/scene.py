@@ -1,11 +1,13 @@
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Literal
 
 from typing_extensions import Self
 
 from ... import binding
+from ...awaitable_response import AwaitableResponse, NullResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
@@ -109,6 +111,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['camera-params'] = self.camera.params
         self.objects: dict[str, Object3D] = {}
         self.stack: list[Object3D | SceneObject] = [SceneObject()]
+        self._batched_calls: list[list[Any]] | None = None
         self._initialized_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = click_events[:]
@@ -181,10 +184,33 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         if self._initialized_event.is_set():
             # a second init event implies a JS remount (e.g. after WebGL context loss) with an empty scene graph;
             # re-send parents before children (dict order can deviate after attach())
-            for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
-                obj._resend()  # pylint: disable=protected-access
+            with self._batch_calls():
+                for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
+                    obj._resend()  # pylint: disable=protected-access
         self._initialized_event.set()
         self.move_camera(duration=0)
+
+    @contextmanager
+    def _batch_calls(self) -> Iterator[None]:
+        """Collect the method calls issued within this context and send them as a single message.
+
+        Sending them individually would emit thousands of frames for a large scene
+        and evict the message history other clients need for reconnecting.
+        """
+        calls: list[list[Any]] = []
+        self._batched_calls = calls
+        try:
+            yield
+        finally:
+            self._batched_calls = None
+        if calls:
+            self.run_method('run_methods', calls)
+
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        if self._batched_calls is not None:
+            self._batched_calls.append([name, *args])
+            return NullResponse()
+        return super().run_method(name, *args, timeout=timeout)
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
