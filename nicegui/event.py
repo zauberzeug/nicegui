@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import weakref
 from collections.abc import Awaitable, Callable
-from contextlib import nullcontext
+from contextlib import nullcontext, suppress
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic
 from weakref import WeakSet
@@ -32,16 +32,19 @@ class Callback(Generic[P]):
         with (self.slot and self.slot()) or nullcontext():
             return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
 
-    async def await_and_handle_result(self, result: Awaitable) -> Any:
-        """Await the result of the callback reporting exceptions if necessary."""
-        empty_stack = not context.slot_stack  # 6233
+    async def await_and_handle_result(self, result: Awaitable, *, report_exceptions: bool = False) -> Any:
+        """Await the result of the callback, reporting exceptions if nobody downstream will."""
         with (self.slot and self.slot()) or nullcontext():
-            if not empty_stack:
+            if not report_exceptions:
                 return await result
             try:
                 return await result
             except Exception as e:
-                core.app.handle_exception(e)
+                client = None
+                with suppress(RuntimeError):  # the client may already be deleted
+                    client = context.client if context.slot_stack else None
+                if client is not None:
+                    client.handle_exception(e)
                 raise
 
 
@@ -145,7 +148,7 @@ def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs)
     try:
         result = callback.run(*args, **kwargs)
         if helpers.should_await(result):
-            background_tasks.create_or_defer(callback.await_and_handle_result(result),
+            background_tasks.create_or_defer(callback.await_and_handle_result(result, report_exceptions=True),
                                              name=f'{callback.filepath}:{callback.line}')
     except Exception as e:
         core.app.handle_exception(e)
