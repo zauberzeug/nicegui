@@ -85,7 +85,7 @@ class App(FastAPI):
             self.safe_invoke(t)
         self.on_shutdown(self.storage.on_shutdown)
         self.on_shutdown(background_tasks.teardown)
-        background_tasks.create(binding.refresh_loop(), name='refresh bindings')
+        background_tasks.create(binding.refresh_loop(), name="refresh bindings")
         self.timer(10, Client.prune_instances)
         self.timer(10, Slot.prune_stacks)
         self.timer(10, prune_tab_storage)
@@ -107,7 +107,7 @@ class App(FastAPI):
         try:
             result = func()
             if helpers.should_await(result):
-                background_tasks.create(result, name=f'func {func.__name__ if hasattr(func, "__name__") else func}')
+                background_tasks.create(result, name=f"func {func.__name__ if hasattr(func, '__name__') else func}")
         except Exception as e:
             self.handle_exception(e)
 
@@ -118,7 +118,7 @@ class App(FastAPI):
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
-        self._connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_connect()'))
+        self._connect_handlers.append(helpers.normalize_lifecycle_handler(handler, "app.on_connect()"))
 
     def on_disconnect(self, handler: Callable) -> None:
         """Called every time a new client disconnects from NiceGUI.
@@ -129,7 +129,7 @@ class App(FastAPI):
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
-        self._disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_disconnect()'))
+        self._disconnect_handlers.append(helpers.normalize_lifecycle_handler(handler, "app.on_disconnect()"))
 
     def on_delete(self, handler: Callable) -> None:
         """Called when a client is deleted.
@@ -140,7 +140,7 @@ class App(FastAPI):
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
-        self._delete_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_delete()'))
+        self._delete_handlers.append(helpers.normalize_lifecycle_handler(handler, "app.on_delete()"))
 
     def on_startup(self, handler: Callable) -> None:
         """Called when NiceGUI is started or restarted.
@@ -152,8 +152,8 @@ class App(FastAPI):
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
         if self.is_started:
-            raise RuntimeError('Unable to register another startup handler. NiceGUI has already been started.')
-        self._startup_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_startup()'))
+            raise RuntimeError("Unable to register another startup handler. NiceGUI has already been started.")
+        self._startup_handlers.append(helpers.normalize_lifecycle_handler(handler, "app.on_startup()"))
 
     def on_shutdown(self, handler: Callable) -> None:
         """Called when NiceGUI is shut down or restarted.
@@ -163,7 +163,7 @@ class App(FastAPI):
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
-        self._shutdown_handlers.append(helpers.normalize_lifecycle_handler(handler, 'app.on_shutdown()'))
+        self._shutdown_handlers.append(helpers.normalize_lifecycle_handler(handler, "app.on_shutdown()"))
 
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
@@ -181,12 +181,12 @@ class App(FastAPI):
             if context.slot_stack:
                 client = context.client
         if client is not None:
-            context.client.handle_exception(exception)
+            client.handle_exception(exception)
 
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.should_await(result):
-                background_tasks.create(result, name=f'exception {handler.__name__}')
+                background_tasks.create(result, name=f"exception {handler.__name__}")
 
     def on_page_exception(self, handler: Callable) -> None:
         """Called when an exception occurs in a page and allows to create a custom error page.
@@ -207,16 +207,13 @@ class App(FastAPI):
         if self.native.main_window:
             self.native.main_window.destroy()
         if self.config.reload or Server.instance.config.should_reload:
-            os.kill(os.getppid(), getattr(signal, 'CTRL_C_EVENT' if platform.system() == 'Windows' else 'SIGINT'))
+            os.kill(os.getppid(), getattr(signal, "CTRL_C_EVENT" if platform.system() == "Windows" else "SIGINT"))
         else:
             Server.instance.should_exit = True
 
-    def add_static_files(self,
-                         url_path: str,
-                         local_directory: str | Path,
-                         *,
-                         follow_symlink: bool = False,
-                         max_cache_age: int = 3600) -> None:
+    def add_static_files(
+        self, url_path: str, local_directory: str | Path, *, follow_symlink: bool = False, max_cache_age: int = 3600
+    ) -> None:
         """Add a directory of static files.
 
         `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
@@ -232,24 +229,28 @@ class App(FastAPI):
         :param follow_symlink: whether to follow symlinks (default: False)
         :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
         """
-        if url_path == '/':
-            raise ValueError('''Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.''')
+        if url_path == "/":
+            raise ValueError("""Path cannot be "/", because it would hide NiceGUI's internal "/_nicegui" route.""")
         if max_cache_age < 0:
-            raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
+            raise ValueError("""Value of max_cache_age must be a positive integer or 0.""")
 
         handler = CacheControlledStaticFiles(
-            directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age)
+            directory=local_directory, follow_symlink=follow_symlink, max_cache_age=max_cache_age
+        )
 
-        @self.get(url_path.rstrip('/') + '/{path:path}')  # prevent double slashes in route pattern
-        async def static_file(request: Request, path: str = '') -> Response:
+        @self.get(url_path.rstrip("/") + "/{path:path}")  # prevent double slashes in route pattern
+        async def static_file(request: Request, path: str = "") -> Response:
             return await handler.get_response(path, request.scope)
 
-    def add_static_file(self, *,
-                        local_file: str | Path,
-                        url_path: str | None = None,
-                        single_use: bool = False,
-                        strict: bool = True,
-                        max_cache_age: int = 3600) -> str:
+    def add_static_file(
+        self,
+        *,
+        local_file: str | Path,
+        url_path: str | None = None,
+        single_use: bool = False,
+        strict: bool = True,
+        max_cache_age: int = 3600,
+    ) -> str:
         """Add a single static file.
 
         Allows a local file to be accessed online with enabled caching.
@@ -266,18 +267,18 @@ class App(FastAPI):
         :return: encoded URL which can be used to access the file
         """
         if max_cache_age < 0:
-            raise ValueError('''Value of max_cache_age must be a positive integer or 0.''')
+            raise ValueError("""Value of max_cache_age must be a positive integer or 0.""")
 
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise FileNotFoundError(f'File not found: {file}')
-        path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
+            raise FileNotFoundError(f"File not found: {file}")
+        path = f"/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}" if url_path is None else url_path
 
         @self.get(path)
         def read_item() -> FileResponse:
             if single_use:
                 self.remove_route(path)
-            return FileResponse(file, headers={'Cache-Control': f'public, max-age={max_cache_age}'})
+            return FileResponse(file, headers={"Cache-Control": f"public, max-age={max_cache_age}"})
 
         return urllib.parse.quote(path)
 
@@ -295,19 +296,18 @@ class App(FastAPI):
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
         """
-        @self.get(url_path.rstrip('/') + '/{filename:path}')  # prevent double slashes in route pattern
+
+        @self.get(url_path.rstrip("/") + "/{filename:path}")  # prevent double slashes in route pattern
         def read_item(request: Request, filename: str, nicegui_chunk_size: int = 8192) -> Response:
             local_dir = Path(local_directory).resolve()
             filepath = (local_dir / filename).resolve()
             if not filepath.is_relative_to(local_dir) or not filepath.is_file():
-                raise HTTPException(status_code=404, detail='Not Found')
+                raise HTTPException(status_code=404, detail="Not Found")
             return get_range_response(filepath, request, chunk_size=nicegui_chunk_size)
 
-    def add_media_file(self, *,
-                       local_file: str | Path,
-                       url_path: str | None = None,
-                       single_use: bool = False,
-                       strict: bool = True) -> str:
+    def add_media_file(
+        self, *, local_file: str | Path, url_path: str | None = None, single_use: bool = False, strict: bool = True
+    ) -> str:
         """Add a single media file.
 
         Allows a local file to be streamed.
@@ -324,8 +324,8 @@ class App(FastAPI):
         """
         file = Path(local_file).resolve()
         if strict and not file.is_file():
-            raise FileNotFoundError(f'File not found: {file}')
-        path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
+            raise FileNotFoundError(f"File not found: {file}")
+        path = f"/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}" if url_path is None else url_path
 
         @self.get(path)
         def read_item(request: Request, nicegui_chunk_size: int = 8192) -> Response:
@@ -335,17 +335,20 @@ class App(FastAPI):
 
         return urllib.parse.quote(path)
 
-    def colors(self, *,
-               primary: str = '#5898d4',
-               secondary: str = '#26a69a',
-               accent: str = '#9c27b0',
-               dark: str = '#1d1d1d',
-               dark_page: str = '#121212',
-               positive: str = '#21ba45',
-               negative: str = '#c10015',
-               info: str = '#31ccec',
-               warning: str = '#f2c037',
-               **custom_colors: str) -> None:
+    def colors(
+        self,
+        *,
+        primary: str = "#5898d4",
+        secondary: str = "#26a69a",
+        accent: str = "#9c27b0",
+        dark: str = "#1d1d1d",
+        dark_page: str = "#121212",
+        positive: str = "#21ba45",
+        negative: str = "#c10015",
+        info: str = "#31ccec",
+        warning: str = "#f2c037",
+        **custom_colors: str,
+    ) -> None:
         """Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
@@ -365,22 +368,22 @@ class App(FastAPI):
         :param warning: Warning color (default: "#f2c037")
         :param custom_colors: Custom color definitions for branding
         """
-        brand: dict[str, str] = self.config.quasar_config['brand']
-        brand['primary'] = primary
-        brand['secondary'] = secondary
-        brand['accent'] = accent
-        brand['dark'] = dark
-        brand['dark-page'] = dark_page
-        brand['positive'] = positive
-        brand['negative'] = negative
-        brand['info'] = info
-        brand['warning'] = warning
-        brand.update({name.replace('_', '-'): value for name, value in custom_colors.items()})
-        QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
+        brand: dict[str, str] = self.config.quasar_config["brand"]
+        brand["primary"] = primary
+        brand["secondary"] = secondary
+        brand["accent"] = accent
+        brand["dark"] = dark
+        brand["dark-page"] = dark_page
+        brand["positive"] = positive
+        brand["negative"] = negative
+        brand["info"] = info
+        brand["warning"] = warning
+        brand.update({name.replace("_", "-"): value for name, value in custom_colors.items()})
+        QUASAR_COLORS.update({name.replace("_", "-") for name in custom_colors})
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
-        self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+        self.routes[:] = [r for r in self.routes if getattr(r, "path", None) != path]
 
     def reset(self) -> None:
         """Reset app to its initial state. (Useful for testing.)"""
@@ -425,15 +428,19 @@ async def prune_tab_storage(*, force: bool = False) -> None:
 
 async def prune_user_storage(*, force: bool = False) -> None:
     """Remove user storage objects without a client session."""
-    client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
+    client_session_ids = {client.request.session["id"] for client in Client.instances.values()}
     active_request_sessions = core.app.storage._active_request_sessions  # pylint: disable=protected-access
     storages_to_close: list[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access
     for session_id in list(user_storages):
-        if session_id not in client_session_ids and session_id not in active_request_sessions:  # avoid pruning mid-request
+        if (
+            session_id not in client_session_ids and session_id not in active_request_sessions
+        ):  # avoid pruning mid-request
             age = now - user_storages[session_id].last_modified
-            if force or age > USER_STORAGE_PRUNE_INTERVAL:  # do not remove storages created by middleware and still wait for client
+            if (
+                force or age > USER_STORAGE_PRUNE_INTERVAL
+            ):  # do not remove storages created by middleware and still wait for client
                 storages_to_close.append(user_storages.pop(session_id))
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:
