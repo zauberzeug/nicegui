@@ -7,7 +7,7 @@ from typing import Any, ClassVar, Concatenate, Generic, TypeVar, cast
 
 from typing_extensions import ParamSpec, Self
 
-from .. import background_tasks, context, helpers
+from .. import background_tasks, helpers
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
