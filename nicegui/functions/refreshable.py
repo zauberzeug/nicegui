@@ -128,8 +128,10 @@ class refreshable(Generic[_P, _T]):
             target.kwargs.update(kwargs)
             try:
                 result = target.run(self.func, report_exceptions=report_exceptions)
-            except TypeError as e:
-                if 'got multiple values for argument' in str(e):
+            except Exception as e:
+                if report_exceptions and not target.container.is_deleted:
+                    target.container.client.handle_exception(e)
+                if isinstance(e, TypeError) and 'got multiple values for argument' in str(e):
                     function = str(e).split()[0].split('.')[-1]
                     parameter = str(e).split()[-1]
                     raise TypeError(f'{parameter} needs to be consistently passed to {function} '
