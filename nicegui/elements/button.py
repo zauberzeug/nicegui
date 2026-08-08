@@ -63,5 +63,6 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """Wait until the button is clicked."""
         event = asyncio.Event()
         self.on('click', event.set, [])
+        self.client.on_delete(event.set)
         await self.client.connected()
         await event.wait()
