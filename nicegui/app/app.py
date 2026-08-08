@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import inspect
 import os
 import platform
@@ -175,8 +176,13 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
-        if context.slot_stack and context.client is not None:
-            context.client.handle_exception(exception)
+        client = None
+        with contextlib.suppress(RuntimeError):
+            if context.slot_stack:
+                client = context.client
+        if client is not None:
+            client.handle_exception(exception)
+
         for handler in self._exception_handlers:
             result = handler() if not inspect.signature(handler).parameters else handler(exception)
             if helpers.should_await(result):
