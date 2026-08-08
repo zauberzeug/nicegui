@@ -1,7 +1,8 @@
+import asyncio
 from collections import namedtuple
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 ColorCase = namedtuple('ColorCase', ['label', 'color', 'result'])
 
@@ -86,3 +87,19 @@ def test_enable_disable(screen: Screen):
     screen.wait_for(screen.find_by_tag('button').is_enabled)
     screen.click('Button')
     assert events == [1, 1]
+
+
+async def test_clicked_returns_when_client_is_deleted(user: User):
+    returned = asyncio.Event()
+
+    @ui.page('/')
+    async def page():
+        button = ui.button('Click me')
+        await button.clicked()
+        returned.set()
+
+    client = await user.open('/')
+    await asyncio.sleep(0.1)
+    client.delete()
+    await asyncio.sleep(0.1)
+    assert returned.is_set(), 'clicked() never returned after the client was deleted'
