@@ -330,3 +330,30 @@ async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture):
     await asyncio.sleep(0.1)
     caplog.records.clear()
     assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
+
+
+@pytest.mark.parametrize('awaited', [False, True])
+async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixture, awaited: bool):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    async def page():
+        ui.on_exception(seen.append)
+
+        @ui.refreshable
+        async def part(explode: bool = False):
+            await asyncio.sleep(0)
+            if explode:
+                raise RuntimeError('boom')
+
+        async def refresh_awaited():
+            await part.refresh(True)
+
+        await part()
+        ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
