@@ -4,7 +4,6 @@ from typing import Any, TypeAlias, cast
 from typing_extensions import Self
 
 from ... import background_tasks, helpers
-from ...context import context
 from ...events import ValueT
 from .value_element import ValueElement
 
