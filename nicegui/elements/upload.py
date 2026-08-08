@@ -72,7 +72,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._upload_handlers = [on_upload] if on_upload else []
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
-        @app.post(self._props['url'], include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
+        @app.post(self._registered_url, include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
         async def upload_route(request: Request) -> dict[str, str]:
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
