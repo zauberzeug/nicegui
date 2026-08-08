@@ -1,7 +1,7 @@
 # Code Review Guidelines for NiceGUI
 
 This file augments any review prompt — the built-in `/review` command, Cursor commands, or an ad-hoc "review this" request.
-It defines _what to look for_ and _how to label severity_, but leaves the layout to whatever invokes the review.
+It defines _what to look for_, _how far to trust the pull request_, and _how to label severity_, but leaves the layout to whatever invokes the review.
 For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guidance, see [AGENTS.md](AGENTS.md).
 
 ## What to look for
@@ -49,6 +49,17 @@ For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guid
   - Tests asserting CPython-only semantics — immediate weakref cleanup via refcounting, exact CPython error-message wording — need a PyPy `skipif` or a tolerant match (PyPy compatibility is tracked externally, not promised)
 - **Readability**
   - Complex logic without comments explaining intent; magic numbers
+
+## How far to trust the pull request
+
+A pull request's measurements, mechanisms and root-cause stories are the author's hypotheses, not evidence.
+Review what the code does, not what the description says it does.
+
+- Re-derive load-bearing claims yourself: rebuild the artifact, run the reproduction, read the upstream source.
+  A number, a benchmark or a "this is why it happens" that nobody re-checked is an open question, not a finding.
+- When a fix depends on undocumented behavior of an upstream or vendored library, ask for a test against the real library, so an upstream change fails loudly instead of silently.
+- A reported bug is a sample, not the population.
+  Before merging, look for the same shape elsewhere in the codebase and say what you found.
 
 ## Severity vocabulary
 
