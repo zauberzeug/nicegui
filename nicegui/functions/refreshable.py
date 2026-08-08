@@ -118,7 +118,7 @@ class refreshable(Generic[_P, _T]):
             try:
                 result = target.run(self.func)
             except Exception as e:
-                if not context.slot_stack:
+                if not context.slot_stack and not target.container.is_deleted:
                     target.container.client.handle_exception(e)
                 if isinstance(e, TypeError) and 'got multiple values for argument' in str(e):
                     function = str(e).split()[0].split('.')[-1]
