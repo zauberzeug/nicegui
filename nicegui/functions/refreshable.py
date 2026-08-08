@@ -50,7 +50,8 @@ class RefreshableTarget:
         try:
             return await helpers.await_with_context(awaitable, self.container)
         except Exception as e:
-            self.container.client.handle_exception(e)
+            if not self.container.is_deleted:
+                self.container.client.handle_exception(e)
             raise
 
 
