@@ -62,6 +62,19 @@ def test_pagination_dict(screen: Screen):
     screen.should_contain('1-2 of 3')
 
 
+def test_pagination_via_setter(screen: Screen):
+    @ui.page('/')
+    def page():
+        table = ui.table(columns=columns(), rows=rows())
+        table.pagination = {'rowsPerPage': 2}
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_not_contain('Lionel')
+    screen.should_contain('1-2 of 3')
+
+
 def test_filter(screen: Screen):
     @ui.page('/')
     def page():
