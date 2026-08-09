@@ -445,6 +445,7 @@ export default {
         this.camera.right = (this.camera.aspect * this.cameraParams.size) / 2;
       }
       this.camera.updateProjectionMatrix();
+      this.controls?.handleResize?.();
     },
   },
 
