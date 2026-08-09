@@ -329,6 +329,38 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
 
 
+def test_trackball_controls_follow_window_resize(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(control_type='trackball').classes('w-full h-64')
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+
+    def rects():
+        return screen.selenium.execute_script(f'''
+            const el = getElement({scene.id});
+            const r = el.renderer.domElement.getBoundingClientRect();
+            return {{cached: [el.controls.screen.width, el.controls.screen.height],
+                     actual: [r.width, r.height]}};
+        ''')
+
+    original_size = screen.selenium.get_window_size()
+    try:
+        before = rects()
+        assert before['cached'] == before['actual']  # fresh controls agree
+
+        screen.selenium.set_window_size(700, 620)
+        screen.wait(1.0)
+        after = rects()
+        assert after['cached'] == after['actual']  # cached rect follows the resize (was stale before the fix)
+    finally:
+        screen.selenium.set_window_size(original_size['width'], original_size['height'])
+
+
 async def test_dragend_after_object_deleted(user: User):
     events: list[str] = []
     scene = None
