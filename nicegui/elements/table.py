@@ -72,8 +72,7 @@ class Table(FilterElement, component='table.js'):
         self._props['rows'] = rows
         self._props['row-key'] = row_key
         self._props.set_optional('title', title)
-        self._props['hide-pagination'] = pagination is None
-        self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
+        self.pagination = pagination
         self._props['selection'] = selection or 'none'
         self._props['selected'] = []
         self._props['fullscreen'] = False
@@ -394,8 +393,9 @@ class Table(FilterElement, component='table.js'):
         return self._props['pagination']
 
     @pagination.setter
-    def pagination(self, value: dict) -> None:
-        self._props['pagination'] = value
+    def pagination(self, value: int | dict | None) -> None:
+        self._props['hide-pagination'] = value is None
+        self._props['pagination'] = value if isinstance(value, dict) else {'rowsPerPage': value or 0}
 
     @property
     def is_fullscreen(self) -> bool:
