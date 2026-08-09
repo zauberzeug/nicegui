@@ -350,6 +350,8 @@ async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixtu
             await part.refresh(True)
 
         await part()
+        # awaited=False guards the fix (fails without it); awaited=True passes either way, since the
+        # awaited path already reports through the event system, so it guards against double-reporting.
         ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
 
     await user.open('/')
