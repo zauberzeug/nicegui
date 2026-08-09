@@ -98,7 +98,7 @@ def test_encode_codepoints():
 
 
 def test_selection_change_event(screen: Screen):
-    events: list[tuple[int, int]] = []
+    events: list[tuple[int, int, int, int, bool]] = []
     editor = None
 
     @ui.page('/')
@@ -106,7 +106,7 @@ def test_selection_change_event(screen: Screen):
         nonlocal editor
         editor = ui.codemirror(
             'Line 1\nLine 2\nLine 3',
-            on_selection_change=lambda e: events.append((e.line, e.column)),
+            on_selection_change=lambda e: events.append((e.line, e.column, e.from_line, e.to_line, e.empty)),
         )
 
     screen.open('/')
@@ -117,7 +117,14 @@ def test_selection_change_event(screen: Screen):
         f'const el = getElement({editor.id});'
         'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from + 3}});'
     )
-    screen.wait_for(lambda: (2, 4) in events)
+    screen.wait_for(lambda: (2, 4, 2, 2, True) in events)
+    # A ranged selection from line 1 into line 3 spans from_line=1..to_line=3
+    # regardless of head direction (head at the anchor end here).
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(3).from + 2, head: 0}});'
+    )
+    screen.wait_for(lambda: (1, 1, 1, 3, False) in events)
 
 
 def test_selection_reemits_after_focus_change(screen: Screen):

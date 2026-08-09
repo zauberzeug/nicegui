@@ -166,6 +166,9 @@ class TableSelectionEventArguments(UiEventArguments):
 class CodeMirrorSelectionChangeEventArguments(UiEventArguments):
     line: int
     column: int
+    from_line: int
+    to_line: int
+    empty: bool
 
 
 @dataclass(kw_only=True, slots=True)

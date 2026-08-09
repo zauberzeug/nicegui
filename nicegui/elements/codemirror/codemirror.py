@@ -166,6 +166,7 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         """Add a callback for cursor selection changes (line + column).
 
         Fires on selection moves and on document edits that shift the cursor line or column.
+        ``from_line``/``to_line`` span the main selection (equal and ``empty`` is ``True`` for a bare cursor).
         """
         callback, debounce_ms = self._unpack_handler(handler)
         self.on('selection-change', lambda e: handle_event(callback, CodeMirrorSelectionChangeEventArguments(
@@ -173,6 +174,9 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
             client=self.client,
             line=e.args['line'],
             column=e.args['column'],
+            from_line=e.args['from_line'],
+            to_line=e.args['to_line'],
+            empty=e.args['empty'],
         )))
         self._props['selection-tracking-enabled'] = True
         if debounce_ms is not None:

@@ -264,11 +264,14 @@ export default {
             // about the first post-focus selection even if it matches the last payload.
             if (u.focusChanged) delete this._last["selection-change"];
             if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
-              const head = u.state.selection.main.head;
-              const line = u.state.doc.lineAt(head);
+              const sel = u.state.selection.main;
+              const line = u.state.doc.lineAt(sel.head);
               this._maybeEmit("selection-change", self.selectionDebounceMs, {
                 line: line.number,
-                column: head - line.from + 1,
+                column: sel.head - line.from + 1,
+                from_line: u.state.doc.lineAt(sel.from).number,
+                to_line: u.state.doc.lineAt(sel.to).number,
+                empty: sel.empty,
               });
             }
             if (self.focusTrackingEnabled && u.focusChanged) {
