@@ -465,6 +465,8 @@ class Client:
             self.safe_invoke(t)
         self._waiting_for_disconnect.clear()
         self._deleted_event.set()
+        # NOTE: removing all elements before removing the client from Client.instances ensures
+        # that elements are marked as deleted before their client weakref can die (Timer._should_stop relies on this)
         self.remove_all_elements()
         self.outbox.stop()
         del Client.instances[self.id]

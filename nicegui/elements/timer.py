@@ -3,9 +3,8 @@ from contextlib import AbstractContextManager, nullcontext
 from typing_extensions import Self
 
 from .. import core
-from ..client import Client, ClientConnectionTimeout
+from ..client import Client
 from ..element import Element
-from ..logging import log
 from ..timer import Timer as BaseTimer
 
 
@@ -26,13 +25,8 @@ class Timer(BaseTimer, Element, component='timer.js'):
         """
         if self._should_stop():
             return False
-        try:
-            await self.client.connected()
-            return not self._should_stop()
-        except ClientConnectionTimeout:
-            self.cancel()
-            log.debug('Timer cancelled because client connection timed out')
-            return False
+        await self.client.connected()
+        return not self._should_stop()
 
     def _should_stop(self) -> bool:
         return (
