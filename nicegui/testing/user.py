@@ -274,6 +274,9 @@ class User:
 
         The filter must match exactly one element; otherwise an ``AssertionError`` is raised,
         because scoping to an ambiguous match would hide the very bugs this feature helps catch.
+        The element must already exist:
+        entering a scope does not retry like ``should_see``,
+        so wait for asynchronously created content with ``await user.should_see(...)`` first.
 
         The scope only applies to the task that entered it:
         assertions running in a task created inside the block, e.g. by ``asyncio.gather``,
