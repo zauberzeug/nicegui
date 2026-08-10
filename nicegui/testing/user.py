@@ -371,4 +371,5 @@ class User:
             return f'{description} on the page:\n{self.current_layout}'
         # The first line of an element's string representation describes the element itself,
         # the remaining lines its subtree -- which is exactly what the search covered.
-        return f'{description} within {str(scope).splitlines()[0]}:\n{scope}'
+        tree = str(scope)
+        return f'{description} within {tree.splitlines()[0]}:\n{tree}'
