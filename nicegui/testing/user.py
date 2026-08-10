@@ -141,8 +141,7 @@ class User:
         This can be adjusted with the `retries` parameter.
         """
         for _ in range(retries):
-            if (not self._is_scoped() and self.notify.contains(target)) or \
-                    self._gather_elements(target, kind, marker, content):
+            if self._sees(target, kind, marker, content):
                 return
             await asyncio.sleep(0.1)
         raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
@@ -175,8 +174,7 @@ class User:
                              ) -> None:
         """Assert that the page does not contain an element fulfilling certain filter rules."""
         for _ in range(retries):
-            if (self._is_scoped() or not self.notify.contains(target)) and \
-                    not self._gather_elements(target, kind, marker, content):
+            if not self._sees(target, kind, marker, content):
                 return
             await asyncio.sleep(0.05)
         raise AssertionError('expected not to see any ' + self._build_error_message(target, kind, marker, content))
@@ -317,8 +315,17 @@ class User:
                                  'its container; enter the scope again after rebuilding it')
         return scope
 
-    def _is_scoped(self) -> bool:
-        return self._current_scope() is not None
+    def _sees(
+        self,
+        target: str | type[T] | None = None,
+        kind: type[T] | None = None,
+        marker: str | list[str] | None = None,
+        content: str | list[str] | None = None,
+    ) -> bool:
+        """Return whether an element or notification matching the given filter is currently visible."""
+        if self._current_scope() is None and self.notify.contains(target):
+            return True  # notifications are page-level, so a scoped search must not match them
+        return bool(self._gather_elements(target, kind, marker, content))
 
     def _gather_elements(
         self,
