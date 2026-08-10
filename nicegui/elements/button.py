@@ -35,6 +35,8 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
+        self._click_events: set[asyncio.Event] = set()
+
         if on_click:
             self.on_click(on_click)
 
@@ -63,6 +65,16 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """Wait until the button is clicked."""
         event = asyncio.Event()
         self.on('click', event.set, [])
-        self.client.on_delete(event.set)
-        await self.client.connected()
-        await event.wait()
+        self._click_events.add(event)
+        try:
+            await self.client.connected()
+            await event.wait()
+        finally:
+            self._click_events.discard(event)
+
+    def _handle_delete(self) -> None:
+        # resolve pending clicked() awaits so their tasks don't wait forever for a click that can no longer arrive,
+        # e.g. when the client is deleted after a disconnect or the button's parent is removed while the client lives
+        for event in self._click_events:
+            event.set()
+        super()._handle_delete()
