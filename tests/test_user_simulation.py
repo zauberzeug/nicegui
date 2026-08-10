@@ -1107,6 +1107,24 @@ async def test_scope_enters_the_element_for_building(user: User) -> None:
         await user.should_see(marker='added')
 
 
+async def test_scope_detects_deleted_element(user: User) -> None:
+    @ui.refreshable
+    def card() -> None:
+        with ui.card().mark('card'):
+            ui.label('old value')
+
+    @ui.page('/')
+    def page():
+        card()
+
+    await user.open('/')
+    with user.scope(marker='card'):
+        card.refresh()
+        # The entered card has been replaced, so a scoped lookup would silently find nothing.
+        with pytest.raises(AssertionError, match='has been deleted'):
+            await user.should_not_see('old value')
+
+
 async def test_scoped_error_message(user: User) -> None:
     @ui.page('/')
     def page():

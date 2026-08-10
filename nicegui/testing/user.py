@@ -299,7 +299,16 @@ class User:
     def _current_scope(self) -> ui.element | None:
         """Return the innermost element entered via ``scope()`` in the current task, if any."""
         stack = self._scope_stack.get(get_task_id())
-        return stack[-1] if stack else None
+        if not stack:
+            return None
+        scope = stack[-1]
+        if scope.is_deleted:
+            # Without this check every lookup would silently find nothing, because a deleted element
+            # is no longer an ancestor of anything -- making `should_not_see` pass for the wrong reason.
+            raise AssertionError('expected the element entered via `user.scope(...)` to still exist, but '
+                                 f'{str(scope).splitlines()[0]} has been deleted, e.g. by refreshing or clearing '
+                                 'its container; enter the scope again after rebuilding it')
+        return scope
 
     def _is_scoped(self) -> bool:
         return self._current_scope() is not None
