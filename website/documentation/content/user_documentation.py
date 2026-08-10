@@ -94,6 +94,38 @@ def querying():
         ''')
 
 
+doc.text('Scoping', '''
+    Pages often reuse the same markers or content in different parts of the layout.
+    To limit `user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` to one part of the page,
+    enter it with `user.scope(...)`.
+    Inside the block only the descendants of the entered element are searched.
+    It takes the same filter arguments as `user.find(...)`, must match exactly one element,
+    and yields it for further use.
+
+    *Added in version 3.16.0*
+''')
+
+
+@doc.ui
+def scoping():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='UI code', code='''
+            with ui.card().mark('left'):
+                ui.label('Apple')
+                ui.button('Buy')
+            with ui.card().mark('right'):
+                ui.label('Banana')
+                ui.button('Buy')
+        ''')
+
+        python_window(title='user assertions', code='''
+            with user.scope(marker='left'):
+                await user.should_see('Apple')
+                await user.should_not_see('Banana')
+                user.find('Buy').click()
+        ''')
+
+
 doc.text('User Interaction', '''
     `user.find(...)` returns a `UserInteraction` object which provides methods to type text,
     clear inputs, click buttons and trigger events on the found elements.
@@ -154,7 +186,8 @@ doc.text('Using an ElementFilter', '''
     It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
 
     - preserve the order of elements to check their order on the page, and
-    - more granular filtering options, such as `ElementFilter(...).within(...)`.
+    - more granular filtering options, such as `ElementFilter(...).within(...)`
+      (to simply restrict all assertions to one part of the page, use [`user.scope(...)`](#scoping)).
 
     By entering the `user` context and iterating over `ElementFilter`,
     you can preserve the natural document order of matching elements:
