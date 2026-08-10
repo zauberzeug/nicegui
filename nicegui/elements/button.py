@@ -35,7 +35,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
-        self._click_events: set[asyncio.Event] = set()
+        self._click_tasks: set[asyncio.Task] = set()
 
         if on_click:
             self.on_click(on_click)
@@ -62,19 +62,30 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         self._props['label'] = text
 
     async def clicked(self) -> None:
-        """Wait until the button is clicked."""
+        """Wait until the button is clicked.
+
+        If the button (or its client) is deleted while waiting, the wait is cancelled instead of
+        returning, so the code after ``await button.clicked()`` does not run for a click that never
+        happened.
+
+        *Updated in version 3.16.0: A pending wait is cancelled when the button is deleted.*
+        """
         event = asyncio.Event()
         self.on('click', event.set, [])
-        self._click_events.add(event)
+        task = asyncio.current_task()
+        assert task is not None
+        self._click_tasks.add(task)
         try:
             await self.client.connected()
             await event.wait()
         finally:
-            self._click_events.discard(event)
+            self._click_tasks.discard(task)
 
     def _handle_delete(self) -> None:
-        # resolve pending clicked() awaits so their tasks don't wait forever for a click that can no longer arrive,
-        # e.g. when the client is deleted after a disconnect or the button's parent is removed while the client lives
-        for event in self._click_events:
-            event.set()
+        # A deleted button can never be clicked, so cancel every pending clicked() wait rather than let it resolve:
+        # returning normally would run the caller's post-click code (e.g. a form submit) for a click that never
+        # happened. Cancellation fires on client deletion and on element/parent removal alike, and -- unlike a caught
+        # exception -- cannot be swallowed by a surrounding `except Exception`, so the sensitive continuation is skipped.
+        for task in self._click_tasks:
+            task.cancel()
         super()._handle_delete()

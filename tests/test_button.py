@@ -89,17 +89,20 @@ def test_enable_disable(screen: Screen):
     assert events == [1, 1]
 
 
-async def test_clicked_returns_when_client_is_deleted(user: User):
-    returned = asyncio.Event()
+async def test_clicked_is_cancelled_when_client_is_deleted(user: User):
+    clicked = asyncio.Event()
+    task: list[asyncio.Task] = []
 
     @ui.page('/')
     async def page():
         button = ui.button('Click me')
+        task.append(asyncio.current_task())
         await button.clicked()
-        returned.set()
+        clicked.set()  # must not run: the button was never clicked
 
     client = await user.open('/')
     await asyncio.sleep(0.1)
     client.delete()
     await asyncio.sleep(0.1)
-    assert returned.is_set(), 'clicked() never returned after the client was deleted'
+    assert not clicked.is_set(), 'code after clicked() ran even though the button was never clicked'
+    assert task[0].cancelled(), 'the waiting task should be cancelled, not left pending or resolved'
