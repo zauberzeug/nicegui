@@ -64,16 +64,20 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     async def clicked(self) -> None:
         """Wait until the button is clicked.
 
-        If the button (or its client) is deleted while waiting, the wait is cancelled instead of
-        returning, so the code after ``await button.clicked()`` does not run for a click that never
-        happened.
+        If the button (or its client) is deleted, the wait is cancelled instead of returning,
+        so the code after ``await button.clicked()`` does not run for a click that never happened.
 
         *Updated in version 3.16.0: A pending wait is cancelled when the button is deleted.*
         """
-        event = asyncio.Event()
-        self.on('click', event.set, [])
         task = asyncio.current_task()
         assert task is not None
+        if self.is_deleted:
+            # already gone, so it can never be clicked: cancel up front instead of registering a dead listener and
+            # parking forever (touching the element here would also emit a spurious use-after-delete warning)
+            task.cancel()
+            await asyncio.sleep(0)  # deliver the cancellation before we return control
+        event = asyncio.Event()
+        self.on('click', event.set, [])
         self._click_tasks.add(task)
         try:
             await self.client.connected()
