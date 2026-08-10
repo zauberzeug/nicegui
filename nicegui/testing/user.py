@@ -142,7 +142,7 @@ class User:
         """
         for _ in range(retries):
             if (not self._is_scoped() and self.notify.contains(target)) or \
-                    self._gather_elements(target=target, kind=kind, marker=marker, content=content):
+                    self._gather_elements(target, kind, marker, content):
                 return
             await asyncio.sleep(0.1)
         raise AssertionError('expected to see at least one ' + self._build_error_message(target, kind, marker, content))
@@ -176,7 +176,7 @@ class User:
         """Assert that the page does not contain an element fulfilling certain filter rules."""
         for _ in range(retries):
             if (self._is_scoped() or not self.notify.contains(target)) and \
-                    not self._gather_elements(target=target, kind=kind, marker=marker, content=content):
+                    not self._gather_elements(target, kind, marker, content):
                 return
             await asyncio.sleep(0.05)
         raise AssertionError('expected not to see any ' + self._build_error_message(target, kind, marker, content))
@@ -218,7 +218,7 @@ class User:
              content: str | list[str] | None = None,
              ) -> UserInteraction[T]:
         """Select elements for interaction."""
-        elements = self._gather_elements(target=target, kind=kind, marker=marker, content=content)
+        elements = self._gather_elements(target, kind, marker, content)
         if not elements:
             raise AssertionError('expected to find at least one ' +
                                  self._build_error_message(target, kind, marker, content))
@@ -275,7 +275,7 @@ class User:
         The filter must match exactly one element; otherwise an ``AssertionError`` is raised,
         because scoping to an ambiguous match would hide the very bugs this feature helps catch.
         """
-        elements = self._gather_elements(target=target, kind=kind, marker=marker, content=content)
+        elements = self._gather_elements(target, kind, marker, content)
         if len(elements) != 1:
             raise AssertionError(f'expected exactly one element to scope to, but found {len(elements)}: ' +
                                  self._build_error_message(target, kind, marker, content))
@@ -306,7 +306,6 @@ class User:
 
     def _gather_elements(
         self,
-        *,
         target: str | type[T] | None = None,
         kind: type[T] | None = None,
         marker: str | list[str] | None = None,
