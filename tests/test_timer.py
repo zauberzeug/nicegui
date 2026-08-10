@@ -287,14 +287,10 @@ async def test_no_error_when_timer_is_deleted_while_waiting_for_connection(user:
             ui.timer(0.2, lambda: None, **kwargs)
         containers.append(container)
 
-    exceptions: list[Exception] = []
-    app.on_exception(exceptions.append)
-
     await user.http_client.get('/')  # request the page without ever opening the websocket
     await asyncio.sleep(0)
     containers.pop().delete()  # delete the timer and drop the last reference to its parent slot
     Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
     gc.collect()
     await asyncio.sleep(0.3)
-
-    assert not exceptions
+    # no assertion needed: the user fixture fails the test if the woken timer raises and logs an ERROR
