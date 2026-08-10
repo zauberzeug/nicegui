@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import Self
+
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
@@ -43,7 +45,7 @@ class ChoiceElement(ValueElement[Any]):
         before_value = self.value
         self._props['options'] = [{'value': index, 'label': option} for index, option in enumerate(self._labels)]
         self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
-        if not isinstance(before_value, list):  # NOTE: no need to update value in case of multi-select
+        if not isinstance(before_value, list):  # no need to update value in case of multi-select
             self.value = before_value if before_value in self._values else None
 
     def update(self) -> None:
@@ -52,7 +54,7 @@ class ChoiceElement(ValueElement[Any]):
             self._update_options()
         super().update()
 
-    def set_options(self, options: list | dict, *, value: Any = ...) -> None:
+    def set_options(self, options: list | dict, *, value: Any = ...) -> Self:
         """Set the options of this choice element.
 
         :param options: The new options.
@@ -62,3 +64,4 @@ class ChoiceElement(ValueElement[Any]):
         if value is not ...:
             self.value = value
         self.update()
+        return self

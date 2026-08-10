@@ -24,7 +24,8 @@ def section_label(text: str) -> ui.label:
 def section_title(text: str) -> ui.label:
     """Large section title."""
     return ui.label(text) \
-        .classes(f'{d.TEXT_SECTION_TITLE} font-semibold tracking-tight leading-tight mb-3 {d.TEXT_PRIMARY}')
+        .classes(f'{d.TEXT_SECTION_TITLE} font-semibold tracking-tight leading-tight mb-3 {d.TEXT_PRIMARY}') \
+        .props('role=heading aria-level=2')
 
 
 def section_desc(text: str) -> ui.label:
@@ -45,7 +46,7 @@ def cta_button(
     """Styled CTA button with optional Phosphor icons."""
     with ui.button(on_click=on_click) \
             .props('unelevated no-caps rounded size=1rem') \
-            .classes('px-7 py-2.5 transition-all duration-150 hover:-translate-y-px') as button:
+            .classes('px-7 py-2.5 transition-transform duration-150 hover:-translate-y-px') as button:
         with ui.row(align_items='center').classes('gap-2'):
             if left_icon:
                 phosphor_icon(left_icon)

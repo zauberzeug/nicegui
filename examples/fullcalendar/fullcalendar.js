@@ -7,7 +7,7 @@ export default {
     resourcePath: String,
   },
   async mounted() {
-    await this.$nextTick(); // NOTE: wait for window.path_prefix to be set
+    await this.$nextTick(); // wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.resourcePath}/index.global.min.js`);
     this.options.eventClick = (info) => this.$emit("click", { info });
     this.calendar = new FullCalendar.Calendar(this.$el, this.options);

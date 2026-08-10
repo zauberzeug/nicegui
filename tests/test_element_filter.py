@@ -319,8 +319,8 @@ async def test_typing(user: User):
         ui.button('button A')
         ui.label('label A')
 
-        # NOTE we have not yet found a way to test the typing suggestions automatically
-        # to test, hover over the variable and verify that your IDE infers the correct type
+        # We have not yet found a way to test the typing suggestions automatically.
+        # To test, hover over the variable and verify that your IDE infers the correct type.
         _ = ElementFilter(kind=ui.button)  # ElementFilter[ui.button]
         _ = ElementFilter(kind=ui.label)  # ElementFilter[ui.label]
         _ = ElementFilter()  # ElementFilter[Element]

@@ -28,7 +28,7 @@ def user_fixture():
     ''').classes('w-full')
 
     ui.markdown('''
-        **NOTE:** The `user` fixture might still miss some features.
+        **Note:** The `user` fixture might still miss some features.
         Please let us know in separate feature requests
         [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
     ''')

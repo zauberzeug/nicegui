@@ -1,0 +1,2 @@
+import{S as r,f as t}from"./flowDiagram-BWE6NHOH-CITvxd5c.js";import"./chunk-AZZRMDJM-C8XoZMs4.js";import"./chunk-VE5CLXGZ-D6e-yfgk.js";import"./chunk-A7VWPJGB-B1-P7yLF.js";import{m as s}from"./index-C7gcuJPt.js";import"./chunk-6L755F7B-CwxdtWVT.js";var e=r({defaultLayout:"swimlane",styles:s(r=>`${t(r)}\n  .swimlane.cluster rect {\n    stroke: ${r.clusterBorder} !important;\n  }\n  [data-look="neo"].cluster rect {\n    filter: none;\n  }\n`,"getStyles")});export{e as diagram};
+//# sourceMappingURL=swimlanesDiagram-RHGX2RDE-BVimdh7A.js.map

@@ -123,19 +123,14 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
     :param upload: the Starlette UploadFile to create a file upload from
     :param chunk_size: the size of each chunk to read in bytes (default: 1 MB)
     """
-    memory_limit = (
-        getattr(MultiPartParser, 'spool_max_size', 0) or
-        getattr(MultiPartParser, 'max_part_size', 0) or  # NOTE: for starlette < 0.46.0
-        1024 * 1024
-    )
-
     buffer = BytesIO()
     buffer_size = 0
     temp_file: aiofiles.threadpool.binary.AsyncBufferedIOBase | None = None
+    success = False
 
     try:
         while (chunk := await upload.read(chunk_size)):
-            if not temp_file and buffer_size + len(chunk) > memory_limit:
+            if not temp_file and buffer_size + len(chunk) > MultiPartParser.spool_max_size:
                 temp_file = await aiofiles.tempfile.NamedTemporaryFile('wb', delete=False)
                 await temp_file.write(buffer.getvalue())
                 buffer = BytesIO()  # release memory
@@ -144,10 +139,13 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
                 buffer_size += len(chunk)
             else:
                 await temp_file.write(chunk)
+        success = True
     finally:
         await upload.close()
         if temp_file:
             await temp_file.close()
+            if not success:
+                _cleanup_path(Path(str(temp_file.name)))
 
     filename = _sanitize_filename(upload.filename)
     if temp_file:

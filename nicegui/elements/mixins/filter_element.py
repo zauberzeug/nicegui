@@ -85,12 +85,13 @@ class FilterElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_filter(self, filter_: str) -> None:
+    def set_filter(self, filter_: str) -> Self:
         """Set the filter of this element.
 
         :param filter: The new filter.
         """
         self.filter = filter_
+        return self
 
     def _handle_filter_change(self, filter_: str) -> None:
         """Called when the filter of this element changes.
