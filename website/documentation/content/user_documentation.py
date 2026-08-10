@@ -68,6 +68,10 @@ doc.text('Querying', '''
     The `user.should_see(...)` method and `user.find(...)` method
     provide parameters to filter for content, [markers](/documentation/element_filter#markers), types, etc.
     If you do not provide a named property, the string will match against the text content and markers.
+    They always search the whole page, including header, drawers and footer,
+    independent of `ElementFilter.DEFAULT_LOCAL_SCOPE`.
+
+    *Updated in version 3.16.0: searching the whole page independent of `ElementFilter.DEFAULT_LOCAL_SCOPE`*
 ''')
 
 
