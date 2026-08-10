@@ -454,6 +454,7 @@ def test_client_side_fullscreen_syncs_back(screen: Screen):
 
     screen.click('FS')
     screen.wait_for(lambda: table.is_fullscreen is True)
+    screen.wait(0.5)  # HACK: wait for the echoed fullscreen update, so the button is not re-rendered mid-click
 
     screen.click('FS')
     screen.wait_for(lambda: table.is_fullscreen is False)

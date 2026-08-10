@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE, TWEEN, Stats } = SceneLib;
+import { find_object_with_id, THREE, TWEEN, Stats } from "nicegui-scene";
 
 export default {
   template: `
@@ -77,11 +76,12 @@ export default {
       this.$emit("click3d", {
         hits: raycaster
           .intersectObjects(this.scene.children, true)
-          .filter((o) => o.object.object_id)
-          .map((o) => ({
-            object_id: o.object.object_id,
-            object_name: o.object.name,
-            point: o.point,
+          .map((hit) => ({ hit, owner: find_object_with_id(hit.object) }))
+          .filter(({ owner }) => owner)
+          .map(({ hit, owner }) => ({
+            object_id: owner.object_id,
+            object_name: owner.name,
+            point: hit.point,
           })),
         click_type: mouseEvent.type,
         button: mouseEvent.button,

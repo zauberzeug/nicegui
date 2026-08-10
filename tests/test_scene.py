@@ -102,6 +102,50 @@ def test_deleting_group(screen: Screen):
     assert len(scene.objects) == 0
 
 
+def test_deleting_object_right_after_creation(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('warmup')  # when the button is clicked, box.js is already loaded but group.js is not
+
+        def create_and_delete():
+            with scene, scene.group().with_name('group'):
+                scene.box().with_name('box').delete()
+
+        ui.button('Create and delete', on_click=create_and_delete)
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("warmup")?.type', 'Mesh')
+    screen.click('Create and delete')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("group")?.type', 'Group')
+    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.getObjectByName("box")?.type ?? null') is None
+
+
+def test_moving_right_after_detaching(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+        def detach_and_move():
+            with scene, scene.group():
+                box = scene.box().with_name('box')
+            box.detach()
+            box.move(1, 2, 3)
+
+        ui.button('Detach and move', on_click=detach_and_move)
+
+    screen.open('/')
+    screen.click('Detach and move')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.parent?.type', 'Scene')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x', 1)
+
+
 def test_replace_scene(screen: Screen):
     scene = None
 
@@ -233,30 +277,24 @@ def test_stl_wireframe(screen: Screen):
         ui.button('Rename', on_click=lambda: obj.with_name('renamed'))
 
     screen.open('/')
-    screen.wait_for(lambda: obj is not None and screen.selenium.execute_script(
-        f'return !!window.getElement && getElement({scene.id})?.objects?.get("{obj.id}")?.children.length > 0'
-    ))
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0', True)
     result = screen.selenium.execute_script(f'''
-        const obj = getElement({scene.id}).objects.get("{obj.id}");
-        const child = obj.children && obj.children[0];
+        const group = scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}");
+        const child = group.children[0];
         return {{
-            root_type: obj.type,
+            root_type: group.type,
             child_geometry: child ? child.geometry.type : null,
             edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,
-            child_object_id: child ? child.object_id : null,
             child_color: (child && child.material) ? child.material.color.getHexString() : null,
         }};
     ''')
     assert result['root_type'] == 'Group', f'expected a Group wrapper, got {result}'
     assert result['child_geometry'] == 'EdgesGeometry', f'expected EdgesGeometry child, got {result}'
     assert result['edge_count'] > 0, f'expected non-empty edges, got {result}'
-    assert result['child_object_id'] == obj.id, f'expected click-hittable child with object_id, got {result}'
     assert result['child_color'] == 'ff0000', f'expected material to reach the wireframe lines, got {result}'
 
     screen.click('Rename')  # rename AFTER the async load has completed
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).objects.get("{obj.id}").children[0].name === "renamed"'
-    ))
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}").name', 'renamed')
 
 
 def test_no_cyclic_references(screen: Screen):
@@ -326,3 +364,36 @@ async def test_bound_object_is_released_on_delete(user: User):
     await user.open('/')
     gc.collect()
     assert len(objects) == 0
+
+
+def test_context_loss_recovery_restores_objects(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().material('#ff0000').move(1, 2, 3).with_name('box')
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+    screen.selenium.execute_script(f'''
+        window.sceneBeforeRecovery = scene_{scene.html_id};
+        document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();
+    ''')
+    screen.click('Click to re-initialize')
+    screen.wait_for_js(f'scene_{scene.html_id} !== window.sceneBeforeRecovery', True)  # remounting replaces the scene
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
+
+
+def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
+    hits: list[str] = []
+
+    @ui.page('/')
+    def page():
+        ui.scene(on_click=lambda e: hits.extend(hit.object_id for hit in e.hits))
+
+    screen.open('/')
+    screen.find_by_tag('canvas').click()
+    screen.wait_for(lambda: hits == ['ground'])
