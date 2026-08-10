@@ -45,7 +45,10 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
 
     @property
     def submitted(self) -> asyncio.Event:
-        """An event that is set when the dialog is submitted."""
+        """An event that is set when the dialog is submitted.
+
+        *Updated in version 3.16.0: The event is also set when the dialog is deleted.*
+        """
         if self._submitted is None:
             self._submitted = asyncio.Event()
         return self._submitted
@@ -58,13 +61,14 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         return super().toggle()
 
     def __await__(self):
-        if self.is_deleted:
-            return None  # a deleted dialog can never be submitted or closed, so we resolve immediately
+        if not self._is_safe_to_interact():
+            return None  # the dialog cannot be submitted anymore, so we resolve immediately instead of waiting forever
         self._result = None
         self.submitted.clear()
         self.open()
         yield from self.submitted.wait().__await__()  # pylint: disable=no-member
         result = self._result
+        self._result = None  # release the result so a deleted dialog does not keep it alive (close() would do the same)
         if not self.is_deleted:  # closing a deleted dialog would warn about using a deleted element
             self.close()
         return result
@@ -83,6 +87,5 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
     def _handle_delete(self) -> None:
         # resolve pending awaits so their tasks don't wait forever, e.g. when the client is deleted after a disconnect
         # (keep self._result untouched: a result submitted just before deletion should still reach the awaiting task)
-        if self._submitted is not None:
-            self._submitted.set()
+        self.submitted.set()
         super()._handle_delete()
