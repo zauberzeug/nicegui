@@ -1097,6 +1097,24 @@ async def test_scope_enters_the_element_for_building(user: User) -> None:
         await user.should_see(marker='added')
 
 
+@pytest.mark.parametrize('default_local_scope', [False, True])
+async def test_scope_searches_whole_page(user: User, default_local_scope: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ElementFilter, 'DEFAULT_LOCAL_SCOPE', default_local_scope)
+
+    @ui.page('/')
+    def page():
+        with ui.header():
+            with ui.card().mark('card'):
+                ui.label('in card')
+        ui.label('in content')
+
+    await user.open('/')
+    await user.should_see('in card')
+    with user.scope(marker='card'):
+        await user.should_see('in card')
+        await user.should_not_see('in content')
+
+
 async def test_switching_between_sub_pages(user: User) -> None:
     calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
 

@@ -292,27 +292,22 @@ class User:
         content: str | list[str] | None = None,
     ) -> set[T]:
         stack = self._scope_stack.get(get_task_id())
-        # When the current task is inside a `with user.scope(...):` block, restrict the search to the
-        # innermost entered element via `ElementFilter.within(instance=...)`. This searches the whole
-        # page and keeps only descendants of the scope, independent of the ambient slot stack and of
-        # `ElementFilter.DEFAULT_LOCAL_SCOPE`. Without a scope the search covers the whole layout
-        # (header, drawer, footer, notifications), exactly as before.
         scope = stack[-1] if stack else None
 
-        def scoped(element_filter: ElementFilter[Any]) -> ElementFilter[Any]:
+        def make_filter(**kwargs: Any) -> ElementFilter[Any]:
+            # `local_scope=False` covers the whole layout (header, drawer, footer, notifications),
+            # independent of the ambient slot stack and of `ElementFilter.DEFAULT_LOCAL_SCOPE`.
+            # Inside a `with user.scope(...):` block, only descendants of the innermost entered element remain.
+            element_filter = ElementFilter(only_visible=True, local_scope=False, **kwargs)
             return element_filter.within(instance=scope) if scope is not None else element_filter
 
         with self._client:
             if target is None:
-                if kind is None:
-                    elements = set(scoped(ElementFilter(marker=marker, content=content, only_visible=True)))
-                else:
-                    elements = set(scoped(ElementFilter(kind=kind, marker=marker, content=content, only_visible=True)))
+                elements = set(make_filter(kind=kind, marker=marker, content=content))
             elif isinstance(target, str):
-                elements = set(scoped(ElementFilter(marker=target, only_visible=True))) \
-                    .union(scoped(ElementFilter(content=target, only_visible=True)))
+                elements = set(make_filter(marker=target)).union(make_filter(content=target))
             else:
-                elements = set(scoped(ElementFilter(kind=target, only_visible=True)))
+                elements = set(make_filter(kind=target))
         return elements  # type: ignore
 
     def _build_error_message(self,
