@@ -309,8 +309,13 @@ class User:
         """Return the root layout element of the current page."""
         return self._client.layout
 
+    def _current_scope(self) -> ui.element | None:
+        """Return the innermost element entered via ``scope()`` in the current task, if any."""
+        stack = self._scope_stack.get(get_task_id())
+        return stack[-1] if stack else None
+
     def _is_scoped(self) -> bool:
-        return bool(self._scope_stack.get(get_task_id()))
+        return self._current_scope() is not None
 
     def _gather_elements(
         self,
@@ -320,8 +325,7 @@ class User:
         marker: str | list[str] | None = None,
         content: str | list[str] | None = None,
     ) -> set[T]:
-        stack = self._scope_stack.get(get_task_id())
-        scope = stack[-1] if stack else None
+        scope = self._current_scope()
 
         def make_filter(**kwargs: Any) -> ElementFilter[Any]:
             # `local_scope=False` covers the whole layout (header, drawer, footer, notifications),
@@ -346,10 +350,16 @@ class User:
                              content: str | list[str] | None = None,
                              ) -> str:
         if isinstance(target, str):
-            return f'element with marker={target} or content={target} on the page:\n{self.current_layout}'
+            description = f'element with marker={target} or content={target}'
         elif target is not None:
-            return f'element of type {target.__name__} on the page:\n{self.current_layout}'
+            description = f'element of type {target.__name__}'
         elif kind is not None:
-            return f'element of type {kind.__name__} with {marker=} and {content=} on the page:\n{self.current_layout}'
+            description = f'element of type {kind.__name__} with {marker=} and {content=}'
         else:
-            return f'element with {marker=} and {content=} on the page:\n{self.current_layout}'
+            description = f'element with {marker=} and {content=}'
+        scope = self._current_scope()
+        if scope is None:
+            return f'{description} on the page:\n{self.current_layout}'
+        # The first line of an element's string representation describes the element itself,
+        # the remaining lines its subtree -- which is exactly what the search covered.
+        return f'{description} within {str(scope).splitlines()[0]}:\n{scope}'

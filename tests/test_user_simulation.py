@@ -1107,6 +1107,23 @@ async def test_scope_enters_the_element_for_building(user: User) -> None:
         await user.should_see(marker='added')
 
 
+async def test_scoped_error_message(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('outside')
+        with ui.card().mark('card'):
+            ui.label('inside')
+
+    await user.open('/')
+    with user.scope(marker='card'):
+        with pytest.raises(AssertionError, match=re.escape(textwrap.dedent('''
+            expected to see at least one element with marker=outside or content=outside within Card [markers=card]:
+            Card [markers=card]
+             Label [text=inside]
+        ''').strip())):
+            await user.should_see('outside')
+
+
 @pytest.mark.parametrize('default_local_scope', [False, True])
 async def test_scope_searches_whole_page(user: User, default_local_scope: bool, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ElementFilter, 'DEFAULT_LOCAL_SCOPE', default_local_scope)
