@@ -235,7 +235,7 @@ class User:
         ...
 
     @overload
-    def scope(self: User,
+    def scope(self,
               *,
               marker: str | list[str] | None = None,
               content: str | list[str] | None = None,
@@ -262,9 +262,9 @@ class User:
         """Enter the single element matching the given filter, scoping all lookups inside the block to it.
 
         This is the recommended way to write assertions against pages that intentionally reuse
-        markers or content in different parts of the layout. Inside the block, ``should_see``,
-        ``should_not_see`` and ``find`` only search the descendants of the entered element
-        (the element itself is not matched)::
+        markers or content in different parts of the layout.
+        Inside the block, ``should_see``, ``should_not_see`` and ``find``
+        only search the descendants of the entered element (the element itself is not matched)::
 
             with user.scope(marker='left-card'):
                 await user.should_see('Button')  # only the button inside the left card

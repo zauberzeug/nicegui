@@ -1162,7 +1162,9 @@ async def test_scoped_error_message(user: User) -> None:
 
 
 @pytest.mark.parametrize('default_local_scope', [False, True])
-async def test_scope_searches_whole_page(user: User, default_local_scope: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_scope_searches_whole_page(user: User,
+                                         default_local_scope: bool,
+                                         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ElementFilter, 'DEFAULT_LOCAL_SCOPE', default_local_scope)
 
     @ui.page('/')
