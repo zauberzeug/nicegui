@@ -439,17 +439,27 @@ async def test_combined_filter_parameters(user: User) -> None:
 async def test_typing(user: User) -> None:
     @ui.page('/')
     def page():
-        ui.label('Hello!')
-        ui.button('World!')
+        with ui.card().mark('container'):
+            ui.label('Hello!')
+            ui.button('World!')
 
     await user.open('/')
     # We have not yet found a way to test the typing suggestions automatically.
-    # To test, hover over the variable and verify that your IDE inferres the correct type.
+    # To test, hover over the variable and verify that your IDE infers the correct type.
     _ = user.find(kind=ui.label).elements  # Set[ui.label]
     _ = user.find(ui.label).elements  # Set[ui.label]
     _ = user.find('World').elements  # Set[ui.element]
     _ = user.find('Hello').elements  # Set[ui.element]
     _ = user.find('!').elements  # Set[ui.element]
+
+    with user.scope(kind=ui.card) as _:  # ui.card
+        pass
+    with user.scope(ui.card) as _:  # ui.card
+        pass
+    with user.scope(marker='container') as _:  # ui.element
+        pass
+    with user.scope('container') as _:  # ui.element
+        pass
 
 
 async def test_select(user: User) -> None:

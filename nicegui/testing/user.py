@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import re
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
 from typing import Any, TypeVar, overload
 from uuid import uuid4
 
@@ -236,6 +236,35 @@ class User:
             raise AssertionError('expected to find at least one ' +
                                  self._build_error_message(target, kind, marker, content))
         return UserInteraction(self, elements, target)
+
+    @overload
+    def scope(self,
+              target: str,
+              ) -> AbstractContextManager[ui.element]:
+        ...
+
+    @overload
+    def scope(self,
+              target: type[T],
+              ) -> AbstractContextManager[T]:
+        ...
+
+    @overload
+    def scope(self: User,
+              *,
+              marker: str | list[str] | None = None,
+              content: str | list[str] | None = None,
+              ) -> AbstractContextManager[ui.element]:
+        ...
+
+    @overload
+    def scope(self,
+              *,
+              kind: type[T],
+              marker: str | list[str] | None = None,
+              content: str | list[str] | None = None,
+              ) -> AbstractContextManager[T]:
+        ...
 
     @contextmanager
     def scope(self,
