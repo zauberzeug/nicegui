@@ -1060,6 +1060,25 @@ async def test_scope_is_task_local(user: User) -> None:
     assert other_count == 2
 
 
+async def test_scope_does_not_reach_into_new_tasks(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('left'):
+            ui.button('L').mark('dup')
+        with ui.card().mark('right'):
+            ui.button('R').mark('dup')
+
+    await user.open('/')
+
+    async def count() -> int:
+        return len(user.find(marker='dup').elements)
+
+    with user.scope(marker='left'):
+        assert len(user.find(marker='dup').elements) == 1
+        # A task created inside the block runs unscoped, because the scope is stored per task.
+        assert await asyncio.create_task(count()) == 2
+
+
 async def test_scope_ignores_manual_element_context(user: User) -> None:
     @ui.page('/')
     def page():

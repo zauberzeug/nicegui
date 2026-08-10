@@ -274,6 +274,10 @@ class User:
 
         The filter must match exactly one element; otherwise an ``AssertionError`` is raised,
         because scoping to an ambiguous match would hide the very bugs this feature helps catch.
+
+        The scope only applies to the task that entered it:
+        assertions running in a task created inside the block, e.g. by ``asyncio.gather``,
+        still search the whole page.
         """
         elements = self._gather_elements(target, kind, marker, content)
         if len(elements) != 1:
