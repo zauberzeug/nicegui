@@ -139,10 +139,6 @@ class User:
 
         By default `should_see` makes three attempts to find the element before failing.
         This can be adjusted with the `retries` parameter.
-
-        To limit the search to one part of a page that reuses markers or content, wrap the
-        assertion in a ``with user.scope(...):`` block (see ``User.scope``).
-        Notifications are page-level and are not matched inside a scope.
         """
         for _ in range(retries):
             if (not self._is_scoped() and self.notify.contains(target)) or \
@@ -177,12 +173,7 @@ class User:
                              content: str | list[str] | None = None,
                              retries: int = 3,
                              ) -> None:
-        """Assert that the page does not contain an element fulfilling certain filter rules.
-
-        To limit the search to one part of a page that reuses markers or content, wrap the
-        assertion in a ``with user.scope(...):`` block (see ``User.scope``).
-        Notifications are page-level and are not matched inside a scope.
-        """
+        """Assert that the page does not contain an element fulfilling certain filter rules."""
         for _ in range(retries):
             if (self._is_scoped() or not self.notify.contains(target)) and \
                     not self._gather_elements(target=target, kind=kind, marker=marker, content=content):
@@ -226,11 +217,7 @@ class User:
              marker: str | list[str] | None = None,
              content: str | list[str] | None = None,
              ) -> UserInteraction[T]:
-        """Select elements for interaction.
-
-        To limit the search to one part of a page that reuses markers or content, wrap the
-        call in a ``with user.scope(...):`` block (see ``User.scope``).
-        """
+        """Select elements for interaction."""
         elements = self._gather_elements(target=target, kind=kind, marker=marker, content=content)
         if not elements:
             raise AssertionError('expected to find at least one ' +
