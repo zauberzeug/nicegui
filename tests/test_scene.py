@@ -343,7 +343,7 @@ def test_transform_controls_enable_disable(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && el.is_initialized'
+        f'const el = getElement({scene.id}); return el && !!el.renderer'
     ))
     screen.click('Enable')
     screen.wait_for(lambda: screen.selenium.execute_script(
@@ -370,7 +370,7 @@ def test_transform_controls_mode_change(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && el.is_initialized'
+        f'const el = getElement({scene.id}); return el && !!el.renderer'
     ))
     screen.click('Translate')
     screen.wait_for(lambda: screen.selenium.execute_script(
@@ -403,7 +403,7 @@ def test_set_orbit_enabled_survives_transform_drag(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && el.is_initialized'
+        f'const el = getElement({scene.id}); return el && !!el.renderer'
     ))
     screen.click('Disable orbit')
     screen.wait_for(lambda: not screen.selenium.execute_script(
@@ -426,26 +426,34 @@ def test_set_orbit_enabled_survives_transform_drag(screen: Screen):
     ) is False
 
 
-def test_interactive_payload_only_when_truthy(screen: Screen):
-    """Plain objects' data length stays stable; objects with handlers or effects append a trailing dict."""
+def test_interactive_state_survives_context_loss(screen: Screen):
+    """_resend() replays handler registrations and hover effects when the scene remounts."""
     scene = None
-    plain = None
-    handled = None
-    glowed = None
+    box = None
 
     @ui.page('/')
     def page():
-        nonlocal scene, plain, handled, glowed
+        nonlocal scene, box
         with ui.scene() as scene:
-            plain = scene.box()
-            handled = scene.box().on_pointer_over(lambda _: None)
-            glowed = scene.box().hover_effect('glow', color='#ff0000')
+            box = scene.box().on_pointer_over(lambda _: None).hover_effect('glow', color='#ff0000')
 
     screen.open('/')
-    assert len(handled.data) == len(plain.data) + 1
-    assert handled.data[-1] == {'handlers': ['pointerover']}
-    assert len(glowed.data) == len(plain.data) + 1
-    assert glowed.data[-1] == {'effect': {'effect': 'glow', 'color': '#ff0000'}}
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id}); return el && !!el.renderer'
+    ))
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        f'return el.objectHandlers.has("{box.id}") && el.objectEffects.has("{box.id}")'
+    ))
+    screen.selenium.execute_script(
+        'document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();'
+    )
+    screen.click('Click to re-initialize')
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        'if (!el || !el.objectHandlers) return false;'
+        f'return el.objectHandlers.has("{box.id}") && el.objectEffects.has("{box.id}")'
+    ))
 
 
 def test_interactive_list_maintained_on_handler_register(screen: Screen):
@@ -463,7 +471,7 @@ def test_interactive_list_maintained_on_handler_register(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && el.is_initialized'
+        f'const el = getElement({scene.id}); return el && !!el.renderer'
     ))
     # Initially neither handlers nor effect set, so not interactive.
     assert screen.selenium.execute_script(
@@ -503,7 +511,7 @@ def test_hover_effect_named_variants(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && el.is_initialized'
+        f'const el = getElement({scene.id}); return el && !!el.renderer'
     ))
 
     def get_effect_spec() -> dict | None:
@@ -538,7 +546,7 @@ def test_pointer_event_dispatches_to_object_handler(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && el.is_initialized'
+        f'const el = getElement({scene.id}); return el && !!el.renderer'
     ))
     # Synthesize the event directly on the element. Bypasses the actual pointer raycast,
     # but exercises the Python dispatch path end-to-end.
