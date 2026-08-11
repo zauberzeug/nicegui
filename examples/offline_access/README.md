@@ -27,7 +27,9 @@ A minimal web app manifest (`manifest.webmanifest`) is also linked to provide th
    ```
 
 2. Save one or more articles for offline reading.
+
 3. Simulate being offline: stop the server (`Ctrl+C`), or switch the browser dev tools **Network** tab to *Offline*.
+
 4. Reload the page. The service worker serves the cached offline page, which lists the articles you saved.
 
 > **Note:** Service workers require a secure context, so they only run on `http://localhost` or over HTTPS.
