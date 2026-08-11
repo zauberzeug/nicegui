@@ -434,6 +434,47 @@ with ui.scene() as scene:
     scene.box().material('#ff0000')
 ```
 
+### Custom Three.js objects
+
+Subclass `Object3D` and pair it with a sibling JS module.
+The `component=` path is resolved relative to the Python file — no manual registration needed.
+`super().__init__(...)` args are forwarded positionally to the JS factory; `self.run_method('<name>', *args)` dispatches to a same-named method on the component instance.
+
+```python
+# pulsing_sphere.py
+from nicegui.elements.scene import Object3D
+
+class PulsingSphere(Object3D, component='pulsing_sphere.js'):
+    def __init__(self, radius: float = 1.0) -> None:
+        super().__init__(radius)
+    def set_scale(self, s: float):
+        self.run_method('set_scale', s)
+```
+
+```js
+// pulsing_sphere.js — default-export a class
+import { THREE } from "nicegui-scene";
+
+export default class PulsingSphere {
+  mesh;
+  // or: create_geometry(...) for a plain BufferGeometry
+  create_mesh(radius) {
+    this.mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 32, 16),
+      new THREE.MeshPhongMaterial({ transparent: true }),
+    );
+    return this.mesh;
+  }
+  set_scale(s) { this.mesh.scale.set(s, s, s); }
+  // optional hooks: apply_material({ color, opacity, side }), created()
+}
+```
+
+Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
+Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
+
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
+
 ---
 
 ## Navigation & Dialogs

@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Callable
 
 import pytest
@@ -5,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_open_close_dialog(screen: Screen):
@@ -97,6 +98,57 @@ def test_dialog_in_menu(screen: Screen):
     screen.click('Delete menu')
     screen.wait(0.5)
     screen.should_not_contain('Dialog content')  # it has been deleted together with the menu
+
+
+async def test_awaited_dialog_resolves_when_client_is_deleted(user: User):
+    """The task awaiting a dialog must not wait forever when the client is deleted, e.g. after a disconnect."""
+    dialog = None
+    results = []
+
+    @ui.page('/')
+    def page():
+        nonlocal dialog
+        with ui.dialog() as dialog, ui.card():
+            ui.label('Content')
+
+        async def show() -> None:
+            results.append(await dialog)
+
+        ui.button('Open', on_click=show)
+
+    await user.open('/')
+    user.find('Open').click()
+    await asyncio.sleep(0.1)  # let the button handler start awaiting the dialog
+    assert not results
+
+    assert isinstance(dialog, ui.dialog)
+    dialog.client.delete()
+    await asyncio.sleep(0.1)  # let the handler resume
+    assert results == [None]  # the handler resumed with None instead of waiting forever
+
+    assert await dialog is None  # awaiting a deleted dialog resolves immediately
+
+
+async def test_submit_and_delete_dialog_in_same_handler(user: User):
+    """A result submitted right before the dialog is deleted must still reach the awaiting task."""
+    @ui.page('/')
+    def page():
+        with ui.dialog() as dialog, ui.card():
+            def confirm() -> None:
+                dialog.submit('Yes')
+                dialog.delete()
+            ui.button('Yes', on_click=confirm)
+
+        async def show() -> None:
+            ui.notify(f'Result: {await dialog}')
+
+        ui.button('Open', on_click=show)
+
+    await user.open('/')
+    user.find('Open').click()
+    await asyncio.sleep(0.1)  # let the button handler start awaiting the dialog
+    user.find('Yes').click()
+    await user.should_see('Result: Yes')
 
 
 @pytest.mark.parametrize('element_factory,selector,text', [
