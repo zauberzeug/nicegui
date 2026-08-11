@@ -7,8 +7,8 @@ from pygments.styles.solarized import DARK_COLORS, LIGHT_COLORS, SolarizedDarkSt
 from nicegui import app, ui
 
 from . import design as d
-from . import github_stars
 from .design import phosphor_icon
+from .github_stats import STARS_STRING
 from .search import Search
 
 HEADER_HTML = (Path(__file__).parent / 'static' / 'header.html').read_text(encoding='utf-8')
@@ -148,4 +148,4 @@ def _github_badge() -> None:
                      f'hover:{d.BG_ACCENT}/10 transition-[background-color] duration-150'):
         with ui.row().classes(f'gap-2 items-center {d.TEXT_ACCENT}'):
             phosphor_icon('ph-github-logo').classes('text-base')
-            ui.label().bind_text_from(github_stars.stars, 'string').classes(MD_UP)
+            ui.label(STARS_STRING).classes(MD_UP)

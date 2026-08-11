@@ -80,7 +80,7 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
 
     def set_autocomplete(self, autocomplete: list[str] | None) -> Self:
         """Set the autocomplete list."""
-        self._props['_autocomplete'] = autocomplete
+        self._props['_autocomplete'] = autocomplete or []
         return self
 
     @property

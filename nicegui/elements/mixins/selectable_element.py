@@ -21,8 +21,6 @@ class SelectableElement(Element):
         if not selectable:
             return
 
-        self._props['selectable'] = selectable
-
         self.selected = selected
         self._props['selected'] = selected
         self.set_selected(selected)
