@@ -183,6 +183,41 @@ def test_last_anchor_deletion_notifies(screen: Screen):
     screen.wait_for(lambda: editor.line_anchors == {})
 
 
+def test_anchors_survive_client_side_remount(screen: Screen):
+    """A remount without a server round-trip must restore the live positions, not the declared ones."""
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        with ui.tabs() as tabs:
+            ui.tab('One')
+            ui.tab('Two')
+        with ui.tab_panels(tabs, value='One', keep_alive=False):
+            with ui.tab_panel('One'):
+                editor = ui.codemirror('a\nb\nc\nd\ne', line_anchors={'mid': 3})
+            with ui.tab_panel('Two'):
+                ui.label('Second tab')
+
+    screen.open('/')
+    _wait_for_editor(screen)
+    screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
+    # Remap the anchor by inserting a line at the top: mid moves from line 3 to line 4.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
+    )
+    screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
+    # Leaving the tab destroys the editor client-side; coming back builds a fresh one from the props.
+    screen.click('Two')
+    screen.should_contain('Second tab')
+    screen.click('One')
+    _wait_for_editor(screen)
+    screen.wait(0.2)
+    assert editor.line_anchors == {'mid': 4}, \
+        f'anchors should survive a client-side remount, got {editor.line_anchors}'
+
+
 def test_on_anchor_change_handler(screen: Screen):
     """on_anchor_change fires with the current positions on every change."""
     editor = None

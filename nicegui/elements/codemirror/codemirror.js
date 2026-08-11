@@ -94,7 +94,12 @@ export default {
   beforeUnmount() {
     if (this.editor) {
       const element = mounted_app.elements[this.$props.id.slice(1)];
-      if (element) element.props.value = this.editor.state.doc.toString();
+      if (element) {
+        element.props.value = this.editor.state.doc.toString();
+        // A client-side remount (e.g. a v-if container) re-applies these props against the restored
+        // document, so they have to describe where the anchors are now, not where they were declared.
+        if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
+      }
     }
     clearTimeout(this._anchorTimer);
   },
@@ -211,8 +216,7 @@ export default {
       clearTimeout(this._anchorTimer);
       this.emitAnchorPositions();
     },
-    emitAnchorPositions() {
-      if (!this.editor) return;
+    currentAnchorPositions() {
       const state = this.editor.state;
       const field = state.field(anchorField);
       const doc = state.doc;
@@ -222,7 +226,11 @@ export default {
         positions[cursor.value.id] = doc.lineAt(cursor.from).number;
         cursor.next();
       }
-      this.$emit("anchor-positions", { anchors: positions });
+      return positions;
+    },
+    emitAnchorPositions() {
+      if (!this.editor) return;
+      this.$emit("anchor-positions", { anchors: this.currentAnchorPositions() });
     },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({

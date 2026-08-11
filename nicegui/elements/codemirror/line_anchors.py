@@ -13,10 +13,11 @@ class LineAnchorElement(Element):
 
     The browser is the source of truth: anchors are remapped by CodeMirror as the document changes
     and the current ``{id: line}`` snapshot is pushed back via the "anchor-positions" event.
-    The declared positions are mirrored into the "line-anchors" prop,
-    while ``_anchor_positions`` mirrors the live positions on the server.
-    The ``line-anchors`` prop is preserved on unrelated updates
-    so a re-broadcast does not snap remapped anchors back to their declared lines.
+    That snapshot is mirrored into the "line-anchors" prop without triggering an update,
+    so the prop describes where the anchors actually are rather than where they were declared —
+    a re-render then restores the live positions instead of snapping them back.
+    Until the browser confirms a deliberate assignment, the prop is sent as-is;
+    afterwards it is preserved on unrelated updates.
     """
 
     def __init__(
@@ -28,8 +29,9 @@ class LineAnchorElement(Element):
     ) -> None:
         super().__init__(**kwargs)
         self._anchor_positions: dict[str, int] = {}
-        self._apply_anchors = True
-        self._props['line-anchors'] = line_anchors or {}
+        self._anchors_pending = True
+        if line_anchors:
+            self._props['line-anchors'] = line_anchors
         self.on('anchor-positions', self._update_anchor_mirror)
         if on_anchor_change is not None:
             self.on_anchor_change(on_anchor_change)
@@ -52,19 +54,17 @@ class LineAnchorElement(Element):
 
         *Added in version 3.16.0*
         """
-        return dict(self._anchor_positions)
+        return self._anchor_positions
 
     @line_anchors.setter
     def line_anchors(self, anchors: dict[str, int] | None) -> None:
+        self._anchors_pending = True
         self._props['line-anchors'] = anchors or {}
-        self._apply_anchors = True
 
     def _to_dict(self) -> dict[str, Any]:
         dict_ = super()._to_dict()
-        if not self._apply_anchors:
+        if not self._anchors_pending:
             dict_.setdefault('preserved_props', []).append('line-anchors')
-        # NOTE: resetting here relies on exactly one outgoing serialization per deliberate reassignment
-        self._apply_anchors = False
         return dict_
 
     def on_anchor_change(self, handler: Handler[CodeMirrorAnchorChangeEventArguments]) -> Self:
@@ -78,3 +78,7 @@ class LineAnchorElement(Element):
 
     def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
         self._anchor_positions = e.args['anchors']
+        self._anchors_pending = False
+        # A separate dict keeps a caller mutating the exposed positions from rewriting what we send.
+        with self._props.suspend_updates():
+            self._props['line-anchors'] = dict(self._anchor_positions)
