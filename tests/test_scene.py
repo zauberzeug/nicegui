@@ -497,9 +497,13 @@ def _wait_for_scene_ready(screen: Screen, scene_id: int) -> None:
 
 def _count_clipping_planes(screen: Screen, scene_id: int, object_id: str) -> int:
     return screen.selenium.execute_script(
-        f'const o = getElement({scene_id}).objects.get("{object_id}").mesh;'
+        f'const el = getElement({scene_id});'
+        # -1 while the scene or object is (re-)mounting, so wait_for polls instead of raising
+        'if (!el || !el.objects) return -1;'
+        f'const record = el.objects.get("{object_id}");'
+        'if (!record || !record.mesh) return -1;'
         'let n = 0;'
-        'o.traverse((c) => {'
+        'record.mesh.traverse((c) => {'
         '  if (!c.material) return;'
         '  const mats = Array.isArray(c.material) ? c.material : [c.material];'
         '  for (const m of mats) if (m.clippingPlanes) n += m.clippingPlanes.length;'
@@ -527,24 +531,28 @@ def test_set_clipping_planes(screen: Screen):
     screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) == 0)
 
 
-async def test_clipping_planes_in_object_data(user: User):
+def test_clipping_planes_survive_context_loss(screen: Screen):
     from nicegui import events
+    scene = None
     box = None
 
     @ui.page('/')
     def page():
-        nonlocal box
+        nonlocal scene, box
         with ui.scene() as scene:
             box = scene.box()
 
-    await user.open('/')
-    # `data` is the tuple scene.js init_objects consumes on every fresh connect, so
-    # asserting its shape here is what makes the planes survive a reload.
-    assert box.data[-1] == []
+    screen.open('/')
+    _wait_for_scene_ready(screen, scene.id)
     box.set_clipping_planes([events.SceneClipPlane(nx=0, ny=0, nz=1, d=2)])
-    assert box.data[-1] == [{'nx': 0, 'ny': 0, 'nz': 1, 'd': 2}]
-    box.clear_clipping_planes()
-    assert box.data[-1] == []
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) >= 1)
+
+    # _resend() must replay the planes when the scene remounts after a WebGL context loss.
+    screen.selenium.execute_script(
+        'document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();'
+    )
+    screen.click('Click to re-initialize')
+    screen.wait_for(lambda: _count_clipping_planes(screen, scene.id, box.id) >= 1)
 
 
 def test_intersection_planes_in_click_event(screen: Screen):
