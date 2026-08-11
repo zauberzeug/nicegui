@@ -16,7 +16,7 @@ This example works around that with two browser features:
 - **Client-side storage** (`localStorage`) holds the content the user chose to keep.
   "Save for offline" writes an article into `localStorage` via `ui.run_javascript`, and the offline page reads it back with plain JavaScript — no server involved.
 
-A minimal web app manifest (`manifest.webmanifest`) is also linked so the app can be installed like a native one.
+A minimal web app manifest (`manifest.webmanifest`) is also linked to provide the metadata a browser uses when installing the app (add icons to make it fully installable).
 
 ## Try it
 
