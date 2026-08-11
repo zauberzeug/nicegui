@@ -60,6 +60,9 @@ Review what the code does, not what the description says it does.
 - When a fix depends on undocumented behavior of an upstream or vendored library, ask for a test against the real library, so an upstream change fails loudly instead of silently.
 - A reported bug is a sample, not the population.
   Before merging, look for the same shape elsewhere in the codebase and say what you found.
+- The same caution applies to your own findings.
+  Before reporting existing behavior as a defect, check that nobody chose it: the source shows what the code does, not whether it was intended.
+  Search the tracker for the symptom, and `git blame` the warning or guard being flagged — or `git log -S` it when the string is stable — to find the pull request that introduced it, because a deliberate trade-off and a defect look identical in the diff.
 
 ## Severity vocabulary
 

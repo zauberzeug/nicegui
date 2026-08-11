@@ -177,6 +177,9 @@ The conventions below cover both general Python style and NiceGUI-specific patte
     Match the sibling elements first — a popup-like element opens and closes like `ui.menu` and `ui.dialog`, usually by inheriting `OpenableElement` rather than reimplementing them — and the wrapped Quasar or JavaScript component's own terms second.
     Check what NiceGUI already means by a candidate name: `show()`/`hide()` are the layout vocabulary of `ui.drawer`, `ui.header` and `ui.footer`, and `bind_*` belongs to data binding, so borrowing either for a different concept reads as the wrong one.
     Renaming after release is a breaking change, so settle names before merge.
+  - **Event handlers**: When a public `on_*` method listens to an event `__init__` already registered with the same payload, append the callback to a Python-side list and let the one listener fan out, as `ValueElement` does with `_change_handlers`.
+    Each listener emits its own client-to-server socket event, so a second registration doubles the traffic for that event.
+    Separate `self.on(...)` calls are right when the payloads genuinely differ: `EChart.on_point_click()` and `EChart.on_click()` both listen to `componentClick` but request different argument subsets.
   - **Mixins**: Elements use mixin composition; inheritance order matters for Python's Method Resolution Order (MRO)
   - **Props vs. attributes**: Use `self._props` for data that syncs to Vue/frontend; use instance attributes for Python-only state
   - **Context managers**: Elements can be used as context managers (`with element:`) for slot/child management
