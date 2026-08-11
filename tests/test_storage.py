@@ -4,6 +4,7 @@ import re
 import threading
 import time
 from collections.abc import Callable
+from uuid import uuid4
 
 import httpx
 import pytest
@@ -11,6 +12,7 @@ import pytest
 from nicegui import Client, app, background_tasks, context, core, ui
 from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
+from nicegui.nicegui import _on_handshake
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
 from nicegui.storage import Storage
 from nicegui.testing import Screen, User
@@ -241,6 +243,26 @@ def test_clear_tab_storage(screen: Screen):
     screen.click('clear')
     screen.wait(0.5)
     assert not tab_storages
+
+
+async def test_tab_storage_is_capped_per_client(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    client = await user.open('/')  # registers the first tab ID
+
+    async def handshake_with_a_fresh_tab_id() -> bool:
+        return await _on_handshake(f'test-{uuid4()}', {
+            'client_id': client.id,
+            'tab_id': str(uuid4()),
+            'document_id': str(uuid4()),
+        })
+
+    for _ in range(Client.MAX_TAB_STORAGES_PER_CLIENT - 1):
+        assert await handshake_with_a_fresh_tab_id()
+    assert not await handshake_with_a_fresh_tab_id()
+    assert len(app.storage._tabs) == Client.MAX_TAB_STORAGES_PER_CLIENT  # pylint: disable=protected-access
 
 
 def test_client_storage(screen: Screen):

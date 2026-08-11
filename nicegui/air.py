@@ -138,6 +138,8 @@ class Air:
         @relay.on('handshake')
         def _handle_handshake(data: dict[str, Any]) -> bool:
             if client := Client.instances.get(data['client_id']):
+                if not client.register_tab_id(data['tab_id']):
+                    return False
                 client.environ = data['environ']
                 if data.get('old_tab_id'):
                     core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])

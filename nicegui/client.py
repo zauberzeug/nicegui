@@ -74,6 +74,9 @@ class Client:
     instances: ClassVar[dict[str, Client]] = {}
     '''Maps client IDs to clients.'''
 
+    MAX_TAB_STORAGES_PER_CLIENT: ClassVar[int] = 128
+    '''Maximum number of tab storages a single client may create (a browser presents only one tab ID per client).'''
+
     shared_head_html = ''
     '''HTML to be inserted in the <head> of every page template.'''
 
@@ -99,6 +102,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._tab_ids: set[str] = set()
         self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
@@ -348,6 +352,13 @@ class Client:
         The callback has an optional parameter of `Exception`.
         """
         self._exception_handlers.append(handler)
+
+    def register_tab_id(self, tab_id: str) -> bool:
+        """Remember a tab ID, unless `MAX_TAB_STORAGES_PER_CLIENT` is already exhausted. (For internal use only.)"""
+        if tab_id not in self._tab_ids and len(self._tab_ids) >= self.MAX_TAB_STORAGES_PER_CLIENT:
+            return False
+        self._tab_ids.add(tab_id)
+        return True
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""

@@ -205,6 +205,8 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
+    if not client.register_tab_id(data['tab_id']):
+        return False
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
