@@ -1036,6 +1036,28 @@ def test_exception_in_page_builder(screen: Screen):
     assert len(exceptions) == 4
 
 
+def test_param_coercion_error_on_client_side_navigation(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Go to bad int', '/int-abc')
+        ui.sub_pages({'/': main, '/int-{idx}': needs_int})
+
+    def main():
+        ui.label('main_content')
+
+    def needs_int(idx: int):
+        ui.label(f'int-{idx}')
+
+    screen.open('/')
+    screen.should_contain('main_content')
+
+    msg = 'sub page /int-abc produced an error'
+    screen.click('Go to bad int')
+    screen.should_contain(f'500: {msg}')
+    screen.assert_py_logger('ERROR', msg)
+
+
 def test_disabling_404(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')

@@ -1,11 +1,13 @@
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Literal
 
 from typing_extensions import Self
 
 from ... import binding
+from ...awaitable_response import AwaitableResponse, NullResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...element import Element
 from ...events import (
@@ -41,23 +43,23 @@ class SceneObject:
 
 class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
-    from .scene_objects import AxesHelper as axes_helper
-    from .scene_objects import Box as box
-    from .scene_objects import Curve as curve
-    from .scene_objects import Cylinder as cylinder
-    from .scene_objects import Extrusion as extrusion
-    from .scene_objects import Gltf as gltf
-    from .scene_objects import Group as group
-    from .scene_objects import Line as line
-    from .scene_objects import PointCloud as point_cloud
-    from .scene_objects import QuadraticBezierTube as quadratic_bezier_tube
-    from .scene_objects import Ring as ring
-    from .scene_objects import Sphere as sphere
-    from .scene_objects import SpotLight as spot_light
-    from .scene_objects import Stl as stl
-    from .scene_objects import Text as text
-    from .scene_objects import Text3d as text3d
-    from .scene_objects import Texture as texture
+    from .objects.axes_helper import AxesHelper as axes_helper
+    from .objects.box import Box as box
+    from .objects.curve import Curve as curve
+    from .objects.cylinder import Cylinder as cylinder
+    from .objects.extrusion import Extrusion as extrusion
+    from .objects.gltf import Gltf as gltf
+    from .objects.group import Group as group
+    from .objects.line import Line as line
+    from .objects.point_cloud import PointCloud as point_cloud
+    from .objects.quadratic_bezier_tube import QuadraticBezierTube as quadratic_bezier_tube
+    from .objects.ring import Ring as ring
+    from .objects.sphere import Sphere as sphere
+    from .objects.spot_light import SpotLight as spot_light
+    from .objects.stl import Stl as stl
+    from .objects.text import Text as text
+    from .objects.text3d import Text3d as text3d
+    from .objects.texture import Texture as texture
 
     @resolve_defaults
     def __init__(self,
@@ -109,6 +111,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['camera-params'] = self.camera.params
         self.objects: dict[str, Object3D] = {}
         self.stack: list[Object3D | SceneObject] = [SceneObject()]
+        self._batched_calls: list[list[Any]] | None = None
         self._initialized_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = click_events[:]
@@ -178,9 +181,36 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         return attribute
 
     def _handle_init(self) -> None:
+        if self._initialized_event.is_set():
+            # a second init event implies a JS remount (e.g. after WebGL context loss) with an empty scene graph;
+            # re-send parents before children (dict order can deviate after attach())
+            with self._batch_calls():
+                for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
+                    obj._resend()  # pylint: disable=protected-access
         self._initialized_event.set()
         self.move_camera(duration=0)
-        self.run_method('init_objects', [obj.data for obj in self.objects.values()])
+
+    @contextmanager
+    def _batch_calls(self) -> Iterator[None]:
+        """Collect the method calls issued within this context and send them as a single message.
+
+        Sending them individually would emit thousands of frames for a large scene
+        and evict the message history other clients need for reconnecting.
+        """
+        calls: list[list[Any]] = []
+        self._batched_calls = calls
+        try:
+            yield
+        finally:
+            self._batched_calls = None
+        if calls:
+            self.run_method('run_methods', calls)
+
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        if self._batched_calls is not None:
+            self._batched_calls.append([name, *args])
+            return NullResponse()
+        return super().run_method(name, *args, timeout=timeout)
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
@@ -219,7 +249,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
             y=e.args['y'],
             z=e.args['z'],
         )
-        if arguments.type == 'dragend':
+        if arguments.type == 'dragend' and arguments.object_id in self.objects:
             self.objects[arguments.object_id].move(arguments.x, arguments.y, arguments.z)
 
         for handler in (self._drag_start_handlers if arguments.type == 'dragstart' else self._drag_end_handlers):

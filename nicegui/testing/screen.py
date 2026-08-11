@@ -12,6 +12,7 @@ import pytest
 from selenium import webdriver
 from selenium.common.exceptions import (
     ElementNotInteractableException,
+    JavascriptException,
     NoSuchElementException,
     StaleElementReferenceException,
 )
@@ -150,6 +151,25 @@ class Screen:
                 self.wait(0.1)
             raise AssertionError('Condition not met')
 
+    def wait_for_js(self, expression: str, expected: Any, *, timeout: float | None = None) -> None:
+        """Wait until the given JavaScript expression evaluates to the expected value.
+
+        :param expression: JavaScript expression to evaluate
+        :param expected: expected value of the expression
+        :param timeout: maximum time to wait in seconds (default: ``IMPLICIT_WAIT``)
+        """
+        value = None
+        deadline = time.time() + (self.IMPLICIT_WAIT if timeout is None else timeout)
+        while time.time() < deadline:
+            try:
+                value = self.selenium.execute_script(f'return {expression}')
+                if value == expected:
+                    return
+            except JavascriptException:
+                pass  # e.g. the expression accesses something which does not exist yet, retry
+            self.wait(0.1)
+        raise AssertionError(f'"{expression}" is {value!r}, expected {expected!r}')
+
     def should_not_contain(self, text: str, wait: float = 0.5) -> None:
         """Assert that the page does not contain the given text."""
         assert self.selenium.title != text
@@ -164,9 +184,12 @@ class Screen:
         """Assert that the page contains an input with the given value."""
         deadline = time.time() + self.IMPLICIT_WAIT
         while time.time() < deadline:
-            for input_element in self.find_all_by_tag('input'):
-                if input_element.get_attribute('value') == text:
-                    return
+            try:
+                for input_element in self.find_all_by_tag('input'):
+                    if input_element.get_attribute('value') == text:
+                        return
+            except StaleElementReferenceException:
+                pass  # elements were re-rendered while iterating, retry
             self.wait(0.1)
         raise AssertionError(f'Could not find input with value "{text}"')
 

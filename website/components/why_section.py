@@ -41,5 +41,5 @@ def _pillar(icon: str, title: str, description: str) -> None:
     """Render a single value proposition pillar."""
     with ui.column(align_items='center').classes('gap-3 flex-1 px-8 py-4 text-center'):
         phosphor_icon(icon).classes(f'text-3xl {d.TEXT_BLUE}')
-        ui.label(title).classes(f'{d.TEXT_19PX} font-semibold {d.TEXT_PRIMARY}')
+        ui.label(title).classes(f'{d.TEXT_19PX} font-semibold {d.TEXT_PRIMARY}').props('role=heading aria-level=3')
         ui.label(description).classes(f'{d.TEXT_15PX} leading-relaxed {d.TEXT_SECONDARY}')
