@@ -1,3 +1,4 @@
+import asyncio
 import weakref
 
 import pytest
@@ -200,7 +201,7 @@ def test_slot_children_cleared_on_delete(screen: Screen):
 
 @pytest.mark.parametrize('deletion_method', ['client_delete', 'element_delete'])
 async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, deletion_method: str):
-    """Using an element after deletion is silent when the client is gone (benign reload race)
+    """Using an element or head functions after deletion is silent when the client is gone (benign reload race)
     but warns once when only the element was deleted (a user bug). See issue #6058."""
     label = None
 
@@ -218,8 +219,30 @@ async def test_usage_after_delete(user: User, caplog: pytest.LogCaptureFixture, 
     label.run_method('foo')
     label.update()
     label.get_computed_prop('bar')
+    with label.client:
+        ui.page_title('late title')
+        ui.add_head_html('<meta name="late">')
+        ui.add_body_html('<span>late</span>')
+        ui.add_css('body {color: red}')
+    await asyncio.sleep(0)  # let the fire-and-forget tasks of run_javascript run
     expected_warnings = 0 if deletion_method == 'client_delete' else 1
     assert len([record for record in caplog.records if 'still being used' in record.message]) == expected_warnings
+
+
+async def test_parent_slot_error(user: User):
+    label = card = None
+
+    @ui.page('/')
+    def page():
+        nonlocal label, card
+        with ui.card() as card:
+            label = ui.label('hi').mark('my_label')
+
+    await user.open('/')
+    card.delete()
+    del card  # drop the last strong reference to the card and its slots
+    with pytest.raises(RuntimeError, match=r'The parent slot of Label\(id=5, markers=my_label\) has been deleted\.'):
+        _ = label.parent_slot
 
 
 def test_event_listeners_cleared_on_delete(screen: Screen):

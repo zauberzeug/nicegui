@@ -35,11 +35,17 @@ jobs:
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'pytest'
         run: uv run pytest
+      - name: ${{ matrix.python }} / examples/pytests
+        if: matrix.scope == 'pytest'
+        run: uv run --project ../.. pytest
+        working-directory: examples/pytests
       - uses: actions/upload-artifact@v7
         if: matrix.scope == 'pytest' && failure()
         with:
           name: screenshots-${{ matrix.python }}
-          path: screenshots/**/*.failed.png
+          path: |
+            screenshots/**/*.failed.png
+            examples/pytests/screenshots/**/*.failed.png
           retention-days: 14
       - name: ${{ matrix.python }} / ${{ matrix.scope }}
         if: matrix.scope == 'startup'
