@@ -1,5 +1,51 @@
 import * as CM from "nicegui-codemirror";
 
+// A RangeSet StateField whose ranges remap through document edits.
+// Dispatching setEffect.of(ranges) replaces the whole set.
+function defineRemappableRangeSet() {
+  const setEffect = CM.StateEffect.define(); // value: list of ranges (replaces all)
+  const field = CM.StateField.define({
+    create() {
+      return CM.RangeSet.empty;
+    },
+    update(set, tr) {
+      set = set.map(tr.changes);
+      for (const effect of tr.effects) {
+        if (effect.is(setEffect)) set = CM.RangeSet.of(effect.value, true);
+      }
+      return set;
+    },
+  });
+  return { setEffect, field };
+}
+
+// Line anchors: {id, line} pairs whose positions CM6 auto-remaps through edits. Each AnchorValue carries its id.
+class AnchorValue extends CM.RangeValue {
+  constructor(id) {
+    super();
+    this.id = id;
+  }
+  eq(other) {
+    return this.id === other.id;
+  }
+}
+const { setEffect: setAnchorsEffect, field: anchorField } = defineRemappableRangeSet();
+const ANCHOR_DEBOUNCE_MS = 50;
+
+function sameAnchorPositions(a, b) {
+  const ids = Object.keys(a);
+  return ids.length === Object.keys(b).length && ids.every((id) => a[id] === b[id]);
+}
+
+// Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
+class TooltipValue extends CM.RangeValue {
+  constructor(content) {
+    super();
+    this.content = content;
+  }
+}
+const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRangeSet();
+
 export default {
   template: `
     <div></div>
@@ -12,6 +58,10 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    lineAnchors: Object,
+    keymap: Array,
+    lineTooltips: Object,
+    lineTooltipHtml: Boolean,
     id: String,
   },
   watch: {
@@ -27,6 +77,15 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
+    lineAnchors(newAnchors) {
+      this.applyLineAnchors(newAnchors);
+    },
+    keymap() {
+      this.setKeymap();
+    },
+    lineTooltips(newTooltips) {
+      this.setLineTooltips(newTooltips);
+    },
   },
   data() {
     return {
@@ -40,8 +99,14 @@ export default {
   beforeUnmount() {
     if (this.editor) {
       const element = mounted_app.elements[this.$props.id.slice(1)];
-      if (element) element.props.value = this.editor.state.doc.toString();
+      if (element) {
+        element.props.value = this.editor.state.doc.toString();
+        // A client-side remount (e.g. a v-if container) re-applies these props against the restored
+        // document, so they have to describe where the anchors are now, not where they were declared.
+        if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
+      }
     }
+    clearTimeout(this._anchorTimer);
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -50,8 +115,8 @@ export default {
         for (const alias of [language.name, ...language.alias])
           if (name.toLowerCase() === alias.toLowerCase()) return language;
 
-      console.error(`Language not found: ${this.language}`);
-      console.info("Supported language names:", languages.map((lang) => lang.name).join(", "));
+      console.error(`Language not found: ${name}`);
+      console.info("Supported language names:", this.languages.map((lang) => lang.name).join(", "));
       return null;
     },
     // Get the names of all supported languages
@@ -68,9 +133,8 @@ export default {
         return;
       }
 
-      const lang_description = this.findLanguage(language, this.languages);
+      const lang_description = this.findLanguage(language);
       if (!lang_description) {
-        console.error("Language not found:", language);
         return;
       }
 
@@ -131,6 +195,95 @@ export default {
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
     },
+    async applyLineAnchors(anchors) {
+      // The server marks `line-anchors` as a preserved prop on unrelated updates, so the watcher
+      // only fires on a deliberate (re)assignment — re-applying from the declared lines is then intended,
+      // snapping anchors back to their declared positions (and restoring any dropped by a delete-across).
+      if (!this.editor) await this.editorPromise;
+      const doc = this.editor.state.doc;
+      const ranges = [];
+      for (const [id, line] of Object.entries(anchors || {})) {
+        if (line >= 1 && line <= doc.lines) {
+          const pos = doc.line(line).from;
+          ranges.push(new AnchorValue(id).range(pos, pos));
+        } else {
+          logAndEmit(
+            "warning",
+            `line_anchors: anchor ${JSON.stringify(id)} on line ${line} out of range [1, ${doc.lines}]`,
+          );
+        }
+      }
+      this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
+      // The dispatch re-armed the debounced tracker; the immediate emit below supersedes that echo.
+      clearTimeout(this._anchorTimer);
+      this.emitAnchorPositions({ force: true });
+    },
+    currentAnchorPositions() {
+      const state = this.editor.state;
+      const field = state.field(anchorField);
+      const doc = state.doc;
+      const positions = {};
+      const cursor = field.iter();
+      while (cursor.value) {
+        positions[cursor.value.id] = doc.lineAt(cursor.from).number;
+        cursor.next();
+      }
+      return positions;
+    },
+    // A deliberate apply forces the emit: the server treats it as the confirmation that its declared
+    // anchors have landed, even when they happen to sit where the live ones already were.
+    emitAnchorPositions({ force = false } = {}) {
+      if (!this.editor) return;
+      const positions = this.currentAnchorPositions();
+      if (!force && this._lastAnchors && sameAnchorPositions(this._lastAnchors, positions)) return;
+      this._lastAnchors = positions;
+      this.$emit("anchor-positions", { anchors: positions });
+    },
+    buildUserKeymap() {
+      return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
+        key,
+        mac, // unset mac will fall back to key
+        linux, // unset linux will fall back to key
+        win, // unset win will fall back to key
+        run: () => {
+          this.$emit("keybinding", { key });
+          return preventDefault;
+        },
+      }));
+    },
+    setKeymap() {
+      if (!this.editor) return;
+      this.editor.dispatch({
+        effects: this.userKeymapConfig.reconfigure(CM.keymap.of(this.buildUserKeymap())),
+      });
+      this.validateUserKeymap();
+    },
+    validateUserKeymap() {
+      if (!this.editor || !(this.keymap || []).length) return;
+      try {
+        // Force CodeMirror to build its combined keymap now instead of lazily on the first keydown:
+        // a chord whose prefix is also a standalone binding (incl. basicSetup's, e.g. "Mod-a Mod-b"
+        // vs. the built-in Mod-a) throws here rather than silently killing every keybinding later.
+        CM.runScopeHandlers(this.editor, new KeyboardEvent("keydown", { key: "Unidentified" }), "editor");
+      } catch (error) {
+        logAndEmit("error", `ui.codemirror: ${error.message}`);
+      }
+    },
+    setLineTooltips(tooltips) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const ranges = [];
+      for (const [line, content] of Object.entries(tooltips || {})) {
+        const lineNum = parseInt(line);
+        if (lineNum >= 1 && lineNum <= doc.lines) {
+          const pos = doc.line(lineNum).from;
+          ranges.push(new TooltipValue(content).range(pos, pos));
+        } else {
+          logAndEmit("warning", `line_tooltips: line ${lineNum} out of range [1, ${doc.lines}]`);
+        }
+      }
+      this.editor.dispatch({ effects: setTooltipsEffect.of(ranges) });
+    },
     setupExtensions() {
       const self = this;
 
@@ -149,11 +302,56 @@ export default {
         },
       );
 
+      // The debounce coalesces bursts (paste, multi-cursor insert) so high-latency
+      // connections do not see one event per keystroke. The fire-time callback reads live
+      // editor state via emitAnchorPositions(), so a stale timer that survives a clear or
+      // re-set transaction will see the up-to-date field rather than its scheduling-time snapshot.
+      const anchorTracker = CM.ViewPlugin.fromClass(
+        class {
+          update(update) {
+            if (!update.docChanged) return;
+            // Skip only when there is nothing to report before and after — checking just the end state
+            // would swallow the last anchor's removal (1 -> 0), leaving the Python mirror stale.
+            if (update.state.field(anchorField).size === 0 && update.startState.field(anchorField).size === 0) return;
+            clearTimeout(self._anchorTimer);
+            self._anchorTimer = setTimeout(() => self.emitAnchorPositions(), ANCHOR_DEBOUNCE_MS);
+          }
+        },
+      );
+
+      const lineTooltip = CM.hoverTooltip((view, pos) => {
+        const set = view.state.field(tooltipField);
+        const line = view.state.doc.lineAt(pos);
+        let content = null;
+        set.between(line.from, line.to, (_from, _to, value) => {
+          content = value.content;
+          return false; // at most one tooltip per line — stop after the first match
+        });
+        if (content === null) return null;
+        const renderHtml = self.lineTooltipHtml;
+        return {
+          pos: line.from,
+          above: true,
+          create() {
+            const dom = document.createElement("div");
+            if (renderHtml) dom.setHTML(content);
+            else dom.textContent = content;
+            return { dom };
+          },
+        };
+      });
+
       const extensions = [
         CM.basicSetup,
         changeSender,
+        anchorTracker,
+        anchorField,
+        tooltipField,
+        lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
+        // User keymap: Prec.high so they win over basicSetup defaults like Mod-z.
+        CM.Prec.high(this.userKeymapConfig.of(CM.keymap.of(this.buildUserKeymap()))),
         // Sets indentation https://codemirror.net/docs/ref/#language.indentUnit
         CM.indentUnit.of(this.indent),
         // We will set these Compartments later and dynamically through props
@@ -184,6 +382,7 @@ export default {
     this.editableConfig = new CM.Compartment();
     this.editableStates = { true: CM.EditorView.editable.of(true), false: CM.EditorView.editable.of(false) };
     this.lineWrappingConfig = new CM.Compartment();
+    this.userKeymapConfig = new CM.Compartment();
 
     const extensions = this.setupExtensions();
 
@@ -199,5 +398,10 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.lineAnchors && Object.keys(this.lineAnchors).length > 0) {
+      this.applyLineAnchors(this.lineAnchors);
+    }
+    this.setLineTooltips(this.lineTooltips);
+    this.validateUserKeymap();
   },
 };

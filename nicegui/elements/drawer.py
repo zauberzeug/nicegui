@@ -1,5 +1,7 @@
 from typing import Any, Literal
 
+from typing_extensions import Self
+
 from ..context import context
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..helpers import require_top_level_layout
@@ -62,20 +64,23 @@ class Drawer(ValueElement[bool | None], default_classes='nicegui-drawer'):
                 )
             self.client.on_connect(_request_value)
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the drawer"""
         if self.value is None:
             self.run_method('toggle')
         else:
             self.value = not self.value
+        return self
 
-    def show(self) -> None:
+    def show(self) -> Self:
         """Show the drawer"""
         self.value = True
+        return self
 
-    def hide(self) -> None:
+    def hide(self) -> Self:
         """Hide the drawer"""
         self.value = False
+        return self
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)

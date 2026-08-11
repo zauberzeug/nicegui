@@ -85,12 +85,13 @@ class ContentElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_content(self, content: str) -> None:
+    def set_content(self, content: str) -> Self:
         """Set the content of this element.
 
         :param content: The new content.
         """
         self.content = content
+        return self
 
     def _handle_content_change(self, content: str) -> None:
         """Called when the content of this element changes.

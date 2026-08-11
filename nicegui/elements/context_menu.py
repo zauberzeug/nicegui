@@ -1,3 +1,5 @@
+from typing_extensions import Self
+
 from ..element import Element
 
 
@@ -14,10 +16,12 @@ class ContextMenu(Element):
         self._props['context-menu'] = True
         self._props['touch-position'] = True
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the context menu."""
         self.run_method('show')
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the context menu."""
         self.run_method('hide')
+        return self

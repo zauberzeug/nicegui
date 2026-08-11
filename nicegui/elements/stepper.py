@@ -35,6 +35,7 @@ class Stepper(ValueElement[str | Step | None], default_classes='nicegui-stepper'
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
+        value = self._value_to_model_value(value)
         names = [step.props['name'] for step in self]
         for i, step in enumerate(self):
             done = i < names.index(value) if value in names else False

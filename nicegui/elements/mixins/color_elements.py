@@ -33,9 +33,10 @@ class BackgroundColorElement(Element):
         self.background_color = background_color
         self._handle_background_color_change(background_color)
 
-    def set_background_color(self, background_color: str | None) -> None:
+    def set_background_color(self, background_color: str | None) -> Self:
         """Set the background color of this element."""
         self.background_color = background_color
+        return self
 
     def _handle_background_color_change(self, background_color: str | None) -> None:
         # Clear previous color based on tracked state
@@ -140,9 +141,10 @@ class TextColorElement(Element):
         self.text_color = text_color
         self._handle_text_color_change(text_color)
 
-    def set_text_color(self, text_color: str | None) -> None:
+    def set_text_color(self, text_color: str | None) -> Self:
         """Set the text color of this element."""
         self.text_color = text_color
+        return self
 
     def _handle_text_color_change(self, text_color: str | None) -> None:
         # Clear previous color based on tracked state

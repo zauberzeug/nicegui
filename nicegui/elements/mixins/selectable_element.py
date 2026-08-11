@@ -21,8 +21,6 @@ class SelectableElement(Element):
         if not selectable:
             return
 
-        self._props['selectable'] = selectable
-
         self.selected = selected
         self._props['selected'] = selected
         self.set_selected(selected)
@@ -105,12 +103,13 @@ class SelectableElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_selected(self, selected: bool) -> None:
+    def set_selected(self, selected: bool) -> Self:
         """Set the selection state of this element.
 
         :param selected: The new selection state.
         """
         self.selected = selected
+        return self
 
     def _handle_selection_change(self, selected: bool) -> None:
         """Called when the selection state of this element changes.

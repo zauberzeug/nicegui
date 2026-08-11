@@ -78,7 +78,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         if on_mouse:
             self.on_mouse(on_mouse)
 
-    def set_source(self, source: str | Path | PIL_Image) -> None:
+    def set_source(self, source: str | Path | PIL_Image) -> Self:
         return super().set_source(source)
 
     def on_mouse(self, on_mouse: Handler[MouseEventArguments]) -> Self:

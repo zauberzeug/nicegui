@@ -18,7 +18,7 @@ class ValidationElement(ValueElement[ValueT]):
         self._auto_validation = True
         self._error: str | None = None
         super().__init__(**kwargs)
-        self._props['error'] = None if validation is None else False  # NOTE: reserve bottom space for error message
+        self._props['error'] = None if validation is None else False  # reserve bottom space for error message
 
     @property
     def validation(self) -> ValidationFunction | ValidationDict | None:
@@ -46,7 +46,7 @@ class ValidationElement(ValueElement[ValueT]):
         :param error: The optional error message
         """
         new_error_prop = None if error is None and self.validation is None else (error is not None)
-        if self._error == error and self._props['error'] == new_error_prop:
+        if self._error == error and self._props.get('error') == new_error_prop:
             return
         self._error = error
         self._props['error'] = new_error_prop

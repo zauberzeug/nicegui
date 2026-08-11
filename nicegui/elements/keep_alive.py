@@ -47,7 +47,7 @@ class KeepAlive(Element, component='keep_alive_anchor.js'):
         self._host.__exit__(*exc)
 
     def _handle_delete(self) -> None:
-        # NOTE: the host may already be queued for deletion if the entire client is being torn down,
+        # The host may already be queued for deletion if the entire client is being torn down,
         # in which case its parent slot has already cleared it from its children list.
         host_slot = self._host.parent_slot
         if not self._host.is_deleted and host_slot is not None and self._host in host_slot.children:
