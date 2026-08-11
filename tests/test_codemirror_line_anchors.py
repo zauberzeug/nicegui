@@ -2,7 +2,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def _wait_for_editor(screen: Screen) -> None:
@@ -47,6 +47,37 @@ def test_anchor_remapping(screen: Screen, anchors: dict[str, int], change: str, 
     screen.wait_for(lambda: editor.line_anchors == anchors)
     screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({change});')
     screen.wait_for(lambda: editor.line_anchors == expected)
+
+
+def test_anchors_out_of_range(screen: Screen):
+    """A line below 1 is refused outright; one past the end is dropped rather than moved somewhere else."""
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc')
+
+    screen.open('/')
+    _wait_for_editor(screen)
+    with pytest.raises(ValueError, match='1-indexed'):
+        editor.line_anchors = {'bad': 0}
+
+    editor.line_anchors = {'inside': 2, 'beyond': 50}
+    screen.wait_for(lambda: editor.line_anchors == {'inside': 2})
+
+
+async def test_rejected_anchors_leave_no_editor_behind(user: User):
+    """The constructor must refuse before the element registers itself, not halfway through building it."""
+    @ui.page('/')
+    def page():
+        ui.label('Some content')
+
+    await user.open('/')
+    with user:
+        with pytest.raises(ValueError, match='1-indexed'):
+            ui.codemirror('a\nb', line_anchors={'bad': 0})
+    await user.should_not_see(ui.codemirror)
 
 
 def test_anchor_notifications_coalesce_during_typing(screen: Screen):

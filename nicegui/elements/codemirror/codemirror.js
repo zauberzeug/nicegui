@@ -203,18 +203,15 @@ export default {
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const [id, line] of Object.entries(anchors || {})) {
-        if (line < 1) {
-          logAndEmit("warning", `line_anchors: anchor ${JSON.stringify(id)} has line ${line}; clamping to 1.`);
-        } else if (line > doc.lines) {
+        if (line >= 1 && line <= doc.lines) {
+          const pos = doc.line(line).from;
+          ranges.push(new AnchorValue(id).range(pos, pos));
+        } else {
           logAndEmit(
             "warning",
-            `line_anchors: anchor ${JSON.stringify(id)} requested line ${line} ` +
-              `but document only has ${doc.lines} line(s); clamping to last line.`,
+            `line_anchors: anchor ${JSON.stringify(id)} on line ${line} out of range [1, ${doc.lines}]`,
           );
         }
-        const lineNum = Math.max(1, Math.min(line, doc.lines));
-        const pos = doc.line(lineNum).from;
-        ranges.push(new AnchorValue(id).range(pos, pos));
       }
       this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
       // The dispatch re-armed the debounced tracker; the immediate emit below supersedes that echo.

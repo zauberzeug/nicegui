@@ -27,6 +27,9 @@ class LineAnchorElement(Element):
         on_anchor_change: Handler[CodeMirrorAnchorChangeEventArguments] | None = None,
         **kwargs: Any,
     ) -> None:
+        # NOTE: validate before super().__init__ registers the element, so a rejected argument
+        # does not leave a half-built element behind in the element tree
+        _validate(line_anchors or {})
         super().__init__(**kwargs)
         self._anchor_positions: dict[str, int] = {}
         self._anchors_pending = True
@@ -49,8 +52,9 @@ class LineAnchorElement(Element):
         An anchor is dropped only when a deletion spans across its position —
         a full-line delete that starts at the anchor slides it to the following line.
 
-        Lines exceeding the current document length are clamped to the last line on the JS side
-        (a warning is emitted via NiceGUI's logger).
+        Lines beyond the end of the document are dropped on the JS side with a warning via NiceGUI's
+        logger, just like ``line_tooltips``, so a read never reports a position that was not applied.
+        A line below 1 is rejected right away with a ``ValueError``.
 
         *Added in version 3.16.0*
         """
@@ -58,8 +62,10 @@ class LineAnchorElement(Element):
 
     @line_anchors.setter
     def line_anchors(self, anchors: dict[str, int] | None) -> None:
+        anchors = anchors or {}
+        _validate(anchors)
         self._anchors_pending = True
-        self._props['line-anchors'] = anchors or {}
+        self._props['line-anchors'] = anchors
 
     def _to_dict(self) -> dict[str, Any]:
         dict_ = super()._to_dict()
@@ -82,3 +88,9 @@ class LineAnchorElement(Element):
         # A separate dict keeps a caller mutating the exposed positions from rewriting what we send.
         with self._props.suspend_updates():
             self._props['line-anchors'] = dict(self._anchor_positions)
+
+
+def _validate(anchors: dict[str, int]) -> None:
+    for id_, line in anchors.items():
+        if line < 1:
+            raise ValueError(f'line_anchors: anchor {id_!r} has line {line}, but lines are 1-indexed')
