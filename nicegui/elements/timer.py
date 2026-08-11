@@ -1,8 +1,10 @@
 from contextlib import AbstractContextManager, nullcontext
 
-from ..client import Client, ClientConnectionTimeout
+from typing_extensions import Self
+
+from .. import core
+from ..client import Client
 from ..element import Element
-from ..logging import log
 from ..timer import Timer as BaseTimer
 
 
@@ -11,19 +13,20 @@ class Timer(BaseTimer, Element, component='timer.js'):
     def _get_context(self) -> AbstractContextManager:
         return self.parent_slot or nullcontext()
 
+    def _skip_registration(self) -> bool:
+        # Per-client ui.timer: skip on the script-mode preflight; will register on each per-client re-execution.
+        return core.is_script_mode_preflight()
+
     async def _can_start(self) -> bool:
         """Wait for the client connection before the timer callback can be allowed to manipulate the state.
 
         See https://github.com/zauberzeug/nicegui/issues/206 for details.
-        Returns True if the client is connected, False if the client is not connected and the timer should be cancelled.
+        Returns True if the client is connected, False if the timer should not run (anymore).
         """
-        try:
-            await self.client.connected()
-            return True
-        except ClientConnectionTimeout:
-            self.cancel()
-            log.debug('Timer cancelled because client connection timed out')
+        if self._should_stop():
             return False
+        await self.client.connected()
+        return not self._should_stop()
 
     def _should_stop(self) -> bool:
         return (
@@ -43,5 +46,5 @@ class Timer(BaseTimer, Element, component='timer.js'):
             assert parent_slot is not None
             parent_slot.parent.remove(self)
 
-    def set_visibility(self, visible: bool) -> None:
+    def set_visibility(self, visible: bool) -> Self:
         raise NotImplementedError('Use `activate()`, `deactivate()` or `cancel()`. See #3670 for more information.')

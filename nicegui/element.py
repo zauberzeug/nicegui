@@ -145,7 +145,9 @@ class Element(Visibility):
             return None
         parent_slot = self._parent_slot()
         if parent_slot is None:
-            raise RuntimeError('The parent slot of the element has been deleted.')
+            name = self.tag if type(self) is Element else type(self).__name__  # pylint: disable=unidiomatic-typecheck
+            markers = f', markers={",".join(self._markers)}' if self._markers else ''
+            raise RuntimeError(f'The parent slot of {name}(id={self.id}{markers}) has been deleted.')
         return parent_slot
 
     @parent_slot.setter
@@ -201,6 +203,22 @@ class Element(Visibility):
     def __iter__(self) -> Iterator[Element]:
         for slot in self.slots.values():
             yield from slot
+
+    def _render_markdown(self) -> str:
+        """Render the Markdown body for this element.
+
+        The default implementation recurses into children, which is the natural behavior for container elements.
+        Override to render specific content (e.g. text, value) or to actively skip children (return an empty string).
+        """
+        return self._children_to_markdown()
+
+    def _children_to_markdown(self) -> str:
+        """Collect Markdown from all child elements across all slots."""
+        return '\n\n'.join(
+            markdown
+            for child in self
+            if child.visible and (markdown := child._render_markdown())  # pylint: disable=protected-access
+        )
 
     def _collect_slot_dict(self) -> dict[str, Any]:
         return {
@@ -394,9 +412,28 @@ class Element(Visibility):
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
         events.handle_event(listener.handler, args)
 
+    def _is_safe_to_interact(self) -> bool:
+        """Return True if it is safe to send messages to this element's client.
+
+        Silent when the *client* has been deleted (e.g. browser reload race past ``reconnect_timeout``)
+        or already garbage-collected: an async callback resuming after the teardown is not a user bug.
+        Emits a one-shot warning when the *element* has been explicitly deleted but the client is still alive:
+        that is a real use-after-free in user code and worth surfacing.
+        """
+        client = self._client()
+        if client is None or client.is_deleted:
+            return False
+        if self.is_deleted:
+            helpers.warn_once('An element has been deleted but is still being used. '
+                              'This is most likely a bug in your application code. '
+                              'See https://github.com/zauberzeug/nicegui/issues/3028 for more information.',
+                              stack_info=True)
+            return False
+        return True
+
     def update(self) -> None:
         """Update the element on the client side."""
-        if self.is_deleted:
+        if not self._is_safe_to_interact():
             return
         self.client.outbox.enqueue_update(self)
 
@@ -410,7 +447,7 @@ class Element(Visibility):
         :param args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.is_loop_running():
+        if not core.is_loop_running() or not self._is_safe_to_interact():
             return NullResponse()
         return self.client.run_javascript(
             f'return runMethod({self.id}, {json.dumps(name)}, {json.dumps(args)})', timeout=timeout,
@@ -424,7 +461,7 @@ class Element(Visibility):
         :param prop_name: name of the computed prop
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
-        if not core.is_loop_running():
+        if not core.is_loop_running() or not self._is_safe_to_interact():
             return NullResponse()
         return self.client.run_javascript(
             f'return getComputedProp({self.id}, {json.dumps(prop_name)})', timeout=timeout,
@@ -462,7 +499,7 @@ class Element(Visibility):
     def move(self,
              target_container: Element | None = None,
              target_index: int = -1, *,
-             target_slot: str | None = None) -> None:
+             target_slot: str | None = None) -> Self:
         """Move the element to another container.
 
         :param target_container: container to move the element to (default: the parent container)
@@ -471,24 +508,27 @@ class Element(Visibility):
         """
         parent_slot = self.parent_slot
         assert parent_slot is not None
-        parent_slot.children.remove(self)
-        parent_slot.parent.update()
         target_container = target_container or parent_slot.parent
+        if self in target_container.ancestors(include_self=True):
+            raise ValueError('Cannot move an element into itself or one of its descendants.')
 
         if target_slot is None:
-            parent_slot = target_container.default_slot
-            self.parent_slot = parent_slot
+            new_slot = target_container.default_slot
         elif target_slot in target_container.slots:
-            parent_slot = target_container.slots[target_slot]
-            self.parent_slot = parent_slot
+            new_slot = target_container.slots[target_slot]
         else:
             raise ValueError(f'Slot "{target_slot}" does not exist in the target container. '
                              f'Add it first using `add_slot("{target_slot}")`.')
 
-        target_index = target_index if target_index >= 0 else len(parent_slot.children)
-        parent_slot.children.insert(target_index, self)
+        parent_slot.children.remove(self)
+        parent_slot.parent.update()
+        self.parent_slot = new_slot
+
+        target_index = target_index if target_index >= 0 else len(new_slot.children)
+        new_slot.children.insert(target_index, self)
 
         target_container.update()
+        return self
 
     def remove(self, element: Element | int) -> None:
         """Remove a child element.

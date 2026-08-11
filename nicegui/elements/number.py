@@ -128,6 +128,8 @@ class Number(LabelElement, ValidationElement[float | None], DisableableElement):
     @property
     def out_of_limits(self) -> bool:
         """Whether the current value is out of the allowed limits."""
+        if self.value is None:
+            return False
         return not self.min <= self.value <= self.max
 
     def sanitize(self) -> None:
@@ -158,3 +160,9 @@ class Number(LabelElement, ValidationElement[float | None], DisableableElement):
         if value == '':
             return 0
         return self.format % float(value)
+
+    def _render_markdown(self) -> str:
+        value = '' if self.value is None else str(self.value)
+        if self.label:
+            return f'{self.label}: {value}'
+        return value

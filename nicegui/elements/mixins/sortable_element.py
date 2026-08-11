@@ -33,6 +33,8 @@ class SortableElement(Element):
         Note: Setting a custom HTML ID on the container (e.g. via ``.props('id="my-list"')``) is not supported
         and will break the internal slot synchronization.
 
+        *Added in version 3.11.0*
+
         :param options: dictionary of raw SortableJS options (overrides named params like ``animation`` if both are given)
         :param on_end: callback invoked when a sort operation ends (fires on the source container only, even for cross-container moves)
         :param animation: animation duration in seconds (default: 0.15)

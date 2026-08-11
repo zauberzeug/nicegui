@@ -1,0 +1,2 @@
+import{Y as r,Z as s,D as a,p as e}from"./chunk-VJFVEZTB-By_rGwew.js";import"./chunk-AZZRMDJM-C8XoZMs4.js";import"./chunk-VE5CLXGZ-D6e-yfgk.js";import"./chunk-A7VWPJGB-B1-P7yLF.js";import{m as t}from"./index-C7gcuJPt.js";import"./chunk-6L755F7B-CwxdtWVT.js";var o={parser:a,get db(){return new e},renderer:s,styles:r,init:t(r=>{r.class||(r.class={}),r.class.arrowMarkerAbsolute=r.arrowMarkerAbsolute},"init")};export{o as diagram};
+//# sourceMappingURL=classDiagram-v2-5VFNUXQA-8WmOj0zL.js.map

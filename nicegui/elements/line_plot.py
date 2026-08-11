@@ -73,7 +73,7 @@ class LinePlot(Pyplot):
 
         if isinstance(x_limits, tuple):
             self.fig.gca().set_xlim(*x_limits)
-        elif x_limits == 'auto':
+        elif x_limits == 'auto' and self.x:
             min_x = min(self.x)
             max_x = max(self.x)
             if min_x != max_x:
@@ -84,11 +84,12 @@ class LinePlot(Pyplot):
             self.fig.gca().set_ylim(*y_limits)
         elif y_limits == 'auto':
             flat_y = [y_i for y in self.Y for y_i in y]
-            min_y = min(flat_y)
-            max_y = max(flat_y)
-            if min_y != max_y:
-                pad_y = 0.01 * (max_y - min_y)
-                self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
+            if flat_y:
+                min_y = min(flat_y)
+                max_y = max(flat_y)
+                if min_y != max_y:
+                    pad_y = 0.01 * (max_y - min_y)
+                    self.fig.gca().set_ylim(min_y - pad_y, max_y + pad_y)
 
         self._convert_to_html()
 

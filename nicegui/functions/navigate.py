@@ -69,7 +69,7 @@ class Navigate:
         if not new_tab and isinstance(target, str):
             parsed = urlparse(path)
             if not parsed.scheme and not parsed.netloc and \
-                    any(isinstance(el, SubPages) for el in context.client.elements.values()):
+                    any(isinstance(el, SubPages) for el in context.client.layout.descendants()):
                 client = context.client
                 navigate_coro = client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
                 background_tasks.create(helpers.await_with_context(navigate_coro, client), name='navigate_sub_pages')

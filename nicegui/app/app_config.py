@@ -11,7 +11,7 @@ class AppConfig:
     socket_io_js_query_params: dict = field(default_factory=dict)
     socket_io_js_extra_headers: dict = field(default_factory=dict)
     socket_io_js_transports: list[Literal['websocket', 'polling']] = \
-        field(default_factory=lambda: ['websocket', 'polling'])  # NOTE: we favor websocket
+        field(default_factory=lambda: ['websocket', 'polling'])  # we favor websocket
     quasar_config: dict = \
         field(default_factory=lambda: {
             'brand': {},
@@ -33,7 +33,7 @@ class AppConfig:
     viewport: str = field(init=False)
     favicon: str | Path | None = field(init=False)
     dark: bool | None = field(init=False)
-    language: Language = field(init=False)
+    language: Language | None = field(init=False)
     binding_refresh_interval: float | None = field(init=False)
     reconnect_timeout: float = field(init=False)
     message_history_length: int = field(init=False)
@@ -42,6 +42,7 @@ class AppConfig:
     unocss: Literal['mini', 'wind3', 'wind4'] | None = field(init=False)
     prod_js: bool = field(init=False)
     show_welcome_message: bool = field(init=False)
+    markdown: bool = field(init=False)
     _has_run_config: bool = False
 
     def add_run_config(self,
@@ -51,7 +52,7 @@ class AppConfig:
                        viewport: str,
                        favicon: str | Path | None,
                        dark: bool | None,
-                       language: Language,
+                       language: Language | None,
                        binding_refresh_interval: float | None,
                        reconnect_timeout: float,
                        message_history_length: int,
@@ -60,6 +61,7 @@ class AppConfig:
                        unocss: Literal['mini', 'wind3', 'wind4'] | None,
                        prod_js: bool,
                        show_welcome_message: bool,
+                       markdown: bool,
                        ) -> None:
         """Add the run config to the app config."""
         self.reload = reload
@@ -76,6 +78,7 @@ class AppConfig:
         self.unocss = unocss
         self.prod_js = prod_js
         self.show_welcome_message = show_welcome_message
+        self.markdown = markdown
         self._has_run_config = True
 
     @property

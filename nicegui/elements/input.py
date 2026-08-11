@@ -1,5 +1,7 @@
 from typing import Any
 
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .icon import Icon
@@ -76,9 +78,10 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
         if suffix is not None:
             self._props['suffix'] = suffix
 
-    def set_autocomplete(self, autocomplete: list[str] | None) -> None:
+    def set_autocomplete(self, autocomplete: list[str] | None) -> Self:
         """Set the autocomplete list."""
-        self._props['_autocomplete'] = autocomplete
+        self._props['_autocomplete'] = autocomplete or []
+        return self
 
     @property
     def prefix(self) -> str | None:
@@ -114,3 +117,9 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')
+
+    def _render_markdown(self) -> str:
+        value = '' if self.value is None else str(self.value)
+        if self.label:
+            return f'{self.label}: {value}'
+        return value

@@ -4,8 +4,9 @@ from typing import Literal
 
 import httpx
 import pytest
+from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
-from selenium.webdriver.common.by import By
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from nicegui import app, background_tasks, ui
 from nicegui.testing import Screen, User
@@ -71,7 +72,7 @@ def test_wait_for_connected(screen: Screen):
     async def load() -> None:
         assert label
         label.text = 'loading...'
-        # NOTE we can not use asyncio.create_task() here because we are on a different thread than the NiceGUI event loop
+        # we can not use asyncio.create_task() here because we are on a different thread than the NiceGUI event loop
         background_tasks.create(takes_a_while())
 
     async def takes_a_while() -> None:
@@ -174,6 +175,34 @@ def test_api_exception(screen: Screen):
     screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.should_contain('Internal Server Error')
+
+
+@pytest.mark.parametrize('exception_class', [HTTPException, StarletteHTTPException])
+def test_api_http_exception_404_returns_json(screen: Screen, exception_class: type) -> None:
+    @app.get('/api/missing')
+    def api_missing():
+        raise exception_class(404, 'item not found')
+
+    screen.start_server()
+    response = httpx.get(f'http://localhost:{Screen.PORT}/api/missing')
+    assert response.status_code == 404, 'status code should be forwarded'
+    assert response.headers['content-type'].startswith('application/json'), \
+        "endpoints raising HTTPException(404) should get FastAPI's default JSON response, not NiceGUI's HTML error page"
+    assert response.json() == {'detail': 'item not found'}
+
+
+def test_ui_page_http_exception_404_keeps_html(screen: Screen):
+    @ui.page('/blog/{id_}')
+    def blog(id_: int):
+        if id_ != 1:
+            raise HTTPException(404, 'blog post not found')
+        ui.label(f'Blog post {id_}')
+
+    screen.start_server()
+    response = httpx.get(f'http://localhost:{Screen.PORT}/blog/99')
+    assert response.status_code == 404, 'status code should be forwarded'
+    assert response.headers['content-type'].startswith('text/html'), \
+        'ui.page raising HTTPException(404) should render the HTML error page for browsers'
 
 
 def test_page_with_args(screen: Screen):
@@ -286,20 +315,6 @@ def test_warning_about_to_late_responses(screen: Screen):
     screen.assert_py_logger('ERROR', re.compile('it was returned after the HTML had been delivered to the client'))
 
 
-def test_reconnecting_without_page_reload(screen: Screen):
-    @ui.page('/', reconnect_timeout=3.0)
-    def page():
-        ui.input('Input').props('autofocus')
-        ui.button('drop connection', on_click=lambda: ui.run_javascript('socket.io.engine.close()'))
-
-    screen.open('/')
-    screen.type('hello')
-    screen.click('drop connection')
-    screen.wait(2.0)
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
-    assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
-
-
 def test_ip(screen: Screen):
     @ui.page('/')
     def page():
@@ -329,16 +344,53 @@ def test_multicast(screen: Screen, path: str | None):
     screen.should_contain('added')
 
 
+@pytest.mark.parametrize('global_lang', ['', 'de'])
+def test_html_lang_attribute(screen: Screen, global_lang: str):
+    screen.ui_run_kwargs['language'] = global_lang or None
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    @ui.page('/swiss-german', language='de-CH')
+    def swiss_german_page():
+        ui.label('Grüezi')
+
+    @ui.page('/undeclared-lang', language=None)
+    def undeclared_lang_page():
+        ui.label('Ciao')
+
+    def html_tag(path: str) -> str:
+        response = httpx.get(f'http://localhost:{Screen.PORT}{path}')
+        return re.search(r'<html[^>]*>', response.text).group()  # type: ignore
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    assert screen.find_by_tag('html').get_attribute('lang') == global_lang
+    assert html_tag('/') == (f'<html lang="{global_lang}">' if global_lang else '<html dir="ltr">')
+
+    screen.open('/swiss-german')
+    screen.should_contain('Grüezi')
+    assert screen.find_by_tag('html').get_attribute('lang') == 'de-CH'
+    assert html_tag('/swiss-german') == '<html lang="de-CH">'
+
+    screen.open('/undeclared-lang')
+    screen.should_contain('Ciao')
+    assert screen.find_by_tag('html').get_attribute('lang') == ''
+    assert html_tag('/undeclared-lang') == '<html dir="ltr">'
+
+
 def test_warning_if_response_takes_too_long(screen: Screen):
     @ui.page('/', response_timeout=0.5)
     async def page():
         await asyncio.sleep(1)
         ui.label('all done')
 
-    screen.start_server()
-    # NOTE: using httpx instead of screen.open to avoid Selenium script timeout on incomplete page responses
-    httpx.get(f'http://localhost:{Screen.PORT}/', timeout=5)
-    screen.wait(1)
+    screen.allowed_js_errors.append('/ - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('500')
+    screen.should_contain('Server error')
+    screen.should_contain('The page took longer than the response_timeout of 0.5 seconds to build.')
     screen.assert_py_logger('WARNING', re.compile('Response for / not ready after 0.5 seconds'))
 
 

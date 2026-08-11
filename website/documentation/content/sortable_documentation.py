@@ -1,4 +1,6 @@
 from nicegui import ui
+from nicegui.elements.sortable.sortable import Sortable
+from nicegui.elements.mixins.sortable_element import SortableElement
 
 from . import doc
 
@@ -7,6 +9,10 @@ from . import doc
     Container elements like `ui.column`, `ui.row`, and `ui.card` can be made sortable via drag-and-drop
     using the `make_sortable()` method.
     It returns a `Sortable` controller for enabling, disabling, or changing the sort behavior.
+
+    Note: Only direct children of the container are sortable; nested containers can be made sortable independently.
+
+    *Added in version 3.11.0*
 ''')
 def main_demo() -> None:
     with ui.card() as card:
@@ -62,3 +68,7 @@ def enable_disable() -> None:
     sortable = card.make_sortable()
     ui.switch('Enable', value=True,
               on_change=lambda e: sortable.enable() if e.value else sortable.disable())
+
+
+doc.reference(SortableElement, title='Reference for SortableElement')
+doc.reference(Sortable, title='Reference for Sortable controller')

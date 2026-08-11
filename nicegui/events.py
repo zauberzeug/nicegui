@@ -158,6 +158,11 @@ class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
 
 
 @dataclass(kw_only=True, slots=True)
+class CodeMirrorAnchorChangeEventArguments(UiEventArguments):
+    anchors: dict[str, int]  # mapping of anchor id to its current 1-indexed line, as reported by the browser
+
+
+@dataclass(kw_only=True, slots=True)
 class TableSelectionEventArguments(UiEventArguments):
     selection: list[Any]
 
@@ -438,11 +443,16 @@ class SortableEventArguments(UiEventArguments):
     new_index: int
 
 
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorKeyBindingEventArguments(UiEventArguments):
+    key: str
+
+
 EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 
 
-def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
+def handle_event(handler: Handler[EventT] | None, arguments: EventT, *, expect_args: bool | None = None) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
@@ -452,6 +462,9 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
 
     :param handler: the event handler
     :param arguments: the event arguments
+    :param expect_args: whether the handler expects the arguments to be passed
+        (default: ``None`` meaning auto-detected from the handler's signature;
+        pass a pre-resolved bool to skip the per-call signature introspection, *added in version 3.15.0*)
     """
     if handler is None:
         return
@@ -463,7 +476,9 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
             parent_slot = nullcontext()
 
         with parent_slot:
-            if helpers.expects_arguments(handler):
+            if expect_args is None:
+                expect_args = helpers.expects_arguments(handler)
+            if expect_args:
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()

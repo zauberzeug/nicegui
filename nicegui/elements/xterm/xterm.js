@@ -17,7 +17,7 @@ export default {
         this.terminal[key]((e) => this.$emit(key.slice(2).toLowerCase(), e));
       });
 
-    // NOTE: wait for window.path_prefix to be set
+    // wait for window.path_prefix to be set
     this.$nextTick().then(() => loadResource(window.path_prefix + `${this.resourcePath}/xterm.css`));
   },
   methods: {

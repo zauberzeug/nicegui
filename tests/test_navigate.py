@@ -31,16 +31,18 @@ def test_navigate_to(screen: Screen, new_tab: bool):
 
 
 def test_navigate_to_absolute_url(screen: Screen):
-    external_url = 'https://www.google.com/'
+    @ui.page('/external')
+    def external():
+        ui.label('External page')
 
     @ui.page('/')
     def page():
-        ui.button('Go external', on_click=lambda: ui.navigate.to(external_url))
+        ui.button('Go external', on_click=lambda: ui.navigate.to(f'{screen.url}/external'))
 
     screen.open('/')
     screen.click('Go external')
-    screen.wait(1.0)
-    assert external_url in screen.selenium.current_url
+    screen.should_contain('External page')
+    assert screen.selenium.current_url == f'{screen.url}/external'
 
 
 def test_navigate_to_relative_url(screen: Screen):

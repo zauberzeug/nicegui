@@ -54,7 +54,7 @@ def run(root: Callable | None = None, *,
         viewport: str = 'width=device-width, initial-scale=1',
         favicon: str | Path | None = None,
         dark: bool | None = False,
-        language: Language = 'en-US',
+        language: Language | None = None,
         binding_refresh_interval: float | None = 0.1,
         reconnect_timeout: float = 3.0,
         message_history_length: int = 1000,
@@ -79,6 +79,7 @@ def run(root: Callable | None = None, *,
         storage_secret: str | None = None,
         session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
+        markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
         **kwargs: Any,
         ) -> None:
     """ui.run
@@ -91,9 +92,11 @@ def run(root: Callable | None = None, *,
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
+    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers).
+        In Windows native mode, a local `.ico` file path is also applied as the native window icon.
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
-    :param language: language for Quasar elements (default: `'en-US'`)
+    :param language: language for Quasar elements and the ``lang`` attribute of the ``html`` tag
+        (default: ``None``, in which case Quasar elements use ``'en-US'`` and the ``lang`` attribute is omitted, *updated in version 3.14.0*)
     :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
@@ -118,6 +121,8 @@ def run(root: Callable | None = None, *,
     :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.user and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
     :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
+        (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
@@ -170,6 +175,7 @@ def run(root: Callable | None = None, *,
         unocss=unocss,
         prod_js=prod_js,
         show_welcome_message=show_welcome_message,
+        markdown=markdown,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
@@ -239,8 +245,10 @@ def run(root: Callable | None = None, *,
         width, height = window_size or (800, 600)
         native_host = '127.0.0.1' if host == '0.0.0.0' else host
         if reload:
-            shutdown_event = multiprocessing.Event()
-        native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless, shutdown_event)
+            shutdown_event = native_module.native.SPAWN_CONTEXT.Event()
+        native_favicon = str(Path(favicon).resolve()) if favicon and helpers.is_file(favicon) else None
+        native_module.activate(protocol, native_host, port, title, width, height, fullscreen, frameless,
+                               shutdown_event, native_favicon)
     else:
         port = port or 8080
         host = host or '0.0.0.0'
@@ -254,7 +262,7 @@ def run(root: Callable | None = None, *,
         native = False
         show_welcome_message = False
 
-    # NOTE: We save host and port in environment variables so the subprocess started in reload mode can access them.
+    # We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
     os.environ['NICEGUI_PORT'] = str(port)
     os.environ['NICEGUI_PROTOCOL'] = protocol
@@ -268,7 +276,7 @@ def run(root: Callable | None = None, *,
     if kwargs.get('workers', 1) > 1:
         raise ValueError('NiceGUI does not support multiple workers yet.')
 
-    # NOTE: The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
+    # The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
     config = CustomServerConfig(
         APP_IMPORT_STRING if reload else core.app,

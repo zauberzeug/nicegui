@@ -43,6 +43,19 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
         return self
 
+    def _render_markdown(self) -> str:
+        if label := self._props.get('label'):
+            return f'[Button: {label}]'
+        if aria_label := self._props.get('aria-label'):
+            return f'[Button: {aria_label}]'
+        if icon := self._props.get('icon'):
+            return f'[Button: icon:{icon}]'
+        children = self._children_to_markdown().strip()
+        if children and '\n' not in children and '[' not in children and ']' not in children:
+            # only surface single plain lines of child content that doesn't garble the "[Button: ...]" wrapper
+            return f'[Button: {children}]'
+        return '[Button]'
+
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 

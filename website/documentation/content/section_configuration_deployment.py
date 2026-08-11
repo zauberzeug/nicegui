@@ -46,6 +46,24 @@ doc.intro(run_documentation)
     as pywebview uses it for the EdgeChromium backend.
     This is typically pre-installed on standard Windows installations,
     but may be missing on minimal or freshly installed systems.
+
+    On Windows, a file-path `favicon` is also used as the native window icon (taskbar, title bar).
+    The `.ico` format is required.
+
+    **Port Selection:** In native mode, NiceGUI automatically finds an open port if none is specified via the `port` parameter.
+    This is handled by `native.find_open_port()` which scans ports 8000-8999 by default.
+    This is particularly useful when packaging your app with PyInstaller, allowing multiple copies of the same executable to run simultaneously.
+    In browser mode, the port defaults to 8080 and is not scanned automatically —
+    pass `port=native.find_open_port()` yourself if multiple instances should run side by side.
+
+    **Storage in Native Mode:** All [storage types](/documentation/storage) work the same in native mode as in web mode.
+    The storage files are saved to the path specified by the `NICEGUI_STORAGE_PATH` environment variable (defaults to ".nicegui" in the working directory).
+    As with any NiceGUI app, multiple instances started from the same working directory share this path.
+    Since each process holds its own copy of the data in memory and rewrites the storage files on change,
+    the instances do not see each other's data and silently overwrite each other's writes.
+    Native mode makes this situation especially likely, because multiple copies of the same packaged executable can run simultaneously.
+    To avoid it, give each instance its own `NICEGUI_STORAGE_PATH`,
+    or use [Redis storage](/documentation/storage#redis_storage) to share data consistently across instances.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -361,6 +379,61 @@ doc.text('', '''
     sys.stdout = open('logs.txt', 'w')
     ```
     See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
+''')
+
+doc.text('Packaging with Nuitka', '''
+    NiceGUI apps can also be bundled with [Nuitka](https://nuitka.net/), which compiles Python to C.
+    Compared to PyInstaller, builds take longer but the resulting binaries are harder to decompile.
+
+    Two flags are required because NiceGUI uses [PEP 562](https://peps.python.org/pep-0562/) lazy imports
+    that Nuitka's static analyzer cannot follow on its own:
+
+    - `--include-package=nicegui` bundles every submodule reachable through `from nicegui import ui`.
+    - `--include-package-data=nicegui` bundles data files (templates, libraries, ESM bundles for elements).
+
+    The same `ui.run` rules as for PyInstaller apply:
+    call it with `reload=False` and provide a `root` page or at least one `@page` function.
+''')
+
+
+@doc.ui
+def nuitka():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
+
+            def root():
+                ui.label('Hello from Nuitka')
+
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            python -m nuitka \\
+                --onefile \\
+                --include-package=nicegui \\
+                --include-package-data=nicegui \\
+                main.py
+        ''')
+
+
+doc.text('', '''
+    **Tips:**
+
+    - Use `--standalone` for a `main.dist/` directory that starts faster than `--onefile`,
+    which unpacks itself into a temporary directory on every launch.
+
+    - For optional packages your app uses (e.g. `pyecharts` for `ui.echart.from_pyecharts`,
+    or any other third-party package shipping templates or data files),
+    add matching `--include-package=<name>` and `--include-package-data=<name>` flags.
+
+    - Native mode (`ui.run(reload=False, native=True)`) works the same as with PyInstaller.
+    Platform-specific flags include
+    `--macos-create-app-bundle` (Mac),
+    `--windows-disable-console` (Windows), and
+    `--linux-onefile-icon=<path>` (Linux).
+
+    - First builds are slow because Nuitka compiles the entire dependency graph; subsequent builds reuse Nuitka's cache.
+    Add `--show-progress` to monitor long builds.
 ''')
 
 doc.text('', '''

@@ -24,3 +24,6 @@ class Badge(TextElement, BackgroundColorElement, TextColorElement):
         """
         super().__init__(tag='q-badge', text=text, text_color=text_color, background_color=color)
         self._props['outline'] = outline
+
+    def _render_markdown(self) -> str:
+        return self._text or ''

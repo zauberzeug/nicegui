@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import Response
+from starlette.responses import FileResponse, Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
@@ -43,6 +43,12 @@ documentation.build_search_index()
 documentation.build_tree()
 
 
+@app.get('/llms.md')
+@app.get('/llms.txt')
+def _get_llms() -> FileResponse:
+    return FileResponse(Path(__file__).parent / 'nicegui' / 'llms.md', media_type='text/markdown; charset=utf-8')
+
+
 @app.post('/dark_mode')
 async def _post_dark_mode(request: Request) -> None:
     app.storage.browser['dark_mode'] = (await request.json()).get('value')
@@ -71,6 +77,7 @@ def _main_page() -> None:
             .props('accordion no-connectors no-selection-unset icon=chevron_right color=primary')
         tree.visible = False
         spinner = ui.image('/static/loading.gif').classes('w-8 h-8 m-auto').props('no-spinner no-transition')
+        d.override_markdown(spinner, '')
 
         @intersection_observer
         def update_tree() -> None:
@@ -89,13 +96,14 @@ def _main_page() -> None:
         </script>
     ''')
 
-    custom_sub_pages({
+    main_content = custom_sub_pages({
         '/': main_page.create,
         '/examples': examples_page.create,
         '/documentation': lambda: documentation.render_page(documentation.registry['']),
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
     }, show_404=False).classes('w-full')
+    ui.skip_link(target=main_content)
 
     footer_section.create()
 
@@ -129,5 +137,5 @@ def _status():
     return 'Ok'
 
 
-# NOTE: do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0)
+# do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0, markdown=True)

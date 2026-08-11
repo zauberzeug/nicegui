@@ -160,7 +160,7 @@ def create_tiles():
     for documentation, description in tiles:
         page = doc.get_page(documentation)
         with ui.link(target=f'/documentation/{page.name}').classes(
-            f'rounded-xl p-5 transition-all duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
+            f'rounded-xl p-5 transition-transform duration-200 cursor-pointer hover:-translate-y-0.5 {d.BG_SURFACE} {d.BORDER}'
         ):
             if page.title:
                 ui.label(page.title.replace('*', '')).classes(f'{d.TEXT_19PX} font-semibold mb-1')
@@ -261,7 +261,9 @@ def map_of_nicegui():
             - [`ui.notification`](/documentation/notification)
             - [`ui.number`](/documentation/number)
             - [`ui.pagination`](/documentation/pagination)
+            - [`ui.parallax`](/documentation/parallax)
             - [`ui.plotly`](/documentation/plotly)
+            - [`ui.popup`](/documentation/popup)
             - [`ui.pyplot`](/documentation/pyplot)
             - [`ui.radio`](/documentation/radio)
             - [`ui.rating`](/documentation/rating)
@@ -273,6 +275,7 @@ def map_of_nicegui():
             - [`ui.select`](/documentation/select)
             - [`ui.separator`](/documentation/separator)
             - [`ui.skeleton`](/documentation/skeleton)
+            - [`ui.skip_link`](/documentation/skip_link)
             - [`ui.slide_item`](/documentation/slide_item)
             - [`ui.slider`](/documentation/slider)
             - [`ui.space`](/documentation/space)
@@ -292,6 +295,7 @@ def map_of_nicegui():
             - [`ui.tree`](/documentation/tree)
             - [`ui.upload`](/documentation/upload)
             - [`ui.video`](/documentation/video)
+            - [`ui.xterm`](/documentation/xterm)
         - special layout [elements](/documentation/page_layout):
             - `ui.header`
             - `ui.footer`
@@ -311,6 +315,7 @@ def map_of_nicegui():
             - [`ui.download`](/documentation/download): download a file to the client
             - [`ui.fullscreen`](/documentation/fullscreen): enter, exit and toggle fullscreen mode
             - [`ui.keyboard`](/documentation/keyboard): define keyboard event handlers
+            - [`ui.keep_alive`](/documentation/keep_alive): keep elements alive even when they are not visible
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler
