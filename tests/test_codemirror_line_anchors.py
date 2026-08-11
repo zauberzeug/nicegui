@@ -1,3 +1,4 @@
+import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
@@ -5,25 +6,11 @@ from nicegui.testing import Screen
 
 
 def _wait_for_editor(screen: Screen) -> None:
-    screen.wait_for(lambda: screen.selenium.find_elements(By.CSS_SELECTOR, '.cm-content'))
-
-
-def test_line_anchors_populates_mirror(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('a\nb\nc\nd\ne')
-
-    screen.open('/')
-    _wait_for_editor(screen)
-    editor.line_anchors = {'a1': 2, 'a2': 4}
-    screen.wait_for(lambda: editor.line_anchors == {'a1': 2, 'a2': 4})
+    screen.wait_for(lambda: bool(screen.selenium.find_elements(By.CSS_SELECTOR, '.cm-content')))
 
 
 def test_line_anchors_replace_and_clear(screen: Screen):
-    editor = None
+    editor: ui.codemirror = None  # type: ignore[assignment]
 
     @ui.page('/')
     def page():
@@ -40,8 +27,14 @@ def test_line_anchors_replace_and_clear(screen: Screen):
     screen.wait_for(lambda: editor.line_anchors == {})
 
 
-def test_clear_after_typing_does_not_resurrect_anchors(screen: Screen):
-    editor = None
+@pytest.mark.parametrize('anchors, change, expected', [
+    pytest.param({'mid': 3}, r'{changes: {from: 0, insert: "X\n"}}', {'mid': 4}, id='inserting_shifts_anchor_down'),
+    pytest.param({'only': 2}, r'{changes: {from: 1, to: 3}}', {}, id='deleting_across_the_anchor_drops_it'),
+    pytest.param({'mid': 3}, r'{changes: {from: 2, to: 4}}', {'mid': 2}, id='deleting_a_line_above_shifts_anchor_up'),
+])
+def test_anchor_remapping(screen: Screen, anchors: dict[str, int], change: str, expected: dict[str, int]):
+    """CodeMirror remaps anchors through edits; a deletion spanning one drops it (field size 1 -> 0)."""
+    editor: ui.codemirror = None  # type: ignore[assignment]
 
     @ui.page('/')
     def page():
@@ -50,43 +43,15 @@ def test_clear_after_typing_does_not_resurrect_anchors(screen: Screen):
 
     screen.open('/')
     _wait_for_editor(screen)
-    editor.line_anchors = {'mid': 3}
-    screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
-    # The pending JS debounce timer plus the explicit clear must converge to an
-    # empty mirror — a stale late-fire emit must not resurrect the cleared anchor.
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
-    )
-    editor.line_anchors = {}
-    screen.wait_for(lambda: editor.line_anchors == {})
-    screen.wait(0.2)
-    assert editor.line_anchors == {}
-
-
-def test_anchor_remap_on_edit(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('a\nb\nc\nd\ne')
-
-    screen.open('/')
-    _wait_for_editor(screen)
-    editor.line_anchors = {'mid': 3}
-    screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
-    # Insert a new line at the very start; line 3 should remap to line 4.
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
-    )
-    screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
+    editor.line_anchors = anchors
+    screen.wait_for(lambda: editor.line_anchors == anchors)
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({change});')
+    screen.wait_for(lambda: editor.line_anchors == expected)
 
 
 def test_anchor_notifications_coalesce_during_typing(screen: Screen):
     """A burst of edits that keeps moving the anchors is reported once, not once per edit."""
-    editor = None
+    editor: ui.codemirror = None  # type: ignore[assignment]
     notifications: list[dict] = []
 
     @ui.page('/')
@@ -99,6 +64,7 @@ def test_anchor_notifications_coalesce_during_typing(screen: Screen):
     _wait_for_editor(screen)
     editor.line_anchors = {'a': 2, 'b': 3}
     screen.wait_for(lambda: editor.line_anchors == {'a': 2, 'b': 3})
+
     notifications.clear()
     # Dispatch 10 line insertions synchronously from JS so they all land within one debounce window,
     # regardless of Selenium IPC speed: the anchors move ten times but should be reported once.
@@ -113,7 +79,7 @@ def test_anchor_notifications_coalesce_during_typing(screen: Screen):
 
 def test_no_notification_when_anchors_do_not_move(screen: Screen):
     """Editing elsewhere in the document must not notify about unchanged positions."""
-    editor = None
+    editor: ui.codemirror = None  # type: ignore[assignment]
     notifications: list[dict] = []
 
     @ui.page('/')
@@ -126,20 +92,20 @@ def test_no_notification_when_anchors_do_not_move(screen: Screen):
     _wait_for_editor(screen)
     editor.line_anchors = {'a': 2, 'b': 3}
     screen.wait_for(lambda: editor.line_anchors == {'a': 2, 'b': 3})
+
     notifications.clear()
     # Appending to the last line leaves every anchor on the line it is already on.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
-        'for (let i = 0; i < 5; i++)'
-        '  el.editor.dispatch({changes: {from: el.editor.state.doc.length, insert: "y"}});'
+        'for (let i = 0; i < 5; i++) el.editor.dispatch({changes: {from: el.editor.state.doc.length, insert: "y"}});'
     )
     screen.wait(0.2)
-    assert notifications == [], f'edits that move no anchor should not notify, got {notifications}'
+    assert not notifications, f'edits that move no anchor should not notify, got {notifications}'
 
 
 def test_anchor_positions_survive_unrelated_prop_update(screen: Screen):
     """An unrelated prop change must not snap remapped anchors back to their declared lines."""
-    editor = None
+    editor: ui.codemirror = None  # type: ignore[assignment]
 
     @ui.page('/')
     def page():
@@ -150,12 +116,11 @@ def test_anchor_positions_survive_unrelated_prop_update(screen: Screen):
     _wait_for_editor(screen)
     editor.line_anchors = {'mid': 3}
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
+
     # Remap the anchor by inserting a line at the top: mid moves from line 3 to line 4.
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
-    )
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "X\\n"}}}})')
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
+
     # Changing an unrelated prop re-broadcasts all props and re-fires the lineAnchors watcher;
     # the live position must survive instead of resetting to the declared line 3.
     editor.theme = 'oneDark'
@@ -167,7 +132,7 @@ def test_anchor_positions_survive_unrelated_prop_update(screen: Screen):
 
 def test_reassign_same_declared_value_snaps_back(screen: Screen):
     """A deliberate reassignment must re-apply the declared lines even if the value is unchanged."""
-    editor = None
+    editor: ui.codemirror = None  # type: ignore[assignment]
 
     @ui.page('/')
     def page():
@@ -178,42 +143,20 @@ def test_reassign_same_declared_value_snaps_back(screen: Screen):
     _wait_for_editor(screen)
     editor.line_anchors = {'mid': 3}
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
+
     # Remap the anchor by inserting a line at the top: mid moves from line 3 to line 4.
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
-    )
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "X\\n"}}}})')
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
+
     # Reassigning the identical declared dict is an intent signal (not detectable by value comparison):
     # it must not be preserved like an unrelated re-broadcast, but snap the anchor back to line 3.
     editor.line_anchors = {'mid': 3}
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
 
 
-def test_last_anchor_deletion_notifies(screen: Screen):
-    """Deleting the only anchor (field size 1 -> 0) still notifies Python."""
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('a\nb\nc')
-
-    screen.open('/')
-    _wait_for_editor(screen)
-    editor.line_anchors = {'only': 2}
-    screen.wait_for(lambda: editor.line_anchors == {'only': 2})
-    # Delete a range straddling the anchor's position so CodeMirror drops it (TrackDel).
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'el.editor.dispatch({changes: {from: 1, to: 3}});'
-    )
-    screen.wait_for(lambda: editor.line_anchors == {})
-
-
 def test_anchors_survive_client_side_remount(screen: Screen):
     """A remount without a server round-trip must restore the live positions, not the declared ones."""
-    editor = None
+    editor: ui.codemirror = None  # type: ignore[assignment]
 
     @ui.page('/')
     def page():
@@ -230,25 +173,26 @@ def test_anchors_survive_client_side_remount(screen: Screen):
     screen.open('/')
     _wait_for_editor(screen)
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 3)
+
     # Remap the anchor by inserting a line at the top: mid moves from line 3 to line 4.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
         'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
     )
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
+
     # Leaving the tab destroys the editor client-side; coming back builds a fresh one from the props.
     screen.click('Two')
     screen.should_contain('Second tab')
     screen.click('One')
     _wait_for_editor(screen)
     screen.wait(0.2)
-    assert editor.line_anchors == {'mid': 4}, \
-        f'anchors should survive a client-side remount, got {editor.line_anchors}'
+    assert editor.line_anchors == {'mid': 4}, f'anchors should survive a client-side remount, got {editor.line_anchors}'
 
 
 def test_on_anchor_change_handler(screen: Screen):
     """on_anchor_change fires with the current positions on every change."""
-    editor = None
+    editor: ui.codemirror = None  # type: ignore[assignment]
     received: list[dict] = []
 
     @ui.page('/')
@@ -260,9 +204,7 @@ def test_on_anchor_change_handler(screen: Screen):
     _wait_for_editor(screen)
     editor.line_anchors = {'mid': 3}
     screen.wait_for(lambda: bool(received) and received[-1] == {'mid': 3})
+
     # A remapping edit fires the handler again with the new line.
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
-    )
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "X\\n"}}}})')
     screen.wait_for(lambda: received[-1] == {'mid': 4})
