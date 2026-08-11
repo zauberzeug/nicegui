@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offline — saved articles</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f3f4f6;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    .wrap {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .banner {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .head h1 {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+
+    button {
+      border: 1px solid #1976d2;
+      color: #1976d2;
+      background: transparent;
+      border-radius: 0.375rem;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .card h2 {
+      font-size: 1.125rem;
+      margin: 0 0 0.5rem;
+    }
+
+    .card p {
+      color: #4b5563;
+      margin: 0;
+      white-space: pre-line;
+    }
+
+    .empty {
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="banner">You are offline — showing the articles saved on this device.</div>
+    <div class="head">
+      <h1>Saved articles</h1>
+      <button onclick="location.reload()">Retry connection</button>
+    </div>
+    <div id="articles"></div>
+  </div>
+
+  <script>
+    // Read every article the user stored while online and render it. No server needed.
+    const container = document.getElementById('articles');
+    const saved = Object.keys(localStorage)
+      .filter((key) => key.startsWith('article:'))
+      .map((key) => JSON.parse(localStorage.getItem(key)));
+
+    if (saved.length === 0) {
+      container.innerHTML =
+        '<p class="empty">No saved articles yet. Reconnect and save some for offline reading.</p>';
+    } else {
+      for (const article of saved) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const title = document.createElement('h2');
+        title.textContent = article.title;  // textContent avoids injecting HTML
+        const body = document.createElement('p');
+        body.textContent = article.body;
+        card.append(title, body);
+        container.append(card);
+      }
+    }
+  </script>
+</body>
+
+</html>

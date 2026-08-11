@@ -1,0 +1,10 @@
+{
+  "name": "Offline Access Demo",
+  "short_name": "Offline",
+  "description": "A NiceGUI app that keeps working without a connection.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "icons": []
+}
