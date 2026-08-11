@@ -32,6 +32,11 @@ class AnchorValue extends CM.RangeValue {
 const { setEffect: setAnchorsEffect, field: anchorField } = defineRemappableRangeSet();
 const ANCHOR_DEBOUNCE_MS = 50;
 
+function sameAnchorPositions(a, b) {
+  const ids = Object.keys(a);
+  return ids.length === Object.keys(b).length && ids.every((id) => a[id] === b[id]);
+}
+
 // Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
 class TooltipValue extends CM.RangeValue {
   constructor(content) {
@@ -214,7 +219,7 @@ export default {
       this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
       // The dispatch re-armed the debounced tracker; the immediate emit below supersedes that echo.
       clearTimeout(this._anchorTimer);
-      this.emitAnchorPositions();
+      this.emitAnchorPositions({ force: true });
     },
     currentAnchorPositions() {
       const state = this.editor.state;
@@ -228,9 +233,14 @@ export default {
       }
       return positions;
     },
-    emitAnchorPositions() {
+    // A deliberate apply forces the emit: the server treats it as the confirmation that its declared
+    // anchors have landed, even when they happen to sit where the live ones already were.
+    emitAnchorPositions({ force = false } = {}) {
       if (!this.editor) return;
-      this.$emit("anchor-positions", { anchors: this.currentAnchorPositions() });
+      const positions = this.currentAnchorPositions();
+      if (!force && this._lastAnchors && sameAnchorPositions(this._lastAnchors, positions)) return;
+      this._lastAnchors = positions;
+      this.$emit("anchor-positions", { anchors: positions });
     },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({

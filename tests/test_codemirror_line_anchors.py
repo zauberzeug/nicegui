@@ -84,29 +84,57 @@ def test_anchor_remap_on_edit(screen: Screen):
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
 
 
-def test_anchor_emissions_bounded_during_typing(screen: Screen):
+def test_anchor_notifications_coalesce_during_typing(screen: Screen):
+    """A burst of edits that keeps moving the anchors is reported once, not once per edit."""
     editor = None
-    emissions: list[dict] = []
+    notifications: list[dict] = []
 
     @ui.page('/')
     def page():
         nonlocal editor
         editor = ui.codemirror('hello\nworld\n!')
-        editor.on('anchor-positions', lambda e: emissions.append(e.args))
+        editor.on_anchor_change(lambda e: notifications.append(e.anchors))
 
     screen.open('/')
     _wait_for_editor(screen)
-    editor.line_anchors = {'a': 1, 'b': 3}
-    screen.wait_for(lambda: editor.line_anchors == {'a': 1, 'b': 3})
-    emissions.clear()
-    # Dispatch 10 doc changes synchronously from JS so they all land within the 50ms debounce
-    # window, regardless of Selenium IPC speed. With coalescing we expect a single emission.
+    editor.line_anchors = {'a': 2, 'b': 3}
+    screen.wait_for(lambda: editor.line_anchors == {'a': 2, 'b': 3})
+    notifications.clear()
+    # Dispatch 10 line insertions synchronously from JS so they all land within one debounce window,
+    # regardless of Selenium IPC speed: the anchors move ten times but should be reported once.
     screen.selenium.execute_script(
         f'const el = getElement({editor.id});'
-        'for (let i = 0; i < 10; i++) el.editor.dispatch({changes: {from: 0, insert: "x"}});'
+        'for (let i = 0; i < 10; i++) el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
     )
     screen.wait(0.2)
-    assert len(emissions) == 1, f'expected one coalesced emission for 10 synchronous edits, got {len(emissions)}'
+    assert notifications == [{'a': 12, 'b': 13}], \
+        f'ten edits within one debounce window should be reported once, got {notifications}'
+
+
+def test_no_notification_when_anchors_do_not_move(screen: Screen):
+    """Editing elsewhere in the document must not notify about unchanged positions."""
+    editor = None
+    notifications: list[dict] = []
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('hello\nworld\n!')
+        editor.on_anchor_change(lambda e: notifications.append(e.anchors))
+
+    screen.open('/')
+    _wait_for_editor(screen)
+    editor.line_anchors = {'a': 2, 'b': 3}
+    screen.wait_for(lambda: editor.line_anchors == {'a': 2, 'b': 3})
+    notifications.clear()
+    # Appending to the last line leaves every anchor on the line it is already on.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'for (let i = 0; i < 5; i++)'
+        '  el.editor.dispatch({changes: {from: el.editor.state.doc.length, insert: "y"}});'
+    )
+    screen.wait(0.2)
+    assert notifications == [], f'edits that move no anchor should not notify, got {notifications}'
 
 
 def test_anchor_positions_survive_unrelated_prop_update(screen: Screen):
