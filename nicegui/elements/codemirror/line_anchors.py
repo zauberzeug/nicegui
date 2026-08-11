@@ -11,11 +11,12 @@ from ...events import CodeMirrorAnchorChangeEventArguments, GenericEventArgument
 class LineAnchorElement(Element):
     """Mixin tracking CodeMirror line anchors that follow document positions through edits.
 
-    The browser is the source of truth: anchors are remapped by CodeMirror as the document changes and
-    the current ``{id: line}`` snapshot is pushed back via the "anchor-positions" event. The declared
-    positions are mirrored into the "line-anchors" prop, while ``_anchor_positions`` mirrors the live
-    positions on the server. The ``line-anchors`` prop is preserved on unrelated updates so a re-broadcast
-    does not snap remapped anchors back to their declared lines.
+    The browser is the source of truth: anchors are remapped by CodeMirror as the document changes
+    and the current ``{id: line}`` snapshot is pushed back via the "anchor-positions" event.
+    The declared positions are mirrored into the "line-anchors" prop,
+    while ``_anchor_positions`` mirrors the live positions on the server.
+    The ``line-anchors`` prop is preserved on unrelated updates
+    so a re-broadcast does not snap remapped anchors back to their declared lines.
     """
 
     def __init__(
@@ -49,7 +50,7 @@ class LineAnchorElement(Element):
         Lines exceeding the current document length are clamped to the last line on the JS side
         (a warning is emitted via NiceGUI's logger).
 
-        *Added in version 3.14.0*
+        *Added in version 3.16.0*
         """
         return dict(self._anchor_positions)
 
@@ -69,7 +70,7 @@ class LineAnchorElement(Element):
     def on_anchor_change(self, handler: Handler[CodeMirrorAnchorChangeEventArguments]) -> Self:
         """Register a callback to be invoked whenever tracked anchor positions change.
 
-        *Added in version 3.14.0*
+        *Added in version 3.16.0*
         """
         self.on('anchor-positions', lambda e: handle_event(handler,
                 CodeMirrorAnchorChangeEventArguments(sender=self, client=self.client, anchors=e.args['anchors'])))

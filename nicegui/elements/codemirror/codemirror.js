@@ -30,6 +30,7 @@ class AnchorValue extends CM.RangeValue {
   }
 }
 const { setEffect: setAnchorsEffect, field: anchorField } = defineRemappableRangeSet();
+const ANCHOR_DEBOUNCE_MS = 50;
 
 // Zero-width range so CM6's RangeSet.map() carries each tooltip through edits.
 class TooltipValue extends CM.RangeValue {
@@ -71,11 +72,8 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    lineAnchors: {
-      deep: true,
-      handler(newAnchors) {
-        this.applyLineAnchors(newAnchors);
-      },
+    lineAnchors(newAnchors) {
+      this.applyLineAnchors(newAnchors);
     },
     keymap() {
       this.setKeymap();
@@ -188,7 +186,7 @@ export default {
       });
     },
     async applyLineAnchors(anchors) {
-      // The server marks `line-anchors` as a preserved prop on unrelated updates, so the deep watcher
+      // The server marks `line-anchors` as a preserved prop on unrelated updates, so the watcher
       // only fires on a deliberate (re)assignment — re-applying from the declared lines is then intended,
       // snapping anchors back to their declared positions (and restoring any dropped by a delete-across).
       if (!this.editor) await this.editorPromise;
@@ -211,7 +209,6 @@ export default {
       this.editor.dispatch({ effects: setAnchorsEffect.of(ranges) });
       // The dispatch re-armed the debounced tracker; the immediate emit below supersedes that echo.
       clearTimeout(this._anchorTimer);
-      this._anchorTimer = null;
       this.emitAnchorPositions();
     },
     emitAnchorPositions() {
@@ -290,7 +287,7 @@ export default {
         },
       );
 
-      // The 50 ms debounce coalesces bursts (paste, multi-cursor insert) so high-latency
+      // The debounce coalesces bursts (paste, multi-cursor insert) so high-latency
       // connections do not see one event per keystroke. The fire-time callback reads live
       // editor state via emitAnchorPositions(), so a stale timer that survives a clear or
       // re-set transaction will see the up-to-date field rather than its scheduling-time snapshot.
@@ -302,10 +299,7 @@ export default {
             // would swallow the last anchor's removal (1 -> 0), leaving the Python mirror stale.
             if (update.state.field(anchorField).size === 0 && update.startState.field(anchorField).size === 0) return;
             clearTimeout(self._anchorTimer);
-            self._anchorTimer = setTimeout(() => {
-              self._anchorTimer = null;
-              self.emitAnchorPositions();
-            }, 50);
+            self._anchorTimer = setTimeout(() => self.emitAnchorPositions(), ANCHOR_DEBOUNCE_MS);
           }
         },
       );

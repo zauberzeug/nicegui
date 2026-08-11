@@ -1,5 +1,4 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -129,15 +128,13 @@ def test_anchor_positions_survive_unrelated_prop_update(screen: Screen):
         'el.editor.dispatch({changes: {from: 0, insert: "X\\n"}});'
     )
     screen.wait_for(lambda: editor.line_anchors.get('mid') == 4)
-    # Changing an unrelated prop re-broadcasts all props and re-fires the deep lineAnchors watcher;
+    # Changing an unrelated prop re-broadcasts all props and re-fires the lineAnchors watcher;
     # the live position must survive instead of resetting to the declared line 3.
     editor.theme = 'oneDark'
-    WebDriverWait(screen.selenium, 5).until(
-        lambda d: d.execute_script(f'return getElement({editor.id}).$props.theme;') == 'oneDark'
-    )
+    screen.wait_for_js(f'getElement({editor.id}).$props.theme', 'oneDark', timeout=5)
     screen.wait(0.2)
     assert editor.line_anchors == {'mid': 4}, \
-        f'unrelated prop update reset anchors, got {editor.line_anchors}'
+        f'anchor positions should survive an unrelated prop update, got {editor.line_anchors}'
 
 
 def test_reassign_same_declared_value_snaps_back(screen: Screen):

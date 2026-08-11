@@ -31,10 +31,10 @@ def preserve_cursor_demo() -> None:
     Line anchors give you a more stable reference to specific lines than line numbers.
     The browser tracks each anchor's position through every change — insertions, deletions, reformatting
     — and reading ``line_anchors`` back returns the current line on the Python side.
-    The example below anchors the first line and rewrites it in place when you click "Update argument":
+    The example below anchors the first line and increments its value in place when you click "Increment":
     edit the code freely (add blank lines above, indent, reorder) and the anchor still points at the right line.
 
-    *Added in version 3.14.0*
+    *Added in version 3.16.0*
 ''')
 def line_anchors_demo() -> None:
     editor = ui.codemirror('answer: 42', line_anchors={'answer': 1}) \
