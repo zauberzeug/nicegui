@@ -1,3 +1,4 @@
+import asyncio
 import csv
 import re
 import sys
@@ -438,17 +439,27 @@ async def test_combined_filter_parameters(user: User) -> None:
 async def test_typing(user: User) -> None:
     @ui.page('/')
     def page():
-        ui.label('Hello!')
-        ui.button('World!')
+        with ui.card().mark('container'):
+            ui.label('Hello!')
+            ui.button('World!')
 
     await user.open('/')
     # We have not yet found a way to test the typing suggestions automatically.
-    # To test, hover over the variable and verify that your IDE inferres the correct type.
+    # To test, hover over the variable and verify that your IDE infers the correct type.
     _ = user.find(kind=ui.label).elements  # Set[ui.label]
     _ = user.find(ui.label).elements  # Set[ui.label]
     _ = user.find('World').elements  # Set[ui.element]
     _ = user.find('Hello').elements  # Set[ui.element]
     _ = user.find('!').elements  # Set[ui.element]
+
+    with user.scope(kind=ui.card) as _:  # ui.card
+        pass
+    with user.scope(ui.card) as _:  # ui.card
+        pass
+    with user.scope(marker='container') as _:  # ui.element
+        pass
+    with user.scope('container') as _:  # ui.element
+        pass
 
 
 async def test_select(user: User) -> None:
@@ -942,6 +953,232 @@ async def test_clearing_container_with_button_inside(user: User) -> None:
     await user.should_see('First handler')
     await user.should_see('click me')
     await user.should_not_see('Last handler')
+
+
+async def test_scoped_search_for_elements(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('scope-card left'):
+            ui.label('Scope').mark('scope-title left')
+            ui.button('Shared Action Left').mark('duplicate-button')
+            ui.input('duplicated').mark('duplicated-marker')
+
+        with ui.card().mark('scope-card right'):
+            ui.label('Scope').mark('scope-title right')
+            ui.button('Shared Action Right').mark('duplicate-button')
+            ui.input('duplicated').mark('duplicated-marker')
+
+    await user.open('/')
+    # Without a scope, both cards are searched, so the duplicated markers and content are all visible.
+    await user.should_see(marker='duplicate-button', content='Shared Action Left')
+    await user.should_see(marker='duplicate-button', content='Shared Action Right')
+    assert len(user.find(marker='duplicated-marker').elements) == 2
+
+    # `user.scope(...)` limits every lookup inside the block to the entered element.
+    with user.scope(marker='scope-card left'):
+        await user.should_see(marker='duplicate-button', content='Shared Action Left')
+        await user.should_see(marker='scope-title left')
+        await user.should_not_see(marker='duplicate-button', content='Shared Action Right')
+        await user.should_not_see(marker='scope-title right')
+        assert len(user.find(marker='duplicated-marker').elements) == 1
+
+    # Outside the block the search is global again.
+    assert len(user.find(marker='duplicated-marker').elements) == 2
+
+
+async def test_scope_requires_exactly_one_match(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.button('A').mark('dup')
+        ui.button('B').mark('dup')
+
+    await user.open('/')
+    with pytest.raises(AssertionError):
+        with user.scope(marker='dup'):
+            pass
+
+
+async def test_scope_restored_after_exception(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('card'):
+            ui.button('inside').mark('dup')
+        ui.button('outside').mark('dup')
+
+    await user.open('/')
+    with pytest.raises(RuntimeError):
+        with user.scope(marker='card'):
+            raise RuntimeError('boom')
+    # The scope must be restored even when the block raises: the search is global again.
+    assert len(user.find(marker='dup').elements) == 2
+
+
+async def test_nested_scope(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('outer'):
+            ui.button('outer button').mark('btn')
+            with ui.card().mark('inner'):
+                ui.button('inner button').mark('btn')
+
+    await user.open('/')
+    with user.scope(marker='outer'):
+        assert len(user.find(marker='btn').elements) == 2
+        with user.scope(marker='inner'):
+            await user.should_see(content='inner button')
+            await user.should_not_see(content='outer button')
+            assert len(user.find(marker='btn').elements) == 1
+        # Back in the outer scope, both buttons are visible again.
+        assert len(user.find(marker='btn').elements) == 2
+
+
+async def test_scope_is_task_local(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('left'):
+            ui.button('L').mark('dup')
+        with ui.card().mark('right'):
+            ui.button('R').mark('dup')
+
+    await user.open('/')
+
+    parent_in_scope = asyncio.Event()
+
+    async def other() -> int:
+        await parent_in_scope.wait()  # run while the sibling task is inside its scope
+        (right,) = user.find(marker='right').elements
+        with right:
+            # This task never entered `user.scope()`, so even though the sibling task is
+            # currently scoped to the left card, its lookups must still cover the whole page.
+            return len(user.find(marker='dup').elements)
+
+    task = asyncio.create_task(other())
+    with user.scope(marker='left'):
+        assert len(user.find(marker='dup').elements) == 1
+        parent_in_scope.set()
+        other_count = await task  # awaited inside the scope, so the scope is still active
+    assert other_count == 2
+
+
+async def test_scope_does_not_reach_into_new_tasks(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('left'):
+            ui.button('L').mark('dup')
+        with ui.card().mark('right'):
+            ui.button('R').mark('dup')
+
+    await user.open('/')
+
+    async def count() -> int:
+        return len(user.find(marker='dup').elements)
+
+    with user.scope(marker='left'):
+        assert len(user.find(marker='dup').elements) == 1
+        # A task created inside the block runs unscoped, because the scope is stored per task.
+        assert await asyncio.create_task(count()) == 2
+
+
+async def test_scope_ignores_manual_element_context(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('scoped'):
+            ui.button('inside scoped').mark('btn')
+        with ui.card().mark('other'):
+            ui.button('inside other').mark('btn')
+
+    await user.open('/')
+    (other,) = user.find(marker='other').elements
+    with user.scope(marker='scoped'):
+        with other:
+            # A manual `with other:` inside the scope block must not retarget lookups: the scope
+            # stays the 'scoped' card (the element `scope()` entered), independent of the slot stack.
+            await user.should_see(content='inside scoped')
+            await user.should_not_see(content='inside other')
+            assert len(user.find(marker='btn').elements) == 1
+
+
+async def test_scope_excludes_global_notifications(user: User) -> None:
+    @ui.page('/')
+    def page():
+        with ui.card().mark('card'):
+            ui.button('Save', on_click=lambda: ui.notify('Saved'))
+
+    await user.open('/')
+    user.find('Save').click()
+    with user.scope(marker='card'):
+        # The notification is page-level, not a descendant of the card, so a scoped search
+        # must not match it -- even though a global `should_see('Saved')` would.
+        await user.should_not_see('Saved')
+    await user.should_see('Saved')
+
+
+async def test_scope_enters_the_element_for_building(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.card().mark('card')
+
+    await user.open('/')
+    with user.scope(marker='card'):
+        ui.label('added inside').mark('added')
+        # The label is created while the card's slot is active, so it lands inside the card
+        # and the scoped lookup finds it (it would not if `scope()` stopped entering the element).
+        await user.should_see(marker='added')
+
+
+async def test_scope_detects_deleted_element(user: User) -> None:
+    @ui.refreshable
+    def card() -> None:
+        with ui.card().mark('card'):
+            ui.label('old value')
+
+    @ui.page('/')
+    def page():
+        card()
+
+    await user.open('/')
+    with user.scope(marker='card'):
+        card.refresh()
+        # The entered card has been replaced, so a scoped lookup would silently find nothing.
+        with pytest.raises(AssertionError, match='has been deleted'):
+            await user.should_not_see('old value')
+
+
+async def test_scoped_error_message(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('outside')
+        with ui.card().mark('card'):
+            ui.label('inside')
+
+    await user.open('/')
+    with user.scope(marker='card'):
+        with pytest.raises(AssertionError, match=re.escape(textwrap.dedent('''
+            expected to see at least one element with marker=outside or content=outside within Card [markers=card]:
+            Card [markers=card]
+             Label [text=inside]
+        ''').strip())):
+            await user.should_see('outside')
+
+
+@pytest.mark.parametrize('default_local_scope', [False, True])
+async def test_scope_searches_whole_page(user: User,
+                                         default_local_scope: bool,
+                                         monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ElementFilter, 'DEFAULT_LOCAL_SCOPE', default_local_scope)
+
+    @ui.page('/')
+    def page():
+        with ui.header():
+            with ui.card().mark('card'):
+                ui.label('in card')
+        ui.label('in content')
+
+    await user.open('/')
+    await user.should_see('in card')
+    with user.scope(marker='card'):
+        await user.should_see('in card')
+        await user.should_not_see('in content')
 
 
 async def test_switching_between_sub_pages(user: User) -> None:

@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from nicegui import ui
@@ -83,6 +85,25 @@ def test_sass(screen: Screen, shared: bool, delayed: bool):
     label = screen.find('This is purple on yellow with SASS.')
     screen.wait(0.5)
     assert label.value_of_css_property('color') == 'rgba(128, 0, 128, 1)'
+
+
+def test_add_body_html_and_css_after_await_in_async_sub_page(screen: Screen):
+    async def sub():
+        ui.add_body_html('<div>early body html</div>')
+        await asyncio.sleep(0)  # resumes after the response is built, before the socket connects
+        ui.add_css('.late { color: rgb(255, 0, 0); }')
+        ui.label('late label').classes('late')
+        ui.add_body_html('<div>late body html</div>')
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': sub})
+
+    screen.open('/')
+    screen.should_contain('late body html')  # enqueued last, so the CSS has been applied once this arrives
+    assert len(screen.find_all('early body html')) == 1, 'build-time HTML should not be injected a second time via JS'
+    assert len(screen.find_all('late body html')) == 1, 'late HTML should be injected exactly once'
+    assert screen.find('late label').value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
 
 
 def test_add_css_with_script(screen: Screen):

@@ -29,9 +29,11 @@ For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guid
 - **Logging & observability**
   - Noisy logs, missing error context, debug prints in library code
 - **Tests**
-  - New features and bug fixes need tests (see CONTRIBUTING.md for `User` vs `Screen` fixture choice)
-  - Edge cases: empty/None, large payloads, cancellation
-  - Flakiness, time-dependence, hidden network deps
+  - Missing test for a new feature or bug fix, with no reason given in the pull request
+  - Tests coupled to implementation details — private attributes, call counts, patched internals, fake request objects — where the user-visible effect could be asserted instead
+  - Test cost out of proportion to the risk: a `Screen` test where the `User` fixture would do, elaborate scaffolding for a marginal edge case (see [CONTRIBUTING.md](CONTRIBUTING.md#coding-conventions))
+  - Untested edge cases: empty/None, large payloads, cancellation
+  - Flaky, time-dependent, or network-dependent tests
 - **Docs & examples**
   - Code that diverges from documented behavior
   - Examples that no longer run
@@ -44,6 +46,7 @@ For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guid
   - Unclear problem statement or impact
 - **Cross-platform**
   - Windows path assumptions, locale/timezone hardcoding, reliance on system binaries without guards
+  - Tests asserting CPython-only semantics — immediate weakref cleanup via refcounting, exact CPython error-message wording — need a PyPy `skipif` or a tolerant match (PyPy compatibility is tracked externally, not promised)
 - **Readability**
   - Complex logic without comments explaining intent; magic numbers
 
