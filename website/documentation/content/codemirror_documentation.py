@@ -30,25 +30,16 @@ def preserve_cursor_demo() -> None:
 @doc.demo('Line Anchors', '''
     Line anchors give you a more stable reference to specific lines than line numbers.
     The browser tracks each anchor's position through every change — insertions, deletions, reformatting
-    — and reading ``line_anchors`` back returns the current line on the Python side.
-    The example below anchors the first line and increments its value in place when you click "Increment":
-    edit the code freely (add blank lines above, indent, reorder) and the anchor still points at the right line.
+    — and reading `line_anchors` back returns the current line on the Python side.
+    Add or remove lines above the anchored one and watch the reported number follow it.
+    Pass `on_anchor_change` to be notified whenever a tracked position moves.
 
     *Added in version 3.16.0*
 ''')
 def line_anchors_demo() -> None:
-    editor = ui.codemirror('answer: 42', line_anchors={'answer': 1}) \
-        .on_anchor_change(lambda e: ui.notify(e.anchors)) \
-        .classes('h-40')
-
-    def increment() -> None:
-        lines = editor.value.split('\n')
-        if (line_no := editor.line_anchors.get('answer')) and line_no <= len(lines):
-            answer = int(lines[line_no - 1].split()[-1])
-            lines[line_no - 1] = f'answer: {answer + 1}'
-            editor.value = '\n'.join(lines)
-
-    ui.button('Increment', on_click=increment)
+    editor = ui.codemirror('def answer():\n    return 42', line_anchors={'return': 2}).classes('h-40')
+    ui.label().bind_text_from(editor, 'line_anchors',
+                              lambda anchors: f'"return" is on line {anchors.get("return", "—")}')
 
 
 @doc.demo('Custom Keybindings', '''
