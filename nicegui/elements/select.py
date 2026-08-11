@@ -63,7 +63,7 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
             elif not isinstance(value, list):
                 value = [value]
             else:
-                value = value[:]  # NOTE: avoid modifying the original list which could be the list of options (#3014)
+                value = value[:]  # avoid modifying the original list which could be the list of options (#3014)
         super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         if isinstance(key_generator, Generator):
             next(key_generator)  # prime the key generator, prepare it to receive the first value
@@ -79,6 +79,7 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
             self._props.set_bool('hide-selected', not multiple)
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
+            self._props['for'] = self.html_id  # keep html_id on the input so tooltips/ui.query can anchor (#6114)
         self._props.set_bool('multiple', multiple)
         self._props.set_bool('clearable', clearable)
 
@@ -157,7 +158,7 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                     self.options.remove(value)
                 else:
                     self.options.append(value)
-            # NOTE: self._labels and self._values are updated via self.options since they share the same references
+            # self._labels and self._values are updated via self.options since they share the same references
             return value
         else:
             key = value

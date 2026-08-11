@@ -23,7 +23,7 @@ with ui.row():
         tax_label = ui.label()
         total_label = ui.label().classes('text-bold')
 
-        # NOTE: Effects must be assigned to variables to prevent garbage collection
+        # Effects must be assigned to variables to prevent garbage collection
         subtotal_effect = Effect(lambda: subtotal_label.set_text(f'Subtotal: ${subtotal():.2f}'))
         tax_effect = Effect(lambda: tax_label.set_text(f'Tax: ${tax():.2f}'))
         total_effect = Effect(lambda: total_label.set_text(f'Total: ${total():.2f}'))

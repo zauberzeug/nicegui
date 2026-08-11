@@ -24,12 +24,12 @@ def create() -> None:
 def example_card(example: Example) -> None:
     """Render a single example card with screenshot, title, and description."""
     with ui.link(target=example.url).classes(
-        'rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5'
+        'rounded-2xl overflow-hidden transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5'
         f' {d.BG_SURFACE} {d.BORDER} hover:{d.SHADOW_CARD}'
     ):
         with ui.element().classes(f'overflow-hidden aspect-video bg-white p-4 dark:brightness-[0.85] {d.BORDER_B}'):
             ui.interactive_image(example.screenshot) \
                 .classes('size-full object-cover transition-transform duration-300')
         with ui.column().classes('p-5 gap-0'):
-            ui.label(example.title).classes(f'{d.TEXT_19PX} font-semibold')
+            ui.label(example.title).classes(f'{d.TEXT_19PX} font-semibold').props('role=heading aria-level=3')
             ui.markdown(example.description).classes(f'{d.TEXT_15PX} leading-normal {d.TEXT_SECONDARY}')

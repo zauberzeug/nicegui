@@ -116,17 +116,17 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
             return NullResponse()
         return super().run_method(name, *args, timeout=timeout)
 
-    def set_center(self, center: tuple[float, float]) -> None:
+    def set_center(self, center: tuple[float, float]) -> Self:
         """Set the center location of the map."""
-        if self._props['center'] == center:
-            return
-        self._props['center'] = center
+        if self._props['center'] != center:
+            self._props['center'] = center
+        return self
 
-    def set_zoom(self, zoom: int) -> None:
+    def set_zoom(self, zoom: int) -> Self:
         """Set the zoom level of the map."""
-        if self._props['zoom'] == zoom:
-            return
-        self._props['zoom'] = zoom
+        if self._props['zoom'] != zoom:
+            self._props['zoom'] = zoom
+        return self
 
     def remove_layer(self, layer: Layer) -> None:
         """Remove a layer from the map."""

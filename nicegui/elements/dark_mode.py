@@ -1,3 +1,5 @@
+from typing_extensions import Self
+
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
@@ -23,15 +25,17 @@ class DarkMode(ValueElement[bool | None], component='dark_mode.js'):
         """
         super().__init__(value=value, on_value_change=on_change)
 
-    def enable(self) -> None:
+    def enable(self) -> Self:
         """Enable dark mode."""
         self.value = True
+        return self
 
-    def disable(self) -> None:
+    def disable(self) -> Self:
         """Disable dark mode."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle dark mode.
 
         This method will raise a ValueError if dark mode is set to auto.
@@ -39,10 +43,12 @@ class DarkMode(ValueElement[bool | None], component='dark_mode.js'):
         if self.value is None:
             raise ValueError('Cannot toggle dark mode when it is set to auto.')
         self.value = not self.value
+        return self
 
-    def auto(self) -> None:
+    def auto(self) -> Self:
         """Set dark mode to auto.
 
         This will use the client's system preference.
         """
         self.value = None
+        return self

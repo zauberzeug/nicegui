@@ -213,6 +213,82 @@ def test_automatic_cleanup(screen: Screen):
     assert is_alive(ref2) and has_bindable_property(model_id2)
 
 
+def test_remove_target_keeps_remaining_target_bound(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self) -> None:
+            self.value = 'initial'
+
+    class Target:
+        text = ''
+
+    source = Model()
+    target1 = Target()
+    target2 = Target()
+
+    binding.bind_to(source, 'value', target1, 'text')
+    binding.bind_to(source, 'value', target2, 'text')
+
+    binding.remove([target1])
+    source.value = 'changed'
+
+    assert target1.text == 'initial'
+    assert target2.text == 'changed'
+
+
+def test_remove_source_unbinds_all_targets(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self) -> None:
+            self.value = 'initial'
+
+    class Target:
+        text = ''
+
+    source = Model()
+    target = Target()
+
+    binding.bind_to(source, 'value', target, 'text')
+
+    binding.remove([source])
+    source.value = 'changed'
+
+    assert target.text == 'initial'
+    assert not binding.bindings
+    assert not binding._binding_keys_by_object  # pylint: disable=protected-access
+
+
+def test_remove_rebind_preserves_bindable_property_semantics(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self, value: list[int]) -> None:
+            self.value = value
+
+    class Target:
+        value: list[int] | None = None
+
+    source = Model([1])
+    target = Target()
+    source_key = (id(source), ('value',))
+
+    binding.bind_to(source, 'value', target, 'value', forward=list)
+    assert len(binding.active_links) == 0
+    assert target.value == [1]
+
+    binding.remove([source])
+    assert source_key in binding.bindable_properties
+
+    binding.bind_to(source, 'value', target, 'value', forward=list)
+    source.value.append(2)
+    binding._refresh_step()  # pylint: disable=protected-access
+
+    assert len(binding.active_links) == 0
+    assert target.value == [1]
+
+
 async def test_nested_propagation(user: User):
     class Demo:
         a = binding.BindableProperty()

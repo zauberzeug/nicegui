@@ -1,6 +1,11 @@
+from pathlib import Path
+
 from nicegui import ui
 
+from ..windows import code_window
 from . import doc
+
+TORUS_KNOT_JS = (Path(__file__).parent / 'static' / 'torus_knot.js').read_text()
 
 
 @doc.demo(ui.scene)
@@ -316,6 +321,103 @@ def custom_composed_objects() -> None:
         CoordinateSystem('custom frame').move(-2, -2, 1).rotate(0.1, 0.2, 0.3)
 
 
+@doc.demo('Custom Three.js Objects', '''
+    If the primitives bundled in NiceGUI are not enough for your needs, or if you want to run
+    complex logic on the client side, you can create your own 3D objects.
+    Subclass `Object3D` and pass `component=` with the path to a JavaScript module,
+    resolved relative to the Python file.
+    Arguments passed to `super().__init__(...)` are forwarded positionally to the module's factory method.
+    Additional Python methods can dispatch to same-named methods of the JavaScript class via `run_method`.
+
+    The JavaScript module for this demo is shown below.
+
+    *Added in version 3.16.0*
+''')
+def custom_3d_scene_objects() -> None:
+    # from nicegui import app
+    from nicegui.elements.scene import Object3D
+
+    class TorusKnot(Object3D, component='static/torus_knot.js'):
+        def __init__(self, *, radius: float, tube: float, p: int, q: int) -> None:
+            super().__init__(radius, tube, p, q)
+
+        def update_topology(self, p: int, q: int) -> None:
+            self.run_method('update_topology', p, q)
+
+    with ui.scene().classes('w-full h-96'):
+        knot = TorusKnot(radius=1.5, tube=0.4, p=2, q=3).move(z=1)
+
+    ui.label('Winds around axis:')
+    p_slider = ui.slider(min=1, max=10, value=2)
+    ui.label('Winds around interior:')
+    q_slider = ui.slider(min=1, max=10, value=3)
+
+    p_slider.on_value_change(lambda e: knot.update_topology(e.value, q_slider.value))
+    q_slider.on_value_change(lambda e: knot.update_topology(p_slider.value, e.value))
+
+
+@doc.part('')
+def custom_object_javascript_module() -> None:
+    ui.markdown('''
+        **The JavaScript module**
+
+        The JavaScript module referenced via `component=` — `static/torus_knot.js` in the demo above —
+        default-exports a class.
+        NiceGUI instantiates it once per scene object and calls one of two entry points to build the mesh:
+
+        - `create_geometry(...args)` returns a `THREE.BufferGeometry`.
+          NiceGUI wraps it in a `MeshPhongMaterial`
+          (or a wireframe `LineSegments` if `wireframe=True` is passed to `super().__init__()`),
+          so the built-in `material()`, `move()`, `scale()` etc. work automatically.
+        - `create_mesh(...args)` returns a `THREE.Object3D` for full control.
+          Use it when the object is more than a single geometry
+          or when your own methods need ongoing access to the mesh, like `update_topology` below.
+    ''')
+
+    code_window(title='torus_knot.js', language='js', code=TORUS_KNOT_JS).classes('w-full')
+
+
+@doc.part('')
+def materials_for_composite_objects() -> None:
+    ui.markdown('''
+        **Materials for composite objects**
+
+        When Python calls `material(...)`, NiceGUI applies color, opacity and side to the material of the mesh.
+        A composite object built from several sub-meshes can define the optional `apply_material` hook
+        to decide which parts the material applies to.
+        The hook receives a single options object;
+        destructure the fields you need, so future NiceGUI versions can add fields without breaking your component.
+        The `apply_material` function exported by the `nicegui-scene` module implements NiceGUI's material semantics
+        (`color=None` enables vertex colors, `side` is "front", "back" or "both").
+    ''')
+
+    code_window(title='robot.js', language='js', code='''
+        import { apply_material, THREE } from "nicegui-scene";
+
+        export default class Robot {
+          create_mesh() {
+            this.body = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 2), new THREE.MeshPhongMaterial({ transparent: true }));
+            this.eyes = new THREE.Mesh(new THREE.SphereGeometry(0.2), new THREE.MeshPhongMaterial({ color: "black" }));
+            this.eyes.position.set(0.5, 0, 1);
+            return new THREE.Group().add(this.body, this.eyes);
+          }
+
+          apply_material(options) {
+            apply_material(this.body.material, options); // tint only the body, keep the eyes black
+          }
+        }
+    ''').classes('w-full')
+
+    ui.markdown('''
+        There is also an optional `created()` hook which is called right after the mesh has been built.
+
+        Note that NiceGUI recovers from a lost WebGL context by re-creating every object
+        from its constructor arguments (`self.args`) and built-in state like position, rotation and material.
+        State changed only via `run_method` is lost in that case —
+        keep `self.args` up to date in mutating methods so re-created objects reflect the latest state.
+    ''')
+
+
 @doc.demo('Attaching/detaching objects', '''
     To add or remove objects from groups you can use the `attach` and `detach` methods.
     The position and rotation of the object are preserved so that the object does not move in space.
@@ -367,8 +469,9 @@ def new_primitives_and_polar_grid() -> None:
 
 
 @doc.demo('Rotate with a different Euler order', '''
-    ``rotate`` accepts an optional intrinsic Euler ``order``
-    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``).
+    ``rotate`` accepts an optional extrinsic Euler ``order``
+    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``);
+    the leftmost letter rotates first about the world frame.
     The default ``'XYZ'`` keeps the same behavior as before.
 ''')
 def rotate_with_order() -> None:

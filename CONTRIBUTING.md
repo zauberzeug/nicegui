@@ -148,8 +148,9 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 
   - Follow **PEP 8** with a 120 character line length
   - Use single quotes in Python, double quotes in JavaScript
-  - Use f-strings wherever possible (mark performance-critical exceptions with `# NOTE:`)
-  - Use `# NOTE:` prefix for important implementation details and non-obvious code
+  - Use f-strings wherever possible (mark performance-critical exceptions with a comment)
+  - Explain important implementation details and non-obvious code with comments
+  - Use `# NOTE:` only to draw special attention, e.g. to changes that need to be mirrored elsewhere or hidden cross-file coupling
   - No mutable defaults (`[]`, `{}`) without `# noqa: B006` and a justification — prefer `None`
   - Put high-level/interesting code at the top of files; helper functions go below their usage
   - Each sentence in documentation goes on a new line ([why](https://nick.groenen.me/notes/one-sentence-per-line/))
@@ -199,7 +200,22 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 
 - **Dataclasses**: Prefer `@dataclass(kw_only=True, slots=True)`
 
-- **Tests**: Include tests for new features and bug fixes. Prefer the `User` fixture (fast, runs in the same async context as NiceGUI, no browser); use the `Screen` fixture only when testing browser/JavaScript interactions.
+- **Tests**
+
+  - Include tests for new features and bug fixes — but test observable behavior, not implementation.
+    A test should read like a small demo of the public API: create elements, interact, assert what a user would see.
+    Avoid tests that reach into internals — private attributes, call counts, monkeypatched browser or library APIs, hand-built fake objects.
+    They break when the implementation changes (so they get rewritten along with it, guarding nothing) and they are hard to read for anyone who doesn't know the internals.
+  - Before writing a test, read a recent one in the same file.
+    The existing suite is almost entirely behavior tests, and copying a neighbouring test's shape is faster and safer than inventing a new one.
+  - Prefer the `User` fixture (fast, runs in the same async context as NiceGUI, no browser); use the `Screen` fixture only when testing browser/JavaScript interactions.
+  - A regression test must fail when the fix is reverted — verify that once before trusting it.
+    A test that has only ever been seen green proves nothing.
+  - Not every change needs a test.
+    We have over a thousand tests and the browser-based ones dominate the runtime, so each new test is a permanent cost for every contributor.
+    If a fix can only be covered by an elaborate test that mirrors the implementation, skipping the test can be the better choice — give the reason in the **Implementation** section of the pull request, so it reads as a deliberate decision and not as an oversight.
+    A small, obviously correct fix with a clear explanation is often worth more than an unreadable regression test.
+  - If you find yourself building scaffolding to observe an internal mechanism (e.g. patching `ResizeObserver` to check that `disconnect()` was called), that is the signal to stop and either find the user-visible effect to assert on, or skip the test.
 
 ### Before submitting a pull request
 
@@ -301,7 +317,7 @@ The following scripts update various resources:
 - `fetch_google_fonts.py` — fetches the Google Fonts
 - `fetch_languages.py` — updates the list of supported languages in `language.py`
 - `fetch_milestone.py` — prepares the release notes for a given milestone
-- `fetch_sponsors.py` — updates the list of sponsors on the website and in `README.md`
+- `fetch_github_stats.py` — updates GitHub stats (sponsors, contributors, stars) on the website and the list of sponsors in `README.md`
 - `summarize_dependencies.py` — updates `DEPENDENCIES.md`
 - `set_scale.sh` — sets the Fly.io machine count per region for nicegui.io
 
