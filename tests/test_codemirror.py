@@ -1,9 +1,9 @@
+from typing import Any
+
 import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -11,10 +11,17 @@ from nicegui.testing import Screen
 # pylint: disable=protected-access
 
 
-def _wait_for_cm_mount(screen: Screen) -> None:
-    WebDriverWait(screen.selenium, 5).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, '.cm-content'))
-    )
+def _open_editor(screen: Screen, doc: str = 'alpha\nbeta\ngamma', **kwargs: Any) -> ui.codemirror:
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(doc, **kwargs)
+
+    screen.open('/')
+    screen.wait_for(lambda: bool(screen.selenium.find_elements(By.CSS_SELECTOR, '.cm-content')))
+    return editor
 
 
 def test_codemirror(screen: Screen):
@@ -112,15 +119,7 @@ def _line_decoration_count(screen: Screen, css_class: str) -> int:
 
 
 def test_set_and_clear_line_decorations(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma\ndelta')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen, 'alpha\nbeta\ngamma\ndelta')
     editor.decorations = [
         {'kind': 'line', 'line': 1, 'class': 'my-line-class'},
         {'kind': 'line', 'line': 3, 'class': 'my-line-class'},
@@ -131,15 +130,7 @@ def test_set_and_clear_line_decorations(screen: Screen):
 
 
 def test_decorations_list_mutations_sync(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('one\ntwo\nthree')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen, 'one\ntwo\nthree')
     editor.decorations.append({'kind': 'line', 'line': 1, 'class': 'set-a'})
     editor.decorations.append({'kind': 'line', 'line': 2, 'class': 'set-b'})
     screen.wait_for(lambda: _line_decoration_count(screen, 'set-a') == 1
@@ -164,15 +155,7 @@ def _replacement_widget_count(screen: Screen, css_class: str) -> int:
 
 
 def test_replace_decoration_collapses_range(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     baseline = _visible_text_length(screen)
     # 'beta\n' spans offsets 6..11 (5 chars + newline) — collapse hides those characters.
     editor.decorations = [{'kind': 'replace', 'from': 6, 'to': 11}]
@@ -182,15 +165,7 @@ def test_replace_decoration_collapses_range(screen: Screen):
 
 
 def test_replace_decoration_with_text(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     editor.decorations = [
         {'kind': 'replace', 'from': 6, 'to': 10, 'text': 'BETA-NEW', 'class': 'cm-test-suggest'},
     ]
@@ -205,15 +180,7 @@ def test_replace_decoration_with_text(screen: Screen):
 
 
 def test_widget_text_renders_html_sanitized(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma', decoration_text_html=True)
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen, decoration_text_html=True)
     editor.decorations = [
         {'kind': 'widget', 'position': 5,
          'text': '<b>safe</b><script>window.__deco_hijack=1</script>',
@@ -233,15 +200,7 @@ def test_widget_text_renders_html_sanitized(screen: Screen):
 
 
 def test_widget_text_defaults_to_plain(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     editor.decorations = [
         {'kind': 'widget', 'position': 5,
          'text': '<b>literal</b>',
@@ -259,15 +218,7 @@ def test_widget_text_defaults_to_plain(screen: Screen):
 
 
 def test_replace_decoration_block_mode(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma\ndelta')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen, 'alpha\nbeta\ngamma\ndelta')
     # Lines 2-3 ('beta\ngamma') span offsets 6..16 — must cover full lines for block mode.
     editor.decorations = [{
         'kind': 'replace', 'from': 6, 'to': 16,
@@ -283,15 +234,7 @@ def test_replace_decoration_block_mode(screen: Screen):
 
 
 def test_mark_decoration_styles_range(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     editor.decorations = [{
         'kind': 'mark', 'from': 6, 'to': 10,
         'class': 'cm-test-mark', 'attributes': {'data-marker': 'beta'},
@@ -307,15 +250,7 @@ def test_mark_decoration_styles_range(screen: Screen):
 
 
 def test_widget_decoration_inserts_text(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     editor.decorations = [
         {'kind': 'widget', 'position': 5, 'text': '<-- end of alpha', 'class': 'cm-test-hint'},
     ]
@@ -329,15 +264,7 @@ def test_widget_decoration_inserts_text(screen: Screen):
 
 
 def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     # A type-invalid spec (missing 'line') and an out-of-range spec must each be skipped with a
     # warning rather than throwing and voiding the whole batch or silently retargeting another line.
     editor.decorations = [
@@ -350,15 +277,7 @@ def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
 
 
 def test_decorations_track_document_edits(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-track'}]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-track') == 1)
     assert screen.selenium.execute_script(
@@ -374,15 +293,7 @@ def test_decorations_track_document_edits(screen: Screen):
 
 
 def test_decoration_inclusive_end_extends_mark(screen: Screen):
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('alpha\nbeta\ngamma')
-
-    screen.open('/')
-    _wait_for_cm_mount(screen)
+    editor = _open_editor(screen)
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'inclusiveEnd': True, 'class': 'cm-test-incl'}]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-incl') == 1)
     # Insert exactly at the mark's right edge (offset 10). Only a live inclusiveEnd grows the mark
