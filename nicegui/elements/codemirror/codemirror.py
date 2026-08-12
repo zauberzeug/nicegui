@@ -122,6 +122,10 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         Line anchors that track document positions through edits can be attached via the ``line_anchors`` dict
         (assign to declare, read back for the current positions).
 
+        *Since version 3.17.0:*
+        Decorations style, hide or annotate parts of the document without changing it.
+        Assign a list of specs to ``decorations`` or mutate the list in place.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
@@ -131,8 +135,8 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         :param decorations: initial list of decoration specs applied to the editor;
-            spec offsets (``from``/``to``/``position``) are UTF-16 code units, not Python ``str`` indices (default: ``None``)
-        :param decoration_text_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``)
+            spec offsets (``from``/``to``/``position``) are UTF-16 code units, not Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
+        :param decoration_text_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
         :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.16.0*)
         :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.16.0*)
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
@@ -236,7 +240,7 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         for a document containing emoji or other astral characters an offset computed from a Python
         ``str`` index will be wrong, so account for surrogate pairs when computing offsets.
 
-        *Added in version 3.16.0*
+        *Added in version 3.17.0*
         """
         return self._props['decorations']
 
