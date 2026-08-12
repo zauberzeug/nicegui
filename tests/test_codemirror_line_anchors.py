@@ -225,6 +225,7 @@ def test_on_anchor_change_handler(screen: Screen):
     """on_anchor_change fires with the current positions on every change."""
     editor: ui.codemirror = None  # type: ignore[assignment]
     received: list[dict] = []
+    late: list[dict] = []
 
     @ui.page('/')
     def page():
@@ -239,3 +240,9 @@ def test_on_anchor_change_handler(screen: Screen):
     # A remapping edit fires the handler again with the new line.
     screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "X\\n"}}}})')
     screen.wait_for(lambda: received[-1] == {'mid': 4})
+
+    # A handler added after the first render fires as well, without re-creating the editor.
+    editor.on_anchor_change(lambda e: late.append(e.anchors))
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "Y\\n"}}}})')
+    screen.wait_for(lambda: late == [{'mid': 5}])
+    assert 'Event listeners changed after initial definition.' not in screen.render_js_logs()
