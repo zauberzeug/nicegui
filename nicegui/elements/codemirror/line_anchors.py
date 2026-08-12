@@ -89,7 +89,7 @@ class LineAnchorElement(Element):
         with self._props.suspend_updates():
             self._props['line-anchors'] = dict(self._anchor_positions)
         for handler in self._anchor_change_handlers:
-            # A fresh dict per handler keeps one of them from rewriting the mirror or the others' view.
+            # A fresh dict per handler keeps one of them from rewriting the exposed positions or the others' view.
             handle_event(handler, CodeMirrorAnchorChangeEventArguments(
                 sender=self, client=self.client, anchors=dict(self._anchor_positions)))
 
