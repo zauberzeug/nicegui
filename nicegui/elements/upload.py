@@ -58,8 +58,8 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         super().__init__(label=label)
         self._props.set_bool('multiple', multiple)
         self._props.set_bool('auto-upload', auto_upload)
-        self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
-        self._registered_url = self._props['url']
+        self._registered_url = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
+        self._props['url'] = self._registered_url
 
         self._props.set_optional('max-file-size', max_file_size)
         self._props.set_optional('max-total-size', max_total_size)
