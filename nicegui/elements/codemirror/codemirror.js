@@ -311,6 +311,16 @@ export default {
         const range = this._clampRange(spec, doc);
         if (!range) return null;
         const { from, to } = range;
+        if (spec.text !== undefined && typeof spec.text !== "string") {
+          logAndEmit("warning", `decorations: replace 'text' must be a string (got ${JSON.stringify(spec.text)})`);
+          return null;
+        }
+        // CodeMirror rejects an empty replace range unless it is inclusive — which `block` implies.
+        // Skip cleanly instead of letting it throw into the setDecorations backstop.
+        if (from === to && !(spec.inclusive ?? !!spec.block)) {
+          logAndEmit("warning", `decorations: replace range is empty (from=${spec.from}, to=${spec.to})`);
+          return null;
+        }
         if (spec.block) {
           // CodeMirror requires block-replace ranges to span full lines; otherwise it throws
           // out of editor.dispatch and breaks the editor for the rest of the page.
@@ -331,6 +341,11 @@ export default {
       if (spec.kind === "widget") {
         if (!Number.isInteger(spec.position)) {
           logAndEmit("warning", `decorations: widget requires integer 'position' (got ${spec.position})`);
+          return null;
+        }
+        if (typeof spec.text !== "string") {
+          // Without it the widget would silently render an empty span.
+          logAndEmit("warning", `decorations: widget requires a string 'text' (got ${JSON.stringify(spec.text)})`);
           return null;
         }
         const pos = Math.max(0, Math.min(spec.position, doc.length));

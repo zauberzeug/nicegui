@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 import pytest
@@ -276,6 +277,30 @@ def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
     ]
     screen.wait_for(lambda: _line_decoration_count(screen, 'valid') == 1)
     assert _line_decoration_count(screen, 'out-of-range') == 0
+
+
+def test_widget_without_text_is_skipped(screen: Screen):
+    editor = _open_editor(screen)
+    editor.decorations = [
+        {'kind': 'widget', 'position': 5, 'class': 'cm-test-no-text'},
+        {'kind': 'widget', 'position': 5, 'text': 'hint', 'class': 'cm-test-late-hint'},
+    ]
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-late-hint') == 1)
+    assert _replacement_widget_count(screen, 'cm-test-no-text') == 0, \
+        'a widget without text is skipped instead of rendering an empty span'
+    screen.assert_py_logger('WARNING', re.compile(r"widget requires a string 'text'"))
+
+
+def test_empty_replace_range_is_skipped(screen: Screen):
+    editor = _open_editor(screen)
+    editor.decorations = [
+        {'kind': 'replace', 'from': 6, 'to': 6, 'text': 'nothing', 'class': 'cm-test-empty'},
+        # An empty range is legal for CodeMirror as long as it is inclusive, so this one survives.
+        {'kind': 'replace', 'from': 8, 'to': 8, 'text': 'INS', 'class': 'cm-test-empty-incl', 'inclusive': True},
+    ]
+    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-empty-incl') == 1)
+    assert _replacement_widget_count(screen, 'cm-test-empty') == 0
+    screen.assert_py_logger('WARNING', re.compile(r'replace range is empty'))
 
 
 def test_decorations_track_document_edits(screen: Screen):
