@@ -256,22 +256,33 @@ export default {
       }
       this.editor.dispatch({ effects: setDecorationsEffect.of(all) });
     },
+    // Validate a spec's from/to pair and clamp it into the document.
+    // Warns and returns null for a range that cannot be used, so the caller skips just this spec.
+    _clampRange(spec, doc) {
+      if (!Number.isInteger(spec.from) || !Number.isInteger(spec.to)) {
+        logAndEmit(
+          "warning",
+          `decorations: ${spec.kind} requires integer 'from' and 'to' (got from=${spec.from}, to=${spec.to})`,
+        );
+        return null;
+      }
+      if (spec.from > spec.to) {
+        logAndEmit("warning", `decorations: ${spec.kind} has from > to (from=${spec.from}, to=${spec.to})`);
+        return null;
+      }
+      const from = Math.max(0, Math.min(spec.from, doc.length));
+      const to = Math.max(from, Math.min(spec.to, doc.length));
+      return { from, to };
+    },
     _createDecoration(spec) {
       const doc = this.editor.state.doc;
       // Props arrive as user-supplied JSON; the Python TypedDicts enforce nothing at runtime, so
       // every numeric field is validated here. Bad specs are warned-and-skipped (returning null)
       // rather than thrown, so one malformed entry never voids the rest of the batch.
       if (spec.kind === "mark") {
-        if (!Number.isInteger(spec.from) || !Number.isInteger(spec.to)) {
-          logAndEmit("warning", `decorations: mark requires integer 'from' and 'to' (got from=${spec.from}, to=${spec.to})`);
-          return null;
-        }
-        if (spec.from > spec.to) {
-          logAndEmit("warning", `decorations: mark has from > to (from=${spec.from}, to=${spec.to})`);
-          return null;
-        }
-        const from = Math.max(0, Math.min(spec.from, doc.length));
-        const to = Math.max(from, Math.min(spec.to, doc.length));
+        const range = this._clampRange(spec, doc);
+        if (!range) return null;
+        const { from, to } = range;
         if (from === to) {
           // CodeMirror rejects zero-length mark ranges; skip cleanly instead of letting it throw
           // into the setDecorations backstop (which would log at error level).
@@ -297,16 +308,9 @@ export default {
         return CM.Decoration.line(lineSpec).range(line.from);
       }
       if (spec.kind === "replace") {
-        if (!Number.isInteger(spec.from) || !Number.isInteger(spec.to)) {
-          logAndEmit("warning", `decorations: replace requires integer 'from' and 'to' (got from=${spec.from}, to=${spec.to})`);
-          return null;
-        }
-        if (spec.from > spec.to) {
-          logAndEmit("warning", `decorations: replace has from > to (from=${spec.from}, to=${spec.to})`);
-          return null;
-        }
-        const from = Math.max(0, Math.min(spec.from, doc.length));
-        const to = Math.max(from, Math.min(spec.to, doc.length));
+        const range = this._clampRange(spec, doc);
+        if (!range) return null;
+        const { from, to } = range;
         if (spec.block) {
           // CodeMirror requires block-replace ranges to span full lines; otherwise it throws
           // out of editor.dispatch and breaks the editor for the rest of the page.
