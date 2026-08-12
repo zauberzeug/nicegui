@@ -260,6 +260,7 @@ export default {
       // only fires on a deliberate (re)assignment — re-applying from the declared lines is then intended,
       // snapping anchors back to their declared positions (and restoring any dropped by a delete-across).
       if (!this.editor) await this.editorPromise;
+      if (this.crdtSyncPromise) await this.crdtSyncPromise;
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const [id, line] of Object.entries(anchors || {})) {
@@ -437,19 +438,31 @@ export default {
         const ydoc = new Y.Doc();
         const awareness = new Awareness(ydoc);
         room = { ydoc, awareness, refs: 0, handlers: null, rx: {} };
+        // Anchors must not be applied against the still-empty ydoc; settled by the first
+        // yjs_init, by a join the server refused, or by teardown before either arrives.
+        room.synced = new Promise((resolve) => (room.resolveSync = resolve));
         yjsRooms.set(docId, room);
 
         room.handlers = {
           onInit: (data) => {
             if (data.doc_id !== docId) return;
             reassemble(room.rx, "yjs_init", data, (update) => {
-              if (update.length > 0) Y.applyUpdate(ydoc, update, YJS_REMOTE);
-              // Send back whatever the server is missing (edits made while disconnected);
-              // an empty diff encodes as 2 bytes.
-              const serverStateVector = update.length > 0 ? Y.encodeStateVectorFromUpdate(update) : undefined;
-              const diff = Y.encodeStateAsUpdate(ydoc, serverStateVector);
-              if (diff.length > 2) emitChunked("yjs_update", docId, diff);
+              try {
+                if (update.length > 0) Y.applyUpdate(ydoc, update, YJS_REMOTE);
+                // Send back whatever the server is missing (edits made while disconnected);
+                // an empty diff encodes as 2 bytes.
+                const serverStateVector = update.length > 0 ? Y.encodeStateVectorFromUpdate(update) : undefined;
+                const diff = Y.encodeStateAsUpdate(ydoc, serverStateVector);
+                if (diff.length > 2) emitChunked("yjs_update", docId, diff);
+              } finally {
+                // a rejected update still ends the wait: degraded anchors beat none at all
+                room.resolveSync();
+              }
             });
+          },
+          onJoinFailed: (data) => {
+            if (data.doc_id !== docId) return;
+            room.resolveSync();
           },
           onSocketConnect: () => {
             // A transient reconnect mints a new server-side sid; re-join to restore
@@ -479,6 +492,7 @@ export default {
         // mount hook on first load; defer registration until the socket is ready.
         const wireSocket = () => {
           window.socket.on("yjs_init", room.handlers.onInit);
+          window.socket.on("yjs_join_failed", room.handlers.onJoinFailed);
           window.socket.on("yjs_update", room.handlers.onUpdate);
           window.socket.on("yjs_awareness", room.handlers.onAwareness);
           window.socket.on("connect", room.handlers.onSocketConnect);
@@ -495,6 +509,7 @@ export default {
       }
       room.refs++;
       this.ydoc = room.ydoc;
+      this.crdtSyncPromise = room.synced;
       this.ytext = room.ydoc.getText("codemirror");
       this.awareness = room.awareness;
     },
@@ -505,9 +520,11 @@ export default {
       room.refs--;
       if (room.refs > 0) return;
       room.cancelled = true;
+      room.resolveSync();
       if (window.socket) {
         window.socket.emit("yjs_leave", { doc_id: docId });
         window.socket.off("yjs_init", room.handlers.onInit);
+        window.socket.off("yjs_join_failed", room.handlers.onJoinFailed);
         window.socket.off("yjs_update", room.handlers.onUpdate);
         window.socket.off("yjs_awareness", room.handlers.onAwareness);
         window.socket.off("connect", room.handlers.onSocketConnect);

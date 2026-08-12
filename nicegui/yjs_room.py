@@ -92,9 +92,13 @@ async def _check_access(doc_id: str, sid: str) -> bool:
     check = _access_checks.get(doc_id)
     if check is None:
         return True
-    result = check(doc_id, sid)
-    if inspect.isawaitable(result):
-        result = await result
+    try:
+        result = check(doc_id, sid)
+        if inspect.isawaitable(result):
+            result = await result
+    except Exception as e:
+        core.app.handle_exception(e)
+        return False  # a check that cannot answer must deny, so the join still gets a negative acknowledgement
     return bool(result)
 
 
@@ -103,7 +107,7 @@ def _client_id_from_sid(sid: str) -> str | None:
         environ = core.sio.get_environ(sid)
         query_bytes: bytes = environ['asgi.scope']['query_string']
         return urllib.parse.parse_qs(query_bytes.decode()).get('client_id', [None])[0]
-    except (KeyError, AttributeError, UnicodeDecodeError):
+    except (KeyError, AttributeError, TypeError, UnicodeDecodeError):
         return None
 
 
@@ -160,28 +164,37 @@ def _install_handlers_once() -> None:
 
     @sio.on('yjs_join')
     async def _on_join(sid: str, data: dict[str, Any]) -> None:
-        if not isinstance(data, dict):
-            return
-        doc_id = data.get('doc_id')
+        doc_id = data.get('doc_id') if isinstance(data, dict) else None
         if not isinstance(doc_id, str):
+            # echoed as received: the client matches the acknowledgement against the id it sent
+            await sio.emit('yjs_join_failed', {'doc_id': doc_id}, to=sid)
             return
         client_id = _client_id_from_sid(sid)
         client = Client.instances.get(client_id) if client_id is not None else None
         if client_id is None or client is None:
-            return  # only sockets belonging to a live NiceGUI client may join (and get cleaned up)
-        if not await _check_access(doc_id, sid):
+            # only sockets belonging to a live NiceGUI client may join (and get cleaned up)
+            await sio.emit('yjs_join_failed', {'doc_id': doc_id}, to=sid)
             return
-        room = _rooms.setdefault(doc_id, _Room(doc_id))
-        room.sids.add(sid)
-        room.clients.add(client_id)
-        _client_sids.setdefault(client_id, set()).add(sid)
-        if client_id not in _clients_with_hook:
-            _clients_with_hook.add(client_id)
-            _hook_client_lifecycle(client, client_id)
-        await sio.enter_room(sid, _sio_room(doc_id))
-        async with room.lock:
-            state: bytes = room.doc.get_update()
-            await _emit_chunked('yjs_init', doc_id, state, to=sid)
+        if not await _check_access(doc_id, sid):
+            # NOTE: deliberately reasonless — distinguishing denial from a missing room
+            # would turn this event into an oracle for doc_ids, which are soft secrets.
+            await sio.emit('yjs_join_failed', {'doc_id': doc_id}, to=sid)
+            return
+        try:
+            room = _rooms.setdefault(doc_id, _Room(doc_id))
+            room.sids.add(sid)
+            room.clients.add(client_id)
+            _client_sids.setdefault(client_id, set()).add(sid)
+            if client_id not in _clients_with_hook:
+                _clients_with_hook.add(client_id)
+                _hook_client_lifecycle(client, client_id)
+            await sio.enter_room(sid, _sio_room(doc_id))
+            async with room.lock:
+                state: bytes = room.doc.get_update()
+                await _emit_chunked('yjs_init', doc_id, state, to=sid)
+        except Exception as e:  # every join gets exactly one answer, or the client waits forever
+            core.app.handle_exception(e)
+            await sio.emit('yjs_join_failed', {'doc_id': doc_id}, to=sid)
 
     @sio.on('yjs_update')
     async def _on_update(sid: str, data: dict[str, Any]) -> None:

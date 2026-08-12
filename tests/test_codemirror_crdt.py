@@ -129,6 +129,65 @@ def test_large_seeded_state_is_chunked_to_client(screen: Screen):
     assert 'yyyy' in content.text
 
 
+def test_line_anchors_survive_initial_sync(screen: Screen):
+    from pycrdt import Text  # pylint: disable=import-outside-toplevel
+    editor: ui.codemirror = None  # type: ignore[assignment]
+    doc = yjs_room.get_doc('anchor-seed')
+    doc['codemirror'] = Text()
+    doc['codemirror'] += 'one\ntwo\nthree\nfour'
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(line_anchors={'mid': 3}).with_crdt('anchor-seed')
+
+    screen.open('/')
+    screen.wait_for(lambda: editor.line_anchors == {'mid': 3})
+
+
+def test_line_anchors_are_applied_when_the_join_is_denied(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(line_anchors={'top': 1}).with_crdt('anchor-denied',
+                                                                  access_check=lambda _doc_id, _sid: False)
+
+    screen.open('/')
+    screen.wait_for(lambda: editor.line_anchors == {'top': 1})
+
+
+def test_line_anchors_are_applied_when_the_doc_id_is_not_a_string(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(line_anchors={'top': 1}).with_crdt(42)  # type: ignore[arg-type]
+
+    screen.open('/')
+    screen.wait_for(lambda: editor.line_anchors == {'top': 1})
+
+
+def test_line_anchors_are_applied_when_the_access_check_raises(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    def broken(_doc_id: str, _sid: str) -> bool:
+        raise RuntimeError('access backend is down')
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(line_anchors={'top': 1}).with_crdt('anchor-broken', access_check=broken)
+
+    screen.open('/')
+    screen.wait_for(lambda: editor.line_anchors == {'top': 1})
+    assert 'anchor-broken' not in yjs_room._rooms  # pylint: disable=protected-access
+    screen.assert_py_logger('ERROR', 'access backend is down')
+    screen.caplog.records.clear()  # a reconnect re-joins and raises again
+
+
 def test_access_check_denies_unauthorized_editor(screen: Screen):
     @ui.page('/')
     def page():
