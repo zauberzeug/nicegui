@@ -27,7 +27,8 @@ class TextWidget extends CM.WidgetType {
 
 // A RangeSet StateField whose ranges remap through document edits.
 // Dispatching setEffect.of(ranges) replaces the whole set.
-function defineRemappableRangeSet() {
+// `provide` is handed to StateField.define for fields that feed a facet; leaving it out is fine.
+function defineRemappableRangeSet(provide) {
   const setEffect = CM.StateEffect.define(); // value: list of ranges (replaces all)
   const field = CM.StateField.define({
     create() {
@@ -40,6 +41,7 @@ function defineRemappableRangeSet() {
       }
       return set;
     },
+    provide,
   });
   return { setEffect, field };
 }
@@ -75,25 +77,13 @@ const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRa
 // range through document edits — a mark on "beta" follows the text, and the mark/replace
 // inclusivity options actually affect how ranges grow at their edges. A new decoration list
 // from the server replaces the whole set via setDecorationsEffect.
-const setDecorationsEffect = CM.StateEffect.define();
-
-const decorationField = CM.StateField.define({
-  create() {
-    return CM.Decoration.none;
-  },
-  update(deco, tr) {
-    deco = deco.map(tr.changes);
-    for (const effect of tr.effects) {
-      if (effect.is(setDecorationsEffect)) {
-        deco = CM.Decoration.set(effect.value, true);
-      }
-    }
-    return deco;
-  },
-  // Providing decorations from a field (rather than a plugin) is also what CM6 requires for
-  // block replace/widget decorations to work.
-  provide: (field) => CM.EditorView.decorations.from(field),
-});
+// A DecorationSet is a RangeSet: Decoration.none is RangeSet.empty and Decoration.set(v, true)
+// is RangeSet.of(v, true), so the shared factory covers decorations as well.
+// Providing them from a field (rather than a plugin) is what CM6 requires for block
+// replace/widget decorations to work.
+const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet((field) =>
+  CM.EditorView.decorations.from(field),
+);
 
 export default {
   template: `
@@ -128,11 +118,8 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    decorations: {
-      deep: true,
-      handler(newDecorations) {
-        this.setDecorations(newDecorations);
-      },
+    decorations(newDecorations) {
+      this.setDecorations(newDecorations);
     },
     lineAnchors(newAnchors) {
       this.applyLineAnchors(newAnchors);
