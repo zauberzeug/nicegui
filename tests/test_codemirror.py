@@ -183,20 +183,22 @@ def test_widget_text_renders_html_sanitized(screen: Screen):
     editor = _open_editor(screen, decoration_text_html=True)
     editor.decorations = [
         {'kind': 'widget', 'position': 5,
-         'text': '<b>safe</b><script>window.__deco_hijack=1</script>',
+         'text': '<b onclick="window.hijacked = true">safe</b><script>window.hijacked = true</script>',
          'class': 'cm-test-html-widget'},
     ]
     screen.wait_for(lambda: screen.selenium.execute_script(
         'const w = document.querySelector(".cm-content span.cm-test-html-widget");'
         'return !!(w && w.querySelector("b"));'
     ))
-    has_script = screen.selenium.execute_script(
+    # Assert on the sanitized DOM rather than on a "did it run" flag: scripts inserted via innerHTML
+    # never execute, so such a flag stays unset even without sanitization. Dropping the sanitizer
+    # leaves both the script element and the handler attribute in place, which is what we check.
+    sanitized = screen.selenium.execute_script(
         'const w = document.querySelector(".cm-content span.cm-test-html-widget");'
-        'return !!(w && w.querySelector("script"));'
+        'return {script: !!w.querySelector("script"), handler: !!w.querySelector("[onclick]")};'
     )
-    hijacked = screen.selenium.execute_script('return window.__deco_hijack === 1')
-    assert not has_script, 'DOMPurify should have stripped <script>'
-    assert not hijacked, 'inline script must not have executed'
+    assert not sanitized['script'], 'DOMPurify strips <script> elements'
+    assert not sanitized['handler'], 'DOMPurify strips inline event handlers'
 
 
 def test_widget_text_defaults_to_plain(screen: Screen):
