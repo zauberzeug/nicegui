@@ -127,17 +127,19 @@ class refreshable(Generic[_P, _T]):
             target.args = args or target.args
             target.kwargs.update(kwargs)
             try:
-                result = target.run(self.func, report_exceptions=report_exceptions)
-            except Exception as e:
-                if isinstance(e, TypeError) and 'got multiple values for argument' in str(e):
+                try:
+                    result = target.run(self.func, report_exceptions=report_exceptions)
+                except TypeError as e:
+                    if 'got multiple values for argument' not in str(e):
+                        raise
                     function = str(e).split()[0].split('.')[-1]
                     parameter = str(e).split()[-1]
-                    e = TypeError(f'{parameter} needs to be consistently passed to {function} '
-                                  'either as positional or as keyword argument')
+                    raise TypeError(f'{parameter} needs to be consistently passed to {function} '
+                                    'either as positional or as keyword argument') from e
+            except Exception as e:
                 if report_exceptions and not target.container.is_deleted:
                     target.container.client.handle_exception(e)
-                raise e
-
+                raise
             if helpers.should_await(result):
                 awaitables.append(result)
 
