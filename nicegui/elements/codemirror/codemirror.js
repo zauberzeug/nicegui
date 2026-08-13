@@ -77,6 +77,10 @@ const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRa
 // range through document edits — a mark on "beta" follows the text, and the mark/replace
 // inclusivity options actually affect how ranges grow at their edges. A new decoration list
 // from the server replaces the whole set via setDecorationsEffect.
+// Each decoration carries the key of the spec it was built from, so an update can tell which
+// decorations are unchanged and keep them at the position they have been mapped to.
+const DECORATION_KEY = "__nicegui_decoration_key";
+
 // A DecorationSet is a RangeSet: Decoration.none is RangeSet.empty and Decoration.set(v, true)
 // is RangeSet.of(v, true), so the shared factory covers decorations as well.
 // Providing them from a field (rather than a plugin) is what CM6 requires for block
@@ -148,6 +152,7 @@ export default {
         // A client-side remount (e.g. a v-if container) re-applies these props against the restored
         // document, so they have to describe where the anchors are now, not where they were declared.
         if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
+        if (element.props.decorations?.length) element.props.decorations = this.currentDecorationSpecs();
       }
     }
     clearTimeout(this._anchorTimer);
@@ -241,11 +246,20 @@ export default {
     },
     setDecorations(decorations) {
       if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      // Re-applying the declared offsets would undo the mapping the state field has been doing
+      // through edits, so a decoration would jump back onto stale text on any update of the
+      // element — including appending one spec, which re-sends all the others.
+      // Specs that are unchanged keep where they were mapped to; only new or edited ones land
+      // at their declared offsets.
+      const mapped = this._mappedDecorationRanges();
       const all = [];
       for (const spec of decorations || []) {
+        const key = JSON.stringify(spec);
+        const range = mapped.get(key);
         let dec = null;
         try {
-          dec = this._createDecoration(spec);
+          dec = this._createDecoration(range ? this._withMappedOffsets(spec, range, doc) : spec, key);
         } catch (error) {
           // Backstop: a single malformed spec that slips past validation must not void the
           // whole batch. _createDecoration warns-and-skips known-bad specs itself; this catches
@@ -255,6 +269,33 @@ export default {
         if (dec) all.push(dec);
       }
       this.editor.dispatch({ effects: setDecorationsEffect.of(all) });
+    },
+    // Current position of every applied decoration, keyed by the spec it was built from.
+    // Each decoration carries its key on the spec object CodeMirror hands back, so the mapped
+    // ranges the state field maintains can be matched up with the specs the server sent.
+    _mappedDecorationRanges() {
+      const ranges = new Map();
+      const cursor = this.editor.state.field(decorationField).iter();
+      while (cursor.value) {
+        const key = cursor.value.spec?.[DECORATION_KEY];
+        if (key !== undefined && !ranges.has(key)) ranges.set(key, { from: cursor.from, to: cursor.to });
+        cursor.next();
+      }
+      return ranges;
+    },
+    _withMappedOffsets(spec, range, doc) {
+      if (spec.kind === "mark" || spec.kind === "replace") return { ...spec, from: range.from, to: range.to };
+      if (spec.kind === "widget") return { ...spec, position: range.from };
+      if (spec.kind === "line") return { ...spec, line: doc.lineAt(range.from).number };
+      return spec;
+    },
+    currentDecorationSpecs() {
+      const doc = this.editor.state.doc;
+      const mapped = this._mappedDecorationRanges();
+      return (this.decorations || []).map((spec) => {
+        const range = mapped.get(JSON.stringify(spec));
+        return range ? this._withMappedOffsets(spec, range, doc) : spec;
+      });
     },
     // Validate a spec's from/to pair and clamp it into the document.
     // Warns and returns null for a range that cannot be used, so the caller skips just this spec.
@@ -274,7 +315,7 @@ export default {
       const to = Math.max(from, Math.min(spec.to, doc.length));
       return { from, to };
     },
-    _createDecoration(spec) {
+    _createDecoration(spec, key) {
       const doc = this.editor.state.doc;
       // Props arrive as user-supplied JSON; the Python TypedDicts enforce nothing at runtime, so
       // every numeric field is validated here. Bad specs are warned-and-skipped (returning null)
@@ -289,7 +330,7 @@ export default {
           logAndEmit("warning", `decorations: mark range is empty (from=${spec.from}, to=${spec.to})`);
           return null;
         }
-        const markSpec = {};
+        const markSpec = { [DECORATION_KEY]: key };
         if (spec.class) markSpec.class = spec.class;
         if (spec.attributes) markSpec.attributes = spec.attributes;
         if (spec.inclusiveStart !== undefined) markSpec.inclusiveStart = spec.inclusiveStart;
@@ -302,7 +343,7 @@ export default {
           return null;
         }
         const line = doc.line(spec.line);
-        const lineSpec = {};
+        const lineSpec = { [DECORATION_KEY]: key };
         if (spec.class) lineSpec.class = spec.class;
         if (spec.attributes) lineSpec.attributes = spec.attributes;
         return CM.Decoration.line(lineSpec).range(line.from);
@@ -331,7 +372,7 @@ export default {
             return null;
           }
         }
-        const replaceSpec = {};
+        const replaceSpec = { [DECORATION_KEY]: key };
         if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
         if (spec.block) replaceSpec.block = true;
         if (spec.text !== undefined) replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
@@ -350,6 +391,7 @@ export default {
         }
         const pos = Math.max(0, Math.min(spec.position, doc.length));
         return CM.Decoration.widget({
+          [DECORATION_KEY]: key,
           widget: new TextWidget(spec.text, spec.class, this.decorationTextHtml),
           side: spec.side ?? 1,
         }).range(pos);

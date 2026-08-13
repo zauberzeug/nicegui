@@ -408,3 +408,38 @@ def test_line_tooltip_html_sanitized(screen: Screen):
     ActionChains(screen.selenium).move_to_element(screen.find('hello')).perform()
     screen.should_contain('bold')  # The tooltip should render the allowed HTML...
     assert 'XSS' not in screen.selenium.get_log('browser')  # ...but sanitize out any scripts.
+
+
+
+def _marked_text(screen: Screen, css_class: str) -> str | None:
+    return screen.selenium.execute_script(
+        f'const s = document.querySelector(".cm-content span.{css_class}"); return s ? s.textContent : null;')
+
+
+def test_decorations_survive_an_unrelated_update(screen: Screen):
+    editor = _open_editor(screen)
+    editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-keep'}]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-keep') == 'beta')
+    editor.value = 'XX' + editor.value
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelector(".cm-content").innerText.startsWith("XXalpha");'))
+    # Any later update re-sends the whole props dict, which used to re-apply the declared offsets
+    # and drop the mark back onto the text that now sits at 6..10.
+    editor.theme = 'basicDark'
+    screen.wait(0.5)
+    assert _marked_text(screen, 'cm-test-keep') == 'beta'
+
+
+def test_appending_a_decoration_leaves_the_others_in_place(screen: Screen):
+    editor = _open_editor(screen)
+    editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-first'}]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-first') == 'beta')
+    editor.value = 'XX' + editor.value
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return document.querySelector(".cm-content").innerText.startsWith("XXalpha");'))
+    # Appending re-sends every spec, so the existing mark must keep the position it was mapped to
+    # while the new one lands where it was just declared.
+    editor.decorations.append({'kind': 'mark', 'from': 13, 'to': 18, 'class': 'cm-test-second'})
+    editor.update()
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-second') == 'gamma')
+    assert _marked_text(screen, 'cm-test-first') == 'beta'
