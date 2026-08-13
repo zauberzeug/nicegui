@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import accumulate, chain, repeat
-from typing import Literal, TypedDict, get_args
+from typing import Any, Literal, TypedDict, cast, get_args
 
 from typing_extensions import NotRequired, Self
 
@@ -69,6 +69,14 @@ WidgetDecorationSpec = TypedDict(
 
 DecorationSpec = MarkDecorationSpec | LineDecorationSpec | ReplaceDecorationSpec | WidgetDecorationSpec
 
+# Offset fields per kind, addressed as Python str indices on the way in.
+_DECORATION_OFFSETS: dict[str, tuple[str, ...]] = {
+    'mark': ('from', 'to'),
+    'line': (),
+    'replace': ('from', 'to'),
+    'widget': ('position',),
+}
+
 
 class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], DisableableElement,
                  component='codemirror.js',
@@ -135,7 +143,7 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         :param decorations: initial list of decoration specs applied to the editor;
-            spec offsets (``from``/``to``/``position``) are UTF-16 code units, not Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
+            spec offsets (``from``/``to``/``position``) are Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
         :param decoration_text_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
         :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.16.0*)
         :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.16.0*)
@@ -234,11 +242,14 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         ``onclick``) and is not sanitized.
         Do not pass untrusted input through it.
 
-        The ``from``, ``to`` and ``position`` fields are UTF-16 code-unit offsets into the document
-        (CodeMirror's native addressing).
-        These match Python ``str`` indices only for text in the Basic Multilingual Plane;
-        for a document containing emoji or other astral characters an offset computed from a Python
-        ``str`` index will be wrong, so account for surrogate pairs when computing offsets.
+        The ``from``, ``to`` and ``position`` fields are Python ``str`` indices into ``value``,
+        so ``value.index(...)`` addresses what you expect even in a document containing emoji;
+        they are translated to CodeMirror's UTF-16 addressing on the way out.
+
+        Reading this property returns the specs as declared, not where the decorations have since
+        moved: the browser keeps them pinned to their text as the document changes, but that
+        mapping stays on the client.
+        Use ``line_anchors`` when the current position is what you need.
 
         *Added in version 3.17.0*
         """
@@ -263,6 +274,15 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
     def _event_args_to_value(self, e: GenericEventArguments) -> str:
         """The event contains a change set which is applied to the current value."""
         return self._apply_change_set(e.args['sections'], e.args['inserted'])
+
+    def _to_dict(self) -> dict[str, Any]:
+        dict_ = super()._to_dict()
+        props = dict_.get('props')
+        if props:
+            decorations = _to_utf16_offsets(props.get('decorations') or [], self._codepoints)
+            if decorations is not None:
+                dict_['props'] = {**props, 'decorations': decorations}
+        return dict_
 
     @staticmethod
     def _encode_codepoints(doc: str) -> bytes:
@@ -300,3 +320,38 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
                 codepoint_parts.append(self._encode_codepoints(joined_insert))
         self._codepoints = b''.join(codepoint_parts)
         return ''.join(document_parts)
+
+
+
+def _to_utf16_offsets(decorations: list[DecorationSpec], codepoints: bytes) -> list[DecorationSpec] | None:
+    """Translate Python ``str`` indices into the UTF-16 code units CodeMirror addresses by.
+
+    Returns ``None`` when the document is entirely in the Basic Multilingual Plane, where the two
+    coincide — the common case, recognized straight from the codepoint map maintained for the
+    incoming direction. Offsets that are not integers are left alone for the JS side to report.
+    """
+    if b'\0' not in codepoints or not decorations:
+        return None
+    # Each astral code point occupies two UTF-16 units, so an offset shifts by the number of
+    # astral code points preceding it. Walking the map once gives that count per code point.
+    shifts: list[int] = []
+    shift = 0
+    for byte in codepoints:
+        if byte == 0:
+            shift += 1
+        else:
+            shifts.append(shift)
+    shifts.append(shift)
+
+    def convert(offset: Any) -> Any:
+        if not isinstance(offset, int) or isinstance(offset, bool) or not 0 <= offset < len(shifts):
+            return offset
+        return offset + shifts[offset]
+
+    converted: list[DecorationSpec] = []
+    for entry in decorations:
+        spec = cast('dict[str, Any]', entry)
+        keys = _DECORATION_OFFSETS.get(spec.get('kind', ''), ())
+        shifted = {**spec, **{key: convert(spec.get(key)) for key in keys}} if keys else spec
+        converted.append(cast('DecorationSpec', shifted))
+    return converted

@@ -443,3 +443,12 @@ def test_appending_a_decoration_leaves_the_others_in_place(screen: Screen):
     editor.update()
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-second') == 'gamma')
     assert _marked_text(screen, 'cm-test-first') == 'beta'
+
+
+
+def test_decoration_offsets_are_python_string_indices(screen: Screen):
+    document = 'a🎉b beta'
+    editor = _open_editor(screen, document)
+    start = document.index('beta')
+    editor.decorations = [{'kind': 'mark', 'from': start, 'to': start + 4, 'class': 'cm-test-astral'}]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-astral') == 'beta')

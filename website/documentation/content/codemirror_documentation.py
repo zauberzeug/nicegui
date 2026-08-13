@@ -37,6 +37,10 @@ def preserve_cursor_demo() -> None:
     - **replace** — hide a range (no `text`) or replace it visually with text
     - **widget** — insert a text annotation at a position
 
+    The `from`, `to` and `position` fields are Python `str` indices into the editor's value.
+    Reading `decorations` back returns the specs as declared, not where the browser has since
+    mapped them as the document changed.
+
     The host application supplies its own CSS for whatever class names it passes.
     Widget and replace `text` values render as plain text by default; pass
     `decoration_text_html=True` to the constructor to render them as sanitized HTML.
