@@ -203,7 +203,7 @@ export default {
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const [id, line] of Object.entries(anchors || {})) {
-        if (line >= 1 && line <= doc.lines) {
+        if (Number.isInteger(line) && line >= 1 && line <= doc.lines) {
           const pos = doc.line(line).from;
           ranges.push(new AnchorValue(id).range(pos, pos));
         } else {

@@ -67,6 +67,21 @@ def test_anchors_out_of_range(screen: Screen):
     screen.wait_for(lambda: editor.line_anchors == {'inside': 2})
 
 
+def test_anchors_on_a_fractional_line(screen: Screen):
+    """A line that is not a whole number resolves to a neighbouring one, so it is dropped like one past the end."""
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc')
+
+    screen.open('/')
+    _wait_for_editor(screen)
+    editor.line_anchors = {'inside': 3, 'fractional': 2.5}  # type: ignore[dict-item]
+    screen.wait_for(lambda: editor.line_anchors == {'inside': 3})
+
+
 async def test_rejected_anchors_leave_no_editor_behind(user: User):
     """The constructor must refuse before the element registers itself, not halfway through building it."""
     @ui.page('/')
