@@ -69,12 +69,18 @@ WidgetDecorationSpec = TypedDict(
 
 DecorationSpec = MarkDecorationSpec | LineDecorationSpec | ReplaceDecorationSpec | WidgetDecorationSpec
 
-# Offset fields per kind, addressed as Python str indices on the way in.
+# Offset fields per kind, and the keys a spec must carry to be applicable at all.
 _DECORATION_OFFSETS: dict[str, tuple[str, ...]] = {
     'mark': ('from', 'to'),
     'line': (),
     'replace': ('from', 'to'),
     'widget': ('position',),
+}
+_DECORATION_REQUIRED: dict[str, tuple[str, ...]] = {
+    'mark': ('from', 'to'),
+    'line': ('line',),
+    'replace': ('from', 'to'),
+    'widget': ('position', 'text'),
 }
 
 
@@ -150,6 +156,9 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
+        # NOTE: validate before super().__init__ registers the element, so a rejected argument
+        # does not leave a half-built element behind in the element tree
+        _validate_decorations(decorations or [])
         super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap,
                          line_anchors=line_anchors, on_anchor_change=on_anchor_change)
         self._codepoints = b''
@@ -257,7 +266,9 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
     @decorations.setter
     def decorations(self, decorations: list[DecorationSpec] | None) -> None:
-        self._props['decorations'] = decorations or []
+        decorations = decorations or []
+        _validate_decorations(decorations)
+        self._props['decorations'] = decorations
 
     @property
     def line_tooltips(self) -> dict[int, str]:
@@ -321,6 +332,32 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         self._codepoints = b''.join(codepoint_parts)
         return ''.join(document_parts)
 
+
+def _validate_decorations(decorations: list[DecorationSpec]) -> None:
+    """Reject specs that cannot describe a decoration, whatever the document says.
+
+    Everything document-dependent — offsets past the end, empty replace ranges, lines that do not
+    exist — stays on the JS side, which warns and skips the individual spec.
+    """
+    for entry in decorations:
+        spec = cast('dict[str, Any]', entry)  # the TypedDicts describe intent; at runtime this is user data
+        kind = spec.get('kind')
+        if kind not in _DECORATION_REQUIRED:
+            raise ValueError(f'decorations: unknown kind {kind!r}, expected one of '
+                             f'{", ".join(sorted(_DECORATION_REQUIRED))}')
+        for key in _DECORATION_REQUIRED[kind]:
+            if key not in spec:
+                raise ValueError(f'decorations: {kind} decoration is missing required key {key!r}')
+        for key in _DECORATION_OFFSETS[kind]:
+            offset = spec[key]
+            if not isinstance(offset, int) or isinstance(offset, bool):
+                raise ValueError(f'decorations: {kind} decoration needs an integer {key!r} (got {offset!r})')
+            if offset < 0:
+                raise ValueError(f'decorations: {kind} decoration has {key}={offset}, but offsets start at 0')
+        if kind in ('mark', 'replace') and spec['from'] > spec['to']:
+            raise ValueError(f'decorations: {kind} decoration has from={spec["from"]} > to={spec["to"]}')
+        if kind == 'line' and (not isinstance(spec['line'], int) or spec['line'] < 1):
+            raise ValueError(f'decorations: line decoration has line={spec["line"]!r}, but lines are 1-indexed')
 
 
 def _to_utf16_offsets(decorations: list[DecorationSpec], codepoints: bytes) -> list[DecorationSpec] | None:

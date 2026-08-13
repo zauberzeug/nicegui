@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 # pylint: disable=protected-access
 
@@ -268,10 +268,10 @@ def test_widget_decoration_inserts_text(screen: Screen):
 
 def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
     editor = _open_editor(screen)
-    # A type-invalid spec (missing 'line') and an out-of-range spec must each be skipped with a
-    # warning rather than throwing and voiding the whole batch or silently retargeting another line.
+    # A spec that only the document can refute — a line past its end — is skipped with a warning
+    # rather than throwing and voiding the whole batch or silently retargeting another line.
+    # Structural mistakes never reach the browser; they raise at the assignment site instead.
     editor.decorations = [
-        {'kind': 'line'},
         {'kind': 'line', 'line': 9999, 'class': 'out-of-range'},
         {'kind': 'line', 'line': 2, 'class': 'valid'},
     ]
@@ -279,15 +279,17 @@ def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
     assert _line_decoration_count(screen, 'out-of-range') == 0
 
 
-def test_widget_without_text_is_skipped(screen: Screen):
+def test_widget_with_unusable_text_is_skipped(screen: Screen):
     editor = _open_editor(screen)
+    # A missing 'text' is rejected at the assignment site; a present but unusable one is the case
+    # left for the browser, which skips just this widget instead of rendering an empty span.
     editor.decorations = [
-        {'kind': 'widget', 'position': 5, 'class': 'cm-test-no-text'},
+        {'kind': 'widget', 'position': 5, 'text': 42, 'class': 'cm-test-no-text'},
         {'kind': 'widget', 'position': 5, 'text': 'hint', 'class': 'cm-test-late-hint'},
     ]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-late-hint') == 1)
     assert _replacement_widget_count(screen, 'cm-test-no-text') == 0, \
-        'a widget without text is skipped instead of rendering an empty span'
+        'a widget without usable text is skipped instead of rendering an empty span'
     screen.assert_py_logger('WARNING', re.compile(r"widget requires a string 'text'"))
 
 
@@ -410,7 +412,6 @@ def test_line_tooltip_html_sanitized(screen: Screen):
     assert 'XSS' not in screen.selenium.get_log('browser')  # ...but sanitize out any scripts.
 
 
-
 def _marked_text(screen: Screen, css_class: str) -> str | None:
     return screen.selenium.execute_script(
         f'const s = document.querySelector(".cm-content span.{css_class}"); return s ? s.textContent : null;')
@@ -445,10 +446,44 @@ def test_appending_a_decoration_leaves_the_others_in_place(screen: Screen):
     assert _marked_text(screen, 'cm-test-first') == 'beta'
 
 
-
 def test_decoration_offsets_are_python_string_indices(screen: Screen):
     document = 'a🎉b beta'
     editor = _open_editor(screen, document)
     start = document.index('beta')
     editor.decorations = [{'kind': 'mark', 'from': start, 'to': start + 4, 'class': 'cm-test-astral'}]
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-astral') == 'beta')
+
+
+async def test_decoration_specs_are_validated_on_assignment(user: User):
+    """A spec no document could make sense of is refused where it is written, like a line anchor below 1."""
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('alpha\nbeta\ngamma')
+
+    await user.open('/')
+    with pytest.raises(ValueError, match='unknown kind'):
+        editor.decorations = [{'kind': 'sparkle', 'from': 0, 'to': 1}]  # type: ignore[list-item]
+    with pytest.raises(ValueError, match='missing required key'):
+        editor.decorations = [{'kind': 'mark', 'from': 0}]  # type: ignore[list-item,typeddict-item]
+    with pytest.raises(ValueError, match='from=4 > to=1'):
+        editor.decorations = [{'kind': 'mark', 'from': 4, 'to': 1}]
+    with pytest.raises(ValueError, match='offsets start at 0'):
+        editor.decorations = [{'kind': 'widget', 'position': -1, 'text': '!'}]
+    with pytest.raises(ValueError, match='lines are 1-indexed'):
+        editor.decorations = [{'kind': 'line', 'line': 0}]
+
+
+async def test_rejected_decorations_leave_no_editor_behind(user: User):
+    """The constructor must refuse before the element registers itself, not halfway through building it."""
+    @ui.page('/')
+    def page():
+        ui.label('Some content')
+
+    await user.open('/')
+    with user:
+        with pytest.raises(ValueError, match='unknown kind'):
+            ui.codemirror('alpha', decorations=[{'kind': 'sparkle'}])  # type: ignore[list-item]
+    await user.should_not_see(ui.codemirror)
