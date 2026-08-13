@@ -305,20 +305,22 @@ def test_empty_replace_range_is_skipped(screen: Screen):
     screen.assert_py_logger('WARNING', re.compile(r'replace range is empty'))
 
 
+def _marked_text(screen: Screen, css_class: str) -> str | None:
+    return screen.selenium.execute_script(
+        f'const s = document.querySelector(".cm-content span.{css_class}"); return s ? s.textContent : null;')
+
+
 def test_decorations_track_document_edits(screen: Screen):
     editor = _open_editor(screen)
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-track'}]
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-track') == 1)
-    assert screen.selenium.execute_script(
-        'return document.querySelector(".cm-content span.cm-test-track").textContent;') == 'beta'
+    assert _marked_text(screen, 'cm-test-track') == 'beta'
     # Insert two characters before the mark; a mapped decoration follows "beta" instead of
     # staying at the now-stale absolute offsets 6..10.
     editor.value = 'XX' + editor.value
     screen.wait_for(lambda: screen.selenium.execute_script(
         'return document.querySelector(".cm-content").innerText.startsWith("XXalpha");'))
-    marked = screen.selenium.execute_script(
-        'const s = document.querySelector(".cm-content span.cm-test-track"); return s ? s.textContent : null;')
-    assert marked == 'beta'
+    assert _marked_text(screen, 'cm-test-track') == 'beta'
 
 
 def test_decoration_inclusive_end_extends_mark(screen: Screen):
@@ -412,11 +414,6 @@ def test_line_tooltip_html_sanitized(screen: Screen):
     assert 'XSS' not in screen.selenium.get_log('browser')  # ...but sanitize out any scripts.
 
 
-def _marked_text(screen: Screen, css_class: str) -> str | None:
-    return screen.selenium.execute_script(
-        f'const s = document.querySelector(".cm-content span.{css_class}"); return s ? s.textContent : null;')
-
-
 def test_decorations_survive_an_unrelated_update(screen: Screen):
     editor = _open_editor(screen)
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-keep'}]
@@ -441,17 +438,20 @@ def test_appending_a_decoration_leaves_the_others_in_place(screen: Screen):
     # Appending re-sends every spec, so the existing mark must keep the position it was mapped to
     # while the new one lands where it was just declared.
     editor.decorations.append({'kind': 'mark', 'from': 13, 'to': 18, 'class': 'cm-test-second'})
-    editor.update()
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-second') == 'gamma')
     assert _marked_text(screen, 'cm-test-first') == 'beta'
 
 
-def test_decoration_offsets_are_python_string_indices(screen: Screen):
+@pytest.mark.parametrize('target', ['beta', '🎉'])
+def test_decoration_offsets_are_python_string_indices(screen: Screen, target: str):
+    """An offset computed with str.index() addresses the same text in the editor, astral chars included."""
     document = 'a🎉b beta'
     editor = _open_editor(screen, document)
-    start = document.index('beta')
-    editor.decorations = [{'kind': 'mark', 'from': start, 'to': start + 4, 'class': 'cm-test-astral'}]
-    screen.wait_for(lambda: _marked_text(screen, 'cm-test-astral') == 'beta')
+    start = document.index(target)
+    editor.decorations = [{
+        'kind': 'mark', 'from': start, 'to': start + len(target), 'class': 'cm-test-astral',
+    }]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-astral') == target)
 
 
 async def test_decoration_specs_are_validated_on_assignment(user: User):

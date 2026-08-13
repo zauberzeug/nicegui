@@ -258,6 +258,10 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         Reading this property returns the specs as declared, not where the decorations have since
         moved: the browser keeps them pinned to their text as the document changes, but that
         mapping stays on the client.
+
+        A spec that cannot describe a decoration at all — an unknown kind, a missing required key,
+        an inverted or negative offset — is rejected right away with a ``ValueError``.
+        Whether it fits the document is decided in the browser, which warns and skips just that spec.
         Use ``line_anchors`` when the current position is what you need.
 
         *Added in version 3.17.0*
@@ -290,7 +294,7 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         dict_ = super()._to_dict()
         props = dict_.get('props')
         if props:
-            decorations = _to_utf16_offsets(props.get('decorations') or [], self._codepoints)
+            decorations = _to_utf16_offsets(props.get('decorations') or [], self.value or '', self._codepoints)
             if decorations is not None:
                 dict_['props'] = {**props, 'decorations': decorations}
         return dict_
@@ -356,29 +360,29 @@ def _validate_decorations(decorations: list[DecorationSpec]) -> None:
                 raise ValueError(f'decorations: {kind} decoration has {key}={offset}, but offsets start at 0')
         if kind in ('mark', 'replace') and spec['from'] > spec['to']:
             raise ValueError(f'decorations: {kind} decoration has from={spec["from"]} > to={spec["to"]}')
-        if kind == 'line' and (not isinstance(spec['line'], int) or spec['line'] < 1):
+        if kind == 'line' and (not isinstance(spec['line'], int) or isinstance(spec['line'], bool)
+                               or spec['line'] < 1):
             raise ValueError(f'decorations: line decoration has line={spec["line"]!r}, but lines are 1-indexed')
 
 
-def _to_utf16_offsets(decorations: list[DecorationSpec], codepoints: bytes) -> list[DecorationSpec] | None:
+def _to_utf16_offsets(decorations: list[DecorationSpec], document: str, codepoints: bytes) -> list[DecorationSpec] | None:
     """Translate Python ``str`` indices into the UTF-16 code units CodeMirror addresses by.
 
     Returns ``None`` when the document is entirely in the Basic Multilingual Plane, where the two
     coincide — the common case, recognized straight from the codepoint map maintained for the
     incoming direction. Offsets that are not integers are left alone for the JS side to report.
     """
-    if b'\0' not in codepoints or not decorations:
+    if not decorations or b'\0' not in codepoints:
         return None
-    # Each astral code point occupies two UTF-16 units, so an offset shifts by the number of
-    # astral code points preceding it. Walking the map once gives that count per code point.
+    # Each astral code point occupies two UTF-16 units, so an offset shifts by the number of astral
+    # code points that precede it; the character an offset addresses does not shift its own start.
     shifts: list[int] = []
     shift = 0
-    for byte in codepoints:
-        if byte == 0:
+    for character in document:
+        shifts.append(shift)
+        if ord(character) > 0xFFFF:
             shift += 1
-        else:
-            shifts.append(shift)
-    shifts.append(shift)
+    shifts.append(shift)  # an offset may address the end of the document
 
     def convert(offset: Any) -> Any:
         if not isinstance(offset, int) or isinstance(offset, bool) or not 0 <= offset < len(shifts):
