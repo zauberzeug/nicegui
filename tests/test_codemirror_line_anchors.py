@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from selenium.webdriver.common.by import By
 
@@ -80,6 +82,7 @@ def test_anchors_on_a_fractional_line(screen: Screen):
     _wait_for_editor(screen)
     editor.line_anchors = {'inside': 3, 'fractional': 2.5}  # type: ignore[dict-item]
     screen.wait_for(lambda: editor.line_anchors == {'inside': 3})
+    screen.assert_py_logger('WARNING', re.compile('is not a whole line'))
 
 
 async def test_rejected_anchors_leave_no_editor_behind(user: User):
