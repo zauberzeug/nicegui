@@ -330,8 +330,9 @@ export default {
         logAndEmit("error", `ui.codemirror: ${error.message}`);
       }
     },
-    setLineTooltips(tooltips) {
+    async setLineTooltips(tooltips) {
       if (!this.editor) return;
+      if (this.crdtSyncPromise) await this.crdtSyncPromise;
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const [line, content] of Object.entries(tooltips || {})) {

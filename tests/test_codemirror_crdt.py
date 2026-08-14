@@ -1,6 +1,7 @@
 import time
 
 import pytest
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
 from nicegui import ui, yjs_room
@@ -143,6 +144,22 @@ def test_line_anchors_survive_initial_sync(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: editor.line_anchors == {'mid': 3})
+
+
+def test_line_tooltips_survive_initial_sync(screen: Screen):
+    from pycrdt import Text  # pylint: disable=import-outside-toplevel
+    doc = yjs_room.get_doc('tooltip-seed')
+    doc['codemirror'] = Text()
+    doc['codemirror'] += 'one\ntwo\nthree\nfour'
+
+    @ui.page('/')
+    def page():
+        ui.codemirror(line_tooltips={3: 'seeded tooltip'}).with_crdt('tooltip-seed').classes('w-24')
+
+    screen.open('/')
+    screen.should_contain('three')  # arrives via yjs_init, after the tooltip was first applied
+    ActionChains(screen.selenium).move_to_element(screen.find('three')).perform()
+    screen.should_contain('seeded tooltip')
 
 
 def test_line_anchors_are_applied_when_the_join_is_denied(screen: Screen):
