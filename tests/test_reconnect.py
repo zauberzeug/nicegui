@@ -53,3 +53,19 @@ def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
     screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
     screen.wait(2.0)
     assert screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);') > 0
+
+
+def test_reconnect_reloads_after_max_attempts(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Initial Page Load')
+
+    screen.open('/')
+    screen.should_contain('Initial Page Load')
+    initial_doc_id = screen.selenium.execute_script('return window.documentId;')
+
+    screen.selenium.execute_script('window.socket.io.emit("reconnect_attempt", 5);')
+    screen.wait(1.0)
+    new_doc_id = screen.selenium.execute_script('return window.documentId;')
+    assert new_doc_id != initial_doc_id
+
