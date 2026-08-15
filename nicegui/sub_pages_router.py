@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from fastapi import Request
 from starlette.routing import Match, Route
 
-from . import core, json
+from . import core, helpers, json
 from .context import context
 from .elements.sub_pages import SubPages
 from .functions.on import on
@@ -97,7 +97,8 @@ class SubPagesRouter:
         client_func = \
             getattr(client_route.endpoint, '__func__', client_route.endpoint) if client_route is not None else None
 
-        other_routes = [route for route in core.app.routes if isinstance(route, Route)]
+        other_routes = helpers.get_routes(core.app.routes)
+        clean_path = path.split('?')[0]
         for other_route in other_routes:
             other_func = getattr(other_route.endpoint, '__func__', other_route.endpoint)
             if (
@@ -108,9 +109,14 @@ class SubPagesRouter:
             ):
                 continue  # client route and other route point to the same page builder, so they don't count
 
-            match, _ = other_route.matches({'type': 'http', 'path': path, 'method': 'GET'})
+            match, _ = other_route.matches({'type': 'http', 'path': clean_path, 'method': 'GET'})
             if match == Match.FULL:
                 return True
+            if clean_path != '/':
+                alt_path = clean_path[:-1] if clean_path.endswith('/') else clean_path + '/'
+                alt_match, _ = other_route.matches({'type': 'http', 'path': alt_path, 'method': 'GET'})
+                if alt_match == Match.FULL:
+                    return True
 
         return False
 

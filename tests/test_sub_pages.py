@@ -6,7 +6,7 @@ import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import PageArguments, background_tasks, ui
+from nicegui import APIRouter, PageArguments, app, background_tasks, ui
 from nicegui.testing import Screen
 
 # pylint: disable=missing-function-docstring
@@ -1324,6 +1324,29 @@ def test_navigate_from_root_page_to_other_page(screen: Screen):
     screen.click('Go to other page')
     screen.should_contain('Other')
     assert screen.current_path == '/other'
+
+
+def test_navigate_from_sub_pages_to_api_router_page(screen: Screen):
+    router = APIRouter(prefix='/other')
+
+    @router.page('/')
+    def other_page():
+        ui.label('Other')
+
+    app.include_router(router)
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', '/other')
+
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path in ('/other', '/other/')
+
 
 
 def test_remaining_path_for_wildcard_routing(screen: Screen):

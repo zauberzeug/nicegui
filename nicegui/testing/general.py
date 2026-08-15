@@ -5,7 +5,7 @@ from copy import copy
 
 from starlette.routing import Route
 
-from .. import app, binding, core, dependencies, event, run, ui
+from .. import app, binding, core, dependencies, event, helpers, run, ui
 from ..client import Client
 from ..helpers import warnings
 
@@ -33,8 +33,8 @@ def prepare_simulation() -> None:
 @contextlib.contextmanager
 def nicegui_reset_globals():
     """Reset the global state of the NiceGUI package."""
-    for route in list(app.routes):
-        if isinstance(route, Route) and (
+    for route in helpers.get_routes(app.routes):
+        if (
             not route.path.startswith('/_nicegui/')
             or route.path.startswith('/_nicegui/auto/static')
             or route.path.startswith('/_nicegui/client/')
