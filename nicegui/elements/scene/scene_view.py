@@ -55,6 +55,7 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
+        self._initialized_tasks: set[asyncio.Task] = set()
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
@@ -76,8 +77,22 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized."""
-        await self.client.connected()
-        await self._initialized_event.wait()
+        task = asyncio.current_task()
+        assert task is not None
+        if self.is_deleted:
+            task.cancel()
+            await asyncio.sleep(0)
+        self._initialized_tasks.add(task)
+        try:
+            await self.client.connected()
+            await self._initialized_event.wait()
+        finally:
+            self._initialized_tasks.discard(task)
+
+    def _handle_delete(self) -> None:
+        for task in self._initialized_tasks:
+            task.cancel()
+        super()._handle_delete()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
