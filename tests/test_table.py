@@ -75,6 +75,16 @@ def test_pagination_via_setter(screen: Screen):
     screen.should_contain('1-2 of 3')
 
 
+def test_default_table_hides_pagination(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.table(columns=columns(), rows=rows())
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_not_contain('Records per page')
+
+
 def test_filter(screen: Screen):
     @ui.page('/')
     def page():
