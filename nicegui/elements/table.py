@@ -93,7 +93,7 @@ class Table(FilterElement, component='table.js'):
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
             previous_value = self.pagination
-            self.pagination = e.args
+            self._props['pagination'] = e.args
             arguments = ValueChangeEventArguments(sender=self, client=self.client,
                                                   value=self.pagination, previous_value=previous_value)
             for handler in self._pagination_change_handlers:
