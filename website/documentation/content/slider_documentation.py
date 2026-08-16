@@ -37,6 +37,17 @@ def throttle_events_with_leading_and_trailing_options():
             throttle=1.0, leading_events=False)
 
 
+@doc.demo('Only react once the slider is released', '''
+    The `on_change` callback is invoked continuously while the slider moves.
+    If the callback is expensive - a database query, say - use `on_release` instead,
+    which is invoked once the user finishes the interaction.
+
+    *Added in version 3.17.0*
+''')
+def only_react_once_the_slider_is_released():
+    ui.slider(min=0, max=100, value=50, on_release=lambda e: ui.notify(f'released at {e.value}'))
+
+
 @doc.demo('Disable slider', '''
     You can disable a slider with the `disable()` method.
     This will prevent the user from moving the slider.

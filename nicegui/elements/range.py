@@ -1,10 +1,10 @@
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
-from .mixins.value_element import ValueElement
+from .mixins.releasable_element import ReleasableElement
 
 
-class Range(ValueElement[dict[str, float] | None], DisableableElement):
+class Range(ReleasableElement[dict[str, float] | None], DisableableElement):
 
     @resolve_defaults
     def __init__(self, *,
@@ -13,6 +13,7 @@ class Range(ValueElement[dict[str, float] | None], DisableableElement):
                  step: float = DEFAULT_PROP | 1.0,
                  value: dict[str, float] | None = DEFAULT_PROPS['model-value'] | None,
                  on_change: Handler[ValueChangeEventArguments[dict[str, float] | None]] | None = None,
+                 on_release: Handler[ValueChangeEventArguments[dict[str, float] | None]] | None = None,
                  ) -> None:
         """Range
 
@@ -22,10 +23,11 @@ class Range(ValueElement[dict[str, float] | None], DisableableElement):
         :param max: upper bound of the range
         :param step: step size
         :param value: initial value to set min and max position of the range (default: ``min`` to ``max``)
-        :param on_change: callback which is invoked when the user releases the range
+        :param on_change: callback to execute when the value changes, including while dragging
+        :param on_release: callback to execute when the user releases the range (*added in version 3.17.0*)
         """
         super().__init__(tag='q-range', value=value or {'min': min, 'max': max},
-                         on_value_change=on_change, throttle=0.05)
+                         on_value_change=on_change, throttle=0.05, on_release=on_release)
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
