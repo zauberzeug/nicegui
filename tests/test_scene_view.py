@@ -1,4 +1,5 @@
 import asyncio
+
 import numpy as np
 
 from nicegui import app, ui
