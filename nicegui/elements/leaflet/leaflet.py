@@ -51,6 +51,7 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         self.layers: list[Layer] = []
         self.is_initialized = False
         self._initialized_event = asyncio.Event()
+        self._initialized_tasks: set[asyncio.Task] = set()
 
         # read-write public API
         self.center = center
@@ -102,8 +103,19 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
     async def initialized(self) -> None:
         """Wait until the map is initialized."""
-        await self.client.connected()
-        await self._initialized_event.wait()
+        if self.is_initialized:
+            return
+        task = asyncio.current_task()
+        assert task is not None
+        if self.is_deleted:
+            task.cancel()
+            await asyncio.sleep(0)
+        self._initialized_tasks.add(task)
+        try:
+            await self.client.connected()
+            await self._initialized_event.wait()
+        finally:
+            self._initialized_tasks.discard(task)
 
     def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False
@@ -171,6 +183,8 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
+        for task in self._initialized_tasks:
+            task.cancel()
         super()._handle_delete()
 
     def _to_dict(self):
