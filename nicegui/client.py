@@ -257,7 +257,10 @@ class Client:
         return self.page.resolve_title() if self.title is None else self.title
 
     async def connected(self, timeout: float | None = None) -> None:
-        """Block execution until the client is connected.
+        """Block execution until the client is connected or deleted.
+
+        Because this method also returns when the client is deleted,
+        the caller must recheck using `client.is_deleted`.
 
         :param timeout: timeout in seconds (default: ``None``)
         """
