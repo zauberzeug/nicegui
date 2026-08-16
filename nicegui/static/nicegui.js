@@ -310,10 +310,10 @@ function renderRecursively(elements, id, propsContext) {
         // Cache the component definition on the slot so its identity is stable across renders.
         // Otherwise a fresh object literal makes Vue treat each render as a new component type,
         // unmounting and remounting the slot's DOM (losing local state) and recompiling the template.
-        data._component ??= {
+        data._component ??= Vue.markRaw({
           props: { props: { type: Object, default: {} } },
           template: data.template,
-        };
+        });
         rendered.push(
           Vue.h(data._component, {
             props: props,
