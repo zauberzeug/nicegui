@@ -74,22 +74,3 @@ def normalize_lifecycle_handler(handler: Callable[..., Any] | Awaitable[Any], re
               'Pass a synchronous or asynchronous function instead.')
     wrapped_handler.__name__ = f'deprecated {registration} awaitable'
     return wrapped_handler
-
-
-def get_routes(routes: Any) -> list:
-    """Recursively collect all Route instances from a list of routes or router objects."""
-    from starlette.routing import Route
-    result: list = []
-    for route in routes:
-        if isinstance(route, Route):
-            result.append(route)
-        elif hasattr(route, 'routes'):
-            result.extend(get_routes(route.routes))
-        elif hasattr(route, 'effective_candidates'):
-            result.extend(get_routes(route.effective_candidates()))
-        elif hasattr(route, 'original_route') and isinstance(route.original_route, Route):
-            result.append(route.original_route)
-        elif hasattr(route, 'original_router') and hasattr(route.original_router, 'routes'):
-            result.extend(get_routes(route.original_router.routes))
-    return result
-

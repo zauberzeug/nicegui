@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from fastapi import Request
 from starlette.routing import Match, Route
 
-from . import core, helpers, json
+from . import core, json
 from .context import context
 from .elements.sub_pages import SubPages
 from .functions.on import on
@@ -97,8 +97,8 @@ class SubPagesRouter:
         client_func = \
             getattr(client_route.endpoint, '__func__', client_route.endpoint) if client_route is not None else None
 
-        other_routes = helpers.get_routes(core.app.routes)
-        clean_path = path.split('?')[0]
+        other_routes = [route for route in core.app.routes if isinstance(route, Route)]
+        clean_path = path.split('?', maxsplit=1)[0]
         for other_route in other_routes:
             other_func = getattr(other_route.endpoint, '__func__', other_route.endpoint)
             if (
