@@ -204,7 +204,7 @@ class page:
                 if not task_wait_for_connection.done():
                     task_wait_for_connection.cancel()
                 if task.done():
-                    result = task.result()
+                    result = None if task.cancelled() else task.result()
                 else:
                     result = None
                     task.add_done_callback(check_for_late_return_value)
