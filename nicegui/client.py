@@ -303,9 +303,6 @@ class Client:
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             await self.connected()
-            if self.is_deleted:
-                asyncio.current_task().cancel()
-                await asyncio.sleep(0)  # let cancellation take effect
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
