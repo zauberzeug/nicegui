@@ -260,6 +260,7 @@ class Client:
         """Block execution until the client is connected.
 
         :param timeout: timeout in seconds (default: ``None``)
+        :raises ClientConnectionTimeout: if ``timeout`` elapses first
         """
         if self.has_socket_connection or self.is_deleted:
             return
