@@ -67,7 +67,8 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         If the button (or its client) is deleted, the wait is cancelled instead of returning,
         so the code after ``await button.clicked()`` does not run for a click that never happened.
 
-        *Updated in version 3.16.0: A pending wait is cancelled when the button is deleted.*
+        *Updated in version 3.17.0: Awaiting the button click cancels the calling task
+        when the button element is deleted, e.g. because the client disconnected.*
         """
         task = asyncio.current_task()
         assert task is not None
