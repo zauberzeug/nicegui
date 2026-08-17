@@ -426,17 +426,9 @@ function createApp(elements, options) {
         tryAllTransports: true, // if the WebSocket fails with an error, try polling within the same attempt (see #5802)
       });
       let usePollingFallback = transportNames[0] === "websocket" && transportNames.includes("polling");
-      window.socket.io.on("reconnect_attempt", (attempt) => {
+      window.socket.io.on("reconnect_attempt", () => {
         // keep the otherwise-frozen reconnect query in sync to avoid triggering a reload (see #6019)
         options.query.next_message_id = window.nextMessageId;
-        if (attempt >= 5) {
-          console.log("reloading because maximum reconnect attempts reached");
-          window.location.reload();
-        }
-      });
-      window.socket.io.on("reconnect_failed", () => {
-        console.log("reloading because reconnect failed");
-        window.location.reload();
       });
       window.did_handshake = false;
       const messageHandlers = {
@@ -491,6 +483,15 @@ function createApp(elements, options) {
           } else if (err.message == "Implicit handshake failed") {
             console.log("reloading because implicit handshake failed for clientId " + window.clientId);
             window.location.reload();
+          } else if (err.context?.status && err.context.status !== 200) {
+            // an auth proxy intercepted the connection; probe before reloading to avoid reload-into-outage (see #6289)
+            fetch(window.location.href, { headers: { "NiceGUI-Check": "connect_error" } })
+              .then(() => {
+                if (window.socket.connected) return; // recovered while probing
+                console.log("reloading because server rejected connection with HTTP " + err.context.status);
+                window.location.reload();
+              })
+              .catch(() => {});
           }
         },
         try_reconnect: async () => {
