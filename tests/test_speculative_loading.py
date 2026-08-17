@@ -117,9 +117,11 @@ def test_prefetch_connects_after_navigation(screen: Screen, event_log: EventLog)
     screen.click('answer')
     event_log.wait_for('connect: /answer')
     event_log.wait_for('answer: 42')
-    # if the client was deleted, shouldn't the answer be None?
-    assert event_log.items == ['answer: called', 'connect: /', 'answer: called', 'connect: /answer', 'answer: 42'], \
-        'answer() should re-evaluate after prefetch client was pruned'
+    assert event_log.items == [
+        'answer: called', 'connect: /',
+        'answer: None',
+        'answer: called', 'connect: /answer', 'answer: 42',
+    ], 'answer() should re-evaluate after prefetch client was pruned'
     screen.should_contain('all done')
 
 
