@@ -2,7 +2,7 @@ import asyncio
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from typing_extensions import Self
 
@@ -214,9 +214,12 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         return super().run_method(name, *args, timeout=timeout)
 
     async def initialized(self) -> None:
-        """Wait until the scene is initialized."""
-        task = asyncio.current_task()
-        assert task is not None
+        """Wait until the scene is initialized.
+
+        *Updated in version 3.17.0: Awaiting scene initialization cancels the calling task
+        when the scene element is deleted, e.g. because the client disconnected.*
+        """
+        task = cast(asyncio.Task, asyncio.current_task())
         if self.is_deleted:
             task.cancel()
             await asyncio.sleep(0)

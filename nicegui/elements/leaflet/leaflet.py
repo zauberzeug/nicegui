@@ -102,11 +102,12 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
             self.run_method('add_layer', layer.to_dict(), layer.id)
 
     async def initialized(self) -> None:
-        """Wait until the map is initialized."""
-        if self.is_initialized:
-            return
-        task = asyncio.current_task()
-        assert task is not None
+        """Wait until the map is initialized.
+
+        *Updated in version 3.17.0: Awaiting leaflet initialization cancels the calling task
+        when the leaflet element is deleted, e.g. because the client disconnected.*
+        """
+        task = cast(asyncio.Task, asyncio.current_task())
         if self.is_deleted:
             task.cancel()
             await asyncio.sleep(0)

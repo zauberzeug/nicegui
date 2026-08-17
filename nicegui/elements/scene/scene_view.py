@@ -1,4 +1,5 @@
 import asyncio
+from typing import cast
 
 from typing_extensions import Self
 
@@ -76,9 +77,12 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self.run_method('init')
 
     async def initialized(self) -> None:
-        """Wait until the scene is initialized."""
-        task = asyncio.current_task()
-        assert task is not None
+        """Wait until the scene is initialized.
+
+        *Updated in version 3.17.0: Awaiting scene_view initialization cancels the calling task
+        when the scene_view element is deleted, e.g. because the client disconnected.*
+        """
+        task = cast(asyncio.Task, asyncio.current_task())
         if self.is_deleted:
             task.cancel()
             await asyncio.sleep(0)
