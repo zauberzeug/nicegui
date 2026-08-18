@@ -3,6 +3,10 @@ from nicegui.distributed import DistributedSession
 
 from . import doc
 
+# NOTE: Created at module scope, because the demo function below runs once per viewer.
+shared_event = DistributedEvent[str]()
+local_event = Event[str]()
+
 
 @doc.demo(Event)
 def events_demo():
@@ -70,33 +74,48 @@ def emitting_vs_calling_events():
 
     Without distributed mode - or without the extra (`pip install nicegui[distributed]`) - a
     `DistributedEvent` behaves like a regular `Event`. Start the example twice to see the difference.
+
+    Create the events at module scope: one created inside a page function is not shared.
 ''')
 def distributed_events():
     from nicegui import DistributedEvent, Event
 
-    shared_event = DistributedEvent[str]()
-    local_event = Event[str]()
-
+    # shared_event = DistributedEvent[str]()
+    # local_event = Event[str]()
+    #
     # @ui.page('/')
-    def page():
-        with ui.column():
-            if DistributedSession.get() is None:  # HIDE
-                ui.label('This instance runs standalone: the shared event stays local.').classes('text-orange')  # HIDE
-            ui.label('Distributed event (shared across instances):')
-            with ui.row(align_items='center'):
-                message = ui.input('Message')
-                ui.button('Send to all', on_click=lambda: shared_event.emit(message.value))
-            shared_event.subscribe(lambda m: ui.notify(f'Received: "{m}"'))
-
-            ui.separator()
-            ui.label('Local event (this instance only):')
-            with ui.row(align_items='center'):
-                local_msg = ui.input('Local message')
-                ui.button('Send locally', on_click=lambda: local_event.emit(local_msg.value))
-            local_event.subscribe(lambda m: ui.notify(f'Local: "{m}"', color='orange'))
-    page()  # HIDE
-
+    # def page():
+    #     with ui.column():
+    #         ui.label('Distributed event (shared across instances):')
+    #         with ui.row(align_items='center'):
+    #             message = ui.input('Message')
+    #             ui.button('Send to all', on_click=lambda: shared_event.emit(message.value))
+    #         shared_event.subscribe(lambda m: ui.notify(f'Received: "{m}"'))
+    #
+    #         ui.separator()
+    #         ui.label('Local event (this instance only):')
+    #         with ui.row(align_items='center'):
+    #             local_msg = ui.input('Local message')
+    #             ui.button('Send locally', on_click=lambda: local_event.emit(local_msg.value))
+    #         local_event.subscribe(lambda m: ui.notify(f'Local: "{m}"', color='orange'))
+    #
     # ui.run(distributed=True, storage_secret='shared by all instances')
+    # END OF DEMO
+    with ui.column():
+        if DistributedSession.get() is None:
+            ui.label('This instance runs standalone: the shared event stays local.').classes('text-orange')
+        ui.label('Distributed event (shared across instances):')
+        with ui.row(align_items='center'):
+            message = ui.input('Message')
+            ui.button('Send to all', on_click=lambda: shared_event.emit(message.value))
+        shared_event.subscribe(lambda m: ui.notify(f'Received: "{m}"'))
+
+        ui.separator()
+        ui.label('Local event (this instance only):')
+        with ui.row(align_items='center'):
+            local_msg = ui.input('Local message')
+            ui.button('Send locally', on_click=lambda: local_event.emit(local_msg.value))
+        local_event.subscribe(lambda m: ui.notify(f'Local: "{m}"', color='orange'))
 
 
 doc.reference(Event)
