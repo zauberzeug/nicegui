@@ -1,14 +1,18 @@
 import asyncio
 import gc
 import json
+import os
 import subprocess
 import sys
 import threading
+import time
 import weakref
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
 
 from nicegui import Event, core, ui
@@ -109,6 +113,57 @@ except ImportError as e:
     assert 'cryptography' in message
     assert 'zenoh' not in message
     assert 'nicegui[distributed]' in message
+
+
+def test_a_process_that_does_not_serve_opens_no_session():
+    """`run.cpu_bound` workers re-import __main__ and thereby re-run ui.run(), but they serve nothing."""
+    script = '''
+import multiprocessing
+multiprocessing.current_process().name = 'SpawnProcess-1'  # as in a run.cpu_bound worker
+from nicegui import ui
+from nicegui.distributed import DistributedSession
+ui.run(distributed=True, storage_secret='alpha', reload=False, show=False)
+print(DistributedSession.get())
+'''
+    output = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True, check=True).stdout
+    assert output.strip() == 'None'
+
+
+def test_the_serving_process_opens_the_session(tmp_path: Path):
+    """With auto-reload the reloader's child serves the app, so that is the process which needs the session.
+
+    Asking the app itself is what makes this observation unambiguous:
+    only the process that answers the request is serving.
+    """
+    app_file = tmp_path / 'app.py'
+    app_file.write_text(f'''
+from nicegui import app, ui
+from nicegui.distributed import DistributedSession
+
+@app.get('/has-session')
+def has_session():
+    return DistributedSession.get() is not None
+
+ui.run(distributed={{'listen': {{'endpoints': ['tcp/127.0.0.1:{LOOPBACK_PORT + 1}']}}}},
+       storage_secret='alpha', reload=True, show=False, port={LOOPBACK_PORT + 2})
+''')
+    environment = {key: value for key, value in os.environ.items() if key != 'PYTEST_CURRENT_TEST'}
+    with subprocess.Popen([sys.executable, str(app_file)], env=environment) as process:
+        try:
+            for _ in range(300):
+                try:
+                    assert httpx.get(f'http://127.0.0.1:{LOOPBACK_PORT + 2}/has-session', timeout=1).json() is True
+                    break
+                except httpx.TransportError:
+                    time.sleep(0.1)
+            else:
+                pytest.fail('the app never came up')
+        finally:
+            process.terminate()  # the reloader shuts its child down; kill only if it will not go
+            try:
+                process.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                process.kill()
 
 
 def test_emit_raises_before_local_fire_on_non_json_payload(fresh_session):

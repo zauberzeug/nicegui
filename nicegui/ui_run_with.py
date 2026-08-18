@@ -114,7 +114,9 @@ def run_with(
         if IMPORT_ERROR:
             log.warning(IMPORT_ERROR)
         else:
-            DistributedSession.initialize(distributed, storage_secret=storage_secret)
+            # NOTE: Open the session on startup, i.e. only in the processes that actually serve the app
+            # (one per uvicorn worker), not in a `run.cpu_bound` worker that re-imports __main__.
+            core.app.on_startup(lambda: DistributedSession.initialize(distributed, storage_secret=storage_secret))
 
     if not helpers.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)

@@ -230,7 +230,10 @@ def run(root: Callable | None = None, *,
         if IMPORT_ERROR:
             log.warning(IMPORT_ERROR)
         else:
-            DistributedSession.initialize(distributed, storage_secret=storage_secret)
+            # NOTE: Open the session on startup, i.e. only in the process that actually serves the app.
+            # `run.cpu_bound` workers re-import __main__ and so re-run this call, and in reload mode the
+            # serving process is the reloader's child, not the one that gets past the MainProcess guard below.
+            core.app.on_startup(lambda: DistributedSession.initialize(distributed, storage_secret=storage_secret))
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
