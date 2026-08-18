@@ -99,6 +99,20 @@ async def test_await_emitted(user: User):
     await user.should_see('Emitted number: 42')
 
 
+async def test_emitted_timeout(user: User):
+    event = Event()
+
+    @ui.page('/')
+    async def page():
+        try:
+            await event.emitted(timeout=0.1)
+        except TimeoutError as e:
+            ui.label(f'caught: {e}')
+
+    await user.open('/')
+    await user.should_see('caught: Timed out waiting for event after 0.1 seconds')
+
+
 async def test_exception_during_call(user: User):
     event = Event()
     event.subscribe(lambda: print(1 / 0))

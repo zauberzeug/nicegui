@@ -247,6 +247,30 @@ async def test_move_to_invalid_slot_keeps_element_in_place(user: User):
     await user.should_not_see('X')
 
 
+async def test_move_into_descendant_is_rejected(user: User):
+    outer = inner = label = other = None
+
+    @ui.page('/')
+    def page():
+        nonlocal outer, inner, label, other
+        with ui.card() as outer:
+            with ui.card() as inner:
+                label = ui.label('X')
+        other = ui.card()
+
+    await user.open('/')
+    root = outer.parent_slot
+    with pytest.raises(ValueError, match='itself or one of its descendants'):
+        outer.move(inner)
+    with pytest.raises(ValueError, match='itself or one of its descendants'):
+        outer.move(outer)
+    assert outer in root.children, 'a rejected move must keep the element in its original slot'
+    assert list(outer.descendants()) == [inner, label]
+    await user.should_see('X')
+    label.move(other)
+    assert list(other.descendants()) == [label]
+
+
 def test_xss(screen: Screen):
     @ui.page('/')
     def page():

@@ -105,9 +105,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     self._set_match(None)
 
     def _render_page(self, match: RouteMatch) -> bool:
-        kwargs = PageArguments.build_kwargs(match, self, self._data)
         self._rendered_path = f'{self._root_path or ""}{match.path}'
         try:
+            kwargs = PageArguments.build_kwargs(match, self, self._data)
             result = match.builder(**kwargs)
         except Exception as e:
             self.clear()  # clear partial content created before the exception
@@ -122,7 +122,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     try:
                         await result
                     except Exception as e:
-                        self.client.handle_exception(e)
+                        client = self._client()
+                        if client is not None and not client.is_deleted:
+                            client.handle_exception(e)
                         raise
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
@@ -218,6 +220,10 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         regex_match = re.match(f'^{regex_pattern}$', path)
         return regex_match.groupdict() if regex_match else None
+
+    def _handle_delete(self) -> None:
+        self._cancel_active_tasks()  # stop pending builders so they don't touch the deleted client
+        super()._handle_delete()
 
     def _cancel_active_tasks(self) -> None:
         for task in self._active_tasks:

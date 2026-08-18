@@ -338,6 +338,10 @@ ui.markdown('```mermaid\ngraph TD; A-->B\n```',
             extras=['fenced-code-blocks', 'tables', 'mermaid'])  # `extras` REPLACES the default ['fenced-code-blocks', 'tables']
 ui.markdown.default_extras = ['fenced-code-blocks', 'tables', 'mermaid']  # change the default for all ui.markdown (since 3.14)
 ui.code('print("hello")', language='python')
+editor = ui.codemirror('def f():\n    return 42', language='Python')  # editable code editor
+editor.line_anchors = {'a': 2}          # line anchors (since 3.16): stable {id: line} references that follow
+                                        # their line through edits; read back for the current positions,
+                                        # on_anchor_change= fires whenever a tracked position moves
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -433,6 +437,47 @@ with ui.scene() as scene:
     scene.sphere().move(x=1)
     scene.box().material('#ff0000')
 ```
+
+### Custom Three.js objects (since 3.16)
+
+Subclass `Object3D` and pair it with a sibling JS module.
+The `component=` path is resolved relative to the Python file — no manual registration needed.
+`super().__init__(...)` args are forwarded positionally to the JS factory; `self.run_method('<name>', *args)` dispatches to a same-named method on the component instance.
+
+```python
+# pulsing_sphere.py
+from nicegui.elements.scene import Object3D
+
+class PulsingSphere(Object3D, component='pulsing_sphere.js'):
+    def __init__(self, radius: float = 1.0) -> None:
+        super().__init__(radius)
+    def set_scale(self, s: float):
+        self.run_method('set_scale', s)
+```
+
+```js
+// pulsing_sphere.js — default-export a class
+import { THREE } from "nicegui-scene";
+
+export default class PulsingSphere {
+  mesh;
+  // or: create_geometry(...) for a plain BufferGeometry
+  create_mesh(radius) {
+    this.mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 32, 16),
+      new THREE.MeshPhongMaterial({ transparent: true }),
+    );
+    return this.mesh;
+  }
+  set_scale(s) { this.mesh.scale.set(s, s, s); }
+  // optional hooks: apply_material({ color, opacity, side }), created()
+}
+```
+
+Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
+Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
+
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
 
 ---
 
@@ -1232,6 +1277,15 @@ async def test_counter(user: User) -> None:
     await user.open('/')
     await user.click('Increment')
     await user.should_see('Count: 1')
+```
+
+`user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` always search the whole page (including header, drawers and footer).
+When markers or content repeat across the page, limit them to one subtree with `user.scope(...)` (since 3.16):
+
+```python
+with user.scope(marker='left-card'):  # same filter args as user.find(), must match exactly one element
+    await user.should_see('Apple')
+    user.find('Buy').click()
 ```
 
 Use `Screen` fixture only when JavaScript or real browser rendering is required:

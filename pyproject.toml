@@ -51,11 +51,9 @@ dependencies = [
     "watchfiles>=0.18.1",
     "h11>=0.16.0",
     "python-engineio>=4.13.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/320
-    "aiohttp>=3.14.1",  # https://github.com/zauberzeug/nicegui/security/dependabot/315
+    "aiohttp>=3.14.3",  # https://github.com/zauberzeug/nicegui/security/dependabot/388
     "certifi>=2024.07.04",
     "pydantic-core>=2.35.0",
-    "lxml-html-clean>=0.4.4",  # https://github.com/zauberzeug/nicegui/security/dependabot/167
-    "lxml>=6.1.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/251, for lxml-html-clean
     "python-dotenv>=1.2.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/250, for uvicorn[standard]
     "idna>=3.15",  # https://github.com/zauberzeug/nicegui/security/dependabot/280, for httpx
     "tinycss2>=1.4.0,<2",
@@ -127,6 +125,8 @@ website = [
     "html-sanitizer>=2.6.0,<3",
     "isort>=6.0.0,<7.0.0",
     "latex2mathml>=3.78.1,<4.0.0",
+    "lxml-html-clean>=0.4.4",  # https://github.com/zauberzeug/nicegui/security/dependabot/167, for html-sanitizer
+    "lxml>=6.1.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/251, for lxml-html-clean
     "pandas>=2.0.0,<3 ; python_version < '3.13'",
     "pandas>=2.2.3,<3 ; python_version >= '3.13' and python_version < '3.14'",
     "pandas>=2.3.3,<3 ; python_version >= '3.14'",
@@ -155,6 +155,11 @@ requires = [
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
+exclude = ["nicegui/**/*.map"]
+include = [
+    { path = "nicegui/static/*.map", format = "sdist" },
+    { path = "nicegui/elements/*/dist/*.map", format = "sdist" },
+]
 version = "0.0.0"
 
 [tool.poetry-dynamic-versioning]
@@ -167,6 +172,7 @@ addopts = "--driver Chrome"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 main_file = ""
+markers = ["screen: uses the browser-based screen fixture"]
 testpaths = ["tests"]
 filterwarnings = [
   'error',
