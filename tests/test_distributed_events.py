@@ -1,5 +1,7 @@
 import asyncio
 import json
+import subprocess
+import sys
 import threading
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -12,7 +14,7 @@ from nicegui.distributed import ZENOH_AVAILABLE, DistributedSession, _peer_to_en
 from nicegui.distributed_event import DistributedEvent
 from nicegui.testing import User
 
-pytestmark = pytest.mark.skipif(not ZENOH_AVAILABLE, reason='eclipse-zenoh not installed')
+pytestmark = pytest.mark.skipif(not ZENOH_AVAILABLE, reason='the "distributed" extra is not installed')
 
 LOOPBACK_PORT = 17447  # uncommon port to reduce collision risk in CI
 LOOPBACK_ENDPOINT = f'tcp/127.0.0.1:{LOOPBACK_PORT}'
@@ -90,6 +92,23 @@ def test_session_rejects_without_storage_secret():
         DistributedSession(True, storage_secret='')
 
 
+def test_missing_dependency_is_reported_by_name():
+    """The "distributed" extra is more than zenoh, so a missing cryptography must not be blamed on zenoh."""
+    script = '''
+import sys
+sys.modules['cryptography'] = None  # as if only the encryption half of the extra were missing
+from nicegui.distributed import DistributedSession
+try:
+    DistributedSession.initialize(True, storage_secret='alpha')
+except ImportError as e:
+    print(e)
+'''
+    message = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True, check=True).stdout
+    assert 'cryptography' in message
+    assert 'zenoh' not in message
+    assert 'nicegui[distributed]' in message
+
+
 def test_emit_raises_before_local_fire_on_non_json_payload(fresh_session):
     """A non-JSON-serializable arg must raise BEFORE any local callback fires."""
     DistributedSession.initialize(True, storage_secret='alpha')
@@ -161,6 +180,24 @@ async def test_event_from_another_instance_arrives_on_the_loop_thread(user: User
     assert received[0][1] is threading.main_thread()
 
 
+async def test_own_emission_is_not_echoed_back(user: User, fresh_session):
+    """Each instance subscribes to the topic it publishes on, so its own emission must not arrive twice."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    received: list[str] = []
+
+    @ui.page('/')
+    def page():
+        event = shared_event()
+        event.subscribe(received.append)
+        ui.button('emit', on_click=lambda: event.emit('hello'))
+
+    await user.open('/')
+    user.find('emit').click()
+    await wait_for(lambda: bool(received))
+    await asyncio.sleep(0.5)  # leave time for an echo to come back through the network
+    assert received == ['hello']
+
+
 async def test_instance_with_different_secret_is_ignored(user: User, fresh_session):
     """Deployments that do not share the storage_secret must not cross-talk."""
     DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
@@ -203,6 +240,24 @@ async def test_payload_without_the_secret_is_rejected(user: User, fresh_session)
         with remote_instance('alpha'):
             shared_event().emit('hello')
             await wait_for(lambda: bool(received))
+    assert received == ['hello']
+
+
+async def test_unreachable_network_degrades_to_local_events(user: User, fresh_session):
+    """A Zenoh session that cannot be opened must not take the app down; events keep working locally."""
+    DistributedSession.initialize({'listen': {'endpoints': ['bogus/127.0.0.1:1']}}, storage_secret='alpha')
+    assert DistributedSession.get() is None
+    received: list[str] = []
+
+    @ui.page('/')
+    def page():
+        event = shared_event()
+        event.subscribe(received.append)
+        ui.button('emit', on_click=lambda: event.emit('hello'))
+
+    await user.open('/')
+    user.find('emit').click()
+    await wait_for(lambda: bool(received))
     assert received == ['hello']
 
 

@@ -14,12 +14,19 @@ try:
     from cryptography.fernet import Fernet, InvalidToken
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-    from zenoh import Sample
+    from zenoh import Sample, ZError
     ZENOH_AVAILABLE = True
-except ImportError:
+    IMPORT_ERROR = ''
+except ImportError as e:
     ZENOH_AVAILABLE = False
+    # NOTE: The extra brings more than zenoh, so name what is actually missing instead of always blaming zenoh.
+    IMPORT_ERROR = (f'{e.name or "a dependency"} is not installed. Distributed events are disabled. '
+                    'Install with: pip install "nicegui[distributed]"')
     zenoh = None  # type: ignore
     Sample = Any  # type: ignore
+
+    class ZError(Exception):  # type: ignore  # placeholder: without zenoh there is no zenoh error to catch
+        pass
 
 DEFAULT_ZENOH_PORT = 7447
 TOPIC_NAMESPACE_INFO = b'nicegui-distributed-v1'
@@ -55,6 +62,10 @@ class DistributedSession:
     Event instances are expected to be long-lived (typically module-level),
     so no automatic cleanup of unused topics is performed.
 
+    Under ``uvicorn --workers N`` (via ``ui.run_with()``, since ``ui.run()`` rejects it) each worker gets
+    its own session and exchanges events like a separate host would, receiving every event exactly once.
+    A raw config with a fixed ``listen`` endpoint is the exception: only the first worker binds it.
+
     Trust model:
 
     - **Payload confidentiality & integrity (the real boundary):** event payloads are encrypted
@@ -83,8 +94,7 @@ class DistributedSession:
                                security boundary (see the class docstring's trust model)
         """
         if not ZENOH_AVAILABLE:
-            raise ImportError('zenoh is required for distributed events. '
-                              'Install with: pip install "nicegui[distributed]"')
+            raise ImportError(IMPORT_ERROR)
         if not storage_secret:
             raise ValueError(
                 'distributed events require ui.run(storage_secret=...). '
@@ -137,11 +147,18 @@ class DistributedSession:
     def initialize(cls, config: bool | list[str] | dict, storage_secret: str | None = None) -> None:
         """Initialize the global distributed session.
 
+        If the Zenoh session cannot be opened, the app keeps running with local events only.
+        Misconfiguration that no network can fix (missing dependency, missing storage_secret) still raises.
+
         :param config: True for defaults, list of "host" / "host:port" peers, or a raw Zenoh config dict
         :param storage_secret: NiceGUI's storage_secret, used to derive the topic namespace
         """
         if cls._instance is None:
-            cls._instance = cls(config, storage_secret=storage_secret)
+            try:
+                cls._instance = cls(config, storage_secret=storage_secret)
+            except ZError as e:
+                log.warning(f'Could not open the Zenoh session. Distributed events are disabled: {e}')
+                return
             cls._setup_existing_events()
             # Release the Zenoh session, publishers and subscribers when the app shuts down.
             core.app.on_shutdown(cls._instance.shutdown)

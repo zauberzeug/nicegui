@@ -226,10 +226,9 @@ def run(root: Callable | None = None, *,
         return
 
     if distributed is not None:
-        from .distributed import ZENOH_AVAILABLE, DistributedSession  # pylint: disable=import-outside-toplevel
-        if not ZENOH_AVAILABLE:
-            log.warning('zenoh is not installed. Distributed events disabled. '
-                        'Install with: pip install "nicegui[distributed]"')
+        from .distributed import IMPORT_ERROR, DistributedSession  # pylint: disable=import-outside-toplevel
+        if IMPORT_ERROR:
+            log.warning(IMPORT_ERROR)
         else:
             DistributedSession.initialize(distributed, storage_secret=storage_secret)
 
