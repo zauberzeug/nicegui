@@ -5,6 +5,7 @@ from nicegui.testing import Screen
 
 
 def test_reconnecting_without_page_reload(screen: Screen):
+    # A connectivity drop must not cause a page reload — regression guard for #6289.
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')
@@ -12,8 +13,12 @@ def test_reconnecting_without_page_reload(screen: Screen):
 
     screen.open('/')
     screen.type('hello')
+    initial_doc_id = screen.selenium.execute_script('return window.documentId;')
+
     screen.click('drop connection')
     screen.wait(2.0)
+
+    assert screen.selenium.execute_script('return window.documentId;') == initial_doc_id
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
     assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
 
@@ -53,21 +58,3 @@ def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
     screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
     screen.wait(2.0)
     assert screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);') > 0
-
-
-def test_short_outage_does_not_reload(screen: Screen):
-    """A brief connectivity drop must not cause a page reload (regression for #6289)."""
-    @ui.page('/', reconnect_timeout=3.0)
-    def page():
-        ui.input('Input').props('autofocus')
-
-    screen.open('/')
-    screen.type('hello')
-    initial_doc_id = screen.selenium.execute_script('return window.documentId;')
-
-    screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
-    screen.wait(1.5)  # well inside the 3 s reconnect_timeout; avoids race with server-side client pruning
-
-    assert screen.selenium.execute_script('return window.documentId;') == initial_doc_id
-    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
-    assert element.get_attribute('value') == 'hello', 'input should be preserved after short outage (no reload)'
