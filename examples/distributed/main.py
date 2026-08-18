@@ -23,7 +23,7 @@ def index():
     def show_reaction(emoji: str):
         left = random.randint(10, 90)
         with context.client.layout:
-            floating = ui.html(emoji, sanitize=False).classes('fixed text-5xl pointer-events-none z-[9999]')
+            floating = ui.html(emoji).classes('fixed text-5xl pointer-events-none z-[9999]')
             floating.style(f'animation: float-up 3s ease-out forwards; left: {left}%; bottom: 100px')
             ui.timer(3.0, floating.delete, once=True)
 
