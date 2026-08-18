@@ -37,7 +37,7 @@ def loads(value: str) -> Any:
     return json.loads(value)
 
 
-def render(obj: Any) -> bytes:
+def _dumps_bytes(obj: Any) -> bytes:
     """Serialize a Python object directly to JSON-encoded bytes.
 
     Uses Python's default json module internally.

@@ -1,3 +1,4 @@
+import importlib
 import sys
 from types import ModuleType
 from typing import TYPE_CHECKING
@@ -21,6 +22,7 @@ _LAZY_IMPORTS = {
     'storage': ('.storage', ''),
     'ui': ('.ui', ''),
 }
+_NON_MODULE_LAZY_IMPORTS = {name for name, (_, attr) in _LAZY_IMPORTS.items() if attr}
 
 if TYPE_CHECKING:
     from . import binding, elements, html, run, storage, ui
@@ -54,26 +56,34 @@ __all__ = [
 
 
 def __dir__() -> list[str]:
-    return __all__
+    return sorted(set(__all__) | set(globals()))
 
 
 def __getattr__(name: str) -> object:
+    if name not in _LAZY_IMPORTS and not name.startswith('_'):
+        try:
+            # import submodules on demand, so that `import nicegui; nicegui.<submodule>` keeps working as on an
+            # eagerly initialized package - independently of what has been imported before
+            return importlib.import_module(f'.{name}', __name__)
+        except ModuleNotFoundError as e:
+            if e.name != f'{__name__}.{name}':
+                raise  # the submodule exists, but one of its own imports is missing
     return _lazy.resolve(__name__, 'nicegui', _LAZY_IMPORTS, name)
 
 
 class _PackageModule(ModuleType):
     """Class for the nicegui package module itself.
 
-    The attributes ``app`` and ``context`` collide with the submodules ``nicegui.app`` and ``nicegui.context``:
-    whenever the import machinery loads those submodules, it binds them as package attributes,
-    shadowing the ``App`` and ``Context`` instances which ``__getattr__`` provides.
+    Lazy imports of objects rather than modules (``app``, ``context``, ...) can collide with equally named submodules
+    (``nicegui.app``, ``nicegui.context``, ...): whenever the import machinery loads such a submodule,
+    it binds it as a package attribute, shadowing the object which ``__getattr__`` provides.
     (The eager package init used to win this race by assignment order.)
-    Ignoring module bindings for these two names keeps them resolvable via ``__getattr__``,
+    Ignoring module bindings for these names keeps them resolvable via ``__getattr__``,
     while non-module assignments (e.g. ``mock.patch``) still work as plain instance attributes.
     """
 
     def __setattr__(self, name: str, value: object) -> None:
-        if name in {'app', 'context'} and isinstance(value, ModuleType):
+        if name in _NON_MODULE_LAZY_IMPORTS and isinstance(value, ModuleType):
             return  # absorb the import machinery's submodule binding (see class docstring)
         super().__setattr__(name, value)
 

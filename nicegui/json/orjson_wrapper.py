@@ -50,7 +50,7 @@ def loads(value: str) -> Any:
     return orjson.loads(value)
 
 
-def render(obj: Any) -> bytes:
+def _dumps_bytes(obj: Any) -> bytes:
     """Serialize a Python object directly to JSON-encoded bytes.
 
     Uses package `orjson` internally.

@@ -128,7 +128,7 @@ _LAZY_IMPORTS = {
     'upload': ('.elements.upload', 'Upload'),
     'video': ('.elements.video', 'Video'),
     'xterm': ('.elements.xterm', 'Xterm'),
-    'clipboard': ('.functions.clipboard', None),
+    'clipboard': ('.functions.clipboard', ''),
     'download': ('.functions.download', 'download'),
     'add_body_html': ('.functions.html', 'add_body_html'),
     'add_head_html': ('.functions.html', 'add_head_html'),
@@ -437,7 +437,7 @@ if TYPE_CHECKING:
 
 
 def __dir__() -> builtins.list[str]:
-    return __all__
+    return sorted(set(__all__) | set(globals()))
 
 
 def __getattr__(name: str) -> object:

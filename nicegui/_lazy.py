@@ -4,7 +4,7 @@ import sys
 from collections.abc import Mapping
 
 
-def resolve(module_name: str, package: str, lazy_imports: Mapping[str, tuple[str, str | None]], name: str) -> object:
+def resolve(module_name: str, package: str, lazy_imports: Mapping[str, tuple[str, str]], name: str) -> object:
     """Import the attribute ``name`` as declared in ``lazy_imports`` and cache it on module ``module_name``.
 
     Each entry in ``lazy_imports`` maps an attribute name to a ``(module path, attribute name)`` tuple,

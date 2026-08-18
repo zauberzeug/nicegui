@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import atexit
-import importlib
 import os
 import sys
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+from . import _lazy
 from .logging import log
 
 if TYPE_CHECKING:
@@ -27,14 +27,8 @@ script_client: Client | None = None
 
 
 def __getattr__(name: str) -> object:
-    if name in {'app', 'sio'}:
-        # lazily build the App and AsyncServer on first access by importing the nicegui module which assigns them
-        module = importlib.import_module('.nicegui', package='nicegui')
-        if name in globals():
-            return globals()[name]
-        # a genuine circular import raises AttributeError with Python's standard "partially initialized" hint
-        return getattr(module, name)
-    raise AttributeError(f"module 'nicegui.core' has no attribute {name!r}")
+    # lazily build the App and AsyncServer on first access by importing the nicegui module which assigns them
+    return _lazy.resolve(__name__, 'nicegui', {'app': ('.nicegui', 'app'), 'sio': ('.nicegui', 'sio')}, name)
 
 
 def is_loop_running() -> bool:
