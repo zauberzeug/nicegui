@@ -261,13 +261,20 @@ class DistributedSession:
             self.subscribers[wire] = self.session.declare_subscriber(wire, handler)
 
     def shutdown(self) -> None:
-        """Clean up the Zenoh session."""
+        """Clean up the Zenoh session.
+
+        Every step runs even if an earlier one fails: one publisher that refuses to be undeclared must not
+        leave the transport open, and a session that is gone must not stay installed for the next ``emit``.
+        """
+        for declaration in [*self.publishers.values(), *self.subscribers.values()]:
+            try:
+                declaration.undeclare()
+            except Exception:
+                log.exception('Error undeclaring a Zenoh publisher or subscriber')
         try:
-            for pub in self.publishers.values():
-                pub.undeclare()
-            for sub in self.subscribers.values():
-                sub.undeclare()
             self.session.close()
             log.info('Distributed session closed')
         except Exception:
-            log.exception('Error during distributed session shutdown')
+            log.exception('Error closing the Zenoh session')
+        if DistributedSession._instance is self:
+            DistributedSession._instance = None

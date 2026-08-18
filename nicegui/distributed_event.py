@@ -41,28 +41,27 @@ class DistributedEvent(Event[P]):
         module = inspect.getmodule(frame)
         module_name = module.__name__ if module else 'unknown'
         self.topic = f'event_{module_name}:{frame.f_lineno}'
-        self._zenoh_setup_done = False
+        self._subscribed_session_id: str | None = None
         self._setup_distributed()
 
     def _setup_distributed(self) -> None:
         """Set up distributed event handling if enabled.
 
-        This method is safe to call multiple times due to the _zenoh_setup_done guard.
-        It's called during DistributedEvent initialization and retroactively
-        when DistributedSession.initialize() is called.
+        This method is safe to call multiple times: it subscribes once per distributed session.
+        It's called during DistributedEvent initialization, retroactively
+        when DistributedSession.initialize() is called, and before emitting -
+        so an event also follows a session that has been replaced since it last emitted.
         Events emitted before distributed mode is initialized will only be local.
         """
-        if self._zenoh_setup_done:
-            return
         from .distributed import DistributedSession  # pylint: disable=import-outside-toplevel,cyclic-import
         session = DistributedSession.get()
-        if session is None:
+        if session is None or session.instance_id == self._subscribed_session_id:
             return
 
         # NOTE: The session only references this bound method weakly, so subscribing does not
         # keep a per-client event alive after the page that created it is gone.
         session.subscribe(self.topic, self._handle_remote)
-        self._zenoh_setup_done = True
+        self._subscribed_session_id = session.instance_id
 
     def _handle_remote(self, data: dict) -> None:
         """Handle an event received from a remote instance."""
@@ -84,8 +83,7 @@ class DistributedEvent(Event[P]):
 
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
-        if not self._zenoh_setup_done:
-            self._setup_distributed()
+        self._setup_distributed()
         self._validate_distributable(args, kwargs)
 
         super().emit(*args, **kwargs)
@@ -97,8 +95,7 @@ class DistributedEvent(Event[P]):
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
-        if not self._zenoh_setup_done:
-            self._setup_distributed()
+        self._setup_distributed()
         self._validate_distributable(args, kwargs)
 
         await super().call(*args, **kwargs)

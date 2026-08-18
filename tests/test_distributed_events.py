@@ -435,8 +435,62 @@ async def test_session_is_released_on_app_shutdown(user: User, fresh_session):
     assert received == ['before']
 
     await core.app.stop()
+    assert DistributedSession.get() is None  # a later emit must not publish on a closed session
 
     with remote_instance('alpha'):
         shared_event().emit('after')
         await asyncio.sleep(0.5)
     assert received == ['before']
+
+
+async def test_an_existing_event_follows_a_replaced_session(user: User, fresh_session):
+    """Releasing a session and opening another one must not leave the events of the first one deaf.
+
+    The ``user`` fixture is what puts a running event loop behind ``core.loop``, where remote events land.
+    """
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    received: list[str] = []
+    event = shared_event()
+    event.subscribe(received.append)
+
+    session = DistributedSession.get()
+    assert session is not None
+    session.shutdown()
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+
+    with remote_instance('alpha'):
+        shared_event().emit('hello')
+        await wait_for(lambda: bool(received))
+    assert received == ['hello']
+
+
+async def test_shutdown_finishes_even_when_undeclaring_fails(user: User, caplog: pytest.LogCaptureFixture,
+                                                             fresh_session):
+    """One resource that refuses to go must not leave the transport open and the session still installed."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    session = DistributedSession.get()
+    assert session is not None
+
+    class StubbornPublisher:
+        def undeclare(self) -> None:
+            raise RuntimeError('not going anywhere')
+
+    session.publishers['stubborn'] = StubbornPublisher()
+    received: list[str] = []
+    event = shared_event()
+    event.subscribe(received.append)  # outside a UI context, so no client teardown unsubscribes it
+
+    @ui.page('/')
+    def page():
+        ui.label('hello')
+
+    await user.open('/')
+    await core.app.stop()
+    assert DistributedSession.get() is None
+
+    with remote_instance('alpha'):
+        shared_event().emit('after')
+        await asyncio.sleep(0.5)
+    assert received == []
+    assert [record.message for record in caplog.records] == ['Error undeclaring a Zenoh publisher or subscriber']
+    caplog.records.clear()
