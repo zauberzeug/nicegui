@@ -1,1 +1,1 @@
-eclipse-zenoh
+nicegui[distributed]
