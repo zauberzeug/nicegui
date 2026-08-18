@@ -78,12 +78,12 @@ class _PackageModule(ModuleType):
     (``nicegui.app``, ``nicegui.context``, ...): whenever the import machinery loads such a submodule,
     it binds it as a package attribute, shadowing the object which ``__getattr__`` provides.
     (The eager package init used to win this race by assignment order.)
-    Ignoring module bindings for these names keeps them resolvable via ``__getattr__``,
-    while non-module assignments (e.g. ``mock.patch``) still work as plain instance attributes.
+    Ignoring the machinery's own binding for these names keeps them resolvable via ``__getattr__``,
+    while every other assignment (e.g. ``mock.patch``, even with a module) works as a plain instance attribute.
     """
 
     def __setattr__(self, name: str, value: object) -> None:
-        if name in _NON_MODULE_LAZY_IMPORTS and isinstance(value, ModuleType):
+        if name in _NON_MODULE_LAZY_IMPORTS and getattr(value, '__name__', None) == f'{__name__}.{name}':
             return  # absorb the import machinery's submodule binding (see class docstring)
         super().__setattr__(name, value)
 

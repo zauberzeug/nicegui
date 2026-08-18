@@ -437,7 +437,7 @@ if TYPE_CHECKING:
 
 
 def __dir__() -> builtins.list[str]:
-    return sorted(set(__all__) | set(globals()))
+    return __all__
 
 
 def __getattr__(name: str) -> object:

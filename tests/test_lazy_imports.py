@@ -2,6 +2,7 @@ import subprocess
 import sys
 from textwrap import dedent
 from types import ModuleType
+from unittest import mock
 
 import pytest
 
@@ -28,7 +29,10 @@ def test_dir_returns_expected_names(module: ModuleType):
     module_dir = dir(module)
     for name in module.__all__:
         assert name in module_dir, f'{name!r} should be in dir({module.__name__})'
-    assert '__file__' in module_dir, f'dir({module.__name__}) should also list the module globals'
+
+
+def test_package_dir_also_lists_the_module_globals():
+    assert '__file__' in dir(nicegui), 'the eagerly initialized package listed its globals, too'
 
 
 def test_nonexistent_attribute_raises(module: ModuleType):
@@ -53,11 +57,12 @@ def test_package_app_is_the_app_instance():
 
 
 @pytest.mark.parametrize('name', ['app', 'context'])
-def test_package_objects_can_be_monkeypatched(name: str):
-    from unittest import mock
+# a module must be replaceable, too: only the import machinery's own submodule binding may be ignored
+@pytest.mark.parametrize('replacement', [mock.DEFAULT, ModuleType('fake')], ids=['mock', 'module'])
+def test_package_objects_can_be_monkeypatched(name: str, replacement: object):
     original = getattr(nicegui, name)
-    with mock.patch.object(nicegui, name) as fake:
-        assert getattr(nicegui, name) is fake
+    with mock.patch.object(nicegui, name, replacement) as fake:
+        assert getattr(nicegui, name) is (fake if replacement is mock.DEFAULT else replacement)
     assert getattr(nicegui, name) is original
 
 
@@ -92,7 +97,7 @@ def test_every_submodule_can_be_imported_first():
         assert names, 'the sweep found no submodules at all'
         failures = []
         for name in names:
-            for module in [key for key in sys.modules if key.startswith('nicegui')]:
+            for module in [key for key in sys.modules if key == 'nicegui' or key.startswith('nicegui.')]:
                 del sys.modules[module]
             try:
                 import_module(name)  # a lazy package must not depend on which submodule is imported first
@@ -112,6 +117,6 @@ def test_module_access_does_not_import_others():
         import sys
         from nicegui import ui
         ui.label
-        sys.exit('button' in sys.modules.keys())
+        sys.exit('nicegui.elements.button' in sys.modules)  # sys.modules is keyed by the fully qualified name
     ''')], capture_output=True, text=True, timeout=30, check=False)
     assert result.returncode == 0, 'button should not be imported when accessing label'
