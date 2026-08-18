@@ -59,13 +59,15 @@ class DistributedEvent(Event[P]):
         if session is None:
             return
 
-        def remote_handler(data: dict) -> None:
-            """Handle events received from remote instances."""
-            for callback in self.callbacks:
-                _invoke_and_forget(callback, *data.get('args', ()), **data.get('kwargs', {}))
-
-        session.subscribe(self.topic, remote_handler)
+        # NOTE: The session only references this bound method weakly, so subscribing does not
+        # keep a per-client event alive after the page that created it is gone.
+        session.subscribe(self.topic, self._handle_remote)
         self._zenoh_setup_done = True
+
+    def _handle_remote(self, data: dict) -> None:
+        """Handle an event received from a remote instance."""
+        for callback in self.callbacks:
+            _invoke_and_forget(callback, *data.get('args', ()), **data.get('kwargs', {}))
 
     def _validate_distributable(self, args: tuple, kwargs: dict) -> None:
         """Raise ``TypeError`` upfront if the payload cannot be sent to remote peers."""

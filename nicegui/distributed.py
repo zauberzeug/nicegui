@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import uuid
+import weakref
 from collections.abc import Callable
 from typing import Any
 
@@ -58,9 +59,10 @@ class DistributedSession:
     """Manages distributed event communication via Zenoh pub/sub.
 
     This is an internal class used by the Event system to handle distributed messaging.
-    Publishers and subscribers are kept alive for the lifetime of the session.
-    Event instances are expected to be long-lived (typically module-level),
+    Publishers and subscribers are kept alive for the lifetime of the session,
     so no automatic cleanup of unused topics is performed.
+    The event callbacks behind them are only referenced weakly,
+    so events created per client (e.g. inside a page function) are collected with their client.
 
     Under ``uvicorn --workers N`` (via ``ui.run_with()``, since ``ui.run()`` rejects it) each worker gets
     its own session and exchanges events like a separate host would, receiving every event exactly once.
@@ -108,6 +110,7 @@ class DistributedSession:
         self._fernet = self._derive_fernet(storage_secret)
         self.publishers: dict[str, Any] = {}
         self.subscribers: dict[str, Any] = {}
+        self.callbacks: dict[str, list[weakref.WeakMethod]] = {}
         log.info(f'Distributed events enabled via Zenoh '
                  f'(instance: {self.instance_id[:8]}..., namespace: {self.namespace})')
 
@@ -198,10 +201,16 @@ class DistributedSession:
     def subscribe(self, topic: str, callback: Callable[[Any], None]) -> None:
         """Subscribe to a topic.
 
+        Several events can share a topic (e.g. one created per client), so every callback is kept.
+        They are only referenced weakly, hence the callback has to be a bound method:
+        subscribing must not keep an event alive that its creator has let go.
+
         :param topic: logical topic name (will be namespaced)
-        :param callback: function to call when data arrives
+        :param callback: bound method to call when data arrives
         """
         wire = self.wire_topic(topic)
+        callbacks = self.callbacks.setdefault(wire, [])
+        callbacks.append(weakref.WeakMethod(callback, callbacks.remove))
 
         def handler(sample: Sample) -> None:
             try:
@@ -224,11 +233,15 @@ class DistributedSession:
             # NOTE: Zenoh invokes this callback on a Rust-managed worker thread; downstream
             # NiceGUI machinery (slot weakrefs, asyncio.create_task) must run on the loop thread.
             data = payload['data']
-            if core.loop is not None:
-                core.loop.call_soon_threadsafe(callback, data)
-            else:
-                # No loop yet (e.g. during early startup or in stand-alone scripts) - run inline.
-                callback(data)
+            for ref in list(self.callbacks[wire]):
+                callback_ = ref()
+                if callback_ is None:
+                    continue
+                if core.loop is not None:
+                    core.loop.call_soon_threadsafe(callback_, data)
+                else:
+                    # No loop yet (e.g. during early startup or in stand-alone scripts) - run inline.
+                    callback_(data)
 
         if wire not in self.subscribers:
             self.subscribers[wire] = self.session.declare_subscriber(wire, handler)

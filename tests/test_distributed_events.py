@@ -1,8 +1,10 @@
 import asyncio
+import gc
 import json
 import subprocess
 import sys
 import threading
+import weakref
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from typing import Any
@@ -178,6 +180,33 @@ async def test_event_from_another_instance_arrives_on_the_loop_thread(user: User
         await wait_for(lambda: bool(received))
     assert [value for value, _ in received] == ['hello']
     assert received[0][1] is threading.main_thread()
+
+
+async def test_all_events_sharing_a_topic_receive_remote_events(user: User, fresh_session):
+    """A topic can carry more than one event, e.g. one per client, and a remote event must reach all of them."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    first: list[str] = []
+    second: list[str] = []
+
+    @ui.page('/')
+    def page():
+        shared_event().subscribe(first.append)
+        shared_event().subscribe(second.append)
+
+    await user.open('/')
+    with remote_instance('alpha'):
+        shared_event().emit('hello')
+        await wait_for(lambda: bool(first) and bool(second))
+    assert first == ['hello']
+    assert second == ['hello']
+
+
+def test_subscribing_does_not_keep_the_event_alive(fresh_session):
+    """An event created per client (e.g. inside a page function) must not be pinned by its subscription."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    reference = weakref.ref(shared_event())
+    gc.collect()
+    assert reference() is None
 
 
 async def test_own_emission_is_not_echoed_back(user: User, fresh_session):
