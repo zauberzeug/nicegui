@@ -126,7 +126,8 @@ def run(root: Callable | None = None, *,
         (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
     :param distributed: enable :class:`~nicegui.DistributedEvent` synchronisation across instances - ``True`` for
         Zenoh's defaults (UDP-multicast peer scout), a list of ``"host"`` / ``"host:port"`` peers for explicit
-        unicast, or a raw Zenoh config dict for full control (default: ``None``, requires the ``distributed`` extra)
+        unicast (which also listens on port 7447, so the peers can reach this instance),
+        or a raw Zenoh config dict for full control (default: ``None``, requires the ``distributed`` extra)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:

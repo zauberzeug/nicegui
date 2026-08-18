@@ -50,6 +50,12 @@ def _normalize_config(config: bool | list[str] | dict) -> Any:
         zenoh_config = zenoh.Config()
         zenoh_config.insert_json5('mode', '"peer"')
         zenoh_config.insert_json5('connect/endpoints', peers_json)
+        # Zenoh's peer default listens on an ephemeral port, which no peer list can point at, so the list
+        # would only ever work thanks to multicast scouting - exactly what is missing where this shortcut is
+        # needed. Listen on the port those lists point at instead, and keep going if it is already taken:
+        # a second instance on the same host cannot bind it, but still reaches its peers by connecting out.
+        zenoh_config.insert_json5('listen/endpoints', json.dumps([f'tcp/[::]:{DEFAULT_ZENOH_PORT}']))
+        zenoh_config.insert_json5('listen/exit_on_failure', 'false')
         return zenoh_config
     # NOTE: zenoh 1.x dropped Config.from_obj; from_json5 accepts a JSON string for the same effect.
     return zenoh.Config.from_json5(json.dumps(config))
@@ -66,7 +72,9 @@ class DistributedSession:
 
     Under ``uvicorn --workers N`` (via ``ui.run_with()``, since ``ui.run()`` rejects it) each worker gets
     its own session and exchanges events like a separate host would, receiving every event exactly once.
-    A raw config with a fixed ``listen`` endpoint is the exception: only the first worker binds it.
+    The peer list is the exception: only the first worker binds ``DEFAULT_ZENOH_PORT``, and the others
+    reach their peers by connecting out. A raw config with a fixed ``listen`` endpoint has to allow for
+    that itself, or every worker but the first fails to open a session at all.
 
     Trust model:
 

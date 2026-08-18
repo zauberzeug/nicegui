@@ -16,7 +16,7 @@ import httpx
 import pytest
 
 from nicegui import Event, core, ui
-from nicegui.distributed import ZENOH_AVAILABLE, DistributedSession, _peer_to_endpoint
+from nicegui.distributed import ZENOH_AVAILABLE, DistributedSession, _normalize_config, _peer_to_endpoint
 from nicegui.distributed_event import DistributedEvent
 from nicegui.testing import User
 
@@ -88,6 +88,29 @@ def test_peer_to_endpoint_default_port():
 
 def test_peer_to_endpoint_explicit_port():
     assert _peer_to_endpoint('host.example.com:9999') == 'tcp/host.example.com:9999'
+
+
+async def test_the_peer_list_alone_connects_two_instances(monkeypatch):
+    """Nothing may be left to scouting: where an explicit peer list is needed, multicast does not travel.
+
+    The second session cannot bind the port the first one took, which is what two instances on one host do.
+    """
+    import zenoh  # local import: only reachable when ZENOH_AVAILABLE
+    monkeypatch.setattr('nicegui.distributed.DEFAULT_ZENOH_PORT', LOOPBACK_PORT + 3)
+    sessions = []
+    for _ in range(2):
+        config = _normalize_config(['127.0.0.1'])
+        config.insert_json5('scouting/multicast/enabled', 'false')  # as on a network that does not route multicast
+        config.insert_json5('scouting/gossip/enabled', 'false')
+        sessions.append(zenoh.open(config))
+    received: list[bytes] = []
+    try:
+        sessions[1].declare_subscriber('nicegui/test', lambda sample: received.append(bytes(sample.payload)))
+        await wait_for(lambda: bool(received), retry=lambda: sessions[0].put('nicegui/test', b'hello'))
+    finally:
+        for session in sessions:
+            session.close()
+    assert received, 'the peers in the list never reached each other'
 
 
 def test_session_rejects_without_storage_secret():
