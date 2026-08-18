@@ -185,6 +185,9 @@ class DistributedSession:
     def publish(self, topic: str, data: Any) -> None:
         """Publish data to a topic.
 
+        Failures are logged, not raised: the caller has already run its local callbacks, and a network
+        that stops working degrades the app to local events rather than breaking the code that emitted.
+
         :param topic: logical topic name (will be namespaced)
         :param data: data to publish (must be JSON-serializable)
         """
@@ -201,10 +204,8 @@ class DistributedSession:
         except (TypeError, ValueError) as e:
             log.error(f'Failed to serialize event data for topic {topic}: {e}. '
                       'Event data must be JSON-serializable (str, int, float, bool, list, dict, None).')
-            raise
         except Exception as e:
             log.exception(f'Failed to publish event to topic {topic}: {e}')
-            raise
 
     def subscribe(self, topic: str, callback: Callable[[Any], None]) -> None:
         """Subscribe to a topic.

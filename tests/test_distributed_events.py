@@ -305,6 +305,31 @@ async def test_own_emission_is_not_echoed_back(user: User, fresh_session):
     assert received == ['hello']
 
 
+async def test_a_failing_publish_does_not_abort_the_handler(user: User, caplog: pytest.LogCaptureFixture,
+                                                            fresh_session):
+    """The local callbacks have already run when the publish happens, so a dead transport must not raise."""
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+
+    @ui.page('/')
+    def page():
+        event = shared_event()
+
+        def emit_and_go_on() -> None:
+            event.emit('hello')
+            ui.label('done')
+
+        ui.button('emit', on_click=emit_and_go_on)
+
+    await user.open('/')
+    session = DistributedSession.get()
+    assert session is not None
+    session.session.close()  # as a transport that went away while the app keeps running
+    user.find('emit').click()
+    await user.should_see('done')
+    assert len(caplog.records) == 1 and 'Failed to publish' in caplog.records[0].message
+    caplog.records.pop(0)
+
+
 async def test_instance_with_different_secret_is_ignored(user: User, fresh_session):
     """Deployments that do not share the storage_secret must not cross-talk."""
     DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
