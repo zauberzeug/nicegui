@@ -1,4 +1,5 @@
 from nicegui import DistributedEvent, Event, ui
+from nicegui.distributed import DistributedSession
 
 from . import doc
 
@@ -66,6 +67,9 @@ def emitting_vs_calling_events():
     When enabled, every `DistributedEvent` automatically forwards its emissions to every
     other instance that shares the same `storage_secret` - regular `Event` instances stay
     local. The example below contrasts the two.
+
+    Without distributed mode - or without the extra (`pip install nicegui[distributed]`) - a
+    `DistributedEvent` behaves like a regular `Event`. Start the example twice to see the difference.
 ''')
 def distributed_events():
     from nicegui import DistributedEvent, Event
@@ -76,6 +80,8 @@ def distributed_events():
     # @ui.page('/')
     def page():
         with ui.column():
+            if DistributedSession.get() is None:  # HIDE
+                ui.label('This instance runs standalone: the shared event stays local.').classes('text-orange')  # HIDE
             ui.label('Distributed event (shared across instances):')
             with ui.row(align_items='center'):
                 message = ui.input('Message')
@@ -89,6 +95,8 @@ def distributed_events():
                 ui.button('Send locally', on_click=lambda: local_event.emit(local_msg.value))
             local_event.subscribe(lambda m: ui.notify(f'Local: "{m}"', color='orange'))
     page()  # HIDE
+
+    # ui.run(distributed=True, storage_secret='shared by all instances')
 
 
 doc.reference(Event)
