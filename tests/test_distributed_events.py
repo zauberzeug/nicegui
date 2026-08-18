@@ -375,6 +375,32 @@ async def test_payload_without_the_secret_is_rejected(user: User, fresh_session)
     assert received == ['hello']
 
 
+async def test_an_undecryptable_event_is_reported_once(user: User, caplog: pytest.LogCaptureFixture, fresh_session):
+    """Dropping in complete silence looks exactly like having no peers, which is the harder thing to debug."""
+    from cryptography.fernet import Fernet  # local import: only reachable when ZENOH_AVAILABLE
+    DistributedSession.initialize({'listen': {'endpoints': [LOOPBACK_ENDPOINT]}}, storage_secret='alpha')
+    observed: list[str] = []
+
+    def reports() -> list[str]:
+        return [record.message for record in caplog.records if 'could not be decrypted' in record.message]
+
+    @ui.page('/')
+    def page():
+        event = shared_event()
+        ui.button('emit', on_click=lambda: event.emit('local'))
+
+    await user.open('/')
+    with wire_observer(observed) as sibling:
+        await wait_for(lambda: bool(observed), retry=user.find('emit').click)
+        publisher = sibling.declare_publisher(observed[0])
+        for _ in range(3):
+            publisher.put(Fernet(Fernet.generate_key()).encrypt(b'{}'))  # encrypted with a foreign key
+        await wait_for(lambda: bool(reports()))
+        await asyncio.sleep(0.5)  # leave time for the other two to be dropped as well
+    assert len(reports()) == 1
+    assert f'event_{__name__}:' in reports()[0]
+
+
 async def test_unreachable_network_degrades_to_local_events(user: User, fresh_session):
     """A Zenoh session that cannot be opened must not take the app down; events keep working locally."""
     DistributedSession.initialize({'listen': {'endpoints': ['bogus/127.0.0.1:1']}}, storage_secret='alpha')

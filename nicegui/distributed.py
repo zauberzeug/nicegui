@@ -8,6 +8,7 @@ from collections.abc import Callable
 from typing import Any
 
 from . import core
+from .helpers import warn_once
 from .logging import log
 
 try:
@@ -226,7 +227,11 @@ class DistributedSession:
                 plaintext = self._fernet.decrypt(bytes(sample.payload), ttl=EVENT_TTL_SECONDS)
             except InvalidToken:
                 # Not encrypted with our secret (foreign deployment / forged), or stale (replay window
-                # exceeded). Drop quietly - this is the confidentiality/integrity boundary doing its job.
+                # exceeded). Dropping it is the confidentiality/integrity boundary doing its job, but doing
+                # so in complete silence looks exactly like having no peers, so say it once per topic.
+                warn_once(f'Dropped an event on topic {topic} that could not be decrypted. '
+                          'Either another deployment shares this network, or its storage_secret differs, '
+                          f'or the clocks are more than {EVENT_TTL_SECONDS} seconds apart.')
                 return
             try:
                 payload = json.loads(plaintext.decode('utf-8'))
