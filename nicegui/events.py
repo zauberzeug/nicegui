@@ -108,6 +108,52 @@ class SceneDragEventArguments(ClickEventArguments):
 
 
 @dataclass(kw_only=True, slots=True)
+class SceneTransformEventArguments(UiEventArguments):
+    type: Literal['transform', 'transform_start', 'transform_end']
+    mode: Literal['translate', 'rotate', 'scale']
+    object_id: str
+    object_name: str
+    x: float
+    y: float
+    z: float
+    rx: float
+    ry: float
+    rz: float
+    wx: float
+    wy: float
+    wz: float
+
+
+@dataclass(kw_only=True, slots=True)
+class ScenePointerEventArguments(UiEventArguments):
+    type: Literal['pointerover', 'pointerout', 'pointerdown', 'pointerup',
+                  'pointermove', 'click', 'dblclick', 'contextmenu']
+    object_id: str
+    object_name: str
+    button: int
+    alt: bool
+    ctrl: bool
+    meta: bool
+    shift: bool
+    x: float
+    y: float
+    z: float
+    wx: float
+    wy: float
+    wz: float
+
+
+@dataclass(kw_only=True, slots=True)
+class ScenePointerMissedEventArguments(UiEventArguments):
+    type: Literal['click', 'dblclick', 'contextmenu', 'pointerdown']
+    button: int
+    alt: bool
+    ctrl: bool
+    meta: bool
+    shift: bool
+
+
+@dataclass(kw_only=True, slots=True)
 class ColorPickEventArguments(UiEventArguments):
     color: str
 
