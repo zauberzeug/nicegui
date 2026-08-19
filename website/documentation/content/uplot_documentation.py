@@ -77,6 +77,8 @@ def live_demo() -> None:
 @doc.demo('Sizing', '''
     The `width` and `height` in the options are optional: set them for a default size, or omit them to fill the parent.
     Either way the chart follows its element via a `ResizeObserver`, so you can size it with Tailwind classes or `.style()`.
+    Note that `width` and `height` only apply when the chart is created;
+    to resize it later, change the element's classes or style rather than the options.
 ''')
 def sizing_demo() -> None:
     import math
