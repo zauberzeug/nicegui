@@ -85,11 +85,7 @@ class Query:
         """
         element = self.element
         old_style = element.props['style']
-        new_style = {} if replace is not None else dict(old_style)
-        for key in Style.parse(remove):
-            new_style.pop(key, None)
-        new_style.update(Style.parse(add))
-        new_style.update(Style.parse(replace))
+        new_style = Style.update_dict(old_style, add, remove, replace)
         removed_keys = [key for key in old_style if key not in new_style]
         if removed_keys:
             element.run_method('remove_style', removed_keys)
