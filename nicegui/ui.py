@@ -81,6 +81,7 @@ _LAZY_IMPORTS = {
     'pagination': ('.elements.pagination', 'Pagination'),
     'parallax': ('.elements.parallax', 'Parallax'),
     'plotly': ('.elements.plotly', 'Plotly'),
+    'popup': ('.elements.popup', 'Popup'),
     'circular_progress': ('.elements.progress', 'CircularProgress'),
     'linear_progress': ('.elements.progress', 'LinearProgress'),
     'matplotlib': ('.elements.pyplot', 'Matplotlib'),
@@ -97,6 +98,7 @@ _LAZY_IMPORTS = {
     'select': ('.elements.select', 'Select'),
     'separator': ('.elements.separator', 'Separator'),
     'skeleton': ('.elements.skeleton', 'Skeleton'),
+    'skip_link': ('.elements.skip_link', 'SkipLink'),
     'slide_item': ('.elements.slide_item', 'SlideItem'),
     'slider': ('.elements.slider', 'Slider'),
     'space': ('.elements.space', 'Space'),
@@ -240,6 +242,7 @@ __all__ = [
     'pagination',
     'parallax',
     'plotly',
+    'popup',
     'pyplot',
     'query',
     'radio',
@@ -259,6 +262,7 @@ __all__ = [
     'select',
     'separator',
     'skeleton',
+    'skip_link',
     'slide_item',
     'slider',
     'space',
@@ -369,6 +373,7 @@ if TYPE_CHECKING:
     from .elements.pagination import Pagination as pagination
     from .elements.parallax import Parallax as parallax
     from .elements.plotly import Plotly as plotly
+    from .elements.popup import Popup as popup
     from .elements.progress import CircularProgress as circular_progress
     from .elements.progress import LinearProgress as linear_progress
     from .elements.pyplot import Matplotlib as matplotlib
@@ -385,6 +390,7 @@ if TYPE_CHECKING:
     from .elements.select import Select as select
     from .elements.separator import Separator as separator
     from .elements.skeleton import Skeleton as skeleton
+    from .elements.skip_link import SkipLink as skip_link
     from .elements.slide_item import SlideItem as slide_item
     from .elements.slider import Slider as slider
     from .elements.space import Space as space

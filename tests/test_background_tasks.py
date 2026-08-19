@@ -10,7 +10,7 @@ from nicegui.testing import Screen, User
 # pylint: disable=missing-function-docstring
 
 
-# NOTE: click handlers, and system events used to wrap background_task in a background_task (see https://github.com/zauberzeug/nicegui/pull/4641#issuecomment-2837448265)
+# click handlers, and system events used to wrap background_task in a background_task (see https://github.com/zauberzeug/nicegui/pull/4641#issuecomment-2837448265)
 @pytest.mark.parametrize('strategy', ['direct', 'click', 'system'])
 async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
     run = set()
@@ -66,9 +66,9 @@ async def test_awaiting_background_tasks_on_shutdown(user: User, strategy: str):
         background_tasks.create(one(), name='one')
         background_tasks.create(two(), name='two')
 
-    await asyncio.sleep(0.1)  # NOTE: we need to wait for the tasks to be created
+    await asyncio.sleep(0.1)  # we need to wait for the tasks to be created
 
-    # NOTE: teardown is called on shutdown; here we call it directly to test the teardown logic while test is still running
+    # teardown is called on shutdown; here we call it directly to test the teardown logic while test is still running
     await background_tasks.teardown()
     assert cancelled == {'one', 'three'}
     assert run == {'one', 'two', 'four'}

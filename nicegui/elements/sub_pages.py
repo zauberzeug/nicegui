@@ -30,6 +30,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         Provides URL-based navigation between different views to build single page applications (SPAs).
         Routes are defined as path patterns mapping to page builder functions.
         Path parameters like "/user/{id}" are extracted and passed to the builder function.
+        Only single-segment "{name}" parameters are supported (not Starlette-style converters like "{name:path}");
+        for wildcard routing use ``show_404=False`` and read ``PageArguments.remaining_path``.
 
         *Added in version 2.22.0*
 
@@ -42,6 +44,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         super().__init__()
         self._router = context.client.sub_pages_router
         self._routes = routes or {}
+        for path in self._routes:
+            self._validate_route(path)
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
         self._rendered_path = ''
         self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
@@ -59,6 +63,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param page: function to call when this path is accessed
         :return: self for method chaining
         """
+        self._validate_route(path)
         self._routes[path] = page
         self._show()
         return self
@@ -75,16 +80,18 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Display the page matching the current URL path."""
         self._rendered_path = ''
         match = self._find_matching_path()
-        # NOTE: if path and query params are the same, only update fragment without re-rendering
+        has_nested_sub_pages = any(isinstance(el, SubPages) for el in self.descendants())
+        # if path and query params are the same, only update fragment without re-rendering
         if (
+            # pylint: disable=too-many-boolean-expressions
             match is not None and
             self._match is not None and
             match.path == self._match.path and
-            not self._required_query_params_changed(match) and
-            not (self.has_404 and self._match.remaining_path == match.remaining_path)
+            (self._match.remaining_path == match.remaining_path or has_nested_sub_pages or self._404_enabled) and
+            not self._required_query_params_changed(match)
         ):
-            # NOTE: Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
-            if match.remaining_path and not any(isinstance(el, SubPages) for el in self.descendants()):
+            # Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
+            if match.remaining_path and not has_nested_sub_pages:
                 self._set_match(None)
             else:
                 self._handle_scrolling(match, behavior='smooth')
@@ -98,12 +105,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     self._set_match(None)
 
     def _render_page(self, match: RouteMatch) -> bool:
-        kwargs = PageArguments.build_kwargs(match, self, self._data)
         self._rendered_path = f'{self._root_path or ""}{match.path}'
         try:
+            kwargs = PageArguments.build_kwargs(match, self, self._data)
             result = match.builder(**kwargs)
         except Exception as e:
-            self.clear()  # NOTE: clear partial content created before the exception
+            self.clear()  # clear partial content created before the exception
             self._render_error(e)
             self.client.handle_exception(e)
             return True
@@ -115,7 +122,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     try:
                         await result
                     except Exception as e:
-                        self.client.handle_exception(e)
+                        client = self._client()
+                        if client is not None and not client.is_deleted:
+                            client.handle_exception(e)
                         raise
 
             task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
@@ -133,7 +142,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Display a 404 error message for unmatched routes."""
         Label(f'404: sub page {self._router.current_path} not found')
 
-    def _render_error(self, _: Exception) -> None:  # NOTE: exception is exposed for debugging scenarios via inheritance
+    def _render_error(self, _: Exception) -> None:  # exception is exposed for debugging scenarios via inheritance
         msg = f'sub page {self._router.current_path} produced an error'
         Label(f'500: {msg}')
         log.error(msg, exc_info=True)
@@ -188,17 +197,33 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         return None, query_params
 
     @staticmethod
+    def _validate_route(path: str) -> None:
+        for parameter in re.findall(r'\{(.*?)\}', path):
+            if not parameter.isidentifier():
+                raise ValueError(
+                    f'Invalid route "{path}": the parameter "{{{parameter}}}" is not supported. '
+                    'ui.sub_pages only supports single-segment "{name}" parameters that are valid Python identifiers, '
+                    'not Starlette-style converters like "{name:path}". '
+                    'For wildcard routing, use show_404=False and read PageArguments.remaining_path '
+                    '(see https://nicegui.io/documentation/sub_pages).'
+                )
+
+    @staticmethod
     def _match_path(pattern: str, path: str) -> dict[str, str] | None:
         if '{' not in pattern:
             return {} if pattern == path else None
 
         regex_pattern = re.escape(pattern)
-        for match in re.finditer(r'\\{(\w+)\\}', regex_pattern):
+        for match in re.finditer(r'\\{(.*?)\\}', regex_pattern):
             param_name = match.group(1)
             regex_pattern = regex_pattern.replace(f'\\{{{param_name}\\}}', f'(?P<{param_name}>[^/]+)')
 
         regex_match = re.match(f'^{regex_pattern}$', path)
         return regex_match.groupdict() if regex_match else None
+
+    def _handle_delete(self) -> None:
+        self._cancel_active_tasks()  # stop pending builders so they don't touch the deleted client
+        super()._handle_delete()
 
     def _cancel_active_tasks(self) -> None:
         for task in self._active_tasks:
@@ -209,7 +234,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _handle_scrolling(self, match: RouteMatch, *, behavior: str) -> None:
         if match.fragment:
             self._scroll_to_fragment(match.fragment, behavior=behavior)
-        elif not self._router.is_initial_request:  # NOTE: the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
+        elif not self._router.is_initial_request:  # the initial path has no fragment; to not interfere with later fragment scrolling, we skip scrolling to top
             self._scroll_to_top(behavior=behavior)
 
     def _scroll_to_fragment(self, fragment: str, *, behavior: str) -> None:

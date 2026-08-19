@@ -2,6 +2,7 @@ import hashlib
 import os
 from collections.abc import Callable
 from functools import lru_cache
+from typing import ClassVar
 
 import markdown2
 from fastapi.responses import PlainTextResponse
@@ -14,10 +15,11 @@ from .mixins.content_element import ContentElement
 
 class Markdown(ContentElement, component='markdown.js', default_classes='nicegui-markdown'):
     # NOTE: The Mermaid ESM is already registered in mermaid.py.
+    default_extras: ClassVar[list[str]] = ['fenced-code-blocks', 'tables']
 
     def __init__(self,
                  content: str = '', *,
-                 extras: list[str] = ['fenced-code-blocks', 'tables'],  # noqa: B006
+                 extras: list[str] | None = None,
                  sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
         """Markdown Element
@@ -25,17 +27,18 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
         Renders Markdown onto the page.
 
         :param content: the Markdown content to be displayed
-        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_ (default: `['fenced-code-blocks', 'tables']`)
+        :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_
+            (default: ``['fenced-code-blocks', 'tables']``, *since in version 3.14.0*: can be set via ``ui.markdown.default_extras``)
         :param sanitize: sanitization mode:
             ``True`` (default) uses client-side sanitization via DOMPurify,
             ``False`` disables sanitization (use only with trusted content),
             or pass a callable to apply server-side sanitization
         """
         self._sanitize = sanitize
-        self.extras = extras[:]
+        self.extras = extras[:] if extras is not None else self.default_extras[:]
         super().__init__(content=content)
         self._props['sanitize'] = sanitize is True
-        if 'mermaid' in extras:
+        if 'mermaid' in self.extras:
             self._props['use-mermaid'] = True
 
         codehilite = self._generate_codehilite_css()

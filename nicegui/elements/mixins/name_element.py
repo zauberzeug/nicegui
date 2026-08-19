@@ -84,12 +84,13 @@ class NameElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_name(self, name: str) -> None:
+    def set_name(self, name: str) -> Self:
         """Set the name of this element.
 
         :param name: The new name.
         """
         self.name = name
+        return self
 
     def _handle_name_change(self, name: str) -> None:
         """Called when the name of this element changes.

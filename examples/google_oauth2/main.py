@@ -67,6 +67,6 @@ def _is_valid(user_info: dict) -> bool:
 
 
 ui.run(
-    host='localhost',  # NOTE: this ensures that you can run the app locally, accessing via http://127.0.0.1:8080 is not supported by Google OAuth2
+    host='localhost',  # this ensures that you can run the app locally, accessing via http://127.0.0.1:8080 is not supported by Google OAuth2
     storage_secret='random secret goes here',
 )

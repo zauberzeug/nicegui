@@ -84,12 +84,13 @@ class IconElement(Element):
              self_strict=False, other_strict=strict)
         return self
 
-    def set_icon(self, icon: str | None) -> None:
+    def set_icon(self, icon: str | None) -> Self:
         """Set the icon of this element.
 
         :param icon: The new icon.
         """
         self.icon = icon
+        return self
 
     def _handle_icon_change(self, icon: str | None) -> None:
         """Called when the icon of this element changes.

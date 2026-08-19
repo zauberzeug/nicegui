@@ -2,8 +2,8 @@
 description: Summarize current branch
 ---
 
-Read README.md, AGENTS.md, and CONTRIBUTING.md, then write a short PR description.
-Lead with the motivation of the change, then explain what changed and design decisions made.
+Write a PR description following the template in [`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md).
+Lead with the motivation of the change, then explain what changed and the design decisions made.
 Also mention special assumptions or risks implied by the changes.
 
 Consider NiceGUI-specific concerns:

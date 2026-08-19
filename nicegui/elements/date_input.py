@@ -39,7 +39,7 @@ class DateInput(LabelElement, ValueElement[str | None], DisableableElement):
         with self.add_slot('append'):
             with button(icon='edit_calendar', color=None).props('flat round') as self.button:
                 with menu() as self.menu:
-                    self.picker = date().props('no-parent-event').props('range' if range_input else '')
+                    self.picker = date().props('range' if range_input else '')
 
         self.picker.bind_value(self,
                                forward=lambda v: self._picker_to_input_value(v) if self._range_input else v,

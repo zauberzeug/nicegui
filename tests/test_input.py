@@ -112,6 +112,23 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
     assert_validation(True)
 
 
+def test_validation_with_lagging_value_change_events(screen: Screen):
+    @ui.page('/')
+    def page():
+        name = ui.input('Name', validation=lambda v: f'Still {10 - len(v)} characters missing' if len(v) < 10 else None)
+        for listener in name._event_listeners.values():  # pylint: disable=protected-access
+            if listener.type == 'update:value':
+                listener.throttle = 1.0  # let change events lag behind the typing like on a slow connection (#5185)
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
+    element.send_keys('123')  # the throttled listener sends "1" immediately
+    screen.wait(0.5)  # let the validation error for "1" reach the client
+    element.send_keys('45678')  # keep typing after the error message arrived
+    screen.should_contain('Still 2 characters missing')
+    assert element.get_attribute('value') == '12345678'
+
+
 def test_input_with_multi_word_error_message(screen: Screen):
     @ui.page('/')
     def page():
@@ -132,6 +149,17 @@ def test_setting_error_without_validation(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Something is wrong')
+
+
+def test_validate_after_removing_error_prop(screen: Screen):
+    @ui.page('/')
+    def page():
+        input_ = ui.input('Name', value='valid', validation=lambda v: None if v else 'required')
+        ui.button('Reset', on_click=lambda: (input_.props(remove='error error-message').validate(), ui.label('done')))
+
+    screen.open('/')
+    screen.click('Reset')
+    screen.should_contain('done')
 
 
 def test_autocompletion(screen: Screen):
@@ -174,6 +202,10 @@ def test_autocompletion(screen: Screen):
     element.send_keys('o')
     screen.should_contain('nce')
 
+    input_.set_autocomplete(None)  # removing the list used to raise a TypeError in the shadowText computed (#6161)
+    screen.wait(0.2)
+    screen.should_not_contain('nce')
+
 
 def test_clearable_input(screen: Screen):
     @ui.page('/')
@@ -206,6 +238,21 @@ def test_update_input(screen: Screen):
     input_.value = 'Pete'
     screen.wait(0.5)
     assert element.get_attribute('value') == 'Pete'
+
+
+def test_setting_value_via_props_overrides_user_input(screen: Screen):
+    @ui.page('/')
+    def page():
+        input_ = ui.input('Name')
+        ui.button('Force', on_click=lambda: input_.props('value=RAW'))
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Name"]')
+    element.send_keys('typed')
+
+    screen.click('Force')
+    screen.wait(0.5)
+    assert element.get_attribute('value') == 'RAW'
 
 
 def test_switching_focus(screen: Screen):

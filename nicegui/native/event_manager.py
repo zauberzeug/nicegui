@@ -24,14 +24,6 @@ class EventManager:
         self._thread = Thread(target=self._event_loop, daemon=True)
         self._thread.start()
 
-    def stop(self) -> None:
-        """Stop the event listener thread."""
-        if native.event_sender is not None:
-            try:
-                native.event_sender.send(None)
-            except OSError:
-                pass  # the pipe might already be closed
-
     def _dispatch(self, data: dict) -> None:
         args = NativeEventArguments(type=data['type'], args=data.get('args', {}))
         for handler in self._handlers.get(args.type, []):

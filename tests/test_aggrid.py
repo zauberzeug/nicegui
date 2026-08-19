@@ -11,7 +11,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import Event, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_update_table(screen: Screen):
@@ -380,3 +380,20 @@ def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unex
         screen.should_contain(item)
     for item in unexpected:
         screen.should_not_contain(item)
+
+
+@pytest.mark.parametrize('args,auto_size_strategy_expected', [
+    ({'options': {'columnDefs': [{'field': 'a'}]}}, True),
+    ({'options': {'columnDefs': [{'field': 'a'}], 'defaultColDef': {'flex': 1}}}, False),
+    ({'options': {'columnDefs': [{'field': 'a', 'flex': 0}]}}, True),
+    ({'options': {'columnDefs': [{'field': 'a', ':flex': '1'}]}}, False),
+    ({'options': {'columnDefs': [{'field': 'a'}]}, 'auto_size_columns': False}, False),
+    ({'options': {'defaultColDef': {'flex': 1}}, 'auto_size_columns': True}, True),
+])
+async def test_auto_size_columns_vs_flex(user: User, args: dict[str, Any], auto_size_strategy_expected: bool):
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid(**args)
+        assert ('autoSizeStrategy' in grid.options) == auto_size_strategy_expected
+
+    await user.open('/')
