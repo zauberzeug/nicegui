@@ -96,7 +96,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             not self._required_query_params_changed(match)
         ):
             # Even though our matched path is the same, the remaining path might still require us to handle 404 (if we are the last sub pages element)
-            if self._has_unconsumed_path(match):
+            if match.remaining_path and not has_nested_sub_pages:
                 self._set_match(None)
             else:
                 self._handle_scrolling(match, behavior='smooth')
@@ -154,10 +154,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _set_match(self, match: RouteMatch | None) -> None:
         self._match = match
         self.has_404 = match is None
-        for element in self._404_elements:
-            if not element.is_deleted:
-                element.delete()
-        self._404_elements.clear()
+        self._404_elements = []
         if self.has_404 and self._404_enabled and not self._error_rendered:  # a rendered error tells more than a 404
             if not self._active_tasks:  # a builder which is still running keeps the content it has already created
                 self.clear()
@@ -170,6 +167,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         """Withdraw a 404 because a nested sub pages element has appeared to consume the remaining path."""
         match = self._find_matching_path()
         if match is not None:  # a 404 which is due to no route matching at all stands
+            for element in self._404_elements:
+                if not element.is_deleted:
+                    element.delete()
             self._set_match(match)
 
     def _has_unconsumed_path(self, match: RouteMatch) -> bool:
