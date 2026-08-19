@@ -1204,6 +1204,50 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
     screen.should_contain('404: sub page /bad_path not found')
 
 
+def test_404_is_retracted_when_nested_sub_pages_are_created_after_an_await(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': main, '/other': other})
+
+    def main():
+        ui.label('main page')
+
+    async def other():
+        ui.label('other page')
+        await asyncio.sleep(0.5)
+        ui.sub_pages({'/': lambda: ui.label('sub main page'), '/a': lambda: ui.label('sub A page')})
+
+    screen.allowed_js_errors.append('/other/a - Failed to load resource')
+    screen.open('/other/a')
+    screen.should_contain('sub A page')
+    screen.should_contain('other page')
+    screen.should_not_contain('not found')
+
+
+def test_unknown_path_still_shows_404_when_routes_are_added_after_an_await(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/': main, '/other': other})
+
+    def main():
+        ui.label('main page')
+
+    async def other():
+        ui.label('other page')
+        sub = ui.sub_pages({'/': lambda: ui.label('sub main page')})
+        await asyncio.sleep(0.5)
+        sub.add('/a', lambda: ui.label('sub A page'))
+
+    screen.allowed_js_errors.append('/other/zzz - Failed to load resource')
+    screen.open('/other/zzz')
+    screen.should_contain('404: sub page /other/zzz not found')
+    screen.wait(1.0)  # the late add() must not turn the 404 into a fallback match
+    screen.should_contain('404: sub page /other/zzz not found')
+    screen.should_not_contain('sub main page')
+
+
 def test_http_404_with_root_function_and_sub_pages(screen: Screen):
     def root():
         ui.sub_pages({'/': lambda: ui.label('Home')})
