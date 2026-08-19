@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 from ...element import Element
@@ -24,8 +25,11 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         :param options: chart options (see `uPlot options <https://github.com/leeoniya/uPlot/tree/master/docs#basics>`_)
         :param data: chart data (see `uPlot data format <https://github.com/leeoniya/uPlot/tree/master/docs#data-format>`_)
         :param scale_mode: how scales are updated on data changes: "reset" (always recompute, default), "preserve_all" (never recompute), or "preserve_zoom" (recompute unless the user is zoomed)
+
+        *Added in version 3.17.0*
         """
         super().__init__()
+        self.add_resource(Path(__file__).parent / 'dist')
         self._props['options'] = options
         self._props['data'] = data
         self._props['scaleMode'] = scale_mode

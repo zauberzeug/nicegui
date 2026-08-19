@@ -294,6 +294,7 @@ def map_of_nicegui():
             - [`ui.tooltip`](/documentation/tooltip)
             - [`ui.tree`](/documentation/tree)
             - [`ui.upload`](/documentation/upload)
+            - [`ui.uplot`](/documentation/uplot)
             - [`ui.video`](/documentation/video)
             - [`ui.xterm`](/documentation/xterm)
         - special layout [elements](/documentation/page_layout):

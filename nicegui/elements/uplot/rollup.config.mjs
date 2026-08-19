@@ -1,7 +1,7 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
-import postcss from "rollup-plugin-postcss";
+import copy from "rollup-plugin-copy";
 
 export default {
   input: "./src/index.mjs",
@@ -13,9 +13,11 @@ export default {
   plugins: [
     nodeResolve(),
     commonjs(),
-    postcss(),
     terser({
       mangle: true,
+    }),
+    copy({
+      targets: [{ src: "node_modules/uplot/dist/uPlot.min.css", dest: "dist" }],
     }),
   ],
 };

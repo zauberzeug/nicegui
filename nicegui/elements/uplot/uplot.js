@@ -1,5 +1,6 @@
 import { toRaw } from "vue";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
+import { loadResource } from "../../static/utils/resources.js";
 import { uPlot, optionsChanged, dataMatch } from "nicegui-uplot";
 
 // Based on uplot-vue by @skalinichev (https://github.com/skalinichev/uplot-wrappers)
@@ -9,13 +10,16 @@ export default {
     options: { type: Object, required: true },
     data: { type: Array, required: true },
     scaleMode: { type: String, required: false, default: "reset" },
+    resourcePath: String,
   },
   created() {
     this.chart = null;
     this.chrome = 0; // measured height of uPlot's title + legend, reserved so they fit inside the host
     this.resizeFrame = null;
   },
-  mounted() {
+  async mounted() {
+    await this.$nextTick(); // wait for window.path_prefix to be set
+    await loadResource(window.path_prefix + `${this.resourcePath}/uPlot.min.css`);
     this._create();
     // uPlot needs explicit width/height as initial dimensions; the ResizeObserver then keeps the
     // chart in sync with the host element afterwards (same approach as ui.echart), so it can follow
@@ -33,10 +37,12 @@ export default {
   // arrays in its drawing loops; Vue's reactive proxies would slow these down considerably.
   watch: {
     options(options, prevOptions) {
+      if (!this.chart) return; // still loading the CSS; _create will use the current props
       // compare the raw options, so ":"-prefixed functions are compared by their source strings
       if (optionsChanged(toRaw(prevOptions), toRaw(options))) this._create();
     },
     data(data, prevData) {
+      if (!this.chart) return; // still loading the CSS; _create will use the current props
       data = toRaw(data);
       prevData = toRaw(prevData);
       if (dataMatch(prevData, data)) return;
