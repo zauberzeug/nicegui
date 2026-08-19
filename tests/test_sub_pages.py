@@ -1058,6 +1058,28 @@ def test_param_coercion_error_on_client_side_navigation(screen: Screen):
     screen.assert_py_logger('ERROR', msg)
 
 
+def test_error_is_not_replaced_by_404_when_the_path_is_not_fully_consumed(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Go to deep link', '/other/deep')
+        ui.sub_pages({'/': main, '/other': broken})
+
+    def main():
+        ui.label('main page')
+
+    def broken():
+        raise Exception('test exception')  # pylint: disable=broad-exception-raised
+
+    screen.open('/')
+    screen.should_contain('main page')
+
+    msg = 'sub page /other/deep produced an error'
+    screen.click('Go to deep link')
+    screen.should_contain(f'500: {msg}')
+    screen.assert_py_logger('ERROR', msg)
+
+
 def test_disabling_404(screen: Screen):
     @ui.page('/')
     @ui.page('/{_:path}')
@@ -1246,6 +1268,17 @@ def test_unknown_path_still_shows_404_when_routes_are_added_after_an_await(scree
     screen.wait(1.0)  # the late add() must not turn the 404 into a fallback match
     screen.should_contain('404: sub page /other/zzz not found')
     screen.should_not_contain('sub main page')
+
+
+def test_nested_sub_pages_survives_a_parent_without_a_matching_route(screen: Screen):
+    @ui.page('/')
+    def index():
+        with ui.sub_pages({'/other': lambda: ui.label('other page')}):
+            ui.sub_pages({'/': lambda: ui.label('nested main page')})
+
+    screen.allowed_js_errors.append('/ - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('nested main page')
 
 
 def test_http_404_with_root_function_and_sub_pages(screen: Screen):
