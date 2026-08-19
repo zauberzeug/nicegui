@@ -38,9 +38,15 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         if on_click:
             self.on_click(on_click)
 
-    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
-        """Add a callback to be invoked when the button is clicked."""
-        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+    def on_click(self, callback: Handler[ClickEventArguments], replace: bool = False) -> Self:
+        """Add a callback to be invoked when the button is clicked.
+
+        :param callback: callback to be invoked when the button is clicked
+        :param replace: replace existing callback with a new one rather than appending
+        """
+        self.on('click',
+                lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [],
+                replace=replace)
         return self
 
     def _render_markdown(self) -> str:

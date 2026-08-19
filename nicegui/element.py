@@ -357,6 +357,7 @@ class Element(Visibility):
            leading_events: bool = True,
            trailing_events: bool = True,
            js_handler: str = '(...args) => emit(...args)',
+           replace: bool = False
            ) -> Self:
         """Subscribe to an event.
 
@@ -384,11 +385,13 @@ class Element(Visibility):
         :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: ``True``)
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
+        :param replace: whether to replace the event or append to existing events
         """
         if handler or js_handler:
+            event_type = helpers.event_type_to_camel_case(type)
             listener = EventListener(
                 element_id=self.id,
-                type=helpers.event_type_to_camel_case(type),
+                type=event_type,
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
                 handler=handler,
                 js_handler=None if js_handler == '(...args) => emit(...args)' else js_handler,
@@ -397,6 +400,10 @@ class Element(Visibility):
                 trailing_events=trailing_events,
                 request=storage.request_contextvar.get(),
             )
+            if replace:
+                self._event_listeners = {
+                    id_: l for id_, l in self._event_listeners.items() if l.type != event_type
+                }
             self._event_listeners[listener.id] = listener
             self.update()
         return self
