@@ -1,9 +1,3 @@
-/**
- * Equal compare for plain objects/arrays
- * @param {object} a
- * @param {object} b
- * @returns {boolean}
- */
 function deepCompare(a, b) {
   if (a === b) return true;
   if (typeof a !== typeof b) return false;
@@ -26,38 +20,13 @@ function deepCompare(a, b) {
   return true;
 }
 
-/**
- * Compares uPlot options for update/create/keep
- * @param {Object} _lhs
- * @param {Object} _rhs
- * @returns {'keep'|'update'|'create'}
- */
-export function optionsUpdateState(_lhs, _rhs) {
-  const { width: lhsWidth, height: lhsHeight, plugins: lhsPlugins, ...lhs } = _lhs;
-  const { width: rhsWidth, height: rhsHeight, plugins: rhsPlugins, ...rhs } = _rhs;
-  if (lhsHeight !== rhsHeight || lhsWidth !== rhsWidth) {
-    return "update";
-  }
-  if (Object.keys(lhs).length !== Object.keys(rhs).length) {
-    return "create";
-  }
-  const lhsKeys = Object.keys(lhs);
-  for (let i = 0; i < lhsKeys.length; i++) {
-    const k = lhsKeys[i];
-    if (!deepCompare(lhs[k], rhs[k])) {
-      return "create";
-    }
-  }
-
-  return "keep";
+// width and height are ignored because the chart is sized by its host element (see uplot.js)
+export function optionsChanged(lhs, rhs) {
+  const { width: _lhsWidth, height: _lhsHeight, ...lhsRest } = lhs;
+  const { width: _rhsWidth, height: _rhsHeight, ...rhsRest } = rhs;
+  return !deepCompare(lhsRest, rhsRest);
 }
 
-/**
- * Compares uPlot data arrays
- * @param {Array} lhs
- * @param {Array} rhs
- * @returns {boolean}
- */
 export function dataMatch(lhs, rhs) {
   if (lhs.length !== rhs.length) {
     return false;

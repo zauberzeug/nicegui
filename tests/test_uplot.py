@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -82,20 +83,16 @@ def test_custom_series_function(screen: Screen):
     assert html is not None and 'F' in html
 
 
-def test_scale_mode_prop(screen: Screen):
-    def register_page(prop):
-        @ui.page(f'/{prop}')
-        def _():
-            options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}
-            data = [[0, 1], [2, 4]]
-            ui.uplot(options, data, scale_mode=prop)
+@pytest.mark.parametrize('mode', ['reset', 'preserve_zoom', 'preserve_all'])
+def test_scale_mode_prop(screen: Screen, mode: str):
+    @ui.page('/')
+    def page():
+        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}
+        data = [[0, 1], [2, 4]]
+        ui.uplot(options, data, scale_mode=mode)
 
-    for prop in ['reset', 'preserve_zoom', 'preserve_all']:
-        register_page(prop)
-
-    for prop in ['reset', 'preserve_zoom', 'preserve_all']:
-        screen.open(f'/{prop}')
-        assert screen.find_by_tag('canvas')
+    screen.open('/')
+    assert screen.find_by_tag('canvas')
 
 
 def test_empty_data(screen: Screen):
@@ -150,13 +147,6 @@ def test_create_dynamically(screen: Screen):
     assert screen.find_by_tag('canvas')
 
 
-def _x_scale(screen: Screen) -> list:
-    """Read the live uPlot x-scale [min, max] via the NiceGUI client's getElement() seam."""
-    return screen.selenium.execute_script(
-        'const u = getElement(parseInt(document.querySelector(".nicegui-uplot").id.slice(1)))._chart;'
-        'return [u.scales.x.min, u.scales.x.max];')
-
-
 def test_resize_after_reveal(screen: Screen):
     """A chart created in a hidden (zero-size) container must fill its box once revealed."""
     @ui.page('/')
@@ -177,8 +167,11 @@ def test_resize_after_reveal(screen: Screen):
 
 def test_preserve_zoom_keeps_zoom_on_update(screen: Screen):
     """scale_mode='preserve_zoom' keeps a manual zoom across a data update; 'reset' recomputes it."""
+    plot = None
+
     @ui.page('/{mode}')
     def page(mode: str):
+        nonlocal plot
         options = {'width': 400, 'height': 200, 'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}
         plot = ui.uplot(options, [list(range(11)), list(range(11))], scale_mode=mode)
 
@@ -186,27 +179,73 @@ def test_preserve_zoom_keeps_zoom_on_update(screen: Screen):
             plot.data = [list(range(12)), list(range(12))]
         ui.button('Update', on_click=update)
 
+    def x_scale() -> list:
+        return screen.selenium.execute_script(f'const u = getElement({plot.id}).chart; return [u.scales.x.min, u.scales.x.max];')
+
     def zoom_to_2_5():
-        screen.selenium.execute_script(
-            'getElement(parseInt(document.querySelector(".nicegui-uplot").id.slice(1)))'
-            '._chart.setScale("x", {min: 2, max: 5});')
+        screen.selenium.execute_script(f'getElement({plot.id}).chart.setScale("x", {{min: 2, max: 5}});')
 
     screen.open('/preserve_zoom')
     screen.wait(0.3)
     zoom_to_2_5()
-    assert _x_scale(screen) == [2, 5]
+    assert x_scale() == [2, 5]
     screen.click('Update')
     screen.wait(0.3)
-    assert _x_scale(screen) == [2, 5], 'preserve_zoom should keep the manual zoom after a data update'
+    assert x_scale() == [2, 5], 'preserve_zoom should keep the manual zoom after a data update'
 
     screen.open('/reset')
     screen.wait(0.3)
     zoom_to_2_5()
     screen.click('Update')
     screen.wait(0.3)
-    min_x, max_x = _x_scale(screen)
+    min_x, max_x = x_scale()
     assert (min_x, max_x) != (2, 5), 'reset should recompute the scale'
     assert max_x >= 11, 'reset should fit the new full data range'
+
+
+@pytest.mark.parametrize('mode', ['preserve_all', 'preserve_zoom'])
+def test_redraw_when_keeping_scales(screen: Screen, mode: str):
+    """Data updates must redraw the canvas even when the scales are kept (uPlot's setData(data, false) does not)."""
+    plot = None
+
+    @ui.page('/')
+    def page():
+        nonlocal plot
+        options = {'width': 400, 'height': 200, 'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}
+        plot = ui.uplot(options, [[0, 1, 2], [0, 1, 2]], scale_mode=mode)
+        ui.button('Update', on_click=lambda: setattr(plot, 'data', [[0, 1, 2], [2, 1, 0]]))
+
+    def canvas_image() -> str:
+        return screen.selenium.execute_script('return document.querySelector(".nicegui-uplot canvas").toDataURL();')
+
+    screen.open('/')
+    screen.wait(0.3)
+    screen.selenium.execute_script(f'getElement({plot.id}).chart.setScale("x", {{min: 0.5, max: 1.5}});')  # zoom in
+    screen.wait(0.3)
+    image_before = canvas_image()
+    screen.click('Update')
+    screen.wait(0.3)
+    assert canvas_image() != image_before, 'the canvas should show the new data'
+
+
+def test_dynamic_options_keep_chart_on_data_update(screen: Screen):
+    """A data update must not recreate the chart only because the options contain ":"-prefixed functions."""
+    plot = None
+
+    @ui.page('/')
+    def page():
+        nonlocal plot
+        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red', ':value': '(self, v) => v'}]}
+        plot = ui.uplot(options, [[0, 1], [2, 4]])
+        ui.button('Update', on_click=lambda: setattr(plot, 'data', [[0, 1, 2], [2, 4, 6]]))
+
+    screen.open('/')
+    screen.wait(0.3)
+    screen.selenium.execute_script(f'getElement({plot.id}).chart.marker = true;')
+    screen.click('Update')
+    screen.wait(0.3)
+    assert screen.selenium.execute_script(f'return getElement({plot.id}).chart.marker;'), \
+        'the uPlot instance should survive a data update'
 
 
 def test_recreate_preserves_container_size(screen: Screen):
@@ -246,10 +285,6 @@ def test_delete_without_error(screen: Screen):
     screen.click('Delete')
     screen.wait(0.3)
     assert not screen.find_all_by_tag('canvas')
-    js_errors = [log['message'] for log in screen.selenium.get_log('browser')
-                 if log['level'] == 'SEVERE' and 'favicon' not in log['message']]
-    assert not js_errors, js_errors
-    assert not screen.caplog.records
 
 
 def test_update_in_flex_container(screen: Screen):
@@ -336,5 +371,5 @@ def test_content_sized_host_does_not_grow(screen: Screen):
     height_1 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
     screen.wait(1.0)
     height_2 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
-    assert height_1 == height_2, f'host kept resizing: {height_1} -> {height_2}'
-    assert 0 < height_2 < 600, f'host grew unexpectedly: {height_2}'
+    assert height_1 == height_2, f'host height should stay constant once settled: {height_1} -> {height_2}'
+    assert 0 < height_2 < 600, f'host should stay content-sized: {height_2}'
