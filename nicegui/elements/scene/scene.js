@@ -141,9 +141,26 @@ export default {
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
 
-    const gridSize = this.grid[0] || 100;
-    const gridDivisions = this.grid[1] || 100;
-    if (this.grid) {
+    if (this.polarGrid) {
+      const radius = this.polarGrid[0] || 1.0;
+      const sectors = this.polarGrid[1] || 10;
+      const rings = this.polarGrid[2] || 10;
+      const divisions = this.polarGrid[3] || 64;
+      const ground = new THREE.Mesh(
+        new THREE.CircleGeometry(radius, divisions),
+        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
+      );
+      ground.translateZ(-0.01);
+      ground.object_id = "ground";
+      this.scene.add(ground);
+      const polarGrid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+      polarGrid.material.transparent = true;
+      polarGrid.material.opacity = 0.3;
+      polarGrid.rotateX(Math.PI / 2);
+      this.scene.add(polarGrid);
+    } else if (this.grid) {
+      const gridSize = this.grid[0] || 100;
+      const gridDivisions = this.grid[1] || 100;
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(gridSize, gridSize),
         new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
@@ -452,6 +469,7 @@ export default {
     width: Number,
     height: Number,
     grid: Object,
+    polarGrid: Array,
     cameraType: String,
     cameraParams: Object,
     clickEvents: Array,

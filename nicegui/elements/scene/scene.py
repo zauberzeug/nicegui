@@ -45,13 +45,18 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     # pylint: disable=import-outside-toplevel
     from .objects.axes_helper import AxesHelper as axes_helper
     from .objects.box import Box as box
+    from .objects.capsule import Capsule as capsule
+    from .objects.cone import Cone as cone
     from .objects.curve import Curve as curve
     from .objects.cylinder import Cylinder as cylinder
     from .objects.extrusion import Extrusion as extrusion
     from .objects.gltf import Gltf as gltf
     from .objects.group import Group as group
+    from .objects.lathe import Lathe as lathe
     from .objects.line import Line as line
+    from .objects.plane import Plane as plane
     from .objects.point_cloud import PointCloud as point_cloud
+    from .objects.polyline import Polyline as polyline
     from .objects.quadratic_bezier_tube import QuadraticBezierTube as quadratic_bezier_tube
     from .objects.ring import Ring as ring
     from .objects.sphere import Sphere as sphere
@@ -60,6 +65,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
     from .objects.text import Text as text
     from .objects.text3d import Text3d as text3d
     from .objects.texture import Texture as texture
+    from .objects.torus import Torus as torus
 
     @resolve_defaults
     def __init__(self,
@@ -77,6 +83,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
+                 polar_grid: tuple[float, int, int] | tuple[float, int, int, int] | None = None,
                  ) -> None:
         """3D Scene
 
@@ -98,6 +105,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
+        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` or ``(radius, sectors, rings, divisions)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; ``divisions`` controls the visual smoothness of each ring (default: ``64``); takes precedence over ``grid`` (default: ``None``)
         """
         super().__init__()
         self._props['width'] = width
@@ -105,6 +113,7 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self._props['fps'] = fps
         self._props['show-stats'] = show_stats
         self._props['grid'] = grid
+        self._props['polar-grid'] = polar_grid
         self._props['background-color'] = background_color
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
