@@ -14,22 +14,18 @@ export default {
   },
   created() {
     this.chart = null;
-    this.chrome = 0; // measured height of uPlot's title + legend, reserved so they fit inside the host
-    this.resizeFrame = null;
   },
   async mounted() {
     await this.$nextTick(); // wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.resourcePath}/uPlot.min.css`);
-    this._create();
     // uPlot needs explicit width/height as initial dimensions; the ResizeObserver then keeps the
     // chart in sync with the host element afterwards (same approach as ui.echart), so it can follow
     // its container when sized via CSS classes.
     this.resizeObserver = new ResizeObserver(() => this._resize());
-    this.resizeObserver.observe(this.$el);
+    this._create();
   },
   unmounted() {
     this.resizeObserver?.disconnect();
-    cancelAnimationFrame(this.resizeFrame);
     this._destroy();
   },
   // NiceGUI replaces the whole prop object on every update, so the watchers need not be deep.
@@ -69,18 +65,12 @@ export default {
       if (!width || !height) return;
       // uPlot renders the title and legend as DOM siblings of the plot, so reserve room for them and
       // shrink the plot to keep the whole chart inside the host box instead of overflowing it (like
-      // ui.echart). Their height is only known once laid out and can change (e.g. the legend wrapping
-      // to another row), so apply the last known value now and re-measure on the next frame.
-      this.chart.setSize({ width, height: Math.max(0, height - this.chrome) });
-      cancelAnimationFrame(this.resizeFrame);
-      this.resizeFrame = requestAnimationFrame(() => {
-        if (!this.chart) return;
-        const chrome = this.chart.root.offsetHeight - this.chart.height;
-        if (chrome >= 0 && chrome !== this.chrome) {
-          this.chrome = chrome;
-          this._resize();
-        }
-      });
+      // ui.echart). Subtracting the plot from the root measures them without depending on the plot
+      // height, so a single pass settles it.
+      const chrome = Math.max(0, this.chart.root.offsetHeight - this.chart.height);
+      const plotHeight = Math.max(0, height - chrome);
+      if (width === this.chart.width && plotHeight === this.chart.height) return; // setSize always redraws
+      this.chart.setSize({ width, height: plotHeight });
     },
     _destroy() {
       this.chart?.destroy();
@@ -98,6 +88,11 @@ export default {
       if (this.$el.offsetHeight) options.height = this.$el.offsetHeight;
       this.chart = new uPlot(options, toRaw(this.data), this.$el);
       this._resize();
+      // observe the title and legend too: the live legend grows for wider values without resizing the host
+      this.resizeObserver.disconnect();
+      for (const el of [this.$el, ...this.chart.root.querySelectorAll(".u-title, .u-legend")]) {
+        this.resizeObserver.observe(el);
+      }
     },
   },
 };

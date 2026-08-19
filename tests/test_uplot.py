@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from selenium.webdriver.common.action_chains import ActionChains
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -335,6 +336,24 @@ def test_wrapping_legend_fits_in_box(screen: Screen):
     assert chart_height <= host_height
 
 
+def test_growing_legend_fits_in_box(screen: Screen):
+    """A live legend showing wider values grows without resizing the host; the chart must still fit."""
+    @ui.page('/')
+    def page():
+        with ui.element().style('width: 220px; height: 300px'):
+            options = {'width': 220, 'height': 300, 'scales': {'x': {'time': False}},
+                       'series': [{'label': 'x'}, {'label': 'alpha'}, {'label': 'beta'}]}
+            ui.uplot(options, [[0, 1], [111111111111, 2], [333333333333, 4]]).classes('w-full h-full')
+
+    screen.open('/')
+    screen.wait(0.5)
+    ActionChains(screen.selenium).move_to_element(screen.find_by_class('u-over')).perform()
+    screen.wait(0.5)
+    host_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
+    chart_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot .uplot').offsetHeight")
+    assert chart_height <= host_height
+
+
 def test_legend_mounted_externally(screen: Screen):
     """uPlot's legend.mount relocates the legend; our resize logic then gives the whole box to the canvas."""
     @ui.page('/')
@@ -367,7 +386,9 @@ def test_content_sized_host_does_not_grow(screen: Screen):
         ui.uplot(options, [[0, 1, 2], [3, 4, 5]]).style('width: 400px; height: auto')
 
     screen.open('/')
-    screen.wait(0.8)  # allow the chrome re-measure and observer to settle
+    screen.wait(0.8)  # allow the resize observer to settle
+    # with no box to fit into, the plot must keep the configured height instead of absorbing the chrome
+    assert screen.find_by_tag('canvas').get_attribute('height') == '200'
     height_1 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
     screen.wait(1.0)
     height_2 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
