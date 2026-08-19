@@ -194,7 +194,7 @@ export default {
       this.scene.add(grid);
     }
     this.controlClass = { trackball: TrackballControls, map: MapControls }[this.controlType] || OrbitControls;
-    this.create_controls();
+    this.create_controls(this.camera.up);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -506,20 +506,17 @@ export default {
       this.move(object_id, x, y, z);
       this.rotate(object_id, R);
     },
-    create_controls() {
+    create_controls(up) {
       this.controls = new this.controlClass(this.camera, this.renderer.domElement);
-      // TrackballControls rotates the camera's up vector, so the vector the controls were created for
-      // must be remembered separately to tell a user rotation apart from an actual camera move
-      this.controls_up = this.camera.up.clone();
+      // remember the up vector the controls were built for: camera.up may differ from it after a user rotation
+      // (TrackballControls) or an interrupted tween, so it cannot be used to decide whether a rebuild is needed
+      this.controls_up = up.clone();
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
+      if (!this.controls) return; // WebGL renderer could not be created
       if (this.camera_tween) this.camera_tween.stop();
-      const target_up = new THREE.Vector3(
-        up_x === null ? this.camera.up.x : up_x,
-        up_y === null ? this.camera.up.y : up_y,
-        up_z === null ? this.camera.up.z : up_z,
-      );
-      // the controls are only rebuilt if the up vector they were created for really changes,
+      const target_up = new THREE.Vector3(up_x, up_y, up_z);
+      // the controls are only rebuilt if the up vector they were built for really changes,
       // because rebuilding resets their configuration
       const camera_up_changed = !this.controls_up.equals(target_up);
       this.camera_tween = new TWEEN.Tween([
@@ -533,20 +530,7 @@ export default {
         this.look_at.y,
         this.look_at.z,
       ])
-        .to(
-          [
-            x === null ? this.camera.position.x : x,
-            y === null ? this.camera.position.y : y,
-            z === null ? this.camera.position.z : z,
-            target_up.x,
-            target_up.y,
-            target_up.z,
-            look_at_x === null ? this.look_at.x : look_at_x,
-            look_at_y === null ? this.look_at.y : look_at_y,
-            look_at_z === null ? this.look_at.z : look_at_z,
-          ],
-          duration * 1000,
-        )
+        .to([x, y, z, up_x, up_y, up_z, look_at_x, look_at_y, look_at_z], duration * 1000)
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
           this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
@@ -556,14 +540,14 @@ export default {
         })
         .onComplete(() => {
           if (camera_up_changed) {
-            this.camera.up.copy(target_up); // remove interpolation residue, so the next comparison is exact
             this.controls.dispose();
-            this.create_controls();
+            this.create_controls(target_up);
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
         })
         .start();
+      if (duration === 0) this.camera_tween.update(); // settle immediately, so subsequent JavaScript sees the final state
     },
     get_camera() {
       return {
@@ -593,6 +577,7 @@ export default {
         this.camera.right = (this.camera.aspect * this.cameraParams.size) / 2;
       }
       this.camera.updateProjectionMatrix();
+      this.controls.handleResize?.(); // TrackballControls caches the canvas rect
     },
     init_objects(data) {
       this.resize();

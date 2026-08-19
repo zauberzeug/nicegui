@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
 from selenium.webdriver import ActionChains
-from selenium.webdriver.common.by import By
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
@@ -330,7 +329,8 @@ def test_moving_camera_keeps_trackball_controls_after_rotating(screen: Screen):
     static_moving = f'getElement({scene.id}).controls.staticMoving'
     screen.selenium.execute_script(f'{static_moving} = true')  # no rotation momentum after releasing the mouse
 
-    canvas = screen.selenium.find_element(By.CSS_SELECTOR, '.nicegui-scene canvas')
+    canvas = screen.find_by_tag('canvas')
+    screen.wait_for(canvas.is_displayed)  # the scene is hidden until it is initialized
     ActionChains(screen.selenium).click_and_hold(canvas).move_by_offset(50, 50).release().perform()
     camera_up_z = f'getElement({scene.id}).camera.up.z'
     screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_up_z}') != 1)  # the user rotated the scene
@@ -339,6 +339,40 @@ def test_moving_camera_keeps_trackball_controls_after_rotating(screen: Screen):
     scene.move_camera(x=1, duration=0)
     screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_x}') == pytest.approx(1))
     assert screen.selenium.execute_script(f'return {static_moving}') is True
+
+
+def test_trackball_controls_follow_canvas_size(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(control_type='trackball').classes('w-full h-64')
+
+    screen.open('/')
+    canvas = screen.find_by_tag('canvas')
+    screen.wait_for(canvas.is_displayed)  # the scene is hidden until it is initialized
+    assert canvas.size['width'] != 400, 'the canvas has been resized from its default size'
+    screen_width = f'getElement({scene.id}).controls.screen.width'
+    assert screen.selenium.execute_script(f'return {screen_width}') == canvas.size['width']
+
+
+def test_configuring_controls_after_initialization(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    async def page():
+        nonlocal scene
+        scene = ui.scene()
+        scene.move_camera(up_y=1, up_z=0)
+        await scene.initialized()
+        ui.run_javascript(f'getElement({scene.id}).controls.enableRotate = false')
+
+    screen.open('/')
+    camera_up_y = f'getElement({scene.id}).camera.up.y'
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_up_y}') == pytest.approx(1))
+    enable_rotate = f'getElement({scene.id}).controls.enableRotate'
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is False, 'configuration survives initialization'
 
 
 async def test_dragend_after_object_deleted(user: User):
