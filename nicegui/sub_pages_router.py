@@ -124,8 +124,7 @@ class SubPagesRouter:
         for sub_pages in sub_pages_elements:
             if (
                 sub_pages._match is not None and  # pylint: disable=protected-access
-                sub_pages._match.remaining_path and  # pylint: disable=protected-access
-                not any(isinstance(el, SubPages) for el in sub_pages.descendants())
+                sub_pages._has_unconsumed_path(sub_pages._match)  # pylint: disable=protected-access
             ):
                 sub_pages._set_match(None)  # pylint: disable=protected-access
         return not has_any_unresolved_path(client, with_404_enabled_only=True)

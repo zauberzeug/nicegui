@@ -164,7 +164,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             index = len(self.default_slot.children)
             with self:
                 self._render_404()
-            self._404_elements = self.default_slot.children[index:]
+            self._404_elements = self.default_slot.children[index:]  # the elements to delete when the 404 is retracted
 
     def _retract_404(self) -> None:
         """Withdraw a 404 because a nested sub pages element has appeared to consume the remaining path."""
