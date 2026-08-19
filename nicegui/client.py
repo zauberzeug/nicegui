@@ -74,9 +74,6 @@ class Client:
     instances: ClassVar[dict[str, Client]] = {}
     '''Maps client IDs to clients.'''
 
-    MAX_TAB_STORAGES_PER_CLIENT: ClassVar[int] = 128
-    '''Maximum number of tab storages a single client may create (a browser presents only one tab ID per client).'''
-
     shared_head_html = ''
     '''HTML to be inserted in the <head> of every page template.'''
 
@@ -354,8 +351,8 @@ class Client:
         self._exception_handlers.append(handler)
 
     def register_tab_id(self, tab_id: str) -> bool:
-        """Remember a tab ID, unless `MAX_TAB_STORAGES_PER_CLIENT` is already exhausted. (For internal use only.)"""
-        if tab_id not in self._tab_ids and len(self._tab_ids) >= self.MAX_TAB_STORAGES_PER_CLIENT:
+        """Remember a tab ID, unless ``max_tab_storages_per_client`` is already exhausted. (For internal use only.)"""
+        if tab_id not in self._tab_ids and len(self._tab_ids) >= core.app.storage.max_tab_storages_per_client:
             return False
         self._tab_ids.add(tab_id)
         return True
@@ -395,6 +392,8 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
+                active_elsewhere = {client.tab_id for client in Client.instances.values() if client is not self}
+                await core.app.storage.prune_empty_tabs(self._tab_ids - active_elsewhere)
                 await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
         self._delete_tasks[document_id] = \

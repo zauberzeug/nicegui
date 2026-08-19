@@ -4,7 +4,6 @@ import re
 import threading
 import time
 from collections.abc import Callable
-from uuid import uuid4
 
 import httpx
 import pytest
@@ -248,21 +247,53 @@ def test_clear_tab_storage(screen: Screen):
 async def test_tab_storage_is_capped_per_client(user: User):
     @ui.page('/')
     def page():
-        ui.label('ok')
+        pass
 
     client = await user.open('/')  # registers the first tab ID
 
-    async def handshake_with_a_fresh_tab_id() -> bool:
-        return await _on_handshake(f'test-{uuid4()}', {
-            'client_id': client.id,
-            'tab_id': str(uuid4()),
-            'document_id': str(uuid4()),
-        })
+    async def handshake_with_tab(tab_id: str) -> bool:
+        return await _on_handshake(f'test-{tab_id}', {'client_id': client.id, 'tab_id': tab_id, 'document_id': 'doc'})
 
-    for _ in range(Client.MAX_TAB_STORAGES_PER_CLIENT - 1):
-        assert await handshake_with_a_fresh_tab_id()
-    assert not await handshake_with_a_fresh_tab_id()
-    assert len(app.storage._tabs) == Client.MAX_TAB_STORAGES_PER_CLIENT  # pylint: disable=protected-access
+    for i in range(app.storage.max_tab_storages_per_client - 1):  # the client already registered one tab ID on open
+        assert await handshake_with_tab(f'tab-{i}')
+    assert not await handshake_with_tab('one-too-many')
+
+
+async def test_empty_tab_storages_are_reclaimed_when_client_is_deleted(user: User):
+    @ui.page('/', reconnect_timeout=0)
+    def page():
+        pass
+
+    client = await user.open('/')  # creates one empty tab storage
+    assert await _on_handshake('test-a', {'client_id': client.id, 'tab_id': 'empty', 'document_id': 'doc-a'})
+    assert await _on_handshake('test-b', {'client_id': client.id, 'tab_id': 'used', 'document_id': 'doc-b'})
+    app.storage._tabs['used']['keep'] = 'me'  # pylint: disable=protected-access
+
+    client.handle_disconnect('test-a')  # deletes the client after reconnect_timeout=0
+    await asyncio.sleep(0.1)
+
+    tabs = app.storage._tabs  # pylint: disable=protected-access
+    assert 'empty' not in tabs, 'empty tab storages should be reclaimed with their client'
+    assert 'used' in tabs, 'tab storages holding data must survive'
+
+
+async def test_empty_tab_storage_shared_by_a_live_client_is_not_reclaimed(user: User):
+    # a page reload reuses the tab ID under a fresh client ID, so the old and new client briefly share one tab storage
+    @ui.page('/', reconnect_timeout=0)
+    def page():
+        pass
+
+    new_client = await user.open('/')  # the reloaded page; owns an (empty) tab storage
+    tab_id = new_client.tab_id
+    assert tab_id in app.storage._tabs  # pylint: disable=protected-access
+
+    old_client = Client(new_client.page, request=new_client.request)  # the pre-reload client, about to be reaped
+    assert await _on_handshake('test-old', {'client_id': old_client.id, 'tab_id': tab_id, 'document_id': 'doc-old'})
+
+    old_client.handle_disconnect('test-old')  # reaps the old client after reconnect_timeout=0
+    await asyncio.sleep(0.1)
+
+    assert tab_id in app.storage._tabs, 'a tab storage still claimed by a live client must survive'  # pylint: disable=protected-access
 
 
 def test_client_storage(screen: Screen):
