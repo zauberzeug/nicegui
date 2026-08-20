@@ -202,6 +202,10 @@ def test_autocompletion(screen: Screen):
     element.send_keys('o')
     screen.should_contain('nce')
 
+    input_.set_autocomplete(None)  # removing the list used to raise a TypeError in the shadowText computed (#6161)
+    screen.wait(0.2)
+    screen.should_not_contain('nce')
+
 
 def test_clearable_input(screen: Screen):
     @ui.page('/')

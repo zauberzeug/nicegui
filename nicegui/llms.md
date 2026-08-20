@@ -119,8 +119,9 @@ Use `ui.run_javascript()` only for things that are truly impossible via the Pyth
 
 NiceGUI runs in a single asyncio event loop. Every page, every user, every timer shares it. Blocking the loop (with `time.sleep()`, `requests.get()`, heavy CPU work) freezes the **entire application** for all users. Rules:
 
-- All I/O must be async (`httpx`, `aiofiles`, `asyncio.sleep()`)
-- CPU-heavy work must run in a thread: `await asyncio.to_thread(cpu_func)` (Python 3.9+, simpler than `run_in_executor`; use `run_in_executor` when you need a custom executor like `ProcessPoolExecutor`)
+- All I/O must be async (`httpx`, `aiofiles`, `asyncio.sleep()`) — or wrap a blocking call with `await run.io_bound(fn, *args)`, which runs it in a thread
+- CPU-heavy work must leave the event loop: `await run.cpu_bound(fn, *args)` runs it in a separate process (arguments and return value must be picklable)
+- `run.io_bound` / `run.cpu_bound` come from `from nicegui import run` — prefer them over `asyncio.to_thread()` or a hand-rolled `run_in_executor`, because NiceGUI manages the pools and their shutdown
 - `background_tasks.create()` for fire-and-forget coroutines — wraps `create_task` but keeps a reference (so the GC won't cancel it) and routes exceptions through NiceGUI's exception handler. Avoid bare `asyncio.create_task()` or `asyncio.ensure_future()` for this reason.
 - Timers (`ui.timer()`) are safe: they schedule callbacks without blocking
 
@@ -167,19 +168,20 @@ async def index():
 
 **Never reach for raw CSS, Quasar props, or JavaScript unless NiceGUI's Python API is insufficient.**
 
-| Situation               | WRONG                                                      | RIGHT                                                                            |
-| ----------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Change background color | `ui.add_head_html('<style>body{background:blue}</style>')` | `ui.query('body').classes('bg-blue')`                                            |
-| Hide an element         | `element.run_method('hide')`                               | `element.visible = False`                                                        |
-| Style a button          | `ui.button(...).style('background-color: green')`          | `ui.button(..., color='green')`                                                  |
-| Center content          | raw flexbox CSS                                            | `with ui.row().classes('justify-center'):`                                       |
-| React to input          | JS event listener                                          | `ui.input(on_change=handler)`                                                    |
-| Repeat an action        | `asyncio.create_task(loop())`                              | `ui.timer(interval, callback)`                                                   |
-| Navigate                | `ui.run_javascript('window.location = ...')`               | `ui.navigate.to(url)`                                                            |
-| Show a message          | custom HTML overlay                                        | `ui.notify('message')`                                                           |
-| Copy to clipboard       | `ui.run_javascript("navigator.clipboard.writeText(...)")`  | `await ui.clipboard.write(text)`                                                 |
-| Styled download link    | `ui.html('<a href=... style=...>')`                        | `ui.button('Download').props('href=/download tag=a')`                            |
-| CPU work in thread      | `asyncio.get_event_loop().run_in_executor(None, fn)`       | `await asyncio.to_thread(fn)` (3.9+; use `run_in_executor` for custom executors) |
+| Situation               | WRONG                                                      | RIGHT                                                 |
+| ----------------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| Change background color | `ui.add_head_html('<style>body{background:blue}</style>')` | `ui.query('body').classes('bg-blue')`                 |
+| Hide an element         | `element.run_method('hide')`                               | `element.visible = False`                             |
+| Style a button          | `ui.button(...).style('background-color: green')`          | `ui.button(..., color='green')`                       |
+| Center content          | raw flexbox CSS                                            | `with ui.row().classes('justify-center'):`            |
+| React to input          | JS event listener                                          | `ui.input(on_change=handler)`                         |
+| Repeat an action        | `asyncio.create_task(loop())`                              | `ui.timer(interval, callback)`                        |
+| Navigate                | `ui.run_javascript('window.location = ...')`               | `ui.navigate.to(url)`                                 |
+| Show a message          | custom HTML overlay                                        | `ui.notify('message')`                                |
+| Copy to clipboard       | `ui.run_javascript("navigator.clipboard.writeText(...)")`  | `await ui.clipboard.write(text)`                      |
+| Styled download link    | `ui.html('<a href=... style=...>')`                        | `ui.button('Download').props('href=/download tag=a')` |
+| Blocking I/O call       | `requests.get(url)` in an async handler                    | `await run.io_bound(requests.get, url)`               |
+| CPU-heavy work          | `asyncio.get_event_loop().run_in_executor(None, fn)`       | `await run.cpu_bound(fn)`                             |
 
 ---
 
@@ -334,7 +336,12 @@ ui.label('Hello World')
 ui.markdown('**Bold** and *italic*')
 ui.markdown('```mermaid\ngraph TD; A-->B\n```',
             extras=['fenced-code-blocks', 'tables', 'mermaid'])  # `extras` REPLACES the default ['fenced-code-blocks', 'tables']
+ui.markdown.default_extras = ['fenced-code-blocks', 'tables', 'mermaid']  # change the default for all ui.markdown (since 3.14)
 ui.code('print("hello")', language='python')
+editor = ui.codemirror('def f():\n    return 42', language='Python')  # editable code editor
+editor.line_anchors = {'a': 2}          # line anchors (since 3.16): stable {id: line} references that follow
+                                        # their line through edits; read back for the current positions,
+                                        # on_anchor_change= fires whenever a tracked position moves
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -431,6 +438,47 @@ with ui.scene() as scene:
     scene.box().material('#ff0000')
 ```
 
+### Custom Three.js objects (since 3.16)
+
+Subclass `Object3D` and pair it with a sibling JS module.
+The `component=` path is resolved relative to the Python file — no manual registration needed.
+`super().__init__(...)` args are forwarded positionally to the JS factory; `self.run_method('<name>', *args)` dispatches to a same-named method on the component instance.
+
+```python
+# pulsing_sphere.py
+from nicegui.elements.scene import Object3D
+
+class PulsingSphere(Object3D, component='pulsing_sphere.js'):
+    def __init__(self, radius: float = 1.0) -> None:
+        super().__init__(radius)
+    def set_scale(self, s: float):
+        self.run_method('set_scale', s)
+```
+
+```js
+// pulsing_sphere.js — default-export a class
+import { THREE } from "nicegui-scene";
+
+export default class PulsingSphere {
+  mesh;
+  // or: create_geometry(...) for a plain BufferGeometry
+  create_mesh(radius) {
+    this.mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 32, 16),
+      new THREE.MeshPhongMaterial({ transparent: true }),
+    );
+    return this.mesh;
+  }
+  set_scale(s) { this.mesh.scale.set(s, s, s); }
+  // optional hooks: apply_material({ color, opacity, side }), created()
+}
+```
+
+Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
+Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
+
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
+
 ---
 
 ## Navigation & Dialogs
@@ -454,6 +502,13 @@ with ui.dialog() as dialog:
             ui.button('Yes', on_click=dialog.close)
             ui.button('No', on_click=dialog.close)
 ui.button('Open', on_click=dialog.open)
+# dialog, menu and popup share open() / close() / toggle()
+
+# Popup (since 3.15): placed *inside* the element that should open it;
+# shown as a menu, or as a dialog below the "breakpoint" prop (default 450px)
+with ui.label('Click me'):
+    with ui.popup() as popup:
+        ui.input('Name').props('autofocus').on('keydown.enter', popup.close)
 
 # Menu
 with ui.button('Menu'):
@@ -776,30 +831,35 @@ app.add_media_file(local_file='path/to/clip.mp4', url_path='/clip.mp4')
 from starlette.middleware.base import BaseHTTPMiddleware
 app.add_middleware(BaseHTTPMiddleware, dispatch=auth_dispatch)
 
-# Run — full flag surface
+# Run — most relevant flags (the values shown are examples; the default follows in the comment)
 ui.run(
-    host='0.0.0.0',
-    port=8080,
-    title='My App',
-    favicon='🚀',
-    dark=None,                       # None = follow system
-    language='en-US',                # Quasar element language
-    storage_secret='my-secret',      # required for app.storage.user and app.storage.browser
-    reload=True,                     # auto-reload on file change (dev only)
-    show=False,                      # don't open browser automatically
-    binding_refresh_interval=0.1,    # bindings pull-loop interval; raise to reduce CPU
-    tailwind=True,                   # disable to drop the Tailwind runtime
-    prod_js=True,                    # production-minified Vue/Quasar bundles
-    fastapi_docs=False,              # set True to expose /docs, /redoc, /openapi.json
-    markdown=False,                  # experimental: serve your own pages as Markdown to agents
+    host='0.0.0.0',                  # default: '0.0.0.0', or '127.0.0.1' in native mode
+    port=8080,                       # default: 8080, or an open port in native mode
+    title='My App',                  # default: 'NiceGUI'; can be overwritten per page
+    favicon='🚀',                    # default: None (NiceGUI icon); emoji, file path or URL
+    dark=None,                       # default: False; None = follow system
+    language='en-US',                # default: None (Quasar element language)
+    storage_secret='my-secret',      # default: None; required for app.storage.user and app.storage.browser
+    root=None,                       # default: None; root page function (since 3.0)
+    viewport='width=device-width, initial-scale=1',   # this is also the default
+    reload=True,                     # default: True; auto-reload on file change (dev only)
+    show=False,                      # default: True, i.e. the browser is opened automatically
+    reconnect_timeout=3.0,           # default: 3.0; grace period for a client to reconnect
+    binding_refresh_interval=0.1,    # default: 0.1; bindings pull-loop interval, raise to reduce CPU
+    tailwind=True,                   # default: True; disable to drop the Tailwind runtime
+    unocss=None,                     # default: None; 'mini'/'wind3'/'wind4' uses UnoCSS instead of Tailwind (since 3.7)
+    prod_js=True,                    # default: True; production-minified Vue/Quasar bundles
+    fastapi_docs=False,              # default: False; True exposes /docs, /redoc, /openapi.json
+    endpoint_documentation='none',   # default: 'none'; which routes those docs list ('internal'/'page'/'all')
+    markdown=False,                  # default: False; experimental: serve your own pages as Markdown to agents
                                      # (Accept: text/markdown, or recognized agent UAs); override per page via @ui.page(markdown=...)
     # Native desktop window (pywebview) — flagship offline mode:
-    native=False,                    # True opens a native window instead of a browser
-    window_size=(1024, 768),         # implies native=True
-    fullscreen=False,                # implies native=True
-    frameless=False,                 # implies native=True
+    native=False,                    # default: False; True opens a native window instead of a browser
+    window_size=(1024, 768),         # default: None; implies native=True
+    fullscreen=False,                # default: False; implies native=True
+    frameless=False,                 # default: False; implies native=True
     # Tech preview: temporary public URL without port-forwarding
-    on_air=None,                     # True for an anonymous tunnel, or a device token string
+    on_air=None,                     # default: None; True for an anonymous tunnel, or a device token string
 )
 
 # Mount NiceGUI inside an existing FastAPI app instead of using ui.run()
@@ -836,6 +896,29 @@ async def index():
     label = ui.label('Working…')
     background_tasks.create(long_work())
 ```
+
+---
+
+## Blocking Code (`run.io_bound` / `run.cpu_bound`)
+
+Anything that blocks freezes the whole app (see Mental Model #7). NiceGUI ships two wrappers so you don't have to manage executors yourself:
+
+```python
+from nicegui import run
+
+# Blocking I/O (requests, file access, DB drivers without async support) → thread pool
+response = await run.io_bound(requests.get, url, timeout=3)
+
+# CPU-heavy work → process pool (arguments and return value must be picklable,
+# so pass module-level functions, not lambdas or closures)
+result = await run.cpu_bound(compute, data)
+
+# Optional: choose the multiprocessing start method for the cpu_bound pool (since 3.15).
+# Set it before ui.run(); None keeps the platform default, which will become 'spawn' in 4.0.
+run.process_pool_start_method = 'spawn'
+```
+
+Both must be awaited from an async context and currently return `None` instead of the result when the call is cancelled or the app shuts down (NiceGUI 4.0 will raise `CancelledError` there instead).
 
 ---
 
@@ -940,6 +1023,7 @@ async def index():
 | ---------------------- | ----------------------- |
 | `ui.dialog()`          | Modal dialog            |
 | `ui.menu()`            | Dropdown menu           |
+| `ui.popup()`           | Popup inside its anchor |
 | `ui.context_menu()`    | Right-click menu        |
 | `ui.tooltip(text)`     | Hover tooltip           |
 | `ui.notification(msg)` | Persistent notification |
@@ -1152,10 +1236,13 @@ ui.button('Download', icon='download') \
 # BAD: blocking I/O in async handler
 async def on_click():
     data = requests.get(url).json()  # blocks the event loop!
-# GOOD:
+# GOOD: an async client, …
 async def on_click():
     async with httpx.AsyncClient() as client:
         data = (await client.get(url)).json()
+# … or the blocking call wrapped in a thread
+async def on_click():
+    data = (await run.io_bound(requests.get, url)).json()
 
 # BAD: rebuilding entire page on every change
 @ui.page('/')
@@ -1190,6 +1277,15 @@ async def test_counter(user: User) -> None:
     await user.open('/')
     await user.click('Increment')
     await user.should_see('Count: 1')
+```
+
+`user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` always search the whole page (including header, drawers and footer).
+When markers or content repeat across the page, limit them to one subtree with `user.scope(...)` (since 3.16):
+
+```python
+with user.scope(marker='left-card'):  # same filter args as user.find(), must match exactly one element
+    await user.should_see('Apple')
+    user.find('Buy').click()
 ```
 
 Use `Screen` fixture only when JavaScript or real browser rendering is required:
@@ -1273,7 +1369,7 @@ These follow NiceGUI project conventions and work well for NiceGUI-based apps:
 # NEVER block the event loop
 import time
 time.sleep(5)             # blocks everything — never do this in async context
-requests.get(url)         # synchronous HTTP — use httpx or aiohttp instead
+requests.get(url)         # synchronous HTTP — use httpx, or await run.io_bound(requests.get, url)
 
 # ALWAYS use background_tasks for fire-and-forget coroutines
 from nicegui import background_tasks

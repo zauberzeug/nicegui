@@ -27,6 +27,21 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Line Anchors', '''
+    Line anchors give you a more stable reference to specific lines than line numbers.
+    The browser tracks each anchor's position through every change — insertions, deletions, reformatting
+    — and reading `line_anchors` back returns the current line on the Python side.
+    Add or remove lines above the anchored one and watch the reported number follow it.
+    Pass `on_anchor_change` to be notified whenever a tracked position moves.
+
+    *Added in version 3.16.0*
+''')
+def line_anchors_demo() -> None:
+    editor = ui.codemirror('def answer():\n    return 42', line_anchors={'return': 2}).classes('h-40')
+    ui.label().bind_text_from(editor, 'line_anchors',
+                              lambda anchors: f'"return" is on line {anchors.get("return", "—")}')
+
+
 @doc.demo('Editor Signals and Reveal Line', '''
     ``on_selection_change`` reports the 1-indexed line and column whenever the cursor moves,
     plus the ``from_line``/``to_line`` span of the selection (``empty`` distinguishes a bare cursor).
@@ -56,6 +71,8 @@ def signals_and_reveal_demo() -> None:
     or to provide per-platform shortcut overrides (`mac=`, `linux=`, `win=`).
 
     Use `unmap_key(key)` to remove a mapping at runtime.
+
+    *Added in version 3.14.0*
 ''')
 def keymap_demo() -> None:
     editor = ui.codemirror(
@@ -77,7 +94,7 @@ def keymap_demo() -> None:
 @doc.demo('Hover tooltips on lines', '''
     `line_tooltips` maps 1-indexed line numbers to hover content.
 
-    *Added in NiceGUI 3.13.0*
+    *Added in version 3.13.0*
 ''')
 def line_tooltips_demo() -> None:
     editor = ui.codemirror(
@@ -93,7 +110,7 @@ def line_tooltips_demo() -> None:
     Pass `line_tooltip_html=True` to render tooltip content as HTML,
     sanitized via NiceGUI's DOMPurify-backed `setHTML` polyfill.
 
-    *Added in NiceGUI 3.13.0*
+    *Added in version 3.13.0*
 ''')
 def line_tooltip_html_demo() -> None:
     editor = ui.codemirror(

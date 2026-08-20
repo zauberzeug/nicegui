@@ -1,10 +1,14 @@
+import tempfile
+from io import BytesIO
 from pathlib import Path
 
 import pytest
+from starlette.datastructures import UploadFile
+from starlette.formparsers import MultiPartParser
 
-from nicegui import events, ui
-from nicegui.elements.upload_files import _sanitize_filename
-from nicegui.testing import Screen
+from nicegui import app, events, ui
+from nicegui.elements.upload_files import _sanitize_filename, create_file_upload
+from nicegui.testing import Screen, User
 
 test_path1 = Path('tests/test_upload.py').resolve()
 test_path2 = Path('tests/test_scene.py').resolve()
@@ -93,6 +97,26 @@ def test_replace_upload(screen: Screen):
     screen.should_not_contain('A')
 
 
+async def test_route_removal_when_deleting_upload_with_custom_url(user: User):
+    @app.post('/custom/upload')
+    def custom_upload() -> None:
+        pass
+
+    upload: ui.upload = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal upload
+        upload = ui.upload().props('url=/custom/upload')
+
+    await user.open('/')
+    assert any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
+
+    upload.delete()
+    assert not any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
+    assert any(getattr(route, 'path', None) == '/custom/upload' for route in app.routes)
+
+
 def test_reset_upload(screen: Screen):
     @ui.page('/')
     def page():
@@ -176,3 +200,23 @@ async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
 ])
 def test_upload_filename_sanitization(input_name: str | None, expected: str):
     assert _sanitize_filename(input_name) == expected
+
+
+async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.setattr(MultiPartParser, 'spool_max_size', 8)  # spill to a temp file after the first chunk
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
+
+    class FlakyUpload(UploadFile):  # one chunk (triggers the spill), then errors mid-upload
+        _read = False
+
+        async def read(self, size: int = -1) -> bytes:
+            if self._read:
+                assert any(tmp_path.iterdir()), 'first chunk should have been spilled to the temp directory'
+                raise OSError('No space left on device')
+            self._read = True
+            return b'x' * 16
+
+    with pytest.raises(OSError):
+        await create_file_upload(FlakyUpload(BytesIO(b''), filename='big.bin'), chunk_size=16)
+
+    assert not any(tmp_path.iterdir()), 'spilled temp file should be removed when the upload fails'
