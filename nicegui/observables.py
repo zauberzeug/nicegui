@@ -4,14 +4,24 @@ import abc
 import time
 import weakref
 from collections.abc import Callable, Collection, Iterable
+from collections.abc import Set as AbstractSet
 from copy import deepcopy
-from typing import Any, SupportsIndex, cast
+from types import EllipsisType
+from typing import TYPE_CHECKING, SupportsIndex, TypeVar, cast, overload
 
 from typing_extensions import Self
 
 from . import events, helpers
 
-_MISSING = object()
+if TYPE_CHECKING:
+    from _typeshed import SupportsKeysAndGetItem, SupportsRichComparison
+
+_T = TypeVar('_T')
+_T2 = TypeVar('_T2')
+_KT = TypeVar('_KT')
+_VT = TypeVar('_VT')
+_KT2 = TypeVar('_KT2')
+_VT2 = TypeVar('_VT2')
 
 
 class ObservableCollection(abc.ABC):  # noqa: B024
@@ -79,7 +89,28 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             self._parent = None
         self._observer_refs = [ref for ref in self._observer_refs if ref() is not None and ref() is not observer]
 
-    def _observe(self, data: Any) -> Any:
+    @overload
+    def _observe(self, data: dict[_KT, _VT]) -> ObservableDict[_KT, _VT]:
+        ...
+
+    @overload
+    def _observe(self, data: list[_T]) -> ObservableList[_T]:
+        ...
+
+    @overload
+    def _observe(self, data: set[_T]) -> ObservableSet[_T]:
+        ...
+
+    @overload
+    def _observe(self, data: ObservableCollection) -> ObservableCollection:
+        ...
+
+    @overload
+    def _observe(self, data: _T) -> _T:
+        ...
+
+    def _observe(self, data: _T | dict | list | set | ObservableCollection
+                 ) -> _T | ObservableDict | ObservableList | ObservableSet | ObservableCollection:
         if isinstance(data, ObservableCollection):
             data._register_observer(self)  # pylint: disable=protected-access
             return data
@@ -91,7 +122,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             return ObservableSet(data, _parent=self)
         return data
 
-    def _unobserve(self, *items: Any) -> None:
+    def _unobserve(self, *items: object) -> None:
         removed = [item for item in items if isinstance(item, ObservableCollection)]
         if not removed:
             return
@@ -119,7 +150,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             return ObservableSet({deepcopy(item) for item in self}, _parent=self._parent)
         raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
 
-    def __reduce__(self) -> tuple[Any, tuple]:
+    def __reduce__(self) -> tuple[type[Self], tuple]:
         # reconstruct from plain contents so that the observer wiring (weak references, which are not picklable)
         # is rebuilt by __init__ instead of being pickled; a freshly loaded tree has no observers yet.
         if isinstance(self, dict):
@@ -131,10 +162,10 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         raise NotImplementedError(f'ObservableCollection.__reduce__ not implemented for {type(self)}')
 
 
-class ObservableDict(ObservableCollection, dict):
+class ObservableDict(ObservableCollection, dict[_KT, _VT]):
 
     def __init__(self,
-                 data: dict | None = None,
+                 data: dict[_KT, _VT] | None = None,
                  *,
                  on_change: Callable | None = None,
                  _parent: ObservableCollection | None = None,
@@ -143,25 +174,25 @@ class ObservableDict(ObservableCollection, dict):
         for key, value in self.items():
             super().__setitem__(key, self._observe(value))
 
-    def pop(self, k: Any, d: Any = _MISSING) -> Any:
+    def pop(self, k: object, d: _T | EllipsisType = ...) -> _VT | _T:
         try:
-            item = super().pop(k)
+            item = super().pop(cast(_KT, k))
         except KeyError:  # nothing was removed, so skip _unobserve/_handle_change below
-            if d is _MISSING:
+            if d is ...:
                 raise
             return d
         self._unobserve(item)
         self._handle_change()
         return item
 
-    def popitem(self) -> Any:
+    def popitem(self) -> tuple[_KT, _VT]:
         item = super().popitem()
         self._unobserve(item[1])
         self._handle_change()
         return item
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        new_items = dict(*args, **kwargs)
+    def update(self, m: SupportsKeysAndGetItem[_KT, _VT] | Iterable[tuple[_KT, _VT]] = (), /, **kwargs: _VT) -> None:
+        new_items = cast(dict[_KT, _VT], dict(m, **kwargs))
         if not new_items:
             return
         old_values = [self[key] for key in new_items if key in self]
@@ -175,37 +206,38 @@ class ObservableDict(ObservableCollection, dict):
         self._unobserve(*values)
         self._handle_change()
 
-    def setdefault(self, __key: Any, __default: Any = None) -> Any:
+    def setdefault(self, __key: _KT, __default: _VT | None = None) -> _VT:
         if __key in self:
             return super().__getitem__(__key)
-        item = super().setdefault(__key, self._observe(__default))
+        item = super().setdefault(__key, self._observe(cast(_VT, __default)))
         self._handle_change()
         return item
 
-    def __setitem__(self, __key: Any, __value: Any) -> None:
+    def __setitem__(self, __key: _KT, __value: _VT) -> None:
         old_value = self.get(__key)
         super().__setitem__(__key, self._observe(__value))
         self._unobserve(old_value)
         self._handle_change()
 
-    def __delitem__(self, __key: Any) -> None:
+    def __delitem__(self, __key: _KT) -> None:
         item = self[__key]
         super().__delitem__(__key)
         self._unobserve(item)
         self._handle_change()
 
-    def __or__(self, other: Any) -> Any:
+    def __or__(self, other: dict[_KT2, _VT2]) -> dict[_KT | _KT2, _VT | _VT2]:
         return super().__or__(other)
 
-    def __ior__(self, other: Any) -> Any:
+    def __ior__(self,  # type: ignore[misc,override]  # See https://stackoverflow.com/a/78844946
+                other:  SupportsKeysAndGetItem[_KT, _VT] | Iterable[tuple[_KT, _VT]]) -> Self:
         self.update(other)
         return self
 
 
-class ObservableList(ObservableCollection, list):
+class ObservableList(ObservableCollection, list[_T]):
 
     def __init__(self,
-                 data: list | None = None,
+                 data: list[_T] | None = None,
                  *,
                  on_change: Callable | None = None,
                  _parent: ObservableCollection | None = None,
@@ -214,25 +246,25 @@ class ObservableList(ObservableCollection, list):
         for i, item in enumerate(self):
             super().__setitem__(i, self._observe(item))
 
-    def append(self, item: Any) -> None:
+    def append(self, item: _T) -> None:
         super().append(self._observe(item))
         self._handle_change()
 
-    def extend(self, iterable: Iterable) -> None:
+    def extend(self, iterable: Iterable[_T]) -> None:
         items = [self._observe(item) for item in iterable]
         if not items:
             return
         super().extend(items)
         self._handle_change()
 
-    def insert(self, index: SupportsIndex, obj: Any) -> None:
+    def insert(self, index: SupportsIndex, obj: _T) -> None:
         super().insert(index, self._observe(obj))
         self._handle_change()
 
-    def remove(self, value: Any) -> None:
+    def remove(self, value: _T) -> None:
         self.pop(super().index(value))
 
-    def pop(self, index: SupportsIndex = -1) -> Any:
+    def pop(self, index: SupportsIndex = -1) -> _T:
         item = super().pop(index)
         self._unobserve(item)
         self._handle_change()
@@ -244,42 +276,44 @@ class ObservableList(ObservableCollection, list):
         self._unobserve(*items)
         self._handle_change()
 
-    def sort(self, **kwargs: Any) -> None:
-        super().sort(**kwargs)
+    def sort(self, key: Callable[[_T], SupportsRichComparison] | None = None, reverse: bool = False) -> None:
+        super().sort(key=key, reverse=reverse)
         self._handle_change()
 
     def reverse(self) -> None:
         super().reverse()
         self._handle_change()
 
-    def __delitem__(self, key: SupportsIndex | slice) -> None:
+    def __delitem__(self, key: SupportsIndex | slice[SupportsIndex | None]) -> None:
         items = self[key] if isinstance(key, slice) else [self[key]]
         super().__delitem__(key)
         self._unobserve(*items)
         self._handle_change()
 
-    def __setitem__(self, key: SupportsIndex | slice, value: Any) -> None:
+    def __setitem__(self, key: SupportsIndex | slice[SupportsIndex | None], value: _T | Iterable[_T]) -> None:
         if isinstance(key, slice):
             old_items = self[key]
+            if not isinstance(value, Iterable):
+                raise TypeError('must assign iterable to slice')
             super().__setitem__(key, [self._observe(item) for item in value])
             self._unobserve(*old_items)
         else:
             old_item = self[key]
-            super().__setitem__(key, self._observe(value))
+            super().__setitem__(key, self._observe(cast(_T, value)))
             self._unobserve(old_item)
         self._handle_change()
 
-    def __add__(self, other: Any) -> Any:
+    def __add__(self, other: list[_T2]) -> list[_T | _T2]:
         return super().__add__(other)
 
-    def __iadd__(self, other: Any) -> Any:
+    def __iadd__(self, other: Iterable[_T]) -> Self:  # type: ignore[misc,override]
         self.extend(other)
         return self
 
-    def __mul__(self, other: Any) -> Any:
+    def __mul__(self, other: SupportsIndex) -> list[_T]:
         return super().__mul__(other)
 
-    def __imul__(self, other: Any) -> Any:
+    def __imul__(self, other: SupportsIndex) -> Self:
         old_items = list(self)
         super().__imul__(other)
         if len(self) == len(old_items):
@@ -289,10 +323,10 @@ class ObservableList(ObservableCollection, list):
         return self
 
 
-class ObservableSet(ObservableCollection, set):
+class ObservableSet(ObservableCollection, set[_T]):
 
     def __init__(self,
-                 data: set | None = None,
+                 data: set[_T] | None = None,
                  *,
                  on_change: Callable | None = None,
                  _parent: ObservableCollection | None = None,
@@ -301,22 +335,22 @@ class ObservableSet(ObservableCollection, set):
         for item in self:
             super().add(self._observe(item))
 
-    def add(self, item: Any) -> None:
+    def add(self, item: _T) -> None:
         if item in self:
             return
         super().add(self._observe(item))
         self._handle_change()
 
-    def remove(self, item: Any) -> None:
+    def remove(self, item: _T) -> None:
         super().remove(item)
         self._unobserve(item)
         self._handle_change()
 
-    def discard(self, item: Any) -> None:
+    def discard(self, item: object) -> None:
         if item in self:
-            self.remove(item)
+            self.remove(cast(_T, item))
 
-    def pop(self) -> Any:
+    def pop(self) -> _T:
         item = super().pop()
         self._unobserve(item)
         self._handle_change()
@@ -328,14 +362,14 @@ class ObservableSet(ObservableCollection, set):
         self._unobserve(*items)
         self._handle_change()
 
-    def update(self, *s: Iterable[Any]) -> None:
+    def update(self, *s: Iterable[_T]) -> None:
         items = set().union(*s)
         if items <= self:
             return
         super().update({self._observe(item) for item in items})
         self._handle_change()
 
-    def intersection_update(self, *s: Iterable[Any]) -> None:
+    def intersection_update(self, *s: Iterable[object]) -> None:
         old_items = list(self)
         super().intersection_update(*s)
         if len(self) == len(old_items):
@@ -343,7 +377,7 @@ class ObservableSet(ObservableCollection, set):
         self._unobserve(*old_items)
         self._handle_change()
 
-    def difference_update(self, *s: Iterable[Any]) -> None:
+    def difference_update(self, *s: Iterable[object]) -> None:
         old_items = list(self)
         super().difference_update(*s)
         if len(self) == len(old_items):
@@ -351,7 +385,7 @@ class ObservableSet(ObservableCollection, set):
         self._unobserve(*old_items)
         self._handle_change()
 
-    def symmetric_difference_update(self, *s: Iterable[Any]) -> None:
+    def symmetric_difference_update(self, *s: Iterable[_T]) -> None:
         items = set().union(*s)
         if not items:
             return
@@ -360,30 +394,30 @@ class ObservableSet(ObservableCollection, set):
         self._unobserve(*old_items)
         self._handle_change()
 
-    def __or__(self, other: Any) -> Any:
+    def __or__(self, other: AbstractSet[_T2]) -> set[_T | _T2]:
         return super().__or__(other)
 
-    def __ior__(self, other: Any) -> Any:
+    def __ior__(self, other: AbstractSet[_T]) -> Self:  # type: ignore[misc,override]
         self.update(other)
         return self
 
-    def __and__(self, other: Any) -> set:
+    def __and__(self, other: AbstractSet[object]) -> set[_T]:
         return super().__and__(other)
 
-    def __iand__(self, other: Any) -> Any:
+    def __iand__(self, other: AbstractSet[object]) -> Self:
         self.intersection_update(other)
         return self
 
-    def __sub__(self, other: Any) -> set:
-        return super().__sub__(other)
+    def __sub__(self, other: AbstractSet[object]) -> set[_T]:
+        return super().__sub__(cast(AbstractSet, other))
 
-    def __isub__(self, other: Any) -> Any:
+    def __isub__(self, other: AbstractSet[object]) -> Self:
         self.difference_update(other)
         return self
 
-    def __xor__(self, other: Any) -> set:
+    def __xor__(self, other: AbstractSet[_T2]) -> set[_T | _T2]:
         return super().__xor__(other)
 
-    def __ixor__(self, other: Any) -> Any:
+    def __ixor__(self, other: AbstractSet[_T]) -> Self:  # type: ignore[misc,override]
         self.symmetric_difference_update(other)
         return self

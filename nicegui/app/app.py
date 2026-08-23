@@ -43,7 +43,7 @@ class App(FastAPI):
         super().__init__(**kwargs, docs_url=None, redoc_url=None, openapi_url=None)
         self.native = NativeConfig()
         self.storage = Storage()
-        self.urls = ObservableSet()
+        self.urls: ObservableSet[str] = ObservableSet()
         self._state: State = State.STOPPED
         self.config = AppConfig()
 
