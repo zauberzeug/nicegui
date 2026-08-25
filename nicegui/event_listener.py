@@ -18,6 +18,7 @@ class EventListener:
     leading_events: bool
     trailing_events: bool
     request: Request | None
+    key: Any = None
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())

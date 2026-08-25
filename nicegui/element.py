@@ -357,7 +357,8 @@ class Element(Visibility):
            leading_events: bool = True,
            trailing_events: bool = True,
            js_handler: str = '(...args) => emit(...args)',
-           replace: bool = False
+           replace: bool = False,
+           key: Any = None
            ) -> Self:
         """Subscribe to an event.
 
@@ -386,6 +387,7 @@ class Element(Visibility):
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
         :param replace: whether to replace the event or append to existing events
+        :param key : an identifier key to distinct between internally and externally generated elements
         """
         if handler or js_handler:
             event_type = helpers.event_type_to_camel_case(type)
@@ -399,11 +401,20 @@ class Element(Visibility):
                 leading_events=leading_events,
                 trailing_events=trailing_events,
                 request=storage.request_contextvar.get(),
+                key=key
             )
-            if replace:
-                self._event_listeners = {
-                    id_: l for id_, l in self._event_listeners.items() if l.type != event_type
-                }
+            if replace and key is not None:
+                existing = next((listener for listener in self._event_listeners.values()
+                                 if listener.type == event_type and listener.key == key), None)
+                if existing is not None:
+                    old_dict = {**existing.to_dict(), 'listener_id': ''}
+                    new_dict = {**listener.to_dict(), 'listener_id': ''}
+                    existing.handler = handler
+                    existing.request = listener.request
+                    if old_dict == new_dict:
+                        return self
+                    del self._event_listeners[existing.id]
+
             self._event_listeners[listener.id] = listener
             self.update()
         return self

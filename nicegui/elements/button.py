@@ -11,6 +11,7 @@ from .mixins.text_element import TextElement
 
 
 class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
+    _ON_CLICK_KEY = object()
 
     @resolve_defaults
     def __init__(self,
@@ -46,7 +47,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """
         self.on('click',
                 lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [],
-                replace=replace)
+                replace=replace, key=self._ON_CLICK_KEY)
         return self
 
     def _render_markdown(self) -> str:
