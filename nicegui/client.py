@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
-from urllib.parse import quote
+from urllib.parse import parse_qs, quote
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -61,6 +61,14 @@ HTML_ESCAPE_TABLE = str.maketrans({
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
 
+def _client_id_from_query(environ: dict[str, Any]) -> str | None:
+    """Read the ``client_id`` a socket connected with, or ``None`` if its environment does not carry one."""
+    query_string = environ.get('QUERY_STRING') or environ.get('asgi.scope', {}).get('query_string') or ''
+    if isinstance(query_string, (bytes, bytearray)):
+        query_string = query_string.decode()
+    return parse_qs(query_string).get('client_id', [None])[0]
+
+
 class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
         super().__init__(f'ClientConnectionTimeout: {client.id}')
@@ -99,7 +107,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
-        self._tab_ids: set[str] = set()
+        self._pinned_tab_id: str | None = None
         self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
@@ -350,12 +358,19 @@ class Client:
         """
         self._exception_handlers.append(handler)
 
-    def register_tab_id(self, tab_id: str) -> bool:
-        """Remember a tab ID, unless ``max_tab_storages_per_client`` is already exhausted. (For internal use only.)"""
-        if tab_id not in self._tab_ids and len(self._tab_ids) >= core.app.storage.max_tab_storages_per_client:
+    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None) -> bool:
+        """Check whether a handshake may proceed, pinning the client's tab ID on the first one.
+
+        A browser opens one socket per client, handshakes it once, and keeps the same tab ID for the client's whole
+        lifetime, so a handshake that breaks any of these is a replayed frame. (For internal use only.)
+        """
+        if socket_id in self._socket_to_document_id:
             return False
-        self._tab_ids.add(tab_id)
-        return True
+        if environ is not None and _client_id_from_query(environ) not in (None, self.id):
+            return False
+        if self._pinned_tab_id is None:
+            self._pinned_tab_id = tab_id
+        return self._pinned_tab_id == tab_id
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
@@ -392,12 +407,16 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                active_elsewhere = {client.tab_id for client in Client.instances.values() if client is not self}
-                await core.app.storage.prune_empty_tabs(self._tab_ids - active_elsewhere)
+                if self._pinned_tab_id is not None and not self._tab_id_is_held_elsewhere():
+                    await core.app.storage.prune_empty_tab(self._pinned_tab_id)
                 await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
+
+    def _tab_id_is_held_elsewhere(self) -> bool:
+        return any(client._pinned_tab_id == self._pinned_tab_id and client._socket_to_document_id  # pylint: disable=protected-access
+                   for client in Client.instances.values() if client is not self)
 
     def _cancel_delete_task(self, document_id: str) -> None:
         if document_id in self._delete_tasks:

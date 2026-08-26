@@ -244,19 +244,27 @@ def test_clear_tab_storage(screen: Screen):
     assert not tab_storages
 
 
-async def test_tab_storage_is_capped_per_client(user: User):
-    @ui.page('/')
+async def test_client_is_pinned_to_one_tab_id(user: User):
+    @ui.page('/', reconnect_timeout=10)
     def page():
         pass
 
-    client = await user.open('/')  # registers the first tab ID
+    client = await user.open('/')  # pins the tab ID the user fixture presents
 
-    async def handshake_with_tab(tab_id: str) -> bool:
-        return await _on_handshake(f'test-{tab_id}', {'client_id': client.id, 'tab_id': tab_id, 'document_id': 'doc'})
+    async def handshake(socket_id: str, tab_id: str) -> bool:
+        return await _on_handshake(socket_id, {'client_id': client.id, 'tab_id': tab_id, 'document_id': 'doc'})
 
-    for i in range(app.storage.max_tab_storages_per_client - 1):  # the client already registered one tab ID on open
-        assert await handshake_with_tab(f'tab-{i}')
-    assert not await handshake_with_tab('one-too-many')
+    assert await handshake('test-reconnect', user.tab_id), 'a reconnect presents the same tab ID and must be accepted'
+    assert not await handshake('test-reconnect', user.tab_id), 'a socket may only handshake once'
+    assert not await handshake('test-replay', 'other-tab'), 'a second tab ID on one client must be refused'
+
+    client.handle_disconnect('test-reconnect')  # nulls client.tab_id, but the pin must survive it
+    assert not await handshake('test-after-disconnect', 'other-tab')
+
+    for foreign_environ in [{'QUERY_STRING': 'client_id=somebody-else'},  # both shapes Engine.IO provides
+                            {'asgi.scope': {'query_string': b'client_id=somebody-else'}}]:
+        assert not client.accept_handshake('test-foreign', user.tab_id, foreign_environ), \
+            'a handshake naming a client other than the one its socket connected with must be refused'
 
 
 async def test_empty_tab_storages_are_reclaimed_when_client_is_deleted(user: User):
@@ -264,12 +272,15 @@ async def test_empty_tab_storages_are_reclaimed_when_client_is_deleted(user: Use
     def page():
         pass
 
-    client = await user.open('/')  # creates one empty tab storage
-    assert await _on_handshake('test-a', {'client_id': client.id, 'tab_id': 'empty', 'document_id': 'doc-a'})
-    assert await _on_handshake('test-b', {'client_id': client.id, 'tab_id': 'used', 'document_id': 'doc-b'})
+    template = await user.open('/')  # only to get hold of a page and a request
+    empty_client = Client(template.page, request=template.request)  # one browser tab whose storage stays empty
+    used_client = Client(template.page, request=template.request)  # another one whose storage holds data
+    assert await _on_handshake('test-empty', {'client_id': empty_client.id, 'tab_id': 'empty', 'document_id': 'doc'})
+    assert await _on_handshake('test-used', {'client_id': used_client.id, 'tab_id': 'used', 'document_id': 'doc'})
     app.storage._tabs['used']['keep'] = 'me'  # pylint: disable=protected-access
 
-    client.handle_disconnect('test-a')  # deletes the client after reconnect_timeout=0
+    empty_client.handle_disconnect('test-empty')  # deletes both clients after reconnect_timeout=0
+    used_client.handle_disconnect('test-used')
     await asyncio.sleep(0.1)
 
     tabs = app.storage._tabs  # pylint: disable=protected-access

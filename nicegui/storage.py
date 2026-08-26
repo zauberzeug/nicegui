@@ -3,7 +3,6 @@ import contextvars
 import os
 import uuid
 from collections import Counter
-from collections.abc import Iterable
 from datetime import timedelta
 from pathlib import Path
 from typing import Any
@@ -93,9 +92,6 @@ class Storage:
 
     max_tab_storage_age: float = timedelta(days=30).total_seconds()
     '''Maximum age in seconds before tab storage is automatically purged. Defaults to 30 days.'''
-
-    max_tab_storages_per_client: int = 4
-    '''Maximum number of distinct tab storages a single client may create (a browser presents one tab ID per client, so this is headroom). Defaults to 4.'''
 
     def __init__(self) -> None:
         self._general = Storage._create_persistent_dict(GENERAL_ID)
@@ -207,15 +203,14 @@ class Storage:
         if tab_id and isinstance(tab := self._tabs.get(tab_id), PersistentDict):
             await tab.close()
 
-    async def prune_empty_tabs(self, tab_ids: Iterable[str]) -> None:
-        """Discard empty tab storages among the given IDs, e.g. when their client is deleted. (For internal use only.)"""
-        for tab_id in list(tab_ids):
-            tab = self._tabs.get(tab_id)
-            if tab is not None and not tab:
-                tab.clear()
-                if isinstance(tab, PersistentDict):
-                    await tab.close()
-                del self._tabs[tab_id]
+    async def prune_empty_tab(self, tab_id: str) -> None:
+        """Discard the given tab storage if it is empty, e.g. when its client is deleted. (For internal use only.)"""
+        tab = self._tabs.get(tab_id)
+        if tab is not None and not tab:
+            tab.clear()
+            if isinstance(tab, PersistentDict):
+                await tab.close()
+            del self._tabs[tab_id]
 
     def clear(self) -> None:
         """Clears all storage."""

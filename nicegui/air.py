@@ -138,7 +138,7 @@ class Air:
         @relay.on('handshake')
         def _handle_handshake(data: dict[str, Any]) -> bool:
             if client := Client.instances.get(data['client_id']):
-                if not client.register_tab_id(data['tab_id']):
+                if not client.accept_handshake(data['sid'], data['tab_id'], data['environ']):
                     return False
                 client.environ = data['environ']
                 if data.get('old_tab_id'):
