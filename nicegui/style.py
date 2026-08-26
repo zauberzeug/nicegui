@@ -55,15 +55,24 @@ class Style(ObservableDict, Generic[T]):
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
         element = self.element
-        style_dict = {**self} if replace is None else {}
-        for key in self.parse(remove):
-            style_dict.pop(key, None)
-        style_dict.update(self.parse(add))
-        style_dict.update(self.parse(replace))
-        if self != style_dict:
+        new_style = self.update_dict(self, add, remove, replace)
+        if self != new_style:
             self.clear()
-            self.update(style_dict)
+            self.update(new_style)
         return element
+
+    @staticmethod
+    def update_dict(style: dict[str, str],
+                    add: str | None = None,
+                    remove: str | None = None,
+                    replace: str | None = None) -> dict[str, str]:
+        """Update a dictionary of styles."""
+        style_dict = {**style} if replace is None else {}
+        for key in Style.parse(remove):
+            style_dict.pop(key, None)
+        style_dict.update(Style.parse(add))
+        style_dict.update(Style.parse(replace))
+        return style_dict
 
     @staticmethod
     def parse(text: str | None) -> dict[str, str]:
