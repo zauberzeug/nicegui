@@ -27,6 +27,21 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Line Anchors', '''
+    Line anchors give you a more stable reference to specific lines than line numbers.
+    The browser tracks each anchor's position through every change — insertions, deletions, reformatting
+    — and reading `line_anchors` back returns the current line on the Python side.
+    Add or remove lines above the anchored one and watch the reported number follow it.
+    Pass `on_anchor_change` to be notified whenever a tracked position moves.
+
+    *Added in version 3.16.0*
+''')
+def line_anchors_demo() -> None:
+    editor = ui.codemirror('def answer():\n    return 42', line_anchors={'return': 2}).classes('h-40')
+    ui.label().bind_text_from(editor, 'line_anchors',
+                              lambda anchors: f'"return" is on line {anchors.get("return", "—")}')
+
+
 @doc.demo('Custom Keybindings', '''
     Map keystrokes to Python callbacks via the `keymap` constructor parameter or the `map_key` method.
     Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) —
