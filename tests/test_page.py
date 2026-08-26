@@ -205,6 +205,19 @@ def test_ui_page_http_exception_404_keeps_html(screen: Screen):
         'ui.page raising HTTPException(404) should render the HTML error page for browsers'
 
 
+def test_normal_response_when_async_page_is_cancelled(screen: Screen):
+    @ui.page('/')
+    async def page():
+        asyncio.current_task().cancel()
+        ui.label('The end')
+
+    screen.start_server()
+    response = httpx.get(f'http://localhost:{Screen.PORT}/')
+    assert response.status_code == 200, 'page cancelling its own task should still return a normal response'
+    assert 'The end' in response.text, 'elements created before the cancellation takes effect should be served'
+    screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled'))
+
+
 def test_page_with_args(screen: Screen):
     @ui.page('/page/{id_}')
     def page(id_: int):
