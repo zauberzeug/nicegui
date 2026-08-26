@@ -204,7 +204,12 @@ class page:
                 if not task_wait_for_connection.done():
                     task_wait_for_connection.cancel()
                 if task.done():
-                    result = None if task.cancelled() else task.result()
+                    if task.cancelled():
+                        log.warning(f'Page building for {client.page.path} was cancelled; '
+                                    'serving the elements created so far')
+                        result = None
+                    else:
+                        result = task.result()
                 else:
                     result = None
                     task.add_done_callback(check_for_late_return_value)
