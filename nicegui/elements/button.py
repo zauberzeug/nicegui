@@ -39,7 +39,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         if on_click:
             self.on_click(on_click)
 
-    def on_click(self, callback: Handler[ClickEventArguments], replace: bool = False) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments], *, replace: bool = False) -> Self:
         """Add a callback to be invoked when the button is clicked.
 
         :param callback: callback to be invoked when the button is clicked
