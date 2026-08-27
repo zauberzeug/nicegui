@@ -857,40 +857,46 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         ui.link('Go to top', '/page#top')
         ui.link('Back to main', '/')
 
+    def scroll_y() -> int:
+        return screen.selenium.execute_script('return window.scrollY')
+
+    def scroll_has_settled() -> bool:
+        y_before = scroll_y()
+        screen.wait(0.2)
+        return scroll_y() == y_before  # clicking while a smooth scroll is still moving the page would miss its target
+
     # Test 1: Direct navigation with fragment should work
     screen.open('/page#bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page#bottom'
-    screen.wait(1)
-    scroll_y = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y > 500, 'Expected scrolling to occur for fragment navigation'
+    screen.wait_for(lambda: scroll_y() > 500)
+    screen.wait_for(scroll_has_settled)
+    scroll_y_bottom = scroll_y()
     assert calls == {'index': 1, 'main': 0, 'targets': 1}
 
     # Test 2: Same-page fragment navigation should not rebuild pages but should work
     screen.click('Go to top')
     screen.should_contain('Top target content')
-    screen.wait(1)
-    scroll_y_top = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y_top < scroll_y, 'Expected scrolling to top to have smaller scroll position'
+    screen.wait_for(lambda: scroll_y() < scroll_y_bottom)
+    screen.wait_for(scroll_has_settled)
     assert calls == {'index': 1, 'main': 0, 'targets': 1}, 'Fragment navigation should not rebuild page'
 
     # Test 3: Cross-page navigation auto-scrolls to top
     screen.click('Go to bottom')
-    screen.wait(1)
-    assert screen.selenium.execute_script('return window.scrollY') > 500
+    screen.wait_for(lambda: scroll_y() > 500)
+    screen.wait_for(scroll_has_settled)
     screen.click('Back to main')
     screen.should_contain('Main page')
     assert screen.current_path == '/'
     assert calls == {'index': 1, 'main': 1, 'targets': 1}
-    assert screen.selenium.execute_script('return window.scrollY') == 0
+    screen.wait_for_js('window.scrollY', 0)
 
     # Test 4: Cross-page fragment navigation
     screen.click('Go to bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page#bottom'
-    screen.wait(1)
-    scroll_y = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y > 0, 'Expected scrolling after cross-page fragment navigation'
+    screen.wait_for(lambda: scroll_y() > 0)
+    screen.wait_for(scroll_has_settled)
     assert calls == {'index': 1, 'main': 1, 'targets': 2}
 
     # Test 5: Fragment navigation again
