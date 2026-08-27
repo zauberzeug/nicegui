@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from nicegui import app, background_tasks, ui
+from nicegui import app, background_tasks, context, ui
 from nicegui.testing import Screen, User
 
 
@@ -216,6 +216,20 @@ def test_normal_response_when_async_page_is_cancelled(screen: Screen):
     assert response.status_code == 200, 'page cancelling its own task should still return a normal response'
     assert 'The end' in response.text, 'elements created before the cancellation takes effect should be served'
     screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled'))
+
+
+def test_error_page_when_client_is_deleted_during_page_build(screen: Screen):
+    @ui.page('/')
+    async def page():
+        button = ui.button('Click me')
+        context.client.delete()  # stand-in for pruning or user code deleting the client during the page build
+        await button.clicked()
+
+    screen.start_server()
+    response = httpx.get(f'http://localhost:{Screen.PORT}/')
+    assert response.status_code == 500, 'a deleted client must be served an error page, not a normal page ' \
+                                        'whose handshake would fail and reload-loop'
+    screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled because the client was deleted'))
 
 
 def test_page_with_args(screen: Screen):
