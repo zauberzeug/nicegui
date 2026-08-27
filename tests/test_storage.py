@@ -11,6 +11,7 @@ import pytest
 from nicegui import Client, app, background_tasks, context, core, ui
 from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
+from nicegui.nicegui import _on_handshake
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
 from nicegui.storage import Storage
 from nicegui.testing import Screen, User
@@ -241,6 +242,29 @@ def test_clear_tab_storage(screen: Screen):
     screen.click('clear')
     screen.wait(0.5)
     assert not tab_storages
+
+
+async def test_client_is_pinned_to_one_tab_id(user: User):
+    @ui.page('/', reconnect_timeout=10)
+    def page():
+        pass
+
+    client = await user.open('/')  # pins the tab ID the user fixture presents
+
+    async def handshake(socket_id: str, tab_id: str) -> bool:
+        return await _on_handshake(socket_id, {'client_id': client.id, 'tab_id': tab_id, 'document_id': 'doc'})
+
+    assert await handshake('test-reconnect', user.tab_id), 'a reconnect presents the same tab ID and must be accepted'
+    assert not await handshake('test-reconnect', user.tab_id), 'a socket may only handshake once'
+    assert not await handshake('test-replay', 'other-tab'), 'a second tab ID on one client must be refused'
+
+    client.handle_disconnect('test-reconnect')  # nulls client.tab_id, but the pin must survive it
+    assert not await handshake('test-after-disconnect', 'other-tab')
+
+    for foreign_environ in [{'QUERY_STRING': 'client_id=somebody-else'},  # both shapes Engine.IO provides
+                            {'asgi.scope': {'query_string': b'client_id=somebody-else'}}]:
+        assert not client.accept_handshake('test-foreign', user.tab_id, foreign_environ), \
+            'a handshake naming a client other than the one its socket connected with must be refused'
 
 
 def test_client_storage(screen: Screen):
