@@ -205,13 +205,17 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
+    is_test = sid.startswith('test-')
+    environ = None if is_test else sio.get_environ(sid)
+    if not client.accept_handshake(sid, data['tab_id'], environ):
+        return False
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
-    if sid.startswith('test-'):
+    if is_test:
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
     else:
-        client.environ = sio.get_environ(sid)
+        client.environ = environ
         await sio.enter_room(sid, client.id)
     client.handle_handshake(sid, data['document_id'],
                             int(data['next_message_id']) if 'next_message_id' in data else None)

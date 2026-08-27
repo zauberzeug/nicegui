@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
-from urllib.parse import quote
+from urllib.parse import parse_qs, quote
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -61,6 +61,14 @@ HTML_ESCAPE_TABLE = str.maketrans({
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
 
+def _client_id_from_query(environ: dict[str, Any]) -> str | None:
+    """Read the ``client_id`` a socket connected with, or ``None`` if its environment does not carry one."""
+    query_string = environ.get('QUERY_STRING') or environ.get('asgi.scope', {}).get('query_string') or ''
+    if isinstance(query_string, (bytes, bytearray)):
+        query_string = query_string.decode()
+    return parse_qs(query_string).get('client_id', [None])[0]
+
+
 class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
         super().__init__(f'ClientConnectionTimeout: {client.id}')
@@ -99,6 +107,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._pinned_tab_id: str | None = None
         self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
@@ -348,6 +357,24 @@ class Client:
         The callback has an optional parameter of `Exception`.
         """
         self._exception_handlers.append(handler)
+
+    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None) -> bool:
+        """Check whether a handshake may proceed, pinning the client's tab ID on the first one.
+
+        A browser opens one socket per client, handshakes it once, and keeps the same tab ID for the client's whole
+        lifetime, so a handshake that breaks any of these is a replayed frame.
+        A socket query without a client ID is tolerated:
+        the query is no trust boundary (a forger could simply echo the claimed client ID into it),
+        and query-less sockets must keep working (see ``test_disconnect_without_client_id_in_connect_query``).
+        (For internal use only.)
+        """
+        if socket_id in self._socket_to_document_id:
+            return False
+        if environ is not None and _client_id_from_query(environ) not in (None, self.id):
+            return False
+        if self._pinned_tab_id is None:
+            self._pinned_tab_id = tab_id
+        return self._pinned_tab_id == tab_id
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
