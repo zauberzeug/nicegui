@@ -27,6 +27,57 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Decorations', '''
+    The `decorations` property is a mutable list of styled overlays on top of the editor's text,
+    without modifying the document.
+    There are four kinds:
+
+    - **mark** — style a character range
+    - **line** — style an entire line
+    - **replace** — hide a range (no `text`) or replace it visually with text
+    - **widget** — insert a text annotation at a position
+
+    The `from`, `to` and `position` fields are Python `str` indices into the editor's value.
+    Reading `decorations` back returns the specs as declared, not where the browser has since
+    mapped them as the document changed.
+
+    The host application supplies its own CSS for whatever class names it passes.
+    Widget and replace `text` values render as plain text by default; pass
+    `decoration_text_html=True` to the constructor to render them as sanitized HTML.
+    That flag only covers `text`: the `attributes` field on mark and line decorations is always
+    applied as raw DOM attributes (including handlers like `onclick`) and is never sanitized,
+    so never pass untrusted input through it.
+
+    *Added in version 3.17.0*
+''')
+def decorations_demo() -> None:
+    ui.add_head_html('''
+        <style>
+            .my-error  { background-color: rgba(255, 0, 0, 0.2); }
+            .my-fold   { color: #888; font-style: italic; padding: 0 4px; }
+            .my-hint   { color: #888; font-size: 0.8em; padding: 0 4px; }
+        </style>
+    ''')
+    editor = ui.codemirror('alpha\nbeta\ngamma\ndelta\nepsilon',
+                           decoration_text_html=True).classes('h-32')
+
+    def assign(specs):
+        editor.decorations = specs
+
+    with ui.row():
+        ui.button('Mark range', on_click=lambda: assign(
+            [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'my-error'}]))
+        ui.button('Highlight line', on_click=lambda: assign(
+            [{'kind': 'line', 'line': 3, 'class': 'my-error'}]))
+        ui.button('Fold lines', on_click=lambda: assign(
+            [{'kind': 'replace', 'from': 6, 'to': 22,
+              'text': '{ ... 3 lines ... }', 'class': 'my-fold', 'block': True}]))
+        ui.button('Annotate (HTML)', on_click=lambda: assign(
+            [{'kind': 'widget', 'position': 5,
+              'text': '<b style="color: #c00">⚠ first</b>'}]))
+        ui.button('Clear', on_click=lambda: assign([]))
+
+
 @doc.demo('Line Anchors', '''
     Line anchors give you a more stable reference to specific lines than line numbers.
     The browser tracks each anchor's position through every change — insertions, deletions, reformatting
