@@ -404,16 +404,15 @@ class Element(Visibility):
                 key=key
             )
             if replace and key is not None:
-                existing = next((listener for listener in self._event_listeners.values()
-                                 if listener.type == event_type and listener.key == key), None)
-                if existing is not None:
-                    old_dict = {**existing.to_dict(), 'listener_id': ''}
-                    new_dict = {**listener.to_dict(), 'listener_id': ''}
-                    existing.handler = handler
-                    existing.request = listener.request
-                    if old_dict == new_dict:
-                        return self
-                    del self._event_listeners[existing.id]
+                previous = [old for old in self._event_listeners.values()
+                            if old.type == event_type and old.key == key]
+                new_dict = {**listener.to_dict(), 'listener_id': ''}
+                if len(previous) == 1 and {**previous[0].to_dict(), 'listener_id': ''} == new_dict:
+                    previous[0].handler = handler
+                    previous[0].request = listener.request
+                    return self
+                for old in previous:
+                    del self._event_listeners[old.id]
 
             self._event_listeners[listener.id] = listener
             self.update()
