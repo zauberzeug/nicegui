@@ -358,16 +358,22 @@ class Client:
         """
         self._exception_handlers.append(handler)
 
-    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None) -> bool:
+    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None, *,
+                         require_client_id: bool = True) -> bool:
         """Check whether a handshake may proceed, pinning the client's tab ID on the first one.
 
-        A browser opens one socket per client, handshakes it once, and keeps the same tab ID for the client's whole
-        lifetime, so a handshake that breaks any of these is a replayed frame. (For internal use only.)
+        A browser opens one socket per client, handshakes it once, keeps the same tab ID for the client's whole
+        lifetime, and always carries its client ID in the socket's connecting query --
+        so a handshake that breaks any of these is a replayed or forged frame.
+        Pass ``require_client_id=False`` for transports whose environ may legitimately lack the connecting query
+        (the Air relay), or ``environ=None`` to skip the query check entirely (tests). (For internal use only.)
         """
         if socket_id in self._socket_to_document_id:
             return False
-        if environ is not None and _client_id_from_query(environ) not in (None, self.id):
-            return False
+        if environ is not None:
+            client_id = _client_id_from_query(environ)
+            if client_id != self.id and (client_id is not None or require_client_id):
+                return False
         if self._pinned_tab_id is None:
             self._pinned_tab_id = tab_id
         return self._pinned_tab_id == tab_id
@@ -407,16 +413,10 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                if self._pinned_tab_id is not None and not self._tab_id_is_held_elsewhere():
-                    await core.app.storage.prune_empty_tab(self._pinned_tab_id)
                 await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
-
-    def _tab_id_is_held_elsewhere(self) -> bool:
-        return any(client._pinned_tab_id == self._pinned_tab_id and client._socket_to_document_id  # pylint: disable=protected-access
-                   for client in Client.instances.values() if client is not self)
 
     def _cancel_delete_task(self, document_id: str) -> None:
         if document_id in self._delete_tasks:

@@ -203,15 +203,6 @@ class Storage:
         if tab_id and isinstance(tab := self._tabs.get(tab_id), PersistentDict):
             await tab.close()
 
-    async def prune_empty_tab(self, tab_id: str) -> None:
-        """Discard the given tab storage if it is empty, e.g. when its client is deleted. (For internal use only.)"""
-        tab = self._tabs.get(tab_id)
-        if tab is not None and not tab:
-            tab.clear()
-            if isinstance(tab, PersistentDict):
-                await tab.close()
-            del self._tabs[tab_id]
-
     def clear(self) -> None:
         """Clears all storage."""
         self._general.clear()

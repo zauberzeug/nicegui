@@ -138,7 +138,8 @@ class Air:
         @relay.on('handshake')
         def _handle_handshake(data: dict[str, Any]) -> bool:
             if client := Client.instances.get(data['client_id']):
-                if not client.accept_handshake(data['sid'], data['tab_id'], data['environ']):
+                # the relay's environ crosses as JSON and may lack the connecting query, so a missing client_id is tolerated
+                if not client.accept_handshake(data['sid'], data['tab_id'], data['environ'], require_client_id=False):
                     return False
                 client.environ = data['environ']
                 if data.get('old_tab_id'):

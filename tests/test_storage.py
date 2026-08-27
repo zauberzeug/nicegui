@@ -265,46 +265,8 @@ async def test_client_is_pinned_to_one_tab_id(user: User):
                             {'asgi.scope': {'query_string': b'client_id=somebody-else'}}]:
         assert not client.accept_handshake('test-foreign', user.tab_id, foreign_environ), \
             'a handshake naming a client other than the one its socket connected with must be refused'
-
-
-async def test_empty_tab_storages_are_reclaimed_when_client_is_deleted(user: User):
-    @ui.page('/', reconnect_timeout=0)
-    def page():
-        pass
-
-    template = await user.open('/')  # only to get hold of a page and a request
-    empty_client = Client(template.page, request=template.request)  # one browser tab whose storage stays empty
-    used_client = Client(template.page, request=template.request)  # another one whose storage holds data
-    assert await _on_handshake('test-empty', {'client_id': empty_client.id, 'tab_id': 'empty', 'document_id': 'doc'})
-    assert await _on_handshake('test-used', {'client_id': used_client.id, 'tab_id': 'used', 'document_id': 'doc'})
-    app.storage._tabs['used']['keep'] = 'me'  # pylint: disable=protected-access
-
-    empty_client.handle_disconnect('test-empty')  # deletes both clients after reconnect_timeout=0
-    used_client.handle_disconnect('test-used')
-    await asyncio.sleep(0.1)
-
-    tabs = app.storage._tabs  # pylint: disable=protected-access
-    assert 'empty' not in tabs, 'empty tab storages should be reclaimed with their client'
-    assert 'used' in tabs, 'tab storages holding data must survive'
-
-
-async def test_empty_tab_storage_shared_by_a_live_client_is_not_reclaimed(user: User):
-    # a page reload reuses the tab ID under a fresh client ID, so the old and new client briefly share one tab storage
-    @ui.page('/', reconnect_timeout=0)
-    def page():
-        pass
-
-    new_client = await user.open('/')  # the reloaded page; owns an (empty) tab storage
-    tab_id = new_client.tab_id
-    assert tab_id in app.storage._tabs  # pylint: disable=protected-access
-
-    old_client = Client(new_client.page, request=new_client.request)  # the pre-reload client, about to be reaped
-    assert await _on_handshake('test-old', {'client_id': old_client.id, 'tab_id': tab_id, 'document_id': 'doc-old'})
-
-    old_client.handle_disconnect('test-old')  # reaps the old client after reconnect_timeout=0
-    await asyncio.sleep(0.1)
-
-    assert tab_id in app.storage._tabs, 'a tab storage still claimed by a live client must survive'  # pylint: disable=protected-access
+    assert not client.accept_handshake('test-foreign', user.tab_id, {'QUERY_STRING': ''}), \
+        'a browser always sends its client_id in the socket query, so a query without one must be refused'
 
 
 def test_client_storage(screen: Screen):
