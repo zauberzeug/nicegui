@@ -372,7 +372,9 @@ class Client:
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
         tab_id_to_close = self.tab_id
-        self.tab_id = None
+        # keep the tab_id as long as any socket is live, e.g. one that reconnected before this one was reaped
+        if not self._socket_to_document_id:
+            self.tab_id = None
 
         for t in self.disconnect_handlers:
             self.safe_invoke(t)
