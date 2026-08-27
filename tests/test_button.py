@@ -1,6 +1,8 @@
 import asyncio
 from collections import namedtuple
 
+from fastapi.responses import RedirectResponse
+
 from nicegui import background_tasks, ui
 from nicegui.testing import Screen, User
 
@@ -160,6 +162,25 @@ async def test_awaiting_an_already_deleted_button_is_cancelled(user: User):
     assert not results, 'code after clicked() must not run for a click that never happened'
     assert not any('wait_for_click' in task.get_name() for task in background_tasks.running_tasks), \
         'the awaiting task should be cancelled, not leaked'
+
+
+async def test_cancellation_of_an_awaited_deleted_button_can_be_caught(user: User):
+    """A caller may catch the cancellation and continue, e.g. to redirect instead of serving the half-built page."""
+    @ui.page('/')
+    async def page():
+        button = ui.button('Click me')
+        button.delete()
+        try:
+            await button.clicked()
+        except asyncio.CancelledError:
+            return RedirectResponse('/target')
+
+    @ui.page('/target')
+    def target():
+        ui.label('landed')
+
+    await user.open('/')
+    await user.should_see('landed')
 
 
 async def test_click_that_deletes_the_button_is_still_delivered(user: User):

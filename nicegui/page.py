@@ -159,6 +159,13 @@ class page:
 
                 return error_client.build_response(request, 500)
 
+        def create_terminal_error_page(message: str, request: Request) -> Response:
+            # The client is gone, so serving the normal page would only handshake-fail and reload-loop (#6126).
+            # Serve a terminal error page through a fresh, alive client whose handshake succeeds.
+            with Client(page(''), request=request) as error_client:
+                error_content(500, message)
+            return error_client.build_response(request, 500)
+
         @wraps(func)
         async def decorated(*dec_args, **dec_kwargs) -> Response:
             request = dec_kwargs['request']
@@ -195,22 +202,17 @@ class page:
                     task.cancel()
                     log.warning(f'Response for {client.page.path} not ready after {self.response_timeout} seconds')
                     client.delete()
-                    # The client is gone, so serving the normal page would only handshake-fail and reload-loop (#6126).
-                    # Serve a terminal error page through a fresh, alive client whose handshake succeeds.
-                    with Client(page(''), request=request) as error_client:
-                        error_content(500, f'The page took longer than the response_timeout of {self.response_timeout} seconds to build. '
-                                      'Await ui.context.client.connected() before long-running setup or increase response_timeout.')
-                    return error_client.build_response(request, 500)
+                    return create_terminal_error_page(
+                        f'The page took longer than the response_timeout of {self.response_timeout} seconds to build. '
+                        'Await ui.context.client.connected() before long-running setup or increase response_timeout.',
+                        request)
                 if not task_wait_for_connection.done():
                     task_wait_for_connection.cancel()
                 if task.done():
                     if task.cancelled():
-                        if client.is_deleted:
-                            log.warning(f'Page building for {client.page.path} was cancelled '
-                                        'because the client was deleted')
-                        else:
-                            log.warning(f'Page building for {client.page.path} was cancelled; '
-                                        'serving the elements created so far')
+                        reason = ' because the client was deleted' if client.is_deleted \
+                            else '; serving the elements created so far'
+                        log.warning(f'Page building for {client.page.path} was cancelled{reason}')
                         result = None
                     else:
                         result = task.result()
@@ -219,10 +221,7 @@ class page:
                     task.add_done_callback(check_for_late_return_value)
 
             if client.is_deleted and not isinstance(result, Response):
-                # The client is gone, so serving the normal page would only handshake-fail and reload-loop (#6126).
-                with Client(page(''), request=request) as error_client:
-                    error_content(500, 'The client was deleted while the page was being built.')
-                return error_client.build_response(request, 500)
+                return create_terminal_error_page('The client was deleted while the page was being built.', request)
 
             if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
                 log.warning(f'{request.url} not found')
