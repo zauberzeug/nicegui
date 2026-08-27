@@ -386,8 +386,8 @@ class Element(Visibility):
         :param leading_events: whether to trigger the event handler immediately upon the first event occurrence (default: ``True``)
         :param trailing_events: whether to trigger the event handler after the last event occurrence (default: ``True``)
         :param js_handler: JavaScript function that is handling the event on the client (default: "(...args) => emit(...args)")
-        :param replace: whether to replace the event or append to existing events
-        :param key : an identifier key to distinct between internally and externally generated elements
+        :param replace: whether to replace a listener with the same ``type`` and ``key`` instead of adding another one (default: ``False``)
+        :param key: object identifying this listener, so that it can be replaced later (default: ``None``)
         """
         if handler or js_handler:
             event_type = helpers.event_type_to_camel_case(type)
