@@ -1,10 +1,8 @@
 import asyncio
-from typing import cast
 
 from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
-from ...element import Element
 from ...events import (
     ClickEventArguments,
     GenericEventArguments,
@@ -13,10 +11,11 @@ from ...events import (
     SceneClickHit,
     handle_event,
 )
+from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .scene import Scene, SceneCamera
 
 
-class SceneView(Element, component='scene_view.js', default_classes='nicegui-scene-view'):
+class SceneView(CancelableWaitElement, component='scene_view.js', default_classes='nicegui-scene-view'):
     # NOTE: The ESM is already registered in scene.py.
 
     @resolve_defaults
@@ -56,7 +55,6 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
-        self._initialized_tasks: set[asyncio.Task] = set()
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('click3d', self._handle_click)
@@ -80,23 +78,11 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         """Wait until the scene is initialized.
 
         *Updated in version 3.17.0: Awaiting scene_view initialization cancels the calling task
-        when the scene_view element is deleted, e.g. because the client disconnected.*
+        when the scene_view is deleted, e.g. because the client disconnected.*
         """
-        task = cast(asyncio.Task, asyncio.current_task())
-        if self.is_deleted:
-            task.cancel()
-            await asyncio.sleep(0)
-        self._initialized_tasks.add(task)
-        try:
+        with self._cancel_when_deleted(self._initialized_event):
             await self.client.connected()
             await self._initialized_event.wait()
-        finally:
-            self._initialized_tasks.discard(task)
-
-    def _handle_delete(self) -> None:
-        for task in self._initialized_tasks:
-            task.cancel()
-        super()._handle_delete()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

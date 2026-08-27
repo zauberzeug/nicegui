@@ -2,14 +2,13 @@ import asyncio
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Literal, cast
+from typing import Any, Literal
 
 from typing_extensions import Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
-from ...element import Element
 from ...events import (
     GenericEventArguments,
     Handler,
@@ -18,6 +17,7 @@ from ...events import (
     SceneDragEventArguments,
     handle_event,
 )
+from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .scene_object3d import Object3D
 
 
@@ -41,7 +41,7 @@ class SceneObject:
     id: str = 'scene'
 
 
-class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
+class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
     from .objects.axes_helper import AxesHelper as axes_helper
     from .objects.box import Box as box
@@ -113,7 +113,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         self.stack: list[Object3D | SceneObject] = [SceneObject()]
         self._batched_calls: list[list[Any]] | None = None
         self._initialized_event = asyncio.Event()
-        self._initialized_tasks: set[asyncio.Task] = set()
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
@@ -217,18 +216,11 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         """Wait until the scene is initialized.
 
         *Updated in version 3.17.0: Awaiting scene initialization cancels the calling task
-        when the scene element is deleted, e.g. because the client disconnected.*
+        when the scene is deleted, e.g. because the client disconnected.*
         """
-        task = cast(asyncio.Task, asyncio.current_task())
-        if self.is_deleted:
-            task.cancel()
-            await asyncio.sleep(0)
-        self._initialized_tasks.add(task)
-        try:
+        with self._cancel_when_deleted(self._initialized_event):
             await self.client.connected()
             await self._initialized_event.wait()
-        finally:
-            self._initialized_tasks.discard(task)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
@@ -319,8 +311,6 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
 
     def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()))
-        for task in self._initialized_tasks:
-            task.cancel()
         super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:

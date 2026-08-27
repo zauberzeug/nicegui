@@ -7,12 +7,12 @@ from typing_extensions import Self
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
-from ...element import Element
 from ...events import GenericEventArguments
+from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .leaflet_layer import Layer
 
 
-class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, default_classes='nicegui-leaflet'):
+class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, default_classes='nicegui-leaflet'):
     # pylint: disable=import-outside-toplevel
     from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import ImageOverlay as image_overlay
@@ -51,7 +51,6 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         self.layers: list[Layer] = []
         self.is_initialized = False
         self._initialized_event = asyncio.Event()
-        self._initialized_tasks: set[asyncio.Task] = set()
 
         # read-write public API
         self.center = center
@@ -105,18 +104,11 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
         """Wait until the map is initialized.
 
         *Updated in version 3.17.0: Awaiting leaflet initialization cancels the calling task
-        when the leaflet element is deleted, e.g. because the client disconnected.*
+        when the leaflet is deleted, e.g. because the client disconnected.*
         """
-        task = cast(asyncio.Task, asyncio.current_task())
-        if self.is_deleted:
-            task.cancel()
-            await asyncio.sleep(0)
-        self._initialized_tasks.add(task)
-        try:
+        with self._cancel_when_deleted(self._initialized_event):
             await self.client.connected()
             await self._initialized_event.wait()
-        finally:
-            self._initialized_tasks.discard(task)
 
     def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False
@@ -184,8 +176,6 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
-        for task in self._initialized_tasks:
-            task.cancel()
         super()._handle_delete()
 
     def _to_dict(self):
