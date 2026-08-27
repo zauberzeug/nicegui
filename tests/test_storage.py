@@ -265,8 +265,6 @@ async def test_client_is_pinned_to_one_tab_id(user: User):
                             {'asgi.scope': {'query_string': b'client_id=somebody-else'}}]:
         assert not client.accept_handshake('test-foreign', user.tab_id, foreign_environ), \
             'a handshake naming a client other than the one its socket connected with must be refused'
-    assert not client.accept_handshake('test-foreign', user.tab_id, {'QUERY_STRING': ''}), \
-        'a browser always sends its client_id in the socket query, so a query without one must be refused'
 
 
 def test_client_storage(screen: Screen):

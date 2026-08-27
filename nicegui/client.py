@@ -358,22 +358,20 @@ class Client:
         """
         self._exception_handlers.append(handler)
 
-    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None, *,
-                         require_client_id: bool = True) -> bool:
+    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None) -> bool:
         """Check whether a handshake may proceed, pinning the client's tab ID on the first one.
 
-        A browser opens one socket per client, handshakes it once, keeps the same tab ID for the client's whole
-        lifetime, and always carries its client ID in the socket's connecting query --
-        so a handshake that breaks any of these is a replayed or forged frame.
-        Pass ``require_client_id=False`` for transports whose environ may legitimately lack the connecting query
-        (the Air relay), or ``environ=None`` to skip the query check entirely (tests). (For internal use only.)
+        A browser opens one socket per client, handshakes it once, and keeps the same tab ID for the client's whole
+        lifetime, so a handshake that breaks any of these is a replayed frame.
+        A socket query without a client ID is tolerated:
+        the query is no trust boundary (a forger could simply echo the claimed client ID into it),
+        and query-less sockets must keep working (see ``test_disconnect_without_client_id_in_connect_query``).
+        (For internal use only.)
         """
         if socket_id in self._socket_to_document_id:
             return False
-        if environ is not None:
-            client_id = _client_id_from_query(environ)
-            if client_id != self.id and (client_id is not None or require_client_id):
-                return False
+        if environ is not None and _client_id_from_query(environ) not in (None, self.id):
+            return False
         if self._pinned_tab_id is None:
             self._pinned_tab_id = tab_id
         return self._pinned_tab_id == tab_id
