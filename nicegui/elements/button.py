@@ -4,13 +4,14 @@ from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
+from .mixins.cancelable_wait_element import CancelableWaitElement
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 
 
-class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
+class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement, CancelableWaitElement):
 
     @resolve_defaults
     def __init__(self,
@@ -34,8 +35,6 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
-
-        self._click_tasks: set[asyncio.Task] = set()
 
         if on_click:
             self.on_click(on_click)
@@ -64,33 +63,11 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     async def clicked(self) -> None:
         """Wait until the button is clicked.
 
-        If the button (or its client) is deleted, the wait is cancelled instead of returning,
-        so the code after ``await button.clicked()`` does not run for a click that never happened.
-
-        *Updated in version 3.17.0: Awaiting the button click cancels the calling task
-        when the button element is deleted, e.g. because the client disconnected.*
+        *Updated in version 3.17.0: Awaiting the button click cancels the awaiting task
+        when the button is deleted, e.g. because the client disconnected.*
         """
-        task = asyncio.current_task()
-        assert task is not None
-        if self.is_deleted:
-            # already gone, so it can never be clicked: cancel up front instead of registering a dead listener and
-            # parking forever (touching the element here would also emit a spurious use-after-delete warning)
-            task.cancel()
-            await asyncio.sleep(0)  # deliver the cancellation before we return control
         event = asyncio.Event()
-        self.on('click', event.set, [])
-        self._click_tasks.add(task)
-        try:
+        with self._cancel_when_deleted(event):
+            self.on('click', event.set, [])
             await self.client.connected()
             await event.wait()
-        finally:
-            self._click_tasks.discard(task)
-
-    def _handle_delete(self) -> None:
-        # A deleted button can never be clicked, so cancel every pending clicked() wait rather than let it resolve:
-        # returning normally would run the caller's post-click code (e.g. a form submit) for a click that never
-        # happened. Cancellation fires on client deletion and on element/parent removal alike, and -- unlike a caught
-        # exception -- cannot be swallowed by a surrounding `except Exception`, so the sensitive continuation is skipped.
-        for task in self._click_tasks:
-            task.cancel()
-        super()._handle_delete()

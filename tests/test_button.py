@@ -1,7 +1,7 @@
 import asyncio
 from collections import namedtuple
 
-from nicegui import ui
+from nicegui import background_tasks, ui
 from nicegui.testing import Screen, User
 
 ColorCase = namedtuple('ColorCase', ['label', 'color', 'result'])
@@ -90,19 +90,98 @@ def test_enable_disable(screen: Screen):
 
 
 async def test_clicked_is_cancelled_when_client_is_deleted(user: User):
-    clicked = asyncio.Event()
-    task: list[asyncio.Task] = []
+    """The task awaiting a button click must be cancelled when the client is deleted, e.g. after a disconnect."""
+    results = []
 
     @ui.page('/')
-    async def page():
+    def page():
         button = ui.button('Click me')
-        task.append(asyncio.current_task())
-        await button.clicked()
-        clicked.set()  # must not run: the button was never clicked
+
+        async def wait_for_click() -> None:
+            await button.clicked()
+            results.append('clicked')  # must not run: the button was never clicked
+
+        ui.button('Wait', on_click=wait_for_click)
 
     client = await user.open('/')
-    await asyncio.sleep(0.1)
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)  # let the handler start awaiting the click
     client.delete()
-    await asyncio.sleep(0.1)
-    assert not clicked.is_set(), 'code after clicked() ran even though the button was never clicked'
-    assert task[0].cancelled(), 'the waiting task should be cancelled, not left pending or resolved'
+    await asyncio.sleep(0.1)  # let the cancellation take effect
+    assert not results, 'code after clicked() must not run for a click that never happened'
+    assert not any('wait_for_click' in task.get_name() for task in background_tasks.running_tasks), \
+        'the awaiting task should be cancelled, not leaked'
+
+
+async def test_clicked_is_cancelled_when_button_is_deleted(user: User):
+    """The task awaiting a button click must be cancelled when the button itself is removed from the page."""
+    results = []
+
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            button = ui.button('Click me')
+
+        async def wait_for_click() -> None:
+            await button.clicked()
+            results.append('clicked')  # must not run: the button was never clicked
+
+        ui.button('Wait', on_click=wait_for_click)
+        ui.button('Clear', on_click=card.clear)
+
+    await user.open('/')
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)  # let the handler start awaiting the click
+    user.find('Clear').click()
+    await asyncio.sleep(0.1)  # let the cancellation take effect
+    assert not results, 'code after clicked() must not run for a click that never happened'
+    assert not any('wait_for_click' in task.get_name() for task in background_tasks.running_tasks), \
+        'the awaiting task should be cancelled, not leaked'
+
+
+async def test_awaiting_an_already_deleted_button_is_cancelled(user: User):
+    """Awaiting a button which has already been deleted must cancel immediately instead of waiting forever."""
+    results = []
+
+    @ui.page('/')
+    def page():
+        button = ui.button('Click me')
+        button.delete()
+
+        async def wait_for_click() -> None:
+            await button.clicked()
+            results.append('clicked')  # must not run: the button was never clicked
+
+        ui.button('Wait', on_click=wait_for_click)
+
+    await user.open('/')
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)  # let the cancellation take effect
+    assert not results, 'code after clicked() must not run for a click that never happened'
+    assert not any('wait_for_click' in task.get_name() for task in background_tasks.running_tasks), \
+        'the awaiting task should be cancelled, not leaked'
+
+
+async def test_click_that_deletes_the_button_is_still_delivered(user: User):
+    """A real click must resume the awaiting task even if an async click handler deletes the button."""
+    results = []
+
+    @ui.page('/')
+    def page():
+        with ui.card() as card:
+            async def clear() -> None:
+                card.clear()
+            button = ui.button('Click me', on_click=clear)
+
+        async def wait_for_click() -> None:
+            await button.clicked()
+            results.append('clicked')
+
+        ui.button('Wait', on_click=wait_for_click)
+
+    await user.open('/')
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)  # let the handler start awaiting the click
+    user.find('Click me').click()
+    await asyncio.sleep(0.1)  # let the async on_click handler delete the button
+    assert results == ['clicked'], 'a real click must not be swallowed by the deletion it triggers'
