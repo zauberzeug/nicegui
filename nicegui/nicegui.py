@@ -222,12 +222,9 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
 
 @sio.on('disconnect')
 def _on_disconnect(sid: str) -> None:
-    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
-    query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = query['client_id'][0]
-    client = Client.instances.get(client_id)
-    if client:
-        client.handle_disconnect(sid)
+    for room in sio.rooms(sid):  # the handshake put the socket in a room named after its client
+        if client := Client.instances.get(room):
+            client.handle_disconnect(sid)
 
 
 @sio.on('event')

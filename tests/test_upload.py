@@ -6,9 +6,9 @@ import pytest
 from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartParser
 
-from nicegui import events, ui
+from nicegui import app, events, ui
 from nicegui.elements.upload_files import _sanitize_filename, create_file_upload
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 test_path1 = Path('tests/test_upload.py').resolve()
 test_path2 = Path('tests/test_scene.py').resolve()
@@ -95,6 +95,26 @@ def test_replace_upload(screen: Screen):
     screen.wait(0.5)
     screen.should_contain('B')
     screen.should_not_contain('A')
+
+
+async def test_route_removal_when_deleting_upload_with_custom_url(user: User):
+    @app.post('/custom/upload')
+    def custom_upload() -> None:
+        pass
+
+    upload: ui.upload = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal upload
+        upload = ui.upload().props('url=/custom/upload')
+
+    await user.open('/')
+    assert any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
+
+    upload.delete()
+    assert not any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
+    assert any(getattr(route, 'path', None) == '/custom/upload' for route in app.routes)
 
 
 def test_reset_upload(screen: Screen):

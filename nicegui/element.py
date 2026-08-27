@@ -296,12 +296,7 @@ class Element(Visibility):
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
-        if replace is not None:
-            cls._default_style.clear()
-        for key in Style.parse(remove):
-            cls._default_style.pop(key, None)
-        cls._default_style.update(Style.parse(add))
-        cls._default_style.update(Style.parse(replace))
+        cls._default_style = Style.update_dict(cls._default_style, add, remove, replace)
         return cls
 
     @property
