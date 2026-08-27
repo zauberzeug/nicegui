@@ -205,14 +205,24 @@ class page:
                     task_wait_for_connection.cancel()
                 if task.done():
                     if task.cancelled():
-                        log.warning(f'Page building for {client.page.path} was cancelled; '
-                                    'serving the elements created so far')
+                        if client.is_deleted:
+                            log.warning(f'Page building for {client.page.path} was cancelled '
+                                        'because the client was deleted')
+                        else:
+                            log.warning(f'Page building for {client.page.path} was cancelled; '
+                                        'serving the elements created so far')
                         result = None
                     else:
                         result = task.result()
                 else:
                     result = None
                     task.add_done_callback(check_for_late_return_value)
+
+            if client.is_deleted and not isinstance(result, Response):
+                # The client is gone, so serving the normal page would only handshake-fail and reload-loop (#6126).
+                with Client(page(''), request=request) as error_client:
+                    error_content(500, 'The client was deleted while the page was being built.')
+                return error_client.build_response(request, 500)
 
             if not await client.sub_pages_router._can_resolve_full_path(client):  # pylint: disable=protected-access
                 log.warning(f'{request.url} not found')
