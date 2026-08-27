@@ -76,6 +76,10 @@ class page:
         self.reconnect_timeout = reconnect_timeout
         self.markdown = markdown
 
+        if self.api_router.prefix and self._path == '/':
+            # register the bare prefix (e.g. "/other" instead of "/other/") so links without a trailing slash match
+            self._path = ''
+
         create_favicon_route(self.path, favicon)
 
     @property

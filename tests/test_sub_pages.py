@@ -1342,14 +1342,14 @@ def test_navigate_from_sub_pages_to_api_router_page(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Index')
-    initial_doc_id = screen.selenium.execute_script('return window.documentId;')
 
     screen.click('Go to other page')
     screen.should_contain('Other')
-    assert screen.selenium.execute_script('return window.documentId;') != initial_doc_id
+    assert screen.current_path == '/other'
 
 
-def test_navigate_from_sub_pages_to_page_with_query_string(screen: Screen):
+@pytest.mark.parametrize('suffix', ['?x=1', '#section'])
+def test_navigate_from_sub_pages_to_page_with_query_or_fragment(screen: Screen, suffix: str):
     @ui.page('/other')
     def other_page():
         ui.label('Other')
@@ -1357,15 +1357,14 @@ def test_navigate_from_sub_pages_to_page_with_query_string(screen: Screen):
     @ui.page('/')
     def index():
         ui.sub_pages({'/': lambda: ui.label('Index')})
-        ui.link('Go to other page', '/other?x=1')
+        ui.link('Go to other page', f'/other{suffix}')
 
     screen.open('/')
     screen.should_contain('Index')
-    initial_doc_id = screen.selenium.execute_script('return window.documentId;')
 
     screen.click('Go to other page')
     screen.should_contain('Other')
-    assert screen.selenium.execute_script('return window.documentId;') != initial_doc_id
+    assert screen.current_path == f'/other{suffix}'
 
 
 def test_remaining_path_for_wildcard_routing(screen: Screen):

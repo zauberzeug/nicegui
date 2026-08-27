@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from typing import TYPE_CHECKING
+from urllib.parse import urlparse
 
 from fastapi import Request
 from starlette.routing import Match, Route
@@ -98,7 +99,7 @@ class SubPagesRouter:
             getattr(client_route.endpoint, '__func__', client_route.endpoint) if client_route is not None else None
 
         other_routes = [route for route in core.app.routes if isinstance(route, Route)]
-        clean_path = path.split('?', maxsplit=1)[0]
+        clean_path = urlparse(path).path  # strip query string and fragment which would prevent route matching
         for other_route in other_routes:
             other_func = getattr(other_route.endpoint, '__func__', other_route.endpoint)
             if (
@@ -112,11 +113,6 @@ class SubPagesRouter:
             match, _ = other_route.matches({'type': 'http', 'path': clean_path, 'method': 'GET'})
             if match == Match.FULL:
                 return True
-            if clean_path != '/':
-                alt_path = clean_path[:-1] if clean_path.endswith('/') else clean_path + '/'
-                alt_match, _ = other_route.matches({'type': 'http', 'path': alt_path, 'method': 'GET'})
-                if alt_match == Match.FULL:
-                    return True
 
         return False
 
