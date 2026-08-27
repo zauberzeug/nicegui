@@ -67,13 +67,14 @@ def test_stale_socket_disconnect_does_not_wedge_a_reconnected_browser(screen: Sc
     screen.open('/')
     document_id = screen.selenium.execute_script('return window.documentId;')
 
-    screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
-    screen.wait_for(lambda: screen.selenium.execute_script('return window.socket.connected;'))
+    # let the browser consider the socket dead without actually closing it, so the server does not notice the disconnect
+    screen.selenium.execute_script('window.staleWs = window.socket.io.engine.transport.ws;'
+                                   'window.socket.io.engine.transport.onClose("transport close");')
+    screen.wait_for_js('window.socket.connected', True)
     assert screen.selenium.execute_script('return window.documentId;') == document_id
     assert events['disconnects'] == 0, 'the server reaped the old socket before the browser reconnected'
 
-    screen.wait(9.0)  # > ping_interval + ping_timeout, floored at 4 s and 2 s, so the old socket is reaped by now
-    assert events['disconnects'] == 1, 'the server never reaped the old socket'
+    screen.selenium.execute_script('window.staleWs.close();')  # now the server reaps the stale socket
+    screen.wait_for(lambda: events['disconnects'] == 1)
     screen.click('Click me')
-    screen.wait(1.5)
-    assert events['clicks'] == 1, 'the click of a reconnected browser must still reach the server'
+    screen.wait_for(lambda: events['clicks'] == 1)  # the click of a reconnected browser must still reach the server
