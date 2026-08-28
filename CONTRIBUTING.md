@@ -149,7 +149,8 @@ The conventions below cover both general Python style and NiceGUI-specific patte
   - Follow **PEP 8** with a 120 character line length
   - Use single quotes in Python, double quotes in JavaScript
   - Use f-strings wherever possible (mark performance-critical exceptions with a comment)
-  - Explain important implementation details and non-obvious code with comments
+  - Explain important implementation details and non-obvious code with comments.
+    Verify the explanation before writing it: a comment that guesses at a mechanism, overclaims a guarantee the tests contradict, or names an identifier that does not exist is worse than no comment, because it will be trusted.
   - Use `# NOTE:` only to draw special attention, e.g. to changes that need to be mirrored elsewhere or hidden cross-file coupling
   - No mutable defaults (`[]`, `{}`) without `# noqa: B006` and a justification — prefer `None`
   - Put high-level/interesting code at the top of files; helper functions go below their usage
@@ -172,6 +173,13 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 
 - **Elements** (core library)
 
+  - **Naming**: Borrow vocabulary before inventing it.
+    Match the sibling elements first — a popup-like element opens and closes like `ui.menu` and `ui.dialog`, usually by inheriting `OpenableElement` rather than reimplementing them — and the wrapped Quasar or JavaScript component's own terms second.
+    Check what NiceGUI already means by a candidate name: `show()`/`hide()` are the layout vocabulary of `ui.drawer`, `ui.header` and `ui.footer`, and `bind_*` belongs to data binding, so borrowing either for a different concept reads as the wrong one.
+    Renaming after release is a breaking change, so settle names before merge.
+  - **Event handlers**: When a public `on_*` method listens to an event `__init__` already registered with the same payload, append the callback to a Python-side list and let the one listener fan out, as `ValueElement` does with `_change_handlers`.
+    Each listener emits its own client-to-server socket event, so a second registration doubles the traffic for that event.
+    Separate `self.on(...)` calls are right when the payloads genuinely differ: `EChart.on_point_click()` and `EChart.on_click()` both listen to `componentClick` but request different argument subsets.
   - **Mixins**: Elements use mixin composition; inheritance order matters for Python's Method Resolution Order (MRO)
   - **Props vs. attributes**: Use `self._props` for data that syncs to Vue/frontend; use instance attributes for Python-only state
   - **Context managers**: Elements can be used as context managers (`with element:`) for slot/child management
@@ -208,6 +216,10 @@ The conventions below cover both general Python style and NiceGUI-specific patte
     They break when the implementation changes (so they get rewritten along with it, guarding nothing) and they are hard to read for anyone who doesn't know the internals.
   - Before writing a test, read a recent one in the same file.
     The existing suite is almost entirely behavior tests, and copying a neighbouring test's shape is faster and safer than inventing a new one.
+    Better still, extend it: if a test already covers the same element, page or contract, adding a case to its parametrization or an assertion to its body is usually better than a new function with its own scaffolding.
+    Write a separate test when the setup genuinely differs or when it covers a distinct contract; otherwise the extra page and fixtures are permanent cost in an already-long suite.
+  - Make sure the test exercises the path production actually takes.
+    Reaching the bug through an easier substitute trigger can pass, and fail, for the wrong reason — the fix looks guarded while the real path stays broken.
   - Prefer the `User` fixture (fast, runs in the same async context as NiceGUI, no browser); use the `Screen` fixture only when testing browser/JavaScript interactions.
   - A regression test must fail when the fix is reverted — verify that once before trusting it.
     A test that has only ever been seen green proves nothing.
