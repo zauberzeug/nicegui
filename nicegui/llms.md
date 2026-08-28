@@ -432,6 +432,11 @@ with ui.pyplot(figsize=(6, 4)) as plot:
 with ui.line_plot(n=50, update_every=5) as plot:
     plot.push(x_value, [y1, y2])
 
+# uPlot (fast canvas charts for large or streaming time series; data = [x, y1, y2, ...])
+plot = ui.uplot({'width': 600, 'height': 300, 'series': [{}, {'label': 'y', 'stroke': 'red'}]},
+                [[0, 1, 2], [3, 1, 2]], scale_mode='preserve_zoom')  # keep the user's zoom on updates
+plot.data = [[0, 1, 2, 3], [3, 1, 2, 4]]
+
 # 3D Scene (Three.js)
 with ui.scene() as scene:
     scene.sphere().move(x=1)
@@ -1046,6 +1051,7 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.altair(chart)`                | Vega-Altair chart              |
 | `ui.highchart(options)`           | Highcharts (requires license)  |
 | `ui.line_plot(n)`                 | Efficient streaming line chart |
+| `ui.uplot(options, data)`         | uPlot (fast canvas charts)     |
 
 ### Advanced / Specialized
 

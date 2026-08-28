@@ -22,6 +22,7 @@ from . import (
     spinner_documentation,
     table_documentation,
     tree_documentation,
+    uplot_documentation,
 )
 
 doc.title('*Data* Elements')
@@ -31,6 +32,7 @@ doc.intro(aggrid_documentation)
 if optional_features.has('highcharts'):
     doc.intro(highchart_documentation)
 doc.intro(echart_documentation)
+doc.intro(uplot_documentation)
 if optional_features.has('matplotlib'):
     doc.intro(pyplot_documentation)
     doc.intro(matplotlib_documentation)
