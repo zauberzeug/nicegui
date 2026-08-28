@@ -206,7 +206,15 @@ class ObservableDict(ObservableCollection, dict[_KT, _VT]):
         self._unobserve(*values)
         self._handle_change()
 
-    def setdefault(self, __key: _KT, __default: _VT | None = None) -> _VT:
+    @overload
+    def setdefault(self: ObservableDict[_KT, _T | None], __key: _KT, __default: None = None) -> _T | None:
+        ...
+
+    @overload
+    def setdefault(self, __key: _KT, __default: _VT) -> _VT:
+        ...
+
+    def setdefault(self, __key: _KT, __default: _VT | None = None) -> _VT | None:
         if __key in self:
             return super().__getitem__(__key)
         item = super().setdefault(__key, self._observe(cast(_VT, __default)))
