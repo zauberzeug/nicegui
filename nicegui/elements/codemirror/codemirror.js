@@ -1,4 +1,58 @@
 import * as CM from "nicegui-codemirror";
+import { Awareness, applyAwarenessUpdate, encodeAwarenessUpdate, yCollab } from "nicegui-codemirror";
+import * as Y from "yjs";
+
+// Origin tag for Yjs updates applied locally from a remote source; used to suppress
+// the echo back to the server which would otherwise cause an infinite update storm.
+const YJS_REMOTE = "yjs-remote";
+
+// Per-page registry of shared Y.Doc / Awareness state, keyed by doc_id. Multiple
+// ui.codemirror instances in the same browser tab with the same doc_id share one
+// Y.Doc — their yCollab extensions all subscribe to the same Y.Text, so in-tab
+// edits propagate locally via Yjs observers (no server round-trip needed; the
+// server's broadcast deliberately skips the originator sid for cross-tab clients).
+const yjsRooms = new Map();
+
+// Engine.IO rejects incoming messages above ~1 MB, so updates larger than this are
+// split into parts which the receiver reassembles (see yjs_room.py, incl. the parts cap).
+const YJS_CHUNK_BYTES = 500 * 1024;
+const YJS_MAX_CHUNKS = 256;
+
+function emitChunked(event, docId, update) {
+  if (update.length <= YJS_CHUNK_BYTES) {
+    window.socket.emit(event, { doc_id: docId, update });
+    return;
+  }
+  const parts = Math.ceil(update.length / YJS_CHUNK_BYTES);
+  if (parts > YJS_MAX_CHUNKS) {
+    console.error(`Yjs update of ${update.length} bytes exceeds the ${YJS_MAX_CHUNKS * YJS_CHUNK_BYTES}-byte transfer limit; not sent.`);
+    return;
+  }
+  for (let i = 0; i < parts; i++) {
+    const chunk = update.subarray(i * YJS_CHUNK_BYTES, (i + 1) * YJS_CHUNK_BYTES);
+    window.socket.emit(event, { doc_id: docId, update: chunk, part: i, parts });
+  }
+}
+
+function reassemble(buffers, event, data, apply) {
+  const update = new Uint8Array(data.update);
+  if (data.parts === undefined) return apply(update);
+  if (!buffers[event] || buffers[event].parts !== data.parts) {
+    buffers[event] = { parts: data.parts, chunks: new Map() }; // new transfer supersedes any stale one
+  }
+  const { chunks } = buffers[event];
+  chunks.set(data.part, update);
+  if (chunks.size < data.parts) return;
+  delete buffers[event];
+  const ordered = Array.from({ length: data.parts }, (_, i) => chunks.get(i));
+  const joined = new Uint8Array(ordered.reduce((total, chunk) => total + chunk.length, 0));
+  let offset = 0;
+  for (const chunk of ordered) {
+    joined.set(chunk, offset);
+    offset += chunk.length;
+  }
+  apply(joined);
+}
 
 // A RangeSet StateField whose ranges remap through document edits.
 // Dispatching setEffect.of(ranges) replaces the whole set.
@@ -59,6 +113,7 @@ export default {
     indent: String,
     highlightWhitespace: Boolean,
     lineAnchors: Object,
+    crdtDocId: { type: String, default: null },
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
@@ -100,13 +155,15 @@ export default {
     if (this.editor) {
       const element = mounted_app.elements[this.$props.id.slice(1)];
       if (element) {
-        element.props.value = this.editor.state.doc.toString();
+        // In CRDT mode yjs owns the doc, so only the anchors are written back.
+        if (!this.crdtDocId) element.props.value = this.editor.state.doc.toString();
         // A client-side remount (e.g. a v-if container) re-applies these props against the restored
         // document, so they have to describe where the anchors are now, not where they were declared.
         if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
       }
     }
     clearTimeout(this._anchorTimer);
+    if (this.crdtDocId) this._teardownCrdt();
   },
   methods: {
     // Find the language's extension by its name. Case insensitive.
@@ -163,6 +220,9 @@ export default {
       });
     },
     setEditorValueFromProps() {
+      // When collaboration is on, Yjs owns the document state; the `value` prop is no
+      // longer the source of truth.
+      if (this.crdtDocId) return;
       this.setEditorValue(this.value);
     },
     setEditorValue(value) {
@@ -200,6 +260,7 @@ export default {
       // only fires on a deliberate (re)assignment — re-applying from the declared lines is then intended,
       // snapping anchors back to their declared positions (and restoring any dropped by a delete-across).
       if (!this.editor) await this.editorPromise;
+      if (this.crdtSyncPromise) await this.crdtSyncPromise;
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const [id, line] of Object.entries(anchors || {})) {
@@ -269,8 +330,9 @@ export default {
         logAndEmit("error", `ui.codemirror: ${error.message}`);
       }
     },
-    setLineTooltips(tooltips) {
+    async setLineTooltips(tooltips) {
       if (!this.editor) return;
+      if (this.crdtSyncPromise) await this.crdtSyncPromise;
       const doc = this.editor.state.doc;
       const ranges = [];
       for (const [line, content] of Object.entries(tooltips || {})) {
@@ -343,7 +405,8 @@ export default {
 
       const extensions = [
         CM.basicSetup,
-        changeSender,
+        // In CRDT mode yjs owns the doc and emits via its own update channel; skip changeSender.
+        ...(this.crdtDocId ? [yCollab(this.ytext, this.awareness)] : [changeSender]),
         anchorTracker,
         anchorField,
         tooltipField,
@@ -369,6 +432,110 @@ export default {
 
       return extensions;
     },
+    _setupCrdt() {
+      const docId = this.crdtDocId;
+      let room = yjsRooms.get(docId);
+      if (!room) {
+        const ydoc = new Y.Doc();
+        const awareness = new Awareness(ydoc);
+        room = { ydoc, awareness, refs: 0, handlers: null, rx: {} };
+        // Anchors must not be applied against the still-empty ydoc; settled by the first
+        // yjs_init, by a join the server refused, or by teardown before either arrives.
+        room.synced = new Promise((resolve) => (room.resolveSync = resolve));
+        yjsRooms.set(docId, room);
+
+        room.handlers = {
+          onInit: (data) => {
+            if (data.doc_id !== docId) return;
+            reassemble(room.rx, "yjs_init", data, (update) => {
+              try {
+                if (update.length > 0) Y.applyUpdate(ydoc, update, YJS_REMOTE);
+                // Send back whatever the server is missing (edits made while disconnected);
+                // an empty diff encodes as 2 bytes.
+                const serverStateVector = update.length > 0 ? Y.encodeStateVectorFromUpdate(update) : undefined;
+                const diff = Y.encodeStateAsUpdate(ydoc, serverStateVector);
+                if (diff.length > 2) emitChunked("yjs_update", docId, diff);
+              } finally {
+                // a rejected update still ends the wait: degraded anchors beat none at all
+                room.resolveSync();
+              }
+            });
+          },
+          onJoinFailed: (data) => {
+            if (data.doc_id !== docId) return;
+            room.resolveSync();
+          },
+          onSocketConnect: () => {
+            // A transient reconnect mints a new server-side sid; re-join to restore
+            // room membership (the server replies with yjs_init, which resyncs both ways).
+            window.socket.emit("yjs_join", { doc_id: docId });
+          },
+          onUpdate: (data) => {
+            if (data.doc_id !== docId) return;
+            reassemble(room.rx, "yjs_update", data, (update) => Y.applyUpdate(ydoc, update, YJS_REMOTE));
+          },
+          onAwareness: (data) => {
+            if (data.doc_id !== docId) return;
+            applyAwarenessUpdate(awareness, new Uint8Array(data.update), YJS_REMOTE);
+          },
+          onDocUpdate: (update, origin) => {
+            if (origin === YJS_REMOTE) return;
+            emitChunked("yjs_update", docId, update);
+          },
+          onAwarenessUpdate: ({ added, updated, removed }, origin) => {
+            if (origin === YJS_REMOTE) return;
+            const update = encodeAwarenessUpdate(awareness, added.concat(updated, removed));
+            window.socket.emit("yjs_awareness", { doc_id: docId, update });
+          },
+        };
+
+        // window.socket only exists after NiceGUI's handshake, which races with this
+        // mount hook on first load; defer registration until the socket is ready.
+        const wireSocket = () => {
+          window.socket.on("yjs_init", room.handlers.onInit);
+          window.socket.on("yjs_join_failed", room.handlers.onJoinFailed);
+          window.socket.on("yjs_update", room.handlers.onUpdate);
+          window.socket.on("yjs_awareness", room.handlers.onAwareness);
+          window.socket.on("connect", room.handlers.onSocketConnect);
+          ydoc.on("update", room.handlers.onDocUpdate);
+          awareness.on("update", room.handlers.onAwarenessUpdate);
+          window.socket.emit("yjs_join", { doc_id: docId });
+        };
+        const tryWire = () => {
+          if (room.cancelled) return;
+          if (window.socket && window.did_handshake) wireSocket();
+          else setTimeout(tryWire, 10);
+        };
+        tryWire();
+      }
+      room.refs++;
+      this.ydoc = room.ydoc;
+      this.crdtSyncPromise = room.synced;
+      this.ytext = room.ydoc.getText("codemirror");
+      this.awareness = room.awareness;
+    },
+    _teardownCrdt() {
+      const docId = this.crdtDocId;
+      const room = yjsRooms.get(docId);
+      if (!room) return;
+      room.refs--;
+      if (room.refs > 0) return;
+      room.cancelled = true;
+      room.resolveSync();
+      if (window.socket) {
+        window.socket.emit("yjs_leave", { doc_id: docId });
+        window.socket.off("yjs_init", room.handlers.onInit);
+        window.socket.off("yjs_join_failed", room.handlers.onJoinFailed);
+        window.socket.off("yjs_update", room.handlers.onUpdate);
+        window.socket.off("yjs_awareness", room.handlers.onAwareness);
+        window.socket.off("connect", room.handlers.onSocketConnect);
+      }
+      room.ydoc.off("update", room.handlers.onDocUpdate);
+      room.awareness.off("update", room.handlers.onAwarenessUpdate);
+      room.awareness.destroy();
+      room.ydoc.destroy();
+      yjsRooms.delete(docId);
+    },
   },
   async mounted() {
     // This is used to prevent emitting the value we just received from the server.
@@ -384,10 +551,13 @@ export default {
     this.lineWrappingConfig = new CM.Compartment();
     this.userKeymapConfig = new CM.Compartment();
 
+    if (this.crdtDocId) this._setupCrdt();
+
     const extensions = this.setupExtensions();
 
     this.editor = new CM.EditorView({
-      doc: this.value,
+      // In CRDT mode the y-codemirror binding seeds the editor from ytext on its own.
+      doc: this.crdtDocId ? this.ytext.toString() : this.value,
       extensions: extensions,
       parent: this.$el,
     });

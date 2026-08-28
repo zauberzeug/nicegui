@@ -12,6 +12,7 @@ FEATURE = Literal[
     'pillow',
     'plotly',
     'polars',
+    'pycrdt',
     'pyecharts',
     'redis',
     'webview',
