@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 from pathlib import Path
 
@@ -54,8 +55,10 @@ class FilePersistentDict(PersistentDict):
                 tmp_filepath.unlink(missing_ok=True)
                 await unlink_with_retry_async(self.filepath, missing_ok=True)
                 return
-            async with aiofiles.open(tmp_filepath, 'w', encoding=self.encoding) as f:
-                await f.write(dumps(self, str(self.filepath), indent=self.indent))
+            # write in a worker thread: cancelling an `async with aiofiles.open(...)` while it is
+            # still entering leaves the opened file unclosed, which surfaces later as a ResourceWarning
+            await asyncio.to_thread(tmp_filepath.write_text,
+                                    dumps(self, str(self.filepath), indent=self.indent), encoding=self.encoding)
             with contextlib.suppress(FileNotFoundError):  # a concurrent Storage.clear() may have swept the temp file
                 tmp_filepath.replace(self.filepath)
 
