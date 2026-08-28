@@ -215,7 +215,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     async def initialized(self) -> None:
         """Wait until the scene is initialized.
 
-        *Updated in version 3.17.0: Awaiting scene initialization cancels the calling task
+        *Updated in version 3.17.0: Awaiting scene initialization cancels the awaiting task
         when the scene is deleted, e.g. because the client disconnected.*
         """
         with self._cancel_when_deleted(self._initialized_event):

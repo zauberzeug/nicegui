@@ -103,8 +103,8 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
     async def initialized(self) -> None:
         """Wait until the map is initialized.
 
-        *Updated in version 3.17.0: Awaiting leaflet initialization cancels the calling task
-        when the leaflet is deleted, e.g. because the client disconnected.*
+        *Updated in version 3.17.0: Awaiting map initialization cancels the awaiting task
+        when the map is deleted, e.g. because the client disconnected.*
         """
         with self._cancel_when_deleted(self._initialized_event):
             await self.client.connected()
