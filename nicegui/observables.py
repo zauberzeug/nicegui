@@ -301,9 +301,7 @@ class ObservableList(ObservableCollection, list[_T]):
     def __setitem__(self, key: SupportsIndex | slice[SupportsIndex | None], value: _T | Iterable[_T]) -> None:
         if isinstance(key, slice):
             old_items = self[key]
-            if not isinstance(value, Iterable):
-                raise TypeError('must assign iterable to slice')
-            super().__setitem__(key, [self._observe(item) for item in value])
+            super().__setitem__(key, [self._observe(item) for item in cast(Iterable[_T], value)])
             self._unobserve(*old_items)
         else:
             old_item = self[key]
