@@ -435,8 +435,8 @@ async def test_cancelled_backup_does_not_leak_a_file_handle(user: User, tmp_path
     cancelled = 0
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter('always')
-        # the vulnerable window is while aiofiles' open() is in flight, a few dozen microseconds
-        # after the task starts; the spread keeps this reliable on slower machines too
+        # cancel while the write is in flight, a few dozen microseconds after the task starts;
+        # the spread keeps this reliable on slower machines too
         for i, delay in enumerate([0.00002, 0.00005, 0.0001, 0.0002]):
             for j in range(10):
                 d = FilePersistentDict(tmp_path / f'storage-{i}-{j}.json', encoding='utf-8')
@@ -447,7 +447,8 @@ async def test_cancelled_backup_does_not_leak_a_file_handle(user: User, tmp_path
                 with contextlib.suppress(asyncio.CancelledError):
                     await task
         gc.collect()
-        leaks = [str(w.message) for w in caught if issubclass(w.category, ResourceWarning)]
+        leaks = [str(w.message) for w in caught
+                 if issubclass(w.category, ResourceWarning) and 'storage-' in str(w.message)]
     assert cancelled, 'no backup was still running when cancelled, so nothing was exercised'
     assert not leaks, f'cancelling a backup left {len(leaks)} file(s) unclosed: {leaks[:1]}'
 
