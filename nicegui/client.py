@@ -269,8 +269,9 @@ class Client:
         """Block execution until the client is connected.
 
         :param timeout: timeout in seconds (default: ``None``)
+        :raises ClientConnectionTimeout: if ``timeout`` elapses first
         """
-        if self.has_socket_connection:
+        if self.has_socket_connection or self.is_deleted:
             return
         self._waiting_for_connection.set()
         self._connected.clear()
@@ -312,6 +313,8 @@ class Client:
         async def send_and_wait():
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             await self.connected()
+            if self.is_deleted:
+                return None
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)

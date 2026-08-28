@@ -1,5 +1,8 @@
-from nicegui import ui
-from nicegui.testing import Screen
+import asyncio
+
+from nicegui import background_tasks, ui
+from nicegui.client import Client
+from nicegui.testing import Screen, User
 
 
 def test_run_javascript_on_button_press(screen: Screen):
@@ -93,3 +96,37 @@ def test_simultaneous_async_javascript(screen: Screen):
     screen.click('runB')
     screen.should_contain('A: 1')
     screen.should_contain('B: 2')
+
+
+async def test_awaited_run_javascript_resolves_when_client_is_deleted_while_waiting(user: User):
+    results = []
+
+    @ui.page('/')
+    async def page():
+        results.append(await ui.run_javascript('window.innerWidth'))
+
+    await user.http_client.get('/')  # request the page without ever opening the websocket
+    await asyncio.sleep(0)
+    Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
+    await asyncio.sleep(1.5)  # longer than run_javascript's default 1.0 s timeout
+    assert results == [None]
+
+
+async def test_awaited_run_javascript_resolves_when_client_is_already_deleted(user: User):
+    results = []
+
+    @ui.page('/')
+    async def page():
+        client = ui.context.client
+
+        async def later() -> None:
+            await asyncio.sleep(0.3)  # resume long after the client is gone
+            results.append(await client.run_javascript('window.innerWidth'))
+
+        background_tasks.create(later())
+
+    await user.http_client.get('/')  # request the page without ever opening the websocket
+    await asyncio.sleep(0)
+    Client.prune_instances(client_age_threshold=0)
+    await asyncio.sleep(1.5)
+    assert results == [None]
