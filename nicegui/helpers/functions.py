@@ -6,7 +6,7 @@ from contextlib import AbstractContextManager
 from inspect import Parameter, signature
 from typing import Any, TypeGuard, TypeVar
 
-from ..awaitable_response import AwaitableResponse
+from .. import awaitable_response  # import the module, not the class, to break the cycle via nicegui.helpers
 from .warnings import warn_once
 
 if sys.version_info < (3, 13):
@@ -51,7 +51,8 @@ def should_await(result: Any) -> TypeGuard[Awaitable[Any]]:
     Subclasses of ``NoImplicitAwait`` are also excluded
     so that chainable mutators returning ``self`` on awaitable elements (like ``Dialog``) are not silently awaited.
     """
-    return isinstance(result, Awaitable) and not isinstance(result, (NoImplicitAwait, AwaitableResponse, asyncio.Task))
+    return isinstance(result, Awaitable) and \
+        not isinstance(result, (NoImplicitAwait, awaitable_response.AwaitableResponse, asyncio.Task))
 
 
 async def await_with_context(awaitable: Awaitable[_T], context: AbstractContextManager) -> _T:

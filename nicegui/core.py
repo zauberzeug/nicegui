@@ -7,11 +7,12 @@ import sys
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from socketio import AsyncServer
-
+from . import _lazy
 from .logging import log
 
 if TYPE_CHECKING:
+    from socketio import AsyncServer
+
     from .air import Air
     from .app import App
     from .client import Client
@@ -23,6 +24,11 @@ air: Air | None = None
 root: Callable | None = None
 script_mode: bool = False
 script_client: Client | None = None
+
+
+def __getattr__(name: str) -> object:
+    # lazily build the App and AsyncServer on first access by importing the nicegui module which assigns them
+    return _lazy.resolve(__name__, 'nicegui', {'app': ('.nicegui', 'app'), 'sio': ('.nicegui', 'sio')}, name)
 
 
 def is_loop_running() -> bool:
