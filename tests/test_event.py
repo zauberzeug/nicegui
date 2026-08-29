@@ -204,3 +204,57 @@ async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
     await asyncio.sleep(0.1)
     assert len(exceptions) == 2 and 'sync error' in str(exceptions[0]) and 'async error' in str(exceptions[1])
     caplog.records.clear()
+
+
+async def test_ui_on_exception_from_async_subscriber(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        event: Event[[]] = Event()
+
+        async def subscriber():
+            raise RuntimeError('boom')
+
+        event.subscribe(subscriber)
+        ui.on_exception(seen.append)
+        ui.button('fire', on_click=lambda: event.emit())
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
+
+
+@pytest.mark.parametrize('caught', [False, True])
+async def test_awaited_event_call_reports_once(user: User, caplog: pytest.LogCaptureFixture, caught: bool):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        event: Event[[]] = Event()
+
+        async def subscriber():
+            raise RuntimeError('boom')
+
+        event.subscribe(subscriber)
+        ui.on_exception(seen.append)
+
+        async def fire():
+            if not caught:
+                await event.call()
+                return
+            try:
+                await event.call()
+            except RuntimeError:
+                pass
+
+        ui.button('fire', on_click=fire)
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    expected = 0 if caught else 1
+    assert len(seen) == expected, f'ui.on_exception saw {len(seen)}, expected {expected}'

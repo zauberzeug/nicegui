@@ -70,7 +70,12 @@ class ValidationElement(ValueElement[ValueT]):
             result = self._validation(self.value)
             if helpers.should_await(result):
                 async def await_error():
-                    self.error = await result
+                    try:
+                        self.error = await result
+                    except Exception as e:
+                        if not self.is_deleted:
+                            self.client.handle_exception(e)
+                        raise
                 background_tasks.create(await_error(), name=f'validate {self.id}')
                 return True
             self.error = cast(str | None, result)
