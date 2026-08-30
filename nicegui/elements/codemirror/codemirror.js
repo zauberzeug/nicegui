@@ -48,7 +48,7 @@ const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRa
 
 export default {
   template: `
-    <div></div>
+    <div :id="id"></div>
   `,
   props: {
     value: String,
