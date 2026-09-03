@@ -222,7 +222,7 @@ def run(root: Callable | None = None, *,
         return
 
     is_repl = bool(getattr(sys, 'ps1', sys.flags.interactive))
-    if reload and is_repl:
+    if reload and (is_repl or not helpers.is_file(getattr(sys.modules.get('__main__'), '__file__', None))):
         log.warning('disabling auto-reloading because it is only supported when running from a file')
         core.app.config.reload = reload = False
 
