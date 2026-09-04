@@ -5,9 +5,9 @@ from . import doc
 
 @doc.demo(ui.keyboard)
 def main_demo() -> None:
-    from nicegui.events import KeyEventArguments
+    from nicegui import events
 
-    def handle_key(e: KeyEventArguments):
+    def handle_key(e: events.KeyEventArguments):
         if e.key == 'f' and not e.action.repeat:
             if e.action.keyup:
                 ui.notify('f was just released')
@@ -26,6 +26,25 @@ def main_demo() -> None:
     keyboard = ui.keyboard(on_key=handle_key)
     ui.label('Key events can be caught globally by using the keyboard element.')
     ui.checkbox('Track key events').bind_value_to(keyboard, 'active')
+
+
+@doc.demo('Prevent default and stop propagation', '''
+    You can use the `js_handler` parameter of the `on` method to control how an event is handled on the client side.
+    To prevent the default behavior, you can call the `preventDefault` method of the `event` object.
+    To stop the propagation of the event, you could also call the `stopPropagation` method of the `event` object.
+
+    *Added in version 3.1.0*
+''')
+def prevent_default() -> None:
+    ui.label('Select via Ctrl-A or Cmd-A is disabled')
+
+    ui.keyboard() \
+        .on('key', lambda: ui.notify('Select all prevented.'), js_handler='''(e) => {
+            if (e.key === 'a' && (e.ctrlKey || e.metaKey) && e.action === 'keydown') {
+                emit(e);
+                e.event.preventDefault();
+            }
+        }''')
 
 
 doc.reference(ui.keyboard)

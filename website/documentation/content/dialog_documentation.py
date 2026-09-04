@@ -36,8 +36,7 @@ def async_dialog_demo():
 ''')
 def replace_content():
     def replace():
-        dialog.clear()
-        with dialog, ui.card().classes('w-64 h-64'):
+        with dialog.clear(), ui.card().classes('w-64 h-64'):
             ui.label('New Content')
         dialog.open()
 
@@ -46,6 +45,20 @@ def replace_content():
 
     ui.button('Open', on_click=dialog.open)
     ui.button('Replace', on_click=replace)
+
+
+@doc.demo('Events', '''
+    Dialogs emit events when they are opened or closed.
+    See the [Quasar documentation](https://quasar.dev/vue-components/dialog) for more information.
+''')
+def events():
+    with ui.dialog().props('backdrop-filter="blur(8px) brightness(40%)"') as dialog:
+        ui.label('Press ESC to close').classes('text-3xl text-white')
+
+    dialog.on('show', lambda: ui.notify('Dialog opened'))
+    dialog.on('hide', lambda: ui.notify('Dialog closed'))
+    dialog.on('escape-key', lambda: ui.notify('ESC pressed'))
+    ui.button('Open', on_click=dialog.open)
 
 
 doc.reference(ui.dialog)

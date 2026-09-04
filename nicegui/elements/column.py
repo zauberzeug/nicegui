@@ -1,23 +1,22 @@
-from typing import Literal, Optional
+from typing import Literal
 
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Column(Element):
+class Column(SortableElement, default_classes='nicegui-column'):
 
     def __init__(self, *,
                  wrap: bool = False,
-                 align_items: Optional[Literal['start', 'end', 'center', 'baseline', 'stretch']] = None,
+                 align_items: Literal['start', 'end', 'center', 'baseline', 'stretch'] | None = None,
                  ) -> None:
         """Column Element
 
         Provides a container which arranges its child in a column.
 
         :param wrap: whether to wrap the content (default: `False`)
-        :param align_items: alignment of the items in the column (default: `None`)
+        :param align_items: alignment of the items in the column ("start", "end", "center", "baseline", or "stretch"; default: `None`)
         """
         super().__init__('div')
-        self._classes.append('nicegui-column')
         if align_items:
             self._classes.append(f'items-{align_items}')
 

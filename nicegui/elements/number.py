@@ -1,33 +1,36 @@
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any
 
-from ..events import GenericEventArguments
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
-from .mixins.validation_element import ValidationElement
+from .mixins.label_element import LabelElement
+from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Number(ValidationElement, DisableableElement):
+class Number(LabelElement, ValidationElement[float | None], DisableableElement):
     LOOPBACK = False
 
+    @resolve_defaults
     def __init__(self,
-                 label: Optional[str] = None, *,
-                 placeholder: Optional[str] = None,
-                 value: Optional[float] = None,
-                 min: Optional[float] = None,  # pylint: disable=redefined-builtin
-                 max: Optional[float] = None,  # pylint: disable=redefined-builtin
-                 precision: Optional[int] = None,
-                 step: Optional[float] = None,
-                 prefix: Optional[str] = None,
-                 suffix: Optional[str] = None,
-                 format: Optional[str] = None,  # pylint: disable=redefined-builtin
-                 on_change: Optional[Callable[..., Any]] = None,
-                 validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]] = None,
+                 label: str | None = DEFAULT_PROP | None, *,
+                 placeholder: str | None = DEFAULT_PROP | None,
+                 value: float | None = DEFAULT_PROPS['model-value'] | None,
+                 min: float | None = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
+                 max: float | None = DEFAULT_PROP | None,  # pylint: disable=redefined-builtin
+                 precision: int | None = None,
+                 step: float | None = DEFAULT_PROP | None,
+                 prefix: str | None = DEFAULT_PROP | None,
+                 suffix: str | None = DEFAULT_PROP | None,
+                 format: str | None = None,  # pylint: disable=redefined-builtin
+                 on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Number Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
 
         You can use the `validation` parameter to define a dictionary of validation rules,
-        e.g. ``{'Too small!': lambda value: value < 3}``.
+        e.g. ``{'Too small!': lambda value: value > 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
         To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
@@ -43,26 +46,19 @@ class Number(ValidationElement, DisableableElement):
         :param suffix: a suffix to append to the displayed value
         :param format: a string like "%.2f" to format the displayed value
         :param on_change: callback to execute when the value changes
-        :param validation: dictionary of validation rules or a callable that returns an optional error message
+        :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         """
         self.format = format
-        super().__init__(tag='q-input', value=value, on_value_change=on_change, validation=validation)
+        super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change, validation=validation)
+        self._props['for'] = self.html_id
         self._props['type'] = 'number'
-        if label is not None:
-            self._props['label'] = label
-        if placeholder is not None:
-            self._props['placeholder'] = placeholder
-        if min is not None:
-            self._props['min'] = min
-        if max is not None:
-            self._props['max'] = max
+        self._props.set_optional('placeholder', placeholder)
+        self._props.set_optional('min', min)
+        self._props.set_optional('max', max)
         self._precision = precision
-        if step is not None:
-            self._props['step'] = step
-        if prefix is not None:
-            self._props['prefix'] = prefix
-        if suffix is not None:
-            self._props['suffix'] = suffix
+        self._props.set_optional('step', step)
+        self._props.set_optional('prefix', prefix)
+        self._props.set_optional('suffix', suffix)
         self.on('blur', self.sanitize, [])
 
     @property
@@ -74,9 +70,8 @@ class Number(ValidationElement, DisableableElement):
     def min(self, value: float) -> None:
         if self._props.get('min') == value:
             return
-        self._props['min'] = value
+        self._props.set_optional('min', value)
         self.sanitize()
-        self.update()
 
     @property
     def max(self) -> float:
@@ -87,23 +82,54 @@ class Number(ValidationElement, DisableableElement):
     def max(self, value: float) -> None:
         if self._props.get('max') == value:
             return
-        self._props['max'] = value
+        self._props.set_optional('max', value)
         self.sanitize()
-        self.update()
 
     @property
-    def precision(self) -> Optional[int]:
+    def precision(self) -> int | None:
         """The number of decimal places allowed (default: no limit, negative: decimal places before the dot)."""
         return self._precision
 
     @precision.setter
-    def precision(self, value: Optional[int]) -> None:
+    def precision(self, value: int | None) -> None:
         self._precision = value
         self.sanitize()
 
     @property
+    def prefix(self) -> str | None:
+        """The prefix to prepend to the displayed value.
+
+        *Added in version 3.5.0*
+        """
+        return self._props.get('prefix')
+
+    @prefix.setter
+    def prefix(self, value: str | None) -> None:
+        if value is None:
+            self._props.pop('prefix', None)
+        else:
+            self._props['prefix'] = value
+
+    @property
+    def suffix(self) -> str | None:
+        """The suffix to append to the displayed value.
+
+        *Added in version 3.5.0*
+        """
+        return self._props.get('suffix')
+
+    @suffix.setter
+    def suffix(self, value: str | None) -> None:
+        if value is None:
+            self._props.pop('suffix', None)
+        else:
+            self._props['suffix'] = value
+
+    @property
     def out_of_limits(self) -> bool:
         """Whether the current value is out of the allowed limits."""
+        if self.value is None:
+            return False
         return not self.min <= self.value <= self.max
 
     def sanitize(self) -> None:
@@ -115,10 +141,10 @@ class Number(ValidationElement, DisableableElement):
         value = min(value, self.max)
         if self.precision is not None:
             value = float(round(value, self.precision))
-        self.set_value(float(self.format % value) if self.format else value)
+        self.value = float(self.format % value) if self.format else value
         self.update()
 
-    def _event_args_to_value(self, e: GenericEventArguments) -> Any:
+    def _event_args_to_value(self, e: GenericEventArguments) -> float | None:
         if not e.args:
             return None
         return float(e.args)
@@ -134,3 +160,9 @@ class Number(ValidationElement, DisableableElement):
         if value == '':
             return 0
         return self.format % float(value)
+
+    def _render_markdown(self) -> str:
+        value = '' if self.value is None else str(self.value)
+        if self.label:
+            return f'{self.label}: {value}'
+        return value

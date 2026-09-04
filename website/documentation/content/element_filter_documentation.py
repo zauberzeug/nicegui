@@ -31,7 +31,7 @@ def text_element() -> None:
         ui.icon('home')
         ui.label('label A')
         ui.label('label B')
-        ui.html('HTML')
+        ui.html('HTML', sanitize=False)
 
     # ui.label(', '.join(b.text for b in ElementFilter(kind=TextElement)))
     # END OF DEMO
@@ -58,6 +58,31 @@ def marker_demo() -> None:
     ElementFilter(marker='red', local_scope=True).classes('bg-red-200')
     ElementFilter(marker='strong', local_scope=True).classes('text-bold')
     ElementFilter(marker='red strong', local_scope=True).classes('bg-red-600 text-white')
+
+
+@doc.auto_execute
+@doc.demo('Find elements on other pages', '''
+    You can use the `app.clients` iterator to apply the element filter to all clients of a specific page.
+''')
+def multicasting():
+    from nicegui import app
+    import time
+
+    @ui.page('/log')
+    def log_page():
+        ui.log()
+
+    def log_time():
+        for client in app.clients('/log'):
+            with client:
+                for log in ElementFilter(kind=ui.log):
+                    log.push(f'{time.strftime("%H:%M:%S")}')
+
+    # @ui.page('/')
+    def page():
+        ui.button('Log current time', on_click=log_time)
+        ui.link('Open log', '/log', new_tab=True)
+    page()  # HIDE
 
 
 doc.reference(ElementFilter)

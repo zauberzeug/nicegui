@@ -1,15 +1,13 @@
-from typing import Any, Callable, Optional
-
 from typing_extensions import Self
 
-from ..events import ClickEventArguments, handle_event
+from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.disableable_element import DisableableElement
 from .mixins.text_element import TextElement
 
 
 class Item(DisableableElement):
 
-    def __init__(self, text: str = '', *, on_click: Optional[Callable[..., Any]] = None) -> None:
+    def __init__(self, text: str = '', *, on_click: Handler[ClickEventArguments] | None = None) -> None:
         """List Item
 
         Creates a clickable list item based on Quasar's
@@ -30,7 +28,7 @@ class Item(DisableableElement):
             with self:
                 ItemSection(text=text)
 
-    def on_click(self, callback: Callable[..., Any]) -> Self:
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when the List Item is clicked."""
         self._props['clickable'] = True  # idempotent
         self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)))
@@ -50,6 +48,14 @@ class ItemSection(TextElement):
         """
         super().__init__(tag='q-item-section', text=text)
 
+    def _render_markdown(self) -> str:
+        parts = []
+        if self._text:
+            parts.append(self._text)
+        if children := self._children_to_markdown():
+            parts.append(children)
+        return '\n\n'.join(parts)
+
 
 class ItemLabel(TextElement):
 
@@ -61,3 +67,6 @@ class ItemLabel(TextElement):
         :param text: text to be displayed (default: "")
         """
         super().__init__(tag='q-item-label', text=text)
+
+    def _render_markdown(self) -> str:
+        return self._text or ''

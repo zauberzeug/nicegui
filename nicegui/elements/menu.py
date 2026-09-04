@@ -1,17 +1,14 @@
-from typing import Any, Callable, Optional, Union
-
-from typing_extensions import Self
-
-from .. import helpers
-from ..element import Element
+from ..defaults import DEFAULT_PROPS, resolve_defaults
+from ..events import ClickEventArguments, Handler
 from .context_menu import ContextMenu
 from .item import Item
-from .mixins.value_element import ValueElement
+from .mixins.openable_element import OpenableElement
 
 
-class Menu(ValueElement):
+class Menu(OpenableElement):
 
-    def __init__(self, *, value: bool = False) -> None:
+    @resolve_defaults
+    def __init__(self, *, value: bool = DEFAULT_PROPS['model-value'] | False) -> None:
         """Menu
 
         Creates a menu based on Quasar's `QMenu <https://quasar.dev/vue-components/menu>`_ component.
@@ -22,35 +19,19 @@ class Menu(ValueElement):
 
         :param value: whether the menu is already opened (default: `False`)
         """
-        super().__init__(tag='q-menu', value=value, on_value_change=None)
+        super().__init__(tag='q-menu', value=value)
 
-    def open(self) -> None:
-        """Open the menu."""
-        self.value = True
-
-    def close(self) -> None:
-        """Close the menu."""
-        self.value = False
-
-    def toggle(self) -> None:
-        """Toggle the menu."""
-        self.value = not self.value
-
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
-        super().props(add, remove=remove)
-        if 'touch-position' in self._props:
-            # https://github.com/zauberzeug/nicegui/issues/1738
-            del self._props['touch-position']
-            helpers.warn_once('The prop "touch-position" is not supported by `ui.menu`.\n'
-                              'Use "ui.context_menu()" instead.')
-        return self
+        # https://github.com/zauberzeug/nicegui/issues/1738
+        self._props.add_warning('touch-position',
+                                'The prop "touch-position" is not supported by `ui.menu`. '
+                                'Use "ui.context_menu()" instead.')
 
 
 class MenuItem(Item):
 
     def __init__(self,
                  text: str = '',
-                 on_click: Optional[Callable[..., Any]] = None, *,
+                 on_click: Handler[ClickEventArguments] | None = None, *,
                  auto_close: bool = True,
                  ) -> None:
         """Menu Item
@@ -66,14 +47,6 @@ class MenuItem(Item):
 
         self._props['clickable'] = True
 
-        self.menu = self._find_menu()
+        self.menu = next((e for e in self.ancestors() if isinstance(e, (Menu, ContextMenu))), None)
         if self.menu and auto_close:
             self.on_click(self.menu.close)
-
-    def _find_menu(self) -> Optional[Union[Menu, ContextMenu]]:
-        element: Element = self
-        while element.parent_slot:
-            element = element.parent_slot.parent
-            if isinstance(element, (Menu, ContextMenu)):
-                return element
-        return None

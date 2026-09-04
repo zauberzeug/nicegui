@@ -9,6 +9,39 @@ def main_demo() -> None:
         ui.label('inside a colored div')
 
 
+@doc.demo('Register event handlers', '''
+    The event handler can be a Python function, a JavaScript function or a combination of both:
+
+    - If you want to handle the event on the server with all (serializable) event arguments,
+        use a Python ``handler``.
+
+    - If you want to handle the event on the client side without emitting anything to the server,
+        use ``js_handler`` with a JavaScript function handling the event.
+
+    - If you want to handle the event on the server with a subset or transformed version of the event arguments,
+        use ``js_handler`` with a JavaScript function emitting the transformed arguments using ``emit()``, and
+        use a Python ``handler`` to handle these arguments on the server side.
+
+        The ``js_handler`` can also decide to selectively emit arguments to the server,
+        in which case the Python ``handler`` will not always be called.
+
+    *Updated in version 2.18.0: Both handlers can be specified at the same time.*
+''')
+def register_event_handlers() -> None:
+    ui.button('Python handler') \
+        .on('click',
+            lambda e: ui.notify(f'click: ({e.args["clientX"]}, {e.args["clientY"]})'))
+
+    ui.button('JavaScript handler') \
+        .on('click',
+            js_handler='(e) => alert(`click: (${e.clientX}, ${e.clientY})`)')
+
+    ui.button('Combination') \
+        .on('click',
+            lambda e: ui.notify(f'click: {e.args}'),
+            js_handler='(e) => emit(e.clientX, e.clientY)')
+
+
 @doc.demo('Move elements', '''
     This demo shows how to move elements between or within containers.
 ''')

@@ -27,7 +27,7 @@ def page():
         'button': False,
     }
 
-    ui.add_body_html(f'<script>{(Path(__file__).parent / "script.js").read_text()}</script>')
+    ui.add_body_html(f'<script>{(Path(__file__).parent / "script.js").read_text(encoding="utf-8")}</script>')
 
     ui.button('Connect', on_click=connect).bind_visibility_from(state, 'connected', value=False)
     ui.button('Disconnect', on_click=disconnect).bind_visibility_from(state, 'connected')

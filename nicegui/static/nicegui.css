@@ -18,19 +18,25 @@
 .nicegui-tab-panel,
 .nicegui-card,
 .nicegui-carousel-slide,
+.nicegui-expansion-content,
+.nicegui-scroll-area .q-scrollarea__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--nicegui-default-gap);
+  padding: var(--nicegui-default-padding);
+}
+.nicegui-splitter .q-splitter__panel,
 .nicegui-step .q-stepper__nav,
 .nicegui-step .q-stepper__step-inner,
-.nicegui-expansion .q-expansion-item__content,
-.nicegui-scroll-area .q-scrollarea__content,
-.nicegui-splitter .q-splitter__panel,
 .nicegui-timeline-entry .q-timeline__content,
+.nicegui-sub-pages,
 .nicegui-row,
 .nicegui-column {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--nicegui-default-gap);
-  padding: var(--nicegui-default-padding);
 }
 .nicegui-header,
 .nicegui-footer,
@@ -38,25 +44,9 @@
 .nicegui-row {
   flex-direction: row;
 }
-.nicegui-row,
-.nicegui-column {
-  padding: 0;
-}
 .nicegui-card-tight {
   padding: 0;
   gap: 0;
-}
-
-/* original padding for some Quasar elements */
-.nicegui-step .q-stepper__nav {
-  padding: 8px 0 0 0;
-  gap: 8px;
-}
-.nicegui-timeline-entry .q-timeline__content {
-  padding: 0 0 24px 0;
-}
-.nicegui-splitter .q-splitter__panel {
-  padding: 0;
 }
 
 /* let step content fill the whole stepper for easier layout manipulation (#1788) */
@@ -67,18 +57,13 @@
 .nicegui-stepper .q-stepper__content {
   flex-grow: 1;
 }
-.nicegui-stepper .q-stepper__step-content,
-.nicegui-stepper .q-stepper__step-inner {
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-content,
+.nicegui-stepper.q-stepper--horizontal .q-stepper__step-inner {
   height: 100%;
 }
-
-/* HACK: avoid stutter when expansion item is toggled */
-.nicegui-expansion .q-expansion-item__content {
-  padding: 0 var(--nicegui-default-padding);
-}
-.nicegui-expansion .q-expansion-item__content::before,
-.nicegui-expansion .q-expansion-item__content::after {
-  content: ""; /* the gap compensates for the missing vertical padding */
+.nicegui-step .q-stepper__nav {
+  padding-top: 8px;
+  gap: 8px;
 }
 
 /* revert Tailwind's CSS reset for ui.editor and ui.markdown */
@@ -190,8 +175,44 @@
   padding: 0.5rem;
   border: 1px solid #8884;
 }
-.nicegui-markdown .codehilite pre {
+.nicegui-markdown pre {
   margin: 0.5rem 0;
+}
+.nicegui-markdown .mermaid-pre > .mermaid {
+  display: none;
+}
+
+/* skip link */
+.nicegui-skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.nicegui-skip-link:focus {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  padding: 0.5rem 1rem;
+  border: 1pt solid rgba(127, 159, 191, 0.25);
+  border-radius: 0.25em;
+  box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
+  z-index: 9999;
+}
+.body--dark .nicegui-skip-link:focus {
+  background-color: black;
+}
+.body--light .nicegui-skip-link:focus {
+  background-color: white;
 }
 
 /* other NiceGUI elements */
@@ -207,7 +228,7 @@
 .nicegui-link:active {
   opacity: 0.8;
 }
-.nicegui-separator {
+.nicegui-separator.q-separator--horizontal {
   width: 100%;
 }
 .nicegui-aggrid,
@@ -219,17 +240,27 @@
   width: 100%;
   height: 16rem;
 }
+.nicegui-leaflet video.leaflet-image-layer {
+  max-width: none; /* HACK: make the video show up */
+}
+.q-parallax__media > img,
+.q-parallax__media > video {
+  max-width: none; /* HACK: make the parallax image cover the screen as it should */
+}
 .nicegui-log {
-  padding: 0.5rem;
-  scroll-padding-bottom: 0.5rem;
-  scroll-snap-type: y proximity;
-  overflow-y: scroll;
   outline: 1px solid rgba(127, 159, 191, 0.15);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  white-space: pre;
   background-color: rgba(127, 159, 191, 0.05);
 }
-.nicegui-log > :last-child {
+.nicegui-log .q-scrollarea__container {
+  scroll-padding-bottom: 0.5rem;
+  scroll-snap-type: y proximity;
+}
+.nicegui-log .q-scrollarea__content {
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  padding: 0.5rem;
+}
+.nicegui-log .q-scrollarea__content > :last-child {
   scroll-snap-align: end;
 }
 h6.q-timeline__title {
@@ -243,24 +274,59 @@ h6.q-timeline__title {
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
   border-radius: 0.25rem;
 }
-.nicegui-code .codehilite {
+.nicegui-code-copy {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  opacity: 0.2;
+}
+.nicegui-code-copy:hover {
+  opacity: 0.8;
+}
+.nicegui-code pre {
   padding: 0 0.5rem;
 }
+.nicegui-table-header > * {
+  display: inline-block;
+}
+.nicegui-matplotlib > svg,
 .nicegui-pyplot > svg {
   width: 100%;
   height: 100%;
 }
-
-/* CodeMirror */
+.nicegui-joystick {
+  width: 10em;
+  height: 10em;
+  background-color: AliceBlue;
+}
+.nicegui-joystick > div {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.nicegui-scene[data-initializing],
+.nicegui-scene-view[data-initializing] {
+  visibility: hidden;
+}
+.nicegui-interactive-image-layer {
+  position: absolute !important;
+  inset: 0;
+  pointer-events: none;
+}
+.nicegui-interactive-image-layer img {
+  display: none;
+}
 .nicegui-codemirror .cm-editor.cm-focused {
   outline: none;
 }
+.js-plotly-plot {
+  box-sizing: content-box; /* HACK: fix overflow when adding borders to the Plotly plot */
+}
 
-/* connection popup */
-#popup {
+/* error popups */
+.nicegui-error-popup {
   position: fixed;
   bottom: 0;
-  left: 0;
   border: 1pt solid rgba(127, 159, 191, 0.25);
   border-radius: 0.25em;
   box-shadow: 0 0 0.5em rgba(127, 159, 191, 0.05);
@@ -271,28 +337,43 @@ h6.q-timeline__title {
   gap: 1em;
   transition-duration: 500ms;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 10000;
 }
-.body--dark #popup {
+.nicegui-error-popup:dir(ltr) {
+  left: 0;
+}
+.nicegui-error-popup:dir(rtl) {
+  right: 0;
+}
+.body--dark .nicegui-error-popup {
   background-color: black;
 }
-.body--light #popup {
+.body--light .nicegui-error-popup {
   background-color: white;
 }
-#popup[aria-hidden="true"] {
+.nicegui-error-popup[aria-hidden="true"] {
   opacity: 0;
   visibility: hidden;
 }
-#popup[aria-hidden="false"] {
+.nicegui-error-popup[aria-hidden="false"] {
   opacity: 1;
   visibility: visible;
+}
+#popup[aria-hidden="false"] {
   transition-delay: 2000ms;
 }
-#popup > span:first-child {
+.nicegui-error-popup > span:first-child {
   font-weight: bold;
 }
-#popup > span:first-child::before {
+.nicegui-error-popup > span:first-child::before {
   content: "⚠️";
+  /* NOTE: the inherited stack minus Roboto, whose symbol subset would be fetched just for this glyph */
+  font-family: "-apple-system", "Helvetica Neue", Helvetica, Arial, sans-serif;
   position: absolute;
+}
+.nicegui-error-popup:dir(ltr) > span:first-child::before {
   left: 1.5em;
+}
+.nicegui-error-popup:dir(rtl) > span:first-child::before {
+  right: 1.5em;
 }

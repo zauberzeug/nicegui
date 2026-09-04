@@ -1,9 +1,12 @@
-from typing import Optional
+import weakref
 
 from typing_extensions import Self
 
+from ..classes import Classes
 from ..context import context
 from ..element import Element
+from ..props import Props
+from ..style import Style
 
 
 class QueryElement(Element, component='query.js'):
@@ -14,43 +17,6 @@ class QueryElement(Element, component='query.js'):
         self._props['classes'] = []
         self._props['style'] = {}
         self._props['props'] = {}
-
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
-        classes = self._update_classes_list(self._props['classes'], add, remove, replace)
-        new_classes = [c for c in classes if c not in self._props['classes']]
-        old_classes = [c for c in self._props['classes'] if c not in classes]
-        if new_classes:
-            self.run_method('add_classes', new_classes)
-        if old_classes:
-            self.run_method('remove_classes', old_classes)
-        self._props['classes'] = classes
-        return self
-
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
-        old_style = Element._parse_style(remove)
-        for key in old_style:
-            self._props['style'].pop(key, None)
-        if old_style:
-            self.run_method('remove_style', list(old_style))
-        self._props['style'].update(Element._parse_style(add))
-        self._props['style'].update(Element._parse_style(replace))
-        if self._props['style']:
-            self.run_method('add_style', self._props['style'])
-        return self
-
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
-        old_props = self._parse_props(remove)
-        for key in old_props:
-            self._props['props'].pop(key, None)
-        if old_props:
-            self.run_method('remove_props', list(old_props))
-        new_props = self._parse_props(add)
-        self._props['props'].update(new_props)
-        if self._props['props']:
-            self.run_method('add_props', self._props['props'])
-        return self
 
 
 class Query:
@@ -65,15 +31,27 @@ class Query:
         :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
         """
         for element in context.client.elements.values():
-            if isinstance(element, QueryElement) and element._props['selector'] == selector:  # pylint: disable=protected-access
-                self.element = element
+            if isinstance(element, QueryElement) and element.props['selector'] == selector:
+                self._element = weakref.ref(element)
                 break
         else:
-            self.element = QueryElement(selector)
+            self._element = weakref.ref(QueryElement(selector))
 
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
-            -> Self:
-        """Apply, remove, or replace HTML classes.
+    @property
+    def element(self) -> QueryElement:
+        """The element this query belongs to."""
+        element = self._element()
+        if element is None:
+            raise RuntimeError('The element this query belongs to has been deleted.')
+        return element
+
+    def classes(self,
+                add: str | None = None, *,
+                remove: str | None = None,
+                toggle: str | None = None,
+                replace: str | None = None,
+                ) -> Self:
+        """Apply, remove, toggle, or replace HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
 
@@ -81,12 +59,23 @@ class Query:
 
         :param add: whitespace-delimited string of classes
         :param remove: whitespace-delimited string of classes to remove from the element
+        :param toggle: whitespace-delimited string of classes to toggle (*added in version 2.7.0*)
         :param replace: whitespace-delimited string of classes to use instead of existing ones
         """
-        self.element.classes(add, remove=remove, replace=replace)
+        element = self.element
+        old_classes = element.props['classes']
+        new_classes = Classes.update_list(old_classes, add, remove, toggle, replace)
+        removed_classes = [c for c in dict.fromkeys((remove or '').split() + old_classes) if c not in new_classes]
+        added_classes = [c for c in new_classes if c not in old_classes]
+        if removed_classes:
+            element.run_method('remove_classes', removed_classes)
+        if added_classes:
+            element.run_method('add_classes', added_classes)
+        if new_classes != old_classes:
+            element.props['classes'] = new_classes
         return self
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) \
+    def style(self, add: str | None = None, *, remove: str | None = None, replace: str | None = None) \
             -> Self:
         """Apply, remove, or replace CSS definitions.
 
@@ -96,10 +85,19 @@ class Query:
         :param remove: semicolon-separated list of styles to remove from the element
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
-        self.element.style(add, remove=remove, replace=replace)
+        element = self.element
+        old_style = element.props['style']
+        new_style = Style.update_dict(old_style, add, remove, replace)
+        removed_keys = [key for key in {**Style.parse(remove), **old_style} if key not in new_style]
+        if removed_keys:
+            element.run_method('remove_style', removed_keys)
+        if new_style:
+            element.run_method('add_style', new_style)
+        if new_style != old_style:
+            element.props['style'] = new_style
         return self
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def props(self, add: str | None = None, *, remove: str | None = None) -> Self:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.
@@ -110,5 +108,14 @@ class Query:
         :param add: whitespace-delimited list of either boolean values or key=value pair to add
         :param remove: whitespace-delimited list of property keys to remove
         """
-        self.element.props(add, remove=remove)
+        element = self.element
+        old_props = Props.parse(remove)
+        for key in old_props:
+            element.props['props'].pop(key, None)
+        if old_props:
+            element.run_method('remove_props', list(old_props))
+        new_props = Props.parse(add)
+        element.props['props'].update(new_props)
+        if element.props['props']:
+            element.run_method('add_props', element.props['props'])
         return self

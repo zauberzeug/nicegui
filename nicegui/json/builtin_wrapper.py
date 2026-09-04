@@ -1,19 +1,19 @@
+import importlib.util
 import json
 from datetime import date, datetime
-from typing import Any, Optional, Tuple
+from typing import Any
 
-from fastapi import Response
+from fastapi.responses import JSONResponse
 
 try:
-    import numpy as np
-    has_numpy = True
-except ImportError:
-    has_numpy = False
+    HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+except (ModuleNotFoundError, ValueError):
+    HAS_NUMPY = False
 
 
 def dumps(obj: Any,
           sort_keys: bool = False,
-          separators: Optional[Tuple[str, str]] = None, *,
+          separators: tuple[str, str] | None = None, *,
           indent: bool = False) -> str:
     """Serializes a Python object to a JSON-encoded string.
 
@@ -39,9 +39,8 @@ def loads(value: str) -> Any:
     return json.loads(value)
 
 
-class NiceGUIJSONResponse(Response):
+class NiceGUIJSONResponse(JSONResponse):
     """FastAPI response class to support our custom json serializer implementation."""
-    media_type = 'application/json'
 
     def render(self, content: Any) -> bytes:
         return dumps(content).encode('utf-8')
@@ -51,12 +50,14 @@ class NumpyJsonEncoder(json.JSONEncoder):
     """Special json encoder that supports NumPy arrays and date/datetime objects."""
 
     def default(self, o):
-        if has_numpy and isinstance(o, np.integer):
-            return int(o)
-        if has_numpy and isinstance(o, np.floating):
-            return float(o)
-        if has_numpy and isinstance(o, np.ndarray):
-            return o.tolist()
+        if HAS_NUMPY:
+            import numpy as np  # pylint: disable=import-outside-toplevel
+            if isinstance(o, np.integer):
+                return int(o)
+            if isinstance(o, np.floating):
+                return float(o)
+            if isinstance(o, np.ndarray):
+                return o.tolist()
         if isinstance(o, (datetime, date)):
             return o.isoformat()
         return json.JSONEncoder.default(self, o)

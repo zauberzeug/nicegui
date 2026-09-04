@@ -1,6 +1,6 @@
 export default {
   template: `
-    <div :style="{ position: 'relative', aspectRatio: size ? size[0] / size[1] : undefined }">
+    <div :style="{ position: 'relative', aspectRatio: aspectRatio }">
       <img
         ref="img"
         :src="computed_src"
@@ -10,12 +10,13 @@ export default {
         v-on="onUserEvents"
         draggable="false"
       />
-      <svg ref="svg" style="position:absolute;top:0;left:0;pointer-events:none" :viewBox="viewBox">
-        <g v-if="cross" :style="{ display: showCross ? 'block' : 'none' }">
-          <line :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
-          <line x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
+      <svg ref="svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none" :viewBox="viewBox" preserveAspectRatio="none">
+        <g :style="{ display: showCross ? 'block' : 'none' }">
+          <line v-if="cross" :x1="x" y1="0" :x2="x" y2="100%" :stroke="cross === true ? 'black' : cross" />
+          <line v-if="cross" x1="0" :y1="y" x2="100%" :y2="y" :stroke="cross === true ? 'black' : cross" />
+          <slot name="cross" :x="x" :y="y"></slot>
         </g>
-        <g v-html="content"></g>
+        <g ref="contentGroup"></g>
       </svg>
       <slot></slot>
     </div>
@@ -31,10 +32,20 @@ export default {
       computed_src: undefined,
       waiting_source: undefined,
       loading: false,
+      DOMPurify: null,
+      previousContent: null,
     };
   },
   mounted() {
-    setTimeout(() => this.compute_src(), 0); // NOTE: wait for window.path_prefix to be set in app.mounted()
+    if (this.sanitize) {
+      import("dompurify").then(({ default: DOMPurify }) => {
+        this.DOMPurify = DOMPurify;
+        this.renderContent();
+      });
+    } else {
+      this.renderContent();
+    }
+    setTimeout(() => this.compute_src(), 0); // wait for window.path_prefix to be set in app.mounted()
     const handle_completion = () => {
       if (this.waiting_source) {
         this.computed_src = this.waiting_source;
@@ -59,9 +70,25 @@ export default {
     }
   },
   updated() {
+    this.renderContent();
     this.compute_src();
   },
   methods: {
+    renderContent() {
+      const content = this.content || "";
+      if (content === this.previousContent) return;
+      if (this.sanitize) {
+        if (!this.DOMPurify) return;
+        const sanitized = this.DOMPurify.sanitize(`<svg>${content}</svg>`, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+        });
+        const match = sanitized.match(/^<svg>(.*)<\/svg>$/is);
+        this.$refs.contentGroup.innerHTML = match ? match[1] : "";
+      } else {
+        this.$refs.contentGroup.innerHTML = content;
+      }
+      this.previousContent = content;
+    },
     compute_src() {
       const suffix = this.t ? (this.src.includes("?") ? "&" : "?") + "_nicegui_t=" + this.t : "";
       const new_src = (this.src.startsWith("/") ? window.path_prefix : "") + this.src + suffix;
@@ -75,10 +102,27 @@ export default {
         this.loading = true;
       }
       if (!this.src && this.size) {
-        this.viewBox = `0 0 ${this.size[0]} ${this.size[1]}`;
+        this.updateViewbox(this.size[0], this.size[1]);
+      }
+    },
+    refreshImageDimensions() {
+      // Re-sync cached dimensions with the live <img> when the stream changed size without firing "load" (#6122).
+      // No event fires for an in-place naturalWidth change, so this only catches up on the next interaction.
+      const img = this.$refs.img;
+      if (
+        this.src &&
+        img.naturalWidth &&
+        img.naturalHeight &&
+        (img.naturalWidth !== this.loaded_image_width || img.naturalHeight !== this.loaded_image_height)
+      ) {
+        this.loaded_image_width = img.naturalWidth;
+        this.loaded_image_height = img.naturalHeight;
+        this.updateViewbox(this.loaded_image_width, this.loaded_image_height);
+        this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: img.src });
       }
     },
     updateCrossHair(e) {
+      this.refreshImageDimensions();
       const width = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const height = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.x = (e.offsetX * width) / e.target.clientWidth;
@@ -87,10 +131,11 @@ export default {
     onImageLoaded(e) {
       this.loaded_image_width = e.target.naturalWidth;
       this.loaded_image_height = e.target.naturalHeight;
-      this.viewBox = `0 0 ${this.loaded_image_width} ${this.loaded_image_height}`;
+      this.updateViewbox(this.loaded_image_width, this.loaded_image_height);
       this.$emit("loaded", { width: this.loaded_image_width, height: this.loaded_image_height, source: e.target.src });
     },
     onMouseEvent(type, e) {
+      this.refreshImageDimensions();
       const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit("mouse", {
@@ -106,6 +151,7 @@ export default {
       });
     },
     onPointerEvent(type, e) {
+      this.refreshImageDimensions();
       const imageWidth = this.src ? this.loaded_image_width : this.size ? this.size[0] : 1;
       const imageHeight = this.src ? this.loaded_image_height : this.size ? this.size[1] : 1;
       this.$emit(`svg:${type}`, {
@@ -115,10 +161,20 @@ export default {
         image_y: (e.offsetY * imageHeight) / this.$refs.svg.clientHeight,
       });
     },
+    updateViewbox(width, height) {
+      this.viewBox = `0 0 ${width} ${height}`;
+    },
   },
   computed: {
+    aspectRatio() {
+      if (this.size) return this.size[0] / this.size[1];
+      if (this.loaded_image_width && this.loaded_image_height) {
+        return this.loaded_image_width / this.loaded_image_height;
+      }
+      return undefined;
+    },
     onCrossEvents() {
-      if (!this.cross) return {};
+      if (!this.cross && !this.$slots.cross) return {};
       return {
         mouseenter: () => (this.showCross = true),
         mouseleave: () => (this.showCross = false),
@@ -127,7 +183,7 @@ export default {
     },
     onUserEvents() {
       const events = {};
-      for (const type of this.events) {
+      for (const type of this.events || []) {
         events[type] = (event) => this.onMouseEvent(type, event);
       }
       return events;
@@ -140,5 +196,6 @@ export default {
     events: Array,
     cross: Boolean,
     t: String,
+    sanitize: Boolean,
   },
 };

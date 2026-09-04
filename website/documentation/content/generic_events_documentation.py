@@ -7,7 +7,7 @@ doc.title('Generic Events')
 
 @doc.demo('Generic Events', '''
     Most UI elements come with predefined events.
-    For example, a `ui.button` like "A" in the demo has an `on_click` parameter that expects a coroutine or function.
+    For example, a `ui.button` like "A" in the demo has an `on_click` parameter that expects a synchronous or asynchronous function.
     But you can also use the `on` method to register a generic event handler like for "B".
     This allows you to register handlers for any event that is supported by JavaScript and Quasar.
 
@@ -21,8 +21,8 @@ doc.title('Generic Events')
 
     Here you can find more information about the events that are supported:
 
-    - https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#events for HTML elements
-    - https://quasar.dev/vue-components for Quasar-based elements (see the "Events" tab on the individual component page)
+    - <https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#events> for HTML elements
+    - <https://quasar.dev/vue-components> for Quasar-based elements (see the "Events" tab on the individual component page)
 ''')
 def generic_events_demo() -> None:
     with ui.row():
@@ -83,7 +83,8 @@ def event_attributes() -> None:
         {'name': 'Alice', 'age': 42},
         {'name': 'Bob', 'age': 23},
     ]
-    ui.table(columns, rows, 'name').on('rowClick', ui.notify, [[], ['name'], None])
+    ui.table(columns=columns, rows=rows, row_key='name') \
+        .on('rowClick', ui.notify, [[], ['name'], None])
 
 
 @doc.demo('Modifiers', '''

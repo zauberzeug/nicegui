@@ -1,23 +1,26 @@
-from typing import Any, Callable, Optional
+from typing_extensions import Self
 
-from ..events import ClickEventArguments, handle_event
+from ..defaults import DEFAULT_PROP, resolve_defaults
+from ..events import ClickEventArguments, Handler, ValueChangeEventArguments, handle_event
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
+from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 from .mixins.value_element import ValueElement
 
 
-class DropdownButton(TextElement, DisableableElement, BackgroundColorElement, ValueElement):
+class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundColorElement, ValueElement[bool]):
 
+    @resolve_defaults
     def __init__(self,
                  text: str = '', *,
                  value: bool = False,
-                 on_value_change: Optional[Callable[..., Any]] = None,
-                 on_click: Optional[Callable[..., Any]] = None,
-                 color: Optional[str] = 'primary',
-                 icon: Optional[str] = None,
-                 auto_close: Optional[bool] = False,
-                 split: Optional[bool] = False,
+                 on_value_change: Handler[ValueChangeEventArguments[bool]] | None = None,
+                 on_click: Handler[ClickEventArguments] | None = None,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 icon: str | None = DEFAULT_PROP | None,
+                 auto_close: bool | None = DEFAULT_PROP | False,
+                 split: bool | None = DEFAULT_PROP | False,
                  ) -> None:
         """Dropdown Button
 
@@ -38,31 +41,36 @@ class DropdownButton(TextElement, DisableableElement, BackgroundColorElement, Va
         :param split: whether to split the dropdown icon into a separate button (default: `False`)
         """
         super().__init__(tag='q-btn-dropdown',
-                         text=text, background_color=color, value=value, on_value_change=on_value_change)
+                         icon=icon, text=text, background_color=color, value=value, on_value_change=on_value_change)
 
-        if icon:
-            self._props['icon'] = icon
-
-        if auto_close:
-            self._props['auto-close'] = True
-
-        if split:
-            self._props['split'] = True
+        self._props.set_bool('auto-close', auto_close)
+        self._props.set_bool('split', split)
 
         if on_click:
-            self.on('click', lambda _: handle_event(on_click, ClickEventArguments(sender=self, client=self.client)), [])
+            self.on_click(on_click)
+
+    def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
+        """Add a callback to be invoked when the dropdown button is clicked.
+
+        *Added in version 2.22.0*
+        """
+        self.on('click', lambda _: handle_event(callback, ClickEventArguments(sender=self, client=self.client)), [])
+        return self
 
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 
-    def open(self) -> None:
+    def open(self) -> Self:
         """Open the dropdown."""
         self.value = True
+        return self
 
-    def close(self) -> None:
+    def close(self) -> Self:
         """Close the dropdown."""
         self.value = False
+        return self
 
-    def toggle(self) -> None:
+    def toggle(self) -> Self:
         """Toggle the dropdown."""
         self.value = not self.value
+        return self

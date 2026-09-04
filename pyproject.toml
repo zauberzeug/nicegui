@@ -1,86 +1,184 @@
-[tool.poetry]
+[project]
 name = "nicegui"
-version = "1.4.35-dev"
+dynamic = ["version"]
 description = "Create web-based user interfaces with Python. The nice way."
-authors = ["Zauberzeug GmbH <info@zauberzeug.com>"]
-license = "MIT"
+authors = [{ name = "Zauberzeug GmbH", email = "info@zauberzeug.com" }]
+requires-python = ">=3.10,<4"
 readme = "README.md"
-repository = "https://github.com/zauberzeug/nicegui"
-keywords = ["gui", "ui", "web", "interface", "live"]
-
-[tool.poetry.dependencies]
-python = "^3.8"
-typing-extensions = ">=4.0.0"
-markdown2 = ">=2.4.7,!=2.4.11"
-Pygments = ">=2.15.1,<3.0.0"
-uvicorn = {extras = ["standard"], version = ">=0.22.0"}
-fastapi = ">=0.109.1,<0.110.0" # https://github.com/zauberzeug/nicegui/security/dependabot/27
-python-socketio = {extras = ["asyncio-client"], version = ">=5.10.0"} # version min: see https://github.com/zauberzeug/nicegui/issues/1809
-vbuild = ">=0.8.2"
-watchfiles = ">=0.18.1"
-jinja2 = "^3.1.4" # https://github.com/zauberzeug/nicegui/security/dependabot/32
-python-multipart = ">=0.0.7"
-orjson = {version = ">=3.9.15", markers = "platform_machine != 'i386' and platform_machine != 'i686'"} # https://github.com/zauberzeug/nicegui/security/dependabot/29, orjson does not support 32bit
-itsdangerous = "^2.1.2"
-aiofiles = ">=23.1.0"
-pywebview = { version = "^5.0.1", optional = true }
-plotly = { version = "^5.13.0", optional = true }
-matplotlib = { version = "^3.5.0", optional = true }
-httpx = ">=0.24.0"
-nicegui-highcharts = { version = "^1.0.1", optional = true }
-ifaddr = ">=0.2.0"
-aiohttp = ">=3.10.2" # https://github.com/zauberzeug/nicegui/security/dependabot/36
-libsass = { version = "^0.23.0", optional = true }
-docutils = ">=0.19.0"
-requests = ">=2.32.0" # https://github.com/zauberzeug/nicegui/security/dependabot/33
-urllib3 = ">=1.26.18,!=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5,!=2.0.6,!=2.0.7,!=2.1.0,!=2.2.0,!=2.2.1" # https://github.com/zauberzeug/nicegui/security/dependabot/34
-certifi = ">=2024.07.04" # https://github.com/zauberzeug/nicegui/security/dependabot/35
-
-[tool.poetry.extras]
-native = ["pywebview"]
-plotly = ["plotly"]
-matplotlib = ["matplotlib"]
-highcharts = ["nicegui-highcharts"]
-sass = ["libsass"]
-
-[tool.poetry.group.dev.dependencies]
-autopep8 = ">=1.5.7,<3.0.0"
-debugpy = "^1.3.0"
-pytest-selenium = "^4.1.0"
-pytest-asyncio = ">=0.23.0"
-pytest-watcher = "^0.4.2"
-pytest = "^8.2.2"
-itsdangerous = "^2.1.2" # required by SessionMiddleware (see https://fastapi.tiangolo.com/?h=itsdangerous#optional-dependencies)
-pandas = "^2.0.0"
-secure = ">=0.3.0"
-webdriver-manager = ">=3.8.6,<5.0.0"
-numpy = [
-    {version = "^1.24.0", python = "~3.8"},
-    {version = "^1.26.0", python = ">=3.9,<3.13"}
+license = "MIT"
+keywords = [
+    "gui",
+    "ui",
+    "web",
+    "interface",
+    "live",
 ]
-selenium = "^4.11.2"
-pyecharts = "^2.0.4"
-ruff = ">=0.3.5"
-pre-commit = ">=3.5.0"
-isort = "^5.11"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: AsyncIO",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Software Development :: Widget Sets",
+    "Typing :: Typed",
+]
+dependencies = [
+    "typing-extensions>=4.0.0",
+    "markdown2>=2.4.7,!=2.4.11",
+    "Pygments>=2.20.0,<3.0.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/174
+    "starlette>=1.3.1",  # https://github.com/zauberzeug/nicegui/security/dependabot/317
+    "uvicorn[standard]>=0.22.0",
+    "fastapi>=0.109.1,!=0.123.5",
+    "python-socketio[asyncio-client]>=5.16.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/322
+    "jinja2>=3.1.6,<4",
+    "python-multipart>=0.0.31",  # https://github.com/zauberzeug/nicegui/security/dependabot/290
+    "orjson>=3.11.5 ; platform_machine != 'i386' and platform_machine != 'i686' and platform_python_implementation != 'PyPy'",  # https://github.com/zauberzeug/nicegui/security/dependabot/83
+    "itsdangerous>=2.1.2,<3",
+    "aiofiles>=23.1.0",
+    "httpx>=0.24.0",
+    "ifaddr>=0.2.0",
+    "docutils>=0.19.0",
+    "watchfiles>=0.18.1",
+    "h11>=0.16.0",
+    "python-engineio>=4.13.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/320
+    "aiohttp>=3.14.3",  # https://github.com/zauberzeug/nicegui/security/dependabot/388
+    "certifi>=2024.07.04",
+    "pydantic-core>=2.35.0",
+    "python-dotenv>=1.2.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/250, for uvicorn[standard]
+    "idna>=3.15",  # https://github.com/zauberzeug/nicegui/security/dependabot/280, for httpx
+    "tinycss2>=1.4.0,<2",
+]
 
-[tool.poetry.scripts]
+[project.optional-dependencies]
+# NOTE: These dependencies repeat in the dependency-groups section below.
+altair = ["altair>=6.0.0"]
+anywidget = ["anywidget>=0.9.21"]
+native = ["pywebview>=5.0.1,<7"]
+plotly = ["plotly>=5.13,<7.0"]
+matplotlib = [
+    "matplotlib>=3.5.0,<4",
+    "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
+    "pillow>=12.3.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/335, for matplotlib
+]
+highcharts = ["nicegui-highcharts>=3.3.0,<4"]
+redis = ["redis>=4.0.0"]
+
+[dependency-groups]
+dev = [
+    # NOTE: These dependencies repeat in the project.optional-dependencies section above.
+    "altair>=6.0.0",  # extra: altair
+    "anywidget>=0.9.21",  # extra: anywidget
+    "pywebview>=5.0.1,<7",  # extra: native
+    "plotly>=5.13,<7.0",  # extra: plotly
+    "matplotlib>=3.5.0,<4",  # extra: matplotlib
+    "fonttools>=4.60.2",  # https://github.com/zauberzeug/nicegui/security/dependabot/68, for matplotlib
+    "pillow>=12.3.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/335, for matplotlib
+    "nicegui-highcharts>=3.3.0,<4",  # extra: highcharts
+    "redis>=4.0.0",  # extra: redis
+    {include-group = "types"},
+    {include-group = "website"},
+    "autopep8>=1.5.7,<3.0.0",
+    "debugpy>=1.3.0,<2",
+    "pytest-selenium>=4.1.0,<5",
+    "pytest-asyncio>=0.23.0",
+    "pytest-watcher>=0.4.2,<0.5",
+    "pytest-order>=1.3.0,<2",
+    "pytest>=9.0.3,<10",  # https://github.com/zauberzeug/nicegui/security/dependabot/244
+    "httpx2>=2.0.0",  # preferred by starlette.testclient since starlette 1.0, avoids StarletteDeprecationWarning
+    "requests>=2.33.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/201
+    "urllib3>=2.7.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/259
+    "secure>=0.3.0",
+    "webdriver-manager>=3.8.6,<5.0.0",
+    "numpy>=1.26.0",
+    "selenium>=4.11.2,<5",
+    "ruff>=0.8.1",
+    "pre-commit>=4.0.0",
+    "mypy>=1.13.0,<2",
+    "pylint>=3.3.1",
+    "cssbeautifier>=1.15.4,<2",
+    "rcssmin>=1.2.1,<2",
+    "poetry-dynamic-versioning>=1.8.0,<2",
+]
+types = [
+    "types-aiofiles>=23.1.0",
+    "pandas-stubs>=2.0.0,<3 ; python_version < '3.13'",
+    "pandas-stubs>=2.2.3,<3 ; python_version >= '3.13' and python_version < '3.14'",
+    "pandas-stubs>=2.3.2,<3 ; python_version >= '3.14'",
+    "types-Pygments>=2.15.1,<3.0.0",
+    "types-requests>=2.32.4",
+]
+website = [
+    "dnspython>=2.4.0,<3",
+    "html-sanitizer>=2.6.0,<3",
+    "isort>=6.0.0,<7.0.0",
+    "latex2mathml>=3.78.1,<4.0.0",
+    "lxml-html-clean>=0.4.4",  # https://github.com/zauberzeug/nicegui/security/dependabot/167, for html-sanitizer
+    "lxml>=6.1.0",  # https://github.com/zauberzeug/nicegui/security/dependabot/251, for lxml-html-clean
+    "pandas>=2.0.0,<3 ; python_version < '3.13'",
+    "pandas>=2.2.3,<3 ; python_version >= '3.13' and python_version < '3.14'",
+    "pandas>=2.3.3,<3 ; python_version >= '3.14'",
+    "polars>=1.12.0,<2",
+    "pyecharts>=2.0.4,<3",
+    "slowapi>=0.1.9,<0.2.0",
+    "vega_datasets>=0.9.0,<0.10.0",
+]
+
+[project.urls]
+Homepage = "https://nicegui.io"
+Documentation = "https://nicegui.io/documentation"
+Repository = "https://github.com/zauberzeug/nicegui"
+Issues = "https://github.com/zauberzeug/nicegui/issues"
+Changelog = "https://github.com/zauberzeug/nicegui/releases"
+Funding = "https://github.com/sponsors/zauberzeug"
+
+[project.scripts]
 nicegui-pack = "nicegui.scripts.pack:main"
 
 [build-system]
 requires = [
-    "setuptools>=30.3.0,<50",
-    "poetry-core>=1.0.0"
+    "poetry-core>=1.0.0",
+    "poetry-dynamic-versioning>=1.0.0,<2.0.0",
 ]
-build-backend = "poetry.core.masonry.api"
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry]
+exclude = ["nicegui/**/*.map"]
+include = [
+    { path = "nicegui/static/*.map", format = "sdist" },
+    { path = "nicegui/elements/*/dist/*.map", format = "sdist" },
+]
+version = "0.0.0"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
 
 [tool.pytest.ini_options]
 addopts = "--driver Chrome"
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+main_file = ""
+markers = ["screen: uses the browser-based screen fixture"]
 testpaths = ["tests"]
+filterwarnings = [
+  'error',
+  "ignore:'asyncio\\.iscoroutinefunction' is deprecated and slated for removal:DeprecationWarning",
+]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
+check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -88,17 +186,26 @@ module = [
     "matplotlib.*",
     "nicegui_highcharts",
     "plotly.*",
+    "polars.*",
     "pyecharts.*",
-    "sass",
+    "scipy.*",
     "socketio.*",
-    "vbuild",
-    "webview.*", # can be removed with next pywebview release
 ]
 ignore_missing_imports = true
 
+[tool.autopep8]
+max-line-length = 120
+
 [tool.ruff]
+target-version = "py310"
 indent-width = 4
 line-length = 120
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+multiline-quotes = "single"
+docstring-quotes = "double"
+avoid-escape = true
 
 [tool.ruff.lint]
 # See complete list: https://docs.astral.sh/ruff/rules/
@@ -111,14 +218,21 @@ select = [
     "UP", # pyupgrade
     "RUF", # ruff
     "PL", # pylint
+    "Q", # flake8-quotes
 ]
 fixable = [
     "I",  # isort
+    "UP035", # deprecated import
+    "RUF022", # `__all__` is not sorted
+    "Q000",  # bad quotes inline string
+    "Q001",  # bad quotes multiline string
+    "Q002",  # bad quotes docstring
+    "Q003",  # avoidable escaped quote
+    "Q004",  # unnecessary escaped quote
 ]
 ignore = [
     "E501", # line too long
-    "UP006", # use pipe for union type annotation
-    "UP007", # use pipe for union type annotation
+    "PLC0415", # import outside top level
     "PLR0911", # too many return statements
     "PLR0912", # too many branches
     "PLR0913", # too many arguments
@@ -128,3 +242,33 @@ ignore = [
 exclude = [
     "website/documentation/content/*",
 ]
+
+[tool.pylint]
+disable = [
+    "C0103", # Invalid name (e.g., variable/function/class naming conventions)
+    "C0114", # Missing module docstring
+    "C0115", # Missing class docstring
+    "C0301", # Line too long (exceeds character limit)
+    "C0302", # Too many lines in module
+    "R0801", # Similar lines in files
+    "R0901", # Too many ancestors
+    "R0902", # Too many instance attributes
+    "R0903", # Too few public methods
+    "R0904", # Too many public methods
+    "R0911", # Too many return statements
+    "R0912", # Too many branches
+    "R0913", # Too many arguments
+    "R0914", # Too many local variables
+    "R0915", # Too many statements
+    "R0917", # Too many positional arguments
+    "R1705", # Unnecessary "else" after "return"
+    "R1720", # Unnecessary "else" after "raise"
+    "W0102", # Dangerous default value as argument
+    "W0718", # Catching too general exception
+    "W1203", # Use % formatting in logging functions
+]
+
+[tool.codespell]
+skip = '*.min.js,*.min.js.map,*.prod.js,*.lock'
+check-hidden = true
+ignore-words-list = 'simpy'

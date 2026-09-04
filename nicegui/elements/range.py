@@ -1,17 +1,18 @@
-from typing import Any, Callable, Dict, Optional
-
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Range(ValueElement, DisableableElement):
+class Range(ValueElement[dict[str, float] | None], DisableableElement):
 
+    @resolve_defaults
     def __init__(self, *,
                  min: float,  # pylint: disable=redefined-builtin
                  max: float,  # pylint: disable=redefined-builtin
-                 step: float = 1.0,
-                 value: Optional[Dict[str, int]] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 step: float = DEFAULT_PROP | 1.0,
+                 value: dict[str, float] | None = DEFAULT_PROPS['model-value'] | None,
+                 on_change: Handler[ValueChangeEventArguments[dict[str, float] | None]] | None = None,
                  ) -> None:
         """Range
 
@@ -20,10 +21,12 @@ class Range(ValueElement, DisableableElement):
         :param min: lower bound of the range
         :param max: upper bound of the range
         :param step: step size
-        :param value: initial value to set min and max position of the range
-        :param on_change: callback which is invoked when the user releases the range
+        :param value: initial value to set min and max position of the range (default: ``min`` to ``max``)
+        :param on_change: callback to execute when the value changes, including while dragging
+            (to react only when the range is released, use ``.on('change', ...)`` instead)
         """
-        super().__init__(tag='q-range', value=value, on_value_change=on_change, throttle=0.05)
+        super().__init__(tag='q-range', value=value or {'min': min, 'max': max},
+                         on_value_change=on_change, throttle=0.05)
         self._props['min'] = min
         self._props['max'] = max
         self._props['step'] = step
@@ -38,7 +41,6 @@ class Range(ValueElement, DisableableElement):
         if self._props['min'] == value:
             return
         self._props['min'] = value
-        self.update()
 
     @property
     def max(self) -> float:
@@ -50,7 +52,6 @@ class Range(ValueElement, DisableableElement):
         if self._props['max'] == value:
             return
         self._props['max'] = value
-        self.update()
 
     @property
     def step(self) -> float:
@@ -62,4 +63,3 @@ class Range(ValueElement, DisableableElement):
         if self._props['step'] == value:
             return
         self._props['step'] = value
-        self.update()

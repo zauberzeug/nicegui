@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, ClassVar, Dict
+from typing import Any, ClassVar
 
 
 class JavaScriptRequest:
-    _instances: ClassVar[Dict[str, JavaScriptRequest]] = {}
+    _instances: ClassVar[dict[str, JavaScriptRequest]] = {}
 
     def __init__(self, request_id: str, *, timeout: float) -> None:
         self.request_id = request_id
@@ -17,6 +17,8 @@ class JavaScriptRequest:
     @classmethod
     def resolve(cls, request_id: str, result: Any) -> None:
         """Store the result of a JavaScript request and unblock the awaiter."""
+        if request_id not in cls._instances:
+            return
         request = cls._instances[request_id]
         request._result = result  # pylint: disable=protected-access
         request._event.set()  # pylint: disable=protected-access

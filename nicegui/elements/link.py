@@ -1,15 +1,16 @@
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any
 
 from ..client import Client
 from ..element import Element
 from .mixins.text_element import TextElement
 
 
-class Link(TextElement, component='link.js'):
+class Link(TextElement, component='link.js', default_classes='nicegui-link'):
 
     def __init__(self,
                  text: str = '',
-                 target: Union[Callable[..., Any], str, Element] = '#',
+                 target: Callable[..., Any] | str | Element = '#',
                  new_tab: bool = False,
                  ) -> None:
         """Link
@@ -27,11 +28,13 @@ class Link(TextElement, component='link.js'):
         if isinstance(target, str):
             self._props['href'] = target
         elif isinstance(target, Element):
-            self._props['href'] = f'#c{target.id}'
+            self._props['href'] = f'#{target.html_id}'
         elif callable(target):
             self._props['href'] = Client.page_routes[target]
         self._props['target'] = '_blank' if new_tab else '_self'
-        self._classes.append('nicegui-link')
+
+    def _render_markdown(self) -> str:
+        return f'[{self._text or ""}]({self._props["href"]})'
 
 
 class LinkTarget(Element):

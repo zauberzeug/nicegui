@@ -1,7 +1,7 @@
 from nicegui import ui
 from nicegui.testing import User, UserInteraction
 
-from ..windows import python_window
+from ..windows import code_window, python_window
 from . import doc
 
 
@@ -9,34 +9,29 @@ from . import doc
 def user_fixture():
     ui.markdown('''
         We recommend utilizing the `user` fixture instead of the [`screen` fixture](/documentation/screen) wherever possible
-        because execution is as fast as unit tests and it does not need Selenium as a dependency
-        when loaded via `pytest_plugins = ['nicegui.testing.user_plugin']`
-        (see [project structure](/documentation/project_structure)).
-        The `user` fixture cuts away the browser and replaces it by a lightweight simulation entirely in Python.
+        because execution is as fast as unit tests and it does not need Selenium as a dependency.
+        The `user` fixture cuts away the browser and replaces it by a lightweight simulation.
 
         You can assert to "see" specific elements or content, click buttons, type into inputs and trigger events.
         We aimed for a nice API to write acceptance tests which read like a story and are easy to understand.
         Due to the fast execution, the classical [test pyramid](https://martinfowler.com/bliki/TestPyramid.html),
-        where UI tests are considered slow and expensive, does not apply anymore.
-    ''').classes('bold-links arrow-links')
+        where UI tests are considered to be slow, error prone and expensive, does not apply anymore 🚀.
+    ''')
 
-    with python_window(classes='w-[600px]', title='example'):
-        ui.markdown('''
-            ```python
-            await user.open('/')
-            user.find('Username').type('user1')
-            user.find('Password').type('pass1').trigger('keydown.enter')
-            await user.should_see('Hello user1!')
-            user.find('logout').click()
-            await user.should_see('Log in')
-            ```
-        ''')
+    python_window(title='example', code='''
+        await user.open('/')
+        user.find('Username').type('user1')
+        user.find('Password').type('pass1').trigger('keydown.enter')
+        await user.should_see('Hello user1!')
+        user.find('logout').click()
+        await user.should_see('Log in')
+    ''').classes('w-full')
 
     ui.markdown('''
-        **NOTE:** The `user` fixture is quite new and still misses some features.
+        **Note:** The `user` fixture might still miss some features.
         Please let us know in separate feature requests
         [over on GitHub](https://github.com/zauberzeug/nicegui/discussions/new?category=ideas-feature-requests).
-    ''').classes('bold-links arrow-links')
+    ''')
 
 
 @doc.part('Async execution')
@@ -48,24 +43,24 @@ def async_execution():
         We suggest to activate the [pytest-asyncio auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode)
         by either creating a `pytest.ini` file in your project root
         or adding the activation directly to your `pyproject.toml`.
-    ''').classes('bold-links arrow-links')
 
-    with ui.row(wrap=False).classes('gap-4 items-center'):
-        with python_window(classes='w-[300px] h-42', title='pytest.ini'):
-            ui.markdown('''
-                ```ini
-                [pytest]
-                asyncio_mode = auto
-                ```
-            ''')
-        ui.label('or').classes('text-2xl')
-        with python_window(classes='w-[300px] h-42', title='pyproject.toml'):
-            ui.markdown('''
-                ```toml
-                [tool.pytest.ini_options]
-                asyncio_mode = "auto"
-                ```
-            ''')
+        **Note:** Do not set `asyncio_default_fixture_loop_scope` to anything other than `function` (the default).
+        Using `module`, `session`, or other scopes can interfere with NiceGUI's background tasks
+        and cause issues like binding updates not being reflected in tests.
+    ''')
+
+    with ui.grid().classes('w-full grid-cols-[1fr_auto_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        code_window(title='pytest.ini', language='ini', code='''
+            [pytest]
+            asyncio_mode = auto
+        ''')
+
+        ui.label('or').classes('m-auto')
+
+        code_window(title='pyproject.toml', language='toml', code='''
+            [tool.pytest.ini_options]
+            asyncio_mode = "auto"
+        ''')
 
 
 doc.text('Querying', '''
@@ -73,36 +68,228 @@ doc.text('Querying', '''
     The `user.should_see(...)` method and `user.find(...)` method
     provide parameters to filter for content, [markers](/documentation/element_filter#markers), types, etc.
     If you do not provide a named property, the string will match against the text content and markers.
+    They always search the whole page, including header, drawers and footer,
+    independent of `ElementFilter.DEFAULT_LOCAL_SCOPE`.
+
+    *Updated in version 3.16.0: searching the whole page independent of `ElementFilter.DEFAULT_LOCAL_SCOPE`*
 ''')
 
 
 @doc.ui
 def querying():
-    with ui.row(wrap=False).classes('gap-4 items-stretch'):
-        with python_window(classes='w-[400px]', title='some UI code'):
-            ui.markdown('''
-                ```python
-                with ui.row():
-                    ui.label('Hello World!').mark('greeting')
-                    ui.icon('star')
-                with ui.row():
-                    ui.label('Hello Universe!')
-                    ui.input(placeholder='Type here')
-                ```
-            ''')
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='some UI code', code='''
+            with ui.row():
+                ui.label('Hello World!').mark('greeting')
+                ui.icon('star')
+            with ui.row():
+                ui.label('Hello Universe!')
+                ui.input(placeholder='Type here')
+        ''')
 
-        with python_window(classes='w-[600px]', title='user assertions'):
-            ui.markdown('''
-                ```python
-                await user.should_see('greeting')
-                await user.should_see('star')
-                await user.should_see('Hello Universe!')
-                await user.should_see('Type here')
-                await user.should_see('Hello')
-                await user.should_see(marker='greeting')
-                await user.should_see(kind=ui.icon)
-                ```
-            ''')
+        python_window(title='user assertions', code='''
+            await user.should_see('greeting')
+            await user.should_see('star')
+            await user.should_see('Hello Universe!')
+            await user.should_see('Type here')
+            await user.should_see('Hello')
+            await user.should_see(marker='greeting')
+            await user.should_see(kind=ui.icon)
+        ''')
+
+
+doc.text('Scoping', '''
+    Pages often reuse the same markers or content in different parts of the layout.
+    To limit `user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` to one part of the page,
+    enter it with `user.scope(...)`.
+    Inside the block only the descendants of the entered element are searched.
+    It takes the same filter arguments as `user.find(...)`, must match exactly one element,
+    and yields it for further use.
+
+    *Added in version 3.16.0*
+''')
+
+
+@doc.ui
+def scoping():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='UI code', code='''
+            with ui.card().mark('left'):
+                ui.label('Apple')
+                ui.button('Buy')
+            with ui.card().mark('right'):
+                ui.label('Banana')
+                ui.button('Buy')
+        ''')
+
+        python_window(title='user assertions', code='''
+            with user.scope(marker='left'):
+                await user.should_see('Apple')
+                await user.should_not_see('Banana')
+                user.find('Buy').click()
+        ''')
+
+
+doc.text('User Interaction', '''
+    `user.find(...)` returns a `UserInteraction` object which provides methods to type text,
+    clear inputs, click buttons and trigger events on the found elements.
+    This demo shows how to trigger a "keydown.tab" event to autocomplete an input field after typing the first letter.
+
+    *Added in version 2.7.0: triggering events*
+''')
+
+
+@doc.ui
+def trigger_events():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='some UI code', code='''
+            fruits = ['apple', 'banana', 'cherry']
+            ui.input(label='fruit', autocomplete=fruits)
+        ''')
+
+        python_window(title='user assertions', code='''
+            await user.open('/')
+            user.find('fruit').type('a').trigger('keydown.tab')
+            await user.should_see('apple')
+        ''')
+
+
+doc.text('Selecting options', '''
+    To choose items in a `ui.select` simply
+
+    - locate the `ui.select` element using `user.find()`,
+    - use `click()` to open the dropdown,
+    - locate the specific _option_ you want to select, again using `user.find()`, and
+    - use `click()` a second time to select the desired option.
+
+    For a multi-select element, repeat the click-and-choose steps for each item.
+''')
+
+
+@doc.ui
+def selecting_options_in_a_select():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='UI code', code='''
+            ui.select(
+                ['Apple', 'Banana', 'Cherry'],
+                label='Fruits',
+                multiple=True,
+                on_change=lambda e: ui.notify(', '.join(e.value)),
+            )
+        ''')
+
+        python_window(title='user assertions', code='''
+            user.find('Fruits').click()
+            user.find('Apple').click()
+            user.find('Banana').click()
+            await user.should_see('Apple, Banana')
+        ''')
+
+
+doc.text('Using an ElementFilter', '''
+    It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
+
+    - preserve the order of elements to check their order on the page, and
+    - more granular filtering options, such as `ElementFilter(...).within(...)`
+      (to simply restrict all assertions to one part of the page, use [`user.scope(...)`](#scoping)).
+
+    By entering the `user` context and iterating over `ElementFilter`,
+    you can preserve the natural document order of matching elements:
+''')
+
+
+@doc.ui
+def using_an_elementfilter():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='UI code', code='''
+            ui.label('1').mark('number')
+            ui.label('2').mark('number')
+            ui.label('3').mark('number')
+        ''')
+
+        python_window(title='user assertions', code='''
+            with user:
+                elements = list(ElementFilter(marker='number'))
+                assert len(elements) == 3
+                assert elements[0].text == '1'
+                assert elements[1].text == '2'
+                assert elements[2].text == '3'
+        ''')
+
+
+doc.text('Complex elements', '''
+    There are some elements with complex visualization and interaction behaviors (`ui.upload`, `ui.table`, ...).
+    Not every aspect of these elements can be tested with `should_see` and `UserInteraction`.
+    Still, you can grab them with `user.find(...)` and do the testing on the elements themselves.
+''')
+
+
+@doc.ui
+def upload_table():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='some UI code', code='''
+            async def receive_file(e: events.UploadEventArguments):
+                content = await e.file.text()
+                reader = csv.DictReader(content.splitlines())
+                ui.table(
+                    columns=[{
+                        'name': h,
+                        'label': h.capitalize(),
+                        'field': h,
+                    } for h in reader.fieldnames or []],
+                    rows=list(reader),
+                )
+
+            ui.upload(on_upload=receive_file)
+        ''')
+
+        python_window(title='user assertions', code='''
+            from nicegui import ui
+
+            upload = user.find(ui.upload).elements.pop()
+            await upload.handle_uploads([
+                ui.upload.SmallFileUpload('data.csv', 'text/csv', b'name,age\\nAlice,30\\nBob,28')
+            ])
+            await user.should_see(ui.table)
+            table = user.find(ui.table).elements.pop()
+            assert table.columns == [
+                {'name': 'name', 'label': 'Name', 'field': 'name'},
+                {'name': 'age', 'label': 'Age', 'field': 'age'},
+            ]
+            assert table.rows == [
+                {'name': 'Alice', 'age': '30'},
+                {'name': 'Bob', 'age': '28'},
+            ]
+        ''')
+
+
+doc.text('Test Downloads', '''
+    You can verify that a download was triggered by checking `user.download.http_responses`.
+    By awaiting `user.download.next()` you can get the next download response.
+
+    *Added in version 2.1.0*
+''')
+
+
+@doc.ui
+def check_outbox():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='some UI code', code='''
+            @ui.page('/')
+            def page():
+                def download():
+                    ui.download(b'Hello', filename='hello.txt')
+
+                ui.button('Download', on_click=download)
+        ''')
+
+        python_window(title='user assertions', code='''
+            await user.open('/')
+            assert len(user.download.http_responses) == 0
+            user.find('Download').click()
+            response = await user.download.next()
+            assert response.text == 'Hello'
+        ''')
 
 
 doc.text('Multiple Users', '''
@@ -116,30 +303,116 @@ doc.text('Multiple Users', '''
 
 @doc.ui
 def multiple_users():
-    with python_window(classes='w-[600px]', title='example'):
-        ui.markdown('''
-            ```python
-            async def test_chat(create_user: Callable[[], User]) -> None:
-                userA = create_user()
-                await userA.open('/')
-                userB = create_user()
-                await userB.open('/')
+    python_window(title='example', code='''
+        async def test_chat(create_user: Callable[[], User]) -> None:
+            user1 = create_user()
+            await user1.open('/')
+            user2 = create_user()
+            await user2.open('/')
 
-                userA.find(ui.input).type('from A').trigger('keydown.enter')
-                await userB.should_see('from A')
-                userB.find(ui.input).type('from B').trigger('keydown.enter')
-                await userA.should_see('from A')
-                await userA.should_see('from B')
-            ```
+            user1.find(ui.input).type('from A').trigger('keydown.enter')
+            await user2.should_see('from A')
+            user2.find(ui.input).type('from B').trigger('keydown.enter')
+            await user1.should_see('from A')
+            await user1.should_see('from B')
+    ''').classes('w-full')
+
+
+doc.text('Simulate JavasScript', '''
+    The `User` class has a `javascript_rules` dictionary to simulate JavaScript execution.
+    The key is a compiled regular expression and the value is a function that returns the JavaScript response.
+    The function will be called with the match object of the regular expression on the JavaScript command.
+
+    *Added in version 2.14.0*
+''')
+
+
+@doc.ui
+def simulate_javascript():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='some UI code', code='''
+            @ui.page('/')
+            async def page():
+                await context.client.connected()
+                date = await ui.run_javascript('Math.sqrt(1764)')
+                ui.label(date)
+        ''')
+
+        python_window(title='user assertions', code='''
+            user.javascript_rules[re.compile(r'Math.sqrt\\((\\d+)\\)')] = \\
+                lambda match: int(match.group(1))**0.5
+            await user.open('/')
+            await user.should_see('42')
         ''')
 
 
 doc.text('Comparison with the screen fixture', '''
     By cutting out the browser, test execution becomes much faster than the [`screen` fixture](/documentation/screen).
-    Of course, some features like screenshots or browser-specific behavior are not available.
     See our [pytests example](https://github.com/zauberzeug/nicegui/tree/main/examples/pytests)
     which implements the same tests with both fixtures.
+    Of course, some features like screenshots or browser-specific behavior are not available,
+    but in most cases the speed of the `user` fixture makes it the first choice.
 ''')
+
+
+doc.text('User Simulation Context', '''
+    The [`user_simulation`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/testing/user_simulation.py) context
+    is the low-level building block behind the `user` fixture.
+    It spins up a NiceGUI app inside the same event loop, providing deterministic test control without Selenium.
+    Unlike the `user` fixture, it does not rely on pytest-specific infrastructure
+    and can be used with `unittest` or within plain async code.
+
+    The context supports three testing approaches:
+
+    - Test a `root` callable directly.
+    - Test a specific main file by passing its path.
+    - Define `ui.page` definitions inline within the context.
+
+    More usage examples can be found in
+    [`tests/test_user_simulation_context.py`](https://github.com/zauberzeug/nicegui/blob/main/tests/test_user_simulation_context.py).
+''')
+
+
+@doc.ui
+def user_simulation_examples():
+    python_window(title='script mode with root', code='''
+        from nicegui.testing import user_simulation
+
+        async def test_click_via_root():
+            def root():
+                ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
+
+            async with user_simulation(root) as user:
+                await user.open('/')
+                await user.should_see('Click me')
+                user.find(ui.button).click()
+                await user.should_see('Hello World!')
+    ''').classes('w-full')
+
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window(title='main file via path', code='''
+            from nicegui.testing import user_simulation
+
+            async def test_click_via_main_file():
+                async with user_simulation(main_file='app.py') as user:
+                    await user.open('/')
+                    await user.should_see('Main file content')
+        ''')
+
+        python_window(title='inline UI definitions', code='''
+            from nicegui.testing import user_simulation
+
+            async def test_inline_pages():
+                async with user_simulation() as user:
+
+                    @ui.page('/')
+                    def main_page():
+                        ui.label('Main page')
+
+                    await user.open('/')
+                    await user.should_see('Main page')
+        ''')
+
 
 doc.reference(User, title='User Reference')
 doc.reference(UserInteraction, title='UserInteraction Reference')

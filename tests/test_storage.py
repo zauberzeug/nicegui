@@ -1,13 +1,20 @@
 import asyncio
 import copy
-from pathlib import Path
+import re
+import threading
+import time
+from collections.abc import Callable
 
 import httpx
 import pytest
 
-from nicegui import app, background_tasks, context, core, ui
-from nicegui import storage as storage_module
-from nicegui.testing import Screen
+from nicegui import Client, app, background_tasks, context, core, ui
+from nicegui.app import app as app_module
+from nicegui.app.app import prune_tab_storage, prune_user_storage
+from nicegui.nicegui import _on_handshake
+from nicegui.persistence.file_persistent_dict import FilePersistentDict
+from nicegui.storage import Storage
+from nicegui.testing import Screen, User
 
 
 def test_browser_data_is_stored_in_the_browser(screen: Screen):
@@ -79,20 +86,24 @@ def test_user_storage_modifications(screen: Screen):
     screen.should_contain('3')
 
 
-async def test_access_user_storage_from_fastapi(screen: Screen):
+def test_access_user_storage_from_fastapi(screen: Screen):
     @app.get('/api')
     def api():
         app.storage.user['msg'] = 'yes'
         return 'OK'
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(f'http://localhost:{Screen.PORT}/api')
+    with httpx.Client() as http_client:
+        response = http_client.get(f'http://localhost:{Screen.PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
-        await asyncio.sleep(0.5)  # wait for storage to be written
-        assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"msg":"yes"}'
+        time.sleep(0.5)  # wait for storage to be written
+        assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"msg":"yes"}'
 
 
 def test_access_user_storage_on_interaction(screen: Screen):
@@ -106,7 +117,7 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.open('/')
     screen.click('switch')
     screen.wait(0.5)
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"test_switch":true}'
+    assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"test_switch":true}'
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -118,20 +129,25 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.open('/')
     screen.click('test')
     screen.wait(1)
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"inner_function":"works"}'
+    assert \
+        next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"inner_function":"works"}'
 
 
-async def test_access_user_storage_from_background_task(screen: Screen):
+def test_access_user_storage_from_background_task(screen: Screen):
     @ui.page('/')
     def page():
+        label = ui.label('Busy...')
+
         async def subtask():
             await asyncio.sleep(0.1)
             app.storage.user['subtask'] = 'works'
+            label.text = 'Done'
         background_tasks.create(subtask())
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    assert next(Path('.nicegui').glob('storage-user-*.json')).read_text('utf-8') == '{"subtask":"works"}'
+    screen.should_contain('Done')
+    assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"subtask":"works"}'
 
 
 def test_user_and_general_storage_is_persisted(screen: Screen):
@@ -156,16 +172,18 @@ def test_user_and_general_storage_is_persisted(screen: Screen):
 
 def test_rapid_storage(screen: Screen):
     # https://github.com/zauberzeug/nicegui/issues/1099
-    ui.button('test', on_click=lambda: (
-        app.storage.general.update(one=1),
-        app.storage.general.update(two=2),
-        app.storage.general.update(three=3),
-    ))
+    @ui.page('/')
+    def page():
+        ui.button('test', on_click=lambda: (
+            app.storage.general.update(one=1),
+            app.storage.general.update(two=2),
+            app.storage.general.update(three=3),
+        ))
 
     screen.open('/')
     screen.click('test')
     screen.wait(0.5)
-    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"one":1,"two":2,"three":3}'
+    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}'
 
 
 def test_tab_storage_is_local(screen: Screen):
@@ -190,9 +208,6 @@ def test_tab_storage_is_local(screen: Screen):
 
 
 def test_tab_storage_is_auto_removed(screen: Screen):
-    storage_module.PURGE_INTERVAL = 0.1
-    app.storage.max_tab_storage_age = 0.5
-
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -204,14 +219,13 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.open('/')
     screen.should_contain('2')
 
-    screen.wait(1)
+    background_tasks.create(prune_tab_storage(force=True))
+    screen.wait(0.1)
     screen.open('/')
     screen.should_contain('1')
 
 
 def test_clear_tab_storage(screen: Screen):
-    storage_module.PURGE_INTERVAL = 60
-
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -228,6 +242,29 @@ def test_clear_tab_storage(screen: Screen):
     screen.click('clear')
     screen.wait(0.5)
     assert not tab_storages
+
+
+async def test_client_is_pinned_to_one_tab_id(user: User):
+    @ui.page('/', reconnect_timeout=10)
+    def page():
+        pass
+
+    client = await user.open('/')  # pins the tab ID the user fixture presents
+
+    async def handshake(socket_id: str, tab_id: str) -> bool:
+        return await _on_handshake(socket_id, {'client_id': client.id, 'tab_id': tab_id, 'document_id': 'doc'})
+
+    assert await handshake('test-reconnect', user.tab_id), 'a reconnect presents the same tab ID and must be accepted'
+    assert not await handshake('test-reconnect', user.tab_id), 'a socket may only handshake once'
+    assert not await handshake('test-replay', 'other-tab'), 'a second tab ID on one client must be refused'
+
+    client.handle_disconnect('test-reconnect')  # nulls client.tab_id, but the pin must survive it
+    assert not await handshake('test-after-disconnect', 'other-tab')
+
+    for foreign_environ in [{'QUERY_STRING': 'client_id=somebody-else'},  # both shapes Engine.IO provides
+                            {'asgi.scope': {'query_string': b'client_id=somebody-else'}}]:
+        assert not client.accept_handshake('test-foreign', user.tab_id, foreign_environ), \
+            'a handshake naming a client other than the one its socket connected with must be refused'
 
 
 def test_client_storage(screen: Screen):
@@ -254,9 +291,6 @@ def test_client_storage(screen: Screen):
 
 
 def test_clear_client_storage(screen: Screen):
-    with pytest.raises(RuntimeError):  # no context (auto index)
-        app.storage.client.clear()
-
     @ui.page('/')
     def page():
         app.storage.client['counter'] = 123
@@ -277,7 +311,7 @@ def test_deepcopy(screen: Screen):
     screen.open('/')
     screen.should_contain('Loaded')
     screen.wait(0.5)
-    assert Path('.nicegui', 'storage-general.json').read_text('utf-8') == '{"a":{"b":0}}'
+    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}'
 
 
 def test_missing_storage_secret(screen: Screen):
@@ -286,6 +320,7 @@ def test_missing_storage_secret(screen: Screen):
         ui.label(app.storage.user.get('message', 'no message'))
 
     core.app.user_middleware.clear()  # remove the session middlewares added by prepare_simulation by default
+    screen.allowed_js_errors.append('/ - Failed to load resource')
     screen.open('/')
     screen.assert_py_logger('ERROR', 'app.storage.user needs a storage_secret passed in ui.run()')
 
@@ -314,4 +349,161 @@ def test_storage_access_in_binding_function(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'secret'
 
     screen.open('/')
+    screen.should_contain('John')
     screen.assert_py_logger('ERROR', 'app.storage.user can only be used within a UI context')
+
+
+def test_client_storage_holds_non_serializable_objects(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update storage', on_click=lambda: app.storage.client.update(x=len))
+
+    screen.open('/')
+    screen.click('Update storage')
+    screen.wait(0.5)
+
+
+def test_tab_storage_holds_non_serializable_objects(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update storage', on_click=lambda: app.storage.tab.update(x=len))
+
+    screen.open('/')
+    screen.click('Update storage')
+    screen.wait(0.5)
+
+
+async def test_user_storage_is_pruned(screen: Screen):
+    @ui.page('/', reconnect_timeout=3)
+    def page():
+        ui.label(f'clients: {len(Client.instances)}')
+        ui.label(f'persistent dicts: {len(app.storage._users)}')
+
+    @app.get('/status')
+    def status():
+        return 'ok'
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    screen.open('/')
+    screen.should_contain('clients: 1')
+    screen.should_contain('persistent dicts: 1')
+    assert len(Client.instances) == 1
+    assert len(app.storage._users) == 1
+
+    response = httpx.get(f'http://localhost:{Screen.PORT}/status')
+    assert response.status_code == 200
+    assert response.text == '"ok"'
+    assert len(Client.instances) == 1
+    assert len(app.storage._users) == 2
+
+    screen.close()
+    screen.wait(5)  # more than 3 seconds
+    await prune_user_storage(force=True)
+    assert len(Client.instances) == 0
+    assert len(app.storage._users) == 0
+
+
+def test_user_storage_survives_prune_during_request(screen: Screen, monkeypatch: pytest.MonkeyPatch):
+    """Prune must not remove user storage out from under an in-flight request (regression for #6145).
+
+    The endpoint has no connected WebSocket client and stays in flight for several prune intervals,
+    so a prune tick is guaranteed to fire while its storage is old enough to be eligible for pruning.
+    """
+    monkeypatch.setattr(app_module, 'USER_STORAGE_PRUNE_INTERVAL', 0.1)
+
+    @app.get('/data')
+    async def data():
+        await asyncio.sleep(0.5)  # keep the request in flight while the prune timer fires
+        return {'value': app.storage.user.get('value', 'default')}
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    screen.open('/data')
+    screen.should_contain('default')
+
+
+def test_storage_serialization_error_points_at_offending_key(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.button('Update', on_click=lambda: app.storage.general.update(X={'Y': {1, 2, 3}}))
+
+    screen.open('/')
+    screen.click('Update')
+    screen.wait(0.5)  # let the deferred backup task run
+    screen.assert_py_logger('ERROR', re.compile(r"storage-general.*\.json at \['X'\]\['Y'\]: value of type 'set'"))
+
+
+async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    path = tmp_path / 'storage.json'
+    d = FilePersistentDict(path, encoding='utf-8')
+    d['key'] = 'value'  # schedules async backup task tagged with await_on_shutdown
+    await asyncio.sleep(0)  # ensure the task is created
+    await background_tasks.teardown()
+    assert path.exists(), 'backup should be written during teardown'
+    assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+async def test_unlinking_storage_files_waits_out_transient_holders(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    filepath = Storage.path / 'storage-general.json'
+
+    async def wait_until(condition: Callable[[], bool], *, timeout: float = 2.0) -> None:
+        deadline = time.monotonic() + timeout
+        while not condition() and time.monotonic() < deadline:
+            await asyncio.sleep(0.01)
+
+    async def write_and_hold_file() -> None:
+        app.storage.general['key'] = 'value'  # schedules an async backup task
+        await wait_until(filepath.exists)  # let the backup write the file
+        assert filepath.exists()
+        handle = filepath.open(encoding='utf-8')  # stands in for a backup write still holding the file
+        threading.Timer(0.2, handle.close).start()
+
+    await write_and_hold_file()
+    app.storage.general.clear()  # schedules an async backup which deletes the now-empty file
+    await wait_until(lambda: not filepath.exists())
+    assert not filepath.exists()  # used to log ERROR (WinError 32) on Windows while the handle was open
+
+    await write_and_hold_file()
+    app.storage.clear()  # used to raise PermissionError (WinError 32) on Windows while the handle was open
+    assert not filepath.exists()
+
+
+async def test_clearing_storage_removes_leftover_temp_files(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    Storage.path.mkdir(exist_ok=True)
+    (Storage.path / 'storage-general.json.tmp').touch()  # stands in for a temp file left behind by an interrupted backup
+    app.storage.clear()
+    assert not Storage.path.exists(), 'temp files should be swept so the storage directory can be removed'
+
+
+@pytest.mark.parametrize('custom_cookie_headers', [False, True])
+def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.ui_run_kwargs['storage_secret'] = 'just a test'
+    if custom_cookie_headers:
+        screen.ui_run_kwargs['session_middleware_kwargs'] = {'same_site': 'none', 'https_only': True}
+    screen.open('/')
+    with httpx.Client() as http_client:
+        response = http_client.get(f'http://localhost:{Screen.PORT}/')
+        assert response.status_code == 200
+        cookie_settings = str(response.headers.get('set-cookie')).lower()
+        if custom_cookie_headers:
+            assert cookie_settings.endswith('httponly; samesite=none; secure')
+        else:
+            assert cookie_settings.endswith('httponly; samesite=lax')

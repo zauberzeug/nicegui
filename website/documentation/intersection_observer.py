@@ -1,19 +1,16 @@
-from typing import Callable
+from collections.abc import Callable
 
-from nicegui.element import Element
-from nicegui.events import UiEventArguments, handle_event
+from nicegui import helpers, ui
 
 
-class IntersectionObserver(Element, component='intersection_observer.js'):
+class IntersectionObserver(ui.element, component='intersection_observer.js'):
 
-    def __init__(self, *, on_intersection: Callable) -> None:
+    def __init__(self, on_intersection: Callable) -> None:
         super().__init__()
-        self.on_intersection = on_intersection
-        self.active = True
-        self.on('intersection', self.handle_intersection, [])
 
-    def handle_intersection(self, _) -> None:
-        self.run_method('stop')
-        if self.active:
-            handle_event(self.on_intersection, UiEventArguments(sender=self, client=self.client))
-            self.active = False
+        async def handle_intersection() -> None:
+            self.delete()  # ensure the event fires only once, even if the client remounts the component
+            result = on_intersection()
+            if helpers.should_await(result):
+                await result
+        self.on('intersection', handle_intersection)

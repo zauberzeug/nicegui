@@ -13,7 +13,32 @@ def main_demo() -> None:
         ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
     src = 'https://picsum.photos/id/565/640/360'
-    ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True)
+    ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True, sanitize=False)
+
+
+@doc.demo('Adding layers', '''
+    In some cases you might want to add different groups of SVG elements to an image.
+    Maybe there is one element that needs frequent updates, while the other elements are rarely changed.
+    Putting all elements in the same SVG can lead to performance issues,
+    because the whole SVG needs to be sent to the client whenever one of the elements changes.
+
+    The solution is to add multiple layers to the image.
+    Each layer is a separate SVG element, which means that each layer can be updated independently.
+
+    The following demo shows this concept in action, even though both layers are changed at the same time.
+
+    *Added in version 2.17.0*
+''')
+def adding_layers():
+    from nicegui import events
+
+    def mouse_handler(e: events.MouseEventArguments):
+        image.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="30" fill="none" stroke="red" stroke-width="4" />'
+        highlight.content = f'<circle cx="{e.image_x}" cy="{e.image_y}" r="28" fill="yellow" opacity="0.5" />'
+
+    src = 'https://picsum.photos/id/674/640/360'
+    image = ui.interactive_image(src, on_mouse=mouse_handler, cross=True, sanitize=False)
+    highlight = image.add_layer()
 
 
 @doc.demo('Nesting elements', '''
@@ -44,7 +69,7 @@ def force_reload():
 ''')
 def blank_canvas():
     ui.interactive_image(
-        size=(800, 600), cross=True,
+        size=(800, 600), cross=True, sanitize=False,
         on_mouse=lambda e: e.sender.set_content(f'''
             <circle cx="{e.image_x}" cy="{e.image_y}" r="50" fill="orange" />
         '''),
@@ -65,9 +90,19 @@ def loaded_event():
 @doc.demo('Crosshairs', '''
     You can show crosshairs by passing `cross=True`.
     You can also change the color of the crosshairs by passing a color string.
+
+    *Since version 2.4.0:*
+    You can use the `add_slot` method to add a custom "cross" slot with your own SVG template.
+    The `props.x` and `props.y` variables will be available in the template, representing the crosshair position.
 ''')
 def crosshairs():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross='red')
+
+    ui.interactive_image('https://picsum.photos/id/565/640/360').add_slot('cross', '''
+        <circle :cx="props.x" :cy="props.y" r="30" stroke="red" fill="none" />
+        <line :x1="props.x - 30" :y1="props.y" :x2="props.x + 30" :y2="props.y" stroke="red" />
+        <line :x1="props.x" :y1="props.y - 30" :x2="props.x" :y2="props.y + 30" stroke="red" />
+    ''')
 
 
 @doc.demo('SVG events', '''
@@ -89,7 +124,7 @@ def svg_content():
     ui.interactive_image('https://picsum.photos/id/565/640/360', cross=True, content='''
         <rect id="A" x="85" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
         <rect id="B" x="180" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
-    ''').on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
+    ''', sanitize=False).on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
 
 
 doc.reference(ui.interactive_image)

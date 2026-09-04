@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+
+LICENSE_LINKS = {
+    'MIT': '[MIT](https://opensource.org/licenses/MIT)',
+    'Apache-2.0': '[Apache-2.0](https://opensource.org/licenses/Apache-2.0)',
+    'BSD-2-Clause': '[BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause)',
+    'BSD-3-Clause': '[BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)',
+    'ISC': '[ISC](https://opensource.org/licenses/ISC)',
+    '(MPL-2.0 OR Apache-2.0)': '[MPL-2.0](https://opensource.org/licenses/MPL-2.0) or [Apache-2.0](https://opensource.org/licenses/Apache-2.0)',
+}
+
+with (ROOT / 'DEPENDENCIES.md').open('w') as output_file:
+    output_file.write('# Included Web Dependencies\n\n')
+
+    for p in [ROOT / 'package.json', *sorted(ROOT.glob('nicegui/elements/*/package.json'))]:
+        package_lock = json.loads(p.with_stem('package-lock').read_text(encoding='utf-8'))
+        for name in json.loads(p.read_text(encoding='utf-8')).get('dependencies', {}):
+            assert isinstance(name, str)
+            package = package_lock['packages'][f'node_modules/{name}']
+            output_file.write(f'- {name}: {package["version"]} ({LICENSE_LINKS[package["license"]]})\n')

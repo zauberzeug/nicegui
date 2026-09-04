@@ -1,6 +1,7 @@
 from nicegui import ui
 
-from ..windows import bash_window, python_window
+from ..search import index_sizes
+from ..windows import bash_window, code_window, python_window
 from . import doc, run_documentation
 
 doc.title('Configuration & Deployment')
@@ -29,14 +30,40 @@ doc.intro(run_documentation)
     You can enable native mode for NiceGUI by specifying `native=True` in the `ui.run` function.
     To customize the initial window size and display mode, use the `window_size` and `fullscreen` parameters respectively.
     Additionally, you can provide extra keyword arguments via `app.native.window_args` and `app.native.start_args`.
-    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/guide/api.html)
+    Pick any parameter as it is defined by the internally used [pywebview module](https://pywebview.flowrl.com/api)
     for the `webview.create_window` and `webview.start` functions.
     Note that these keyword arguments will take precedence over the parameters defined in `ui.run`.
 
     Additionally, you can change `webview.settings` via `app.native.settings`.
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
-    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/guide/api.html#window-object).
+    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+
+    Native mode requires a browser engine with ES module and import map support (Chrome 89+).
+    On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.
+
+    On Windows, native mode requires the .NET Framework to be installed,
+    as pywebview uses it for the EdgeChromium backend.
+    This is typically pre-installed on standard Windows installations,
+    but may be missing on minimal or freshly installed systems.
+
+    On Windows, a file-path `favicon` is also used as the native window icon (taskbar, title bar).
+    The `.ico` format is required.
+
+    **Port Selection:** In native mode, NiceGUI automatically finds an open port if none is specified via the `port` parameter.
+    This is handled by `native.find_open_port()` which scans ports 8000-8999 by default.
+    This is particularly useful when packaging your app with PyInstaller, allowing multiple copies of the same executable to run simultaneously.
+    In browser mode, the port defaults to 8080 and is not scanned automatically —
+    pass `port=native.find_open_port()` yourself if multiple instances should run side by side.
+
+    **Storage in Native Mode:** All [storage types](/documentation/storage) work the same in native mode as in web mode.
+    The storage files are saved to the path specified by the `NICEGUI_STORAGE_PATH` environment variable (defaults to ".nicegui" in the working directory).
+    As with any NiceGUI app, multiple instances started from the same working directory share this path.
+    Since each process holds its own copy of the data in memory and rewrites the storage files on change,
+    the instances do not see each other's data and silently overwrite each other's writes.
+    Native mode makes this situation especially likely, because multiple copies of the same packaged executable can run simultaneously.
+    To avoid it, give each instance its own `NICEGUI_STORAGE_PATH`,
+    or use [Redis storage](/documentation/storage#redis_storage) to share data consistently across instances.
 ''', tab=lambda: ui.label('NiceGUI'))
 def native_mode_demo():
     from nicegui import app
@@ -51,6 +78,58 @@ def native_mode_demo():
     # ui.run(native=True, window_size=(400, 300), fullscreen=False)
     # END OF DEMO
     ui.button('enlarge', on_click=lambda: ui.notify('window will be set to 1000x700 in native mode'))
+
+
+@doc.demo('Native Window Events', '''
+    In native mode you can react to window lifecycle events using `app.native.on`.
+    Handlers can be sync or async and optionally accept a `NativeEventArguments` parameter.
+    Supported events: "shown", "loaded", "minimized", "maximized", "restored", "resized", "moved", "closed", "drop".
+    The "resized" event provides `width` and `height` in `e.args`, "moved" provides `x` and `y`,
+    and "drop" provides `files` with a list of filesystem paths.
+''', tab=lambda: ui.label('NiceGUI'))
+def native_events_demo():
+    from nicegui import app
+
+    ui.label('Try this demo in native mode to see the events in action!')
+
+    # app.native.on('minimized', lambda: print('Window minimized'))
+    # app.native.on('resized', lambda e: print(f'{e.args["width"]}x{e.args["height"]}'))
+    # app.native.on('drop', lambda e: print(f'Dropped files: {e.args["files"]}'))
+    #
+    # ui.run(native=True)
+
+
+doc.text('', '''
+    Note that the native app is run in a separate
+    [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
+    Therefore any configuration changes from code run under a
+    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
+    The following examples show the difference between a working and a non-working configuration.
+
+    For packaged apps (nicegui-pack, PyInstaller, etc.), also see the "Packaging with Native Mode" section below
+    regarding the correct placement of `freeze_support()`.
+''')
+
+
+@doc.ui
+def native_main_guard():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import app, ui
+
+            app.native.window_args['resizable'] = False  # works
+
+            if __name__ == '__main__':
+                ui.run(native=True, reload=False)
+        ''', title='good_example.py')
+        python_window('''
+            from nicegui import app, ui
+
+            if __name__ == '__main__':
+                app.native.window_args['resizable'] = False  # ignored
+
+                ui.run(native=True, reload=False)
+        ''', title='bad_example.py')
 
 
 # Show a helpful workaround until issue is fixed upstream.
@@ -72,12 +151,56 @@ doc.text('', '''
     - `NICEGUI_STORAGE_PATH` (default: local ".nicegui") can be set to change the location of the storage files.
     - `MARKDOWN_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of Markdown content snippets that are cached in memory.
     - `RST_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of ReStructuredText content snippets that are cached in memory.
+    - `NICEGUI_REDIS_URL` (default: None, means local file storage): The URL of the Redis server to use for shared persistent storage.
+    - `NICEGUI_REDIS_KEY_PREFIX` (default: "nicegui:"): The prefix for Redis keys.
 ''')
 def env_var_demo():
     from nicegui.elements import markdown
 
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
 
+
+@doc.demo('Background Tasks', '''
+    `background_tasks.create()` allows you to run an async function in the background and return a task object.
+    By default the task will be automatically cancelled during shutdown.
+    You can prevent this by using the `@background_tasks.await_on_shutdown` decorator (added in version 2.16.0).
+    This is useful for tasks that need to be completed even when the app is shutting down.
+''')
+def background_tasks_demo():
+    # import aiofiles
+    import asyncio
+    from nicegui import background_tasks
+
+    results = {'answer': '?'}
+
+    async def compute() -> None:
+        await asyncio.sleep(1)
+        results['answer'] = 42
+
+    @background_tasks.await_on_shutdown
+    async def backup() -> None:
+        await asyncio.sleep(1)
+        # async with aiofiles.open('backup.json', 'w') as f:
+        #     await f.write(f'{results["answer"]}')
+        # print('backup.json written', flush=True)
+
+    ui.label().bind_text_from(results, 'answer', lambda x: f'answer: {x}')
+    ui.button('Compute', on_click=lambda: background_tasks.create(compute()))
+    ui.button('Backup', on_click=lambda: background_tasks.create(backup()))
+
+
+doc.text('Custom Vue Components', '''
+    You can create custom components by subclassing `ui.element` and implementing a corresponding Vue component.
+    The ["Custom Vue components" example](https://github.com/zauberzeug/nicegui/tree/main/examples/custom_vue_component)
+    demonstrates how to create a custom counter component which emits events and receives updates from the server.
+
+    The ["Signature pad" example](https://github.com/zauberzeug/nicegui/blob/main/examples/signature_pad) and
+    the ["Node module integration" example](https://github.com/zauberzeug/nicegui/blob/main/examples/node_module_integration)
+    demonstrate how to bundle a custom Vue component with its dependencies defined in a `package.json` file.
+    In Python we can use the `esm` parameter when subclassing `ui.element`
+    to specify the ESM module name and the path to the bundled component.
+    This adds the ESM module to the import map of the page and makes it available in the Vue component.
+''')
 
 doc.text('Server Hosting', '''
     To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
@@ -91,17 +214,14 @@ doc.text('Server Hosting', '''
 
 @doc.ui
 def docker_run():
-    with bash_window(classes='max-w-lg w-full h-44'):
-        ui.markdown('''
-            ```bash
-            docker run -it --restart always \\
+    bash_window('''
+        docker run -it --restart always \\
             -p 80:8080 \\
             -e PUID=$(id -u) \\
             -e PGID=$(id -g) \\
             -v $(pwd)/:/app/ \\
             zauberzeug/nicegui:latest
-            ```
-        ''')
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -113,21 +233,18 @@ doc.text('', '''
 
 @doc.ui
 def docker_compose():
-    with python_window('docker-compose.yml', classes='max-w-lg w-full h-60'):
-        ui.markdown('''
-            ```yaml
-            app:
-                image: zauberzeug/nicegui:latest
-                restart: always
-                ports:
-                    - 80:8080
-                environment:
-                    - PUID=1000 # change this to your user id
-                    - PGID=1000 # change this to your group id
-                volumes:
-                    - ./:/app/
-            ```
-        ''')
+    code_window('''
+        app:
+            image: zauberzeug/nicegui:latest
+            restart: always
+            ports:
+                - 80:8080
+            environment:
+                - PUID=1000 # change this to your user id
+                - PGID=1000 # change this to your group id
+            volumes:
+                - ./:/app/
+    ''', title='docker-compose.yml', language='yaml').classes('w-full')
 
 
 doc.text('', '''
@@ -136,24 +253,22 @@ doc.text('', '''
 
     To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
     For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
-    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`:
+    relevant [options](https://www.uvicorn.org/#command-line-options) to `ui.run()`.
+    If both a certificate and key file are provided, the application will automatically be served over HTTPS:
 ''')
 
 
 @doc.ui
 def uvicorn_ssl():
-    with python_window('main.py', classes='max-w-lg w-full'):
-        ui.markdown('''
-            ```python
-            from nicegui import ui
+    python_window('''
+        from nicegui import ui
 
-            ui.run(
-                port=443,
-                ssl_certfile="<path_to_certfile>",
-                ssl_keyfile="<path_to_keyfile>",
-            )
-            ```
-        ''')
+        ui.run(
+            port=443,
+            ssl_certfile="<path_to_certfile>",
+            ssl_keyfile="<path_to_keyfile>",
+        )
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -171,30 +286,29 @@ doc.text('Package for Installation', '''
     NiceGUI apps can also be bundled into an executable with `nicegui-pack` which is based on [PyInstaller](https://www.pyinstaller.org/).
     This allows you to distribute your app as a single file that can be executed on any computer.
 
-    Just make sure to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature.
+    Just make sure
+
+    - to call `ui.run` with `reload=False` in your main script to disable the auto-reload feature, and
+    - to pass a `root` page function to `ui.run` or define at least one decorated `@page` function.
+
     Running the `nicegui-pack` command below will create an executable `myapp` in the `dist` folder:
 ''')
 
 
 @doc.ui
 def pyinstaller():
-    with ui.row().classes('w-full items-stretch'):
-        with python_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```python
-                from nicegui import native, ui
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
 
+            def root():
                 ui.label('Hello from PyInstaller')
 
-                ui.run(reload=False, port=native.find_open_port())
-                ```
-            ''')
-        with bash_window(classes='max-w-lg w-full'):
-            ui.markdown('''
-                ```bash
-                nicegui-pack --onefile --name "myapp" main.py
-                ```
-            ''')
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            nicegui-pack --onefile --name "myapp" main.py
+        ''')
 
 
 doc.text('', '''
@@ -223,6 +337,14 @@ doc.text('', '''
     and your end users can unzip once and be good to go,
     without the constant expansion of files due to the `--onefile` flag.
 
+    - Specifying `--onedir` to `nicegui-pack` will create an executable with all supporting files in a directory.
+    This starts faster than "--onefile" because it skips the unpacking step.
+    For distribution, package the directory into an archive file (e.g., .zip or .7z).
+
+    - Specifying `--clean` to `nicegui-pack` will clean the PyInstaller cache (in `./build` folder) and remove temporary files before building.
+
+    - Specifying `--noconfirm` to `nicegui-pack` will replace the output directory (`./dist/SPECNAME`) without asking for confirmation.
+
     - Summary of user experience for different options:
 
         | `nicegui-pack`           | `ui.run(...)`  | Explanation |
@@ -241,15 +363,12 @@ doc.text('', '''
 
 @doc.ui
 def install_pyinstaller():
-    with bash_window(classes='max-w-lg w-full h-42 self-center'):
-        ui.markdown('''
-            ```bash
-            python -m venv venv
-            source venv/bin/activate
-            pip install nicegui
-            pip install pyinstaller
-            ```
-        ''')
+    bash_window('''
+        python -m venv venv
+        source venv/bin/activate
+        pip install nicegui
+        pip install pyinstaller
+    ''').classes('w-full')
 
 
 doc.text('', '''
@@ -262,21 +381,116 @@ doc.text('', '''
     See <https://github.com/zauberzeug/nicegui/issues/681> for more information.
 ''')
 
-doc.text('', '''
-    **macOS Packaging**
+doc.text('Packaging with Nuitka', '''
+    NiceGUI apps can also be bundled with [Nuitka](https://nuitka.net/), which compiles Python to C.
+    Compared to PyInstaller, builds take longer but the resulting binaries are harder to decompile.
 
-    Add the following snippet before anything else in your main app's file, to prevent new processes from being spawned in an endless loop:
+    Two flags are required because NiceGUI uses [PEP 562](https://peps.python.org/pep-0562/) lazy imports
+    that Nuitka's static analyzer cannot follow on its own:
+
+    - `--include-package=nicegui` bundles every submodule reachable through `from nicegui import ui`.
+    - `--include-package-data=nicegui` bundles data files (templates, libraries, ESM bundles for elements).
+
+    The same `ui.run` rules as for PyInstaller apply:
+    call it with `reload=False` and provide a `root` page or at least one `@page` function.
+''')
+
+
+@doc.ui
+def nuitka():
+    with ui.grid().classes('w-full grid-cols-[1fr_1fr] max-xl:grid-cols-1 gap-4 items-stretch'):
+        python_window('''
+            from nicegui import native, ui
+
+            def root():
+                ui.label('Hello from Nuitka')
+
+            ui.run(root, reload=False, port=native.find_open_port())
+        ''')
+        bash_window('''
+            python -m nuitka \\
+                --onefile \\
+                --include-package=nicegui \\
+                --include-package-data=nicegui \\
+                main.py
+        ''')
+
+
+doc.text('', '''
+    **Tips:**
+
+    - Use `--standalone` for a `main.dist/` directory that starts faster than `--onefile`,
+    which unpacks itself into a temporary directory on every launch.
+
+    - For optional packages your app uses (e.g. `pyecharts` for `ui.echart.from_pyecharts`,
+    or any other third-party package shipping templates or data files),
+    add matching `--include-package=<name>` and `--include-package-data=<name>` flags.
+
+    - Native mode (`ui.run(reload=False, native=True)`) works the same as with PyInstaller.
+    Platform-specific flags include
+    `--macos-create-app-bundle` (Mac),
+    `--windows-disable-console` (Windows), and
+    `--linux-onefile-icon=<path>` (Linux).
+
+    - First builds are slow because Nuitka compiles the entire dependency graph; subsequent builds reuse Nuitka's cache.
+    Add `--show-progress` to monitor long builds.
+''')
+
+doc.text('', '''
+    **Packaging with Native Mode**
+
+    When packaging your app (using nicegui-pack, PyInstaller, py2exe, etc.),
+    you need to call `freeze_support()` to prevent new processes from being spawned in an endless loop.
+    It should be called as the first statement inside the main guard.
+
+    If you use `app.native` settings, they must be defined **outside** the main guard
+    so they are applied before `freeze_support()` intercepts the subprocess:
 
     ```python
-    # macOS packaging support
-    from multiprocessing import freeze_support  # noqa
-    freeze_support()  # noqa
+    from multiprocessing import freeze_support
+    from nicegui import app, ui
 
-    # all your other imports and code
+    app.native.window_args['transparent'] = True  # outside main guard
+
+    # any other code (page functions, etc.)
+
+    if __name__ == '__main__':
+        freeze_support()  # first statement in main guard
+        ui.run(native=True, reload=False)
     ```
 
-    The `# noqa` comment instructs Pylance or autopep8 to not apply any PEP rule on those two lines, guaranteeing they remain on top of anything else.
-    This is key to prevent process spawning.
+''')
+
+doc.text('Documentation Index', '''
+    NiceGUI serves its entire documentation as machine-readable JSON endpoints.
+    Each index is a JSON array of objects with these fields:
+
+    | Field     | Type    | Description                                                                                 |
+    | --------- | ------- | ------------------------------------------------------------------------------------------- |
+    | `title`   | string  | Section heading, e.g. "Button: Click Handler" or "Example: Chat App"                        |
+    | `content` | string  | Description or search text (Markdown or reStructuredText)                                   |
+    | `format`  | string  | Content format: "md" or "rst"                                                              |
+    | `url`     | string  | Doc page path or GitHub example link                                                        |
+    | `demo`    | string? | Complete Python demo code, or "" if none (sitewide index only; key absent in other indices) |
+''')
+
+
+@doc.ui
+def _documentation_index_table():
+    ui.markdown(f'''
+        **Available indices:**
+
+        | Endpoint | Entries | Tokens | Includes code | Use case |
+        | -------- | ------- | ------ | ------------- | -------- |
+        | [`/static/sitewide_index.json`](https://nicegui.io/static/sitewide_index.json) | {index_sizes['sitewide']['entries']} | ~{index_sizes['sitewide']['tokens']}k | Yes | RAG, AI tooling, full context                                                    |
+        | [`/static/search_index.json`](https://nicegui.io/static/search_index.json)     | {index_sizes['search']['entries']}   | ~{index_sizes['search']['tokens']}k   | No  | Powers the on-site doc search; includes GitHub examples                          |
+        | [`/static/examples_index.json`](https://nicegui.io/static/examples_index.json) | {index_sizes['examples']['entries']} | ~{index_sizes['examples']['tokens']}k | No  | [GitHub examples](https://github.com/zauberzeug/nicegui/tree/main/examples) only |
+    ''')
+
+
+doc.text('', '''
+    We welcome contributions for MCP servers, AI agent skills, and enhanced RAG implementations —
+    see the [contributing guide](https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md).
 ''')
 
 doc.text('NiceGUI On Air', '''

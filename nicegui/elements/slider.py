@@ -1,17 +1,18 @@
-from typing import Any, Callable, Optional
-
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
+from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
 from .mixins.value_element import ValueElement
 
 
-class Slider(ValueElement, DisableableElement):
+class Slider(ValueElement[float | None], DisableableElement):
 
+    @resolve_defaults
     def __init__(self, *,
                  min: float,  # pylint: disable=redefined-builtin
                  max: float,  # pylint: disable=redefined-builtin
-                 step: float = 1.0,
-                 value: Optional[float] = None,
-                 on_change: Optional[Callable[..., Any]] = None,
+                 step: float = DEFAULT_PROP | 1.0,
+                 value: float | None = DEFAULT_PROPS['model-value'] | None,
+                 on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
                  ) -> None:
         """Slider
 
@@ -21,7 +22,8 @@ class Slider(ValueElement, DisableableElement):
         :param max: upper bound of the slider
         :param step: step size
         :param value: initial value to set position of the slider
-        :param on_change: callback which is invoked when the user releases the slider
+        :param on_change: callback to execute when the value changes, including while dragging
+            (to react only when the slider is released, use ``.on('change', ...)`` instead)
         """
         super().__init__(tag='q-slider', value=value, on_value_change=on_change, throttle=0.05)
         self._props['min'] = min

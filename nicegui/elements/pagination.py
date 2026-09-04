@@ -1,23 +1,24 @@
-from typing import Any, Callable, Optional
+from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
+from ..events import Handler, ValueChangeEventArguments
+from .mixins.disableable_element import DisableableElement
+from .mixins.value_element import ValueElement
 
-from nicegui.elements.mixins.disableable_element import DisableableElement
-from nicegui.elements.mixins.value_element import ValueElement
 
+class Pagination(ValueElement[int | None], DisableableElement):
 
-class Pagination(ValueElement, DisableableElement):
-
+    @resolve_defaults
     def __init__(self,
                  min: int, max: int, *,  # pylint: disable=redefined-builtin
-                 direction_links: bool = False,
-                 value: Optional[int] = ...,  # type: ignore
-                 on_change: Optional[Callable[..., Any]] = None) -> None:
+                 direction_links: bool = DEFAULT_PROP | False,
+                 value: int | None = DEFAULT_PROPS['model-value'] | ...,  # type: ignore
+                 on_change: Handler[ValueChangeEventArguments[int | None]] | None = None) -> None:
         """Pagination
 
         A pagination element wrapping Quasar's `QPagination <https://quasar.dev/vue-components/pagination>`_ component.
 
         :param min: minimum page number
         :param max: maximum page number
-        :param direction_links: whether to show first/last page links
+        :param direction_links: whether to show direction links (previous/next); use ``.props('boundary-links')`` for first/last links
         :param value: initial page (defaults to `min` if no value is provided)
         :param on_change: callback to be invoked when the value changes
         """
@@ -36,7 +37,6 @@ class Pagination(ValueElement, DisableableElement):
     @min.setter
     def min(self, value: int) -> None:
         self._props['min'] = value
-        self.update()
 
     @property
     def max(self) -> int:
@@ -46,14 +46,12 @@ class Pagination(ValueElement, DisableableElement):
     @max.setter
     def max(self, value: int) -> None:
         self._props['max'] = value
-        self.update()
 
     @property
     def direction_links(self) -> bool:
-        """Whether to show first/last page links"""
+        """Whether to show direction links (previous/next)"""
         return self._props['direction-links']
 
     @direction_links.setter
     def direction_links(self, value: bool) -> None:
         self._props['direction-links'] = value
-        self.update()
