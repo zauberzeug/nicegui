@@ -1,18 +1,18 @@
-from typing import Optional
-
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .label import Label as label
 from .mixins.color_elements import TextColorElement
 from .mixins.value_element import ValueElement
 
 
-class LinearProgress(ValueElement, TextColorElement):
+class LinearProgress(ValueElement[float], TextColorElement):
     VALUE_PROP = 'value'
 
+    @resolve_defaults
     def __init__(self,
-                 value: float = 0.0, *,
-                 size: Optional[str] = None,
+                 value: float = DEFAULT_PROP | 0.0, *,
+                 size: str | None = DEFAULT_PROP | None,
                  show_value: bool = True,
-                 color: Optional[str] = 'primary',
+                 color: str | None = DEFAULT_PROP | 'primary',
                  ) -> None:
         """Linear Progress
 
@@ -29,19 +29,20 @@ class LinearProgress(ValueElement, TextColorElement):
 
         if show_value:
             with self:
-                label().classes('absolute-center text-sm text-white').bind_text_from(self, 'value')
+                label().classes('absolute-center text-white').style('font-size: 0.875rem').bind_text_from(self, 'value')
 
 
-class CircularProgress(ValueElement, TextColorElement):
+class CircularProgress(ValueElement[float], TextColorElement):
     VALUE_PROP = 'value'
 
+    @resolve_defaults
     def __init__(self,
-                 value: float = 0.0, *,
-                 min: float = 0.0,  # pylint: disable=redefined-builtin
-                 max: float = 1.0,  # pylint: disable=redefined-builtin
-                 size: str = 'xl',
+                 value: float = DEFAULT_PROP | 0.0, *,
+                 min: float = DEFAULT_PROP | 0.0,  # pylint: disable=redefined-builtin
+                 max: float = DEFAULT_PROP | 1.0,  # pylint: disable=redefined-builtin
+                 size: str = DEFAULT_PROP | 'xl',
                  show_value: bool = True,
-                 color: Optional[str] = 'primary',
+                 color: str | None = DEFAULT_PROP | 'primary',
                  ) -> None:
         """Circular Progress
 
@@ -59,9 +60,9 @@ class CircularProgress(ValueElement, TextColorElement):
         self._props['min'] = min
         self._props['max'] = max
         self._props['size'] = size
-        self._props['show-value'] = True  # NOTE always activate the default slot because this is expected by ui.element
+        self._props['show-value'] = True  # always activate the default slot because this is expected by ui.element
         self._props['track-color'] = 'grey-4'
 
         if show_value:
             with self:
-                label().classes('absolute-center text-xs').bind_text_from(self, 'value')
+                label().classes('absolute-center').style('font-size: 0.75rem').bind_text_from(self, 'value')

@@ -1,49 +1,86 @@
-from typing import Any, Callable, Dict, Optional, Union
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeAlias, cast
 
 from typing_extensions import Self
 
+from ... import background_tasks, helpers
+from ...events import ValueT
 from .value_element import ValueElement
 
+ValidationFunction: TypeAlias = Callable[[Any], str | None | Awaitable[str | None]]
+ValidationDict = dict[str, Callable[[Any], bool]]
 
-class ValidationElement(ValueElement):
 
-    def __init__(self, validation: Optional[Union[Callable[..., Optional[str]], Dict[str, Callable[..., bool]]]], **kwargs: Any) -> None:
-        self.validation = validation if validation is not None else {}
+class ValidationElement(ValueElement[ValueT]):
+
+    def __init__(self, validation: ValidationFunction | ValidationDict | None, **kwargs: Any) -> None:
+        self._validation = validation
         self._auto_validation = True
-        self._error: Optional[str] = None
+        self._error: str | None = None
         super().__init__(**kwargs)
+        self._props['error'] = None if validation is None else False  # reserve bottom space for error message
 
     @property
-    def error(self) -> Optional[str]:
+    def validation(self) -> ValidationFunction | ValidationDict | None:
+        """The validation function or dictionary of validation functions."""
+        return self._validation
+
+    @validation.setter
+    def validation(self, validation: ValidationFunction | ValidationDict | None) -> None:
+        """Sets the validation function or dictionary of validation functions.
+
+        :param validation: validation function or dictionary of validation functions (``None`` to disable validation)
+        """
+        self._validation = validation
+        self.validate(return_result=False)
+
+    @property
+    def error(self) -> str | None:
         """The latest error message from the validation functions."""
         return self._error
 
     @error.setter
-    def error(self, error: Optional[str]) -> None:
+    def error(self, error: str | None) -> None:
         """Sets the error message.
 
         :param error: The optional error message
         """
-        if self._error == error:
+        new_error_prop = None if error is None and self.validation is None else (error is not None)
+        if self._error == error and self._props.get('error') == new_error_prop:
             return
         self._error = error
-        self._props['error'] = error is not None
+        self._props['error'] = new_error_prop
         self._props['error-message'] = error
-        self.update()
 
-    def validate(self) -> bool:
+    def validate(self, *, return_result: bool = True) -> bool:
         """Validate the current value and set the error message if necessary.
 
-        :return: True if the value is valid, False otherwise
+        For async validation functions, ``return_result`` must be set to ``False`` and the return value will be ``True``,
+        independently of the validation result which is evaluated in the background.
+
+        *Updated in version 2.7.0: Added support for async validation functions.*
+
+        :param return_result: whether to return the result of the validation (default: ``True``)
+        :return: whether the validation was successful (always ``True`` for async validation functions)
         """
-        if callable(self.validation):
-            self.error = self.validation(self.value)
+        if return_result and helpers.is_coroutine_function(self._validation):
+            raise NotImplementedError('The validate method cannot return results for async validation functions.')
+
+        if callable(self._validation):
+            result = self._validation(self.value)
+            if helpers.should_await(result):
+                async def await_error():
+                    self.error = await result
+                background_tasks.create(await_error(), name=f'validate {self.id}')
+                return True
+            self.error = cast(str | None, result)
             return self.error is None
 
-        for message, check in self.validation.items():
-            if not check(self.value):
-                self.error = message
-                return False
+        if isinstance(self._validation, dict):
+            for message, check in self._validation.items():
+                if not check(self.value):
+                    self.error = message
+                    return False
 
         self.error = None
         return True
@@ -56,4 +93,4 @@ class ValidationElement(ValueElement):
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         if self._auto_validation:
-            self.validate()
+            self.validate(return_result=False)

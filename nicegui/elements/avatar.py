@@ -1,19 +1,20 @@
-from typing import Optional
-
+from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.color_elements import BackgroundColorElement, TextColorElement
+from .mixins.icon_element import IconElement
 
 
-class Avatar(BackgroundColorElement, TextColorElement):
+class Avatar(IconElement, BackgroundColorElement, TextColorElement):
     TEXT_COLOR_PROP = 'text-color'
 
+    @resolve_defaults
     def __init__(self,
-                 icon: Optional[str] = None, *,
-                 color: Optional[str] = 'primary',
-                 text_color: Optional[str] = None,
-                 size: Optional[str] = None,
-                 font_size: Optional[str] = None,
-                 square: bool = False,
-                 rounded: bool = False,
+                 icon: str | None = None, *,
+                 color: str | None = DEFAULT_PROP | 'primary',
+                 text_color: str | None = DEFAULT_PROP | None,
+                 size: str | None = DEFAULT_PROP | None,
+                 font_size: str | None = DEFAULT_PROP | None,
+                 square: bool = DEFAULT_PROP | False,
+                 rounded: bool = DEFAULT_PROP | False,
                  ) -> None:
         """Avatar
 
@@ -28,15 +29,9 @@ class Avatar(BackgroundColorElement, TextColorElement):
         :param square: removes border-radius so borders are squared (default: False)
         :param rounded: applies a small standard border-radius for a squared shape of the component (default: False)
         """
-        super().__init__(tag='q-avatar', background_color=color, text_color=text_color)
+        super().__init__(tag='q-avatar', background_color=color, text_color=text_color, icon=icon)
 
-        if icon is not None:
-            self._props['icon'] = icon
         self._props['square'] = square
         self._props['rounded'] = rounded
-
-        if size is not None:
-            self._props['size'] = size
-
-        if font_size is not None:
-            self._props['font-size'] = font_size
+        self._props.set_optional('size', size)
+        self._props.set_optional('font-size', font_size)

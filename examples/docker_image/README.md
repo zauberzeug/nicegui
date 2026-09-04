@@ -1,4 +1,8 @@
-# Docker Example with NiceGUI
+# Docker Image
+
+Use the official [zauberzeug/nicegui](https://hub.docker.com/r/zauberzeug/nicegui) Docker image.
+
+![Screenshot](screenshot.webp)
 
 This README provides a walkthrough on how to utilize the NiceGUI release docker image, [zauberzeug/nicegui, available on Docker Hub](https://hub.docker.com/r/zauberzeug/nicegui).
 The image is configured using a `docker-compose.yml` file for ease of use.

@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 
 from descope import AuthException, DescopeClient
 
@@ -21,7 +22,7 @@ def login_form() -> ui.element:
             .on('success', lambda e: app.storage.user.update({'descope': e.args['detail']['user']}))
 
 
-def about() -> Dict[str, Any]:
+def about() -> dict[str, Any]:
     """Return the user's Descope profile.
 
     This function can only be used after the user has logged in.
@@ -73,10 +74,9 @@ class page(ui.page):
                     return
                 ui.timer(self.SESSION_TOKEN_REFRESH_INTERVAL, self._refresh)
 
-            if helpers.is_coroutine_function(func):
-                await func()
-            else:
-                func()
+            result = func()
+            if helpers.should_await(result):
+                await result
 
         return super().__call__(content)
 

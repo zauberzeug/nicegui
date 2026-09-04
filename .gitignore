@@ -1,7 +1,9 @@
 __pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 *.egg-info/
 .*.swp
-dist
 /test.py
 *.pickle
 screenshots/
@@ -10,3 +12,8 @@ venv
 .nicegui/
 *.sqlite*
 .DS_Store
+.env
+node_modules/
+.playwright-mcp/
+.claude/settings.local.json
+CLAUDE.local.md

@@ -1,0 +1,2 @@
+nicegui>=3.0
+openai>=2.3.0

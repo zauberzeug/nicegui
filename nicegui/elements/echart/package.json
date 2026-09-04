@@ -1,0 +1,23 @@
+{
+  "name": "nicegui-echart-bundle",
+  "version": "1.0.0",
+  "description": "ECharts bundling for NiceGUI",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "clean": "rimraf ./dist/*"
+  },
+  "dependencies": {
+    "echarts": "^6.0.0",
+    "echarts-gl": "^2.1.0"
+  },
+  "devDependencies": {
+    "rimraf": "^6.1.3",
+    "terser": "^5.44.0",
+    "vite": "^7.3.2"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1"
+  }
+}

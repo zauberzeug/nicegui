@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional, cast
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -17,70 +18,86 @@ class SourceElement(Element):
 
     def __init__(self, *, source: Any, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.auto_route: Optional[str] = None
+        self.auto_route: str | None = None
+        self._temp_path: Path | None = None
         self.source = source
         self._set_props(source)
 
     def bind_source_to(self,
                        target_object: Any,
-                       target_name: str = 'source',
-                       forward: Callable[..., Any] = lambda x: x,
+                       target_name: str | tuple[str, ...] = 'source',
+                       forward: Callable[[Any], Any] | None = None, *,
+                       strict: bool | None = None,
                        ) -> Self:
         """Bind the source of this element to the target object's target_name property.
 
         The binding works one way only, from this element to the target.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_to(self, 'source', target_object, target_name, forward)
+        bind_to(self, 'source', target_object, target_name, forward, self_strict=False, other_strict=strict)
         return self
 
     def bind_source_from(self,
                          target_object: Any,
-                         target_name: str = 'source',
-                         backward: Callable[..., Any] = lambda x: x,
+                         target_name: str | tuple[str, ...] = 'source',
+                         backward: Callable[[Any], Any] | None = None, *,
+                         strict: bool | None = None,
                          ) -> Self:
         """Bind the source of this element from the target object's target_name property.
 
         The binding works one way only, from the target to this element.
         The update happens immediately and whenever a value changes.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind from.
         :param target_name: The name of the property to bind from.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind_from(self, 'source', target_object, target_name, backward)
+        bind_from(self, 'source', target_object, target_name, backward, self_strict=False, other_strict=strict)
         return self
 
     def bind_source(self,
                     target_object: Any,
-                    target_name: str = 'source', *,
-                    forward: Callable[..., Any] = lambda x: x,
-                    backward: Callable[..., Any] = lambda x: x,
+                    target_name: str | tuple[str, ...] = 'source', *,
+                    forward: Callable[[Any], Any] | None = None,
+                    backward: Callable[[Any], Any] | None = None,
+                    strict: bool | None = None,
                     ) -> Self:
         """Bind the source of this element to the target object's target_name property.
 
         The binding works both ways, from this element to the target and from the target to this element.
         The update happens immediately and whenever a value changes.
         The backward binding takes precedence for the initial synchronization.
+        The ``target_name`` parameter also accepts a tuple of strings for nested keys (*since version 3.10.0*).
 
         :param target_object: The object to bind to.
         :param target_name: The name of the property to bind to.
-        :param forward: A function to apply to the value before applying it to the target.
-        :param backward: A function to apply to the value before applying it to this element.
+        :param forward: A function to apply to the value before applying it to the target (default: identity).
+        :param backward: A function to apply to the value before applying it to this element (default: identity).
+        :param strict: Whether to check (and raise) if the target object has the specified property (default: None,
+            performs a check if the object is not a dictionary, *added in version 3.0.0*).
         """
-        bind(self, 'source', target_object, target_name, forward=forward, backward=backward)
+        bind(self, 'source', target_object, target_name,
+             forward=forward, backward=backward,
+             self_strict=False, other_strict=strict)
         return self
 
-    def set_source(self, source: Any) -> None:
+    def set_source(self, source: Any) -> Self:
         """Set the source of this element.
 
         :param source: The new source.
         """
         self.source = source
+        return self
 
     def _handle_source_change(self, source: Any) -> None:
         """Called when the source of this element changes.
@@ -88,22 +105,26 @@ class SourceElement(Element):
         :param source: The new source.
         """
         self._set_props(source)
-        self.update()
 
     def _set_props(self, source: Any) -> None:
+        if isinstance(source, Path) and not source.exists():
+            raise FileNotFoundError(f'File not found: {source}')
+        if self.auto_route:
+            core.app.remove_route(self.auto_route)
+            self.auto_route = None
         if is_file(source):
-            if self.auto_route:
-                core.app.remove_route(self.auto_route)
+            self._temp_path = source  # prevent cleanup of _TempPath until source changes
             if self.SOURCE_IS_MEDIA_FILE:
                 source = core.app.add_media_file(local_file=source)
             else:
                 source = core.app.add_static_file(local_file=source)
             self.auto_route = source
-        if isinstance(source, Path) and not source.exists():
-            raise FileNotFoundError(f'File not found: {source}')
+        else:
+            self._temp_path = None
         self._props['src'] = source
 
     def _handle_delete(self) -> None:
+        self._temp_path = None
         if self.auto_route:
             core.app.remove_route(self.auto_route)
         return super()._handle_delete()

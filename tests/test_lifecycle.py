@@ -1,39 +1,64 @@
 import asyncio
-from typing import List
+import re
 
-from nicegui import app, ui
+import httpx
+import socketio
+
+from nicegui import Client, app, ui
 from nicegui.testing import Screen
 
 
 def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
-    connections = []
-    ui.label('Adding labels on_connect')
-    app.on_connect(lambda _: connections.append(ui.label(f'new connection {len(connections)}')))
+    connections = {'count': 0}
+    app.on_connect(lambda _: connections.update(count=connections['count'] + 1))
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
 
     screen.open('/')
-    screen.should_contain('new connection 0')
+    screen.should_contain('Hello')
+    assert connections['count'] == 1
+
     screen.open('/')
-    screen.should_contain('new connection 0')
-    screen.should_contain('new connection 1')
+    screen.should_contain('Hello')
+    assert connections['count'] == 2
+
     screen.open('/')
-    screen.should_contain('new connection 0')
-    screen.should_contain('new connection 1')
-    screen.should_contain('new connection 2')
+    screen.should_contain('Hello')
+    assert connections['count'] == 3
 
 
 def test_async_connect_handler(screen: Screen):
-    async def run_js():
+    connections = {'count': 0}
+
+    @app.on_connect
+    async def handle_connect():
         await asyncio.sleep(0.1)
-        status.text = 'Connected'
-    status = ui.label()
-    app.on_connect(run_js)
+        connections.update(count=connections['count'] + 1)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
 
     screen.open('/')
-    screen.should_contain('Connected')
+    screen.should_contain('Hello')
+    screen.wait(0.5)
+    assert connections['count'] == 1
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    screen.wait(0.5)
+    assert connections['count'] == 2
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    screen.wait(0.5)
+    assert connections['count'] == 3
 
 
 def test_connect_disconnect_is_called_for_each_client(screen: Screen):
-    events: List[str] = []
+    events: list[str] = []
 
     @ui.page('/', reconnect_timeout=0)
     def page():
@@ -50,8 +75,29 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     assert events == ['connect', 'disconnect', 'connect', 'disconnect', 'connect']
 
 
+async def test_disconnect_without_client_id_in_connect_query(screen: Screen):
+    events: list[str] = []
+
+    @ui.page('/', reconnect_timeout=0)
+    def page():
+        ui.label('Hello')
+    app.on_connect(lambda: events.append('connect'))
+    app.on_disconnect(lambda: events.append('disconnect'))
+
+    screen.start_server()
+    httpx.get(screen.url, timeout=5)
+    client_id = next(reversed(Client.instances))
+    sio = socketio.AsyncClient()
+    await sio.connect(screen.url, socketio_path='/_nicegui_ws/socket.io')  # no query parameters at all
+    await sio.call('handshake', {'client_id': client_id, 'tab_id': 'tab', 'document_id': 'document'})
+    await sio.disconnect()
+
+    screen.wait_for(lambda: not Client.instances)  # a leaked client would stay connected forever
+    assert events == ['connect', 'disconnect'], 'disconnect should not depend on the client ID being in the query'
+
+
 def test_startup_and_shutdown_handlers(screen: Screen):
-    events: List[str] = []
+    events: list[str] = []
 
     def startup():
         events.append('startup')
@@ -72,6 +118,13 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     app.on_shutdown(shutdown_async)
     app.on_shutdown(shutdown_async())
 
+    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_startup.. is deprecated'))
+    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_shutdown.. is deprecated'))
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
     screen.open('/')
     screen.wait(0.5)
     assert events == ['startup', 'startup_async', 'startup_async']
@@ -79,3 +132,56 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     app.shutdown()
     screen.wait(0.5)
     assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
+
+
+def test_all_lifecycle_handlers_are_called(screen: Screen):
+    events: list[str] = []
+
+    app.on_connect(lambda: events.append('app connect'))
+    app.on_disconnect(lambda: events.append('app disconnect'))
+    app.on_delete(lambda: events.append('app delete'))
+
+    @ui.page('/')
+    def page():
+        ui.context.client.on_connect(lambda: events.append('page connect'))
+        ui.context.client.on_disconnect(lambda: events.append('page disconnect'))
+        ui.context.client.on_delete(lambda: events.append('page delete'))
+
+        ui.button('Delete', on_click=ui.context.client.delete)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect']
+
+    screen.selenium.execute_script('window.socket.disconnect();')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect']
+
+    screen.selenium.execute_script('window.socket.connect();')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect',
+                      'page connect', 'app connect']
+
+    screen.click('Delete')
+    screen.wait(0.5)
+    assert events == ['page connect', 'app connect',
+                      'page disconnect', 'app disconnect',
+                      'page connect', 'app connect',
+                      'page delete', 'app delete']
+
+
+def test_no_double_delete(screen: Screen):
+    events: list[str] = []
+
+    @ui.page('/', reconnect_timeout=3)
+    def page():
+        ui.context.client.on_delete(lambda: events.append('delete'))
+
+    screen.open('/')
+    screen.wait(1)
+    screen.close()  # will trigger client.delete() after another 3 seconds
+    Client.prune_instances(client_age_threshold=0)  # should do nothing because client is still trying to reconnect
+    screen.wait(4)  # meanwhile client.delete() will be called without raising KeyError
+    assert len(events) == 1, 'delete event should be called only once'

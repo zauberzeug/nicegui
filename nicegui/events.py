@@ -1,61 +1,83 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable, Iterator
 from contextlib import nullcontext
-from dataclasses import dataclass
-from inspect import Parameter, signature
-from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, Iterator, List, Literal, Optional, Union
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
 
-from . import background_tasks, core
-from .awaitable_response import AwaitableResponse
-from .dataclasses import KWONLY_SLOTS
+from . import background_tasks, core, helpers
 from .slot import Slot
 
 if TYPE_CHECKING:
     from .client import Client
     from .element import Element
+    from .elements.slide_item import SlideSide
+    from .elements.upload_files import FileUpload
     from .observables import ObservableCollection
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class EventArguments:
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
+class NativeEventArguments(EventArguments):
+    type: str
+    args: dict[str, Any]
+
+
+@dataclass(kw_only=True, slots=True)
 class ObservableChangeEventArguments(EventArguments):
     sender: ObservableCollection
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class UiEventArguments(EventArguments):
     sender: Element
     client: Client
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class GenericEventArguments(UiEventArguments):
     args: Any
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ClickEventArguments(UiEventArguments):
     pass
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
+class SlideEventArguments(UiEventArguments):
+    side: SlideSide
+
+
+@dataclass(kw_only=True, slots=True)
+class EChartComponentClickEventArguments(UiEventArguments):
+    component_type: str
+    name: str | None
+
+
+@dataclass(kw_only=True, slots=True)
 class EChartPointClickEventArguments(UiEventArguments):
     component_type: str
+    name: str
     series_type: str
     series_index: int
     series_name: str
-    name: str
     data_index: int
-    data: Union[float, int, str]
-    data_type: str
-    value: Union[float, int, list]
+    data: float | int | str
+    data_type: str | None
+    value: float | int | list
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
+class MermaidNodeClickEventArguments(UiEventArguments):
+    node_id: str
+
+
+@dataclass(kw_only=True, slots=True)
 class SceneClickHit:
     object_id: str
     object_name: str
@@ -64,7 +86,7 @@ class SceneClickHit:
     z: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneClickEventArguments(ClickEventArguments):
     click_type: str
     button: int
@@ -72,10 +94,10 @@ class SceneClickEventArguments(ClickEventArguments):
     ctrl: bool
     meta: bool
     shift: bool
-    hits: List[SceneClickHit]
+    hits: list[SceneClickHit]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class SceneDragEventArguments(ClickEventArguments):
     type: Literal['dragstart', 'dragend']
     object_id: str
@@ -85,12 +107,12 @@ class SceneDragEventArguments(ClickEventArguments):
     z: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ColorPickEventArguments(UiEventArguments):
     color: str
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class MouseEventArguments(UiEventArguments):
     type: str
     image_x: float
@@ -103,45 +125,56 @@ class MouseEventArguments(UiEventArguments):
     shift: bool
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JoystickEventArguments(UiEventArguments):
     action: str
-    x: Optional[float] = None
-    y: Optional[float] = None
+    x: float | None = None
+    y: float | None = None
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class UploadEventArguments(UiEventArguments):
-    content: BinaryIO
-    name: str
-    type: str
+    file: FileUpload
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class MultiUploadEventArguments(UiEventArguments):
-    contents: List[BinaryIO]
-    names: List[str]
-    types: List[str]
+    files: list[FileUpload]
 
 
-@dataclass(**KWONLY_SLOTS)
-class ValueChangeEventArguments(UiEventArguments):
-    value: Any
+ValueT = TypeVar('ValueT')
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
+class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
+    value: ValueT
+    previous_value: ValueT = ...  # type: ignore[assignment]
+
+    def __post_init__(self):
+        # DEPRECATED: previous_value will be required in NiceGUI 4.0
+        if self.previous_value is ...:
+            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
+                              'In NiceGUI 4.0 this will raise an error.')
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorAnchorChangeEventArguments(UiEventArguments):
+    anchors: dict[str, int]  # mapping of anchor id to its current 1-indexed line, as reported by the browser
+
+
+@dataclass(kw_only=True, slots=True)
 class TableSelectionEventArguments(UiEventArguments):
-    selection: List[Any]
+    selection: list[Any]
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardAction:
     keydown: bool
     keyup: bool
     repeat: bool
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardModifiers:
     alt: bool
     ctrl: bool
@@ -155,7 +188,7 @@ class KeyboardModifiers:
         return sum(self)
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyboardKey:
     name: str
     code: str
@@ -165,8 +198,11 @@ class KeyboardKey:
         if isinstance(other, str):
             return other in {self.name, self.code}
         if isinstance(other, KeyboardKey):
-            return self == other
+            return (self.name, self.code, self.location) == (other.name, other.code, other.location)
         return False
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.code, self.location))
 
     def __repr__(self):
         return str(self.name)
@@ -177,7 +213,7 @@ class KeyboardKey:
         return self.code.startswith('Arrow')
 
     @property
-    def number(self) -> Optional[int]:
+    def number(self) -> int | None:
         """Integer value of a number key."""
         return int(self.code[len('Digit'):]) if self.code.startswith('Digit') else None
 
@@ -229,7 +265,7 @@ class KeyboardKey:
     @property
     def space(self) -> bool:
         """Whether the key is the space key."""
-        return self.name == 'Space'
+        return self.name == ' '
 
     @property
     def page_up(self) -> bool:
@@ -352,14 +388,14 @@ class KeyboardKey:
         return self.name == 'F12'
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class KeyEventArguments(UiEventArguments):
     action: KeyboardAction
     key: KeyboardKey
     modifiers: KeyboardModifiers
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class ScrollEventArguments(UiEventArguments):
     vertical_position: float
     vertical_percentage: float
@@ -371,55 +407,91 @@ class ScrollEventArguments(UiEventArguments):
     horizontal_container_size: float
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsonEditorSelectEventArguments(UiEventArguments):
-    selection: Dict
+    selection: dict
 
 
-@dataclass(**KWONLY_SLOTS)
+@dataclass(kw_only=True, slots=True)
 class JsonEditorChangeEventArguments(UiEventArguments):
-    content: Dict
-    errors: Dict
+    content: dict
+    errors: dict = field(default_factory=dict)
 
 
-def handle_event(handler: Optional[Callable[..., Any]], arguments: EventArguments) -> None:
+@dataclass(kw_only=True, slots=True)
+class XtermBellEventArguments(UiEventArguments):
+    pass
+
+
+@dataclass(kw_only=True, slots=True)
+class XtermDataEventArguments(UiEventArguments):
+    data: str
+
+
+@dataclass(kw_only=True, slots=True)
+class XtermResizeEventArguments(UiEventArguments):
+    cols: int
+    rows: int
+
+
+@dataclass(kw_only=True, slots=True)
+class SortableEventArguments(UiEventArguments):
+    item: Element
+    source: Element
+    target: Element
+    old_index: int
+    new_index: int
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorKeyBindingEventArguments(UiEventArguments):
+    key: str
+
+
+EventT = TypeVar('EventT', bound=EventArguments)
+Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
+
+
+def handle_event(handler: Handler[EventT] | None, arguments: EventT, *, expect_args: bool | None = None) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
-    If the handler is a coroutine, it is scheduled as a background task.
+    If the handler returns an awaitable, it is scheduled as a background task.
     If the handler expects arguments, the arguments are passed to the handler.
     Exceptions are caught and handled globally.
 
     :param handler: the event handler
     :param arguments: the event arguments
+    :param expect_args: whether the handler expects the arguments to be passed
+        (default: ``None`` meaning auto-detected from the handler's signature;
+        pass a pre-resolved bool to skip the per-call signature introspection, *added in version 3.15.0*)
     """
     if handler is None:
         return
     try:
-        expects_arguments = any(p.default is Parameter.empty and
-                                p.kind is not Parameter.VAR_POSITIONAL and
-                                p.kind is not Parameter.VAR_KEYWORD
-                                for p in signature(handler).parameters.values())
-
-        parent_slot: Union[Slot, nullcontext]
+        parent_slot: Slot | nullcontext
         if isinstance(arguments, UiEventArguments):
             parent_slot = arguments.sender.parent_slot or arguments.sender.client.layout.default_slot
         else:
             parent_slot = nullcontext()
 
         with parent_slot:
-            result = handler(arguments) if expects_arguments else handler()
-        if isinstance(result, Awaitable) and not isinstance(result, AwaitableResponse):
-            # NOTE: await an awaitable result even if the handler is not a coroutine (like a lambda statement)
-            async def wait_for_result():
-                with parent_slot:
-                    try:
-                        await result
-                    except Exception as e:
-                        core.app.handle_exception(e)
-            if core.loop and core.loop.is_running():
-                background_tasks.create(wait_for_result(), name=str(handler))
+            if expect_args is None:
+                expect_args = helpers.expects_arguments(handler)
+            if expect_args:
+                result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
-                core.app.on_startup(wait_for_result())
+                result = cast(Callable[[], Any], handler)()
+        if helpers.should_await(result):
+            background_tasks.create_or_defer(_await_and_handle_in_context(result, parent_slot), name=str(handler))
     except Exception as e:
         core.app.handle_exception(e)
+
+
+async def _await_and_handle_in_context(awaitable: Awaitable, context: Slot | nullcontext) -> None:
+    """Await an event handler result within its slot context, handling exceptions in-context."""
+    with context:
+        try:
+            await awaitable
+        except Exception as e:
+            core.app.handle_exception(e)

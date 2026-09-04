@@ -1,0 +1,16 @@
+from nicegui import ui
+
+
+class SignaturePad(ui.element, component='signature_pad.js', esm={'signature_pad': 'dist'}):
+
+    def __init__(self, options: dict | None = None) -> None:
+        """SignaturePad
+
+        An element that integrates the `Signature Pad library <https://szimek.github.io/signature_pad/>`_.
+        """
+        super().__init__()
+        self._props['options'] = options or {}
+
+    def clear(self):
+        """Clear the signature."""
+        self.run_method('clear')

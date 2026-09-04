@@ -1,10 +1,14 @@
 import asyncio
 import copy
-import sys
+import gc
+import pickle
+import weakref
+
+import pytest
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 # pylint: disable=global-statement
 count = 0
@@ -43,9 +47,8 @@ def test_observable_dict():
     assert count == 6
     data.setdefault('a', 1)
     assert count == 7
-    if sys.version_info >= (3, 9):
-        data |= {'b': 2}
-        assert count == 8
+    data |= {'b': 2}
+    assert count == 8
 
 
 def test_observable_list():
@@ -82,7 +85,7 @@ def test_observable_list():
 def test_observable_set():
     reset_counter()
     data = ObservableSet({1, 2, 3, 4, 5}, on_change=increment_counter)
-    data.add(1)
+    data.add(6)
     assert count == 1
     data.remove(1)
     assert count == 2
@@ -135,7 +138,10 @@ def test_nested_observables():
 def test_async_handler(screen: Screen):
     reset_counter()
     data = ObservableList(on_change=increment_counter_slowly)
-    ui.button('Append 42', on_click=lambda: data.append(42))
+
+    @ui.page('/')
+    def page():
+        ui.button('Append 42', on_click=lambda: data.append(42))
 
     screen.open('/')
     assert count == 0
@@ -166,3 +172,191 @@ def test_copy():
     assert a == [[0, 2, 3], [4, 5, 6], [7, 8, 9]]
     assert b == [[0, 2, 3], [4, 5, 6]]
     assert c == [[1, 2, 3], [4, 5, 6]]
+
+
+async def test_no_infinite_recursion(user: User):
+    @ui.page('/')
+    def page():
+        list_ = ObservableList([1, 2, 3])
+        list_ += list_
+        ui.label(str(list_))
+
+    await user.open('/')
+    await user.should_see('[1, 2, 3, 1, 2, 3]')
+
+
+def test_rebuilding_list_in_place_does_not_accumulate_handlers():
+    reset_counter()
+    data = ObservableList([{}], on_change=increment_counter)
+    for _ in range(3):
+        data[:] = list(data)
+    assert count == 3
+    data[0]['x'] = 1
+    assert count == 4, 'mutating a surviving item should fire exactly one change event'
+
+
+def test_replacing_list_does_not_accumulate_handlers():
+    reset_counter()
+    data = ObservableDict({'items': [{}]}, on_change=increment_counter)
+    for _ in range(3):
+        data['items'] = list(data['items'])
+    assert count == 3
+    data['items'][0]['x'] = 1
+    assert count == 4, 'mutating a surviving item should fire exactly one change event'
+
+
+def test_removed_dict_values_are_detached():
+    reset_counter()
+    data = ObservableDict({'a': {}, 'b': {}, 'c': {}, 'd': {}}, on_change=increment_counter)
+    detached = [data.pop('a'), data.popitem()[1], data['b'], data['c']]
+    del data['b']
+    data['c'] = {'new': True}
+    data.update(e={})
+    detached.append(data['e'])
+    data.update(e={})
+    n = count
+    for item in detached:
+        item['x'] = 1
+    assert count == n, 'detached items should not fire change events anymore'
+    data['c']['x'] = 1
+    assert count == n + 1, 'items which are still contained should fire change events'
+    item = data['c']
+    data.clear()
+    item['y'] = 2
+    assert count == n + 2, 'items removed by clearing the dict should not fire change events anymore'
+
+
+def test_removed_list_items_are_detached():
+    reset_counter()
+    data = ObservableList([{}, {}, {}, {}, {}, {}, {}], on_change=increment_counter)
+    detached = [data.pop(), data[0], data[1], data[2], *data[3:5]]
+    data.remove(data[0])
+    del data[0]
+    data[0] = {'new': True}
+    del data[1:3]
+    data.clear()
+    n = count
+    for item in detached:
+        item['x'] = 1
+    assert count == n, 'detached items should not fire change events anymore'
+
+
+def test_multiplying_list_in_place():
+    reset_counter()
+    data = ObservableList([{}], on_change=increment_counter)
+    item = data[0]
+    data *= 2
+    assert count == 1
+    item['x'] = 1
+    assert count == 2, 'items contained multiple times should fire only one change event'
+    data *= 0
+    assert count == 3
+    item['y'] = 2
+    assert count == 3, 'items removed by multiplying with zero should not fire change events anymore'
+
+
+def test_items_contained_multiple_times_are_detached_on_last_removal():
+    reset_counter()
+    data = ObservableList(on_change=increment_counter)
+    item = ObservableDict()
+    data.append(item)
+    data.append(item)
+    item['x'] = 1
+    assert count == 3, 'items contained multiple times should fire only one change event'
+    data.pop()
+    item['y'] = 2
+    assert count == 5, 'items which are still contained once should fire change events'
+    data.pop()
+    item['z'] = 3
+    assert count == 6, 'items removed completely should not fire change events anymore'
+
+
+def test_items_shared_between_collections():
+    counts = {'a': 0, 'b': 0}
+    item = ObservableDict()
+    a = ObservableList([item], on_change=lambda: counts.update(a=counts['a'] + 1))
+    b = ObservableList([item], on_change=lambda: counts.update(b=counts['b'] + 1))
+    item['x'] = 1
+    assert counts == {'a': 1, 'b': 1}
+    a.clear()
+    item['y'] = 2
+    assert counts == {'a': 2, 'b': 2}, 'item should only notify the collection which still contains it'
+    assert b == [item]
+
+
+def test_discarded_collections_are_garbage_collected():
+    data = ObservableDict({'items': [{}]})
+    refs = [weakref.ref(data['items'])]
+    for _ in range(3):
+        data['items'] = list(data['items'])
+        refs.append(weakref.ref(data['items']))
+    child = data['items'][0]
+    del data
+    gc.collect()
+    assert [ref() for ref in refs] == [None, None, None, None], 'discarded collections should be garbage-collected'
+    assert child == {}
+
+
+def test_nested_observables_are_picklable():
+    reset_counter()
+    data = ObservableList([{'id': 1, 'tags': ['a', 'b']}, {'id': 2}])
+    restored = pickle.loads(pickle.dumps(data))
+    assert restored == [{'id': 1, 'tags': ['a', 'b']}, {'id': 2}]
+    assert isinstance(restored, ObservableList)
+    assert isinstance(restored[0], ObservableDict)
+    assert isinstance(restored[0]['tags'], ObservableList)
+    root = ObservableList(restored, on_change=increment_counter)
+    root[0]['x'] = 1
+    assert count == 1, 'a restored tree should wire up freshly and notify exactly once'
+
+
+def test_pop_missing_key_raises_keyerror():
+    reset_counter()
+    data = ObservableDict({'a': 1}, on_change=increment_counter)
+    with pytest.raises(KeyError):
+        data.pop('missing')  # like dict.pop, a missing key without default raises
+    assert count == 0, 'a failed pop must not fire a change event'
+    assert data.pop('missing', 'default') == 'default'
+    assert count == 0, 'popping a missing key with a default must not fire a change event'
+    assert data.pop('a') == 1
+    assert count == 1, 'popping an existing key fires exactly one change event'
+    assert data.pop('a', None) is None, 'the default is returned when the key is gone'
+    assert count == 1, 'popping a now-missing key with a default must not fire another change event'
+
+
+def test_no_op_dict_mutations_do_not_fire_change_events():
+    reset_counter()
+    data = ObservableDict({'a': 1}, on_change=increment_counter)
+    assert data.setdefault('a', 2) == 1, 'setdefault must not overwrite an existing key'
+    data.update({})
+    data |= {}
+    assert count == 0, 'no-op mutations must not fire a change event'
+    assert data.setdefault('b', 2) == 2
+    data.update({'c': 3})
+    assert count == 2, 'real mutations still fire exactly one change event each'
+
+
+def test_no_op_list_mutations_do_not_fire_change_events():
+    reset_counter()
+    data = ObservableList([1], on_change=increment_counter)
+    data.extend([])
+    data += []
+    data *= 1
+    assert count == 0, 'no-op mutations must not fire a change event'
+    data.extend([2])
+    assert count == 1, 'a real mutation still fires exactly one change event'
+
+
+def test_no_op_set_mutations_do_not_fire_change_events():
+    reset_counter()
+    data = ObservableSet({1, 2}, on_change=increment_counter)
+    data.add(1)
+    data.discard(3)
+    data.update({1})
+    data.intersection_update({1, 2, 3})
+    data.difference_update({4})
+    data.symmetric_difference_update(set())
+    assert count == 0, 'no-op mutations must not fire a change event'
+    data.add(3)
+    data.discard(3)
+    assert count == 2, 'real mutations still fire exactly one change event each'

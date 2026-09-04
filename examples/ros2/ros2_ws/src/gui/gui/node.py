@@ -7,17 +7,21 @@ from geometry_msgs.msg import Pose, Twist
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
-from nicegui import Client, app, ui, ui_run
+from nicegui import Event, app, ui, ui_run
 
 
 class NiceGuiNode(Node):
 
     def __init__(self) -> None:
         super().__init__('nicegui')
-        self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 1)
-        self.subscription = self.create_subscription(Pose, 'pose', self.handle_pose, 1)
+        self.pose_update = Event()
+        self.speed_update = Event()
 
-        with Client.auto_index_client:
+        self.cmd_vel_publisher = self.create_publisher(Twist, 'cmd_vel', 1)
+        self.subscription = self.create_subscription(Pose, 'pose', self.pose_update.emit, 1)
+
+        @ui.page('/')
+        def page():
             with ui.row().classes('items-stretch'):
                 with ui.card().classes('w-44 text-center items-center'):
                     ui.label('Control').classes('text-2xl')
@@ -29,30 +33,35 @@ class NiceGuiNode(Node):
                     ui.label('Data').classes('text-2xl')
                     ui.label('linear velocity').classes('text-xs mb-[-1.8em]')
                     slider_props = 'readonly selection-color=transparent'
-                    self.linear = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
+                    linear = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
                     ui.label('angular velocity').classes('text-xs mb-[-1.8em]')
-                    self.angular = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
+                    angular = ui.slider(min=-1, max=1, step=0.05, value=0).props(slider_props)
                     ui.label('position').classes('text-xs mb-[-1.4em]')
-                    self.position = ui.label('---')
+                    position = ui.label('---')
                 with ui.card().classes('w-96 h-96 items-center'):
                     ui.label('Visualization').classes('text-2xl')
                     with ui.scene(350, 300) as scene:
-                        with scene.group() as self.robot_3d:
+                        with scene.group() as robot_3d:
                             prism = [[-0.5, -0.5], [0.5, -0.5], [0.75, 0], [0.5, 0.5], [-0.5, 0.5]]
-                            self.robot_object = scene.extrusion(prism, 0.4).material('#4488ff', 0.5)
+                            scene.extrusion(prism, 0.4).material('#4488ff', 0.5)
+
+            @self.pose_update.subscribe
+            def update_pose(msg: Pose):
+                position.text = f'x: {msg.position.x:.2f}, y: {msg.position.y:.2f}'
+                robot_3d.move(msg.position.x, msg.position.y)
+                robot_3d.rotate(0, 0, 2 * math.atan2(msg.orientation.z, msg.orientation.w))
+
+            @self.speed_update.subscribe
+            def update_speed(msg: Twist):
+                linear.value = msg.linear.x
+                angular.value = msg.angular.z
 
     def send_speed(self, x: float, y: float) -> None:
         msg = Twist()
         msg.linear.x = x
         msg.angular.z = -y
-        self.linear.value = x
-        self.angular.value = y
+        self.speed_update.emit(msg)
         self.cmd_vel_publisher.publish(msg)
-
-    def handle_pose(self, msg: Pose) -> None:
-        self.position.text = f'x: {msg.position.x:.2f}, y: {msg.position.y:.2f}'
-        self.robot_3d.move(msg.position.x, msg.position.y)
-        self.robot_3d.rotate(0, 0, 2 * math.atan2(msg.orientation.z, msg.orientation.w))
 
 
 def main() -> None:

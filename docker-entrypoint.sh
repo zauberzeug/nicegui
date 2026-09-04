@@ -20,10 +20,10 @@ if ! getent passwd "$PUID" >/dev/null; then
   useradd --create-home --shell /bin/bash --uid "$PUID" --gid "$PGID" appuser
 fi
 # Make user the owner of the app directory.
-chown -R appuser:appgroup /app
+chown -R "$PUID":"$PGID" /app
 # Copy the default .bashrc file to the appuser home directory.
 cp /etc/skel/.bashrc /home/appuser/.bashrc
-chown appuser:appgroup /home/appuser/.bashrc
+chown "$PUID":"$PGID" /home/appuser/.bashrc
 export HOME=/home/appuser
 # Set permissions on font directories.
 if [ -d "/usr/share/fonts" ]; then

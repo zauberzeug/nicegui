@@ -1,38 +1,75 @@
+import { loadResource } from "../../static/utils/resources.js";
+
 export default {
   template: `<div></div>`,
   async mounted() {
-    this.ensure_codehilite_css();
-    if (this.use_mermaid) {
-      this.mermaid = (await import("mermaid")).default;
+    await this.$nextTick(); // wait for window.path_prefix to be set
+    await loadResource(window.path_prefix + `${this.dynamicResourcePath}/${this.resourceName}`);
+    this.renderContent();
+    if (this.useMermaid) {
+      this.mermaid = (await import("nicegui-mermaid")).mermaid;
+      this.mermaid.initialize({ startOnLoad: false });
       this.renderMermaid();
     }
   },
   data() {
     return {
       mermaid: null,
+      diagrams: {},
+      previousInnerHTML: null,
     };
   },
   updated() {
+    this.renderContent();
     this.renderMermaid();
   },
   methods: {
-    renderMermaid() {
-      this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
-        await this.mermaid.run({ nodes: [pre.children[0]] });
-      });
+    renderContent() {
+      if (this.innerHTML === this.previousInnerHTML) return;
+      if (this.sanitize) {
+        this.$el.setHTML(this.innerHTML);
+      } else {
+        this.$el.innerHTML = this.innerHTML;
+      }
+      this.previousInnerHTML = this.innerHTML;
     },
-    ensure_codehilite_css() {
-      if (!document.querySelector(`style[data-codehilite-css]`)) {
-        const style = document.createElement("style");
-        style.setAttribute("data-codehilite-css", "");
-        style.innerHTML = this.codehilite_css;
-        document.head.appendChild(style);
+    renderMermaid() {
+      if (!this.useMermaid || !this.mermaid) return;
+      // render new diagrams
+      const usedKeys = new Set();
+      this.$el.querySelectorAll(".mermaid-pre").forEach(async (pre, i) => {
+        const key = pre.children[0].innerText + "\n" + i;
+        usedKeys.add(key);
+        if (!this.diagrams[key]) {
+          try {
+            this.diagrams[key] = await this.mermaid.render(this.$el.id + "_mermaid_" + i, pre.children[0].innerText);
+          } catch (error) {
+            this.diagrams[key] = await this.mermaid.render(this.$el.id + "_mermaid_" + i, "error");
+            console.error(error);
+          }
+        }
+        const svgElement = document.createElement("div");
+        svgElement.classList.add("mermaid-svg");
+        svgElement.innerHTML = this.diagrams[key].svg;
+        this.diagrams[key].bindFunctions?.(svgElement);
+        pre.querySelectorAll(".mermaid-svg").forEach((svg) => svg.remove());
+        pre.appendChild(svgElement);
+      });
+
+      // prune cached diagrams that are not used anymore
+      for (const key in this.diagrams) {
+        if (!usedKeys.has(key)) {
+          delete this.diagrams[key];
+        }
       }
     },
   },
   props: {
-    codehilite_css: String,
-    use_mermaid: {
+    innerHTML: String,
+    dynamicResourcePath: String,
+    resourceName: String,
+    sanitize: Boolean,
+    useMermaid: {
       required: false,
       default: false,
       type: Boolean,

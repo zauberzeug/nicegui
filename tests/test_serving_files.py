@@ -1,29 +1,29 @@
-
-import re
+import asyncio
+import gc
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
-import requests
 
 from nicegui import __version__, app, ui
+from nicegui.app.range_response import get_range_response
 from nicegui.testing import Screen
 
 from .test_helpers import TEST_DIR
 
-IMAGE_FILE = Path(TEST_DIR).parent / 'examples' / 'slideshow' / 'slides' / 'slide1.jpg'
+IMAGE_FILE = Path(TEST_DIR) / 'media' / 'test1.jpg'
 VIDEO_FILE = Path(TEST_DIR) / 'media' / 'test.mp4'
+VIDEO_FILE.parent.mkdir(exist_ok=True)
+VIDEO_FILE.write_bytes(b'\x00' * 2000)  # dummy video file large enough to be streamed
 
 
-@pytest.fixture(autouse=True)
-def provide_media_files():
-    if not VIDEO_FILE.exists():
-        VIDEO_FILE.parent.mkdir(exist_ok=True)
-        url = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4'
-        with httpx.stream('GET', url) as response:
-            with open(VIDEO_FILE, 'wb') as file:
-                for chunk in response.iter_raw():
-                    file.write(chunk)
+@pytest.fixture
+def secret_file():
+    secret_path = Path(TEST_DIR) / '.env'
+    secret_path.write_text('TOP SECRET DATA')
+    yield secret_path
+    secret_path.unlink(missing_ok=True)
 
 
 def assert_video_file_streaming(path: str) -> None:
@@ -42,63 +42,134 @@ def assert_video_file_streaming(path: str) -> None:
 def test_media_files_can_be_streamed(screen: Screen):
     app.add_media_files('/media', Path(TEST_DIR) / 'media')
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.open('/')
     assert_video_file_streaming('/media/test.mp4')
+
+
+def test_media_files_against_path_traversal(screen: Screen, secret_file):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+
+    with httpx.Client() as http_client:
+        r = http_client.get(f'http://localhost:{Screen.PORT}/media/%2e%2e/.env')
+        assert 'TOP SECRET DATA' not in r.text
+        assert r.status_code == 404
 
 
 def test_adding_single_media_file(screen: Screen):
     url_path = app.add_media_file(local_file=VIDEO_FILE)
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.open('/')
     assert_video_file_streaming(url_path)
 
 
+def test_invalid_range_header_returns_416(screen: Screen):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        for range_value in ['bytes=1000-500', 'bytes=9999-10000', 'bytes=abc-def', 'invalid']:
+            r = http_client.get(f'http://localhost:{Screen.PORT}/media/test.mp4', headers={'Range': range_value})
+            assert r.status_code == 416, f'Expected 416 for Range: {range_value}'
+
+
+def test_malicious_chunk_size_is_clamped(screen: Screen):
+    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        for chunk_size in [-1, 0, -9999]:
+            r = http_client.get(
+                f'http://localhost:{Screen.PORT}/media/test.mp4?nicegui_chunk_size={chunk_size}',
+                headers={'Range': 'bytes=0-1000'},
+            )
+            assert r.status_code == 206
+
+
 @pytest.mark.parametrize('url_path', ['/static', '/static/'])
 def test_get_from_static_files_dir(url_path: str, screen: Screen):
-    app.add_static_files(url_path, Path(TEST_DIR).parent)
+    app.add_static_files(url_path, Path(TEST_DIR).parent, max_cache_age=3456)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
 
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
         assert r.status_code == 200
+        assert 'max-age=3456' in r.headers['Cache-Control']
 
 
 def test_404_for_non_existing_static_file(screen: Screen):
     app.add_static_files('/static', Path(TEST_DIR))
 
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/does_not_exist.jpg')
-        screen.assert_py_logger('WARNING', re.compile('.*does_not_exist.jpg not found'))
         assert r.status_code == 404
         assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
 
 
 def test_adding_single_static_file(screen: Screen):
-    url_path = app.add_static_file(local_file=IMAGE_FILE)
+    url_path = app.add_static_file(local_file=IMAGE_FILE, max_cache_age=3456)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
 
     screen.open('/')
     with httpx.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
         assert r.status_code == 200
-        assert 'max-age=' in r.headers['Cache-Control']
+        assert 'max-age=3456' in r.headers['Cache-Control']
 
 
 def test_auto_serving_file_from_image_source(screen: Screen):
-    ui.image(IMAGE_FILE)
+    @ui.page('/')
+    def page():
+        ui.image(IMAGE_FILE)
 
     screen.open('/')
     img = screen.find_by_tag('img')
     assert '/_nicegui/auto/static/' in img.get_attribute('src')
-    assert screen.selenium.execute_script("""
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('''
     return arguments[0].complete &&
         typeof arguments[0].naturalWidth != "undefined" &&
         arguments[0].naturalWidth > 0
-    """, img), 'image should load successfully'
+    ''', img), 'image should load successfully'
 
 
 def test_auto_serving_file_from_video_source(screen: Screen):
-    ui.video(VIDEO_FILE)
+    @ui.page('/')
+    def page():
+        ui.video(VIDEO_FILE)
 
     screen.open('/')
     video = screen.find_by_tag('video')
@@ -107,12 +178,83 @@ def test_auto_serving_file_from_video_source(screen: Screen):
 
 
 def test_mimetypes_of_static_files(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
     screen.open('/')
 
-    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.global.js', timeout=5)
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.esm-browser.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
-    response = requests.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/dompurify.mjs', timeout=5)
+    assert response.status_code == 200
+    assert response.headers['Content-Type'].startswith('text/javascript')
+
+    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')
+
+
+def test_cache_control_header_of_static_files(screen: Screen):
+    app.add_static_files('/static', Path(TEST_DIR).parent)
+
+    @ui.page('/')
+    def page():
+        ui.markdown()
+
+    screen.open('/')
+
+    # resources are served with cache-control headers from `ui.run`
+    response1 = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    assert 'immutable' in response1.headers.get('Cache-Control', '')
+
+    # dynamic resources are _not_ served with cache-control headers from `ui.run`
+    response2 = httpx.get(
+        f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/dynamic_resources/codehilite.css', timeout=5)
+    assert 'immutable' not in response2.headers.get('Cache-Control', '')
+
+    # static resources are _not_ served with cache-control headers from `ui.run`
+    response3 = httpx.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg', timeout=5)
+    assert 'immutable' not in response3.headers.get('Cache-Control', '')
+
+
+def test_streamed_media_file_handle_is_released_on_teardown(monkeypatch: pytest.MonkeyPatch):
+    """Abandoning a range stream must close the file handle even if the event loop is already gone.
+
+    A client (e.g. a browser playing a video) can disconnect mid-stream. Starlette does not
+    ``aclose()`` the response body iterator on disconnect, so the generator is only finalized by the
+    garbage collector. If that happens once the event loop is gone, an *async* close cannot run and
+    the handle leaks, surfacing as a sporadic ``PytestUnraisableExceptionWarning`` at teardown.
+    """
+    opened_files = []
+    real_open = open
+
+    def tracking_open(*args, **kwargs):
+        file = real_open(*args, **kwargs)
+        opened_files.append(file)
+        return file
+
+    monkeypatch.setattr('builtins.open', tracking_open)
+
+    async def _first_chunk(gen):
+        return await gen.__anext__()  # created inside the loop so the finalizer hook is captured
+
+    generator = get_range_response(VIDEO_FILE, SimpleNamespace(headers={'range': 'bytes=0-1999'}),
+                                   chunk_size=64).body_iterator
+    loop = asyncio.new_event_loop()
+    try:
+        # First-iterate *inside* the running loop, as uvicorn/Starlette does: this captures the asyncio
+        # finalizer hook on the generator, so a later GC on the closed loop cannot run its `finally:`
+        # (the only path that reproduces the CI leak; iterating from outside the loop hides it).
+        loop.run_until_complete(_first_chunk(generator))  # open the file and yield once, then suspend
+    finally:
+        loop.close()  # tear down without aclose(), as Starlette does on a client disconnect
+
+    del generator
+    gc.collect()
+
+    media_files = [f for f in opened_files if f.name == str(VIDEO_FILE)]
+    assert media_files, 'the media file was never opened'
+    assert all(f.closed for f in media_files), 'file handle was not closed on teardown'

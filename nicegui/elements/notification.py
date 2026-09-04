@@ -1,11 +1,10 @@
-import asyncio
-from typing import Any, Callable, Dict, Literal, Optional, Union
+from typing import Any, Literal, TypeAlias
 
 from typing_extensions import Self
 
 from ..context import context
 from ..element import Element
-from ..events import UiEventArguments, handle_event
+from ..events import Handler, UiEventArguments, handle_event
 
 NotificationPosition = Literal[
     'top-left',
@@ -19,13 +18,13 @@ NotificationPosition = Literal[
     'center',
 ]
 
-NotificationType = Optional[Literal[
+NotificationType: TypeAlias = Literal[
     'positive',
     'negative',
     'warning',
     'info',
     'ongoing',
-]]
+] | None
 
 
 class Notification(Element, component='notification.js'):
@@ -33,15 +32,15 @@ class Notification(Element, component='notification.js'):
     def __init__(self,
                  message: Any = '', *,
                  position: NotificationPosition = 'bottom',
-                 close_button: Union[bool, str] = False,
+                 close_button: bool | str = False,
                  type: NotificationType = None,  # pylint: disable=redefined-builtin
-                 color: Optional[str] = None,
+                 color: str | None = None,
                  multi_line: bool = False,
-                 icon: Optional[str] = None,
+                 icon: str | None = None,
                  spinner: bool = False,
-                 timeout: Optional[float] = 5.0,
-                 on_dismiss: Optional[Callable] = None,
-                 options: Optional[Dict] = None,
+                 timeout: float | None = 5.0,
+                 on_dismiss: Handler[UiEventArguments] | None = None,
+                 options: dict | None = None,
                  **kwargs: Any,
                  ) -> None:
         """Notification element
@@ -66,6 +65,7 @@ class Notification(Element, component='notification.js'):
         """
         with context.client.layout:
             super().__init__()
+        self._update_method = 'update_notification'
         if options:
             self._props['options'] = options
         else:
@@ -77,7 +77,6 @@ class Notification(Element, component='notification.js'):
                 'closeBtn': close_button,
                 'timeout': (timeout or 0) * 1000,
                 'group': False,
-                'attrs': {'data-id': f'nicegui-dialog-{self.id}'},
             }
             if type is not None:
                 self._props['options']['type'] = type
@@ -91,9 +90,6 @@ class Notification(Element, component='notification.js'):
             self.on_dismiss(on_dismiss)
 
         async def handle_dismiss() -> None:
-            if self.client.is_auto_index_client:
-                self.dismiss()
-                await asyncio.sleep(1.0)  # NOTE: sent dismiss message to all browsers before deleting the element
             if not self._deleted:
                 self.clear()
                 self.delete()
@@ -107,7 +103,6 @@ class Notification(Element, component='notification.js'):
     @message.setter
     def message(self, value: Any) -> None:
         self._props['options']['message'] = str(value)
-        self.update()
 
     @property
     def position(self) -> NotificationPosition:
@@ -117,7 +112,6 @@ class Notification(Element, component='notification.js'):
     @position.setter
     def position(self, value: NotificationPosition) -> None:
         self._props['options']['position'] = value
-        self.update()
 
     @property
     def type(self) -> NotificationType:
@@ -130,20 +124,18 @@ class Notification(Element, component='notification.js'):
             self._props['options'].pop('type', None)
         else:
             self._props['options']['type'] = value
-        self.update()
 
     @property
-    def color(self) -> Optional[str]:
+    def color(self) -> str | None:
         """Color of the notification."""
         return self._props['options'].get('color')
 
     @color.setter
-    def color(self, value: Optional[str]) -> None:
+    def color(self, value: str | None) -> None:
         if value is None:
             self._props['options'].pop('color', None)
         else:
             self._props['options']['color'] = value
-        self.update()
 
     @property
     def multi_line(self) -> bool:
@@ -153,20 +145,18 @@ class Notification(Element, component='notification.js'):
     @multi_line.setter
     def multi_line(self, value: bool) -> None:
         self._props['options']['multiLine'] = value
-        self.update()
 
     @property
-    def icon(self) -> Optional[str]:
+    def icon(self) -> str | None:
         """Icon of the notification."""
         return self._props['options'].get('icon')
 
     @icon.setter
-    def icon(self, value: Optional[str]) -> None:
+    def icon(self, value: str | None) -> None:
         if value is None:
             self._props['options'].pop('icon', None)
         else:
             self._props['options']['icon'] = value
-        self.update()
 
     @property
     def spinner(self) -> bool:
@@ -176,19 +166,29 @@ class Notification(Element, component='notification.js'):
     @spinner.setter
     def spinner(self, value: bool) -> None:
         self._props['options']['spinner'] = value
-        self.update()
 
     @property
-    def close_button(self) -> Union[bool, str]:
+    def timeout(self) -> float:
+        """Timeout of the notification in seconds.
+
+        *Added in version 2.13.0*
+        """
+        return self._props['options']['timeout'] / 1000
+
+    @timeout.setter
+    def timeout(self, value: float | None) -> None:
+        self._props['options']['timeout'] = (value or 0) * 1000
+
+    @property
+    def close_button(self) -> bool | str:
         """Whether the notification has a close button."""
         return self._props['options']['closeBtn']
 
     @close_button.setter
-    def close_button(self, value: Union[bool, str]) -> None:
+    def close_button(self, value: bool | str) -> None:
         self._props['options']['closeBtn'] = value
-        self.update()
 
-    def on_dismiss(self, callback: Callable[..., Any]) -> Self:
+    def on_dismiss(self, callback: Handler[UiEventArguments]) -> Self:
         """Add a callback to be invoked when the notification is dismissed."""
         self.on('dismiss', lambda _: handle_event(callback, UiEventArguments(sender=self, client=self.client)), [])
         return self
@@ -196,3 +196,9 @@ class Notification(Element, component='notification.js'):
     def dismiss(self) -> None:
         """Dismiss the notification."""
         self.run_method('dismiss')
+
+    def set_visibility(self, visible: bool) -> Self:
+        raise NotImplementedError('Use `dismiss()` to remove the notification. See #3670 for more information.')
+
+    def _render_markdown(self) -> str:
+        return self.message

@@ -1,0 +1,7 @@
+# GitHub Copilot Instructions for NiceGUI
+
+**Read these files before working:**
+
+1. [README.md](../README.md) - Project overview and setup
+2. [AGENTS.md](../AGENTS.md) - AI agent guidelines
+3. [CONTRIBUTING.md](../CONTRIBUTING.md) - Coding standards and workflow

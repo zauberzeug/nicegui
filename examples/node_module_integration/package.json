@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs --validate",
+    "clean": "rimraf ./dist/*"
+  },
+  "dependencies": {
+    "is-odd": "^3.0.1"
+  },
+  "devDependencies": {
+    "rollup": "^4.59.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-terser": "^1.0.0",
+    "rimraf": "^6.1.3"
+  }
+}

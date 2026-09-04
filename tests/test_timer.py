@@ -1,9 +1,11 @@
 import asyncio
+import gc
 
+import httpx
 import pytest
 
-from nicegui import ui
-from nicegui.testing import Screen
+from nicegui import Client, app, background_tasks, ui
+from nicegui.testing import Screen, User
 
 
 class Counter:
@@ -15,15 +17,20 @@ class Counter:
 
 def test_timer(screen: Screen):
     counter = Counter()
-    t = ui.timer(0.1, counter.increment)
+    t = None
+
+    @ui.page('/')
+    def page():
+        nonlocal t
+        t = ui.timer(0.1, counter.increment)
 
     assert counter.value == 0, 'count is initially zero'
     screen.wait(0.5)
     assert counter.value == 0, 'timer is not running'
 
-    screen.start_server()
+    screen.open('/')
     screen.wait(0.5)
-    assert counter.value > 0, 'timer is running after starting the server'
+    assert counter.value > 0, 'timer is running after opening the page'
 
     t.deactivate()
     screen.wait(0.5)
@@ -84,7 +91,9 @@ def test_awaiting_coroutine(screen: Screen):
         await asyncio.sleep(0.1)
         user['name'] = 'Bob'
 
-    ui.timer(0.5, update_user)
+    @ui.page('/')
+    def page():
+        ui.timer(0.5, update_user)
 
     screen.open('/')
     screen.wait(1)
@@ -93,13 +102,17 @@ def test_awaiting_coroutine(screen: Screen):
 
 def test_timer_on_deleted_container(screen: Screen):
     state = {'count': 0}
-    with ui.row() as outer_container:
-        with ui.row():
-            ui.timer(0.1, lambda: state.update(count=state['count'] + 1))
 
-    ui.button('delete', on_click=outer_container.clear)
+    @ui.page('/')
+    def page():
+        with ui.row() as outer_container:
+            with ui.row():
+                ui.timer(0.1, lambda: state.update(count=state['count'] + 1))
+
+        ui.button('delete', on_click=outer_container.clear)
 
     screen.open('/')
+    screen.wait(0.5)
     screen.click('delete')
     screen.wait(0.5)
     count = state['count']
@@ -119,13 +132,165 @@ def test_different_callbacks(screen: Screen):
         await asyncio.sleep(0.1)
         ui.label(f'an asynchronous lambda: {msg}')
 
-    ui.timer(0.1, sync_function, once=True)
-    ui.timer(0.1, async_function, once=True)
-    ui.timer(0.1, lambda: ui.label('a synchronous lambda'), once=True)
-    ui.timer(0.1, lambda: async_lambda('Hi!'), once=True)
+    @ui.page('/')
+    def page():
+        ui.timer(0.1, sync_function, once=True)
+        ui.timer(0.1, async_function, once=True)
+        ui.timer(0.1, lambda: ui.label('a synchronous lambda'), once=True)
+        ui.timer(0.1, lambda: async_lambda('Hi!'), once=True)
 
     screen.open('/')
     screen.should_contain('a synchronous function')
     screen.should_contain('an asynchronous function')
     screen.should_contain('a synchronous lambda')
     screen.should_contain('an asynchronous lambda: Hi!')
+
+
+async def test_cleanup(user: User):
+    @ui.page('/')
+    def page():
+        def update():
+            ui.timer(0.01, update, once=True)
+        ui.timer(0, update, once=True)
+
+    def count():
+        return sum(1 for obj in gc.get_objects() if isinstance(obj, ui.timer))
+
+    await user.open('/')
+    assert count() > 0, 'there are timer objects in memory'
+    await asyncio.sleep(0.1)
+    gc.collect()
+    assert count() == 1, 'only current timer object is in memory'
+
+
+def test_app_timer(screen: Screen):
+    counter = Counter()
+    timer = app.timer(0.1, counter.increment)
+
+    @ui.page('/')
+    def page():
+        ui.button('Activate', on_click=timer.activate)
+        ui.button('Deactivate', on_click=timer.deactivate)
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert counter.value > 0, 'timer is running after starting the server'
+
+    screen.click('Deactivate')
+    value = counter.value
+    screen.wait(0.5)
+    assert counter.value == value, 'timer is not running anymore after deactivating it'
+
+    screen.click('Activate')
+    screen.wait(0.5)
+    assert counter.value > value, 'timer is running again after activating it'
+    value = counter.value
+
+    screen.open('/')
+    screen.wait(0.5)
+    assert counter.value > value, 'timer is also incrementing when opening another page'
+
+
+def test_cancel_current_invocation(screen: Screen):
+    counter = Counter()
+
+    async def update():
+        await asyncio.sleep(1.0)
+        counter.increment()
+
+    @ui.page('/')
+    def page():
+        t = ui.timer(0, update, once=True)
+        ui.button('Cancel with current invocation', on_click=lambda: t.cancel(with_current_invocation=True))
+
+    screen.open('/')
+    screen.wait(0.2)
+
+    screen.click('Cancel with current invocation')
+    screen.wait(1.2)
+    assert counter.value == 0
+
+
+def test_cancel_before_invocation_starts(screen: Screen):
+    counter = Counter()
+
+    async def update():
+        await asyncio.sleep(0.2)
+        counter.increment()
+
+    @ui.page('/')
+    def page():
+        # use a small delay before first invocation to ensure we cancel before it starts
+        t = ui.timer(0.5, update, once=True)
+        ui.button('Cancel with current invocation', on_click=lambda: t.cancel(with_current_invocation=True))
+
+    screen.open('/')
+    screen.wait(0.1)
+
+    screen.click('Cancel with current invocation')
+    screen.wait(0.6)
+    assert counter.value == 0
+
+
+def test_error_in_callback(screen: Screen):
+    @ui.page('/')
+    def index():
+        ui.timer(0, lambda: print(1 / 0), once=True)
+
+    app.on_exception(lambda e: ui.notification(f'Exception: {e}'))
+
+    screen.open('/')
+    screen.should_contain('Exception: division by zero')
+    screen.assert_py_logger('ERROR', 'division by zero')
+
+
+def test_once_timer_task_cancelled_on_client_delete(screen: Screen):
+    @ui.page('/', reconnect_timeout=0)
+    def page():
+        async def long_running():
+            ui.label('started')
+            await asyncio.sleep(100)
+        ui.timer(0, long_running, once=True)
+
+    def count_sleeping_tasks():
+        return sum(1 for t in background_tasks.running_tasks if not t.done() and 'long_running' in (t.get_name() or ''))
+
+    screen.open('/')
+    screen.should_contain('started')
+    assert count_sleeping_tasks() == 1, 'there is one timer task'
+
+    screen.close()
+    screen.wait(0.5)
+    assert count_sleeping_tasks() == 0, 'timer task should be cancelled after client deletion'
+
+
+def test_no_leak_when_client_deleted(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.timer(0.1, lambda: None)
+
+    screen.start_server()
+    httpx.get(screen.url)
+    screen.wait(1)
+    Client.prune_instances(client_age_threshold=0)
+    screen.wait(1)
+    assert not any(isinstance(obj, ui.timer) for obj in gc.get_objects())
+
+
+@pytest.mark.parametrize('kwargs', [{}, {'once': True}, {'immediate': False}], ids=['repeating', 'once', 'delayed'])
+async def test_no_error_when_timer_is_deleted_while_waiting_for_connection(user: User, kwargs: dict):
+    containers: list[ui.column] = []
+
+    @ui.page('/')
+    def page():
+        with ui.column() as container:
+            ui.timer(0.2, lambda: None, **kwargs)
+        containers.append(container)
+
+    await user.http_client.get('/')  # request the page without ever opening the websocket
+    await asyncio.sleep(0)
+    containers.pop().delete()  # delete the timer and drop the last reference to its parent slot
+    Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
+    gc.collect()
+    await asyncio.sleep(0.3)
+    # no assertion needed: the user fixture fails the test if the woken timer raises and logs an ERROR

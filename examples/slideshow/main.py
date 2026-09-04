@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
-from nicegui import app, ui
-from nicegui.events import KeyEventArguments
+from nicegui import app, events, ui
 
 ui.query('.nicegui-content').classes('p-0')  # remove padding from the main content
 
@@ -11,7 +10,7 @@ files = sorted(f.name for f in folder.glob('*.jpg'))
 state = {'index': 0}
 
 
-def handle_key(event: KeyEventArguments) -> None:
+def handle_key(event: events.KeyEventArguments) -> None:
     if event.action.keydown:
         if event.key.arrow_right:
             state['index'] += 1

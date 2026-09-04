@@ -10,6 +10,8 @@ def main_demo() -> None:
 
 
 @doc.demo('Input element with date picker', '''
+    **Note:** Since version 3.3.0 you can use the [`ui.date_input`](date_input) element instead of following this demo.
+
     This demo shows how to implement a date picker with an input element.
     We place an icon in the input element's append slot.
     When the icon is clicked, we open a menu with a date picker.
@@ -28,6 +30,24 @@ def date_picker_demo():
                     ui.button('Close', on_click=menu.close).props('flat')
         with date.add_slot('append'):
             ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')
+
+
+@doc.demo('Date range input', '''
+    You can use the "range" prop to select a range of dates.
+    The `value` will be a dictionary with "from" and "to" keys.
+    The following demo shows how to bind a date range picker to an input element,
+    using the `forward` and `backward` functions to convert between the date picker's dictionary and the input string.
+''')
+def date_range_input():
+    date_input = ui.input('Date range').classes('w-40')
+    ui.date().props('range').bind_value(
+        date_input,
+        forward=lambda x: f'{x["from"]} - {x["to"]}' if x else None,
+        backward=lambda x: {
+            'from': x.split(' - ')[0],
+            'to': x.split(' - ')[1],
+        } if ' - ' in (x or '') else None,
+    )
 
 
 @doc.demo('Date filter', '''

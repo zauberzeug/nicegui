@@ -1,14 +1,12 @@
-from typing import Optional, Union
-
-from ..element import Element
+from .mixins.sortable_element import SortableElement
 
 
-class Grid(Element):
+class Grid(SortableElement, default_classes='nicegui-grid'):
 
     def __init__(self,
                  *,
-                 rows: Optional[Union[int, str]] = None,
-                 columns: Optional[Union[int, str]] = None,
+                 rows: int | str | None = None,
+                 columns: int | str | None = None,
                  ) -> None:
         """Grid Element
 
@@ -18,7 +16,6 @@ class Grid(Element):
         :param columns: number of columns in the grid or a string with the grid-template-columns CSS property (e.g. 'auto 1fr')
         """
         super().__init__('div')
-        self._classes.append('nicegui-grid')
 
         if isinstance(rows, int):
             self._style['grid-template-rows'] = f'repeat({rows}, minmax(0, 1fr))'

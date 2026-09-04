@@ -1,17 +1,19 @@
 from .content import overview, redirects, registry
-from .intro import create_intro
+from .custom_restructured_text import CustomRestructuredText
 from .rendering import render_page
 from .search import build_search_index
+from .tree import build_tree
 from .windows import bash_window, browser_window, python_window
 
 __all__ = [
+    'CustomRestructuredText',
     'bash_window',
     'browser_window',
     'build_search_index',
-    'create_intro',
+    'build_tree',
     'overview',  # ensure documentation tree is built
     'python_window',
-    'registry',
     'redirects',
+    'registry',
     'render_page',
 ]

@@ -1,22 +1,22 @@
+import importlib.util
 from decimal import Decimal
-from typing import Any, Optional, Tuple
+from typing import Any
 
 # pylint: disable=no-member
 import orjson
-from fastapi import Response
+from fastapi.responses import JSONResponse
 
 try:
-    import numpy as np
-    has_numpy = True
-except ImportError:
-    has_numpy = False
+    HAS_NUMPY = importlib.util.find_spec('numpy') is not None
+except (ModuleNotFoundError, ValueError):
+    HAS_NUMPY = False
 
 ORJSON_OPTS = orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_NON_STR_KEYS
 
 
 def dumps(obj: Any,
           sort_keys: bool = False,
-          separators: Optional[Tuple[str, str]] = None, *,
+          separators: tuple[str, str] | None = None, *,
           indent: bool = False) -> str:
     """Serializes a Python object to a JSON-encoded string.
 
@@ -53,19 +53,20 @@ def loads(value: str) -> Any:
 
 def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for NumPy object arrays."""
-    if has_numpy and isinstance(obj, np.ndarray) and obj.dtype == np.object_:
-        return obj.tolist()
+    if HAS_NUMPY:
+        import numpy as np  # pylint: disable=import-outside-toplevel
+        if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
+            return obj.tolist()
     if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
 
-class NiceGUIJSONResponse(Response):
+class NiceGUIJSONResponse(JSONResponse):
     """FastAPI response class to support our custom json serializer implementation.
 
     Uses package `orjson` internally.
     """
-    media_type = 'application/json'
 
     def render(self, content: Any) -> bytes:
         return orjson.dumps(content, option=ORJSON_OPTS, default=_orjson_converter)

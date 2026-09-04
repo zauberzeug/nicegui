@@ -1,4 +1,4 @@
-from .. import json
+from .. import core, json
 from ..context import context
 
 
@@ -11,5 +11,7 @@ def page_title(title: str) -> None:
     """
     client = context.client
     client.title = title
-    if client.has_socket_connection:
+    if core.app.native.main_window:
+        core.app.native.main_window.set_title(title)
+    if client._response_built and not client.is_deleted:  # pylint: disable=protected-access
         client.run_javascript(f'document.title = {json.dumps(title)}')

@@ -70,7 +70,7 @@ def vertical_tabs():
                 movie = ui.tab('Movies', icon='movie')
         with splitter.after:
             with ui.tab_panels(tabs, value=mail) \
-                    .props('vertical').classes('w-full h-full'):
+                    .props('vertical').classes('size-full'):
                 with ui.tab_panel(mail):
                     ui.label('Mails').classes('text-h4')
                     ui.label('Content of mails')

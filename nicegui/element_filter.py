@@ -1,16 +1,21 @@
 from __future__ import annotations
 
-from typing import Generic, Iterator, List, Optional, Type, TypeVar, Union, overload
+from collections.abc import Iterator
+from typing import Generic, TypeVar, overload
 
 from typing_extensions import Self
 
 from .context import context
 from .element import Element
+from .elements.chat_message import ChatMessage
+from .elements.choice_element import ChoiceElement
+from .elements.icon import Icon
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
 from .elements.notification import Notification
 from .elements.select import Select
+from .elements.tree import Tree
 
 T = TypeVar('T', bound=Element)
 
@@ -20,26 +25,29 @@ class ElementFilter(Generic[T]):
 
     @overload
     def __init__(self: ElementFilter[Element], *,
-                 marker: Union[str, List[str], None] = None,
-                 content: Union[str, List[str], None] = None,
-                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 marker: str | list[str] | None = None,
+                 content: str | list[str] | None = None,
+                 local_scope: bool | None = None,
+                 only_visible: bool = False,
                  ) -> None:
         ...
 
     @overload
     def __init__(self, *,
-                 kind: Type[T],
-                 marker: Union[str, List[str], None] = None,
-                 content: Union[str, List[str], None] = None,
-                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 kind: type[T],
+                 marker: str | list[str] | None = None,
+                 content: str | list[str] | None = None,
+                 local_scope: bool | None = None,
+                 only_visible: bool = False,
                  ) -> None:
         ...
 
     def __init__(self, *,
-                 kind: Optional[Type[T]] = None,
-                 marker: Union[str, List[str], None] = None,
-                 content: Union[str, List[str], None] = None,
-                 local_scope: bool = DEFAULT_LOCAL_SCOPE,
+                 kind: type[T] | None = None,
+                 marker: str | list[str] | None = None,
+                 content: str | list[str] | None = None,
+                 local_scope: bool | None = None,
+                 only_visible: bool = False,
                  ) -> None:
         """ElementFilter
 
@@ -69,29 +77,33 @@ class ElementFilter(Generic[T]):
 
         :param kind: filter by element type; the iterator will be of type ``kind``
         :param marker: filter by element markers; can be a list of strings or a single string where markers are separated by whitespace
-        :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a singe string or a list of strings which all must match
-        :param local_scope: if `True`, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
+        :param content: filter for elements which contain ``content`` in one of their content attributes like ``.text``, ``.value``, ``.source``, ...; can be a single string or a list of strings which all must match
+        :param local_scope: if ``True``, only elements within the current scope are returned; by default the whole page is searched (this default behavior can be changed with ``ElementFilter.DEFAULT_LOCAL_SCOPE = True``)
+        :param only_visible: if ``True``, filter out elements that are not visible or whose ancestors are not visible
         """
+        if local_scope is None:
+            local_scope = self.DEFAULT_LOCAL_SCOPE
+
         self._kind = kind
         self._markers = marker.split() if isinstance(marker, str) else marker or []
         self._contents = [content] if isinstance(content, str) else content or []
+        self._only_visible = only_visible
 
-        self._within_kinds: List[Type[Element]] = []
-        self._within_instances: List[Element] = []
-        self._within_markers: List[str] = []
+        self._within_kinds: list[type[Element]] = []
+        self._within_instances: list[Element] = []
+        self._within_markers: list[str] = []
 
-        self._not_within_kinds: List[Type[Element]] = []
-        self._not_within_instances: List[Element] = []
-        self._not_within_markers: List[str] = []
+        self._not_within_kinds: list[type[Element]] = []
+        self._not_within_instances: list[Element] = []
+        self._not_within_markers: list[str] = []
 
-        self._exclude_kinds: List[Type[Element]] = []
-        self._exclude_markers: List[str] = []
-        self._exclude_content: List[str] = []
+        self._exclude_kinds: list[type[Element]] = []
+        self._exclude_markers: list[str] = []
+        self._exclude_content: list[str] = []
 
         self._scope = context.slot.parent if local_scope else context.client.layout
 
     def __iter__(self) -> Iterator[T]:
-        # pylint: disable=protected-access
         for element in self._scope.descendants():
             if self._kind and not isinstance(element, self._kind):
                 continue
@@ -105,28 +117,40 @@ class ElementFilter(Generic[T]):
 
             if self._contents or self._exclude_content:
                 element_contents = [content for content in (
-                    element._props.get('text'),
-                    element._props.get('label'),
-                    element._props.get('icon'),
-                    element._props.get('placeholder'),
-                    element._props.get('value'),
+                    element.props.get('text'),
+                    element.props.get('label'),
+                    element.props.get('icon'),
+                    element.props.get('placeholder'),
+                    element.props.get('value'),
+                    element.props.get('error-message'),
                     element.text if isinstance(element, TextElement) else None,
                     element.content if isinstance(element, ContentElement) else None,
                     element.source if isinstance(element, SourceElement) else None,
                 ) if content]
                 if isinstance(element, Notification):
                     element_contents.append(element.message)
-                if isinstance(element, Select):
-                    options = {option['value']: option['label'] for option in element._props.get('options', [])}
-                    element_contents.append(options.get(element.value, ''))
-                    if element.is_showing_popup:
-                        element_contents.extend(options.values())
+                if isinstance(element, ChoiceElement):
+                    if isinstance(element, Select):
+                        values = element.value if element.multiple else [element.value]
+                        labels = [value if isinstance(element.options, list) else element.options.get(value, '')
+                                  for value in values]
+                        element_contents.extend(labels)
+                    if not isinstance(element, Select) or element.is_showing_popup:
+                        element_contents.extend(element._labels)  # pylint: disable=protected-access
+                if isinstance(element, Tree):
+                    LABEL_KEY = element.props.get('label-key')
+                    nodes = element.nodes(visible=True if self._only_visible else None)
+                    element_contents.extend(node[LABEL_KEY] for node in nodes)
+                if isinstance(element, (Icon, ChatMessage)):
+                    element_contents.append(element.props.get('name'))
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
                     continue
 
             ancestors = set(element.ancestors())
+            if self._only_visible and not all(e.visible for e in (element, *ancestors)):
+                continue
             if self._within_instances and not ancestors.issuperset(self._within_instances):
                 continue
             if self._not_within_instances and not ancestors.isdisjoint(self._not_within_instances):
@@ -144,9 +168,9 @@ class ElementFilter(Generic[T]):
             yield element  # type: ignore
 
     def within(self, *,
-               kind: Optional[Type[Element]] = None,
-               marker: Optional[str] = None,
-               instance: Union[Element, List[Element], None] = None,
+               kind: type[Element] | None = None,
+               marker: str | None = None,
+               instance: Element | list[Element] | None = None,
                ) -> Self:
         """Filter elements which have a specific match in the parent hierarchy."""
         if kind is not None:
@@ -159,9 +183,9 @@ class ElementFilter(Generic[T]):
         return self
 
     def exclude(self, *,
-                kind: Optional[Type[Element]] = None,
-                marker: Optional[str] = None,
-                content: Optional[str] = None,
+                kind: type[Element] | None = None,
+                marker: str | None = None,
+                content: str | None = None,
                 ) -> Self:
         """Exclude elements with specific element type, marker or content."""
         if kind is not None:
@@ -174,9 +198,9 @@ class ElementFilter(Generic[T]):
         return self
 
     def not_within(self, *,
-                   kind: Optional[Type[Element]] = None,
-                   marker: Optional[str] = None,
-                   instance: Union[Element, List[Element], None] = None,
+                   kind: type[Element] | None = None,
+                   marker: str | None = None,
+                   instance: Element | list[Element] | None = None,
                    ) -> Self:
         """Exclude elements which have a parent of a specific type or marker."""
         if kind is not None:
@@ -188,7 +212,7 @@ class ElementFilter(Generic[T]):
             self._not_within_instances.extend(instance if isinstance(instance, list) else [instance])
         return self
 
-    def classes(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def classes(self, add: str | None = None, *, remove: str | None = None, replace: str | None = None) -> Self:
         """Apply, remove, or replace HTML classes.
 
         This allows modifying the look of the element or its layout using `Tailwind <https://tailwindcss.com/>`_ or `Quasar <https://quasar.dev/>`_ classes.
@@ -203,7 +227,7 @@ class ElementFilter(Generic[T]):
             element.classes(add, remove=remove, replace=replace)
         return self
 
-    def style(self, add: Optional[str] = None, *, remove: Optional[str] = None, replace: Optional[str] = None) -> Self:
+    def style(self, add: str | None = None, *, remove: str | None = None, replace: str | None = None) -> Self:
         """Apply, remove, or replace CSS definitions.
 
         Removing or replacing styles can be helpful if the predefined style is not desired.
@@ -216,7 +240,7 @@ class ElementFilter(Generic[T]):
             element.style(add, remove=remove, replace=replace)
         return self
 
-    def props(self, add: Optional[str] = None, *, remove: Optional[str] = None) -> Self:
+    def props(self, add: str | None = None, *, remove: str | None = None) -> Self:
         """Add or remove props.
 
         This allows modifying the look of the element or its layout using `Quasar <https://quasar.dev/>`_ props.

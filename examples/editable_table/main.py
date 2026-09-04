@@ -1,26 +1,16 @@
 #!/usr/bin/env python3
 from nicegui import events, ui
 
-columns = [
-    {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
-    {'name': 'age', 'label': 'Age', 'field': 'age'},
-]
-rows = [
-    {'id': 0, 'name': 'Alice', 'age': 18},
-    {'id': 1, 'name': 'Bob', 'age': 21},
-    {'id': 2, 'name': 'Carol', 'age': 20},
-]
-
 
 def add_row() -> None:
-    new_id = max((dx['id'] for dx in rows), default=-1) + 1
-    rows.append({'id': new_id, 'name': 'New guy', 'age': 21})
+    new_id = max((dx['id'] for dx in table.rows), default=-1) + 1
+    table.rows.append({'id': new_id, 'name': 'New guy', 'age': 21})
     ui.notify(f'Added new row with ID {new_id}')
     table.update()
 
 
 def rename(e: events.GenericEventArguments) -> None:
-    for row in rows:
+    for row in table.rows:
         if row['id'] == e.args['id']:
             row.update(e.args)
     ui.notify(f'Updated rows to: {table.rows}')
@@ -28,20 +18,25 @@ def rename(e: events.GenericEventArguments) -> None:
 
 
 def delete(e: events.GenericEventArguments) -> None:
-    rows[:] = [row for row in rows if row['id'] != e.args['id']]
+    table.rows[:] = [row for row in table.rows if row['id'] != e.args['id']]
     ui.notify(f'Deleted row with ID {e.args["id"]}')
     table.update()
 
 
-table = ui.table(columns=columns, rows=rows, row_key='name').classes('w-60')
-table.add_slot('header', r'''
-    <q-tr :props="props">
-        <q-th auto-width />
-        <q-th v-for="col in props.cols" :key="col.name" :props="props">
-            {{ col.label }}
-        </q-th>
-    </q-tr>
-''')
+table = ui.table(columns=[
+    {'name': 'name', 'label': 'Name', 'field': 'name', 'align': 'left'},
+    {'name': 'age', 'label': 'Age', 'field': 'age'},
+], rows=[
+    {'id': 0, 'name': 'Alice', 'age': 18},
+    {'id': 1, 'name': 'Bob', 'age': 21},
+    {'id': 2, 'name': 'Carol', 'age': 20},
+], row_key='name').classes('w-60')
+with table.add_slot('header'):
+    with table.row():
+        table.header().props('auto-width')
+        for column in table.columns:
+            with table.header(column['name']):
+                ui.label(column['label'])
 table.add_slot('body', r'''
     <q-tr :props="props">
         <q-td auto-width >

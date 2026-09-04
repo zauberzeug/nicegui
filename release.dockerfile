@@ -1,44 +1,37 @@
-FROM python:3.11-slim as builder
-
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
-
-RUN python -m pip install --upgrade pip
-
-RUN python -m pip install --upgrade libsass
-
-FROM python:3.11-slim as release
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-ARG VERSION
+FROM python:3.14-slim
 
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
-RUN python -m pip install --upgrade pip
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-RUN python -m pip install \
-    nicegui[plotly,matplotlib]==$VERSION \
-    docutils \
-    isort \
-    itsdangerous \
-    pytest \
-    requests \
-    selenium
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
 
 WORKDIR /app
 
-COPY main.py README.md prometheus.py ./
+# Copy dependency files first for better layer caching
+COPY pyproject.toml uv.lock* ./
+
+# Install dependencies including website group
+ARG VERSION
+ENV POETRY_DYNAMIC_VERSIONING_BYPASS=$VERSION
+RUN uv sync --no-install-project --no-dev --all-extras --group website
+
+# Copy application files
+COPY main.py README.md ./
 COPY examples ./examples
+COPY nicegui ./nicegui
 COPY website ./website
 RUN mkdir /resources
 COPY docker-entrypoint.sh /resources
 RUN chmod 777 /resources/docker-entrypoint.sh
 
+# Install NiceGUI from source
+RUN uv pip install .
+
 EXPOSE 8080
-ENV PYTHONUNBUFFERED True
+ENV PYTHONUNBUFFERED=True
 
 ENTRYPOINT ["/resources/docker-entrypoint.sh"]
-CMD ["python", "main.py"]
+CMD ["/opt/venv/bin/python", "main.py"]

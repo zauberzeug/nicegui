@@ -1,7 +1,6 @@
-version: "3.9"
 services:
   app:
-    image: zauberzeug/nicegui:1.4.19
+    image: zauberzeug/nicegui:latest
     volumes:
       - ./app:/app # mount local app directory
   proxy:

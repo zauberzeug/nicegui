@@ -7,6 +7,7 @@ from . import (
     icon_documentation,
     image_documentation,
     interactive_image_documentation,
+    parallax_documentation,
     video_documentation,
 )
 
@@ -30,10 +31,11 @@ def captions_and_overlays_demo():
             <svg viewBox="0 0 960 638" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <circle cx="445" cy="300" r="100" fill="none" stroke="red" stroke-width="10" />
             </svg>
-        ''').classes('w-full bg-transparent')
+        ''', sanitize=False).classes('w-full bg-transparent')
 
 
 doc.intro(interactive_image_documentation)
+doc.intro(parallax_documentation)
 doc.intro(audio_documentation)
 doc.intro(video_documentation)
 doc.intro(icon_documentation)
@@ -51,4 +53,4 @@ def svg_demo():
         <circle cx="120" cy="85" r="8" />
         <path d="m60,120 C75,150 125,150 140,120" style="fill:none; stroke:black; stroke-width:8; stroke-linecap:round" />
         </svg>'''
-    ui.html(content)
+    ui.html(content, sanitize=False)

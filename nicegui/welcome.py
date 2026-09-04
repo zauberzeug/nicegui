@@ -1,13 +1,13 @@
 import os
-from typing import List
 
 import ifaddr
 
 from . import core, run
+from .helpers import format_url
 
 
-def _get_all_ips() -> List[str]:
-    ips: List[str] = []
+def _get_all_ips() -> list[str]:
+    ips: list[str] = []
     for adapter in ifaddr.get_adapters():
         ips.extend(str(i.ip) for i in adapter.ips if i.is_IPv4)
     return ips
@@ -17,11 +17,13 @@ async def collect_urls() -> None:
     """Print a welcome message with URLs to access the NiceGUI app."""
     host = os.environ.get('NICEGUI_HOST')
     port = os.environ.get('NICEGUI_PORT')
-    if not host or not port:
+    protocol = os.environ.get('NICEGUI_PROTOCOL')
+    if not host or not port or not protocol:
         return
-    ips = set((await run.io_bound(_get_all_ips)) if host == '0.0.0.0' else [])
+    ips = set((await run.io_bound(_get_all_ips) or []) if host == '0.0.0.0' else [])
     ips.discard('127.0.0.1')
-    urls = [(f'http://{ip}:{port}' if port != '80' else f'http://{ip}') for ip in ['localhost', *sorted(ips)]]
+    sorted_ips = ['localhost' if host == '0.0.0.0' else host, *sorted(ips)]
+    urls = [format_url(protocol, ip, int(port)) for ip in sorted_ips]
     core.app.urls.update(urls)
     if len(urls) >= 2:
         urls[-1] = 'and ' + urls[-1]

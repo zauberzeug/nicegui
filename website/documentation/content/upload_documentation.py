@@ -5,7 +5,27 @@ from . import doc
 
 @doc.demo(ui.upload)
 def main_demo() -> None:
-    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
+    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('max-w-full')
+
+
+doc.text('Upload event arguments', '''
+    The `UploadEventArguments` class is used to pass the uploaded file to the handler.
+    It contains a single field `file` of type `ui.upload.FileUpload`, which contains properties
+
+    - `name: str` and
+    - `content_type: str`
+
+    as well as methods for accessing the content:
+
+    - `read()` - read the file contents as bytes,
+    - `text()` - read the file contents as text,
+    - `json()` - read the file contents as JSON dictionary,
+    - `iterate()` - iterate over the file contents as bytes,
+    - `save()` - save the file contents to a path,
+    - `size()` - get the file size in bytes.
+
+    *Added in version 3.0.0*
+''')
 
 
 @doc.demo('Upload restrictions', '''
@@ -13,7 +33,7 @@ def main_demo() -> None:
     When a file is rejected, a notification is shown.
 ''')
 def upload_restrictions() -> None:
-    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}'),
+    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}'),
               on_rejected=lambda: ui.notify('Rejected!'),
               max_file_size=1_000_000).classes('max-w-full')
 
@@ -26,19 +46,19 @@ def show_file_content() -> None:
 
     with ui.dialog().props('full-width') as dialog:
         with ui.card():
-            content = ui.markdown()
+            markdown = ui.markdown()
 
-    def handle_upload(e: events.UploadEventArguments):
-        text = e.content.read().decode('utf-8')
-        content.set_content(text)
+    async def handle_upload(e: events.UploadEventArguments):
+        markdown.content = await e.file.text()
         dialog.open()
 
-    ui.upload(on_upload=handle_upload).props('accept=.md').classes('max-w-full')
+    ui.upload(on_upload=handle_upload, max_file_size=1_000_000) \
+        .props('accept=.md').classes('max-w-full')
 
 
 @doc.demo('Uploading large files', '''
     Large file uploads may encounter issues due to the default file size parameter set within the underlying Starlette library.
-    To ensure smooth uploads of larger files, it is recommended to increase the `max_file_size` parameter in Starlette's `MultiPartParser` class from the default of `1024 * 1024` (1 MB) to a higher limit that aligns with the expected file sizes.
+    To ensure smooth uploads of larger files, it is recommended to increase the `spool_max_size` parameter in Starlette's `MultiPartParser` class from the default of `1024 * 1024` (1 MB) to a higher limit that aligns with the expected file sizes.
 
     This demo increases Starlette Multiparser's `max_file_size` to be kept in RAM to 5 MB.
     This change allows the system to handle larger files more efficiently by keeping them in RAM, thus avoiding the need to write data to temporary files on disk and preventing upload "stuttering".
@@ -48,9 +68,10 @@ def show_file_content() -> None:
 def uploading_large_files() -> None:
     from starlette.formparsers import MultiPartParser
 
-    MultiPartParser.max_file_size = 1024 * 1024 * 5  # 5 MB
+    MultiPartParser.spool_max_size = 1024 * 1024 * 5  # 5 MB
 
-    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.name}')).classes('max-w-full')
+    ui.upload(on_upload=lambda e: ui.notify(f'Uploaded {e.file.name}')).classes('max-w-full')
 
 
-doc.reference(ui.upload)
+doc.reference(ui.upload, title='Reference for ui.upload')
+doc.reference(ui.upload.FileUpload, title='Reference for ui.upload.FileUpload')

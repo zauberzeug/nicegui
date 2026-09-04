@@ -1,11 +1,13 @@
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_entering_color(screen: Screen):
-    ui.color_input(label='Color', on_change=lambda e: ui.label(f'content: {e.value}'), preview=True)
+    @ui.page('/')
+    def page():
+        ui.color_input(label='Color', on_change=lambda e: ui.label(f'content: {e.value}'), preview=True)
 
     screen.open('/')
     screen.type(Keys.TAB)
@@ -15,9 +17,25 @@ def test_entering_color(screen: Screen):
     assert button.value_of_css_property('background-color') == 'rgba(0, 17, 0, 1)'
 
 
+async def test_none_value_with_preview(user: User):
+    @ui.page('/')
+    def page():
+        color_input = ui.color_input(value=None, preview=True)
+        color_input.set_value(None)
+        ui.label('background: ' + color_input.button.style.get('background-color', ''))
+
+    await user.open('/')
+    await user.should_see('background: transparent')
+
+
 def test_picking_color(screen: Screen):
-    ui.color_input(label='Color', on_change=lambda e: output.set_text(e.value))
-    output = ui.label()
+    output = None
+
+    @ui.page('/')
+    def page():
+        nonlocal output
+        ui.color_input(label='Color', on_change=lambda e: output.set_text(e.value))
+        output = ui.label()
 
     screen.open('/')
     screen.click('colorize')
