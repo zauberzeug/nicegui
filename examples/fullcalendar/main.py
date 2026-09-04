@@ -3,7 +3,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from fullcalendar import FetchInfoArguments, FullCalendar as fullcalendar
+from fullcalendar import FetchInfoArguments
+from fullcalendar import FullCalendar as fullcalendar
 
 from nicegui import events, ui
 
@@ -33,10 +34,7 @@ def handle_fetch(info: FetchInfoArguments) -> None:
     start_ms = info.start_value
     end_ms = info.end_value
     all_events = json.loads(EVENTS_FILE.read_text(encoding='utf-8'))
-    filtered = [
-        e for e in all_events
-        if _event_intersects_range(e, start_ms, end_ms)
-    ]
+    filtered = [e for e in all_events if _event_intersects_range(e, start_ms, end_ms)]
     ui.notify(f'Loaded {len(filtered)} events for range {info.start} → {info.end}')
     info.response(filtered)
 

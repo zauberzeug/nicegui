@@ -14,6 +14,7 @@ class FetchInfoArguments(events.EventArguments):
     ``request_id`` that must be passed back via :meth:`response` or :meth:`failure`
     so the result is delivered to the correct pending callback on the client.
     """
+
     request_id: int
     start: str
     end: str
@@ -32,7 +33,6 @@ class FetchInfoArguments(events.EventArguments):
 
 
 class FullCalendar(ui.element, component='fullcalendar.js'):
-
     def __init__(
         self,
         options: dict[str, Any],
@@ -66,6 +66,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
             self.on('click', lambda e: events.handle_event(on_click, e))
 
         if on_fetch_events:
+
             def _on_fetch(e: events.GenericEventArguments) -> None:
                 info = FetchInfoArguments(
                     request_id=e.args['request_id'],
@@ -77,6 +78,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
                     sender=self,
                 )
                 events.handle_event(on_fetch_events, info)
+
             self.on('fetch-events', _on_fetch)
 
     def add_event(self, title: str, start: str, end: str, **kwargs) -> None:
@@ -97,7 +99,11 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         :param end: end time of the event
         """
         for event in self._props['options']['events']:
-            if event['title'] == title and event['start'] == start and event['end'] == end:
+            if (
+                event['title'] == title
+                and event['start'] == start
+                and event['end'] == end
+            ):
                 self._props['options']['events'].remove(event)
                 break
 
@@ -105,4 +111,3 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
     def events(self) -> list[dict]:
         """List of events currently displayed in the calendar."""
         return self._props['options']['events']
-

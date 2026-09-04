@@ -22,6 +22,7 @@ The web app's ``fetch_events_from_python`` function loads this file and
 returns only the events relevant to the calendar's currently visible date
 range.  This keeps the UI fast even with hundreds of events in the dataset.
 """
+
 import json
 import random
 from datetime import datetime, timedelta
@@ -31,10 +32,18 @@ from datetime import datetime, timedelta
 random.seed(42)
 
 titles = [
-    "Team meeting", "Project sync", "Design workshop",
-    "Code review", "Sprint planning", "Client demo",
-    "Internal training", "Maintenance", "Deployment",
-    "Stand-up", "Retrospective", "Brainstorming",
+    'Team meeting',
+    'Project sync',
+    'Design workshop',
+    'Code review',
+    'Sprint planning',
+    'Client demo',
+    'Internal training',
+    'Maintenance',
+    'Deployment',
+    'Stand-up',
+    'Retrospective',
+    'Brainstorming',
 ]
 
 events = []
@@ -50,14 +59,16 @@ for day in range((end_date - start_date).days + 1):
         duration = random.choice([1, 2])
         events.append(
             {
-                "title": random.choice(titles),
-                "start": (current + timedelta(hours=hour)).isoformat(),
-                "end": (current + timedelta(hours=hour + duration)).isoformat(),
-                "color": random.choice(["blue", "green", "red", "orange", "purple", "teal"]),
+                'title': random.choice(titles),
+                'start': (current + timedelta(hours=hour)).isoformat(),
+                'end': (current + timedelta(hours=hour + duration)).isoformat(),
+                'color': random.choice(
+                    ['blue', 'green', 'red', 'orange', 'purple', 'teal']
+                ),
             }
         )
 
-with open("events_full.json", "w", encoding="utf-8") as f:
+with open('events_full.json', 'w', encoding='utf-8') as f:
     json.dump(events, f, indent=2, ensure_ascii=False)
 
-print(f"Generated {len(events)} events in {start_date.year} in events_full.json")
+print(f'Generated {len(events)} events in {start_date.year} in events_full.json')
