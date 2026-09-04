@@ -17,3 +17,5 @@ node_modules/
 .playwright-mcp/
 .claude/settings.local.json
 CLAUDE.local.md
+.kilo/
+./examples/fullcalendar_more_options/
