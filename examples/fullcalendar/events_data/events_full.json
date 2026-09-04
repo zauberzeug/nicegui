@@ -1,0 +1,3506 @@
+[
+  {
+    "title": "Design workshop",
+    "start": "2026-01-03T11:00:00",
+    "end": "2026-01-03T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-01-03T09:00:00",
+    "end": "2026-01-03T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-01-07T11:00:00",
+    "end": "2026-01-07T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-01-08T11:00:00",
+    "end": "2026-01-08T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-01-08T08:00:00",
+    "end": "2026-01-08T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-01-08T13:00:00",
+    "end": "2026-01-08T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-01-09T09:00:00",
+    "end": "2026-01-09T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-01-09T13:00:00",
+    "end": "2026-01-09T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-01-11T16:00:00",
+    "end": "2026-01-11T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-01-11T16:00:00",
+    "end": "2026-01-11T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-01-11T13:00:00",
+    "end": "2026-01-11T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-01-13T12:00:00",
+    "end": "2026-01-13T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-01-14T12:00:00",
+    "end": "2026-01-14T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-01-14T10:00:00",
+    "end": "2026-01-14T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-01-14T12:00:00",
+    "end": "2026-01-14T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-01-15T16:00:00",
+    "end": "2026-01-15T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-01-16T12:00:00",
+    "end": "2026-01-16T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-01-16T08:00:00",
+    "end": "2026-01-16T09:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-01-16T14:00:00",
+    "end": "2026-01-16T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-01-17T11:00:00",
+    "end": "2026-01-17T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-01-17T15:00:00",
+    "end": "2026-01-17T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-01-18T16:00:00",
+    "end": "2026-01-18T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-01-19T14:00:00",
+    "end": "2026-01-19T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-01-19T16:00:00",
+    "end": "2026-01-19T18:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-01-19T09:00:00",
+    "end": "2026-01-19T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-01-20T09:00:00",
+    "end": "2026-01-20T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-01-20T15:00:00",
+    "end": "2026-01-20T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-01-20T09:00:00",
+    "end": "2026-01-20T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-01-22T14:00:00",
+    "end": "2026-01-22T15:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-01-22T12:00:00",
+    "end": "2026-01-22T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-01-23T16:00:00",
+    "end": "2026-01-23T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-01-23T10:00:00",
+    "end": "2026-01-23T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-01-24T08:00:00",
+    "end": "2026-01-24T09:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-01-24T11:00:00",
+    "end": "2026-01-24T12:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-01-24T09:00:00",
+    "end": "2026-01-24T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-01-26T10:00:00",
+    "end": "2026-01-26T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-01-27T16:00:00",
+    "end": "2026-01-27T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-01-27T11:00:00",
+    "end": "2026-01-27T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-01-28T15:00:00",
+    "end": "2026-01-28T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-01-28T11:00:00",
+    "end": "2026-01-28T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-01-29T11:00:00",
+    "end": "2026-01-29T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-01-31T09:00:00",
+    "end": "2026-01-31T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-02-01T12:00:00",
+    "end": "2026-02-01T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-02-02T15:00:00",
+    "end": "2026-02-02T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-02-03T09:00:00",
+    "end": "2026-02-03T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-02-04T14:00:00",
+    "end": "2026-02-04T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-02-04T08:00:00",
+    "end": "2026-02-04T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-02-05T09:00:00",
+    "end": "2026-02-05T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-02-05T16:00:00",
+    "end": "2026-02-05T18:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-02-06T12:00:00",
+    "end": "2026-02-06T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-02-07T16:00:00",
+    "end": "2026-02-07T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-02-07T16:00:00",
+    "end": "2026-02-07T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-02-07T10:00:00",
+    "end": "2026-02-07T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-02-08T14:00:00",
+    "end": "2026-02-08T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-02-10T12:00:00",
+    "end": "2026-02-10T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-02-10T16:00:00",
+    "end": "2026-02-10T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-02-10T12:00:00",
+    "end": "2026-02-10T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-02-12T08:00:00",
+    "end": "2026-02-12T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-02-12T16:00:00",
+    "end": "2026-02-12T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-02-14T09:00:00",
+    "end": "2026-02-14T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-02-15T09:00:00",
+    "end": "2026-02-15T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-02-15T08:00:00",
+    "end": "2026-02-15T09:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-02-15T16:00:00",
+    "end": "2026-02-15T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-02-16T11:00:00",
+    "end": "2026-02-16T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-02-16T12:00:00",
+    "end": "2026-02-16T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-02-18T09:00:00",
+    "end": "2026-02-18T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-02-18T16:00:00",
+    "end": "2026-02-18T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-02-18T09:00:00",
+    "end": "2026-02-18T10:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-02-19T15:00:00",
+    "end": "2026-02-19T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-02-21T09:00:00",
+    "end": "2026-02-21T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-02-21T09:00:00",
+    "end": "2026-02-21T10:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-02-22T13:00:00",
+    "end": "2026-02-22T14:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-02-23T16:00:00",
+    "end": "2026-02-23T18:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-02-23T09:00:00",
+    "end": "2026-02-23T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-02-25T10:00:00",
+    "end": "2026-02-25T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-02-25T15:00:00",
+    "end": "2026-02-25T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-02-28T16:00:00",
+    "end": "2026-02-28T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-03-01T14:00:00",
+    "end": "2026-03-01T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-03-02T08:00:00",
+    "end": "2026-03-02T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-03-02T11:00:00",
+    "end": "2026-03-02T12:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-03-03T10:00:00",
+    "end": "2026-03-03T11:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-03-03T14:00:00",
+    "end": "2026-03-03T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-03-03T13:00:00",
+    "end": "2026-03-03T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-03-04T12:00:00",
+    "end": "2026-03-04T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-03-05T08:00:00",
+    "end": "2026-03-05T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-03-05T15:00:00",
+    "end": "2026-03-05T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-03-05T11:00:00",
+    "end": "2026-03-05T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-03-06T13:00:00",
+    "end": "2026-03-06T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-03-06T13:00:00",
+    "end": "2026-03-06T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-03-06T13:00:00",
+    "end": "2026-03-06T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-03-07T12:00:00",
+    "end": "2026-03-07T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-08T13:00:00",
+    "end": "2026-03-08T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-08T16:00:00",
+    "end": "2026-03-08T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-03-08T11:00:00",
+    "end": "2026-03-08T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-03-09T08:00:00",
+    "end": "2026-03-09T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-03-09T09:00:00",
+    "end": "2026-03-09T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-03-09T09:00:00",
+    "end": "2026-03-09T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-03-10T13:00:00",
+    "end": "2026-03-10T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-03-10T16:00:00",
+    "end": "2026-03-10T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-03-10T14:00:00",
+    "end": "2026-03-10T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-03-11T14:00:00",
+    "end": "2026-03-11T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-03-11T11:00:00",
+    "end": "2026-03-11T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-03-12T15:00:00",
+    "end": "2026-03-12T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-03-12T11:00:00",
+    "end": "2026-03-12T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-03-14T16:00:00",
+    "end": "2026-03-14T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-03-14T12:00:00",
+    "end": "2026-03-14T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-03-17T15:00:00",
+    "end": "2026-03-17T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-18T14:00:00",
+    "end": "2026-03-18T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-19T08:00:00",
+    "end": "2026-03-19T09:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-03-20T16:00:00",
+    "end": "2026-03-20T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-03-21T09:00:00",
+    "end": "2026-03-21T11:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-03-22T15:00:00",
+    "end": "2026-03-22T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-03-22T10:00:00",
+    "end": "2026-03-22T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-03-23T12:00:00",
+    "end": "2026-03-23T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-03-24T15:00:00",
+    "end": "2026-03-24T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-03-24T11:00:00",
+    "end": "2026-03-24T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-26T10:00:00",
+    "end": "2026-03-26T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-27T11:00:00",
+    "end": "2026-03-27T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-28T16:00:00",
+    "end": "2026-03-28T18:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-03-28T11:00:00",
+    "end": "2026-03-28T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-03-30T15:00:00",
+    "end": "2026-03-30T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-03-30T14:00:00",
+    "end": "2026-03-30T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-03-30T16:00:00",
+    "end": "2026-03-30T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-03-31T14:00:00",
+    "end": "2026-03-31T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-03-31T13:00:00",
+    "end": "2026-03-31T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-04-01T10:00:00",
+    "end": "2026-04-01T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-04-01T08:00:00",
+    "end": "2026-04-01T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-04-01T10:00:00",
+    "end": "2026-04-01T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-04-02T14:00:00",
+    "end": "2026-04-02T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-04-02T13:00:00",
+    "end": "2026-04-02T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-03T12:00:00",
+    "end": "2026-04-03T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-04-03T16:00:00",
+    "end": "2026-04-03T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-04-03T09:00:00",
+    "end": "2026-04-03T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-04-04T08:00:00",
+    "end": "2026-04-04T09:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-05T09:00:00",
+    "end": "2026-04-05T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-04-05T12:00:00",
+    "end": "2026-04-05T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-05T09:00:00",
+    "end": "2026-04-05T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-04-07T14:00:00",
+    "end": "2026-04-07T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-04-07T09:00:00",
+    "end": "2026-04-07T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-04-08T09:00:00",
+    "end": "2026-04-08T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-04-08T14:00:00",
+    "end": "2026-04-08T16:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-09T08:00:00",
+    "end": "2026-04-09T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-04-09T14:00:00",
+    "end": "2026-04-09T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-04-10T14:00:00",
+    "end": "2026-04-10T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-11T16:00:00",
+    "end": "2026-04-11T18:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-04-11T12:00:00",
+    "end": "2026-04-11T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-12T15:00:00",
+    "end": "2026-04-12T16:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-04-12T14:00:00",
+    "end": "2026-04-12T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-04-13T10:00:00",
+    "end": "2026-04-13T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-13T12:00:00",
+    "end": "2026-04-13T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-04-14T16:00:00",
+    "end": "2026-04-14T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-04-14T09:00:00",
+    "end": "2026-04-14T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-04-15T16:00:00",
+    "end": "2026-04-15T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-04-15T15:00:00",
+    "end": "2026-04-15T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-04-15T12:00:00",
+    "end": "2026-04-15T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-16T12:00:00",
+    "end": "2026-04-16T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-04-17T14:00:00",
+    "end": "2026-04-17T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-17T15:00:00",
+    "end": "2026-04-17T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-04-18T09:00:00",
+    "end": "2026-04-18T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-04-19T11:00:00",
+    "end": "2026-04-19T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-04-20T16:00:00",
+    "end": "2026-04-20T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-04-20T12:00:00",
+    "end": "2026-04-20T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-21T08:00:00",
+    "end": "2026-04-21T09:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-04-21T08:00:00",
+    "end": "2026-04-21T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-04-22T09:00:00",
+    "end": "2026-04-22T10:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-22T15:00:00",
+    "end": "2026-04-22T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-22T10:00:00",
+    "end": "2026-04-22T11:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-04-25T15:00:00",
+    "end": "2026-04-25T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-04-25T08:00:00",
+    "end": "2026-04-25T09:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-04-25T12:00:00",
+    "end": "2026-04-25T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-04-26T11:00:00",
+    "end": "2026-04-26T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-26T12:00:00",
+    "end": "2026-04-26T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-04-26T08:00:00",
+    "end": "2026-04-26T09:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-04-27T12:00:00",
+    "end": "2026-04-27T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-04-28T16:00:00",
+    "end": "2026-04-28T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-29T15:00:00",
+    "end": "2026-04-29T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-04-29T11:00:00",
+    "end": "2026-04-29T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-04-29T15:00:00",
+    "end": "2026-04-29T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-04-30T11:00:00",
+    "end": "2026-04-30T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-04-30T11:00:00",
+    "end": "2026-04-30T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-03T12:00:00",
+    "end": "2026-05-03T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-05-04T12:00:00",
+    "end": "2026-05-04T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-04T16:00:00",
+    "end": "2026-05-04T18:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-05-04T08:00:00",
+    "end": "2026-05-04T10:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-05-05T08:00:00",
+    "end": "2026-05-05T09:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-05-05T08:00:00",
+    "end": "2026-05-05T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-05-06T15:00:00",
+    "end": "2026-05-06T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-07T15:00:00",
+    "end": "2026-05-07T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-05-07T14:00:00",
+    "end": "2026-05-07T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-05-07T09:00:00",
+    "end": "2026-05-07T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-05-08T12:00:00",
+    "end": "2026-05-08T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-05-08T15:00:00",
+    "end": "2026-05-08T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-05-08T13:00:00",
+    "end": "2026-05-08T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-05-10T14:00:00",
+    "end": "2026-05-10T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-05-10T13:00:00",
+    "end": "2026-05-10T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-05-10T08:00:00",
+    "end": "2026-05-10T09:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-05-11T12:00:00",
+    "end": "2026-05-11T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-05-14T10:00:00",
+    "end": "2026-05-14T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-05-15T09:00:00",
+    "end": "2026-05-15T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-15T09:00:00",
+    "end": "2026-05-15T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-05-15T12:00:00",
+    "end": "2026-05-15T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-05-16T11:00:00",
+    "end": "2026-05-16T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-05-16T14:00:00",
+    "end": "2026-05-16T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-05-16T10:00:00",
+    "end": "2026-05-16T11:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-05-17T16:00:00",
+    "end": "2026-05-17T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-05-17T12:00:00",
+    "end": "2026-05-17T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-05-18T13:00:00",
+    "end": "2026-05-18T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-05-18T14:00:00",
+    "end": "2026-05-18T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-05-18T11:00:00",
+    "end": "2026-05-18T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-05-20T15:00:00",
+    "end": "2026-05-20T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-05-20T10:00:00",
+    "end": "2026-05-20T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-05-21T09:00:00",
+    "end": "2026-05-21T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-05-21T15:00:00",
+    "end": "2026-05-21T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-22T10:00:00",
+    "end": "2026-05-22T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-05-22T13:00:00",
+    "end": "2026-05-22T15:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-05-22T13:00:00",
+    "end": "2026-05-22T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-05-23T16:00:00",
+    "end": "2026-05-23T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-05-23T11:00:00",
+    "end": "2026-05-23T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-05-23T09:00:00",
+    "end": "2026-05-23T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-05-25T10:00:00",
+    "end": "2026-05-25T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-05-25T13:00:00",
+    "end": "2026-05-25T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-05-25T13:00:00",
+    "end": "2026-05-25T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-05-26T10:00:00",
+    "end": "2026-05-26T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-26T14:00:00",
+    "end": "2026-05-26T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-26T10:00:00",
+    "end": "2026-05-26T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-05-27T15:00:00",
+    "end": "2026-05-27T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-05-27T15:00:00",
+    "end": "2026-05-27T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-05-28T09:00:00",
+    "end": "2026-05-28T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-29T14:00:00",
+    "end": "2026-05-29T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-05-29T11:00:00",
+    "end": "2026-05-29T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-05-30T14:00:00",
+    "end": "2026-05-30T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-05-31T08:00:00",
+    "end": "2026-05-31T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-05-31T08:00:00",
+    "end": "2026-05-31T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-06-01T11:00:00",
+    "end": "2026-06-01T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-06-01T10:00:00",
+    "end": "2026-06-01T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-06-03T15:00:00",
+    "end": "2026-06-03T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-06-03T10:00:00",
+    "end": "2026-06-03T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-06-04T10:00:00",
+    "end": "2026-06-04T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-06-04T13:00:00",
+    "end": "2026-06-04T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-06-04T15:00:00",
+    "end": "2026-06-04T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-06-06T09:00:00",
+    "end": "2026-06-06T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-06T14:00:00",
+    "end": "2026-06-06T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-06-06T08:00:00",
+    "end": "2026-06-06T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-06-07T13:00:00",
+    "end": "2026-06-07T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-06-07T13:00:00",
+    "end": "2026-06-07T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-06-07T15:00:00",
+    "end": "2026-06-07T16:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-06-08T11:00:00",
+    "end": "2026-06-08T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-08T12:00:00",
+    "end": "2026-06-08T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-11T15:00:00",
+    "end": "2026-06-11T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-06-11T16:00:00",
+    "end": "2026-06-11T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-06-12T16:00:00",
+    "end": "2026-06-12T18:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-06-12T10:00:00",
+    "end": "2026-06-12T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-06-13T14:00:00",
+    "end": "2026-06-13T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-06-13T13:00:00",
+    "end": "2026-06-13T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-13T11:00:00",
+    "end": "2026-06-13T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-06-14T16:00:00",
+    "end": "2026-06-14T18:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-14T12:00:00",
+    "end": "2026-06-14T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-06-16T08:00:00",
+    "end": "2026-06-16T09:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-06-17T11:00:00",
+    "end": "2026-06-17T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-06-18T11:00:00",
+    "end": "2026-06-18T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-06-20T10:00:00",
+    "end": "2026-06-20T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-06-20T10:00:00",
+    "end": "2026-06-20T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-06-21T08:00:00",
+    "end": "2026-06-21T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-06-22T08:00:00",
+    "end": "2026-06-22T09:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-06-22T10:00:00",
+    "end": "2026-06-22T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-06-24T15:00:00",
+    "end": "2026-06-24T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-06-24T09:00:00",
+    "end": "2026-06-24T11:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-06-24T08:00:00",
+    "end": "2026-06-24T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-06-27T14:00:00",
+    "end": "2026-06-27T16:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-27T15:00:00",
+    "end": "2026-06-27T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-27T13:00:00",
+    "end": "2026-06-27T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-06-28T16:00:00",
+    "end": "2026-06-28T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-06-28T16:00:00",
+    "end": "2026-06-28T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-06-29T09:00:00",
+    "end": "2026-06-29T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-06-29T16:00:00",
+    "end": "2026-06-29T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-06-29T11:00:00",
+    "end": "2026-06-29T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-06-30T14:00:00",
+    "end": "2026-06-30T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-06-30T13:00:00",
+    "end": "2026-06-30T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-06-30T15:00:00",
+    "end": "2026-06-30T16:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-07-02T09:00:00",
+    "end": "2026-07-02T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-07-02T08:00:00",
+    "end": "2026-07-02T10:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-07-02T14:00:00",
+    "end": "2026-07-02T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-07-04T12:00:00",
+    "end": "2026-07-04T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-07-04T16:00:00",
+    "end": "2026-07-04T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-07-05T11:00:00",
+    "end": "2026-07-05T12:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-07-05T13:00:00",
+    "end": "2026-07-05T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-07-05T11:00:00",
+    "end": "2026-07-05T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-07-07T08:00:00",
+    "end": "2026-07-07T09:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-07-07T12:00:00",
+    "end": "2026-07-07T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-07-08T10:00:00",
+    "end": "2026-07-08T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-07-11T14:00:00",
+    "end": "2026-07-11T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-07-12T13:00:00",
+    "end": "2026-07-12T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-07-15T10:00:00",
+    "end": "2026-07-15T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-07-16T15:00:00",
+    "end": "2026-07-16T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-07-16T15:00:00",
+    "end": "2026-07-16T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-07-18T14:00:00",
+    "end": "2026-07-18T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-07-18T15:00:00",
+    "end": "2026-07-18T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-07-19T08:00:00",
+    "end": "2026-07-19T09:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-07-19T11:00:00",
+    "end": "2026-07-19T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-07-19T13:00:00",
+    "end": "2026-07-19T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-07-20T10:00:00",
+    "end": "2026-07-20T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-07-20T11:00:00",
+    "end": "2026-07-20T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-07-20T08:00:00",
+    "end": "2026-07-20T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-07-22T14:00:00",
+    "end": "2026-07-22T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-07-22T14:00:00",
+    "end": "2026-07-22T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-07-24T10:00:00",
+    "end": "2026-07-24T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-07-24T09:00:00",
+    "end": "2026-07-24T11:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-07-25T14:00:00",
+    "end": "2026-07-25T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-07-25T13:00:00",
+    "end": "2026-07-25T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-07-25T09:00:00",
+    "end": "2026-07-25T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-07-26T13:00:00",
+    "end": "2026-07-26T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-07-27T11:00:00",
+    "end": "2026-07-27T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-07-28T10:00:00",
+    "end": "2026-07-28T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-07-29T15:00:00",
+    "end": "2026-07-29T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-07-30T13:00:00",
+    "end": "2026-07-30T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-07-30T09:00:00",
+    "end": "2026-07-30T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-07-30T12:00:00",
+    "end": "2026-07-30T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-07-31T16:00:00",
+    "end": "2026-07-31T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-07-31T15:00:00",
+    "end": "2026-07-31T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-08-01T09:00:00",
+    "end": "2026-08-01T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-08-01T16:00:00",
+    "end": "2026-08-01T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-08-03T11:00:00",
+    "end": "2026-08-03T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-08-03T16:00:00",
+    "end": "2026-08-03T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-08-03T09:00:00",
+    "end": "2026-08-03T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-08-04T08:00:00",
+    "end": "2026-08-04T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-08-05T16:00:00",
+    "end": "2026-08-05T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-08-05T12:00:00",
+    "end": "2026-08-05T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-05T08:00:00",
+    "end": "2026-08-05T10:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-08-07T12:00:00",
+    "end": "2026-08-07T14:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-07T10:00:00",
+    "end": "2026-08-07T12:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-08-07T10:00:00",
+    "end": "2026-08-07T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-08-08T10:00:00",
+    "end": "2026-08-08T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-08-08T14:00:00",
+    "end": "2026-08-08T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-08-08T16:00:00",
+    "end": "2026-08-08T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-08-09T16:00:00",
+    "end": "2026-08-09T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-08-09T12:00:00",
+    "end": "2026-08-09T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-08-09T15:00:00",
+    "end": "2026-08-09T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-10T09:00:00",
+    "end": "2026-08-10T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-08-12T10:00:00",
+    "end": "2026-08-12T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-08-12T10:00:00",
+    "end": "2026-08-12T11:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-08-14T13:00:00",
+    "end": "2026-08-14T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-08-14T12:00:00",
+    "end": "2026-08-14T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-08-14T11:00:00",
+    "end": "2026-08-14T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-08-15T15:00:00",
+    "end": "2026-08-15T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-08-15T16:00:00",
+    "end": "2026-08-15T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-08-16T12:00:00",
+    "end": "2026-08-16T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-08-17T16:00:00",
+    "end": "2026-08-17T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-17T09:00:00",
+    "end": "2026-08-17T11:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-08-18T15:00:00",
+    "end": "2026-08-18T16:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-08-18T11:00:00",
+    "end": "2026-08-18T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-08-19T08:00:00",
+    "end": "2026-08-19T10:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-19T11:00:00",
+    "end": "2026-08-19T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-08-19T11:00:00",
+    "end": "2026-08-19T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-08-20T10:00:00",
+    "end": "2026-08-20T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-08-20T15:00:00",
+    "end": "2026-08-20T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-08-21T08:00:00",
+    "end": "2026-08-21T09:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-08-21T11:00:00",
+    "end": "2026-08-21T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-21T16:00:00",
+    "end": "2026-08-21T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-08-22T12:00:00",
+    "end": "2026-08-22T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-23T15:00:00",
+    "end": "2026-08-23T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-08-23T16:00:00",
+    "end": "2026-08-23T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-08-23T11:00:00",
+    "end": "2026-08-23T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-08-25T11:00:00",
+    "end": "2026-08-25T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-25T09:00:00",
+    "end": "2026-08-25T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-08-27T15:00:00",
+    "end": "2026-08-27T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-08-27T13:00:00",
+    "end": "2026-08-27T15:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-08-27T13:00:00",
+    "end": "2026-08-27T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-08-29T10:00:00",
+    "end": "2026-08-29T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-08-29T13:00:00",
+    "end": "2026-08-29T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-08-30T10:00:00",
+    "end": "2026-08-30T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-08-30T15:00:00",
+    "end": "2026-08-30T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-08-30T08:00:00",
+    "end": "2026-08-30T09:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-08-31T16:00:00",
+    "end": "2026-08-31T18:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-08-31T12:00:00",
+    "end": "2026-08-31T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-09-01T13:00:00",
+    "end": "2026-09-01T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-01T12:00:00",
+    "end": "2026-09-01T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-02T15:00:00",
+    "end": "2026-09-02T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-02T15:00:00",
+    "end": "2026-09-02T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-09-02T12:00:00",
+    "end": "2026-09-02T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-04T10:00:00",
+    "end": "2026-09-04T12:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-09-04T09:00:00",
+    "end": "2026-09-04T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-09-04T12:00:00",
+    "end": "2026-09-04T14:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-05T10:00:00",
+    "end": "2026-09-05T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-09-05T08:00:00",
+    "end": "2026-09-05T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-09-05T12:00:00",
+    "end": "2026-09-05T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-09-06T13:00:00",
+    "end": "2026-09-06T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-09-06T15:00:00",
+    "end": "2026-09-06T16:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-06T11:00:00",
+    "end": "2026-09-06T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-08T15:00:00",
+    "end": "2026-09-08T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-09-10T16:00:00",
+    "end": "2026-09-10T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-09-11T11:00:00",
+    "end": "2026-09-11T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-09-11T10:00:00",
+    "end": "2026-09-11T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-09-13T12:00:00",
+    "end": "2026-09-13T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-09-13T12:00:00",
+    "end": "2026-09-13T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-09-14T09:00:00",
+    "end": "2026-09-14T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-09-15T09:00:00",
+    "end": "2026-09-15T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-09-15T09:00:00",
+    "end": "2026-09-15T11:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-09-15T10:00:00",
+    "end": "2026-09-15T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-09-17T10:00:00",
+    "end": "2026-09-17T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-09-18T16:00:00",
+    "end": "2026-09-18T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-09-18T10:00:00",
+    "end": "2026-09-18T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-09-19T15:00:00",
+    "end": "2026-09-19T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-19T09:00:00",
+    "end": "2026-09-19T10:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-09-19T09:00:00",
+    "end": "2026-09-19T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-09-20T10:00:00",
+    "end": "2026-09-20T11:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-09-20T16:00:00",
+    "end": "2026-09-20T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-09-21T12:00:00",
+    "end": "2026-09-21T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-09-22T13:00:00",
+    "end": "2026-09-22T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-09-23T16:00:00",
+    "end": "2026-09-23T18:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-09-24T16:00:00",
+    "end": "2026-09-24T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-09-24T10:00:00",
+    "end": "2026-09-24T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-09-25T08:00:00",
+    "end": "2026-09-25T09:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-09-25T12:00:00",
+    "end": "2026-09-25T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-09-27T16:00:00",
+    "end": "2026-09-27T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-09-27T15:00:00",
+    "end": "2026-09-27T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-09-27T12:00:00",
+    "end": "2026-09-27T14:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-09-29T15:00:00",
+    "end": "2026-09-29T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-09-30T13:00:00",
+    "end": "2026-09-30T14:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-10-01T13:00:00",
+    "end": "2026-10-01T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-10-01T16:00:00",
+    "end": "2026-10-01T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-10-02T09:00:00",
+    "end": "2026-10-02T11:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-10-02T10:00:00",
+    "end": "2026-10-02T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-10-02T14:00:00",
+    "end": "2026-10-02T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-10-03T13:00:00",
+    "end": "2026-10-03T14:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-10-03T16:00:00",
+    "end": "2026-10-03T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-10-04T08:00:00",
+    "end": "2026-10-04T09:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-10-04T15:00:00",
+    "end": "2026-10-04T16:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-10-04T13:00:00",
+    "end": "2026-10-04T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-10-05T15:00:00",
+    "end": "2026-10-05T17:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-10-05T09:00:00",
+    "end": "2026-10-05T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-10-05T13:00:00",
+    "end": "2026-10-05T15:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-10-06T08:00:00",
+    "end": "2026-10-06T09:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-10-06T12:00:00",
+    "end": "2026-10-06T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-10-06T15:00:00",
+    "end": "2026-10-06T17:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-10-08T09:00:00",
+    "end": "2026-10-08T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-10-09T10:00:00",
+    "end": "2026-10-09T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-10-09T14:00:00",
+    "end": "2026-10-09T15:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-10-10T13:00:00",
+    "end": "2026-10-10T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-10-11T16:00:00",
+    "end": "2026-10-11T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-10-12T10:00:00",
+    "end": "2026-10-12T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-10-12T12:00:00",
+    "end": "2026-10-12T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-10-13T12:00:00",
+    "end": "2026-10-13T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-10-13T13:00:00",
+    "end": "2026-10-13T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-10-13T12:00:00",
+    "end": "2026-10-13T13:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-10-14T11:00:00",
+    "end": "2026-10-14T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-10-14T10:00:00",
+    "end": "2026-10-14T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-10-15T08:00:00",
+    "end": "2026-10-15T09:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-10-16T13:00:00",
+    "end": "2026-10-16T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-10-16T11:00:00",
+    "end": "2026-10-16T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-10-16T15:00:00",
+    "end": "2026-10-16T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-10-17T16:00:00",
+    "end": "2026-10-17T18:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-10-18T13:00:00",
+    "end": "2026-10-18T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-10-18T13:00:00",
+    "end": "2026-10-18T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-10-18T12:00:00",
+    "end": "2026-10-18T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-10-19T16:00:00",
+    "end": "2026-10-19T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-10-19T12:00:00",
+    "end": "2026-10-19T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-10-20T13:00:00",
+    "end": "2026-10-20T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-10-20T12:00:00",
+    "end": "2026-10-20T14:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-10-20T16:00:00",
+    "end": "2026-10-20T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-10-21T12:00:00",
+    "end": "2026-10-21T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-10-23T15:00:00",
+    "end": "2026-10-23T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-10-23T11:00:00",
+    "end": "2026-10-23T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-10-24T10:00:00",
+    "end": "2026-10-24T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-10-24T11:00:00",
+    "end": "2026-10-24T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-10-25T11:00:00",
+    "end": "2026-10-25T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-10-26T15:00:00",
+    "end": "2026-10-26T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-10-26T08:00:00",
+    "end": "2026-10-26T09:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-10-27T15:00:00",
+    "end": "2026-10-27T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-10-27T12:00:00",
+    "end": "2026-10-27T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-10-27T11:00:00",
+    "end": "2026-10-27T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-10-28T08:00:00",
+    "end": "2026-10-28T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-10-29T08:00:00",
+    "end": "2026-10-29T09:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-10-29T09:00:00",
+    "end": "2026-10-29T11:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-10-30T10:00:00",
+    "end": "2026-10-30T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-10-30T09:00:00",
+    "end": "2026-10-30T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-10-30T15:00:00",
+    "end": "2026-10-30T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-01T12:00:00",
+    "end": "2026-11-01T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-01T14:00:00",
+    "end": "2026-11-01T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-03T09:00:00",
+    "end": "2026-11-03T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-03T13:00:00",
+    "end": "2026-11-03T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-11-03T14:00:00",
+    "end": "2026-11-03T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-11-04T12:00:00",
+    "end": "2026-11-04T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-04T13:00:00",
+    "end": "2026-11-04T14:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-11-06T12:00:00",
+    "end": "2026-11-06T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-11-06T16:00:00",
+    "end": "2026-11-06T18:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-11-06T12:00:00",
+    "end": "2026-11-06T14:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-07T10:00:00",
+    "end": "2026-11-07T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-08T14:00:00",
+    "end": "2026-11-08T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-11-08T11:00:00",
+    "end": "2026-11-08T12:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-11-10T16:00:00",
+    "end": "2026-11-10T18:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-10T09:00:00",
+    "end": "2026-11-10T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-10T11:00:00",
+    "end": "2026-11-10T12:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-11-11T09:00:00",
+    "end": "2026-11-11T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-11T15:00:00",
+    "end": "2026-11-11T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-11T08:00:00",
+    "end": "2026-11-11T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-12T15:00:00",
+    "end": "2026-11-12T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-11-12T12:00:00",
+    "end": "2026-11-12T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-11-12T08:00:00",
+    "end": "2026-11-12T09:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-14T13:00:00",
+    "end": "2026-11-14T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-14T09:00:00",
+    "end": "2026-11-14T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-14T14:00:00",
+    "end": "2026-11-14T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-11-15T13:00:00",
+    "end": "2026-11-15T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-11-15T14:00:00",
+    "end": "2026-11-15T15:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-11-15T16:00:00",
+    "end": "2026-11-15T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-17T16:00:00",
+    "end": "2026-11-17T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-11-18T08:00:00",
+    "end": "2026-11-18T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-11-19T16:00:00",
+    "end": "2026-11-19T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-19T15:00:00",
+    "end": "2026-11-19T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-19T11:00:00",
+    "end": "2026-11-19T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-11-20T08:00:00",
+    "end": "2026-11-20T09:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-11-20T09:00:00",
+    "end": "2026-11-20T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-11-20T08:00:00",
+    "end": "2026-11-20T09:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-21T15:00:00",
+    "end": "2026-11-21T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-21T08:00:00",
+    "end": "2026-11-21T09:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-11-21T11:00:00",
+    "end": "2026-11-21T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-11-22T11:00:00",
+    "end": "2026-11-22T13:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-11-22T16:00:00",
+    "end": "2026-11-22T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-11-23T08:00:00",
+    "end": "2026-11-23T09:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-23T14:00:00",
+    "end": "2026-11-23T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-11-24T16:00:00",
+    "end": "2026-11-24T18:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-11-24T14:00:00",
+    "end": "2026-11-24T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-11-24T10:00:00",
+    "end": "2026-11-24T12:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-25T10:00:00",
+    "end": "2026-11-25T12:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-25T14:00:00",
+    "end": "2026-11-25T16:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-11-26T14:00:00",
+    "end": "2026-11-26T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-11-27T09:00:00",
+    "end": "2026-11-27T11:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-27T16:00:00",
+    "end": "2026-11-27T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-11-28T08:00:00",
+    "end": "2026-11-28T09:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Maintenance",
+    "start": "2026-11-28T16:00:00",
+    "end": "2026-11-28T17:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-11-28T13:00:00",
+    "end": "2026-11-28T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-11-29T09:00:00",
+    "end": "2026-11-29T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-11-30T14:00:00",
+    "end": "2026-11-30T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-12-01T14:00:00",
+    "end": "2026-12-01T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-12-01T13:00:00",
+    "end": "2026-12-01T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-12-02T15:00:00",
+    "end": "2026-12-02T16:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-12-02T13:00:00",
+    "end": "2026-12-02T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-12-02T14:00:00",
+    "end": "2026-12-02T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-12-03T08:00:00",
+    "end": "2026-12-03T10:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-12-04T12:00:00",
+    "end": "2026-12-04T13:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-12-04T11:00:00",
+    "end": "2026-12-04T13:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-12-04T15:00:00",
+    "end": "2026-12-04T17:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-12-05T15:00:00",
+    "end": "2026-12-05T16:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-12-05T10:00:00",
+    "end": "2026-12-05T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-12-05T15:00:00",
+    "end": "2026-12-05T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-12-11T10:00:00",
+    "end": "2026-12-11T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-12-11T10:00:00",
+    "end": "2026-12-11T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-12-11T15:00:00",
+    "end": "2026-12-11T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-12-12T15:00:00",
+    "end": "2026-12-12T16:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-12-12T16:00:00",
+    "end": "2026-12-12T18:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Deployment",
+    "start": "2026-12-12T16:00:00",
+    "end": "2026-12-12T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-12-14T10:00:00",
+    "end": "2026-12-14T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-12-14T10:00:00",
+    "end": "2026-12-14T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-12-14T16:00:00",
+    "end": "2026-12-14T18:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-12-15T09:00:00",
+    "end": "2026-12-15T11:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-12-15T11:00:00",
+    "end": "2026-12-15T12:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-12-15T09:00:00",
+    "end": "2026-12-15T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-12-16T14:00:00",
+    "end": "2026-12-16T16:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-12-16T08:00:00",
+    "end": "2026-12-16T09:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-12-16T14:00:00",
+    "end": "2026-12-16T16:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-12-18T11:00:00",
+    "end": "2026-12-18T13:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-12-20T16:00:00",
+    "end": "2026-12-20T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-12-20T08:00:00",
+    "end": "2026-12-20T09:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Design workshop",
+    "start": "2026-12-21T09:00:00",
+    "end": "2026-12-21T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-12-21T11:00:00",
+    "end": "2026-12-21T13:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-12-21T13:00:00",
+    "end": "2026-12-21T15:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-12-23T08:00:00",
+    "end": "2026-12-23T09:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-12-23T09:00:00",
+    "end": "2026-12-23T11:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-12-24T13:00:00",
+    "end": "2026-12-24T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-12-24T15:00:00",
+    "end": "2026-12-24T17:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-12-24T16:00:00",
+    "end": "2026-12-24T18:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Code review",
+    "start": "2026-12-25T09:00:00",
+    "end": "2026-12-25T11:00:00",
+    "color": "teal"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-12-25T09:00:00",
+    "end": "2026-12-25T10:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-12-25T14:00:00",
+    "end": "2026-12-25T15:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-12-26T13:00:00",
+    "end": "2026-12-26T14:00:00",
+    "color": "blue"
+  },
+  {
+    "title": "Client demo",
+    "start": "2026-12-26T12:00:00",
+    "end": "2026-12-26T14:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-12-28T09:00:00",
+    "end": "2026-12-28T10:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-12-29T09:00:00",
+    "end": "2026-12-29T10:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Stand-up",
+    "start": "2026-12-29T16:00:00",
+    "end": "2026-12-29T17:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Team meeting",
+    "start": "2026-12-29T13:00:00",
+    "end": "2026-12-29T15:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Brainstorming",
+    "start": "2026-12-30T14:00:00",
+    "end": "2026-12-30T15:00:00",
+    "color": "purple"
+  },
+  {
+    "title": "Retrospective",
+    "start": "2026-12-30T11:00:00",
+    "end": "2026-12-30T12:00:00",
+    "color": "orange"
+  },
+  {
+    "title": "Sprint planning",
+    "start": "2026-12-30T10:00:00",
+    "end": "2026-12-30T11:00:00",
+    "color": "red"
+  },
+  {
+    "title": "Project sync",
+    "start": "2026-12-31T15:00:00",
+    "end": "2026-12-31T16:00:00",
+    "color": "green"
+  },
+  {
+    "title": "Internal training",
+    "start": "2026-12-31T14:00:00",
+    "end": "2026-12-31T16:00:00",
+    "color": "red"
+  }
+]
