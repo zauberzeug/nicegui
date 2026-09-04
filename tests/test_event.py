@@ -3,7 +3,7 @@ import asyncio
 import httpx
 import pytest
 
-from nicegui import Client, Event, app, ui
+from nicegui import Client, Event, app, background_tasks, ui
 from nicegui.testing import Screen, User
 
 
@@ -111,6 +111,29 @@ async def test_emitted_timeout(user: User):
 
     await user.open('/')
     await user.should_see('caught: Timed out waiting for event after 0.1 seconds')
+
+
+async def test_emitted_is_cancelled_when_client_is_deleted(user: User):
+    """The task awaiting an event must be cancelled when the client is deleted, e.g. after a disconnect."""
+    event = Event()
+    results = []
+
+    @ui.page('/')
+    def page():
+        async def wait_for_event() -> None:
+            await event.emitted()
+            results.append('emitted')  # must not run: the event was never fired
+
+        ui.button('Wait', on_click=wait_for_event)
+
+    client = await user.open('/')
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)  # let the handler start awaiting the event
+    client.delete()
+    await asyncio.sleep(0.1)  # let the cancellation take effect
+    assert not results, 'code after emitted() must not run for an event that never happened'
+    assert not any('wait_for_event' in task.get_name() for task in background_tasks.running_tasks), \
+        'the awaiting task should be cancelled, not leaked'
 
 
 async def test_exception_during_call(user: User):
