@@ -99,11 +99,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         :param end: end time of the event
         """
         for event in self._props['options']['events']:
-            if (
-                event['title'] == title
-                and event['start'] == start
-                and event['end'] == end
-            ):
+            if event['title'] == title and event['start'] == start and event['end'] == end:
                 self._props['options']['events'].remove(event)
                 break
 

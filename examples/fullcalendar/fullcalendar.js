@@ -5,16 +5,13 @@ export default {
   props: {
     options: Array,
     resourcePath: String,
-    resourcePath: String,
   },
   async mounted() {
     await this.$nextTick(); // wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.resourcePath}/index.global.min.js`);
-    await this.$nextTick(); // wait for window.path_prefix to be set
-    await loadResource(window.path_prefix + `${this.resourcePath}/index.global.min.js`);
     this.options.eventClick = (info) => this.$emit("click", { info });
 
-const eventsOpt = this.options.events;
+    const eventsOpt = this.options.events;
     if (eventsOpt === "__fetch__" || typeof eventsOpt === "function") {
       this.options.events = (fetchInfo, successCallback, failureCallback) => {
         const request_id = ++this._next_request_id;
