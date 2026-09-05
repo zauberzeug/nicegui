@@ -74,6 +74,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
                     end_value=e.args['end_value'],
                     time_zone=e.args['time_zone'],
                     sender=self,
+                    client=self.client,
                 )
                 events.handle_event(on_fetch_events, info)
 
