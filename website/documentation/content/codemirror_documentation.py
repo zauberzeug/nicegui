@@ -43,12 +43,11 @@ def line_anchors_demo() -> None:
 
 
 @doc.demo('Editor Signals and Reveal Line', '''
-    ``on_selection_change`` reports the 1-indexed line and column whenever the cursor moves,
-    plus the ``from_line``/``to_line`` span of the selection (``empty`` distinguishes a bare cursor).
-    ``on_viewport_change`` reports the visible line range — useful for confirming that
-    ``reveal_line`` actually scrolled the requested line into view.
-    Other signal hooks include ``on_focus_change`` and ``on_geometry_change``.
-    Per-signal debounce can be tuned via ``ui.codemirror.handler(callback, debounce_ms=...)``.
+    `on_selection_change` reports the 1-indexed line and column whenever the cursor moves,
+    plus the `from_line`/`to_line` span of the selection (`empty` distinguishes a bare cursor).
+    `on_viewport_change` reports the visible line range — useful for confirming that
+    `reveal_line` actually scrolled the requested line into view.
+    Other signal hooks include `on_focus_change` and `on_geometry_change`.
 ''')
 def signals_and_reveal_demo() -> None:
     cursor_status = ui.label('Cursor: line 1, col 1')

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from itertools import accumulate, chain, repeat
-from typing import Any, Generic, get_args
+from typing import get_args
 
 from typing_extensions import Self
 
@@ -16,7 +15,6 @@ from ...events import (
     CodeMirrorKeyBindingEventArguments,
     CodeMirrorSelectionChangeEventArguments,
     CodeMirrorViewportChangeEventArguments,
-    EventT,
     GenericEventArguments,
     Handler,
     ValueChangeEventArguments,
@@ -25,16 +23,6 @@ from ...events import (
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
 from .keybindings import KeyBindingElement
 from .line_anchors import LineAnchorElement
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class CodeMirrorHandlerSpec(Generic[EventT]):
-    """Wraps a CodeMirror handler with per-registration config overrides.
-
-    Construct via :meth:`CodeMirror.handler` rather than instantiating directly.
-    """
-    callback: Handler[EventT]
-    debounce_ms: int | None = None
 
 
 class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], DisableableElement,
@@ -51,14 +39,10 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
         keymap: dict[str, Handler[CodeMirrorKeyBindingEventArguments] | CodeMirror.KeyBinding] | None = None,
-        on_selection_change: Handler[CodeMirrorSelectionChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorSelectionChangeEventArguments] | None = None,
-        on_focus_change: Handler[CodeMirrorFocusChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorFocusChangeEventArguments] | None = None,
-        on_viewport_change: Handler[CodeMirrorViewportChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorViewportChangeEventArguments] | None = None,
-        on_geometry_change: Handler[CodeMirrorGeometryChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorGeometryChangeEventArguments] | None = None,
+        on_selection_change: Handler[CodeMirrorSelectionChangeEventArguments] | None = None,
+        on_focus_change: Handler[CodeMirrorFocusChangeEventArguments] | None = None,
+        on_viewport_change: Handler[CodeMirrorViewportChangeEventArguments] | None = None,
+        on_geometry_change: Handler[CodeMirrorGeometryChangeEventArguments] | None = None,
         language: SUPPORTED_LANGUAGES | None = DEFAULT_PROP | None,
         theme: SUPPORTED_THEMES = DEFAULT_PROP | 'basicLight',
         indent: str = DEFAULT_PROP | ' ' * 4,
@@ -81,10 +65,6 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
         At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
 
-        Each ``on_*_change`` handler accepts either a bare callable (default debounce) or a wrapped
-        :class:`~nicegui.events.CodeMirrorHandlerSpec` for per-registration overrides
-        (e.g. ``ui.codemirror.handler(callback, debounce_ms=200)``).
-
         *Since version 3.13.0:*
         Per-line tooltips can be attached via the ``line_tooltips`` dict.
 
@@ -102,10 +82,10 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
-        :param on_selection_change: callback when cursor line or column changes (debounced 30 ms by default)
-        :param on_focus_change: callback when the editor gains or loses focus (no debounce by default)
-        :param on_viewport_change: callback when the visible line range changes (debounced 100 ms by default)
-        :param on_geometry_change: callback when the editor or content size changes (debounced 100 ms by default)
+        :param on_selection_change: callback when cursor line or column changes (throttled to 30 ms)
+        :param on_focus_change: callback when the editor gains or loses focus
+        :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms)
+        :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -132,10 +112,6 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         self._props['focus-tracking-enabled'] = False
         self._props['viewport-tracking-enabled'] = False
         self._props['geometry-tracking-enabled'] = False
-        self._props['selection-debounce-ms'] = 30
-        self._props['focus-debounce-ms'] = 0
-        self._props['viewport-debounce-ms'] = 100
-        self._props['geometry-debounce-ms'] = 100
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
@@ -152,35 +128,13 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         if on_geometry_change is not None:
             self.on_geometry_change(on_geometry_change)
 
-    @staticmethod
-    def handler(
-        callback: Handler[EventT],
-        *,
-        debounce_ms: int | None = None,
-    ) -> CodeMirrorHandlerSpec[EventT]:
-        """Wrap a CodeMirror signal handler with per-registration config overrides.
-
-        Use this to override the default debounce for a single signal registration::
-
-            ui.codemirror(on_viewport_change=ui.codemirror.handler(scroll_cb, debounce_ms=200))
-
-        :param callback: the handler callable
-        :param debounce_ms: per-signal debounce override in milliseconds; ``None`` keeps the default
-        """
-        return CodeMirrorHandlerSpec(callback=callback, debounce_ms=debounce_ms)
-
-    def on_selection_change(
-        self,
-        handler: Handler[CodeMirrorSelectionChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorSelectionChangeEventArguments],
-    ) -> Self:
+    def on_selection_change(self, handler: Handler[CodeMirrorSelectionChangeEventArguments]) -> Self:
         """Add a callback for cursor selection changes (line + column).
 
         Fires on selection moves and on document edits that shift the cursor line or column.
         ``from_line``/``to_line`` span the main selection (equal and ``empty`` is ``True`` for a bare cursor).
         """
-        callback, debounce_ms = self._unpack_handler(handler)
-        self.on('selection-change', lambda e: handle_event(callback, CodeMirrorSelectionChangeEventArguments(
+        self.on('selection-change', lambda e: handle_event(handler, CodeMirrorSelectionChangeEventArguments(
             sender=self,
             client=self.client,
             line=e.args['line'],
@@ -188,73 +142,42 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
             from_line=e.args['from_line'],
             to_line=e.args['to_line'],
             empty=e.args['empty'],
-        )))
+        )), throttle=0.03)
         self._props['selection-tracking-enabled'] = True
-        if debounce_ms is not None:
-            self._props['selection-debounce-ms'] = debounce_ms
         return self
 
-    def on_focus_change(
-        self,
-        handler: Handler[CodeMirrorFocusChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorFocusChangeEventArguments],
-    ) -> Self:
+    def on_focus_change(self, handler: Handler[CodeMirrorFocusChangeEventArguments]) -> Self:
         """Add a callback for editor focus changes."""
-        callback, debounce_ms = self._unpack_handler(handler)
-        self.on('focus-change', lambda e: handle_event(callback, CodeMirrorFocusChangeEventArguments(
+        self.on('focus-change', lambda e: handle_event(handler, CodeMirrorFocusChangeEventArguments(
             sender=self,
             client=self.client,
             focused=e.args['focused'],
         )))
         self._props['focus-tracking-enabled'] = True
-        if debounce_ms is not None:
-            self._props['focus-debounce-ms'] = debounce_ms
         return self
 
-    def on_viewport_change(
-        self,
-        handler: Handler[CodeMirrorViewportChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorViewportChangeEventArguments],
-    ) -> Self:
+    def on_viewport_change(self, handler: Handler[CodeMirrorViewportChangeEventArguments]) -> Self:
         """Add a callback for viewport (visible line range) changes."""
-        callback, debounce_ms = self._unpack_handler(handler)
-        self.on('viewport-change', lambda e: handle_event(callback, CodeMirrorViewportChangeEventArguments(
+        self.on('viewport-change', lambda e: handle_event(handler, CodeMirrorViewportChangeEventArguments(
             sender=self,
             client=self.client,
             from_line=e.args['from_line'],
             to_line=e.args['to_line'],
-        )))
+        )), throttle=0.1)
         self._props['viewport-tracking-enabled'] = True
-        if debounce_ms is not None:
-            self._props['viewport-debounce-ms'] = debounce_ms
         return self
 
-    def on_geometry_change(
-        self,
-        handler: Handler[CodeMirrorGeometryChangeEventArguments] |
-        CodeMirrorHandlerSpec[CodeMirrorGeometryChangeEventArguments],
-    ) -> Self:
+    def on_geometry_change(self, handler: Handler[CodeMirrorGeometryChangeEventArguments]) -> Self:
         """Add a callback for editor geometry changes (width, height, content height)."""
-        callback, debounce_ms = self._unpack_handler(handler)
-        self.on('geometry-change', lambda e: handle_event(callback, CodeMirrorGeometryChangeEventArguments(
+        self.on('geometry-change', lambda e: handle_event(handler, CodeMirrorGeometryChangeEventArguments(
             sender=self,
             client=self.client,
             width=e.args['width'],
             height=e.args['height'],
             content_height=e.args['content_height'],
-        )))
+        )), throttle=0.1)
         self._props['geometry-tracking-enabled'] = True
-        if debounce_ms is not None:
-            self._props['geometry-debounce-ms'] = debounce_ms
         return self
-
-    @staticmethod
-    def _unpack_handler(
-        handler: Handler[Any] | CodeMirrorHandlerSpec[Any],
-    ) -> tuple[Handler[Any], int | None]:
-        if isinstance(handler, CodeMirrorHandlerSpec):
-            return handler.callback, handler.debounce_ms
-        return handler, None
 
     def reveal_line(self, line_number: int) -> None:
         """Scroll the editor so the given 1-indexed line is visible.

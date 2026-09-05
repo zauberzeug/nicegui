@@ -256,38 +256,6 @@ def test_no_handler_no_traffic(screen: Screen):
     assert events == [], f'expected no traffic without an on_selection_change handler, got {events}'
 
 
-def test_debounce_override(screen: Screen):
-    """Verify the debounce_ms override on the handler factory is honored by the JS dispatcher."""
-    events: list[tuple[int, int]] = []
-    editor = None
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror(
-            'Line 1\nLine 2\nLine 3\nLine 4\nLine 5',
-            on_selection_change=ui.codemirror.handler(
-                lambda e: events.append((e.line, e.column)),
-                debounce_ms=200,
-            ),
-        )
-
-    screen.open('/')
-    screen.should_contain('Line 1')
-    # Fire 5 rapid selection moves well inside the 200 ms debounce window.
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id});'
-        'for (let i = 1; i <= 5; i++) {'
-        '  el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(i).from}});'
-        '}'
-    )
-    # Wait long enough for the trailing debounce to fire and any further frames to settle.
-    screen.wait_for(lambda: len(events) >= 1)
-    screen.wait(0.4)
-    assert len(events) == 1, f'expected exactly one debounced event, got {events}'
-    assert events[0][0] == 5, f'expected the trailing event on line 5, got {events[0]}'
-
-
 def test_reveal_line(screen: Screen):
     editor = None
 
