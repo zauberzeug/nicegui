@@ -48,6 +48,8 @@ def line_anchors_demo() -> None:
     `on_viewport_change` reports the visible line range — useful for confirming that
     `reveal_line` actually scrolled the requested line into view.
     Other signal hooks include `on_focus_change` and `on_geometry_change`.
+
+    *Added in version 3.17.0*
 ''')
 def signals_and_reveal_demo() -> None:
     cursor_status = ui.label('Cursor: line 1, col 1')

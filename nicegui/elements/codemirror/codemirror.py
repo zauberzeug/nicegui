@@ -79,13 +79,17 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         Line anchors that track document positions through edits can be attached via the ``line_anchors`` dict
         (assign to declare, read back for the current positions).
 
+        *Since version 3.17.0:*
+        Editor signals report the cursor selection, focus, visible line range and geometry,
+        and ``reveal_line`` scrolls a given line into view.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
-        :param on_selection_change: callback when cursor line or column changes (throttled to 30 ms)
-        :param on_focus_change: callback when the editor gains or loses focus
-        :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms)
-        :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms)
+        :param on_selection_change: callback when cursor line or column changes (throttled to 30 ms) (*added in version 3.17.0*)
+        :param on_focus_change: callback when the editor gains or loses focus (*added in version 3.17.0*)
+        :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms) (*added in version 3.17.0*)
+        :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms) (*added in version 3.17.0*)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -133,6 +137,8 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
         Fires on selection moves and on document edits that shift the cursor line or column.
         ``from_line``/``to_line`` span the main selection (equal and ``empty`` is ``True`` for a bare cursor).
+
+        *Added in version 3.17.0*
         """
         self.on('selection-change', lambda e: handle_event(handler, CodeMirrorSelectionChangeEventArguments(
             sender=self,
@@ -147,7 +153,10 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         return self
 
     def on_focus_change(self, handler: Handler[CodeMirrorFocusChangeEventArguments]) -> Self:
-        """Add a callback for editor focus changes."""
+        """Add a callback for editor focus changes.
+
+        *Added in version 3.17.0*
+        """
         self.on('focus-change', lambda e: handle_event(handler, CodeMirrorFocusChangeEventArguments(
             sender=self,
             client=self.client,
@@ -157,7 +166,10 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         return self
 
     def on_viewport_change(self, handler: Handler[CodeMirrorViewportChangeEventArguments]) -> Self:
-        """Add a callback for viewport (visible line range) changes."""
+        """Add a callback for viewport (visible line range) changes.
+
+        *Added in version 3.17.0*
+        """
         self.on('viewport-change', lambda e: handle_event(handler, CodeMirrorViewportChangeEventArguments(
             sender=self,
             client=self.client,
@@ -168,7 +180,10 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         return self
 
     def on_geometry_change(self, handler: Handler[CodeMirrorGeometryChangeEventArguments]) -> Self:
-        """Add a callback for editor geometry changes (width, height, content height)."""
+        """Add a callback for editor geometry changes (width, height, content height).
+
+        *Added in version 3.17.0*
+        """
         self.on('geometry-change', lambda e: handle_event(handler, CodeMirrorGeometryChangeEventArguments(
             sender=self,
             client=self.client,
@@ -183,6 +198,8 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         """Scroll the editor so the given 1-indexed line is visible.
 
         :param line_number: 1-indexed line number to scroll into view
+
+        *Added in version 3.17.0*
         """
         self.run_method('revealLine', line_number)
 
