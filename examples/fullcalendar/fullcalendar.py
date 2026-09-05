@@ -49,15 +49,15 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         :param on_fetch_events: callback that is called when FullCalendar requests events for a date range.
             The callback receives a :class:`FetchInfoArguments` and must call ``response(events)``
             (or ``failure(error)``) on the received object to deliver the events back to the calendar.
-            The ``options`` dict must contain ``"events": callable`` to activate this feature.
+            Providing this callback activates event fetching; ``options`` does not need an ``events`` entry.
         """
 
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib')
         options = dict(options)
-        self._events_function = None
-        if callable(options.get('events')):
-            self._events_function = options.pop('events')
+        self._fetch_events_enabled = on_fetch_events is not None
+        if self._fetch_events_enabled:
+            options.pop('events', None)
             options['events'] = '__fetch__'
         self._props['options'] = options
         self._update_method = 'update_calendar'
@@ -65,7 +65,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         if on_click:
             self.on('click', lambda e: events.handle_event(on_click, e))
 
-        if on_fetch_events:
+        if on_fetch_events is not None:
 
             def _on_fetch(e: events.GenericEventArguments) -> None:
                 info = FetchInfoArguments(
@@ -88,6 +88,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         :param start: start time of the event
         :param end: end time of the event
         """
+        self._ensure_static_events()
         event_dict = {'title': title, 'start': start, 'end': end, **kwargs}
         self._props['options']['events'].append(event_dict)
 
@@ -98,6 +99,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         :param start: start time of the event
         :param end: end time of the event
         """
+        self._ensure_static_events()
         for event in self._props['options']['events']:
             if event['title'] == title and event['start'] == start and event['end'] == end:
                 self._props['options']['events'].remove(event)
@@ -106,4 +108,9 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
     @property
     def events(self) -> list[dict]:
         """List of events currently displayed in the calendar."""
+        self._ensure_static_events()
         return self._props['options']['events']
+
+    def _ensure_static_events(self) -> None:
+        if self._fetch_events_enabled:
+            raise RuntimeError('Event mutation is not available when on_fetch_events is set.')

@@ -18,7 +18,6 @@ options = {
     'height': 'auto',
     'width': 'auto',
     'initialDate': datetime.now().strftime('%Y-%m-%d'),
-    'events': lambda *args, **kwargs: None,
 }
 
 titles = [
