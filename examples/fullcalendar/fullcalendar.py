@@ -115,4 +115,5 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
 
     def _ensure_static_events(self) -> None:
         if self._fetch_events_enabled:
-            raise RuntimeError('Event mutation is not available when on_fetch_events is set.')
+            raise RuntimeError(
+                'Events are not available when on_fetch_events is set; the calendar owns its event list.')
