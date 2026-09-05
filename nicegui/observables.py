@@ -214,7 +214,7 @@ class ObservableDict(ObservableCollection, dict[_KT, _VT]):
     def setdefault(self, __key: _KT, __default: _VT) -> _VT:
         ...
 
-    def setdefault(self, __key: _KT, __default: _VT | None = None) -> _VT | None:
+    def setdefault(self, __key: _KT, __default: _VT | None = None) -> object:
         if __key in self:
             return super().__getitem__(__key)
         item = super().setdefault(__key, self._observe(cast(_VT, __default)))
