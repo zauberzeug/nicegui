@@ -56,8 +56,9 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         self.add_resource(Path(__file__).parent / 'lib')
         options = dict(options)
         self._fetch_events_enabled = on_fetch_events is not None
+        if callable(options.get('events')):
+            del options['events']
         if self._fetch_events_enabled:
-            options.pop('events', None)
             options['events'] = '__fetch__'
         self._props['options'] = options
         self._update_method = 'update_calendar'
