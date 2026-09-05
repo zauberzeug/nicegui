@@ -32,6 +32,7 @@ class FetchInfoArguments(events.UiEventArguments):
 
 
 class FullCalendar(ui.element, component='fullcalendar.js'):
+
     def __init__(
         self,
         options: dict[str, Any],
