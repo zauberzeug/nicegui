@@ -6,8 +6,8 @@ from typing import Any
 from nicegui import events, ui
 
 
-@dataclass
-class FetchInfoArguments(events.EventArguments):
+@dataclass(kw_only=True, slots=True)
+class FetchInfoArguments(events.UiEventArguments):
     """Arguments passed to the ``on_fetch_events`` callback.
 
     Contains the date range FullCalendar is requesting events for, plus a
@@ -21,7 +21,6 @@ class FetchInfoArguments(events.EventArguments):
     start_value: int
     end_value: int
     time_zone: str
-    sender: Any = None
 
     def response(self, events_list: list[dict]) -> None:
         """Send the fetched events back to the calendar."""
