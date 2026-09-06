@@ -53,7 +53,11 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._match: RouteMatch | None = None
         self._active_tasks: set[asyncio.Task] = set()
         self._404_enabled = show_404
+        self._404_elements: list[Element] = []
+        self._error_rendered = False
         self.has_404 = False
+        if parent_sub_pages_element is not None and parent_sub_pages_element.has_404:
+            parent_sub_pages_element._retract_404()
         self._show()
 
     def add(self, path: str, page: Callable) -> Self:
@@ -79,6 +83,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _show(self) -> None:
         """Display the page matching the current URL path."""
         self._rendered_path = ''
+        self._error_rendered = False
         match = self._find_matching_path()
         has_nested_sub_pages = any(isinstance(el, SubPages) for el in self.descendants())
         # if path and query params are the same, only update fragment without re-rendering
@@ -99,7 +104,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         else:
             self._cancel_active_tasks()
             with self.clear():
-                if match is not None and self._render_page(match):
+                if match is not None and self._render_page(match) and not self._has_unconsumed_path(match):
                     self._set_match(match)
                 else:
                     self._set_match(None)
@@ -112,6 +117,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         except Exception as e:
             self.clear()  # clear partial content created before the exception
             self._render_error(e)
+            self._error_rendered = True
             self.client.handle_exception(e)
             return True
 
@@ -150,9 +156,27 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
     def _set_match(self, match: RouteMatch | None) -> None:
         self._match = match
         self.has_404 = match is None
-        if self.has_404 and self._404_enabled:
-            with self.clear():
+        self._404_elements = []
+        if self.has_404 and self._404_enabled and not self._error_rendered:  # a rendered error tells more than a 404
+            if not self._active_tasks:  # a builder which is still running keeps the content it has already created
+                self.clear()
+            index = len(self.default_slot.children)
+            with self:
                 self._render_404()
+            self._404_elements = self.default_slot.children[index:]  # the elements to delete when the 404 is retracted
+
+    def _retract_404(self) -> None:
+        """Withdraw a 404 because a nested sub pages element has appeared to consume the remaining path."""
+        match = self._find_matching_path()
+        if match is not None:  # a 404 which is due to no route matching at all stands
+            for element in self._404_elements:
+                if not element.is_deleted:
+                    element.delete()
+            self._set_match(match)
+
+    def _has_unconsumed_path(self, match: RouteMatch) -> bool:
+        """Check if the match leaves a remaining path which no nested sub pages element can consume."""
+        return bool(match.remaining_path) and not any(isinstance(el, SubPages) for el in self.descendants())
 
     def _reset_match(self) -> None:
         self._match = None
