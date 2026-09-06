@@ -41,11 +41,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         :param show_404: whether to show a 404 error message if the full path could not be consumed
             (can be useful for dynamically created nested sub pages) (default: ``True``)
         """
+        routes = routes or {}
+        for path in routes:
+            self._validate_route(path)
         super().__init__()
         self._router = context.client.sub_pages_router
-        self._routes = routes or {}
-        for path in self._routes:
-            self._validate_route(path)
+        self._routes = routes
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
         self._rendered_path = ''
         self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path

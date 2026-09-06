@@ -1181,6 +1181,22 @@ async def test_scope_searches_whole_page(user: User,
         await user.should_not_see('in content')
 
 
+async def test_invalid_sub_pages_route_does_not_break_page(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.label('before')
+        try:
+            ui.sub_pages({'/{x:path}': lambda: None})
+        except ValueError:
+            ui.label('caught')
+        ui.label('after')
+
+    await user.open('/')
+    await user.should_see('before')
+    await user.should_see('caught')
+    await user.should_see('after')
+
+
 async def test_switching_between_sub_pages(user: User) -> None:
     calls = {'index': 0, 'a': 0, 'b': 0, 'other': 0}
 
