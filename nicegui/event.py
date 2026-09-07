@@ -123,11 +123,12 @@ class Event(Generic[P]):
                 future.set_result(args[0] if len(args) == 1 else args if args else None)
 
         if Slot.get_stack():
-            def cancel() -> None:
+            def on_client_delete() -> None:
+                self.unsubscribe(callback)
                 future.cancel()
-            context.client.on_delete(cancel)
+            context.client.on_delete(on_client_delete)
 
-        self.subscribe(callback, expect_args=True)
+        self.subscribe(callback, expect_args=True, unsubscribe_on_delete=False)
         try:
             return await asyncio.wait_for(future, timeout)
         except asyncio.TimeoutError as error:
