@@ -14,5 +14,6 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.ruff": "always"
     }
-  }
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:system"
 }

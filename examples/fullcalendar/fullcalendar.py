@@ -1,13 +1,44 @@
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from nicegui import events, ui
 
 
+@dataclass(kw_only=True, slots=True)
+class FetchInfoArguments(events.UiEventArguments):
+    """Arguments passed to the ``on_fetch_events`` callback.
+
+    Contains the date range FullCalendar is requesting events for, plus a
+    ``request_id`` that must be passed back via :meth:`response` or :meth:`failure`
+    so the result is delivered to the correct pending callback on the client.
+    """
+
+    request_id: int
+    start: str
+    end: str
+    start_value: int
+    end_value: int
+    time_zone: str
+
+    def response(self, events_list: list[dict]) -> None:
+        """Send the fetched events back to the calendar."""
+        self.sender.run_method('on_events_fetched', self.request_id, events_list)
+
+    def failure(self, error: str | None = None) -> None:
+        """Notify the calendar that the fetch failed."""
+        self.sender.run_method('on_events_failed', self.request_id, error)
+
+
 class FullCalendar(ui.element, component='fullcalendar.js'):
 
-    def __init__(self, options: dict[str, Any], on_click: Callable | None = None) -> None:
+    def __init__(
+        self,
+        options: dict[str, Any],
+        on_click: Callable | None = None,
+        on_fetch_events: Callable | None = None,
+    ) -> None:
         """FullCalendar
 
         An element that integrates the FullCalendar library (https://fullcalendar.io/) to create an interactive calendar display.
@@ -15,14 +46,42 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
 
         :param options: dictionary of FullCalendar properties for customization, such as "initialView", "slotMinTime", "slotMaxTime", "allDaySlot", "timeZone", "height", and "events".
         :param on_click: callback that is called when a calendar event is clicked.
+        :param on_fetch_events: callback that is called when FullCalendar requests events for a date range.
+            The callback receives a :class:`FetchInfoArguments` and must call ``response(events)``
+            (or ``failure(error)``) on the received object to deliver the events back to the calendar.
+            Providing this callback activates event fetching; ``options`` does not need an ``events`` entry.
         """
+
         super().__init__()
         self.add_resource(Path(__file__).parent / 'lib')
+        options = dict(options)
+        self._fetch_events_enabled = on_fetch_events is not None
+        if callable(options.get('events')):
+            del options['events']
+        if self._fetch_events_enabled:
+            options['events'] = '__fetch__'
         self._props['options'] = options
         self._update_method = 'update_calendar'
 
         if on_click:
             self.on('click', lambda e: events.handle_event(on_click, e))
+
+        if on_fetch_events is not None:
+
+            def _on_fetch(e: events.GenericEventArguments) -> None:
+                info = FetchInfoArguments(
+                    request_id=e.args['request_id'],
+                    start=e.args['start'],
+                    end=e.args['end'],
+                    start_value=e.args['start_value'],
+                    end_value=e.args['end_value'],
+                    time_zone=e.args['time_zone'],
+                    sender=self,
+                    client=self.client,
+                )
+                events.handle_event(on_fetch_events, info)
+
+            self.on('fetch-events', _on_fetch)
 
     def add_event(self, title: str, start: str, end: str, **kwargs) -> None:
         """Add an event to the calendar.
@@ -31,6 +90,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         :param start: start time of the event
         :param end: end time of the event
         """
+        self._ensure_static_events()
         event_dict = {'title': title, 'start': start, 'end': end, **kwargs}
         self._props['options']['events'].append(event_dict)
 
@@ -41,6 +101,7 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
         :param start: start time of the event
         :param end: end time of the event
         """
+        self._ensure_static_events()
         for event in self._props['options']['events']:
             if event['title'] == title and event['start'] == start and event['end'] == end:
                 self._props['options']['events'].remove(event)
@@ -49,4 +110,10 @@ class FullCalendar(ui.element, component='fullcalendar.js'):
     @property
     def events(self) -> list[dict]:
         """List of events currently displayed in the calendar."""
+        self._ensure_static_events()
         return self._props['options']['events']
+
+    def _ensure_static_events(self) -> None:
+        if self._fetch_events_enabled:
+            raise RuntimeError(
+                'Events are not available when on_fetch_events is set; the calendar owns its event list.')

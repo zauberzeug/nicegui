@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-from datetime import datetime
+import random
+from datetime import datetime, timedelta
 
+from fullcalendar import FetchInfoArguments
 from fullcalendar import FullCalendar as fullcalendar
 
 from nicegui import events, ui
@@ -15,33 +17,45 @@ options = {
     'timeZone': 'local',
     'height': 'auto',
     'width': 'auto',
-    'events': [
-        {
-            'title': 'Math',
-            'start': datetime.now().strftime(r'%Y-%m-%d') + ' 08:00:00',
-            'end': datetime.now().strftime(r'%Y-%m-%d') + ' 10:00:00',
-            'color': 'red',
-        },
-        {
-            'title': 'Physics',
-            'start': datetime.now().strftime(r'%Y-%m-%d') + ' 10:00:00',
-            'end': datetime.now().strftime(r'%Y-%m-%d') + ' 12:00:00',
-            'color': 'green',
-        },
-        {
-            'title': 'Chemistry',
-            'start': datetime.now().strftime(r'%Y-%m-%d') + ' 13:00:00',
-            'end': datetime.now().strftime(r'%Y-%m-%d') + ' 15:00:00',
-            'color': 'blue',
-        },
-        {
-            'title': 'Biology',
-            'start': datetime.now().strftime(r'%Y-%m-%d') + ' 15:00:00',
-            'end': datetime.now().strftime(r'%Y-%m-%d') + ' 17:00:00',
-            'color': 'orange',
-        },
-    ],
+    'initialDate': datetime.now().strftime('%Y-%m-%d'),
 }
+
+titles = [
+    'Team meeting',
+    'Project sync',
+    'Design workshop',
+    'Code review',
+    'Sprint planning',
+    'Client demo',
+    'Internal training',
+    'Maintenance',
+    'Deployment',
+    'Stand-up',
+    'Retrospective',
+    'Brainstorming',
+]
+
+
+def generate_events(year: int) -> list[dict[str, str]]:
+    generator = random.Random(42)
+    start_date = datetime(year, 1, 1)
+    end_date = datetime(year, 12, 31, 23, 59, 59)
+    generated_events = []
+    for day in range((end_date - start_date).days + 1):
+        current = start_date + timedelta(days=day)
+        for _ in range(generator.randint(0, 3)):
+            hour = generator.randint(8, 16)
+            duration = generator.choice([1, 2])
+            generated_events.append({
+                'title': generator.choice(titles),
+                'start': (current + timedelta(hours=hour)).isoformat(),
+                'end': (current + timedelta(hours=hour + duration)).isoformat(),
+                'color': generator.choice(['blue', 'green', 'red', 'orange', 'purple', 'teal']),
+            })
+    return generated_events
+
+
+all_events = generate_events(datetime.now().year)
 
 
 def handle_click(event: events.GenericEventArguments):
@@ -49,6 +63,25 @@ def handle_click(event: events.GenericEventArguments):
         ui.notify(event.args['info']['event'])
 
 
-fullcalendar(options, on_click=handle_click)
+def handle_fetch(info: FetchInfoArguments) -> None:
+    start_ms = info.start_value
+    end_ms = info.end_value
+    filtered = [e for e in all_events if _event_intersects_range(e, start_ms, end_ms)]
+    ui.notify(f'Loaded {len(filtered)} events for range {info.start} → {info.end}')
+    info.response(filtered)
+
+
+def _event_intersects_range(event: dict, start_ms: int, end_ms: int) -> bool:
+    event_start = _parse_local_ms(event['start'])
+    event_end = _parse_local_ms(event.get('end', event['start']))
+    return event_start < end_ms and event_end > start_ms
+
+
+def _parse_local_ms(value: str) -> int:
+    dt = datetime.fromisoformat(value)
+    return int(dt.timestamp() * 1000)
+
+
+fullcalendar(options, on_click=handle_click, on_fetch_events=handle_fetch)
 
 ui.run()
