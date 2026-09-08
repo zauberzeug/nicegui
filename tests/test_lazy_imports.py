@@ -40,12 +40,11 @@ def test_module_access_does_not_import_others():
 def test_esm_modules_registered_on_import():
     result = subprocess.run(['python3', '-c', dedent('''\
         from pathlib import Path
-        import nicegui
         from nicegui import ui
         from nicegui.dependencies import esm_modules
-        packages = {p.parent.name for p in Path(nicegui.__file__).parent.glob('elements/*/dist')}
+        packages = {p.parent.name for p in Path(ui.__file__).parent.glob('elements/*/dist')}
         registered = {m.path.parent.name for m in esm_modules.values()}
         missing = packages - registered
-        raise SystemExit(f'ESM modules not registered on import: {sorted(missing)}' if missing else 0)
+        assert not missing, f'ESM modules not registered on import: {sorted(missing)}'
     ''')], capture_output=True, text=True, timeout=30, check=False)
     assert result.returncode == 0, result.stderr

@@ -452,4 +452,3 @@ def __getattr__(name: str) -> object:
 # We scan the file system rather than `_LAZY_IMPORTS`, because some packages (e.g. sortable) have no `ui` name.
 for _dist in sorted(Path(__file__).parent.glob('elements/*/dist')):
     importlib.import_module(f'.elements.{_dist.parent.name}', package='nicegui')
-del _dist  # pylint: disable=undefined-loop-variable
