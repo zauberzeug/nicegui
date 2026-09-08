@@ -1,3 +1,4 @@
+import asyncio
 import gc
 import weakref
 from typing import Literal
@@ -13,6 +14,25 @@ from nicegui.events import GenericEventArguments
 from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
+
+
+async def test_await_initialized_cancel_task(user: User):
+    initialized = asyncio.Event()
+    task: list[asyncio.Task] = []
+
+    @ui.page('/')
+    async def page():
+        task.append(asyncio.current_task())
+        m = ui.scene()
+        await m.initialized()
+        initialized.set()
+
+    client = await user.open('/')
+    await asyncio.sleep(0.1)
+    client.delete()
+    await asyncio.sleep(0.1)
+    assert not initialized.is_set(), 'code after scene.initialized() ran'
+    assert task[0].cancelled(), 'the waiting task should be cancelled, not left pending or resolved'
 
 
 def test_moving_sphere_with_timer(screen: Screen):

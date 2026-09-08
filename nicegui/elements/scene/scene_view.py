@@ -3,7 +3,6 @@ import asyncio
 from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
-from ...element import Element
 from ...events import (
     ClickEventArguments,
     GenericEventArguments,
@@ -12,10 +11,11 @@ from ...events import (
     SceneClickHit,
     handle_event,
 )
+from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .scene import Scene, SceneCamera
 
 
-class SceneView(Element, component='scene_view.js', default_classes='nicegui-scene-view'):
+class SceneView(CancelableWaitElement, component='scene_view.js', default_classes='nicegui-scene-view'):
     # NOTE: The ESM is already registered in scene.py.
 
     @resolve_defaults
@@ -75,9 +75,14 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self.run_method('init')
 
     async def initialized(self) -> None:
-        """Wait until the scene is initialized."""
-        await self.client.connected()
-        await self._initialized_event.wait()
+        """Wait until the scene is initialized.
+
+        *Updated in version 3.17.0: Awaiting scene view initialization cancels the awaiting task
+        when the scene view is deleted, e.g. because the client disconnected.*
+        """
+        with self._cancel_when_deleted(self._initialized_event):
+            await self.client.connected()
+            await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

@@ -9,7 +9,6 @@ from typing_extensions import Self
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
-from ...element import Element
 from ...events import (
     GenericEventArguments,
     Handler,
@@ -18,6 +17,7 @@ from ...events import (
     SceneDragEventArguments,
     handle_event,
 )
+from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .scene_object3d import Object3D
 
 
@@ -41,7 +41,7 @@ class SceneObject:
     id: str = 'scene'
 
 
-class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
+class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': 'dist'}, default_classes='nicegui-scene'):
     # pylint: disable=import-outside-toplevel
     from .objects.axes_helper import AxesHelper as axes_helper
     from .objects.box import Box as box
@@ -213,9 +213,14 @@ class Scene(Element, component='scene.js', esm={'nicegui-scene': 'dist'}, defaul
         return super().run_method(name, *args, timeout=timeout)
 
     async def initialized(self) -> None:
-        """Wait until the scene is initialized."""
-        await self.client.connected()
-        await self._initialized_event.wait()
+        """Wait until the scene is initialized.
+
+        *Updated in version 3.17.0: Awaiting scene initialization cancels the awaiting task
+        when the scene is deleted, e.g. because the client disconnected.*
+        """
+        with self._cancel_when_deleted(self._initialized_event):
+            await self.client.connected()
+            await self._initialized_event.wait()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
