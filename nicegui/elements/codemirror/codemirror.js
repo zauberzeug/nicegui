@@ -48,7 +48,7 @@ const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRa
 
 export default {
   template: `
-    <div :id="id"></div>
+    <div></div>
   `,
   props: {
     value: String,
@@ -62,7 +62,6 @@ export default {
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
-    id: String,
   },
   watch: {
     language(newLanguage) {
@@ -98,7 +97,7 @@ export default {
   },
   beforeUnmount() {
     if (this.editor) {
-      const element = mounted_app.elements[this.$props.id.slice(1)];
+      const element = mounted_app.elements[this.$el.id.slice(1)];
       if (element) {
         element.props.value = this.editor.state.doc.toString();
         // A client-side remount (e.g. a v-if container) re-applies these props against the restored
