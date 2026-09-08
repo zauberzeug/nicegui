@@ -40,7 +40,7 @@ class Classes(ObservableList, Generic[T]):
             return
         element = self._element()
         if element is not None:
-            element.update()
+            element._enqueue_update()  # pylint: disable=protected-access
 
     def __call__(self,
                  add: str | None = None, *,
@@ -62,6 +62,7 @@ class Classes(ObservableList, Generic[T]):
         new_classes = self.update_list(self, add, remove, toggle, replace)
         if self != new_classes:
             self[:] = new_classes
+            element.update()
         return element
 
     @staticmethod

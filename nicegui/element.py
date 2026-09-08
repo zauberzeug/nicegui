@@ -398,7 +398,7 @@ class Element(Visibility):
                 request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
-            self.update()
+            self._enqueue_update()
         return self
 
     def _handle_event(self, msg: dict) -> None:
@@ -428,6 +428,10 @@ class Element(Visibility):
 
     def update(self) -> None:
         """Update the element on the client side."""
+        self._enqueue_update()
+
+    def _enqueue_update(self) -> None:
+        """Send the element to the client without triggering a subclass `update()` override."""
         if not self._is_safe_to_interact():
             return
         self.client.outbox.enqueue_update(self)

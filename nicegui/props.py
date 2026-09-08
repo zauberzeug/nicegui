@@ -107,7 +107,7 @@ class Props(ObservableDict, Generic[T]):
 
         element = self._element()
         if element is not None:
-            element.update()
+            element._enqueue_update()  # pylint: disable=protected-access
 
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""
@@ -145,12 +145,17 @@ class Props(ObservableDict, Generic[T]):
         :param remove: whitespace-delimited list of property keys to remove
         """
         element = self.element
+        changed = False
         for key in self.parse(remove):
             if key in self:
                 del self[key]
+                changed = True
         for key, value in self.parse(add).items():
             if self.get(key) != value:
                 self[key] = value
+                changed = True
+        if changed:
+            element.update()
         return element
 
     @staticmethod
