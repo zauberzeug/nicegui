@@ -59,6 +59,10 @@ export default {
     indent: String,
     highlightWhitespace: Boolean,
     lineAnchors: Object,
+    selectionTrackingEnabled: Boolean,
+    focusTrackingEnabled: Boolean,
+    viewportTrackingEnabled: Boolean,
+    geometryTrackingEnabled: Boolean,
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
@@ -239,6 +243,15 @@ export default {
       this._lastAnchors = positions;
       this.$emit("anchor-positions", { anchors: positions });
     },
+    revealLine(lineNumber) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const lineNum = Math.max(1, Math.min(lineNumber, doc.lines));
+      const line = doc.line(lineNum);
+      this.editor.dispatch({
+        effects: CM.EditorView.scrollIntoView(line.from, { y: "center" }),
+      });
+    },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
         key,
@@ -319,6 +332,58 @@ export default {
         },
       );
 
+      // Dispatches per-signal events for ViewUpdate flags the host has opted into via
+      // <signal>-tracking-enabled props. Each signal is deduped against its last payload, so an
+      // update that leaves a signal unchanged costs nothing on the wire. Rate limiting is the
+      // Python side's job, via Element.on(..., throttle=...).
+      const updateDispatcher = CM.ViewPlugin.fromClass(
+        class {
+          constructor() {
+            this._last = {};
+          }
+          update(u) {
+            // A focus transition makes selection state meaningful again: hosts that
+            // ignore unfocused selection events (programmatic echoes) must still hear
+            // about the first post-focus selection even if it matches the last payload.
+            if (u.focusChanged) delete this._last["selection-change"];
+            if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
+              const sel = u.state.selection.main;
+              const line = u.state.doc.lineAt(sel.head);
+              this._maybeEmit("selection-change", {
+                line: line.number,
+                column: sel.head - line.from + 1,
+                from_line: u.state.doc.lineAt(sel.from).number,
+                to_line: u.state.doc.lineAt(sel.to).number,
+                empty: sel.empty,
+              });
+            }
+            if (self.focusTrackingEnabled && u.focusChanged) {
+              this._maybeEmit("focus-change", { focused: u.view.hasFocus });
+            }
+            if (self.viewportTrackingEnabled && u.viewportChanged) {
+              const vp = u.view.viewport;
+              this._maybeEmit("viewport-change", {
+                from_line: u.state.doc.lineAt(vp.from).number,
+                to_line: u.state.doc.lineAt(vp.to).number,
+              });
+            }
+            if (self.geometryTrackingEnabled && u.geometryChanged) {
+              this._maybeEmit("geometry-change", {
+                width: u.view.dom.clientWidth,
+                height: u.view.dom.clientHeight,
+                content_height: Math.round(u.view.contentHeight),
+              });
+            }
+          }
+          _maybeEmit(name, payload) {
+            const last = this._last[name];
+            if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
+            this._last[name] = payload;
+            self.$emit(name, payload);
+          }
+        },
+      );
+
       const lineTooltip = CM.hoverTooltip((view, pos) => {
         const set = view.state.field(tooltipField);
         const line = view.state.doc.lineAt(pos);
@@ -346,6 +411,7 @@ export default {
         changeSender,
         anchorTracker,
         anchorField,
+        updateDispatcher,
         tooltipField,
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/

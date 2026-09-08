@@ -97,6 +97,180 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
 
 
+def test_selection_change_event(screen: Screen):
+    events: list[tuple[int, int, int, int, bool]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(
+            'Line 1\nLine 2\nLine 3',
+            on_selection_change=lambda e: events.append((e.line, e.column, e.from_line, e.to_line, e.empty)),
+        )
+
+    screen.open('/')
+    screen.should_contain('Line 2')
+    # Move the cursor to line 2, column 4 (3 chars past line.from) via a CM6 selection transaction.
+    # This bypasses focus/keystroke timing fragility in Selenium.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from + 3}});'
+    )
+    screen.wait_for(lambda: (2, 4, 2, 2, True) in events)
+    # A ranged selection from line 1 into line 3 spans from_line=1..to_line=3
+    # regardless of head direction (head at the anchor end here).
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(3).from + 2, head: 0}});'
+    )
+    screen.wait_for(lambda: (1, 1, 1, 3, False) in events)
+
+
+def test_selection_reemits_after_focus_change(screen: Screen):
+    """The first post-focus selection emits even when it matches the last payload.
+
+    Hosts that ignore unfocused selection events (programmatic echoes) would
+    otherwise never hear about a click landing on the previously echoed position:
+    the dedupe cache is cleared on every focus transition.
+    """
+    events: list[tuple[int, int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(
+            'Line 1\nLine 2\nLine 3',
+            on_selection_change=lambda e: events.append((e.line, e.column)),
+        )
+
+    screen.open('/')
+    screen.should_contain('Line 2')
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
+    )
+    screen.wait_for(lambda: (2, 1) in events)
+
+    # Blur, then refocus and select the identical position: without the
+    # focus-transition cache clear the identical payload would be deduped away.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.contentDOM.blur();'
+    )
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.focus();'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
+    )
+    screen.wait_for(lambda: events.count((2, 1)) >= 2)
+
+
+def test_focus_change_event(screen: Screen):
+    events: list[bool] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Hello', on_focus_change=lambda e: events.append(e.focused))
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    # Focus then blur the editor via JS to avoid Selenium focus-stealing flakiness.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.focus();'
+    )
+    screen.wait_for(lambda: True in events)
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.contentDOM.blur();'
+    )
+    screen.wait_for(lambda: False in events)
+
+
+def test_viewport_change_event(screen: Screen):
+    events: list[tuple[int, int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(
+            '\n'.join(f'Line {i}' for i in range(1, 201)),
+            on_viewport_change=lambda e: events.append((e.from_line, e.to_line)),
+        )
+
+    screen.open('/')
+    screen.should_contain('Line 1')
+    editor.reveal_line(150)
+    # After reveal_line, the viewport should report a range containing line 150.
+    screen.wait_for(lambda: any(from_line <= 150 <= to_line for from_line, to_line in events))
+
+
+def test_geometry_change_event(screen: Screen):
+    events: list[tuple[int, int, int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Hello').classes('h-32')
+        editor.on_geometry_change(lambda e: events.append((e.width, e.height, e.content_height)))
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    # Resize the editor's container to trigger a geometry change.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.$el.style.height = "400px";'
+    )
+    # Force CM to notice the size change.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id}); el.editor.requestMeasure();'
+    )
+    screen.wait_for(lambda: any(height >= 200 for _, height, _ in events))
+
+
+def test_no_handler_no_traffic(screen: Screen):
+    """Verify that dispatching a selection change emits NO event when no handler is registered.
+
+    Subscribes to the raw 'selection-change' channel to detect any traffic; if the JS-side
+    subscription gating works, the channel stays silent because the dispatcher bails before $emit.
+    """
+    events: list = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('Line 1\nLine 2\nLine 3')
+        # Tap the raw event channel without going through on_selection_change so we
+        # don't flip selection-tracking-enabled.
+        editor.on('selection-change', lambda e: events.append(e.args))
+
+    screen.open('/')
+    screen.should_contain('Line 1')
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(2).from}});'
+    )
+    screen.wait(0.5)  # give any (incorrect) emit time to arrive
+    assert events == [], f'expected no traffic without an on_selection_change handler, got {events}'
+
+
+def test_reveal_line(screen: Screen):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('\n'.join(f'Line {i}' for i in range(1, 201)))
+
+    screen.open('/')
+    scroller = screen.selenium.find_element(By.XPATH, '//*[contains(@class, "cm-scroller")]')
+    initial_top = screen.selenium.execute_script('return arguments[0].scrollTop', scroller)
+    editor.reveal_line(150)
+    screen.wait_for(lambda: screen.selenium.execute_script('return arguments[0].scrollTop', scroller) > initial_top)
+
+
 def test_line_tooltip_api(screen: Screen):
     @ui.page('/')
     def page():
