@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 from selenium.webdriver import Keys
 
@@ -326,3 +328,100 @@ def test_popup_scroll_behavior(screen: Screen):
     screen.type(Keys.ESCAPE)
     screen.wait(0.2)
     assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+@dataclass
+class Person:
+    name: str
+    icon: str
+
+
+async def test_dataclass_options(user: User):
+    people = [Person('Alice', 'a'), Person('Bob', 'b')]
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select(people, value=people[0], option_label=lambda person: person.name)
+
+    await user.open('/')
+    assert select.value == Person('Alice', 'a'), 'the value is the selected option itself'
+    assert select.props['options'] == [
+        {'name': 'Alice', 'icon': 'a', 'value': 0, 'label': 'Alice'},
+        {'name': 'Bob', 'icon': 'b', 'value': 1, 'label': 'Bob'},
+    ], "a dataclass option's fields are sent to the client"
+    assert select.props['model-value'] == {'name': 'Alice', 'icon': 'a', 'value': 0, 'label': 'Alice'}
+
+
+async def test_dict_options_expose_their_fields(user: User):
+    options = [{'name': 'Alice', 'icon': 'a'}, {'name': 'Bob', 'icon': 'b'}]
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select(options, value=options[1], option_label=lambda option: option['name'])
+
+    await user.open('/')
+    assert select.value == {'name': 'Bob', 'icon': 'b'}
+    assert select.props['options'] == [
+        {'name': 'Alice', 'icon': 'a', 'value': 0, 'label': 'Alice'},
+        {'name': 'Bob', 'icon': 'b', 'value': 1, 'label': 'Bob'},
+    ]
+
+
+async def test_rich_options_cannot_shadow_reserved_keys(user: User):
+    options = [{'value': 'shadowed', 'label': 'shadowed', 'icon': 'a'}]
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select(options, option_label=lambda option: option['icon'])
+
+    await user.open('/')
+    assert select.props['options'] == [{'icon': 'a', 'value': 0, 'label': 'a'}]
+
+
+async def test_option_label_with_scalar_options(user: User):
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select([1, 2, 3], value=2, option_label=lambda number: f'#{number}')
+
+    await user.open('/')
+    assert select.value == 2, 'the value stays the scalar, only the label changes'
+    assert select.props['options'] == [
+        {'value': 0, 'label': '#1'},
+        {'value': 1, 'label': '#2'},
+        {'value': 2, 'label': '#3'},
+    ]
+
+
+async def test_scalar_options_are_unchanged(user: User):
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select(['A', 'B'])
+
+    await user.open('/')
+    assert select.props['options'] == [{'value': 0, 'label': 'A'}, {'value': 1, 'label': 'B'}]
+
+
+async def test_rich_options_survive_set_options(user: User):
+    select = None
+
+    @ui.page('/')
+    def page():
+        nonlocal select
+        select = ui.select([Person('Alice', 'a')], option_label=lambda person: person.name)
+
+    await user.open('/')
+    select.set_options([Person('Bob', 'b')], value=Person('Bob', 'b'))
+    assert select.props['options'] == [{'name': 'Bob', 'icon': 'b', 'value': 0, 'label': 'Bob'}]
+    assert select.value == Person('Bob', 'b')

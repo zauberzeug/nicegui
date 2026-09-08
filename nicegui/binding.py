@@ -8,9 +8,10 @@ import weakref
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal
 
-from typing_extensions import dataclass_transform
+# NOTE: typing_extensions.TypeVar is needed because typing.TypeVar does not support defaults before Python 3.13
+from typing_extensions import TypeVar, dataclass_transform
 
 from . import core
 from .logging import log
@@ -34,6 +35,8 @@ _binding_keys_by_object: defaultdict[int, set[BindingKey]] = defaultdict(set)
 
 TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
+# NOTE: the default keeps a bare BindableProperty() usable without a type annotation
+BindableT = TypeVar('BindableT', default=Any)
 
 _MISSING = object()
 
@@ -266,7 +269,7 @@ def _path_contains_dict(obj: Any, name: tuple[str, ...]) -> bool:
     return False
 
 
-class BindableProperty:
+class BindableProperty(Generic[BindableT]):
 
     def __init__(self, on_change: Callable[..., Any] | None = None) -> None:
         self._change_handler = on_change
@@ -274,10 +277,10 @@ class BindableProperty:
     def __set_name__(self, _, name: str) -> None:
         self.name = name  # pylint: disable=attribute-defined-outside-init
 
-    def __get__(self, owner: Any, _=None) -> Any:
+    def __get__(self, owner: Any, _=None) -> BindableT:
         return getattr(owner, '___' + self.name)
 
-    def __set__(self, owner: Any, value: Any) -> None:
+    def __set__(self, owner: Any, value: BindableT) -> None:
         has_attr = hasattr(owner, '___' + self.name)
         if not has_attr:
             _make_copyable(type(owner))
