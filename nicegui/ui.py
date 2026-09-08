@@ -1,6 +1,5 @@
 import builtins
 import importlib
-import importlib.util
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -450,8 +449,7 @@ def __getattr__(name: str) -> object:
 
 
 # Eagerly import element packages with 'dist' dirs so their __init__.py registers ESM modules in the importmap.
-for _module_path in {mp for mp, _ in _LAZY_IMPORTS.values()}:
-    _spec = importlib.util.find_spec(_module_path, package='nicegui')
-    if _spec and _spec.submodule_search_locations and (Path(_spec.submodule_search_locations[0]) / 'dist').is_dir():
-        importlib.import_module(_module_path, package='nicegui')
-del _module_path, _spec  # pylint: disable=undefined-loop-variable
+# We scan the file system rather than `_LAZY_IMPORTS`, because some packages (e.g. sortable) have no `ui` name.
+for _dist in sorted(Path(__file__).parent.glob('elements/*/dist')):
+    importlib.import_module(f'.elements.{_dist.parent.name}', package='nicegui')
+del _dist  # pylint: disable=undefined-loop-variable
