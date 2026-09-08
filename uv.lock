@@ -2276,7 +2276,7 @@ dev = [
     { name = "lxml", specifier = ">=6.1.0" },
     { name = "lxml-html-clean", specifier = ">=0.4.4" },
     { name = "matplotlib", specifier = ">=3.5.0,<4" },
-    { name = "mypy", specifier = ">=1.13.0,<2" },
+    { name = "mypy", specifier = ">=1.16.0,<2" },
     { name = "nicegui-highcharts", specifier = ">=3.3.0,<4" },
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "pandas", marker = "python_full_version < '3.13'", specifier = ">=2.0.0,<3" },
