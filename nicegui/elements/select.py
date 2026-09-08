@@ -1,30 +1,79 @@
 from collections.abc import Callable, Generator, Iterable, Iterator
 from contextlib import suppress
 from copy import deepcopy
-from typing import Any, Literal
+from typing import Any, Generic, Literal, cast, overload
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
-from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
-from .choice_element import ChoiceElement
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, ValueT
+from .choice_element import ChoiceElement, OptionT
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
+NewValueMode = Literal['add', 'add-unique', 'toggle']
 
-class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableElement, component='select.js'):
+
+class Select(LabelElement, ValidationElement[ValueT], ChoiceElement[OptionT, ValueT], DisableableElement,
+             Generic[OptionT, ValueT], component='select.js'):
+
+    @overload
+    def __init__(self: 'Select[OptionT, list[OptionT]]',
+                 options: list[OptionT] | dict[OptionT, Any], *,
+                 label: str | None = ...,
+                 value: OptionT | list[OptionT] | None = ...,
+                 on_change: Handler[ValueChangeEventArguments[list[OptionT]]] | None = ...,
+                 with_input: bool = ...,
+                 new_value_mode: NewValueMode | None = ...,
+                 multiple: Literal[True],
+                 clearable: bool = ...,
+                 validation: ValidationFunction | ValidationDict | None = ...,
+                 key_generator: Callable[[Any], Any] | Iterator[Any] | None = ...,
+                 option_label: Callable[[OptionT], Any] | None = ...,
+                 ) -> None: ...
+
+    @overload
+    def __init__(self: 'Select[OptionT, OptionT | None]',
+                 options: list[OptionT] | dict[OptionT, Any], *,
+                 label: str | None = ...,
+                 value: OptionT | None = ...,
+                 on_change: Handler[ValueChangeEventArguments[OptionT | None]] | None = ...,
+                 with_input: bool = ...,
+                 new_value_mode: NewValueMode | None = ...,
+                 multiple: Literal[False] = ...,
+                 clearable: bool = ...,
+                 validation: ValidationFunction | ValidationDict | None = ...,
+                 key_generator: Callable[[Any], Any] | Iterator[Any] | None = ...,
+                 option_label: Callable[[OptionT], Any] | None = ...,
+                 ) -> None: ...
+
+    @overload
+    def __init__(self: 'Select[OptionT, Any]',
+                 options: list[OptionT] | dict[OptionT, Any], *,
+                 label: str | None = ...,
+                 value: OptionT | list[OptionT] | None = ...,
+                 on_change: Handler[ValueChangeEventArguments[Any]] | None = ...,
+                 with_input: bool = ...,
+                 new_value_mode: NewValueMode | None = ...,
+                 multiple: bool = ...,
+                 clearable: bool = ...,
+                 validation: ValidationFunction | ValidationDict | None = ...,
+                 key_generator: Callable[[Any], Any] | Iterator[Any] | None = ...,
+                 option_label: Callable[[OptionT], Any] | None = ...,
+                 ) -> None: ...
 
     @resolve_defaults
     def __init__(self,
-                 options: list | dict, *,
+                 options: list[OptionT] | dict[OptionT, Any], *,
                  label: str | None = DEFAULT_PROP | None,
                  value: Any = DEFAULT_PROPS['model-value'] | None,
                  on_change: Handler[ValueChangeEventArguments[Any]] | None = None,
                  with_input: bool = False,
-                 new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
+                 new_value_mode: NewValueMode | None = DEFAULT_PROP | None,
                  multiple: bool = DEFAULT_PROP | False,
                  clearable: bool = DEFAULT_PROP | False,
                  validation: ValidationFunction | ValidationDict | None = None,
                  key_generator: Callable[[Any], Any] | Iterator[Any] | None = None,
+                 option_label: Callable[[OptionT], Any] | None = None,
                  ) -> None:
         """Dropdown Selection
 
@@ -45,6 +94,17 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
         Alternatively, you can pass a callable that returns an optional error message.
         To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
 
+        Options are not limited to scalars: a list may hold dataclasses or dictionaries,
+        in which case `value` is the selected option itself.
+        Pass `option_label` to say how such an option should be labelled.
+        A rich option's own fields are sent to the client and are available as ``props.opt.<key>`` in slots,
+        except for the reserved keys "value" and "label".
+
+        The element is generic in its option type, so type checkers infer the argument of `option_label`
+        as well as the type of `value` from the options:
+        ``ui.select(people, option_label=lambda person: person.name).value`` is a ``Person | None``,
+        and a ``list[Person]`` when `multiple` is True.
+
         :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
         :param label: the label to display above the selection
         :param value: the initial value
@@ -55,6 +115,7 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
         :param clearable: whether to add a button to clear the selection
         :param validation: dictionary of validation rules or a callable that returns an optional error message (default: None for no validation)
         :param key_generator: a callback or iterator to generate a dictionary key for new values
+        :param option_label: a callback mapping an option to the label shown for it (default: None, i.e. the option itself)
         """
         self.multiple = multiple
         if multiple:
@@ -64,7 +125,8 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                 value = [value]
             else:
                 value = value[:]  # avoid modifying the original list which could be the list of options (#3014)
-        super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
+        super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation,
+                         option_label=option_label)
         if isinstance(key_generator, Generator):
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         self.key_generator = key_generator
@@ -126,13 +188,11 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
             result = []
             for item in value or []:
                 with suppress(ValueError):
-                    index = self._values.index(item)
-                    result.append({'value': index, 'label': self._labels[index]})
+                    result.append(self._option_dict(self._values.index(item)))
             return result
         else:
             try:
-                index = self._values.index(value)
-                return {'value': index, 'label': self._labels[index]}
+                return self._option_dict(self._values.index(value))
             except ValueError:
                 return None
 
@@ -147,33 +207,35 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
 
     def _handle_new_value(self, value: str) -> Any:
         mode = self._props['new-value-mode']
-        if isinstance(self.options, list):
+        # NOTE: new values entered by the user are strings, so they widen the option type beyond OptionT
+        options = cast('list[Any] | dict[Any, Any]', self.options)
+        if isinstance(options, list):
             if mode == 'add':
-                self.options.append(value)
+                options.append(value)
             elif mode == 'add-unique':
-                if value not in self.options:
-                    self.options.append(value)
+                if value not in options:
+                    options.append(value)
             elif mode == 'toggle':
-                if value in self.options:
-                    self.options.remove(value)
+                if value in options:
+                    options.remove(value)
                 else:
-                    self.options.append(value)
+                    options.append(value)
             # self._labels and self._values are updated via self.options since they share the same references
             return value
         else:
             key = value
             if mode == 'add':
                 key = self._generate_key(value)
-                self.options[key] = value
+                options[key] = value
             elif mode == 'add-unique':
-                if value not in self.options.values():
+                if value not in options.values():
                     key = self._generate_key(value)
-                    self.options[key] = value
+                    options[key] = value
             elif mode == 'toggle':
-                if value in self.options:
-                    self.options.pop(value)
+                if value in options:
+                    options.pop(value)
                 else:
                     key = self._generate_key(value)
-                    self.options.update({key: value})
+                    options.update({key: value})
             self._update_values_and_labels()
             return key

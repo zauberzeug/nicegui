@@ -42,7 +42,7 @@ class UserInteraction(Generic[T]):
                 if isinstance(element, ui.input) and event == 'keydown.tab':
                     autocomplete: list[str] = element.props['_autocomplete']
                     for option in autocomplete:
-                        if option.startswith(element.value):
+                        if option.startswith(element.value or ''):  # an empty input matches the first option
                             element.value = option
                             break
 

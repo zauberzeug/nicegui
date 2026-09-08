@@ -3,7 +3,10 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, cast
+
+# NOTE: typing_extensions.TypeVar is needed because typing.TypeVar does not support defaults before Python 3.13
+from typing_extensions import TypeVar
 
 from . import background_tasks, core, helpers
 from .slot import Slot
@@ -142,7 +145,8 @@ class MultiUploadEventArguments(UiEventArguments):
     files: list[FileUpload]
 
 
-ValueT = TypeVar('ValueT')
+# NOTE: the default lets multi-parameter generics like Select[Person] be written without spelling out the value type
+ValueT = TypeVar('ValueT', default=Any)
 
 
 @dataclass(kw_only=True, slots=True)
