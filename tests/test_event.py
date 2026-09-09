@@ -95,8 +95,9 @@ async def test_await_emitted(user: User):
         number = await event.emitted()
         ui.label(f'Emitted number: {number}')
 
-    await user.open('/')
+    client = await user.open('/')
     await user.should_see('Emitted number: 42')
+    assert not client.delete_handlers, 'a completed await must not leave a delete handler behind'
 
 
 async def test_emitted_timeout(user: User):
