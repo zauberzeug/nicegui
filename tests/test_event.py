@@ -249,3 +249,31 @@ async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
     await asyncio.sleep(0.1)
     assert len(exceptions) == 2 and 'sync error' in str(exceptions[0]) and 'async error' in str(exceptions[1])
     caplog.records.clear()
+
+
+async def test_failing_exception_handler_does_not_skip_other_handlers(user: User, caplog: pytest.LogCaptureFixture):
+    page_exceptions: list[Exception] = []
+    app_exceptions: list[Exception] = []
+    app.on_exception(lambda: 1 / 0)
+    app.on_exception(app_exceptions.append)
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(lambda: 1 / 0)
+        ui.on_exception(page_exceptions.append)
+
+        def raise_error():
+            raise RuntimeError('some error')
+
+        ui.button('Click me', on_click=raise_error)
+
+    await user.open('/')
+    user.find('Click me').click()
+    assert len(page_exceptions) == 1 and 'some error' in str(page_exceptions[0])
+    assert len(app_exceptions) == 1 and 'some error' in str(app_exceptions[0])
+    assert [record.message for record in caplog.records] == [
+        'Exception handler <lambda> raised an exception',
+        'some error',
+        'Exception handler <lambda> raised an exception',
+    ]
+    caplog.records.clear()
