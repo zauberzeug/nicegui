@@ -113,14 +113,18 @@ async def test_emitted_timeout(user: User):
     await user.should_see('caught: Timed out waiting for event after 0.1 seconds')
 
 
-async def test_emitted_is_cancelled_when_client_is_deleted(user: User):
-    """The task awaiting an event must be cancelled when the client is deleted, e.g. after a disconnect."""
+@pytest.mark.parametrize('deleted_before_awaiting', [False, True])
+async def test_emitted_is_cancelled_when_client_is_deleted(user: User, deleted_before_awaiting: bool):
+    """The task awaiting an event must be cancelled when the client is deleted, e.g. after a disconnect,
+    no matter whether the deletion happens during the await or before the handler even reaches it."""
     event = Event()
     results = []
 
     @ui.page('/')
     def page():
         async def wait_for_event() -> None:
+            if deleted_before_awaiting:
+                await asyncio.sleep(0.1)  # the client is deleted while the handler is still busy
             await event.emitted()
             results.append('emitted')  # must not run: the event was never fired
 
@@ -128,12 +132,29 @@ async def test_emitted_is_cancelled_when_client_is_deleted(user: User):
 
     client = await user.open('/')
     user.find('Wait').click()
-    await asyncio.sleep(0.1)  # let the handler start awaiting the event
+    if not deleted_before_awaiting:
+        await asyncio.sleep(0.1)  # let the handler start awaiting the event
     client.delete()
-    await asyncio.sleep(0.1)  # let the cancellation take effect
+    await asyncio.sleep(0.2)  # let the handler reach the await and the cancellation take effect
     assert not results, 'code after emitted() must not run for an event that never happened'
     assert not any('wait_for_event' in task.get_name() for task in background_tasks.running_tasks), \
         'the awaiting task should be cancelled, not leaked'
+
+
+def test_unsubscribe_during_emit():
+    """A callback that unsubscribes during an emit must not cause the remaining callbacks to be skipped."""
+    event = Event()
+    results = []
+
+    def one_shot() -> None:
+        results.append('one-shot')
+        event.unsubscribe(one_shot)
+
+    event.subscribe(one_shot)
+    event.subscribe(lambda: results.append('regular'))
+    event.emit()
+    event.emit()
+    assert results == ['one-shot', 'regular', 'regular']
 
 
 async def test_exception_during_call(user: User):
