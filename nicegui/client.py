@@ -472,6 +472,8 @@ class Client:
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
+        if self.is_deleted:
+            return  # the page is gone, so there is no point in running its handlers
         for handler in self._exception_handlers:
             try:
                 with self.content:
