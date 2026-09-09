@@ -177,8 +177,8 @@ class App(FastAPI):
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
         client = None
-        with contextlib.suppress(RuntimeError):
-            if context.slot_stack:
+        if Slot.get_stack():  # don't enter script mode by accessing `context.slot_stack`
+            with contextlib.suppress(RuntimeError):  # the slot's parent element or its client may have been deleted
                 client = context.client
         if client is not None:
             client.handle_exception(exception)
