@@ -99,6 +99,27 @@ async def test_inner_async_function_is_awaited_on_shutdown(user: User, create: C
     assert events == ['inner ran']
 
 
+async def test_queued_lazy_task_is_awaited_on_shutdown(user: User):
+    events: list[str] = []
+
+    @background_tasks.await_on_shutdown
+    async def work(value: str) -> None:
+        try:
+            await asyncio.sleep(0.1)
+            events.append(value)
+        except asyncio.CancelledError:
+            events.append(f'{value} cancelled')
+
+    @ui.page('/')
+    def page():
+        background_tasks.create_lazy(work('first'), name='work')
+        background_tasks.create_lazy(work('second'), name='work')  # queued while "first" is still busy
+
+    await user.open('/')
+    await background_tasks.teardown()
+    assert events == ['first', 'second']
+
+
 def test_create_tasks(screen: Screen) -> None:
     events: list[str] = []
 
