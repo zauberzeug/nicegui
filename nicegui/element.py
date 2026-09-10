@@ -398,7 +398,8 @@ class Element(Visibility):
                 request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
-            self.update()
+            if not self._props._suspend_count:  # pylint: disable=protected-access
+                self.update()
         return self
 
     def _handle_event(self, msg: dict) -> None:
@@ -427,7 +428,10 @@ class Element(Visibility):
         return True
 
     def update(self) -> None:
-        """Update the element on the client side."""
+        """Update the element on the client side.
+
+        Subclasses can override this to rebuild derived state before calling ``super().update()``.
+        """
         if not self._is_safe_to_interact():
             return
         self.client.outbox.enqueue_update(self)
