@@ -339,3 +339,30 @@ async def test_invalid_new_value_mode_does_not_break_page(user: User):
     await user.open('/')
     await user.should_see('caught')
     user.client.delete()
+
+
+async def test_construction_does_not_run_update_override(user: User):
+    calls = 0
+    calls_after_init = 0
+    calls_after_props = 0
+
+    class Select(ui.select):
+
+        def update(self) -> None:
+            nonlocal calls
+            calls += 1
+            super().update()
+
+    @ui.page('/')
+    def page():
+        nonlocal calls_after_init, calls_after_props
+        select = Select(['A', 'B'], value='A')
+        calls_after_init = calls
+        select.props('dense')
+        calls_after_props = calls
+        select.value = 'B'
+
+    await user.open('/')
+    assert calls_after_init == 0, 'constructing the element must not run the override'
+    assert calls_after_props == 1, 'changing props must run the override'
+    assert calls == 2, 'changing the value must run the override'
