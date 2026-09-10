@@ -1,7 +1,6 @@
 import asyncio
 
-from nicegui import background_tasks, ui
-from nicegui.client import Client
+from nicegui import Client, ui
 from nicegui.testing import Screen, User
 
 
@@ -98,35 +97,23 @@ def test_simultaneous_async_javascript(screen: Screen):
     screen.should_contain('B: 2')
 
 
-async def test_awaited_run_javascript_resolves_when_client_is_deleted_while_waiting(user: User):
+async def test_awaited_run_javascript_resolves_when_client_is_deleted(user: User):
+    """The task awaiting run_javascript must not time out or wait forever when the client is deleted, e.g. after a disconnect."""
+    clients: list[Client] = []
     results = []
 
     @ui.page('/')
     async def page():
+        clients.append(ui.context.client)
         results.append(await ui.run_javascript('window.innerWidth'))
 
     await user.http_client.get('/')  # request the page without ever opening the websocket
     await asyncio.sleep(0)
+    assert not results
+
     Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
-    await asyncio.sleep(1.5)  # longer than run_javascript's default 1.0 s timeout
-    assert results == [None]
+    await asyncio.sleep(0.1)  # let the page function resume
+    assert results == [None]  # the page function resumed with None instead of timing out
 
-
-async def test_awaited_run_javascript_resolves_when_client_is_already_deleted(user: User):
-    results = []
-
-    @ui.page('/')
-    async def page():
-        client = ui.context.client
-
-        async def later() -> None:
-            await asyncio.sleep(0.3)  # resume long after the client is gone
-            results.append(await client.run_javascript('window.innerWidth'))
-
-        background_tasks.create(later())
-
-    await user.http_client.get('/')  # request the page without ever opening the websocket
-    await asyncio.sleep(0)
-    Client.prune_instances(client_age_threshold=0)
-    await asyncio.sleep(1.5)
-    assert results == [None]
+    # calling on a deleted client resolves immediately
+    assert await clients[0].run_javascript('window.innerWidth') is None
