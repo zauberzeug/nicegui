@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 from selenium.webdriver import Keys
 
@@ -326,3 +328,19 @@ def test_popup_scroll_behavior(screen: Screen):
     screen.type(Keys.ESCAPE)
     screen.wait(0.2)
     assert screen.selenium.execute_script('return window.scrollY') == position
+
+
+def test_id_generator_multiple(screen: Screen):
+    @ui.page('/')
+    def page():
+        select = ui.select({'a': 'A'}, value=['a'], multiple=True, new_value_mode='add',
+                           key_generator=itertools.count(100))
+        ui.label().bind_text_from(select, 'value', lambda v: f'value = {v}')
+        ui.label().bind_text_from(select, 'options', lambda v: f'options = {v}')
+
+    screen.open('/')
+    screen.find_by_tag('input').send_keys('Banana')
+    screen.wait(0.5)
+    screen.find_by_tag('input').send_keys(Keys.ENTER)
+    screen.should_contain("value = ['a', 100]")
+    screen.should_contain("options = {'a': 'A', 100: 'Banana'}")
