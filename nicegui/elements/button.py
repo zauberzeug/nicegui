@@ -22,18 +22,20 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
                  ) -> None:
         """Button
 
-        This element is based on Quasar's `QBtn <https://quasar.dev/vue-components/button>`_ component.
+        This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.
 
-        The ``color`` parameter accepts a Quasar color, a Tailwind color, or a CSS color.
+        The `color` parameter accepts a Quasar color, a Tailwind color, or a CSS color.
         If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text.
         Note that there are colors like "red" being both a Quasar color and a CSS color.
         In such cases the Quasar color will be used.
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
-        :param icon: the name of an icon to be displayed on the button (default: `None`)
+        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None, default: 'primary')
+        :param icon: the name of an icon to be displayed on the button (default: None)
         """
+        self._clicked_waiters: set[asyncio.Event] = set()
+        self._clicked_waiters_bound = False
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:
@@ -60,6 +62,16 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 
+    def _wake_clicked_waiters(self) -> None:
+        for event in self._clicked_waiters:
+            event.set()
+
+    def _ensure_clicked_waiter_listener(self) -> None:
+        if self._clicked_waiters_bound:
+            return
+        self._clicked_waiters_bound = True
+        self.on('click', self._wake_clicked_waiters, [])
+
     async def clicked(self) -> None:
         """Wait until the button is clicked.
 
@@ -67,5 +79,9 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         when the button is deleted, e.g. because the client disconnected.*
         """
         event = asyncio.Event()
-        self.on('click', event.set, [])
-        await self._wait_for(event)
+        self._clicked_waiters.add(event)
+        try:
+            self._ensure_clicked_waiter_listener()
+            await self._wait_for(event)
+        finally:
+            self._clicked_waiters.discard(event)

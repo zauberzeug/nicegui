@@ -206,3 +206,21 @@ async def test_click_that_deletes_the_button_is_still_delivered(user: User):
     user.find('Click me').click()
     await asyncio.sleep(0.1)  # let the async on_click handler delete the button
     assert results == ['clicked'], 'a real click must not be swallowed by the deletion it triggers'
+
+
+async def test_clicked_can_be_awaited_repeatedly(user: User):
+    """Each click should complete one iteration of an await-clicked loop."""
+    clicks = []
+
+    @ui.page('/')
+    async def page():
+        button = ui.button('Click me')
+        while True:
+            await button.clicked()
+            clicks.append('clicked')
+
+    await user.open('/')
+    for _ in range(3):
+        user.find('Click me').click()
+        await asyncio.sleep(0.1)
+    assert clicks == ['clicked', 'clicked', 'clicked']
