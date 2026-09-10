@@ -2,6 +2,7 @@ import asyncio
 import re
 
 import httpx
+import pytest
 import socketio
 
 from nicegui import Client, app, ui
@@ -185,3 +186,15 @@ def test_no_double_delete(screen: Screen):
     Client.prune_instances(client_age_threshold=0)  # should do nothing because client is still trying to reconnect
     screen.wait(4)  # meanwhile client.delete() will be called without raising KeyError
     assert len(events) == 1, 'delete event should be called only once'
+
+
+def test_warning_about_ignored_nicegui_port(screen: Screen, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv('NICEGUI_PORT', '1')
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    screen.open('/')
+    screen.should_contain('Hello')
+    screen.assert_py_logger('WARNING', re.compile('NICEGUI_PORT=1'))
