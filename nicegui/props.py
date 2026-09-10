@@ -145,17 +145,12 @@ class Props(ObservableDict, Generic[T]):
         :param remove: whitespace-delimited list of property keys to remove
         """
         element = self.element
-        changed = False
         for key in self.parse(remove):
             if key in self:
                 del self[key]
-                changed = True
         for key, value in self.parse(add).items():
             if self.get(key) != value:
                 self[key] = value
-                changed = True
-        if changed:
-            element.update()
         return element
 
     @staticmethod

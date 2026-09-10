@@ -180,7 +180,7 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 - **Memory** (core library)
 
   - **Weakref pattern**: Use `self._element = weakref.ref(element)` to avoid circular references (which require more costly garbage collection).
-    When dereferencing, always check for `None`: `element = self._element(); if element is not None: element.update()`
+    When dereferencing, always check for `None`: `element = self._element(); if element is not None: element._enqueue_update()`
   - **WeakValueDictionary**: Use for caches that shouldn't prevent garbage collection by means of CPython's reference counting
 
 - **Binding** (core library)

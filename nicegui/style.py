@@ -59,7 +59,6 @@ class Style(ObservableDict, Generic[T]):
         if self != new_style:
             self.clear()
             self.update(new_style)
-            element.update()
         return element
 
     @staticmethod

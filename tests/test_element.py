@@ -541,3 +541,38 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
     screen.open('/')
     screen.click('Check IDs')
     screen.should_contain('All IDs found')
+
+
+async def test_internal_resends_skip_update_override(user: User):
+    counts: dict[str, int] = {}
+
+    class ToggleButton(ui.button):
+
+        def __init__(self, *args, **kwargs) -> None:
+            self._state = False
+            super().__init__(*args, **kwargs)
+            self.on('click', self.toggle)
+
+        def toggle(self) -> None:
+            """Toggle the button state."""
+            self._state = not self._state
+            self.update()
+
+        def update(self) -> None:
+            counts['update'] = counts.get('update', 0) + 1
+            with self.props.suspend_updates():
+                self.props(f'color={"green" if self._state else "red"}')
+            super().update()
+
+    @ui.page('/')
+    def page():
+        button = ToggleButton('Toggle me')
+        counts['after_init'] = counts.get('update', 0)
+        button.props('flat').classes('w-24').style('color: red')
+        counts['after_props'] = counts.get('update', 0)
+        button.toggle()
+
+    await user.open('/')
+    assert counts['after_init'] == 0, 'constructing the element must not run the override'
+    assert counts['after_props'] == 0, 'props, classes and style must not run the override'
+    assert counts['update'] == 1, 'an explicit update() must run the override exactly once'

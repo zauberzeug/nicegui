@@ -62,7 +62,6 @@ class Classes(ObservableList, Generic[T]):
         new_classes = self.update_list(self, add, remove, toggle, replace)
         if self != new_classes:
             self[:] = new_classes
-            element.update()
         return element
 
     @staticmethod
