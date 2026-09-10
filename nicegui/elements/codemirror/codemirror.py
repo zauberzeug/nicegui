@@ -134,7 +134,7 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
         *Since version 3.17.0:*
         Decorations style, hide or annotate parts of the document without changing it.
-        Assign a list of specs to ``decorations`` or mutate the list in place.
+        Assign a list of specs to ``decorations`` or mutate ``decorations`` in place.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
@@ -243,8 +243,9 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         Decorations style or modify the editor's rendering without changing the underlying document.
         Each entry is a ``MarkDecorationSpec``, ``LineDecorationSpec``, ``ReplaceDecorationSpec``
         or ``WidgetDecorationSpec`` dict.
-        For mark and line decorations the ``class`` field produces the visible styling, so the host
-        application is responsible for shipping CSS for whatever class names it passes here.
+        The ``class`` field styles a mark or line, or the ``text`` a replace or widget decoration shows;
+        a replace decoration without ``text`` renders nothing that could carry it.
+        The host application is responsible for shipping CSS for whatever class names it passes here.
         The ``attributes`` field is applied as raw DOM attributes (including event handlers like
         ``onclick``) and is not sanitized.
         Do not pass untrusted input through it.

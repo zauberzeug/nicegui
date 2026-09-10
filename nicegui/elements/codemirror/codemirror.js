@@ -1,5 +1,11 @@
 import * as CM from "nicegui-codemirror";
 
+// Caller-supplied text is either sanitized HTML (via the setHTML polyfill) or plain text.
+function setContent(dom, text, asHtml) {
+  if (asHtml) dom.setHTML(text);
+  else dom.textContent = text;
+}
+
 class TextWidget extends CM.WidgetType {
   constructor(text, cls, html) {
     super();
@@ -13,11 +19,7 @@ class TextWidget extends CM.WidgetType {
   toDOM() {
     const span = document.createElement("span");
     if (this.cls) span.className = this.cls;
-    if (this.html) {
-      span.setHTML(this.text);
-    } else {
-      span.textContent = this.text;
-    }
+    setContent(span, this.text, this.html);
     return span;
   }
   ignoreEvent() {
@@ -27,8 +29,7 @@ class TextWidget extends CM.WidgetType {
 
 // A RangeSet StateField whose ranges remap through document edits.
 // Dispatching setEffect.of(ranges) replaces the whole set.
-// `provide` is handed to StateField.define for fields that feed a facet; leaving it out is fine.
-function defineRemappableRangeSet(provide) {
+function defineRemappableRangeSet() {
   const setEffect = CM.StateEffect.define(); // value: list of ranges (replaces all)
   const field = CM.StateField.define({
     create() {
@@ -41,7 +42,6 @@ function defineRemappableRangeSet(provide) {
       }
       return set;
     },
-    provide,
   });
   return { setEffect, field };
 }
@@ -85,9 +85,7 @@ const DECLARED_SPEC = Symbol("declared spec");
 // is RangeSet.of(v, true), so the shared factory covers decorations as well.
 // Providing them from a field (rather than a plugin) is what CM6 requires for block
 // replace/widget decorations to work.
-const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet((field) =>
-  CM.EditorView.decorations.from(field),
-);
+const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet();
 
 // Python addresses the document by str index (one per code point), CodeMirror by UTF-16 code unit.
 // The two only differ once the document contains a character outside the Basic Multilingual Plane.
@@ -325,6 +323,7 @@ export default {
           logAndEmit("warning", `decorations: mark range is empty (from=${declared.from}, to=${declared.to})`);
           return null;
         }
+        // Only the documented fields reach CodeMirror; stray keys in a user spec are dropped, not forwarded.
         const markSpec = { [DECLARED_SPEC]: declared };
         if (spec.class) markSpec.class = spec.class;
         if (spec.attributes) markSpec.attributes = spec.attributes;
@@ -354,7 +353,6 @@ export default {
         if (spec.block) replaceSpec.block = true;
         if (spec.text !== undefined)
           replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
-        else if (spec.class) replaceSpec.class = spec.class;
         return CM.Decoration.replace(replaceSpec).range(from, to);
       }
       if (spec.kind === "widget") {
@@ -505,8 +503,7 @@ export default {
           above: true,
           create() {
             const dom = document.createElement("div");
-            if (renderHtml) dom.setHTML(content);
-            else dom.textContent = content;
+            setContent(dom, content, renderHtml);
             return { dom };
           },
         };
@@ -519,6 +516,7 @@ export default {
         anchorField,
         tooltipField,
         decorationField,
+        CM.EditorView.decorations.from(decorationField),
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
