@@ -302,12 +302,12 @@ class Client:
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 
-        def send_and_forget():
+        def send_and_forget() -> None:
             if self.is_deleted:
                 return
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
-        async def send_and_wait():
+        async def send_and_wait() -> Any:
             if self.is_deleted:
                 return None
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
