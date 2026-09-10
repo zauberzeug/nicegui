@@ -15,6 +15,7 @@ from ...events import (
     Handler,
     ValueChangeEventArguments,
 )
+from ...logging import log
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
 from .keybindings import KeyBindingElement
 from .line_anchors import LineAnchorElement
@@ -69,19 +70,14 @@ WidgetDecorationSpec = TypedDict(
 
 DecorationSpec = MarkDecorationSpec | LineDecorationSpec | ReplaceDecorationSpec | WidgetDecorationSpec
 
-# Offset fields per kind, and the keys a spec must carry to be applicable at all.
-_DECORATION_OFFSETS: dict[str, tuple[str, ...]] = {
-    'mark': ('from', 'to'),
-    'line': (),
-    'replace': ('from', 'to'),
-    'widget': ('position',),
-}
+# The keys a spec must carry per kind, and the lower bound of every numeric field.
 _DECORATION_REQUIRED: dict[str, tuple[str, ...]] = {
     'mark': ('from', 'to'),
     'line': ('line',),
     'replace': ('from', 'to'),
     'widget': ('position', 'text'),
 }
+_DECORATION_MINIMUMS: dict[str, int] = {'from': 0, 'to': 0, 'position': 0, 'line': 1}
 
 
 class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], DisableableElement,
@@ -172,6 +168,8 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
         self._props['decorations'] = decorations or []
+        self._decorations_pending = True
+        self._props['decorations'].on_change(self._mark_decorations_pending)
         self._props['decoration-text-html'] = decoration_text_html
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
@@ -243,8 +241,8 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         """Decoration specs applied to the editor; mutating this list syncs to the client.
 
         Decorations style or modify the editor's rendering without changing the underlying document.
-        Each entry is a :class:`MarkDecorationSpec`, :class:`LineDecorationSpec`,
-        :class:`ReplaceDecorationSpec`, or :class:`WidgetDecorationSpec` dict.
+        Each entry is a ``MarkDecorationSpec``, ``LineDecorationSpec``, ``ReplaceDecorationSpec``
+        or ``WidgetDecorationSpec`` dict.
         For mark and line decorations the ``class`` field produces the visible styling, so the host
         application is responsible for shipping CSS for whatever class names it passes here.
         The ``attributes`` field is applied as raw DOM attributes (including event handlers like
@@ -252,17 +250,17 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         Do not pass untrusted input through it.
 
         The ``from``, ``to`` and ``position`` fields are Python ``str`` indices into ``value``,
-        so ``value.index(...)`` addresses what you expect even in a document containing emoji;
-        they are translated to CodeMirror's UTF-16 addressing on the way out.
+        so ``value.index(...)`` addresses what you expect even in a document containing emoji.
 
-        Reading this property returns the specs as declared, not where the decorations have since
-        moved: the browser keeps them pinned to their text as the document changes, but that
-        mapping stays on the client.
+        As with ``line_anchors``, the browser keeps decorations pinned to their text as the document
+        changes, and reading this property returns the specs as declared, not where they have moved.
+        Every write, an assignment as well as an in-place change of the list, applies all specs afresh
+        at their declared offsets, so compute them from the current ``value``.
 
-        A spec that cannot describe a decoration at all — an unknown kind, a missing required key,
-        an inverted or negative offset — is rejected right away with a ``ValueError``.
+        A spec that cannot describe a decoration at all (an unknown kind, a missing required key,
+        an inverted or negative offset) is rejected with a ``ValueError`` on assignment;
+        one that slips in through an in-place change is skipped with a warning when it is sent.
         Whether it fits the document is decided in the browser, which warns and skips just that spec.
-        Use ``line_anchors`` when the current position is what you need.
 
         *Added in version 3.17.0*
         """
@@ -272,7 +270,12 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
     def decorations(self, decorations: list[DecorationSpec] | None) -> None:
         decorations = decorations or []
         _validate_decorations(decorations)
+        self._decorations_pending = True
         self._props['decorations'] = decorations
+        self._props['decorations'].on_change(self._mark_decorations_pending)
+
+    def _mark_decorations_pending(self) -> None:
+        self._decorations_pending = True
 
     @property
     def line_tooltips(self) -> dict[int, str]:
@@ -292,11 +295,20 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
     def _to_dict(self) -> dict[str, Any]:
         dict_ = super()._to_dict()
-        props = dict_.get('props')
-        if props:
-            decorations = _to_utf16_offsets(props.get('decorations') or [], self.value or '', self._codepoints)
-            if decorations is not None:
-                dict_['props'] = {**props, 'decorations': decorations}
+        if self._decorations_pending:
+            # An in-place change bypasses the setter, so the specs are checked once more on the way out.
+            usable: list[DecorationSpec] = []
+            for spec in self._props['decorations']:
+                error = _decoration_error(spec)
+                if error is None:
+                    usable.append(spec)
+                else:
+                    log.warning(f'{error}; skipping it')
+            dict_['props'] = {**dict_['props'], 'decorations': usable}
+        else:
+            # An unrelated update must leave the positions the browser has mapped alone, as with line anchors.
+            dict_.setdefault('preserved_props', []).append('decorations')
+        self._decorations_pending = False
         return dict_
 
     @staticmethod
@@ -337,62 +349,37 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         return ''.join(document_parts)
 
 
+def _decoration_error(entry: DecorationSpec) -> str | None:
+    """Explain why a spec cannot describe a decoration, whatever the document says, or return ``None``.
+
+    Everything document-dependent (offsets past the end, empty replace ranges, lines that do not
+    exist) stays on the JS side, which warns and skips the individual spec.
+    """
+    spec = cast('dict[str, Any]', entry)  # the TypedDicts describe intent; at runtime this is user data
+    kind = spec.get('kind')
+    if kind not in _DECORATION_REQUIRED:
+        return f'decorations: unknown kind {kind!r}, expected one of {", ".join(sorted(_DECORATION_REQUIRED))}'
+    for key in _DECORATION_REQUIRED[kind]:
+        if key not in spec:
+            return f'decorations: {kind} decoration is missing required key {key!r}'
+    for key, minimum in _DECORATION_MINIMUMS.items():
+        if key not in spec:
+            continue
+        value = spec[key]
+        if not isinstance(value, int) or isinstance(value, bool):
+            return f'decorations: {kind} decoration needs an integer {key!r} (got {value!r})'
+        if value < minimum:
+            bound = 'lines are 1-indexed' if key == 'line' else 'offsets start at 0'
+            return f'decorations: {kind} decoration has {key}={value}, but {bound}'
+    if kind in ('mark', 'replace') and spec['from'] > spec['to']:
+        return f'decorations: {kind} decoration has from={spec["from"]} > to={spec["to"]}'
+    if 'text' in spec and not isinstance(spec['text'], str):
+        return f'decorations: {kind} decoration needs a string \'text\' (got {spec["text"]!r})'
+    return None
+
+
 def _validate_decorations(decorations: list[DecorationSpec]) -> None:
-    """Reject specs that cannot describe a decoration, whatever the document says.
-
-    Everything document-dependent — offsets past the end, empty replace ranges, lines that do not
-    exist — stays on the JS side, which warns and skips the individual spec.
-    """
-    for entry in decorations:
-        spec = cast('dict[str, Any]', entry)  # the TypedDicts describe intent; at runtime this is user data
-        kind = spec.get('kind')
-        if kind not in _DECORATION_REQUIRED:
-            raise ValueError(f'decorations: unknown kind {kind!r}, expected one of '
-                             f'{", ".join(sorted(_DECORATION_REQUIRED))}')
-        for key in _DECORATION_REQUIRED[kind]:
-            if key not in spec:
-                raise ValueError(f'decorations: {kind} decoration is missing required key {key!r}')
-        for key in _DECORATION_OFFSETS[kind]:
-            offset = spec[key]
-            if not isinstance(offset, int) or isinstance(offset, bool):
-                raise ValueError(f'decorations: {kind} decoration needs an integer {key!r} (got {offset!r})')
-            if offset < 0:
-                raise ValueError(f'decorations: {kind} decoration has {key}={offset}, but offsets start at 0')
-        if kind in ('mark', 'replace') and spec['from'] > spec['to']:
-            raise ValueError(f'decorations: {kind} decoration has from={spec["from"]} > to={spec["to"]}')
-        if kind == 'line' and (not isinstance(spec['line'], int) or isinstance(spec['line'], bool)
-                               or spec['line'] < 1):
-            raise ValueError(f'decorations: line decoration has line={spec["line"]!r}, but lines are 1-indexed')
-
-
-def _to_utf16_offsets(decorations: list[DecorationSpec], document: str, codepoints: bytes) -> list[DecorationSpec] | None:
-    """Translate Python ``str`` indices into the UTF-16 code units CodeMirror addresses by.
-
-    Returns ``None`` when the document is entirely in the Basic Multilingual Plane, where the two
-    coincide — the common case, recognized straight from the codepoint map maintained for the
-    incoming direction. Offsets that are not integers are left alone for the JS side to report.
-    """
-    if not decorations or b'\0' not in codepoints:
-        return None
-    # Each astral code point occupies two UTF-16 units, so an offset shifts by the number of astral
-    # code points that precede it; the character an offset addresses does not shift its own start.
-    shifts: list[int] = []
-    shift = 0
-    for character in document:
-        shifts.append(shift)
-        if ord(character) > 0xFFFF:
-            shift += 1
-    shifts.append(shift)  # an offset may address the end of the document
-
-    def convert(offset: Any) -> Any:
-        if not isinstance(offset, int) or isinstance(offset, bool) or not 0 <= offset < len(shifts):
-            return offset
-        return offset + shifts[offset]
-
-    converted: list[DecorationSpec] = []
-    for entry in decorations:
-        spec = cast('dict[str, Any]', entry)
-        keys = _DECORATION_OFFSETS.get(spec.get('kind', ''), ())
-        shifted = {**spec, **{key: convert(spec.get(key)) for key in keys}} if keys else spec
-        converted.append(cast('DecorationSpec', shifted))
-    return converted
+    for spec in decorations:
+        error = _decoration_error(spec)
+        if error is not None:
+            raise ValueError(error)

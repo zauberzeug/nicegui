@@ -279,18 +279,17 @@ def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
     assert _line_decoration_count(screen, 'out-of-range') == 0
 
 
-def test_widget_with_unusable_text_is_skipped(screen: Screen):
+def test_unusable_spec_added_in_place_is_skipped(screen: Screen):
     editor = _open_editor(screen)
-    # A missing 'text' is rejected at the assignment site; a present but unusable one is the case
-    # left for the browser, which skips just this widget instead of rendering an empty span.
-    editor.decorations = [
-        {'kind': 'widget', 'position': 5, 'text': 42, 'class': 'cm-test-no-text'},
-        {'kind': 'widget', 'position': 5, 'text': 'hint', 'class': 'cm-test-late-hint'},
-    ]
+    # An in-place change bypasses the setter's ValueError, so the spec is refused on the way out:
+    # skipped with a warning, while the usable widget behind it still renders.
+    unusable = {'kind': 'widget', 'position': 5, 'text': 42, 'class': 'cm-test-no-text'}
+    editor.decorations.append(unusable)  # type: ignore[arg-type]
+    editor.decorations.append({'kind': 'widget', 'position': 5, 'text': 'hint', 'class': 'cm-test-late-hint'})
     screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-late-hint') == 1)
     assert _replacement_widget_count(screen, 'cm-test-no-text') == 0, \
         'a widget without usable text is skipped instead of rendering an empty span'
-    screen.assert_py_logger('WARNING', re.compile(r"widget requires a string 'text'"))
+    screen.assert_py_logger('WARNING', re.compile(r"needs a string 'text'"))
 
 
 def test_empty_replace_range_is_skipped(screen: Screen):
@@ -428,18 +427,20 @@ def test_decorations_survive_an_unrelated_update(screen: Screen):
     assert _marked_text(screen, 'cm-test-keep') == 'beta'
 
 
-def test_appending_a_decoration_leaves_the_others_in_place(screen: Screen):
+def test_writing_decorations_reapplies_declared_offsets(screen: Screen):
+    """Like reassigning line anchors, any write applies the declared offsets afresh, so they must come from the current value."""
     editor = _open_editor(screen)
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-first'}]
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-first') == 'beta')
-    editor.value = 'XX' + editor.value
+    editor.value = editor.value[:6] + 'XX' + editor.value[6:]
     screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelector(".cm-content").innerText.startsWith("XXalpha");'))
-    # Appending re-sends every spec, so the existing mark must keep the position it was mapped to
-    # while the new one lands where it was just declared.
-    editor.decorations.append({'kind': 'mark', 'from': 13, 'to': 18, 'class': 'cm-test-second'})
-    screen.wait_for(lambda: _marked_text(screen, 'cm-test-second') == 'gamma')
+        'return document.querySelector(".cm-content").innerText.includes("XXbeta");'))
     assert _marked_text(screen, 'cm-test-first') == 'beta'
+    # Appending is a write like any other: the stale first spec snaps back onto whatever sits at 6..10 now.
+    start = editor.value.index('gamma')
+    editor.decorations.append({'kind': 'mark', 'from': start, 'to': start + 5, 'class': 'cm-test-second'})
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-second') == 'gamma')
+    assert _marked_text(screen, 'cm-test-first') == 'XXbe'
 
 
 @pytest.mark.parametrize('target', ['beta', '🎉'])

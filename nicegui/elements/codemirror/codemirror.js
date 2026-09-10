@@ -77,9 +77,9 @@ const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRa
 // range through document edits — a mark on "beta" follows the text, and the mark/replace
 // inclusivity options actually affect how ranges grow at their edges. A new decoration list
 // from the server replaces the whole set via setDecorationsEffect.
-// Each decoration carries the key of the spec it was built from, so an update can tell which
-// decorations are unchanged and keep them at the position they have been mapped to.
-const DECORATION_KEY = "__nicegui_decoration_key";
+// Every decoration carries the spec it was declared with, so a client-side remount can rebuild
+// the list from where the state field has since mapped each one.
+const DECLARED_SPEC = Symbol("declared spec");
 
 // A DecorationSet is a RangeSet: Decoration.none is RangeSet.empty and Decoration.set(v, true)
 // is RangeSet.of(v, true), so the shared factory covers decorations as well.
@@ -88,6 +88,47 @@ const DECORATION_KEY = "__nicegui_decoration_key";
 const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet((field) =>
   CM.EditorView.decorations.from(field),
 );
+
+// Python addresses the document by str index (one per code point), CodeMirror by UTF-16 code unit.
+// The two only differ once the document contains a character outside the Basic Multilingual Plane.
+function documentOffsets(doc) {
+  const text = doc.toString();
+  let toUnit = (index) => index;
+  let toIndex = (unit) => unit;
+  if (/[\uD800-\uDBFF]/.test(text)) {
+    const units = []; // units[i] = UTF-16 offset of the i-th code point
+    let unit = 0;
+    for (const character of text) {
+      units.push(unit);
+      unit += character.length;
+    }
+    units.push(unit); // an offset may address the end of the document
+    toUnit = (index) => units[Math.max(0, Math.min(index, units.length - 1))];
+    toIndex = (unit) => {
+      let low = 0;
+      let high = units.length - 1;
+      while (low < high) {
+        const middle = (low + high + 1) >> 1;
+        if (units[middle] <= unit) low = middle;
+        else high = middle - 1;
+      }
+      return low;
+    };
+  }
+  return {
+    toUtf16(spec) {
+      if (spec.kind === "mark" || spec.kind === "replace")
+        return { ...spec, from: toUnit(spec.from), to: toUnit(spec.to) };
+      if (spec.kind === "widget") return { ...spec, position: toUnit(spec.position) };
+      return spec;
+    },
+    toPython(spec, from, to) {
+      if (spec.kind === "line") return { ...spec, line: doc.lineAt(from).number };
+      if (spec.kind === "widget") return { ...spec, position: toIndex(from) };
+      return { ...spec, from: toIndex(from), to: toIndex(to) };
+    },
+  };
+}
 
 export default {
   template: `
@@ -245,92 +286,46 @@ export default {
       });
     },
     setDecorations(decorations) {
+      // The server marks `decorations` as a preserved prop on unrelated updates, so this only runs on a
+      // deliberate write, which re-applies every spec at its declared offset, as line anchors do.
       if (!this.editor) return;
-      const doc = this.editor.state.doc;
-      // Re-applying the declared offsets would undo the mapping the state field has been doing
-      // through edits, so a decoration would jump back onto stale text on any update of the
-      // element — including appending one spec, which re-sends all the others.
-      // Specs that are unchanged keep where they were mapped to; only new or edited ones land
-      // at their declared offsets.
-      const mapped = this._mappedDecorationRanges();
+      const offsets = documentOffsets(this.editor.state.doc);
       const all = [];
       for (const spec of decorations || []) {
-        const key = JSON.stringify(spec);
-        const range = mapped.get(key);
-        let dec = null;
-        try {
-          dec = this._createDecoration(range ? this._withMappedOffsets(spec, range, doc) : spec, key);
-        } catch (error) {
-          // Backstop: a single malformed spec that slips past validation must not void the
-          // whole batch. _createDecoration warns-and-skips known-bad specs itself; this catches
-          // anything unforeseen that CodeMirror throws on.
-          logAndEmit("error", `decorations: skipping decoration that failed to build: ${error.message}`);
-        }
+        const dec = this._createDecoration(offsets.toUtf16(spec), spec);
         if (dec) all.push(dec);
       }
       this.editor.dispatch({ effects: setDecorationsEffect.of(all) });
     },
-    // Current position of every applied decoration, keyed by the spec it was built from.
-    // Each decoration carries its key on the spec object CodeMirror hands back, so the mapped
-    // ranges the state field maintains can be matched up with the specs the server sent.
-    _mappedDecorationRanges() {
-      const ranges = new Map();
-      const cursor = this.editor.state.field(decorationField).iter();
-      while (cursor.value) {
-        const key = cursor.value.spec?.[DECORATION_KEY];
-        if (key !== undefined && !ranges.has(key)) ranges.set(key, { from: cursor.from, to: cursor.to });
-        cursor.next();
-      }
-      return ranges;
-    },
-    _withMappedOffsets(spec, range, doc) {
-      if (spec.kind === "mark" || spec.kind === "replace") return { ...spec, from: range.from, to: range.to };
-      if (spec.kind === "widget") return { ...spec, position: range.from };
-      if (spec.kind === "line") return { ...spec, line: doc.lineAt(range.from).number };
-      return spec;
-    },
+    // The specs as declared, with their offsets moved to where the state field has mapped each decoration.
+    // A decoration that vanished with its text is left out.
     currentDecorationSpecs() {
-      const doc = this.editor.state.doc;
-      const mapped = this._mappedDecorationRanges();
-      return (this.decorations || []).map((spec) => {
-        const range = mapped.get(JSON.stringify(spec));
-        return range ? this._withMappedOffsets(spec, range, doc) : spec;
-      });
+      const offsets = documentOffsets(this.editor.state.doc);
+      const specs = [];
+      for (const cursor = this.editor.state.field(decorationField).iter(); cursor.value; cursor.next()) {
+        const declared = cursor.value.spec[DECLARED_SPEC];
+        if (declared) specs.push(offsets.toPython(declared, cursor.from, cursor.to));
+      }
+      return specs;
     },
-    // Validate a spec's from/to pair and clamp it into the document.
-    // Warns and returns null for a range that cannot be used, so the caller skips just this spec.
     _clampRange(spec, doc) {
-      if (!Number.isInteger(spec.from) || !Number.isInteger(spec.to)) {
-        logAndEmit(
-          "warning",
-          `decorations: ${spec.kind} requires integer 'from' and 'to' (got from=${spec.from}, to=${spec.to})`,
-        );
-        return null;
-      }
-      if (spec.from > spec.to) {
-        logAndEmit("warning", `decorations: ${spec.kind} has from > to (from=${spec.from}, to=${spec.to})`);
-        return null;
-      }
       const from = Math.max(0, Math.min(spec.from, doc.length));
       const to = Math.max(from, Math.min(spec.to, doc.length));
       return { from, to };
     },
-    _createDecoration(spec, key) {
+    _createDecoration(spec, declared) {
       const doc = this.editor.state.doc;
-      // Props arrive as user-supplied JSON; the Python TypedDicts enforce nothing at runtime, so
-      // every numeric field is validated here. Bad specs are warned-and-skipped (returning null)
-      // rather than thrown, so one malformed entry never voids the rest of the batch.
+      // The server refuses structurally broken specs before they get here; only what depends on the
+      // document is checked. Such specs are warned-and-skipped (returning null) rather than thrown,
+      // so one unusable entry never voids the rest of the batch.
       if (spec.kind === "mark") {
-        const range = this._clampRange(spec, doc);
-        if (!range) return null;
-        const { from, to } = range;
+        const { from, to } = this._clampRange(spec, doc);
         if (from === to) {
-          // CodeMirror rejects zero-length mark ranges; skip cleanly instead of letting it throw
-          // into the setDecorations backstop (which would log at error level).
-          logAndEmit("warning", `decorations: mark range is empty (from=${spec.from}, to=${spec.to})`);
+          // CodeMirror rejects zero-length mark ranges.
+          logAndEmit("warning", `decorations: mark range is empty (from=${declared.from}, to=${declared.to})`);
           return null;
         }
-        const markSpec = { [DECORATION_KEY]: key };
+        const markSpec = { [DECLARED_SPEC]: declared };
         if (spec.class) markSpec.class = spec.class;
         if (spec.attributes) markSpec.attributes = spec.attributes;
         if (spec.inclusiveStart !== undefined) markSpec.inclusiveStart = spec.inclusiveStart;
@@ -338,65 +333,37 @@ export default {
         return CM.Decoration.mark(markSpec).range(from, to);
       }
       if (spec.kind === "line") {
-        if (!Number.isInteger(spec.line) || spec.line < 1 || spec.line > doc.lines) {
+        if (spec.line > doc.lines) {
           logAndEmit("warning", `decorations: line ${spec.line} out of range [1, ${doc.lines}]`);
           return null;
         }
-        const line = doc.line(spec.line);
-        const lineSpec = { [DECORATION_KEY]: key };
+        const lineSpec = { [DECLARED_SPEC]: declared };
         if (spec.class) lineSpec.class = spec.class;
         if (spec.attributes) lineSpec.attributes = spec.attributes;
-        return CM.Decoration.line(lineSpec).range(line.from);
+        return CM.Decoration.line(lineSpec).range(doc.line(spec.line).from);
       }
       if (spec.kind === "replace") {
-        const range = this._clampRange(spec, doc);
-        if (!range) return null;
-        const { from, to } = range;
-        if (spec.text !== undefined && typeof spec.text !== "string") {
-          logAndEmit("warning", `decorations: replace 'text' must be a string (got ${JSON.stringify(spec.text)})`);
-          return null;
-        }
-        // CodeMirror rejects an empty replace range unless it is inclusive — which `block` implies.
-        // Skip cleanly instead of letting it throw into the setDecorations backstop.
+        const { from, to } = this._clampRange(spec, doc);
+        // CodeMirror rejects an empty replace range unless it is inclusive, which `block` implies.
         if (from === to && !(spec.inclusive ?? !!spec.block)) {
-          logAndEmit("warning", `decorations: replace range is empty (from=${spec.from}, to=${spec.to})`);
+          logAndEmit("warning", `decorations: replace range is empty (from=${declared.from}, to=${declared.to})`);
           return null;
         }
-        if (spec.block) {
-          // CodeMirror requires block-replace ranges to span full lines; otherwise it throws
-          // out of editor.dispatch and breaks the editor for the rest of the page.
-          const fromLine = doc.lineAt(from);
-          const toLine = doc.lineAt(to);
-          if (from !== fromLine.from || to !== toLine.to) {
-            logAndEmit("warning", `decorations: block replace must cover full lines (from=${spec.from}, to=${spec.to})`);
-            return null;
-          }
-        }
-        const replaceSpec = { [DECORATION_KEY]: key };
+        const replaceSpec = { [DECLARED_SPEC]: declared };
         if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
         if (spec.block) replaceSpec.block = true;
-        if (spec.text !== undefined) replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
+        if (spec.text !== undefined)
+          replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
         else if (spec.class) replaceSpec.class = spec.class;
         return CM.Decoration.replace(replaceSpec).range(from, to);
       }
       if (spec.kind === "widget") {
-        if (!Number.isInteger(spec.position)) {
-          logAndEmit("warning", `decorations: widget requires integer 'position' (got ${spec.position})`);
-          return null;
-        }
-        if (typeof spec.text !== "string") {
-          // Without it the widget would silently render an empty span.
-          logAndEmit("warning", `decorations: widget requires a string 'text' (got ${JSON.stringify(spec.text)})`);
-          return null;
-        }
-        const pos = Math.max(0, Math.min(spec.position, doc.length));
         return CM.Decoration.widget({
-          [DECORATION_KEY]: key,
+          [DECLARED_SPEC]: declared,
           widget: new TextWidget(spec.text, spec.class, this.decorationTextHtml),
           side: spec.side ?? 1,
-        }).range(pos);
+        }).range(Math.max(0, Math.min(spec.position, doc.length)));
       }
-      logAndEmit("warning", `decorations: unknown decoration kind ${JSON.stringify(spec.kind)}`);
       return null;
     },
     async applyLineAnchors(anchors) {
