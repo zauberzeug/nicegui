@@ -370,6 +370,15 @@ def test_decorations_track_edits_and_survive_an_unrelated_update(screen: Screen)
     assert _marked_text(screen, 'cm-test-keep') == 'beta'
 
 
+def test_decorations_declared_for_a_value_sent_in_the_same_update(screen: Screen):
+    editor = _open_editor(screen)
+    editor.value = 'XXXX' + editor.value
+    start = editor.value.index('gamma')
+    editor.decorations = [{'kind': 'mark', 'from': start, 'to': start + 5, 'class': 'cm-test-batch'}]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-batch') is not None)
+    assert _marked_text(screen, 'cm-test-batch') == 'gamma'
+
+
 def test_decorations_keep_their_text_after_an_astral_insert(screen: Screen):
     """Once an emoji precedes the mark, its str index and UTF-16 offset differ; the mark must still stay put."""
     document = 'a🎉b beta'

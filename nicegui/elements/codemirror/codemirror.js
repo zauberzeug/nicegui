@@ -161,8 +161,11 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    decorations(newDecorations) {
-      this.setDecorations(newDecorations);
+    decorations() {
+      // Applied from setEditorValueFromProps, after a value sent in the same update has landed;
+      // watchers run before nicegui.js calls the update method, so specs declared for the new
+      // value would otherwise be built against the old document.
+      this._decorationsPending = true;
     },
     lineAnchors(newAnchors) {
       this.applyLineAnchors(newAnchors);
@@ -252,6 +255,10 @@ export default {
     },
     setEditorValueFromProps() {
       this.setEditorValue(this.value);
+      if (this._decorationsPending) {
+        this._decorationsPending = false;
+        this.setDecorations(this.decorations);
+      }
     },
     setEditorValue(value) {
       if (!this.editor) return;
