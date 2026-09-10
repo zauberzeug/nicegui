@@ -50,4 +50,47 @@ def update_selection():
         ui.button('1, 2, 3', on_click=lambda: select.set_options([1, 2, 3], value=1))
 
 
+@doc.demo('Rich options', '''
+    Options are not limited to scalars.
+    A list may hold dataclasses or dictionaries, and then `value` is the selected option itself.
+    Use `option_label` to say how an option should be labelled.
+
+    A rich option's own fields are sent to the client,
+    so slots can access them as `props.opt.<key>`.
+    The keys "value" and "label" are reserved.
+
+    The element is generic in its option type,
+    so a type checker knows that `person` is a `Person` and that `select.value` is a `Person | None`
+    (a `list[Person]` if `multiple` is True).
+''')
+def rich_options():
+    from dataclasses import dataclass
+
+    @dataclass
+    class Person:
+        name: str
+        icon: str
+        team: str
+
+    people = [
+        Person('Alice', 'engineering', 'Engineering'),
+        Person('Bob', 'palette', 'Design'),
+        Person('Carol', 'query_stats', 'Data Science'),
+    ]
+    select = ui.select(people, value=people[0], option_label=lambda person: person.name) \
+        .classes('w-64')
+    select.add_slot('option', '''
+        <q-item v-bind="props.itemProps">
+            <q-item-section avatar>
+                <q-icon :name="props.opt.icon" />
+            </q-item-section>
+            <q-item-section>
+                <q-item-label>{{ props.opt.label }}</q-item-label>
+                <q-item-label caption>{{ props.opt.team }}</q-item-label>
+            </q-item-section>
+        </q-item>
+    ''')
+    ui.label().bind_text_from(select, 'value', lambda person: f'Selected: {person.name}')
+
+
 doc.reference(ui.select)
