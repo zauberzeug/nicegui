@@ -107,7 +107,7 @@ class Props(ObservableDict, Generic[T]):
 
         element = self._element()
         if element is not None:
-            element._enqueue_update()  # pylint: disable=protected-access
+            element.update()
 
     def add_warning(self, prop: str, message: str) -> None:
         """Add a warning message for a prop."""

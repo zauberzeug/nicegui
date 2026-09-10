@@ -398,7 +398,8 @@ class Element(Visibility):
                 request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
-            self._enqueue_update()
+            if not self._props._suspend_count:  # pylint: disable=protected-access
+                self.update()
         return self
 
     def _handle_event(self, msg: dict) -> None:
@@ -429,13 +430,8 @@ class Element(Visibility):
     def update(self) -> None:
         """Update the element on the client side.
 
-        Subclasses override this to rebuild derived state first;
-        internal resends use ``_enqueue_update()`` instead.
+        Subclasses can override this to rebuild derived state before calling ``super().update()``.
         """
-        self._enqueue_update()
-
-    def _enqueue_update(self) -> None:
-        """Send the element to the client without triggering a subclass ``update()`` override."""
         if not self._is_safe_to_interact():
             return
         self.client.outbox.enqueue_update(self)
@@ -496,7 +492,7 @@ class Element(Visibility):
         self.client.remove_elements(self.descendants())
         for slot in self.slots.values():
             slot.children.clear()
-        self._enqueue_update()
+        self.update()
         return self
 
     def move(self,
@@ -524,13 +520,13 @@ class Element(Visibility):
                              f'Add it first using `add_slot("{target_slot}")`.')
 
         parent_slot.children.remove(self)
-        parent_slot.parent._enqueue_update()  # pylint: disable=protected-access
+        parent_slot.parent.update()
         self.parent_slot = new_slot
 
         target_index = target_index if target_index >= 0 else len(new_slot.children)
         new_slot.children.insert(target_index, self)
 
-        target_container._enqueue_update()  # pylint: disable=protected-access
+        target_container.update()
         return self
 
     def remove(self, element: Element | int) -> None:
@@ -545,7 +541,7 @@ class Element(Visibility):
         parent_slot = element.parent_slot
         assert parent_slot is not None
         parent_slot.children.remove(element)
-        self._enqueue_update()
+        self.update()
 
     def delete(self) -> None:
         """Delete the element and all its children."""

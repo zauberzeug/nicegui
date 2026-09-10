@@ -18,7 +18,8 @@ class ValidationElement(ValueElement[ValueT]):
         self._auto_validation = True
         self._error: str | None = None
         super().__init__(**kwargs)
-        self._props['error'] = None if validation is None else False  # reserve bottom space for error message
+        with self._props.suspend_updates():
+            self._props['error'] = None if validation is None else False  # reserve bottom space for error message
 
     @property
     def validation(self) -> ValidationFunction | ValidationDict | None:

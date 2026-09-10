@@ -40,7 +40,7 @@ class Style(ObservableDict, Generic[T]):
             return
         element = self._element()
         if element is not None:
-            element._enqueue_update()  # pylint: disable=protected-access
+            element.update()
 
     def __call__(self,
                  add: str | None = None, *,
