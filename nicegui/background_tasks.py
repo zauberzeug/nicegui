@@ -9,7 +9,7 @@ from .logging import log
 
 running_tasks: set[asyncio.Task] = set()
 lazy_tasks_running: dict[str, asyncio.Task] = {}
-lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
+lazy_coroutines_waiting: dict[str, Awaitable[Any]] = {}
 _await_tasks_on_shutdown: set[asyncio.Task] = set()
 
 
@@ -80,8 +80,8 @@ def create_lazy(awaitable: Awaitable[Any] | None = None, *,
     awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create_lazy')
     if name in lazy_tasks_running:
         if name in lazy_coroutines_waiting:
-            lazy_coroutines_waiting[name].close()
-        lazy_coroutines_waiting[name] = _ensure_coroutine(awaitable)
+            _close_if_coroutine(lazy_coroutines_waiting[name])
+        lazy_coroutines_waiting[name] = awaitable
         return
 
     def finalize(_) -> None:
@@ -132,6 +132,12 @@ def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
     return wrapper()
 
 
+def _close_if_coroutine(awaitable: Awaitable[Any]) -> None:
+    """Close an awaitable if it is a coroutine to avoid "was never awaited" warnings."""
+    if asyncio.iscoroutine(awaitable):
+        awaitable.close()
+
+
 # DEPRECATED: remove `coroutine` keyword aliases in NiceGUI 4.0
 def _resolve_awaitable(awaitable: Awaitable[Any] | None,
                        coroutine: Awaitable[Any] | None, *,
@@ -174,5 +180,5 @@ async def teardown() -> None:
                           ', '.join(t.get_name() for t in tasks if not t.done()))
             except Exception:
                 log.exception('Error while cancelling tasks')
-    for coro in lazy_coroutines_waiting.values():
-        coro.close()
+    for awaitable in lazy_coroutines_waiting.values():
+        _close_if_coroutine(awaitable)
