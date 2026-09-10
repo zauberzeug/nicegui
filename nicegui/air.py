@@ -29,6 +29,23 @@ class Stream:
     response: httpx.Response
 
 
+async def _handle_handshake(data: dict[str, Any]) -> bool:
+    """Process an On Air handshake, including tab-storage creation."""
+    if client := Client.instances.get(data['client_id']):
+        if not client.accept_handshake(data['sid'], data['tab_id'], data['environ']):
+            return False
+        client.environ = data['environ']
+        if data.get('old_tab_id'):
+            core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
+        client.tab_id = data['tab_id']
+        client.on_air = True
+        client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
+        assert client.tab_id is not None
+        await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
+        return True
+    return False
+
+
 class Air:
 
     def __init__(self, token: str) -> None:
@@ -135,19 +152,7 @@ class Air:
         def _handleerror(data: dict[str, Any]) -> None:
             print('Error:', data['message'], flush=True)
 
-        @relay.on('handshake')
-        def _handle_handshake(data: dict[str, Any]) -> bool:
-            if client := Client.instances.get(data['client_id']):
-                if not client.accept_handshake(data['sid'], data['tab_id'], data['environ']):
-                    return False
-                client.environ = data['environ']
-                if data.get('old_tab_id'):
-                    core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
-                client.tab_id = data['tab_id']
-                client.on_air = True
-                client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
-                return True
-            return False
+        relay.on('handshake', _handle_handshake)
 
         @relay.on('client_disconnect')
         def _handle_client_disconnect(data: dict[str, Any]) -> None:
