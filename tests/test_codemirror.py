@@ -12,19 +12,6 @@ from nicegui.testing import Screen, User
 # pylint: disable=protected-access
 
 
-def _open_editor(screen: Screen, doc: str = 'alpha\nbeta\ngamma', **kwargs: Any) -> ui.codemirror:
-    editor: ui.codemirror = None  # type: ignore[assignment]
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror(doc, **kwargs)
-
-    screen.open('/')
-    screen.wait_for(lambda: bool(screen.selenium.find_elements(By.CSS_SELECTOR, '.cm-content')))
-    return editor
-
-
 def test_codemirror(screen: Screen):
     @ui.page('/')
     def page():
@@ -113,12 +100,6 @@ def test_encode_codepoints():
     assert ui.codemirror._encode_codepoints('😎😎😎') == bytes([0, 1, 0, 1, 0, 1])
 
 
-def _line_decoration_count(screen: Screen, css_class: str) -> int:
-    return screen.selenium.execute_script(
-        f'return document.querySelectorAll(".cm-line.{css_class}").length;'
-    )
-
-
 def test_set_and_clear_line_decorations(screen: Screen):
     editor = _open_editor(screen, 'alpha\nbeta\ngamma\ndelta')
     editor.decorations = [
@@ -143,18 +124,6 @@ def test_decorations_list_mutations_sync(screen: Screen):
     screen.wait_for(lambda: _line_decoration_count(screen, 'set-b') == 0)
 
 
-def _visible_text_length(screen: Screen) -> int:
-    return screen.selenium.execute_script(
-        'return document.querySelector(".cm-content").innerText.length;'
-    )
-
-
-def _replacement_widget_count(screen: Screen, css_class: str) -> int:
-    return screen.selenium.execute_script(
-        f'return document.querySelectorAll(".cm-content span.{css_class}").length;'
-    )
-
-
 def test_replace_decoration_collapses_range(screen: Screen):
     editor = _open_editor(screen)
     baseline = _visible_text_length(screen)
@@ -170,10 +139,8 @@ def test_replace_decoration_with_text(screen: Screen):
     editor.decorations = [
         {'kind': 'replace', 'from': 6, 'to': 10, 'text': 'BETA-NEW', 'class': 'cm-test-suggest'},
     ]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-suggest') == 1)
-    widget_text = screen.selenium.execute_script(
-        'return document.querySelector(".cm-content span.cm-test-suggest").textContent;'
-    )
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-suggest') == 1)
+    widget_text = _marked_text(screen, 'cm-test-suggest')
     assert widget_text == 'BETA-NEW'
     # Document is unchanged — the editor's value must still contain the original text.
     assert 'beta' in editor.value
@@ -209,13 +176,11 @@ def test_widget_text_defaults_to_plain(screen: Screen):
          'text': '<b>literal</b>',
          'class': 'cm-test-plain-widget'},
     ]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-plain-widget') == 1)
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-plain-widget') == 1)
     widget_html = screen.selenium.execute_script(
         'return document.querySelector(".cm-content span.cm-test-plain-widget").innerHTML;'
     )
-    widget_text = screen.selenium.execute_script(
-        'return document.querySelector(".cm-content span.cm-test-plain-widget").textContent;'
-    )
+    widget_text = _marked_text(screen, 'cm-test-plain-widget')
     assert '<b>' not in widget_html, 'plain mode must render < and > as entities'
     assert widget_text == '<b>literal</b>'
 
@@ -227,7 +192,7 @@ def test_replace_decoration_block_mode(screen: Screen):
         'kind': 'replace', 'from': 6, 'to': 16,
         'text': '{ ... folded ... }', 'class': 'cm-test-fold', 'block': True,
     }]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-fold') == 1)
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-fold') == 1)
     visible = screen.selenium.execute_script(
         'return document.querySelector(".cm-content").innerText;'
     )
@@ -242,14 +207,14 @@ def test_mark_decoration_styles_range(screen: Screen):
         'kind': 'mark', 'from': 6, 'to': 10,
         'class': 'cm-test-mark', 'attributes': {'data-marker': 'beta'},
     }]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-mark') == 1)
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-mark') == 1)
     marker_attr = screen.selenium.execute_script(
         'return document.querySelector(".cm-content span.cm-test-mark").getAttribute("data-marker");'
     )
     assert marker_attr == 'beta'
     assert editor.value == 'alpha\nbeta\ngamma'
     editor.decorations = []
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-mark') == 0)
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-mark') == 0)
 
 
 def test_widget_decoration_inserts_text(screen: Screen):
@@ -257,10 +222,8 @@ def test_widget_decoration_inserts_text(screen: Screen):
     editor.decorations = [
         {'kind': 'widget', 'position': 5, 'text': '<-- end of alpha', 'class': 'cm-test-hint'},
     ]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-hint') == 1)
-    widget_text = screen.selenium.execute_script(
-        'return document.querySelector(".cm-content span.cm-test-hint").textContent;'
-    )
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-hint') == 1)
+    widget_text = _marked_text(screen, 'cm-test-hint')
     assert widget_text == '<-- end of alpha'
     # Document is unchanged — widgets are presentation only.
     assert editor.value == 'alpha\nbeta\ngamma'
@@ -286,8 +249,8 @@ def test_unusable_spec_added_in_place_is_skipped(screen: Screen):
     unusable = {'kind': 'widget', 'position': 5, 'text': 42, 'class': 'cm-test-no-text'}
     editor.decorations.append(unusable)  # type: ignore[arg-type]
     editor.decorations.append({'kind': 'widget', 'position': 5, 'text': 'hint', 'class': 'cm-test-late-hint'})
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-late-hint') == 1)
-    assert _replacement_widget_count(screen, 'cm-test-no-text') == 0, \
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-late-hint') == 1)
+    assert _span_count(screen, 'cm-test-no-text') == 0, \
         'a widget without usable text is skipped instead of rendering an empty span'
     screen.assert_py_logger('WARNING', re.compile(r"needs a string 'text'"))
 
@@ -299,40 +262,20 @@ def test_empty_replace_range_is_skipped(screen: Screen):
         # An empty range is legal for CodeMirror as long as it is inclusive, so this one survives.
         {'kind': 'replace', 'from': 8, 'to': 8, 'text': 'INS', 'class': 'cm-test-empty-incl', 'inclusive': True},
     ]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-empty-incl') == 1)
-    assert _replacement_widget_count(screen, 'cm-test-empty') == 0
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-empty-incl') == 1)
+    assert _span_count(screen, 'cm-test-empty') == 0
     screen.assert_py_logger('WARNING', re.compile(r'replace range is empty'))
-
-
-def _marked_text(screen: Screen, css_class: str) -> str | None:
-    return screen.selenium.execute_script(
-        f'const s = document.querySelector(".cm-content span.{css_class}"); return s ? s.textContent : null;')
-
-
-def test_decorations_track_document_edits(screen: Screen):
-    editor = _open_editor(screen)
-    editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-track'}]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-track') == 1)
-    assert _marked_text(screen, 'cm-test-track') == 'beta'
-    # Insert two characters before the mark; a mapped decoration follows "beta" instead of
-    # staying at the now-stale absolute offsets 6..10.
-    editor.value = 'XX' + editor.value
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelector(".cm-content").innerText.startsWith("XXalpha");'))
-    assert _marked_text(screen, 'cm-test-track') == 'beta'
 
 
 def test_decoration_inclusive_end_extends_mark(screen: Screen):
     editor = _open_editor(screen)
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'inclusiveEnd': True, 'class': 'cm-test-incl'}]
-    screen.wait_for(lambda: _replacement_widget_count(screen, 'cm-test-incl') == 1)
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-incl') == 1)
     # Insert exactly at the mark's right edge (offset 10). Only a live inclusiveEnd grows the mark
     # over the new character; a plain mapped mark (default exclusive end) would still read "beta".
     editor.value = editor.value[:10] + 'Z' + editor.value[10:]
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelector(".cm-content").innerText.includes("betaZ");'))
-    grown = screen.selenium.execute_script(
-        'const s = document.querySelector(".cm-content span.cm-test-incl"); return s ? s.textContent : null;')
+    screen.wait_for_js('document.querySelector(".cm-content").innerText.includes("betaZ")', True)
+    grown = _marked_text(screen, 'cm-test-incl')
     assert grown == 'betaZ'
 
 
@@ -413,18 +356,92 @@ def test_line_tooltip_html_sanitized(screen: Screen):
     assert 'XSS' not in screen.selenium.get_log('browser')  # ...but sanitize out any scripts.
 
 
-def test_decorations_survive_an_unrelated_update(screen: Screen):
+def test_decorations_track_edits_and_survive_an_unrelated_update(screen: Screen):
     editor = _open_editor(screen)
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-keep'}]
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-keep') == 'beta')
+    # Insert two characters before the mark: it follows "beta" instead of staying at the stale offsets 6..10.
     editor.value = 'XX' + editor.value
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelector(".cm-content").innerText.startsWith("XXalpha");'))
-    # Any later update re-sends the whole props dict, which used to re-apply the declared offsets
-    # and drop the mark back onto the text that now sits at 6..10.
-    editor.theme = 'basicDark'
-    screen.wait(0.5)
+    screen.wait_for_js('document.querySelector(".cm-content").innerText.startsWith("XXalpha")', True)
     assert _marked_text(screen, 'cm-test-keep') == 'beta'
+    # An unrelated update re-sends the props, which must not re-apply the declared offsets.
+    editor.theme = 'basicDark'
+    screen.wait_for_js(f'getElement({editor.id}).$props.theme', 'basicDark')
+    assert _marked_text(screen, 'cm-test-keep') == 'beta'
+
+
+def test_decorations_keep_their_text_after_an_astral_insert(screen: Screen):
+    """Once an emoji precedes the mark, its str index and UTF-16 offset differ; the mark must still stay put."""
+    document = 'a🎉b beta'
+    editor = _open_editor(screen, document)
+    start = document.index('beta')
+    editor.decorations = [{'kind': 'mark', 'from': start, 'to': start + 4, 'class': 'cm-test-astral'}]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-astral') == 'beta')
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "🎉"}}}})')
+    screen.wait_for(lambda: editor.value.startswith('🎉a'))
+    editor.theme = 'basicDark'
+    screen.wait_for_js(f'getElement({editor.id}).$props.theme', 'basicDark')
+    assert _marked_text(screen, 'cm-test-astral') == 'beta'
+
+
+def test_a_deleted_decoration_stays_gone(screen: Screen):
+    editor = _open_editor(screen)
+    editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-gone'}]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-gone') == 'beta')
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 6, to: 11}}}})')
+    screen.wait_for(lambda: editor.value == 'alpha\ngamma')
+    assert _marked_text(screen, 'cm-test-gone') is None, 'the mark vanishes with its text'
+    # An unrelated update must not bring it back onto whatever sits at 6..10 now.
+    editor.theme = 'basicDark'
+    screen.wait_for_js(f'getElement({editor.id}).$props.theme', 'basicDark')
+    assert _marked_text(screen, 'cm-test-gone') is None
+
+
+def test_a_fold_survives_joining_its_last_line(screen: Screen):
+    editor = _open_editor(screen, 'alpha\nbeta\ngamma\ndelta')
+    editor.decorations = [{'kind': 'replace', 'from': 6, 'to': 16,
+                           'text': '...', 'class': 'cm-test-fold', 'block': True}]
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-fold') == 1)
+    # Deleting the newline after "gamma" leaves the fold ending mid-line, which CodeMirror keeps rendering.
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 16, to: 17}}}})')
+    screen.wait_for(lambda: editor.value == 'alpha\nbeta\ngammadelta')
+    assert _span_count(screen, 'cm-test-fold') == 1
+    editor.theme = 'basicDark'
+    screen.wait_for_js(f'getElement({editor.id}).$props.theme', 'basicDark')
+    assert _span_count(screen, 'cm-test-fold') == 1
+
+
+def test_decorations_survive_a_client_side_remount(screen: Screen):
+    """A remount without a server round-trip must restore the mapped positions, not the declared ones."""
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        with ui.tabs() as tabs:
+            ui.tab('One')
+            ui.tab('Two')
+        with ui.tab_panels(tabs, value='One', keep_alive=False):
+            with ui.tab_panel('One'):
+                editor = ui.codemirror('alpha\nbeta\ngamma',
+                                       decorations=[{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-remount'}])
+            with ui.tab_panel('Two'):
+                ui.label('Second tab')
+
+    screen.open('/')
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-remount') == 'beta')
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "XX"}}}})')
+    screen.wait_for(lambda: editor.value.startswith('XXalpha'))
+    # Leaving the tab destroys the editor client-side; coming back builds a fresh one from the props.
+    screen.click('Two')
+    screen.should_contain('Second tab')
+    screen.click('One')
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-remount') is not None)
+    assert _marked_text(screen, 'cm-test-remount') == 'beta'
+    # The server still holds the declared offsets; an unrelated update must not re-apply them.
+    editor.theme = 'basicDark'
+    screen.wait_for_js(f'getElement({editor.id}).$props.theme', 'basicDark')
+    assert _marked_text(screen, 'cm-test-remount') == 'beta'
 
 
 def test_writing_decorations_reapplies_declared_offsets(screen: Screen):
@@ -433,8 +450,7 @@ def test_writing_decorations_reapplies_declared_offsets(screen: Screen):
     editor.decorations = [{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-first'}]
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-first') == 'beta')
     editor.value = editor.value[:6] + 'XX' + editor.value[6:]
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        'return document.querySelector(".cm-content").innerText.includes("XXbeta");'))
+    screen.wait_for_js('document.querySelector(".cm-content").innerText.includes("XXbeta")', True)
     assert _marked_text(screen, 'cm-test-first') == 'beta'
     # Appending is a write like any other: the stale first spec snaps back onto whatever sits at 6..10 now.
     start = editor.value.index('gamma')
@@ -488,3 +504,39 @@ async def test_rejected_decorations_leave_no_editor_behind(user: User):
         with pytest.raises(ValueError, match='unknown kind'):
             ui.codemirror('alpha', decorations=[{'kind': 'sparkle'}])  # type: ignore[list-item]
     await user.should_not_see(ui.codemirror)
+
+
+def _open_editor(screen: Screen, doc: str = 'alpha\nbeta\ngamma', **kwargs: Any) -> ui.codemirror:
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(doc, **kwargs)
+
+    screen.open('/')
+    screen.wait_for(lambda: bool(screen.selenium.find_elements(By.CSS_SELECTOR, '.cm-content')))
+    return editor
+
+
+def _line_decoration_count(screen: Screen, css_class: str) -> int:
+    return screen.selenium.execute_script(
+        f'return document.querySelectorAll(".cm-line.{css_class}").length;'
+    )
+
+
+def _visible_text_length(screen: Screen) -> int:
+    return screen.selenium.execute_script(
+        'return document.querySelector(".cm-content").innerText.length;'
+    )
+
+
+def _span_count(screen: Screen, css_class: str) -> int:
+    return screen.selenium.execute_script(
+        f'return document.querySelectorAll(".cm-content span.{css_class}").length;'
+    )
+
+
+def _marked_text(screen: Screen, css_class: str) -> str | None:
+    return screen.selenium.execute_script(
+        f'const s = document.querySelector(".cm-content span.{css_class}"); return s ? s.textContent : null;')
