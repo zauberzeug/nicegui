@@ -328,6 +328,19 @@ def test_popup_scroll_behavior(screen: Screen):
     assert screen.selenium.execute_script('return window.scrollY') == position
 
 
+async def test_invalid_new_value_mode_does_not_break_page(user: User):
+    @ui.page('/')
+    def page():
+        try:
+            ui.select({'a': 'A'}, new_value_mode='add')
+        except ValueError:
+            ui.label('caught')
+
+    await user.open('/')
+    await user.should_see('caught')
+    user.client.delete()
+
+
 async def test_construction_does_not_run_update_override(user: User):
     calls = 0
     calls_after_init = 0
