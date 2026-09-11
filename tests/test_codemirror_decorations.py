@@ -165,6 +165,21 @@ def test_unusable_spec_added_in_place_is_skipped(screen: Screen):
     screen.assert_py_logger('WARNING', re.compile(r"needs a string 'text'"))
 
 
+def test_a_re_render_after_an_unusable_in_place_spec_still_mounts(screen: Screen):
+    """A re-render builds the editor from the props verbatim, so the spec skipped on the way out must stay skipped."""
+    editor = _open_editor(screen, decorations=[{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-kept'}])
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-kept') == 'beta')
+    editor.decorations.append({'kind': 'line', 'class': 'cm-test-broken'})  # type: ignore[arg-type]
+    editor.decorations.append({'kind': 'widget', 'position': 5, 'text': '!', 'class': 'cm-test-late'})
+    screen.wait_for(lambda: _span_count(screen, 'cm-test-late') == 1)
+    # A listener registered after the first render makes nicegui.js rebuild the element from the props.
+    editor.on('focus', lambda: None)
+    editor.theme = 'basicDark'
+    screen.wait_for_js(f'getElement({editor.id}).$props.theme', 'basicDark')
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-kept') == 'beta')
+    assert _span_count(screen, 'cm-test-late') == 1
+
+
 def test_empty_replace_range_is_skipped(screen: Screen):
     editor = _open_editor(screen)
     editor.decorations = [

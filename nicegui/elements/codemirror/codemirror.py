@@ -296,17 +296,19 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
     def _to_dict(self) -> dict[str, Any]:
         dict_ = super()._to_dict()
-        if self._decorations_pending:
-            # An in-place change bypasses the setter, so the specs are checked once more on the way out.
-            usable: list[DecorationSpec] = []
-            for spec in self._props['decorations']:
-                error = _decoration_error(spec)
-                if error is None:
-                    usable.append(spec)
-                else:
-                    log.warning(f'{error}; skipping it')
-            dict_['props'] = {**dict_['props'], 'decorations': usable}
-        else:
+        # An in-place change bypasses the setter, so the specs are checked once more on the way out.
+        # The filter runs on every send, since a full render (a new client of a shared page, or a
+        # re-render after a listener change) uses these props verbatim; the warning is logged only
+        # once, when the write that let the spec in is flushed.
+        usable: list[DecorationSpec] = []
+        for spec in self._props['decorations']:
+            error = _decoration_error(spec)
+            if error is None:
+                usable.append(spec)
+            elif self._decorations_pending:
+                log.warning(f'{error}; skipping it')
+        dict_['props'] = {**dict_['props'], 'decorations': usable}
+        if not self._decorations_pending:
             # An unrelated update must leave the positions the browser has mapped alone, as with line anchors.
             dict_.setdefault('preserved_props', []).append('decorations')
         self._decorations_pending = False
