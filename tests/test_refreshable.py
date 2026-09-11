@@ -1,7 +1,9 @@
 import asyncio
 
+import pytest
+
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_refreshable(screen: Screen) -> None:
@@ -306,3 +308,87 @@ def test_awaitable_refresh(screen: Screen):
     screen.click('Try 0')
     screen.should_contain('error handled')
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
+
+
+async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        @ui.refreshable
+        def part(explode: bool = False):
+            if explode:
+                raise RuntimeError('boom')
+
+        part()
+        ui.button('fire', on_click=lambda: part.refresh(True))
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
+
+
+@pytest.mark.parametrize('rewrapped', [False, True], ids=['direct_raise', 'rewrapped_typeerror'])
+async def test_reported_exception_is_live(user: User, caplog: pytest.LogCaptureFixture, rewrapped: bool):
+    # The handler must receive the live exception, not a fresh object whose traceback is only
+    # retro-attached by a later ``raise``. Snapshotting inside the handler is what distinguishes fixed
+    # from broken; the count-only test above cannot, since it inspects the exception after ``raise``.
+    seen: list[dict] = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(lambda e: seen.append({'tb': e.__traceback__ is not None, 'cause': e.__cause__ is not None}))
+
+        @ui.refreshable
+        def part(a: int = 0, explode: bool = False):
+            if explode:
+                raise RuntimeError('boom')
+
+        if rewrapped:
+            part(42)  # positional 'a' collides with the keyword 'a' below -> TypeError rewrapped with `from e`
+            ui.button('fire', on_click=lambda: part.refresh(a=99, explode=True))
+        else:
+            part()
+            ui.button('fire', on_click=lambda: part.refresh(explode=True))  # RuntimeError raised directly
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
+    assert seen[0]['tb'], 'handler did not see __traceback__ — reported before the exception was caught'
+    assert seen[0]['cause'] == rewrapped, 'handler did not see __cause__ — rewrapped without `from e`' \
+        if rewrapped else 'unexpected __cause__ on a directly raised exception'
+
+
+@pytest.mark.parametrize('awaited', [False, True])
+async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixture, awaited: bool):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    async def page():
+        ui.on_exception(seen.append)
+
+        @ui.refreshable
+        async def part(explode: bool = False):
+            await asyncio.sleep(0)
+            if explode:
+                raise RuntimeError('boom')
+
+        async def refresh_awaited():
+            await part.refresh(True)
+
+        await part()
+        # awaited=False guards the fix (fails without it); awaited=True passes either way, since the
+        # awaited path already reports through the event system, so it guards against double-reporting.
+        ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    caplog.records.clear()
+    assert len(seen) == 1, f'ui.on_exception saw {len(seen)}, expected 1'
