@@ -8,7 +8,7 @@ import weakref
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 from typing_extensions import dataclass_transform
 
@@ -32,7 +32,6 @@ active_links: list[ActiveLink] = []
 _active_links_added = asyncio.Event()
 _binding_keys_by_object: defaultdict[int, set[BindingKey]] = defaultdict(set)
 
-TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
 
 _MISSING = object()
@@ -343,10 +342,22 @@ def reset() -> None:
     _binding_keys_by_object.clear()
 
 
+@overload
+def bindable_dataclass(cls: type[T], /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> type[T]: ...
+
+
+@overload
+def bindable_dataclass(cls: None = ..., /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> IdentityFunction: ...
+
+
 @dataclass_transform()
-def bindable_dataclass(cls: TC | None = None, /, *,
+def bindable_dataclass(cls: type[T] | None = None, /, *,
                        bindable_fields: Iterable[str] | None = None,
-                       **kwargs: Any) -> type[DataclassInstance] | IdentityFunction:
+                       **kwargs: Any) -> type[T] | IdentityFunction:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
@@ -371,8 +382,8 @@ def bindable_dataclass(cls: TC | None = None, /, *,
         if kwargs.get(unsupported_option):
             raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
 
-    dataclass: type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
-    field_names = {field.name for field in dataclasses.fields(dataclass)}
+    dataclass: type[T] = dataclasses.dataclass(**kwargs)(cls)
+    field_names = {field.name for field in dataclasses.fields(cast('type[DataclassInstance]', dataclass))}
     if bindable_fields is None:
         bindable_fields = field_names
     for field_name in bindable_fields:
