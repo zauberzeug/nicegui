@@ -221,6 +221,22 @@ def test_anchors_survive_client_side_remount(screen: Screen):
     assert editor.line_anchors == {'mid': 4}, f'anchors should survive a client-side remount, got {editor.line_anchors}'
 
 
+def test_anchors_declared_for_a_value_sent_in_the_same_update(screen: Screen):
+    """Anchors assigned in the same handler as a new value address that value, not the previous one."""
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc')
+
+    screen.open('/')
+    _wait_for_editor(screen)
+    editor.value = '\n'.join(f'line {i}' for i in range(1, 11))
+    editor.line_anchors = {'end': 10}
+    screen.wait_for(lambda: editor.line_anchors == {'end': 10})
+
+
 def test_on_anchor_change_handler(screen: Screen):
     """on_anchor_change fires with the current positions on every change."""
     editor: ui.codemirror = None  # type: ignore[assignment]

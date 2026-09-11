@@ -76,14 +76,14 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    lineAnchors(newAnchors) {
-      this.applyLineAnchors(newAnchors);
+    lineAnchors() {
+      this._anchorsPending = true; // applied from setEditorValueFromProps
     },
     keymap() {
       this.setKeymap();
     },
-    lineTooltips(newTooltips) {
-      this.setLineTooltips(newTooltips);
+    lineTooltips() {
+      this._tooltipsPending = true; // applied from setEditorValueFromProps
     },
   },
   data() {
@@ -163,6 +163,16 @@ export default {
     },
     setEditorValueFromProps() {
       this.setEditorValue(this.value);
+      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors and
+      // tooltips sent together with a new value would otherwise be applied to the old document.
+      if (this._anchorsPending) {
+        this._anchorsPending = false;
+        this.applyLineAnchors(this.lineAnchors);
+      }
+      if (this._tooltipsPending) {
+        this._tooltipsPending = false;
+        this.setLineTooltips(this.lineTooltips);
+      }
     },
     setEditorValue(value) {
       if (!this.editor) return;
