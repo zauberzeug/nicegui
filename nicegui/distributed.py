@@ -1,0 +1,280 @@
+import base64
+import hashlib
+import hmac
+import json
+import uuid
+import weakref
+from collections.abc import Callable
+from typing import Any
+
+from . import core
+from .helpers import warn_once
+from .logging import log
+
+try:
+    import zenoh
+    from cryptography.fernet import Fernet, InvalidToken
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+    from zenoh import Sample, ZError
+    ZENOH_AVAILABLE = True
+    IMPORT_ERROR = ''
+except ImportError as e:
+    ZENOH_AVAILABLE = False
+    # NOTE: The extra brings more than zenoh, so name what is actually missing instead of always blaming zenoh.
+    IMPORT_ERROR = (f'{e.name or "a dependency"} is not installed. Distributed events are disabled. '
+                    'Install with: pip install "nicegui[distributed]"')
+    zenoh = None  # type: ignore
+    Sample = Any  # type: ignore
+
+    class ZError(Exception):  # type: ignore  # placeholder: without zenoh there is no zenoh error to catch
+        pass
+
+DEFAULT_ZENOH_PORT = 7447
+TOPIC_NAMESPACE_INFO = b'nicegui-distributed-v1'
+PAYLOAD_KEY_INFO = b'nicegui-distributed-payload-v1'
+EVENT_TTL_SECONDS = 60  # reject payloads older than this (bounds replay; assumes loosely NTP-synced clocks)
+
+
+def _peer_to_endpoint(peer: str) -> str:
+    """Turn ``host`` or ``host:port`` into a Zenoh ``tcp/host:port`` endpoint."""
+    return f'tcp/{peer}' if ':' in peer else f'tcp/{peer}:{DEFAULT_ZENOH_PORT}'
+
+
+def _normalize_config(config: bool | list[str] | dict) -> Any:
+    """Build a ``zenoh.Config`` from the user-friendly shortcuts accepted by ``ui.run``."""
+    if config is True:
+        return zenoh.Config()
+    if isinstance(config, list):
+        # NOTE: shortcut for the 99% case - "connect to these peers" without raw Zenoh JSON5
+        peers_json = json.dumps([_peer_to_endpoint(p) for p in config])
+        zenoh_config = zenoh.Config()
+        zenoh_config.insert_json5('mode', '"peer"')
+        zenoh_config.insert_json5('connect/endpoints', peers_json)
+        # Zenoh's peer default listens on an ephemeral port, which no peer list can point at, so the list
+        # would only ever work thanks to multicast scouting - exactly what is missing where this shortcut is
+        # needed. Listen on the port those lists point at instead, and keep going if it is already taken:
+        # a second instance on the same host cannot bind it, but still reaches its peers by connecting out.
+        zenoh_config.insert_json5('listen/endpoints', json.dumps([f'tcp/[::]:{DEFAULT_ZENOH_PORT}']))
+        zenoh_config.insert_json5('listen/exit_on_failure', 'false')
+        return zenoh_config
+    # NOTE: zenoh 1.x dropped Config.from_obj; from_json5 accepts a JSON string for the same effect.
+    return zenoh.Config.from_json5(json.dumps(config))
+
+
+class DistributedSession:
+    """Manages distributed event communication via Zenoh pub/sub.
+
+    This is an internal class used by the Event system to handle distributed messaging.
+    Publishers and subscribers are kept alive for the lifetime of the session,
+    so no automatic cleanup of unused topics is performed.
+    The event callbacks behind them are only referenced weakly,
+    so events created per client (e.g. inside a page function) are collected with their client.
+
+    Under ``uvicorn --workers N`` (via ``ui.run_with()``, since ``ui.run()`` rejects it) each worker gets
+    its own session and exchanges events like a separate host would, receiving every event exactly once.
+    The peer list is the exception: only the first worker binds ``DEFAULT_ZENOH_PORT``, and the others
+    reach their peers by connecting out. A raw config with a fixed ``listen`` endpoint has to allow for
+    that itself, or every worker but the first fails to open a session at all.
+
+    Trust model:
+
+    - **Payload confidentiality & integrity (the real boundary):** event payloads are encrypted
+      with a Fernet key (AES-128-CBC + HMAC-SHA256) derived from ``storage_secret`` via HKDF before
+      they hit the wire, and decrypted on receipt. The secret never crosses the wire, so a node
+      without it sees only ciphertext and cannot forge a valid event - undecryptable messages
+      (foreign deployment, forged, or stale beyond ``EVENT_TTL_SECONDS``) are dropped silently.
+    - **The topic namespace is collision-avoidance only**, not security: the derived prefix travels
+      in Zenoh declarations/interests, so any node can observe and subscribe to it.
+    - **Residuals (document for any internet-exposed deployment):** metadata still leaks (topic /
+      key-expression names, message timing and sizes), and denial-of-service / flooding is still
+      possible. For defense-in-depth on an untrusted network, also pass a raw Zenoh config dict with
+      mTLS node authentication and an ``access_control`` ACL (``default_permission: deny``), or keep
+      the Zenoh transport on a network you control.
+    """
+
+    _instance: 'DistributedSession | None' = None
+
+    def __init__(self, config: bool | list[str] | dict, storage_secret: str | None = None) -> None:
+        """Initialize a Zenoh session for distributed events.
+
+        :param config: True for defaults, list of "host" / "host:port" peers, or a raw Zenoh config dict
+        :param storage_secret: NiceGUI's storage_secret; used to derive a topic namespace so that
+                               instances sharing the same secret sync. Instances with different
+                               secrets won't accidentally cross-talk - collision-avoidance, not a
+                               security boundary (see the class docstring's trust model)
+        """
+        if not ZENOH_AVAILABLE:
+            raise ImportError(IMPORT_ERROR)
+        if not storage_secret:
+            raise ValueError(
+                'distributed events require ui.run(storage_secret=...). '
+                'Without a secret, unrelated deployments would silently cross-talk on '
+                'the same network. Pass the same secret on every node you want to sync.'
+            )
+
+        self.session = zenoh.open(_normalize_config(config))
+        self.instance_id = str(uuid.uuid4())
+        self.namespace = self._derive_namespace(storage_secret)
+        self._fernet = self._derive_fernet(storage_secret)
+        self.publishers: dict[str, Any] = {}
+        self.subscribers: dict[str, Any] = {}
+        self.callbacks: dict[str, list[weakref.WeakMethod]] = {}
+        log.info(f'Distributed events enabled via Zenoh '
+                 f'(instance: {self.instance_id[:8]}..., namespace: {self.namespace})')
+
+    @staticmethod
+    def _derive_namespace(storage_secret: str) -> str:
+        """Topic namespace derived from storage_secret via HMAC-SHA256.
+
+        The secret itself never appears on the wire; only this 16-char digest does. The digest is
+        not confidential either - it travels in Zenoh declarations/interests, so it gives
+        collision-avoidance between deployments, not isolation from a deliberate listener.
+        """
+        return hmac.new(storage_secret.encode(), TOPIC_NAMESPACE_INFO, hashlib.sha256).hexdigest()[:16]
+
+    @staticmethod
+    def _derive_fernet(storage_secret: str) -> 'Fernet':
+        """Derive the payload-encryption key from ``storage_secret`` via HKDF-SHA256.
+
+        Event payloads are encrypted with this Fernet key (AES-128-CBC + HMAC-SHA256) before going on
+        the wire and decrypted on receipt. Because the key is derived from ``storage_secret`` - which
+        never crosses the wire - a node without the secret only ever sees ciphertext and cannot forge
+        a valid event. A separate HKDF ``info`` from the namespace ensures the two derivations differ.
+        """
+        raw_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=PAYLOAD_KEY_INFO) \
+            .derive(storage_secret.encode())
+        return Fernet(base64.urlsafe_b64encode(raw_key))
+
+    def wire_topic(self, logical_topic: str) -> str:
+        """Map a logical (per-event) topic to the namespaced topic actually used on Zenoh."""
+        return f'nicegui/events/{self.namespace}/{logical_topic}'
+
+    @classmethod
+    def get(cls) -> 'DistributedSession | None':
+        """Get the active distributed session, if any."""
+        return cls._instance
+
+    @classmethod
+    def initialize(cls, config: bool | list[str] | dict, storage_secret: str | None = None) -> None:
+        """Initialize the global distributed session.
+
+        If the Zenoh session cannot be opened, the app keeps running with local events only.
+        Misconfiguration that no network can fix (missing dependency, missing storage_secret) still raises.
+
+        :param config: True for defaults, list of "host" / "host:port" peers, or a raw Zenoh config dict
+        :param storage_secret: NiceGUI's storage_secret, used to derive the topic namespace
+        """
+        if cls._instance is None:
+            try:
+                cls._instance = cls(config, storage_secret=storage_secret)
+            except ZError as e:
+                log.warning(f'Could not open the Zenoh session. Distributed events are disabled: {e}')
+                return
+            cls._setup_existing_events()
+            # Release the Zenoh session, publishers and subscribers when the app shuts down.
+            core.app.on_shutdown(cls._instance.shutdown)
+
+    @classmethod
+    def _setup_existing_events(cls) -> None:
+        """Set up distributed mode for all existing DistributedEvent instances."""
+        from .distributed_event import DistributedEvent  # pylint: disable=import-outside-toplevel,cyclic-import
+        for event in DistributedEvent.instances:
+            if isinstance(event, DistributedEvent):
+                event._setup_distributed()  # pylint: disable=protected-access
+
+    def publish(self, topic: str, data: Any) -> None:
+        """Publish data to a topic.
+
+        Failures are logged, not raised: the caller has already run its local callbacks, and a network
+        that stops working degrades the app to local events rather than breaking the code that emitted.
+
+        :param topic: logical topic name (will be namespaced)
+        :param data: data to publish (must be JSON-serializable)
+        """
+        wire = self.wire_topic(topic)
+        try:
+            payload = json.dumps({
+                'instance_id': self.instance_id,
+                'data': data,
+            }).encode('utf-8')
+            token = self._fernet.encrypt(payload)  # confidentiality + integrity; secret never on the wire
+            if wire not in self.publishers:
+                self.publishers[wire] = self.session.declare_publisher(wire)
+            self.publishers[wire].put(token)
+        except (TypeError, ValueError) as e:
+            log.error(f'Failed to serialize event data for topic {topic}: {e}. '
+                      'Event data must be JSON-serializable (str, int, float, bool, list, dict, None).')
+        except Exception as e:
+            log.exception(f'Failed to publish event to topic {topic}: {e}')
+
+    def subscribe(self, topic: str, callback: Callable[[Any], None]) -> None:
+        """Subscribe to a topic.
+
+        Several events can share a topic (e.g. one created per client), so every callback is kept.
+        They are only referenced weakly, hence the callback has to be a bound method:
+        subscribing must not keep an event alive that its creator has let go.
+
+        :param topic: logical topic name (will be namespaced)
+        :param callback: bound method to call when data arrives
+        """
+        wire = self.wire_topic(topic)
+        callbacks = self.callbacks.setdefault(wire, [])
+        callbacks.append(weakref.WeakMethod(callback, callbacks.remove))
+
+        def handler(sample: Sample) -> None:
+            try:
+                plaintext = self._fernet.decrypt(bytes(sample.payload), ttl=EVENT_TTL_SECONDS)
+            except InvalidToken:
+                # Not encrypted with our secret (foreign deployment / forged), or stale (replay window
+                # exceeded). Dropping it is the confidentiality/integrity boundary doing its job, but doing
+                # so in complete silence looks exactly like having no peers, so say it once per topic.
+                warn_once(f'Dropped an event on topic {topic} that could not be decrypted. '
+                          'Either another deployment shares this network, or its storage_secret differs, '
+                          f'or the clocks are more than {EVENT_TTL_SECONDS} seconds apart.')
+                return
+            try:
+                payload = json.loads(plaintext.decode('utf-8'))
+                # NOTE: Ignore events from our own instance (deduplication)
+                if payload['instance_id'] == self.instance_id:
+                    return
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                log.error(f'Failed to deserialize event from topic {topic}: {e}')
+                return
+            except Exception as e:  # pylint: disable=broad-except
+                log.exception(f'Failed to handle event from topic {topic}: {e}')
+                return
+            # NOTE: Zenoh invokes this callback on a Rust-managed worker thread; downstream
+            # NiceGUI machinery (slot weakrefs, asyncio.create_task) must run on the loop thread.
+            data = payload['data']
+            for ref in list(self.callbacks[wire]):
+                callback_ = ref()
+                if callback_ is None:
+                    continue
+                if core.loop is not None:
+                    core.loop.call_soon_threadsafe(callback_, data)
+                else:
+                    # No loop yet (e.g. during early startup or in stand-alone scripts) - run inline.
+                    callback_(data)
+
+        if wire not in self.subscribers:
+            self.subscribers[wire] = self.session.declare_subscriber(wire, handler)
+
+    def shutdown(self) -> None:
+        """Clean up the Zenoh session.
+
+        Every step runs even if an earlier one fails: one publisher that refuses to be undeclared must not
+        leave the transport open, and a session that is gone must not stay installed for the next ``emit``.
+        """
+        for declaration in [*self.publishers.values(), *self.subscribers.values()]:
+            try:
+                declaration.undeclare()
+            except Exception:
+                log.exception('Error undeclaring a Zenoh publisher or subscriber')
+        try:
+            self.session.close()
+            log.info('Distributed session closed')
+        except Exception:
+            log.exception('Error closing the Zenoh session')
+        if DistributedSession._instance is self:
+            DistributedSession._instance = None
