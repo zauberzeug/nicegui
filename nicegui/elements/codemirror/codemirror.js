@@ -313,7 +313,10 @@ export default {
       const specs = [];
       for (const cursor = this.editor.state.field(decorationField).iter(); cursor.value; cursor.next()) {
         const declared = cursor.value.spec[DECLARED_SPEC];
-        if (declared) specs.push(offsets.toPython(declared, cursor.from, cursor.to));
+        // CodeMirror keeps an inclusive mark whose text was deleted as an empty range; it renders
+        // nothing, so it is left out rather than resurrected (with a warning) on remount.
+        if (declared.kind === "mark" && cursor.from === cursor.to) continue;
+        specs.push(offsets.toPython(declared, cursor.from, cursor.to));
       }
       return specs;
     },
