@@ -50,7 +50,7 @@ def test_anchor_remapping(screen: Screen, anchors: dict[str, int], change: str, 
 
 
 def test_anchors_out_of_range(screen: Screen):
-    """A line below 1 is refused outright; one past the end is dropped rather than moved somewhere else."""
+    """A line below 1 or not a whole number is refused outright; one past the end is dropped rather than moved."""
     editor: ui.codemirror = None  # type: ignore[assignment]
 
     @ui.page('/')
@@ -62,6 +62,8 @@ def test_anchors_out_of_range(screen: Screen):
     _wait_for_editor(screen)
     with pytest.raises(ValueError, match='1-indexed'):
         editor.line_anchors = {'bad': 0}
+    with pytest.raises(ValueError, match='whole numbers'):
+        editor.line_anchors = {'bad': 2.5}  # type: ignore[dict-item]
 
     editor.line_anchors = {'inside': 2, 'beyond': 50}
     screen.wait_for(lambda: editor.line_anchors == {'inside': 2})
@@ -221,10 +223,27 @@ def test_anchors_survive_client_side_remount(screen: Screen):
     assert editor.line_anchors == {'mid': 4}, f'anchors should survive a client-side remount, got {editor.line_anchors}'
 
 
+def test_anchors_declared_for_a_value_sent_in_the_same_update(screen: Screen):
+    """Anchors assigned in the same handler as a new value address that value, not the previous one."""
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('a\nb\nc')
+
+    screen.open('/')
+    _wait_for_editor(screen)
+    editor.value = '\n'.join(f'line {i}' for i in range(1, 11))
+    editor.line_anchors = {'end': 10}
+    screen.wait_for(lambda: editor.line_anchors == {'end': 10})
+
+
 def test_on_anchor_change_handler(screen: Screen):
     """on_anchor_change fires with the current positions on every change."""
     editor: ui.codemirror = None  # type: ignore[assignment]
     received: list[dict] = []
+    late: list[dict] = []
 
     @ui.page('/')
     def page():
@@ -239,3 +258,9 @@ def test_on_anchor_change_handler(screen: Screen):
     # A remapping edit fires the handler again with the new line.
     screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "X\\n"}}}})')
     screen.wait_for(lambda: received[-1] == {'mid': 4})
+
+    # A handler added after the first render fires as well, without re-creating the editor.
+    editor.on_anchor_change(lambda e: late.append(e.anchors))
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "Y\\n"}}}})')
+    screen.wait_for(lambda: late == [{'mid': 5}])
+    assert 'Event listeners changed after initial definition.' not in screen.render_js_logs()

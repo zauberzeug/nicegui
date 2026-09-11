@@ -33,6 +33,7 @@ class LineAnchorElement(Element):
         super().__init__(**kwargs)
         self._anchor_positions: dict[str, int] = {}
         self._anchors_pending = True
+        self._anchor_change_handlers: list[Handler[CodeMirrorAnchorChangeEventArguments]] = []
         if line_anchors:
             self._props['line-anchors'] = line_anchors
         self.on('anchor-positions', self._update_anchor_mirror)
@@ -54,7 +55,7 @@ class LineAnchorElement(Element):
 
         Lines beyond the end of the document are dropped on the JS side with a warning via NiceGUI's
         logger, just like ``line_tooltips``, so a read never reports a position that was not applied.
-        A line below 1 is rejected right away with a ``ValueError``.
+        A line below 1 or not a whole number is rejected right away with a ``ValueError``.
 
         *Added in version 3.16.0*
         """
@@ -74,12 +75,11 @@ class LineAnchorElement(Element):
         return dict_
 
     def on_anchor_change(self, handler: Handler[CodeMirrorAnchorChangeEventArguments]) -> Self:
-        """Register a callback to be invoked whenever tracked anchor positions change.
+        """Add a callback to be invoked when tracked anchor positions change.
 
         *Added in version 3.16.0*
         """
-        self.on('anchor-positions', lambda e: handle_event(handler,
-                CodeMirrorAnchorChangeEventArguments(sender=self, client=self.client, anchors=e.args['anchors'])))
+        self._anchor_change_handlers.append(handler)
         return self
 
     def _update_anchor_mirror(self, e: GenericEventArguments) -> None:
@@ -88,9 +88,13 @@ class LineAnchorElement(Element):
         # A separate dict keeps a caller mutating the exposed positions from rewriting what we send.
         with self._props.suspend_updates():
             self._props['line-anchors'] = dict(self._anchor_positions)
+        for handler in self._anchor_change_handlers:
+            # A fresh dict per handler keeps one of them from rewriting the exposed positions or the others' view.
+            handle_event(handler, CodeMirrorAnchorChangeEventArguments(
+                sender=self, client=self.client, anchors=dict(self._anchor_positions)))
 
 
 def _validate(anchors: dict[str, int]) -> None:
     for id_, line in anchors.items():
-        if line < 1:
-            raise ValueError(f'line_anchors: anchor {id_!r} has line {line}, but lines are 1-indexed')
+        if not isinstance(line, int) or line < 1:
+            raise ValueError(f'line_anchors: anchor {id_!r} has line {line!r}, but lines are 1-indexed whole numbers')

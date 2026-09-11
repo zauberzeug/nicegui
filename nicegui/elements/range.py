@@ -22,7 +22,8 @@ class Range(ValueElement[dict[str, float] | None], DisableableElement):
         :param max: upper bound of the range
         :param step: step size
         :param value: initial value to set min and max position of the range (default: ``min`` to ``max``)
-        :param on_change: callback which is invoked when the user releases the range
+        :param on_change: callback to execute when the value changes, including while dragging
+            (to react only when the range is released, use ``.on('change', ...)`` instead)
         """
         super().__init__(tag='q-range', value=value or {'min': min, 'max': max},
                          on_value_change=on_change, throttle=0.05)

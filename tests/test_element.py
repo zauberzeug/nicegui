@@ -526,6 +526,7 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
             ui.toggle([]),
             ui.radio([]),
             ui.upload(),
+            ui.codemirror(),
         ]
         with ui.tabs() as tabs:
             elements += [ui.tab('One')]

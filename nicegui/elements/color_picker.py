@@ -34,7 +34,7 @@ class ColorPicker(Menu):
 
         :param color: the color to set
         """
-        self.q_color.props(f'model-value="{color}"')
+        self.q_color.props['model-value'] = color
         return self
 
     def on_pick(self, callback: Handler[ColorPickEventArguments]) -> Self:

@@ -149,7 +149,6 @@ export default {
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
-    id: String,
   },
   watch: {
     language(newLanguage) {
@@ -165,19 +164,16 @@ export default {
       this.setLineWrapping(newLineWrapping);
     },
     decorations() {
-      // Applied from setEditorValueFromProps, after a value sent in the same update has landed;
-      // watchers run before nicegui.js calls the update method, so specs declared for the new
-      // value would otherwise be built against the old document.
-      this._decorationsPending = true;
+      this._decorationsPending = true; // applied from setEditorValueFromProps
     },
-    lineAnchors(newAnchors) {
-      this.applyLineAnchors(newAnchors);
+    lineAnchors() {
+      this._anchorsPending = true; // applied from setEditorValueFromProps
     },
     keymap() {
       this.setKeymap();
     },
-    lineTooltips(newTooltips) {
-      this.setLineTooltips(newTooltips);
+    lineTooltips() {
+      this._tooltipsPending = true; // applied from setEditorValueFromProps
     },
   },
   data() {
@@ -191,7 +187,7 @@ export default {
   },
   beforeUnmount() {
     if (this.editor) {
-      const element = mounted_app.elements[this.$props.id.slice(1)];
+      const element = mounted_app.elements[this.$el.id.slice(1)];
       if (element) {
         element.props.value = this.editor.state.doc.toString();
         // A client-side remount (e.g. a v-if container) re-applies these props against the restored
@@ -258,6 +254,16 @@ export default {
     },
     setEditorValueFromProps() {
       this.setEditorValue(this.value);
+      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors, tooltips
+      // and decorations sent together with a new value would otherwise be applied to the old document.
+      if (this._anchorsPending) {
+        this._anchorsPending = false;
+        this.applyLineAnchors(this.lineAnchors);
+      }
+      if (this._tooltipsPending) {
+        this._tooltipsPending = false;
+        this.setLineTooltips(this.lineTooltips);
+      }
       if (this._decorationsPending) {
         this._decorationsPending = false;
         this.setDecorations(this.decorations);

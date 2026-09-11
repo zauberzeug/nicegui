@@ -1,8 +1,11 @@
 import asyncio
+import contextlib
 import copy
+import gc
 import re
 import threading
 import time
+import warnings
 from collections.abc import Callable
 
 import httpx
@@ -11,6 +14,7 @@ import pytest
 from nicegui import Client, app, background_tasks, context, core, ui
 from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
+from nicegui.nicegui import _on_handshake
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
 from nicegui.storage import Storage
 from nicegui.testing import Screen, User
@@ -243,6 +247,29 @@ def test_clear_tab_storage(screen: Screen):
     assert not tab_storages
 
 
+async def test_client_is_pinned_to_one_tab_id(user: User):
+    @ui.page('/', reconnect_timeout=10)
+    def page():
+        pass
+
+    client = await user.open('/')  # pins the tab ID the user fixture presents
+
+    async def handshake(socket_id: str, tab_id: str) -> bool:
+        return await _on_handshake(socket_id, {'client_id': client.id, 'tab_id': tab_id, 'document_id': 'doc'})
+
+    assert await handshake('test-reconnect', user.tab_id), 'a reconnect presents the same tab ID and must be accepted'
+    assert not await handshake('test-reconnect', user.tab_id), 'a socket may only handshake once'
+    assert not await handshake('test-replay', 'other-tab'), 'a second tab ID on one client must be refused'
+
+    client.handle_disconnect('test-reconnect')  # nulls client.tab_id, but the pin must survive it
+    assert not await handshake('test-after-disconnect', 'other-tab')
+
+    for foreign_environ in [{'QUERY_STRING': 'client_id=somebody-else'},  # both shapes Engine.IO provides
+                            {'asgi.scope': {'query_string': b'client_id=somebody-else'}}]:
+        assert not client.accept_handshake('test-foreign', user.tab_id, foreign_environ), \
+            'a handshake naming a client other than the one its socket connected with must be refused'
+
+
 def test_client_storage(screen: Screen):
     def increment():
         app.storage.client['counter'] = app.storage.client['counter'] + 1
@@ -421,6 +448,33 @@ async def test_awaiting_backup_scheduled_during_teardown(user: User, tmp_path):
     await background_tasks.teardown()
     assert path.exists(), 'backup should be written during teardown'
     assert path.read_text(encoding='utf-8') == '{"key":"value"}'
+
+
+async def test_cancelled_backup_does_not_leak_a_file_handle(user: User, tmp_path):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    cancelled = 0
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always')
+        # cancel while the write is in flight, a few dozen microseconds after the task starts;
+        # the spread keeps this reliable on slower machines too
+        for i, delay in enumerate([0.00002, 0.00005, 0.0001, 0.0002]):
+            for j in range(10):
+                d = FilePersistentDict(tmp_path / f'storage-{i}-{j}.json', encoding='utf-8')
+                d['key'] = 'value'  # schedules the async backup task
+                task = background_tasks.lazy_tasks_running[d.filepath.stem]
+                await asyncio.sleep(delay)  # let the task get partway through the write
+                cancelled += task.cancel()  # False if it already finished, i.e. nothing was exercised
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
+        gc.collect()
+        leaks = [str(w.message) for w in caught
+                 if issubclass(w.category, ResourceWarning) and 'storage-' in str(w.message)]
+    assert cancelled, 'no backup was still running when cancelled, so nothing was exercised'
+    assert not leaks, f'cancelling a backup left {len(leaks)} file(s) unclosed: {leaks[:1]}'
 
 
 async def test_unlinking_storage_files_waits_out_transient_holders(user: User):

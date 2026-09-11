@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
-from urllib.parse import quote
+from urllib.parse import parse_qs, quote
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -61,6 +61,14 @@ HTML_ESCAPE_TABLE = str.maketrans({
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
 
+def _client_id_from_query(environ: dict[str, Any]) -> str | None:
+    """Read the ``client_id`` a socket connected with, or ``None`` if its environment does not carry one."""
+    query_string = environ.get('QUERY_STRING') or environ.get('asgi.scope', {}).get('query_string') or ''
+    if isinstance(query_string, (bytes, bytearray)):
+        query_string = query_string.decode()
+    return parse_qs(query_string).get('client_id', [None])[0]
+
+
 class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
         super().__init__(f'ClientConnectionTimeout: {client.id}')
@@ -99,6 +107,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._pinned_tab_id: str | None = None
         self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
@@ -260,8 +269,9 @@ class Client:
         """Block execution until the client is connected.
 
         :param timeout: timeout in seconds (default: ``None``)
+        :raises ClientConnectionTimeout: if ``timeout`` elapses first
         """
-        if self.has_socket_connection:
+        if self.has_socket_connection or self.is_deleted:
             return
         self._waiting_for_connection.set()
         self._connected.clear()
@@ -289,20 +299,30 @@ class Client:
         Internally, ``await client.connected()`` is called before the JavaScript code is executed (*since version 3.0.0*).
         This might delay the execution of the JavaScript code and is not covered by the ``timeout`` parameter.
 
+        *Updated in version 3.17.0: Awaiting the response resolves with ``None`` when the client has been deleted,
+        e.g. because the browser tab was closed.*
+
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: 1.0)
 
-        :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
+        :return: AwaitableResponse that can be awaited to get the result of the JavaScript code,
+            or ``None`` if the client has been deleted
         """
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 
-        def send_and_forget():
+        def send_and_forget() -> None:
+            if self.is_deleted:
+                return
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
-        async def send_and_wait():
+        async def send_and_wait() -> Any:
+            if self.is_deleted:
+                return None
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             await self.connected()
+            if self.is_deleted:
+                return None
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
@@ -349,6 +369,24 @@ class Client:
         """
         self._exception_handlers.append(handler)
 
+    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None) -> bool:
+        """Check whether a handshake may proceed, pinning the client's tab ID on the first one.
+
+        A browser opens one socket per client, handshakes it once, and keeps the same tab ID for the client's whole
+        lifetime, so a handshake that breaks any of these is a replayed frame.
+        A socket query without a client ID is tolerated:
+        the query is no trust boundary (a forger could simply echo the claimed client ID into it),
+        and query-less sockets must keep working (see ``test_disconnect_without_client_id_in_connect_query``).
+        (For internal use only.)
+        """
+        if socket_id in self._socket_to_document_id:
+            return False
+        if environ is not None and _client_id_from_query(environ) not in (None, self.id):
+            return False
+        if self._pinned_tab_id is None:
+            self._pinned_tab_id = tab_id
+        return self._pinned_tab_id == tab_id
+
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
         """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
         self._waiting_for_connection.clear()
@@ -372,7 +410,9 @@ class Client:
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
         tab_id_to_close = self.tab_id
-        self.tab_id = None
+        # keep the tab_id as long as any socket is live, e.g. one that reconnected before this one was reaped
+        if not self._socket_to_document_id:
+            self.tab_id = None
 
         for t in self.disconnect_handlers:
             self.safe_invoke(t)

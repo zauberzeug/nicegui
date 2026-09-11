@@ -338,6 +338,10 @@ ui.markdown('```mermaid\ngraph TD; A-->B\n```',
             extras=['fenced-code-blocks', 'tables', 'mermaid'])  # `extras` REPLACES the default ['fenced-code-blocks', 'tables']
 ui.markdown.default_extras = ['fenced-code-blocks', 'tables', 'mermaid']  # change the default for all ui.markdown (since 3.14)
 ui.code('print("hello")', language='python')
+editor = ui.codemirror('def f():\n    return 42', language='Python')  # editable code editor
+editor.line_anchors = {'a': 2}          # line anchors (since 3.16): stable {id: line} references that follow
+                                        # their line through edits; read back for the current positions,
+                                        # on_anchor_change= fires whenever a tracked position moves
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -434,7 +438,7 @@ with ui.scene() as scene:
     scene.box().material('#ff0000')
 ```
 
-### Custom Three.js objects
+### Custom Three.js objects (since 3.16)
 
 Subclass `Object3D` and pair it with a sibling JS module.
 The `component=` path is resolved relative to the Python file — no manual registration needed.
@@ -1273,6 +1277,15 @@ async def test_counter(user: User) -> None:
     await user.open('/')
     await user.click('Increment')
     await user.should_see('Count: 1')
+```
+
+`user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` always search the whole page (including header, drawers and footer).
+When markers or content repeat across the page, limit them to one subtree with `user.scope(...)` (since 3.16):
+
+```python
+with user.scope(marker='left-card'):  # same filter args as user.find(), must match exactly one element
+    await user.should_see('Apple')
+    user.find('Buy').click()
 ```
 
 Use `Screen` fixture only when JavaScript or real browser rendering is required:

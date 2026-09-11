@@ -53,3 +53,28 @@ def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
     screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
     screen.wait(2.0)
     assert screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);') > 0
+
+
+def test_stale_socket_disconnect_does_not_wedge_a_reconnected_browser(screen: Screen):
+    """The server reaps the old socket only on its ping timeout, i.e. after the browser reconnected."""
+    events = {'clicks': 0, 'disconnects': 0}
+
+    @ui.page('/')
+    def page():
+        ui.context.client.on_disconnect(lambda: events.update(disconnects=events['disconnects'] + 1))
+        ui.button('Click me', on_click=lambda: events.update(clicks=events['clicks'] + 1))
+
+    screen.open('/')
+    document_id = screen.selenium.execute_script('return window.documentId;')
+
+    # let the browser consider the socket dead without actually closing it, so the server does not notice the disconnect
+    screen.selenium.execute_script('window.staleWs = window.socket.io.engine.transport.ws;'
+                                   'window.socket.io.engine.transport.onClose("transport close");')
+    screen.wait_for_js('window.socket.connected', True)
+    assert screen.selenium.execute_script('return window.documentId;') == document_id
+    assert events['disconnects'] == 0, 'the server reaped the old socket before the browser reconnected'
+
+    screen.selenium.execute_script('window.staleWs.close();')  # now the server reaps the stale socket
+    screen.wait_for(lambda: events['disconnects'] == 1)
+    screen.click('Click me')
+    screen.wait_for(lambda: events['clicks'] == 1)  # the click of a reconnected browser must still reach the server

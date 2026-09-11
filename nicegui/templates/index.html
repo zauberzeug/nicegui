@@ -47,6 +47,10 @@
         [dir="rtl"] .q-fab__actions--left:not(.q-fab__actions--opened) {
           transform: scale(0.4) translateX(62px);
         }
+        /* DEPRECATED: mirror of quasarframework/quasar#18468, remove with the Quasar bump for NiceGUI 4.0 */
+        .q-position-engine {
+          visibility: hidden;
+        }
       }
       @layer overrides {
         {{ headwind_css | safe }}

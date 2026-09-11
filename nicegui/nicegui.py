@@ -205,13 +205,17 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     client = Client.instances.get(data['client_id'])
     if not client:
         return False
+    is_test = sid.startswith('test-')
+    environ = None if is_test else sio.get_environ(sid)
+    if not client.accept_handshake(sid, data['tab_id'], environ):
+        return False
     if data.get('old_tab_id'):
         app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
     client.tab_id = data['tab_id']
-    if sid.startswith('test-'):
+    if is_test:
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
     else:
-        client.environ = sio.get_environ(sid)
+        client.environ = environ
         await sio.enter_room(sid, client.id)
     client.handle_handshake(sid, data['document_id'],
                             int(data['next_message_id']) if 'next_message_id' in data else None)
@@ -222,12 +226,9 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
 
 @sio.on('disconnect')
 def _on_disconnect(sid: str) -> None:
-    query_bytes: bytearray = sio.get_environ(sid)['asgi.scope']['query_string']
-    query = urllib.parse.parse_qs(query_bytes.decode())
-    client_id = query['client_id'][0]
-    client = Client.instances.get(client_id)
-    if client:
-        client.handle_disconnect(sid)
+    for room in sio.rooms(sid):  # the handshake put the socket in a room named after its client
+        if client := Client.instances.get(room):
+            client.handle_disconnect(sid)
 
 
 @sio.on('event')
