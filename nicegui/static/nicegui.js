@@ -307,16 +307,17 @@ function renderRecursively(elements, id, propsContext) {
     slots[name] = (props) => {
       const rendered = [];
       if (data.template) {
+        // Cache the component definition on the slot so its identity is stable across renders.
+        // Otherwise a fresh object literal makes Vue treat each render as a new component type,
+        // unmounting and remounting the slot's DOM (losing local state) and recompiling the template.
+        data._component ??= Vue.markRaw({
+          props: { props: { type: Object, default: {} } },
+          template: data.template,
+        });
         rendered.push(
-          Vue.h(
-            {
-              props: { props: { type: Object, default: {} } },
-              template: data.template,
-            },
-            {
-              props: props,
-            },
-          ),
+          Vue.h(data._component, {
+            props: props,
+          }),
         );
       }
       const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
@@ -527,6 +528,16 @@ function createApp(elements, options) {
               }
             }
             delete element.preserved_props;
+            // Carry over compiled slot components so their identity stays stable across updates
+            // (as long as the template is unchanged), letting Vue patch the slot instead of
+            // remounting it and discarding its local DOM state. See renderRecursively.
+            const oldSlots = this.elements[id]?.slots;
+            for (const [name, data] of Object.entries(element.slots ?? {})) {
+              const oldData = oldSlots?.[name];
+              if (oldData?._component && oldData.template === data.template) {
+                data._component = oldData._component;
+              }
+            }
             this.elements[id] = element;
           }
 
