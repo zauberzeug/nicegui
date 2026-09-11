@@ -144,7 +144,7 @@ export default {
     indent: String,
     highlightWhitespace: Boolean,
     decorations: Array,
-    decorationTextHtml: Boolean,
+    decorationHtml: Boolean,
     lineAnchors: Object,
     keymap: Array,
     lineTooltips: Object,
@@ -372,13 +372,13 @@ export default {
         if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
         if (spec.block) replaceSpec.block = true;
         if (spec.text !== undefined)
-          replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationTextHtml);
+          replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationHtml);
         return CM.Decoration.replace(replaceSpec).range(from, to);
       }
       if (spec.kind === "widget") {
         return CM.Decoration.widget({
           [DECLARED_SPEC]: declared,
-          widget: new TextWidget(spec.text, spec.class, this.decorationTextHtml),
+          widget: new TextWidget(spec.text, spec.class, this.decorationHtml),
           side: spec.side ?? 1,
         }).range(spec.position);
       }

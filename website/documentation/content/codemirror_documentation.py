@@ -43,7 +43,7 @@ def preserve_cursor_demo() -> None:
 
     The host application supplies its own CSS for whatever class names it passes.
     Widget and replace `text` values render as plain text by default; pass
-    `decoration_text_html=True` to the constructor to render them as sanitized HTML.
+    `decoration_html=True` to the constructor to render them as sanitized HTML.
     That flag only covers `text`: the `attributes` field on mark and line decorations is always
     applied as raw DOM attributes (including handlers like `onclick`) and is never sanitized,
     so never pass untrusted input through it.
@@ -57,7 +57,7 @@ def decorations_demo() -> None:
         .my-hint { color: #888; font-size: 0.8em; padding: 0 4px; }
     ''')
     editor = ui.codemirror('alpha\nbeta\ngamma\ndelta\nepsilon',
-                           decoration_text_html=True).classes('h-32')
+                           decoration_html=True).classes('h-32')
 
     def assign(specs):
         editor.decorations = specs

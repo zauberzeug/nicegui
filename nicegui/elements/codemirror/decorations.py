@@ -81,7 +81,7 @@ class DecorationElement(Element):
         self,
         *,
         decorations: list[DecorationSpec] | None = None,
-        decoration_text_html: bool = False,
+        decoration_html: bool = False,
         **kwargs: Any,
     ) -> None:
         # NOTE: validate before super().__init__ registers the element, so a rejected argument
@@ -93,7 +93,7 @@ class DecorationElement(Element):
         # The list stays the same object for the element's lifetime (the setter fills it in place),
         # so a reference a caller kept stays live and the change handler is registered exactly once.
         self._props['decorations'].on_change(self._mark_decorations_pending)
-        self._props['decoration-text-html'] = decoration_text_html
+        self._props['decoration-html'] = decoration_html
 
     @property
     def decorations(self) -> list[DecorationSpec]:

@@ -41,7 +41,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
         decorations: list[DecorationSpec] | None = None,
-        decoration_text_html: bool = False,
+        decoration_html: bool = False,
         line_anchors: dict[str, int] | None = None,
         on_anchor_change: Handler[CodeMirrorAnchorChangeEventArguments] | None = None,
         line_tooltips: dict[int, str] | None = None,
@@ -87,14 +87,14 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
         :param decorations: initial list of decoration specs applied to the editor;
             spec offsets (``from``/``to``/``position``) are Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
-        :param decoration_text_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
+        :param decoration_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
         :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.16.0*)
         :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.16.0*)
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
         super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap,
-                         decorations=decorations, decoration_text_html=decoration_text_html,
+                         decorations=decorations, decoration_html=decoration_html,
                          line_anchors=line_anchors, on_anchor_change=on_anchor_change)
         self._codepoints = b''
         self._update_codepoints()

@@ -56,7 +56,7 @@ def test_replace_decoration_with_text(screen: Screen):
 
 
 def test_widget_text_renders_html_sanitized(screen: Screen):
-    editor = _open_editor(screen, decoration_text_html=True)
+    editor = _open_editor(screen, decoration_html=True)
     editor.decorations = [
         {'kind': 'widget', 'position': 5,
          'text': '<b onclick="window.hijacked = true">safe</b><script>window.hijacked = true</script>',
