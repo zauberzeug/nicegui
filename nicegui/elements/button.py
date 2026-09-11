@@ -35,6 +35,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
+        self._clicked_waiters_bound = False
 
         if on_click:
             self.on_click(on_click)
@@ -60,6 +61,16 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
     def _text_to_model_text(self, text: str) -> None:
         self._props['label'] = text
 
+    def _wake_clicked_waiters(self) -> None:
+        for event in self._waiting_tasks.values():
+            event.set()
+
+    def _ensure_clicked_waiter_listener(self) -> None:
+        if self._clicked_waiters_bound:
+            return
+        self._clicked_waiters_bound = True
+        self.on('click', self._wake_clicked_waiters, [])
+
     async def clicked(self) -> None:
         """Wait until the button is clicked.
 
@@ -68,6 +79,6 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         """
         event = asyncio.Event()
         with self._cancel_when_deleted(event):
-            self.on('click', event.set, [])
+            self._ensure_clicked_waiter_listener()
             await self.client.connected()
             await event.wait()
