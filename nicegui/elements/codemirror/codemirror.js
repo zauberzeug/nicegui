@@ -1,5 +1,32 @@
 import * as CM from "nicegui-codemirror";
 
+// Caller-supplied text is either sanitized HTML (via the setHTML polyfill) or plain text.
+function setContent(dom, text, asHtml) {
+  if (asHtml) dom.setHTML(text);
+  else dom.textContent = text;
+}
+
+class TextWidget extends CM.WidgetType {
+  constructor(text, cls, html) {
+    super();
+    this.text = text;
+    this.cls = cls || "";
+    this.html = !!html;
+  }
+  eq(other) {
+    return other.text === this.text && other.cls === this.cls && other.html === this.html;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    if (this.cls) span.className = this.cls;
+    setContent(span, this.text, this.html);
+    return span;
+  }
+  ignoreEvent() {
+    return false;
+  }
+}
+
 // A RangeSet StateField whose ranges remap through document edits.
 // Dispatching setEffect.of(ranges) replaces the whole set.
 function defineRemappableRangeSet() {
@@ -46,6 +73,64 @@ class TooltipValue extends CM.RangeValue {
 }
 const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRangeSet();
 
+// Decorations live in a StateField (not a static facet) so `.map(tr.changes)` carries each
+// range through document edits — a mark on "beta" follows the text, and the mark/replace
+// inclusivity options actually affect how ranges grow at their edges. A new decoration list
+// from the server replaces the whole set via setDecorationsEffect.
+// Every decoration carries the spec it was declared with, so a client-side remount can rebuild
+// the list from where the state field has since mapped each one.
+const DECLARED_SPEC = Symbol("declared spec");
+
+// A DecorationSet is a RangeSet: Decoration.none is RangeSet.empty and Decoration.set(v, true)
+// is RangeSet.of(v, true), so the shared factory covers decorations as well.
+// Providing them from a field (rather than a plugin) is what CM6 requires for block
+// replace/widget decorations to work.
+const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet();
+
+// Python addresses the document by str index (one per code point), CodeMirror by UTF-16 code unit.
+// The two only differ once the document contains a character outside the Basic Multilingual Plane.
+function documentOffsets(doc) {
+  const text = doc.toString();
+  let length = text.length; // in Python str indices
+  let toUnit = (index) => index;
+  let toIndex = (unit) => unit;
+  if (/[\uD800-\uDBFF]/.test(text)) {
+    const units = []; // units[i] = UTF-16 offset of the i-th code point
+    let unit = 0;
+    for (const character of text) {
+      units.push(unit);
+      unit += character.length;
+    }
+    units.push(unit); // an offset may address the end of the document
+    length = units.length - 1;
+    toUnit = (index) => units[Math.max(0, Math.min(index, units.length - 1))];
+    toIndex = (unit) => {
+      let low = 0;
+      let high = units.length - 1;
+      while (low < high) {
+        const middle = (low + high + 1) >> 1;
+        if (units[middle] <= unit) low = middle;
+        else high = middle - 1;
+      }
+      return low;
+    };
+  }
+  return {
+    length,
+    toUtf16(spec) {
+      if (spec.kind === "mark" || spec.kind === "replace")
+        return { ...spec, from: toUnit(spec.from), to: toUnit(spec.to) };
+      if (spec.kind === "widget") return { ...spec, position: toUnit(spec.position) };
+      return spec;
+    },
+    toPython(spec, from, to) {
+      if (spec.kind === "line") return { ...spec, line: doc.lineAt(from).number };
+      if (spec.kind === "widget") return { ...spec, position: toIndex(from) };
+      return { ...spec, from: toIndex(from), to: toIndex(to) };
+    },
+  };
+}
+
 export default {
   template: `
     <div></div>
@@ -58,6 +143,8 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    decorations: Array,
+    decorationHtml: Boolean,
     lineAnchors: Object,
     keymap: Array,
     lineTooltips: Object,
@@ -75,6 +162,9 @@ export default {
     },
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
+    },
+    decorations() {
+      this._decorationsPending = true; // applied from setEditorValueFromProps
     },
     lineAnchors() {
       this._anchorsPending = true; // applied from setEditorValueFromProps
@@ -103,6 +193,7 @@ export default {
         // A client-side remount (e.g. a v-if container) re-applies these props against the restored
         // document, so they have to describe where the anchors are now, not where they were declared.
         if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
+        if (element.props.decorations?.length) element.props.decorations = this.currentDecorationSpecs();
       }
     }
     clearTimeout(this._anchorTimer);
@@ -163,8 +254,8 @@ export default {
     },
     setEditorValueFromProps() {
       this.setEditorValue(this.value);
-      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors and
-      // tooltips sent together with a new value would otherwise be applied to the old document.
+      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors, tooltips
+      // and decorations sent together with a new value would otherwise be applied to the old document.
       if (this._anchorsPending) {
         this._anchorsPending = false;
         this.applyLineAnchors(this.lineAnchors);
@@ -172,6 +263,10 @@ export default {
       if (this._tooltipsPending) {
         this._tooltipsPending = false;
         this.setLineTooltips(this.lineTooltips);
+      }
+      if (this._decorationsPending) {
+        this._decorationsPending = false;
+        this.setDecorations(this.decorations);
       }
     },
     setEditorValue(value) {
@@ -203,6 +298,97 @@ export default {
       this.editor.dispatch({
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
+    },
+    setDecorations(decorations) {
+      // The server marks `decorations` as a preserved prop on unrelated updates, so this only runs on a
+      // deliberate write, which re-applies every spec at its declared offset, as line anchors do.
+      if (!this.editor) return;
+      const offsets = documentOffsets(this.editor.state.doc);
+      const all = [];
+      for (const spec of decorations || []) {
+        if (!this._fitsDocument(spec, offsets.length)) continue;
+        const dec = this._createDecoration(offsets.toUtf16(spec), spec);
+        if (dec) all.push(dec);
+      }
+      this.editor.dispatch({ effects: setDecorationsEffect.of(all) });
+    },
+    // The specs as declared, with their offsets moved to where the state field has mapped each decoration.
+    // A decoration that vanished with its text is left out.
+    currentDecorationSpecs() {
+      const offsets = documentOffsets(this.editor.state.doc);
+      const specs = [];
+      for (const cursor = this.editor.state.field(decorationField).iter(); cursor.value; cursor.next()) {
+        const declared = cursor.value.spec[DECLARED_SPEC];
+        // CodeMirror keeps an inclusive mark whose text was deleted as an empty range; it renders
+        // nothing, so it is left out rather than resurrected (with a warning) on remount.
+        if (declared.kind === "mark" && cursor.from === cursor.to) continue;
+        specs.push(offsets.toPython(declared, cursor.from, cursor.to));
+      }
+      return specs;
+    },
+    // An offset past the end of the document is warned-and-skipped, like a line past the last one,
+    // rather than clamped: a spec computed from a longer value than the browser holds by now would
+    // otherwise land silently at the end. `length` counts Python str indices, as the spec does.
+    _fitsDocument(spec, length) {
+      if (spec.kind === "line") return true;
+      const end = spec.kind === "widget" ? spec.position : spec.to;
+      if (end <= length) return true;
+      const where = spec.kind === "widget" ? `position ${spec.position}` : `range ${spec.from}..${spec.to}`;
+      logAndEmit("warning", `decorations: ${spec.kind} ${where} is past the end of the document (length ${length})`);
+      return false;
+    },
+    _createDecoration(spec, declared) {
+      const doc = this.editor.state.doc;
+      // The server refuses structurally broken specs before they get here; only what depends on the
+      // document is checked. Such specs are warned-and-skipped (returning null) rather than thrown,
+      // so one unusable entry never voids the rest of the batch.
+      if (spec.kind === "mark") {
+        const { from, to } = spec;
+        if (from === to) {
+          // CodeMirror rejects zero-length mark ranges.
+          logAndEmit("warning", `decorations: mark range is empty (from=${declared.from}, to=${declared.to})`);
+          return null;
+        }
+        // Only the documented fields reach CodeMirror; stray keys in a user spec are dropped, not forwarded.
+        const markSpec = { [DECLARED_SPEC]: declared };
+        if (spec.class) markSpec.class = spec.class;
+        if (spec.attributes) markSpec.attributes = spec.attributes;
+        if (spec.inclusiveStart !== undefined) markSpec.inclusiveStart = spec.inclusiveStart;
+        if (spec.inclusiveEnd !== undefined) markSpec.inclusiveEnd = spec.inclusiveEnd;
+        return CM.Decoration.mark(markSpec).range(from, to);
+      }
+      if (spec.kind === "line") {
+        if (spec.line > doc.lines) {
+          logAndEmit("warning", `decorations: line ${spec.line} out of range [1, ${doc.lines}]`);
+          return null;
+        }
+        const lineSpec = { [DECLARED_SPEC]: declared };
+        if (spec.class) lineSpec.class = spec.class;
+        if (spec.attributes) lineSpec.attributes = spec.attributes;
+        return CM.Decoration.line(lineSpec).range(doc.line(spec.line).from);
+      }
+      if (spec.kind === "replace") {
+        const { from, to } = spec;
+        // CodeMirror rejects an empty replace range unless it is inclusive, which `block` implies.
+        if (from === to && !(spec.inclusive ?? !!spec.block)) {
+          logAndEmit("warning", `decorations: replace range is empty (from=${declared.from}, to=${declared.to})`);
+          return null;
+        }
+        const replaceSpec = { [DECLARED_SPEC]: declared };
+        if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
+        if (spec.block) replaceSpec.block = true;
+        if (spec.text !== undefined)
+          replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationHtml);
+        return CM.Decoration.replace(replaceSpec).range(from, to);
+      }
+      if (spec.kind === "widget") {
+        return CM.Decoration.widget({
+          [DECLARED_SPEC]: declared,
+          widget: new TextWidget(spec.text, spec.class, this.decorationHtml),
+          side: spec.side ?? 1,
+        }).range(spec.position);
+      }
+      return null;
     },
     async applyLineAnchors(anchors) {
       // The server marks `line-anchors` as a preserved prop on unrelated updates, so the watcher
@@ -343,8 +529,7 @@ export default {
           above: true,
           create() {
             const dom = document.createElement("div");
-            if (renderHtml) dom.setHTML(content);
-            else dom.textContent = content;
+            setContent(dom, content, renderHtml);
             return { dom };
           },
         };
@@ -356,6 +541,8 @@ export default {
         anchorTracker,
         anchorField,
         tooltipField,
+        decorationField,
+        CM.EditorView.decorations.from(decorationField),
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
@@ -407,6 +594,9 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.decorations && this.decorations.length > 0) {
+      this.setDecorations(this.decorations);
+    }
     if (this.lineAnchors && Object.keys(this.lineAnchors).length > 0) {
       this.applyLineAnchors(this.lineAnchors);
     }
