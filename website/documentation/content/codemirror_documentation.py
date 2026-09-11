@@ -42,6 +42,26 @@ def line_anchors_demo() -> None:
                               lambda anchors: f'"return" is on line {anchors.get("return", "—")}')
 
 
+@doc.demo('Editor Signals and Reveal Line', '''
+    `on_selection_change` reports the 1-indexed line and column whenever the cursor moves,
+    plus the `from_line`/`to_line` span of the selection (`empty` distinguishes a bare cursor).
+    `on_viewport_change` reports the visible line range — useful for confirming that
+    `reveal_line` actually scrolled the requested line into view.
+    Other signal hooks include `on_focus_change` and `on_geometry_change`.
+
+    *Added in version 3.17.0*
+''')
+def signals_and_reveal_demo() -> None:
+    cursor_status = ui.label('Cursor: line 1, col 1')
+    viewport_status = ui.label('Viewport: ?')
+    editor = ui.codemirror(
+        '\n'.join(f'Line {i}' for i in range(1, 51)),
+        on_selection_change=lambda e: cursor_status.set_text(f'Cursor: line {e.line}, col {e.column}'),
+        on_viewport_change=lambda e: viewport_status.set_text(f'Viewport: lines {e.from_line}–{e.to_line}'),
+    ).classes('h-32')
+    ui.button('Reveal line 40', on_click=lambda: editor.reveal_line(40))
+
+
 @doc.demo('Custom Keybindings', '''
     Map keystrokes to Python callbacks via the `keymap` constructor parameter or the `map_key` method.
     Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) —
