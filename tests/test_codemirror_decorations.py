@@ -357,6 +357,8 @@ async def test_decoration_specs_are_validated_on_assignment(user: User):
         editor.decorations = [{'kind': 'mark', 'from': 0}]  # type: ignore[list-item,typeddict-item]
     with pytest.raises(ValueError, match='from=4 > to=1'):
         editor.decorations = [{'kind': 'mark', 'from': 4, 'to': 1}]
+    with pytest.raises(ValueError, match='from=to=3'):
+        editor.decorations = [{'kind': 'mark', 'from': 3, 'to': 3}]
     with pytest.raises(ValueError, match='offsets start at 0'):
         editor.decorations = [{'kind': 'widget', 'position': -1, 'text': '!'}]
     with pytest.raises(ValueError, match='lines are 1-indexed'):

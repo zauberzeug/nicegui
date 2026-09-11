@@ -261,7 +261,7 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         at their declared offsets, so compute them from the current ``value``.
 
         A spec that cannot describe a decoration at all (an unknown kind, a missing required key,
-        an inverted or negative offset) is rejected with a ``ValueError`` on assignment;
+        an inverted or negative offset, an empty mark range) is rejected with a ``ValueError`` on assignment;
         one that slips in through an in-place change is skipped with a warning when it is sent.
         Whether it fits the document is decided in the browser, which warns and skips just that spec.
 
@@ -376,6 +376,8 @@ def _decoration_error(entry: DecorationSpec) -> str | None:
             return f'decorations: {kind} decoration has {key}={value}, but {bound}'
     if kind in ('mark', 'replace') and spec['from'] > spec['to']:
         return f'decorations: {kind} decoration has from={spec["from"]} > to={spec["to"]}'
+    if kind == 'mark' and spec['from'] == spec['to']:
+        return f'decorations: mark decoration has from=to={spec["from"]}, but a mark needs a non-empty range'
     if 'text' in spec and not isinstance(spec['text'], str):
         return f'decorations: {kind} decoration needs a string \'text\' (got {spec["text"]!r})'
     return None
