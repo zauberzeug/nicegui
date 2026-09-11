@@ -146,10 +146,14 @@ def test_invalid_decoration_specs_skipped_not_fatal(screen: Screen):
     # Structural mistakes never reach the browser; they raise at the assignment site instead.
     editor.decorations = [
         {'kind': 'line', 'line': 9999, 'class': 'out-of-range'},
+        {'kind': 'widget', 'position': 9999, 'text': '!', 'class': 'cm-test-past-end'},
         {'kind': 'line', 'line': 2, 'class': 'valid'},
     ]
     screen.wait_for(lambda: _line_decoration_count(screen, 'valid') == 1)
     assert _line_decoration_count(screen, 'out-of-range') == 0
+    assert _span_count(screen, 'cm-test-past-end') == 0, 'an offset past the end is skipped, not clamped to it'
+    screen.assert_py_logger('WARNING', re.compile(r'line 9999 out of range'))
+    screen.assert_py_logger('WARNING', re.compile(r'position 9999 is past the end of the document'))
 
 
 def test_unusable_spec_added_in_place_is_skipped(screen: Screen):

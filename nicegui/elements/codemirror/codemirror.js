@@ -91,6 +91,7 @@ const { setEffect: setDecorationsEffect, field: decorationField } = defineRemapp
 // The two only differ once the document contains a character outside the Basic Multilingual Plane.
 function documentOffsets(doc) {
   const text = doc.toString();
+  let length = text.length; // in Python str indices
   let toUnit = (index) => index;
   let toIndex = (unit) => unit;
   if (/[\uD800-\uDBFF]/.test(text)) {
@@ -101,6 +102,7 @@ function documentOffsets(doc) {
       unit += character.length;
     }
     units.push(unit); // an offset may address the end of the document
+    length = units.length - 1;
     toUnit = (index) => units[Math.max(0, Math.min(index, units.length - 1))];
     toIndex = (unit) => {
       let low = 0;
@@ -114,6 +116,7 @@ function documentOffsets(doc) {
     };
   }
   return {
+    length,
     toUtf16(spec) {
       if (spec.kind === "mark" || spec.kind === "replace")
         return { ...spec, from: toUnit(spec.from), to: toUnit(spec.to) };
@@ -297,6 +300,7 @@ export default {
       const offsets = documentOffsets(this.editor.state.doc);
       const all = [];
       for (const spec of decorations || []) {
+        if (!this._fitsDocument(spec, offsets.length)) continue;
         const dec = this._createDecoration(offsets.toUtf16(spec), spec);
         if (dec) all.push(dec);
       }
@@ -313,10 +317,16 @@ export default {
       }
       return specs;
     },
-    _clampRange(spec, doc) {
-      const from = Math.max(0, Math.min(spec.from, doc.length));
-      const to = Math.max(from, Math.min(spec.to, doc.length));
-      return { from, to };
+    // An offset past the end of the document is warned-and-skipped, like a line past the last one,
+    // rather than clamped: a spec computed from a longer value than the browser holds by now would
+    // otherwise land silently at the end. `length` counts Python str indices, as the spec does.
+    _fitsDocument(spec, length) {
+      if (spec.kind === "line") return true;
+      const end = spec.kind === "widget" ? spec.position : spec.to;
+      if (end <= length) return true;
+      const where = spec.kind === "widget" ? `position ${spec.position}` : `range ${spec.from}..${spec.to}`;
+      logAndEmit("warning", `decorations: ${spec.kind} ${where} is past the end of the document (length ${length})`);
+      return false;
     },
     _createDecoration(spec, declared) {
       const doc = this.editor.state.doc;
@@ -324,7 +334,7 @@ export default {
       // document is checked. Such specs are warned-and-skipped (returning null) rather than thrown,
       // so one unusable entry never voids the rest of the batch.
       if (spec.kind === "mark") {
-        const { from, to } = this._clampRange(spec, doc);
+        const { from, to } = spec;
         if (from === to) {
           // CodeMirror rejects zero-length mark ranges.
           logAndEmit("warning", `decorations: mark range is empty (from=${declared.from}, to=${declared.to})`);
@@ -349,7 +359,7 @@ export default {
         return CM.Decoration.line(lineSpec).range(doc.line(spec.line).from);
       }
       if (spec.kind === "replace") {
-        const { from, to } = this._clampRange(spec, doc);
+        const { from, to } = spec;
         // CodeMirror rejects an empty replace range unless it is inclusive, which `block` implies.
         if (from === to && !(spec.inclusive ?? !!spec.block)) {
           logAndEmit("warning", `decorations: replace range is empty (from=${declared.from}, to=${declared.to})`);
@@ -367,7 +377,7 @@ export default {
           [DECLARED_SPEC]: declared,
           widget: new TextWidget(spec.text, spec.class, this.decorationTextHtml),
           side: spec.side ?? 1,
-        }).range(Math.max(0, Math.min(spec.position, doc.length)));
+        }).range(spec.position);
       }
       return null;
     },
