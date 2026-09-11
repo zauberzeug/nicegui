@@ -159,7 +159,7 @@ def test_unusable_spec_added_in_place_is_skipped(screen: Screen):
     # An in-place change bypasses the setter's ValueError, so the spec is refused on the way out:
     # skipped with a warning, while the usable widget behind it still renders.
     unusable = {'kind': 'widget', 'position': 5, 'text': 42, 'class': 'cm-test-no-text'}
-    editor.decorations.append(unusable)  # type: ignore[arg-type]
+    editor.decorations.append(unusable)
     editor.decorations.append({'kind': 'widget', 'position': 5, 'text': 'hint', 'class': 'cm-test-late-hint'})
     screen.wait_for(lambda: _span_count(screen, 'cm-test-late-hint') == 1)
     assert _span_count(screen, 'cm-test-no-text') == 0, \
@@ -171,7 +171,7 @@ def test_a_re_render_after_an_unusable_in_place_spec_still_mounts(screen: Screen
     """A re-render builds the editor from the props verbatim, so the spec skipped on the way out must stay skipped."""
     editor = _open_editor(screen, decorations=[{'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-kept'}])
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-kept') == 'beta')
-    editor.decorations.append({'kind': 'line', 'class': 'cm-test-broken'})  # type: ignore[arg-type]
+    editor.decorations.append({'kind': 'line', 'class': 'cm-test-broken'})
     editor.decorations.append({'kind': 'widget', 'position': 5, 'text': '!', 'class': 'cm-test-late'})
     screen.wait_for(lambda: _span_count(screen, 'cm-test-late') == 1)
     # A listener registered after the first render makes nicegui.js rebuild the element from the props.
@@ -351,9 +351,9 @@ async def test_decoration_specs_are_validated_on_assignment(user: User):
 
     await user.open('/')
     with pytest.raises(ValueError, match='unknown kind'):
-        editor.decorations = [{'kind': 'sparkle', 'from': 0, 'to': 1}]  # type: ignore[list-item,misc]
+        editor.decorations = [{'kind': 'sparkle', 'from': 0, 'to': 1}]
     with pytest.raises(ValueError, match='missing required key'):
-        editor.decorations = [{'kind': 'mark', 'from': 0}]  # type: ignore[list-item,typeddict-item]
+        editor.decorations = [{'kind': 'mark', 'from': 0}]
     with pytest.raises(ValueError, match='from=4 > to=1'):
         editor.decorations = [{'kind': 'mark', 'from': 4, 'to': 1}]
     with pytest.raises(ValueError, match='from=to=3'):
@@ -373,7 +373,7 @@ async def test_rejected_decorations_leave_no_editor_behind(user: User):
     await user.open('/')
     with user:
         with pytest.raises(ValueError, match='unknown kind'):
-            ui.codemirror('alpha', decorations=[{'kind': 'sparkle'}])  # type: ignore[list-item]
+            ui.codemirror('alpha', decorations=[{'kind': 'sparkle'}])
     await user.should_not_see(ui.codemirror)
 
 

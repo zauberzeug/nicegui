@@ -16,7 +16,7 @@ from ...events import (
     ValueChangeEventArguments,
 )
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
-from .decorations import DecorationElement, DecorationSpec
+from .decorations import DecorationElement
 from .keybindings import KeyBindingElement
 from .line_anchors import LineAnchorElement
 
@@ -40,7 +40,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
-        decorations: list[DecorationSpec] | None = None,
+        decorations: list[dict] | None = None,
         decoration_html: bool = False,
         line_anchors: dict[str, int] | None = None,
         on_anchor_change: Handler[CodeMirrorAnchorChangeEventArguments] | None = None,

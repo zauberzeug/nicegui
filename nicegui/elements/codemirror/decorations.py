@@ -1,61 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict, cast
-
-from typing_extensions import NotRequired
+from typing import Any
 
 from ...element import Element
 from ...logging import log
-
-# Functional TypedDict syntax because `from` and `class` are Python keywords.
-MarkDecorationSpec = TypedDict(
-    'MarkDecorationSpec',
-    {
-        'kind': Literal['mark'],
-        'from': int,
-        'to': int,
-        'class': NotRequired[str],
-        'attributes': NotRequired[dict[str, str]],
-        'inclusiveStart': NotRequired[bool],
-        'inclusiveEnd': NotRequired[bool],
-    },
-)
-
-LineDecorationSpec = TypedDict(
-    'LineDecorationSpec',
-    {
-        'kind': Literal['line'],
-        'line': int,
-        'class': NotRequired[str],
-        'attributes': NotRequired[dict[str, str]],
-    },
-)
-
-ReplaceDecorationSpec = TypedDict(
-    'ReplaceDecorationSpec',
-    {
-        'kind': Literal['replace'],
-        'from': int,
-        'to': int,
-        'text': NotRequired[str],
-        'class': NotRequired[str],
-        'inclusive': NotRequired[bool],
-        'block': NotRequired[bool],
-    },
-)
-
-WidgetDecorationSpec = TypedDict(
-    'WidgetDecorationSpec',
-    {
-        'kind': Literal['widget'],
-        'position': int,
-        'text': str,
-        'class': NotRequired[str],
-        'side': NotRequired[Literal[-1, 1]],
-    },
-)
-
-DecorationSpec = MarkDecorationSpec | LineDecorationSpec | ReplaceDecorationSpec | WidgetDecorationSpec
 
 # The keys a spec must carry per kind, and the lower bound of every numeric field.
 _DECORATION_REQUIRED: dict[str, tuple[str, ...]] = {
@@ -80,7 +28,7 @@ class DecorationElement(Element):
     def __init__(
         self,
         *,
-        decorations: list[DecorationSpec] | None = None,
+        decorations: list[dict] | None = None,
         decoration_html: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -96,12 +44,17 @@ class DecorationElement(Element):
         self._props['decoration-html'] = decoration_html
 
     @property
-    def decorations(self) -> list[DecorationSpec]:
+    def decorations(self) -> list[dict]:
         """Decoration specs applied to the editor; mutating this list syncs to the client.
 
         Decorations style or modify the editor's rendering without changing the underlying document.
-        Each entry is a ``MarkDecorationSpec``, ``LineDecorationSpec``, ``ReplaceDecorationSpec``
-        or ``WidgetDecorationSpec`` dict.
+        Each entry is a dict whose ``kind`` selects the decoration and its keys:
+
+        - ``mark``: ``from``, ``to``; optional ``class``, ``attributes``, ``inclusiveStart``, ``inclusiveEnd``
+        - ``line``: ``line`` (1-indexed); optional ``class``, ``attributes``
+        - ``replace``: ``from``, ``to``; optional ``text``, ``class``, ``inclusive``, ``block``
+        - ``widget``: ``position``, ``text``; optional ``class``, ``side`` (``-1`` or ``1``)
+
         The ``class`` field styles a mark or line, or the ``text`` a replace or widget decoration shows;
         a replace decoration without ``text`` renders nothing that could carry it.
         The host application is responsible for shipping CSS for whatever class names it passes here.
@@ -132,7 +85,7 @@ class DecorationElement(Element):
         return self._props['decorations']
 
     @decorations.setter
-    def decorations(self, decorations: list[DecorationSpec] | None) -> None:
+    def decorations(self, decorations: list[dict] | None) -> None:
         decorations = decorations or []
         _validate_decorations(decorations)
         self._props['decorations'][:] = decorations
@@ -146,7 +99,7 @@ class DecorationElement(Element):
         # The filter runs on every send, since a full render (a new client of a shared page, or a
         # re-render after a listener change) uses these props verbatim; the warning is logged only
         # once, when the write that let the spec in is flushed.
-        usable: list[DecorationSpec] = []
+        usable: list[dict] = []
         for spec in self._props['decorations']:
             error = _decoration_error(spec)
             if error is None:
@@ -161,13 +114,12 @@ class DecorationElement(Element):
         return dict_
 
 
-def _decoration_error(entry: DecorationSpec) -> str | None:
+def _decoration_error(spec: dict[str, Any]) -> str | None:
     """Explain why a spec cannot describe a decoration, whatever the document says, or return ``None``.
 
     Everything document-dependent (offsets past the end, empty replace ranges, lines that do not
     exist) stays on the JS side, which warns and skips the individual spec.
     """
-    spec = cast('dict[str, Any]', entry)  # the TypedDicts describe intent; at runtime this is user data
     kind = spec.get('kind')
     if kind not in _DECORATION_REQUIRED:
         return f'decorations: unknown kind {kind!r}, expected one of {", ".join(sorted(_DECORATION_REQUIRED))}'
@@ -192,7 +144,7 @@ def _decoration_error(entry: DecorationSpec) -> str | None:
     return None
 
 
-def _validate_decorations(decorations: list[DecorationSpec]) -> None:
+def _validate_decorations(decorations: list[dict]) -> None:
     for spec in decorations:
         error = _decoration_error(spec)
         if error is not None:
