@@ -6,6 +6,7 @@ from typing import get_args
 from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
+from ...elements.mixins.crdt_element import CrdtElement
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
 from ...events import (
@@ -20,7 +21,7 @@ from .keybindings import KeyBindingElement
 from .line_anchors import LineAnchorElement
 
 
-class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], DisableableElement,
+class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], DisableableElement, CrdtElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
