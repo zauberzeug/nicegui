@@ -169,6 +169,8 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
         self._props['highlight-whitespace'] = highlight_whitespace
         self._props['decorations'] = decorations or []
         self._decorations_pending = True
+        # The list stays the same object for the element's lifetime (the setter fills it in place),
+        # so a reference a caller kept stays live and the change handler is registered exactly once.
         self._props['decorations'].on_change(self._mark_decorations_pending)
         self._props['decoration-text-html'] = decoration_text_html
         self._props['line-tooltips'] = line_tooltips or {}
@@ -271,9 +273,7 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
     def decorations(self, decorations: list[DecorationSpec] | None) -> None:
         decorations = decorations or []
         _validate_decorations(decorations)
-        self._decorations_pending = True
-        self._props['decorations'] = decorations
-        self._props['decorations'].on_change(self._mark_decorations_pending)
+        self._props['decorations'][:] = decorations
 
     def _mark_decorations_pending(self) -> None:
         self._decorations_pending = True

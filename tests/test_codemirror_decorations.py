@@ -180,6 +180,15 @@ def test_a_re_render_after_an_unusable_in_place_spec_still_mounts(screen: Screen
     assert _span_count(screen, 'cm-test-late') == 1
 
 
+def test_a_kept_reference_to_the_list_stays_live_after_reassignment(screen: Screen):
+    editor = _open_editor(screen)
+    specs = editor.decorations
+    editor.decorations = [{'kind': 'mark', 'from': 0, 'to': 5, 'class': 'cm-test-assigned'}]
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-assigned') == 'alpha')
+    specs.append({'kind': 'mark', 'from': 6, 'to': 10, 'class': 'cm-test-appended'})
+    screen.wait_for(lambda: _marked_text(screen, 'cm-test-appended') == 'beta')
+
+
 def test_empty_replace_range_is_skipped(screen: Screen):
     editor = _open_editor(screen)
     editor.decorations = [
