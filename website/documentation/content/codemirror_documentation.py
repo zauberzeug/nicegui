@@ -51,12 +51,10 @@ def preserve_cursor_demo() -> None:
     *Added in version 3.17.0*
 ''')
 def decorations_demo() -> None:
-    ui.add_head_html('''
-        <style>
-            .my-error  { background-color: rgba(255, 0, 0, 0.2); }
-            .my-fold   { color: #888; font-style: italic; padding: 0 4px; }
-            .my-hint   { color: #888; font-size: 0.8em; padding: 0 4px; }
-        </style>
+    ui.add_css('''
+        .my-error { background-color: rgba(255, 0, 0, 0.2); }
+        .my-fold { color: #888; font-style: italic; padding: 0 4px; }
+        .my-hint { color: #888; font-size: 0.8em; padding: 0 4px; }
     ''')
     editor = ui.codemirror('alpha\nbeta\ngamma\ndelta\nepsilon',
                            decoration_text_html=True).classes('h-32')

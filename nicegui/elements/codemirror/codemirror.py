@@ -254,11 +254,16 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
         The ``from``, ``to`` and ``position`` fields are Python ``str`` indices into ``value``,
         so ``value.index(...)`` addresses what you expect even in a document containing emoji.
+        A widget's ``side`` (default ``1``) places it after ``position``, so text typed exactly there
+        lands before the widget; ``-1`` places it before, so typed text lands after it.
 
-        As with ``line_anchors``, the browser keeps decorations pinned to their text as the document
-        changes, and reading this property returns the specs as declared, not where they have moved.
+        The browser keeps decorations pinned to their text as the document changes, but unlike
+        ``line_anchors`` it does not report the moved positions back: reading this property returns
+        the specs as declared, and a fresh client (a second browser on a shared page, say) receives
+        those declared offsets against whatever ``value`` is by then.
         Every write, an assignment as well as an in-place change of the list, applies all specs afresh
-        at their declared offsets, so compute them from the current ``value``.
+        at their declared offsets, so compute them from the current ``value``, and prefer assigning
+        a complete list over appending to one whose other entries the user may have typed past.
 
         A spec that cannot describe a decoration at all (an unknown kind, a missing required key,
         an inverted or negative offset, an empty mark range) is rejected with a ``ValueError`` on assignment;

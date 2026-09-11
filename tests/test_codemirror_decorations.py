@@ -7,8 +7,6 @@ from selenium.webdriver.common.by import By
 from nicegui import ui
 from nicegui.testing import Screen, User
 
-# pylint: disable=protected-access
-
 
 def test_set_and_clear_line_decorations(screen: Screen):
     editor = _open_editor(screen, 'alpha\nbeta\ngamma\ndelta')
@@ -300,8 +298,9 @@ def test_decorations_survive_a_client_side_remount(screen: Screen):
 
     screen.open('/')
     screen.wait_for(lambda: _marked_text(screen, 'cm-test-remount') == 'beta')
-    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "XX"}}}})')
-    screen.wait_for(lambda: editor.value.startswith('XXalpha'))
+    # An emoji makes the mapped UTF-16 offsets differ from the str indices the rebuilt props must carry.
+    screen.selenium.execute_script(f'getElement({editor.id}).editor.dispatch({{changes: {{from: 0, insert: "🎉"}}}})')
+    screen.wait_for(lambda: editor.value.startswith('🎉alpha'))
     # Leaving the tab destroys the editor client-side; coming back builds a fresh one from the props.
     screen.click('Two')
     screen.should_contain('Second tab')
@@ -352,7 +351,7 @@ async def test_decoration_specs_are_validated_on_assignment(user: User):
 
     await user.open('/')
     with pytest.raises(ValueError, match='unknown kind'):
-        editor.decorations = [{'kind': 'sparkle', 'from': 0, 'to': 1}]  # type: ignore[list-item]
+        editor.decorations = [{'kind': 'sparkle', 'from': 0, 'to': 1}]  # type: ignore[list-item,misc]
     with pytest.raises(ValueError, match='missing required key'):
         editor.decorations = [{'kind': 'mark', 'from': 0}]  # type: ignore[list-item,typeddict-item]
     with pytest.raises(ValueError, match='from=4 > to=1'):
