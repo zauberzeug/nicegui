@@ -7,12 +7,12 @@ from typing_extensions import Self
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
-from ...element import Element
 from ...events import GenericEventArguments
+from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .leaflet_layer import Layer
 
 
-class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, default_classes='nicegui-leaflet'):
+class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, default_classes='nicegui-leaflet'):
     # pylint: disable=import-outside-toplevel
     from .leaflet_layers import GenericLayer as generic_layer
     from .leaflet_layers import ImageOverlay as image_overlay
@@ -101,9 +101,14 @@ class Leaflet(Element, component='leaflet.js', esm={'nicegui-leaflet': 'dist'}, 
             self.run_method('add_layer', layer.to_dict(), layer.id)
 
     async def initialized(self) -> None:
-        """Wait until the map is initialized."""
-        await self.client.connected()
-        await self._initialized_event.wait()
+        """Wait until the map is initialized.
+
+        *Updated in version 3.17.0: Awaiting map initialization cancels the awaiting task
+        when the map is deleted, e.g. because the client disconnected.*
+        """
+        with self._cancel_when_deleted(self._initialized_event):
+            await self.client.connected()
+            await self._initialized_event.wait()
 
     def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False
