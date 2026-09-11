@@ -1,5 +1,3 @@
-import re
-
 import pytest
 from selenium.webdriver.common.by import By
 
@@ -52,7 +50,7 @@ def test_anchor_remapping(screen: Screen, anchors: dict[str, int], change: str, 
 
 
 def test_anchors_out_of_range(screen: Screen):
-    """A line below 1 is refused outright; one past the end is dropped rather than moved somewhere else."""
+    """A line below 1 or not a whole number is refused outright; one past the end is dropped rather than moved."""
     editor: ui.codemirror = None  # type: ignore[assignment]
 
     @ui.page('/')
@@ -64,25 +62,11 @@ def test_anchors_out_of_range(screen: Screen):
     _wait_for_editor(screen)
     with pytest.raises(ValueError, match='1-indexed'):
         editor.line_anchors = {'bad': 0}
+    with pytest.raises(ValueError, match='whole numbers'):
+        editor.line_anchors = {'bad': 2.5}  # type: ignore[dict-item]
 
     editor.line_anchors = {'inside': 2, 'beyond': 50}
     screen.wait_for(lambda: editor.line_anchors == {'inside': 2})
-
-
-def test_anchors_on_a_fractional_line(screen: Screen):
-    """A line that is not a whole number resolves to a neighbouring one, so it is dropped like one past the end."""
-    editor: ui.codemirror = None  # type: ignore[assignment]
-
-    @ui.page('/')
-    def page():
-        nonlocal editor
-        editor = ui.codemirror('a\nb\nc')
-
-    screen.open('/')
-    _wait_for_editor(screen)
-    editor.line_anchors = {'inside': 3, 'fractional': 2.5}  # type: ignore[dict-item]
-    screen.wait_for(lambda: editor.line_anchors == {'inside': 3})
-    screen.assert_py_logger('WARNING', re.compile('is not a whole line'))
 
 
 async def test_rejected_anchors_leave_no_editor_behind(user: User):

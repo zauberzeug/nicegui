@@ -55,9 +55,7 @@ class LineAnchorElement(Element):
 
         Lines beyond the end of the document are dropped on the JS side with a warning via NiceGUI's
         logger, just like ``line_tooltips``, so a read never reports a position that was not applied.
-        A line below 1 is rejected right away with a ``ValueError``.
-        A line at or above 1 that is not a whole number is dropped the same way as one beyond the end,
-        since it cannot address a line without silently resolving to a neighbouring one.
+        A line below 1 or not a whole number is rejected right away with a ``ValueError``.
 
         *Added in version 3.16.0*
         """
@@ -98,5 +96,5 @@ class LineAnchorElement(Element):
 
 def _validate(anchors: dict[str, int]) -> None:
     for id_, line in anchors.items():
-        if line < 1:
-            raise ValueError(f'line_anchors: anchor {id_!r} has line {line}, but lines are 1-indexed')
+        if not isinstance(line, int) or line < 1:
+            raise ValueError(f'line_anchors: anchor {id_!r} has line {line!r}, but lines are 1-indexed whole numbers')
