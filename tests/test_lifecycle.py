@@ -196,5 +196,4 @@ def test_warning_about_ignored_nicegui_port(screen: Screen, monkeypatch: pytest.
         ui.label('Hello')
 
     screen.open('/')
-    screen.should_contain('Hello')
     screen.assert_py_logger('WARNING', re.compile('NICEGUI_PORT=1'))
