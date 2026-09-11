@@ -32,7 +32,7 @@ async def increment_counter_slowly(_):
 
 def test_observable_dict():
     reset_counter()
-    data = ObservableDict(on_change=increment_counter)
+    data: ObservableDict[str, int] = ObservableDict(on_change=increment_counter)
     data['a'] = 1
     assert count == 1
     del data['a']
@@ -53,7 +53,7 @@ def test_observable_dict():
 
 def test_observable_list():
     reset_counter()
-    data = ObservableList(on_change=increment_counter)
+    data: ObservableList[int] = ObservableList(on_change=increment_counter)
     data.append(1)
     assert count == 1
     data.extend([2, 3, 4])
@@ -123,21 +123,21 @@ def test_nested_observables():
     }, on_change=increment_counter)
     data['a'] = 42
     assert count == 1
-    data['b'].append(4)
+    data['b'].append(4)  # type: ignore
     assert count == 2
-    data['b'][3].update(t=4)
+    data['b'][3].update(t=4)  # type: ignore
     assert count == 3
-    data['c']['x'] = 2
+    data['c']['x'] = 2  # type: ignore
     assert count == 4
-    data['c']['t'].append(4)
+    data['c']['t'].append(4)  # type: ignore
     assert count == 5
-    data['d'].add(4)
+    data['d'].add(4)  # type: ignore
     assert count == 6
 
 
 def test_async_handler(screen: Screen):
     reset_counter()
-    data = ObservableList(on_change=increment_counter_slowly)
+    data: ObservableList[int] = ObservableList(on_change=increment_counter_slowly)
 
     @ui.page('/')
     def page():
@@ -153,7 +153,7 @@ def test_async_handler(screen: Screen):
 
 def test_setting_change_handler():
     reset_counter()
-    data = ObservableList()
+    data: ObservableList[int] = ObservableList()
     data.append(1)
     assert count == 0
 
@@ -187,7 +187,7 @@ async def test_no_infinite_recursion(user: User):
 
 def test_rebuilding_list_in_place_does_not_accumulate_handlers():
     reset_counter()
-    data = ObservableList([{}], on_change=increment_counter)
+    data: ObservableList[dict[str, int]] = ObservableList([{}], on_change=increment_counter)
     for _ in range(3):
         data[:] = list(data)
     assert count == 3
@@ -197,7 +197,7 @@ def test_rebuilding_list_in_place_does_not_accumulate_handlers():
 
 def test_replacing_list_does_not_accumulate_handlers():
     reset_counter()
-    data = ObservableDict({'items': [{}]}, on_change=increment_counter)
+    data: ObservableDict[str, list[dict[str, int]]] = ObservableDict({'items': [{}]}, on_change=increment_counter)
     for _ in range(3):
         data['items'] = list(data['items'])
     assert count == 3
@@ -207,7 +207,8 @@ def test_replacing_list_does_not_accumulate_handlers():
 
 def test_removed_dict_values_are_detached():
     reset_counter()
-    data = ObservableDict({'a': {}, 'b': {}, 'c': {}, 'd': {}}, on_change=increment_counter)
+    data: ObservableDict[str, dict[str, int]] = ObservableDict(
+        {'a': {}, 'b': {}, 'c': {}, 'd': {}}, on_change=increment_counter)
     detached = [data.pop('a'), data.popitem()[1], data['b'], data['c']]
     del data['b']
     data['c'] = {'new': True}
@@ -228,11 +229,11 @@ def test_removed_dict_values_are_detached():
 
 def test_removed_list_items_are_detached():
     reset_counter()
-    data = ObservableList([{}, {}, {}, {}, {}, {}, {}], on_change=increment_counter)
+    data: ObservableList[dict[str, int]] = ObservableList([{}, {}, {}, {}, {}, {}, {}], on_change=increment_counter)
     detached = [data.pop(), data[0], data[1], data[2], *data[3:5]]
     data.remove(data[0])
     del data[0]
-    data[0] = {'new': True}
+    data[0] = {'new': True}  # type: ignore
     del data[1:3]
     data.clear()
     n = count
@@ -243,7 +244,7 @@ def test_removed_list_items_are_detached():
 
 def test_multiplying_list_in_place():
     reset_counter()
-    data = ObservableList([{}], on_change=increment_counter)
+    data: ObservableList[dict[str, int]] = ObservableList([{}], on_change=increment_counter)
     item = data[0]
     data *= 2
     assert count == 1
@@ -257,8 +258,8 @@ def test_multiplying_list_in_place():
 
 def test_items_contained_multiple_times_are_detached_on_last_removal():
     reset_counter()
-    data = ObservableList(on_change=increment_counter)
-    item = ObservableDict()
+    data: ObservableList[dict[str, int]] = ObservableList(on_change=increment_counter)
+    item: ObservableDict[str, int] = ObservableDict()
     data.append(item)
     data.append(item)
     item['x'] = 1
@@ -273,7 +274,7 @@ def test_items_contained_multiple_times_are_detached_on_last_removal():
 
 def test_items_shared_between_collections():
     counts = {'a': 0, 'b': 0}
-    item = ObservableDict()
+    item: ObservableDict[str, int] = ObservableDict()
     a = ObservableList([item], on_change=lambda: counts.update(a=counts['a'] + 1))
     b = ObservableList([item], on_change=lambda: counts.update(b=counts['b'] + 1))
     item['x'] = 1
@@ -285,7 +286,7 @@ def test_items_shared_between_collections():
 
 
 def test_discarded_collections_are_garbage_collected():
-    data = ObservableDict({'items': [{}]})
+    data: ObservableDict[str, list[dict[str, int]]] = ObservableDict({'items': [{}]})
     refs = [weakref.ref(data['items'])]
     for _ in range(3):
         data['items'] = list(data['items'])
