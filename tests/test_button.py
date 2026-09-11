@@ -224,3 +224,5 @@ async def test_clicked_can_be_awaited_repeatedly(user: User):
         user.find('Click me').click()
         await asyncio.sleep(0.1)
     assert clicks == ['clicked', 'clicked', 'clicked']
+    button = next(iter(user.find('Click me').elements))
+    assert len(button._event_listeners) == 1, 'clicked() must reuse one listener'  # pylint: disable=protected-access
