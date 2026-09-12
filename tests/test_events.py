@@ -294,3 +294,23 @@ async def test_late_event_registration(screen: Screen):
     assert 'Event listeners changed after initial definition. Re-rendering affected elements.' in screen.render_js_logs()
     screen.assert_py_logger('WARNING',
                             'Event listeners changed after initial definition. Re-rendering affected elements.')
+
+
+def test_late_global_event_registration(screen: Screen):
+    events = []
+
+    @ui.page('/')
+    def page():
+        ui.html('<input id="raw">', sanitize=False)
+        ui.button('Register', on_click=lambda: ui.on('some_event', lambda: events.append('fired')))
+        ui.button('Fire', on_click=lambda: ui.run_javascript('emitEvent("some_event")'))
+
+    screen.open('/')
+    screen.selenium.execute_script('document.getElementById("raw").value = "kept"')
+    screen.click('Register')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('return document.getElementById("raw").value') == 'kept', \
+        'the page must not be re-rendered (see #6248)'
+    screen.click('Fire')
+    screen.wait(0.5)
+    assert events == ['fired']
