@@ -1,6 +1,9 @@
 import asyncio
 import re
 
+import httpx
+import socketio
+
 from nicegui import Client, app, ui
 from nicegui.testing import Screen
 
@@ -70,6 +73,27 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     assert events == ['connect', 'disconnect', 'connect', 'disconnect', 'connect']
+
+
+async def test_disconnect_without_client_id_in_connect_query(screen: Screen):
+    events: list[str] = []
+
+    @ui.page('/', reconnect_timeout=0)
+    def page():
+        ui.label('Hello')
+    app.on_connect(lambda: events.append('connect'))
+    app.on_disconnect(lambda: events.append('disconnect'))
+
+    screen.start_server()
+    httpx.get(screen.url, timeout=5)
+    client_id = next(reversed(Client.instances))
+    sio = socketio.AsyncClient()
+    await sio.connect(screen.url, socketio_path='/_nicegui_ws/socket.io')  # no query parameters at all
+    await sio.call('handshake', {'client_id': client_id, 'tab_id': 'tab', 'document_id': 'document'})
+    await sio.disconnect()
+
+    screen.wait_for(lambda: not Client.instances)  # a leaked client would stay connected forever
+    assert events == ['connect', 'disconnect'], 'disconnect should not depend on the client ID being in the query'
 
 
 def test_startup_and_shutdown_handlers(screen: Screen):

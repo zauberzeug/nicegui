@@ -8,12 +8,20 @@ from typing_extensions import Self
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
-from ...events import CodeMirrorKeyBindingEventArguments, GenericEventArguments, Handler, ValueChangeEventArguments
+from ...events import (
+    CodeMirrorAnchorChangeEventArguments,
+    CodeMirrorKeyBindingEventArguments,
+    GenericEventArguments,
+    Handler,
+    ValueChangeEventArguments,
+)
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
+from .decorations import DecorationElement
 from .keybindings import KeyBindingElement
+from .line_anchors import LineAnchorElement
 
 
-class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
+class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
@@ -32,6 +40,10 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        decorations: list[dict] | None = None,
+        decoration_html: bool = False,
+        line_anchors: dict[str, int] | None = None,
+        on_anchor_change: Handler[CodeMirrorAnchorChangeEventArguments] | None = None,
         line_tooltips: dict[int, str] | None = None,
         line_tooltip_html: bool = False,
     ) -> None:
@@ -57,6 +69,14 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         Use ``map_key`` to add keybindings at runtime and ``unmap_key`` to drop them.
         Keybindings do not fire while the editor is disabled.
 
+        *Since version 3.16.0:*
+        Line anchors that track document positions through edits can be attached via the ``line_anchors`` dict
+        (assign to declare, read back for the current positions).
+
+        *Since version 3.17.0:*
+        Decorations style, hide or annotate parts of the document without changing it.
+        Assign a list of specs to ``decorations`` or mutate ``decorations`` in place.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
@@ -65,10 +85,17 @@ class CodeMirror(KeyBindingElement, ValueElement[str], DisableableElement,
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: `False`)
         :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param decorations: initial list of decoration specs applied to the editor;
+            spec offsets (``from``/``to``/``position``) are Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
+        :param decoration_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
+        :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.16.0*)
+        :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.16.0*)
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
-        super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap)
+        super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap,
+                         decorations=decorations, decoration_html=decoration_html,
+                         line_anchors=line_anchors, on_anchor_change=on_anchor_change)
         self._codepoints = b''
         self._update_codepoints()
         if on_change is not None:

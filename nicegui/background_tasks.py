@@ -9,7 +9,7 @@ from .logging import log
 
 running_tasks: set[asyncio.Task] = set()
 lazy_tasks_running: dict[str, asyncio.Task] = {}
-lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
+lazy_coroutines_waiting: dict[str, Awaitable[Any]] = {}
 _await_tasks_on_shutdown: set[asyncio.Task] = set()
 
 
@@ -79,9 +79,11 @@ def create_lazy(awaitable: Awaitable[Any] | None = None, *,
     """
     awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create_lazy')
     if name in lazy_tasks_running:
-        if name in lazy_coroutines_waiting:
-            lazy_coroutines_waiting[name].close()
-        lazy_coroutines_waiting[name] = _ensure_coroutine(awaitable)
+        waiting = lazy_coroutines_waiting.get(name)
+        if asyncio.iscoroutine(waiting):
+            waiting.close()
+        # NOTE: store the original awaitable so an _AwaitOnShutdown marker survives requeueing in finalize()
+        lazy_coroutines_waiting[name] = awaitable
         return
 
     def finalize(_) -> None:
@@ -174,5 +176,6 @@ async def teardown() -> None:
                           ', '.join(t.get_name() for t in tasks if not t.done()))
             except Exception:
                 log.exception('Error while cancelling tasks')
-    for coro in lazy_coroutines_waiting.values():
-        coro.close()
+    for awaitable in lazy_coroutines_waiting.values():
+        if asyncio.iscoroutine(awaitable):
+            awaitable.close()

@@ -4,13 +4,14 @@ from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
+from .mixins.cancelable_wait_element import CancelableWaitElement
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 
 
-class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
+class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement, CancelableWaitElement):
 
     @resolve_defaults
     def __init__(self,
@@ -60,8 +61,13 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         self._props['label'] = text
 
     async def clicked(self) -> None:
-        """Wait until the button is clicked."""
+        """Wait until the button is clicked.
+
+        *Updated in version 3.17.0: Awaiting the button click cancels the awaiting task
+        when the button is deleted, e.g. because the client disconnected.*
+        """
         event = asyncio.Event()
-        self.on('click', event.set, [])
-        await self.client.connected()
-        await event.wait()
+        with self._cancel_when_deleted(event):
+            self.on('click', event.set, [])
+            await self.client.connected()
+            await event.wait()
