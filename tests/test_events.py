@@ -303,7 +303,6 @@ def test_late_global_event_registration(screen: Screen):
     def page():
         ui.html('<input id="raw">', sanitize=False)
         ui.button('Register', on_click=lambda: ui.on('some_event', lambda: events.append('fired')))
-        ui.button('Fire', on_click=lambda: ui.run_javascript('emitEvent("some_event")'))
 
     screen.open('/')
     screen.selenium.execute_script('document.getElementById("raw").value = "kept"')
@@ -311,6 +310,5 @@ def test_late_global_event_registration(screen: Screen):
     screen.wait(0.5)
     assert screen.selenium.execute_script('return document.getElementById("raw").value') == 'kept', \
         'the page must not be re-rendered (see #6248)'
-    screen.click('Fire')
-    screen.wait(0.5)
-    assert events == ['fired']
+    screen.selenium.execute_script('emitEvent("some_event")')
+    screen.wait_for(lambda: events == ['fired'])
