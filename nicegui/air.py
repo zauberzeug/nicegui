@@ -40,8 +40,7 @@ async def _handle_handshake(data: dict[str, Any]) -> bool:
         client.tab_id = data['tab_id']
         client.on_air = True
         client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
-        assert client.tab_id is not None
-        await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
+        await core.app.storage._create_tab_storage(data['tab_id'])  # pylint: disable=protected-access
         return True
     return False
 
