@@ -34,8 +34,8 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
-        super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
         self._clicked_waiters_bound = False
+        super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:
             self.on_click(on_click)
