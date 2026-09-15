@@ -188,12 +188,10 @@ def test_no_double_delete(screen: Screen):
     assert len(events) == 1, 'delete event should be called only once'
 
 
-def test_warning_about_ignored_nicegui_port(screen: Screen, monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv('NICEGUI_PORT', '1')
+@pytest.mark.parametrize('name', ['NICEGUI_HOST', 'NICEGUI_PORT', 'NICEGUI_PROTOCOL'])
+def test_warning_about_ignored_environment_variable(screen: Screen, monkeypatch: pytest.MonkeyPatch, name: str):
+    monkeypatch.setenv(name, 'x')
 
-    @ui.page('/')
-    def page():
-        ui.label('Hello')
-
-    screen.open('/')
-    screen.assert_py_logger('WARNING', re.compile('NICEGUI_PORT=1'))
+    screen.start_server()
+    httpx.get(screen.url, timeout=5)
+    screen.assert_py_logger('WARNING', re.compile(f'Ignoring {name}=x, which is only used internally.'))
