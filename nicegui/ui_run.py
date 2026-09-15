@@ -305,14 +305,18 @@ def run(root: Callable | None = None, *,
         log.warning('You must pass the application as an import string to enable "reload" or "workers".')
         sys.exit(1)
 
-    if config.should_reload:
-        sock = config.bind_socket()
-        ChangeReload(config, target=Server.instance.run, sockets=[sock]).run()
-    elif config.workers > 1:
-        sock = config.bind_socket()
-        Multiprocess(config, target=Server.instance.run, sockets=[sock]).run()
-    else:
-        Server.instance.run()
+    try:
+        if config.should_reload:
+            sock = config.bind_socket()
+            ChangeReload(config, target=Server.instance.run, sockets=[sock]).run()
+        elif config.workers > 1:
+            sock = config.bind_socket()
+            Multiprocess(config, target=Server.instance.run, sockets=[sock]).run()
+        else:
+            Server.instance.run()
+    finally:
+        for name in ('NICEGUI_HOST', 'NICEGUI_PORT', 'NICEGUI_PROTOCOL'):
+            os.environ.pop(name, None)
     if config.uds:
         os.remove(config.uds)  # pragma: py-win32
 
