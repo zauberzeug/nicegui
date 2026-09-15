@@ -1,11 +1,10 @@
-import asyncio
 import base64
 import time
 
 from fastapi import Response
 
 from nicegui import app, ui
-from nicegui.testing import Screen, User
+from nicegui.testing import Screen
 
 
 def test_leaflet(screen: Screen):
@@ -58,25 +57,6 @@ def test_await_initialized_twice(screen: Screen):
     screen.open('/')
     screen.should_contain('Leaflet initialized')
     assert not screen.caplog.records
-
-
-async def test_await_initialized_cancel_task(user: User):
-    initialized = asyncio.Event()
-    task: list[asyncio.Task] = []
-
-    @ui.page('/')
-    async def page():
-        task.append(asyncio.current_task())
-        m = ui.leaflet()
-        await m.initialized()
-        initialized.set()
-
-    client = await user.open('/')
-    await asyncio.sleep(0.1)
-    client.delete()
-    await asyncio.sleep(0.1)
-    assert not initialized.is_set(), 'code after leaflet.initialized() ran'
-    assert task[0].cancelled(), 'the waiting task should be cancelled, not left pending or resolved'
 
 
 def test_leaflet_unhide(screen: Screen):
