@@ -209,7 +209,7 @@ async def test_click_that_deletes_the_button_is_still_delivered(user: User):
 
 
 async def test_clicked_can_be_awaited_repeatedly(user: User):
-    """Each click should complete one iteration of an await-clicked loop."""
+    """Each clicked() call should reuse one listener instead of stacking a new one per await."""
     clicks = []
 
     @ui.page('/')
