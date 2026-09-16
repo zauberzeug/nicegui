@@ -187,7 +187,7 @@ class App(FastAPI):
                 log.exception('Exception handler %s raised an exception', getattr(handler, '__name__', handler))
                 continue
             if helpers.should_await(result):
-                background_tasks.create(result, name=f'exception {handler.__name__}')
+                background_tasks.create(result, name=f'exception {getattr(handler, "__name__", handler)}')
 
     def on_page_exception(self, handler: Callable) -> None:
         """Called when an exception occurs in a page and allows to create a custom error page.
