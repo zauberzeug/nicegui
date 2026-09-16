@@ -37,7 +37,7 @@ def nicegui_reset_globals():
     for route in list(app.routes):
         if isinstance(route, Route) and (
             not route.path.startswith('/_nicegui/')
-            or route.path.startswith('/_nicegui/auto/static')
+            or route.path.startswith('/_nicegui/auto/')
             or route.path.startswith('/_nicegui/client/')
         ):
             app.remove_route(route.path)
