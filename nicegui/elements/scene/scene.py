@@ -218,9 +218,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         *Updated in version 3.17.0: Awaiting scene initialization cancels the awaiting task
         when the scene is deleted, e.g. because the client disconnected.*
         """
-        with self._cancel_when_deleted(self._initialized_event):
-            await self.client.connected()
-            await self._initialized_event.wait()
+        await self._wait_for(self._initialized_event)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

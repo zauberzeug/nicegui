@@ -106,9 +106,7 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         *Updated in version 3.17.0: Awaiting map initialization cancels the awaiting task
         when the map is deleted, e.g. because the client disconnected.*
         """
-        with self._cancel_when_deleted(self._initialized_event):
-            await self.client.connected()
-            await self._initialized_event.wait()
+        await self._wait_for(self._initialized_event)
 
     def _handle_move_or_zoom_end(self, e: GenericEventArguments) -> None:
         self._send_update_on_value_change = False

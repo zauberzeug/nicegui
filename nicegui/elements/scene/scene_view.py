@@ -80,9 +80,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         *Updated in version 3.17.0: Awaiting scene view initialization cancels the awaiting task
         when the scene view is deleted, e.g. because the client disconnected.*
         """
-        with self._cancel_when_deleted(self._initialized_event):
-            await self.client.connected()
-            await self._initialized_event.wait()
+        await self._wait_for(self._initialized_event)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

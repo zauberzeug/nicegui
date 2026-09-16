@@ -29,3 +29,25 @@ async def test_initialized_is_cancelled_when_client_is_deleted(user: User, creat
     assert not results, 'code after initialized() must not run when the client is deleted'
     assert not any('wait for result of page' in task.get_name() for task in background_tasks.running_tasks), \
         'the awaiting task should be cancelled, not leaked'
+
+
+async def test_initialized_resolves_after_init_even_when_client_is_disconnected(user: User):
+    """Once an element is initialized, awaiting it must resolve right away instead of waiting for a reconnect."""
+    results = []
+
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+
+        async def wait_for_init() -> None:
+            await scene.initialized()
+            results.append('initialized')
+
+        ui.button('Wait', on_click=wait_for_init)
+
+    client = await user.open('/')
+    user.find(ui.scene).trigger('init')
+    client.tab_id = None  # simulate a browser disconnect
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)
+    assert results == ['initialized'], 'initialized() should resolve immediately for an already initialized element'
