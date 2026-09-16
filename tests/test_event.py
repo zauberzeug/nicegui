@@ -293,7 +293,6 @@ async def test_exception_after_deleting_the_handler_container(user: User, caplog
         with ui.column() as column:
             ui.button('start', on_click=slow_handler)
         columns.append(column)
-        del column  # the lambda below must not keep the column alive
         ui.button('delete', on_click=lambda: columns.pop().delete())
 
     await user.open('/')

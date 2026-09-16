@@ -138,6 +138,7 @@ doc.text('Error handling', '''
     - UI-context exceptions go to _either_, but never both:
         - `@app.on_page_exception` (2) if raised before client connection
         - `ui.on_exception` (3) if raised after client connection
+    - Once the client has been deleted, its `ui.on_exception` handlers are skipped; `app.on_exception` (1) still runs.
 ''')
 
 
