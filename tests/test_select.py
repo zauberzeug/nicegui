@@ -338,6 +338,7 @@ async def test_invalid_new_value_mode_does_not_break_page(user: User):
 
     await user.open('/')
     await user.should_see('caught')
+    await user.should_not_see(kind=ui.select)
 
 
 async def test_construction_does_not_run_update_override(user: User):
