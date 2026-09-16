@@ -184,7 +184,7 @@ class App(FastAPI):
             try:
                 result = handler() if not inspect.signature(handler).parameters else handler(exception)
             except Exception:  # one failing handler must not prevent the others from running
-                log.exception('Exception handler %s raised an exception', handler.__name__)
+                log.exception('Exception handler %s raised an exception', getattr(handler, '__name__', handler))
                 continue
             if helpers.should_await(result):
                 background_tasks.create(result, name=f'exception {handler.__name__}')
