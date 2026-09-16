@@ -176,17 +176,19 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
-        client = None
         if Slot.get_stack():  # don't enter script mode by accessing `context.slot_stack`
             with contextlib.suppress(RuntimeError):  # the slot's parent element or its client may have been deleted
-                client = context.client
-        if client is not None:
-            client.handle_exception(exception)
+                context.client.handle_exception(exception)
 
         for handler in self._exception_handlers:
-            result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            name = getattr(handler, '__name__', handler)
+            try:
+                result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            except Exception:  # one failing handler must not prevent the others from running
+                log.exception(f'Exception handler {name} raised an exception')
+                continue
             if helpers.should_await(result):
-                background_tasks.create(result, name=f'exception {handler.__name__}')
+                background_tasks.create(result, name=f'exception {name}')
 
     def on_page_exception(self, handler: Callable) -> None:
         """Called when an exception occurs in a page and allows to create a custom error page.
