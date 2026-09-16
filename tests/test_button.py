@@ -208,21 +208,19 @@ async def test_click_that_deletes_the_button_is_still_delivered(user: User):
     assert results == ['clicked'], 'a real click must not be swallowed by the deletion it triggers'
 
 
-async def test_clicked_can_be_awaited_repeatedly(user: User):
-    """Each clicked() call should reuse one listener instead of stacking a new one per await."""
-    clicks = []
-
+def test_clicked_loop_does_not_re_render_the_button(screen: Screen):
+    """Awaiting clicked() in a loop must not rebuild the button DOM (#6312)."""
     @ui.page('/')
     async def page():
         button = ui.button('Click me')
         while True:
             await button.clicked()
-            clicks.append('clicked')
 
-    await user.open('/')
+    screen.open('/')
+    screen.selenium.execute_script("document.querySelector('button.q-btn').dataset.mark = 'original'")
     for _ in range(3):
-        user.find('Click me').click()
-        await asyncio.sleep(0.1)
-    assert clicks == ['clicked', 'clicked', 'clicked']
-    button = next(iter(user.find('Click me').elements))
-    assert len(button._event_listeners) == 1, 'clicked() must reuse one listener'  # pylint: disable=protected-access
+        screen.click('Click me')
+        screen.wait(0.3)
+    mark = screen.selenium.execute_script("return document.querySelector('button.q-btn').dataset.mark")
+    assert mark == 'original', 'the button must not be re-rendered (see #6312)'
+    assert 'Event listeners changed after initial definition' not in screen.render_js_logs()
