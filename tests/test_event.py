@@ -289,7 +289,7 @@ async def test_exception_after_deleting_the_handler_container(user: User, caplog
             await asyncio.sleep(0.1)
             raise ValueError('real error')
 
-        columns = []
+        columns = []  # keep the column out of the lambda's closure so it is really gone after deletion
         with ui.column() as column:
             ui.button('start', on_click=slow_handler)
         columns.append(column)
@@ -327,5 +327,6 @@ async def test_exception_after_deleting_the_client(user: User, caplog: pytest.Lo
     await asyncio.sleep(0.3)
     assert [type(e) for e in app_exceptions] == [ValueError]
     assert not page_exceptions, 'handlers of a deleted page should not run'
+    assert not user.notify.messages, 'handlers of a deleted page should not run'
     assert len(caplog.records) == 1 and 'real error' in caplog.records[0].message
     caplog.records.pop(0)

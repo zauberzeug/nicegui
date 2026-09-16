@@ -123,7 +123,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                         await result
                     except Exception as e:
                         client = self._client()
-                        if client is not None and not client.is_deleted:
+                        if client is not None:
                             client.handle_exception(e)
                         raise
 

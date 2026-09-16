@@ -475,6 +475,7 @@ class Client:
         if self.is_deleted:
             return  # the page is gone, so there is no point in running its handlers
         for handler in self._exception_handlers:
+            name = getattr(handler, '__name__', handler)
             try:
                 with self.content:
                     if helpers.expects_arguments(handler):
@@ -482,11 +483,10 @@ class Client:
                     else:
                         result = cast(Callable[[], Any], handler)()
             except Exception:  # one failing handler must not prevent the others from running
-                log.exception('Exception handler %s raised an exception', getattr(handler, '__name__', handler))
+                log.exception(f'Exception handler {name} raised an exception')
                 continue
             if helpers.should_await(result):
-                background_tasks.create(helpers.await_with_context(result, self.content),
-                                        name=f'UI exception {getattr(handler, "__name__", handler)}')
+                background_tasks.create(helpers.await_with_context(result, self.content), name=f'UI exception {name}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.
