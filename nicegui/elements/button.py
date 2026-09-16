@@ -67,7 +67,5 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         when the button is deleted, e.g. because the client disconnected.*
         """
         event = asyncio.Event()
-        with self._cancel_when_deleted(event):
-            self.on('click', event.set, [])
-            await self.client.connected()
-            await event.wait()
+        self.on('click', event.set, [])
+        await self._wait_for(event)
