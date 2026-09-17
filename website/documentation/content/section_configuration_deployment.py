@@ -37,7 +37,24 @@ doc.intro(run_documentation)
     Additionally, you can change `webview.settings` via `app.native.settings`.
 
     In native mode the `app.native.main_window` object allows you to access the underlying window.
-    It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+    With pywebview installed it is an async version of
+    [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
+
+    **Without pywebview:** `pip install nicegui[native]` installs pywebview, which embeds a platform
+    webview and therefore needs a platform GUI stack.
+    If it is not installed, native mode falls back to opening a Chromium-family browser that is
+    already on the machine as an app window, which needs no additional packages.
+    That fallback covers most of the window API but not all of it:
+    `frameless`, `transparent` and `on_top` are ignored, file and confirmation dialogs are
+    unavailable, dropped files do not report their paths, and window arguments the fallback cannot
+    act on are reported in the log rather than applied silently.
+    Install pywebview whenever any of that matters.
+    Set `NICEGUI_NATIVE_BROWSER` to a browser path or executable name to choose which browser it uses.
+
+    Note that the fallback controls the browser through the Chrome DevTools Protocol on a loopback
+    port, so any process running as the same user can evaluate JavaScript in the app's page while it
+    is open — including pages backed by `app.storage.user`.
+    Prefer pywebview if that matters for your deployment.
 
     Native mode requires a browser engine with ES module and import map support (Chrome 89+).
     On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.
@@ -153,6 +170,8 @@ doc.text('', '''
     - `RST_CONTENT_CACHE_SIZE` (default: 1000): The maximum number of ReStructuredText content snippets that are cached in memory.
     - `NICEGUI_REDIS_URL` (default: None, means local file storage): The URL of the Redis server to use for shared persistent storage.
     - `NICEGUI_REDIS_KEY_PREFIX` (default: "nicegui:"): The prefix for Redis keys.
+    - `NICEGUI_NATIVE_BROWSER` (default: None, means auto-detect): The browser [native mode](/documentation/section_configuration_deployment#native_mode)
+        opens when pywebview is not installed, given as a path or an executable name.
 ''')
 def env_var_demo():
     from nicegui.elements import markdown
