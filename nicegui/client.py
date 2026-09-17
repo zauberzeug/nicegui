@@ -128,7 +128,7 @@ class Client:
         self._head_html = ''
         self._body_html = ''
 
-        self.storage = ObservableDict()
+        self.storage: ObservableDict[str, Any] = ObservableDict()
 
         self.connect_handlers: list[Callable] = []
         self.disconnect_handlers: list[Callable] = []
