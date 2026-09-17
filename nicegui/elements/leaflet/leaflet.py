@@ -174,6 +174,8 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
+        if Layer.current_leaflet is self:
+            Layer.current_leaflet = None  # do not keep the deleted map (and its layers) alive
         super()._handle_delete()
 
     def _to_dict(self):
