@@ -27,3 +27,22 @@ def test_passing_page_parameters(screen: Screen):
 
     screen.open('/')
     screen.should_contain('My Custom Title')
+
+
+def test_relative_navigation_from_router_root_page(screen: Screen):
+    router = APIRouter(prefix='/some-prefix')
+
+    @router.page('/')
+    def root():
+        ui.button('Go', on_click=lambda: ui.navigate.to('4711'))
+
+    @router.page('/{key:int}')
+    def detail(key: int):
+        ui.label(f'Detail {key}')
+
+    app.include_router(router)
+
+    screen.open('/some-prefix')
+    screen.click('Go')
+    screen.should_contain('Detail 4711')
+    assert screen.current_path == '/some-prefix/4711'
