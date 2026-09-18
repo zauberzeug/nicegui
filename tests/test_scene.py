@@ -450,6 +450,21 @@ async def test_bound_object_is_released_on_delete(user: User):
     assert len(objects) == 0
 
 
+async def test_scene_is_collected_after_client_deletion(user: User):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+        objects.add(scene)
+        objects.add(scene.box())
+
+    await user.open('/')
+    user.client.delete()
+    gc.collect()
+    assert len(objects) == 0
+
+
 def test_context_loss_recovery_restores_objects(screen: Screen):
     scene = None
 

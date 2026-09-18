@@ -83,16 +83,15 @@ def test_leaflet_unhide(screen: Screen):
 
 
 async def test_leaflet_is_collected_after_client_deletion(user: User):
-    refs = {}
+    objects: weakref.WeakSet = weakref.WeakSet()
 
     @ui.page('/')
     def page():
         m = ui.leaflet(center=(51.5, -0.09))
-        m.marker(latlng=(51.5, -0.09))
-        refs['leaflet'] = weakref.ref(m)
+        m.marker(latlng=(51.5, -0.09))  # accessing a layer class re-arms Layer.current_leaflet
+        objects.add(m)
 
     await user.open('/')
     user.client.delete()
     gc.collect()
-
-    assert refs['leaflet']() is None
+    assert len(objects) == 0
