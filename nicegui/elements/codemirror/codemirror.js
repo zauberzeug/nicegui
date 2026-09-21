@@ -246,7 +246,10 @@ export default {
     revealLine(lineNumber) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
-      const lineNum = Math.max(1, Math.min(lineNumber, doc.lines));
+      if (!Number.isInteger(lineNumber) || lineNumber < 1 || lineNumber > doc.lines) {
+        logAndEmit("warning", `reveal_line: line ${lineNumber} is not an integer in [1, ${doc.lines}]`);
+      }
+      const lineNum = Math.min(Math.max(Math.trunc(lineNumber) || 1, 1), doc.lines);
       const line = doc.line(lineNum);
       this.editor.dispatch({
         effects: CM.EditorView.scrollIntoView(line.from, { y: "center" }),

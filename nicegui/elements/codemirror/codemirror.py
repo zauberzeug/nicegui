@@ -197,6 +197,8 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
     def reveal_line(self, line_number: int) -> None:
         """Scroll the editor so the given 1-indexed line is visible.
 
+        A line number outside the document logs a warning and scrolls to the nearest line.
+
         :param line_number: 1-indexed line number to scroll into view
 
         *Added in version 3.17.0*

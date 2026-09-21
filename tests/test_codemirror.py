@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
@@ -269,6 +271,11 @@ def test_reveal_line(screen: Screen):
     initial_top = screen.selenium.execute_script('return arguments[0].scrollTop', scroller)
     editor.reveal_line(150)
     screen.wait_for(lambda: screen.selenium.execute_script('return arguments[0].scrollTop', scroller) > initial_top)
+
+    editor.reveal_line(2.5)
+    screen.wait_for(lambda: any('reveal_line' in record.message for record in screen.caplog.records))
+    screen.assert_py_logger('WARNING', re.compile(r'reveal_line: line 2\.5 is not an integer in \[1, 200\]'))
+    screen.wait_for(lambda: screen.selenium.execute_script('return arguments[0].scrollTop', scroller) == initial_top)
 
 
 def test_line_tooltip_api(screen: Screen):
