@@ -370,11 +370,22 @@ export default {
                 to_line: u.state.doc.lineAt(vp.to).number,
               });
             }
+            // CodeMirror forbids DOM layout reads in update(), and geometryChanged is set by every
+            // document change, so reading clientWidth/clientHeight here forces a layout per keystroke.
+            // requestMeasure defers the read into CM's own measure cycle, where it is already batched.
             if (self.geometryTrackingEnabled && u.geometryChanged) {
-              this._maybeEmit("geometry-change", {
-                width: u.view.dom.clientWidth,
-                height: u.view.dom.clientHeight,
-                content_height: Math.round(u.view.contentHeight),
+              u.view.requestMeasure({
+                key: "nicegui-codemirror-geometry",
+                read: (view) => ({
+                  width: view.dom.clientWidth,
+                  height: view.dom.clientHeight,
+                  content_height: Math.round(view.contentHeight),
+                }),
+                // beforeUnmount keeps the view alive, so a queued measure can outlive the editor's
+                // DOM. Without this guard a detached editor would report a 0x0 geometry.
+                write: (payload) => {
+                  if (u.view.dom.isConnected) this._maybeEmit("geometry-change", payload);
+                },
               });
             }
           }
