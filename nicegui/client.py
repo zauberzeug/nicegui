@@ -269,8 +269,9 @@ class Client:
         """Block execution until the client is connected.
 
         :param timeout: timeout in seconds (default: ``None``)
+        :raises ClientConnectionTimeout: if ``timeout`` elapses first
         """
-        if self.has_socket_connection:
+        if self.has_socket_connection or self.is_deleted:
             return
         self._waiting_for_connection.set()
         self._connected.clear()
@@ -298,20 +299,30 @@ class Client:
         Internally, ``await client.connected()`` is called before the JavaScript code is executed (*since version 3.0.0*).
         This might delay the execution of the JavaScript code and is not covered by the ``timeout`` parameter.
 
+        *Updated in version 3.17.0: Awaiting the response resolves with ``None`` when the client has been deleted,
+        e.g. because the browser tab was closed.*
+
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: 1.0)
 
-        :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
+        :return: AwaitableResponse that can be awaited to get the result of the JavaScript code,
+            or ``None`` if the client has been deleted
         """
         request_id = str(uuid.uuid4())
         target_id = self._temporary_socket_id or self.id
 
-        def send_and_forget():
+        def send_and_forget() -> None:
+            if self.is_deleted:
+                return
             self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
 
-        async def send_and_wait():
+        async def send_and_wait() -> Any:
+            if self.is_deleted:
+                return None
             self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
             await self.connected()
+            if self.is_deleted:
+                return None
             return await JavaScriptRequest(request_id, timeout=timeout)
 
         return AwaitableResponse(send_and_forget, send_and_wait)
@@ -472,15 +483,21 @@ class Client:
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
+        if self.is_deleted:
+            return  # the page is gone, so there is no point in running its handlers
         for handler in self._exception_handlers:
-            with self.content:
-                if helpers.expects_arguments(handler):
-                    result = cast(Callable[[Exception], Any], handler)(exception)
-                else:
-                    result = cast(Callable[[], Any], handler)()
+            name = getattr(handler, '__name__', handler)
+            try:
+                with self.content:
+                    if helpers.expects_arguments(handler):
+                        result = cast(Callable[[Exception], Any], handler)(exception)
+                    else:
+                        result = cast(Callable[[], Any], handler)()
+            except Exception:  # one failing handler must not prevent the others from running
+                log.exception(f'Exception handler {name} raised an exception')
+                continue
             if helpers.should_await(result):
-                background_tasks.create(helpers.await_with_context(result, self.content),
-                                        name=f'UI exception {handler.__name__}')
+                background_tasks.create(helpers.await_with_context(result, self.content), name=f'UI exception {name}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.

@@ -104,7 +104,7 @@ class Event(Generic[P]):
 
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
-        for callback in self.callbacks:
+        for callback in list(self.callbacks):  # a callback might unsubscribe (e.g. by deleting a client) during the emit
             _invoke_and_forget(callback, *args, **kwargs)
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
@@ -122,13 +122,26 @@ class Event(Generic[P]):
             if not future.done():
                 future.set_result(args[0] if len(args) == 1 else args if args else None)
 
-        self.subscribe(callback, expect_args=True)
+        def cancel() -> None:
+            future.cancel()  # no-op for a done future, so an event that fired right before the deletion still wins
+
+        client: Client | None = None
+        if Slot.get_stack():  # additional check before accessing `context.client` which would enter script mode
+            client = context.client
+            if client.is_deleted:
+                # raise directly instead of task.cancel() so a caller catching the CancelledError keeps a clean task
+                raise asyncio.CancelledError
+            client.on_delete(cancel)
+
+        self.subscribe(callback, expect_args=True, unsubscribe_on_delete=False)  # cleaned up in the finally block below
         try:
             return await asyncio.wait_for(future, timeout)
         except asyncio.TimeoutError as error:
             raise TimeoutError(f'Timed out waiting for event after {timeout} seconds') from error
         finally:
             self.unsubscribe(callback)
+            if client is not None:
+                client.delete_handlers.remove(cancel)
 
     def __await__(self):
         return self.emitted().__await__()

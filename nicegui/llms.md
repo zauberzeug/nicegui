@@ -342,6 +342,15 @@ editor = ui.codemirror('def f():\n    return 42', language='Python')  # editable
 editor.line_anchors = {'a': 2}          # line anchors (since 3.16): stable {id: line} references that follow
                                         # their line through edits; read back for the current positions,
                                         # on_anchor_change= fires whenever a tracked position moves
+editor.decorations = [                  # decorations (since 3.17): style, hide or annotate text without changing it
+    {'kind': 'mark', 'from': 4, 'to': 5, 'class': 'bg-yellow-200'},        # style a character range
+    {'kind': 'line', 'line': 2, 'class': 'bg-red-100'},                    # style a whole line (1-indexed)
+    {'kind': 'replace', 'from': 13, 'to': 22, 'text': '…'},                 # hide a range, or show `text` instead (block=True folds lines)
+    {'kind': 'widget', 'position': 0, 'text': '# hint', 'side': -1},       # insert text at a position (side: -1 before, 1 after)
+]                                       # from/to/position are Python str indices into editor.value; `class` takes Tailwind
+                                        # or your own CSS; in-place list edits sync too; reading back returns the specs as
+                                        # declared (positions are not tracked like line anchors); decoration_html=True
+                                        # renders `text` as sanitized HTML; `attributes` is applied raw — never pass untrusted input
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -834,7 +843,8 @@ app.add_middleware(BaseHTTPMiddleware, dispatch=auth_dispatch)
 # Run — most relevant flags (the values shown are examples; the default follows in the comment)
 ui.run(
     host='0.0.0.0',                  # default: '0.0.0.0', or '127.0.0.1' in native mode
-    port=8080,                       # default: 8080, or an open port in native mode
+    port=8080,                       # default: 8080, or an open port in native mode; set it here —
+                                     # NICEGUI_HOST/NICEGUI_PORT env vars are internal, ignored and warned about (since 3.17)
     title='My App',                  # default: 'NiceGUI'; can be overwritten per page
     favicon='🚀',                    # default: None (NiceGUI icon); emoji, file path or URL
     dark=None,                       # default: False; None = follow system
@@ -996,6 +1006,7 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.footer()`                                                       | Page footer                                                                  |
 | `ui.left_drawer()`                                                  | Left sidebar drawer                                                          |
 | `ui.right_drawer()`                                                 | Right sidebar drawer                                                         |
+| `ui.drawer(side)`                                                   | Sidebar drawer with `side='left'` / `'right'` (base of the two above)        |
 | `ui.page_sticky(position)`                                          | Fixed-position overlay                                                       |
 | `ui.page_scroller()`                                                | Scroll-to-top button                                                         |
 | `ui.teleport(to)`                                                   | Render child in different DOM location                                       |
@@ -1264,6 +1275,12 @@ ui.query('body').classes('bg-grey-2')
 ui.button().style('background-color: var(--q-primary)')
 # GOOD: let NiceGUI handle Quasar theme
 ui.button(color='primary')
+
+# BAD: configuring host/port via NICEGUI_* environment variables — they are internal to NiceGUI,
+#      ui.run() overwrites them and (since 3.17) logs a warning; the app serves on port= (default 8080)
+os.environ['NICEGUI_PORT'] = '8113'   # or: NICEGUI_PORT=8113 python main.py
+# GOOD: read your own variable and pass it explicitly
+ui.run(port=int(os.environ.get('PORT', 8080)))
 ```
 
 ---
@@ -1407,6 +1424,7 @@ ui.button('Click me') \
 - **Raw CSS/JS** when a NiceGUI Python API exists
 - **`ui.add_head_html` / `ui.add_body_html`** for things `.classes()`, `.style()`, or `ui.query()` can handle
 - **`ui.run_javascript()`** for styling or visibility (use Python API)
+- **`NICEGUI_PORT` / `NICEGUI_HOST` environment variables** — internal only and ignored; pass `ui.run(host=..., port=...)`
 - **Creating new files** when editing existing ones suffices
 - **Over-engineering**: three similar lines beat a premature abstraction
 

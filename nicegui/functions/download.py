@@ -1,3 +1,4 @@
+import urllib.parse
 from pathlib import Path
 
 from .. import core, helpers
@@ -42,6 +43,8 @@ class Download:
         :param media_type: media type of the file to download (default: "")
         """
         src = core.app.add_static_file(local_file=path, single_use=True)
+        # remove the route with the client in case the browser never fetches it
+        context.client.on_delete(lambda: core.app.remove_route(urllib.parse.unquote(src)))
         context.client.download(src, filename, media_type)
 
     def from_url(self, url: str, filename: str | None = None, media_type: str = '') -> None:
