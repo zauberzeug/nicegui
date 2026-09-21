@@ -1,4 +1,5 @@
 import asyncio
+import weakref
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -170,14 +171,14 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
 
     def __enter__(self) -> Self:
-        Object3D.current_scene = self
+        Object3D.current_scene = weakref.ref(self)
         super().__enter__()
         return self
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
         if isinstance(attribute, type) and issubclass(attribute, Object3D):
-            Object3D.current_scene = self
+            Object3D.current_scene = weakref.ref(self)
         return attribute
 
     def _handle_init(self) -> None:
@@ -309,8 +310,6 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
 
     def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()))
-        if Object3D.current_scene is self:
-            Object3D.current_scene = None  # do not keep the deleted scene (and its objects) alive
         super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:

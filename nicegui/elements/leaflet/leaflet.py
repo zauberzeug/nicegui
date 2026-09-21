@@ -1,4 +1,5 @@
 import asyncio
+import weakref
 from pathlib import Path
 from typing import Any, cast
 
@@ -85,13 +86,13 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         self._send_update_on_value_change = True
 
     def __enter__(self) -> Self:
-        Layer.current_leaflet = self
+        Layer.current_leaflet = weakref.ref(self)
         return super().__enter__()
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
         if isinstance(attribute, type) and issubclass(attribute, Layer):
-            Layer.current_leaflet = self
+            Layer.current_leaflet = weakref.ref(self)
         return attribute
 
     def _handle_init(self) -> None:
@@ -174,8 +175,6 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
 
     def _handle_delete(self) -> None:
         binding.remove(self.layers)
-        if Layer.current_leaflet is self:
-            Layer.current_leaflet = None  # do not keep the deleted map (and its layers) alive
         super()._handle_delete()
 
     def _to_dict(self):

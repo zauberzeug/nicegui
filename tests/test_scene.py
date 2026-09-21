@@ -465,6 +465,24 @@ async def test_scene_is_collected_after_client_deletion(user: User):
     assert len(objects) == 0
 
 
+async def test_scene_is_collected_after_late_object_access(user: User):
+    held = []  # stands in for a timer or handler holding the scene
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+        held.append(scene)
+        objects.add(scene)
+
+    await user.open('/')
+    user.client.delete()
+    objects.add(held[0].box())  # late access after the client is gone
+    held.clear()  # the timer finishes and drops its reference
+    gc.collect()
+    assert len(objects) == 0
+
+
 def test_context_loss_recovery_restores_objects(screen: Screen):
     scene = None
 
