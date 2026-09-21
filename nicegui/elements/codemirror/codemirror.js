@@ -354,7 +354,7 @@ export default {
               const line = u.state.doc.lineAt(sel.head);
               this._maybeEmit("selection-change", {
                 line: line.number,
-                column: sel.head - line.from + 1,
+                column: Array.from(u.state.doc.sliceString(line.from, sel.head)).length + 1,
                 from_line: u.state.doc.lineAt(sel.from).number,
                 to_line: u.state.doc.lineAt(sel.to).number,
                 empty: sel.empty,

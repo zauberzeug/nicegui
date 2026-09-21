@@ -137,6 +137,7 @@ class CodeMirror(KeyBindingElement, LineAnchorElement, ValueElement[str], Disabl
 
         Fires on selection moves and on document edits that shift the cursor line or column.
         ``from_line``/``to_line`` span the main selection (equal and ``empty`` is ``True`` for a bare cursor).
+        ``column`` counts Unicode code points, so it indexes ``value`` the same way Python does.
 
         *Added in version 3.17.0*
         """

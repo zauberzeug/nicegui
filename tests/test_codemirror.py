@@ -107,7 +107,7 @@ def test_selection_change_event(screen: Screen):
     def page():
         nonlocal editor
         editor = ui.codemirror(
-            'Line 1\nLine 2\nLine 3',
+            'Line 1\nLine 2\nLine 3\n😎abc',
             on_selection_change=lambda e: events.append((e.line, e.column, e.from_line, e.to_line, e.empty)),
         )
 
@@ -127,6 +127,13 @@ def test_selection_change_event(screen: Screen):
         'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(3).from + 2, head: 0}});'
     )
     screen.wait_for(lambda: (1, 1, 1, 3, False) in events)
+    # `column` counts code points, so it indexes the Python string the same way:
+    # the cursor after "😎abc" is column 5, not the 6 that UTF-16 code units would report.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(4).to}});'
+    )
+    screen.wait_for(lambda: (4, 5, 4, 4, True) in events)
 
 
 def test_set_value_does_not_emit_selection_change(screen: Screen):
