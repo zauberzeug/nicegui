@@ -349,16 +349,25 @@ export default {
             // ignore unfocused selection events (programmatic echoes) must still hear
             // about the first post-focus selection even if it matches the last payload.
             if (u.focusChanged) delete this._last["selection-change"];
-            if (self.selectionTrackingEnabled && (u.selectionSet || (u.docChanged && self.emitting))) {
-              const sel = u.state.selection.main;
-              const line = u.state.doc.lineAt(sel.head);
-              this._maybeEmit("selection-change", {
-                line: line.number,
-                column: Array.from(u.state.doc.sliceString(line.from, sel.head)).length + 1,
-                from_line: u.state.doc.lineAt(sel.from).number,
-                to_line: u.state.doc.lineAt(sel.to).number,
-                empty: sel.empty,
-              });
+            if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
+              const payload = (state) => {
+                const sel = state.selection.main;
+                const line = state.doc.lineAt(sel.head);
+                return {
+                  line: line.number,
+                  column: Array.from(state.doc.sliceString(line.from, sel.head)).length + 1,
+                  from_line: state.doc.lineAt(sel.from).number,
+                  to_line: state.doc.lineAt(sel.to).number,
+                  empty: sel.empty,
+                };
+              };
+              // An edit remaps the selection, so a server-driven change can move the cursor for real.
+              // Comparing the whole payload against the pre-edit state tells the two apart, where the
+              // _maybeEmit dedupe cannot: it compares against the last payload sent, which may be none.
+              const now = payload(u.state);
+              if (u.selectionSet || JSON.stringify(now) !== JSON.stringify(payload(u.startState))) {
+                this._maybeEmit("selection-change", now);
+              }
             }
             if (self.focusTrackingEnabled && u.focusChanged) {
               this._maybeEmit("focus-change", { focused: u.view.hasFocus });

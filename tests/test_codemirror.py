@@ -136,11 +136,14 @@ def test_selection_change_event(screen: Screen):
     screen.wait_for(lambda: (4, 5, 4, 4, True) in events)
 
 
-def test_set_value_does_not_emit_selection_change(screen: Screen):
-    """A server-driven value change is not a cursor move.
+def test_set_value_emits_only_when_the_cursor_actually_moves(screen: Screen):
+    """A server-driven value change emits only if it moved the cursor.
 
-    The payload carries nothing that lets a host tell the two apart, so a host
-    that reacts to the cursor would act on its own echo.
+    An edit that leaves the cursor alone would otherwise reach the host as an
+    echo indistinguishable from a real cursor move. But `set_value` replaces
+    only the changed region, so CodeMirror remaps the selection through it: an
+    edit above the cursor does move it, and a host told nothing would go on
+    pointing at the wrong line.
     """
     events: list[tuple[int, int]] = []
     editor = None
@@ -166,6 +169,11 @@ def test_set_value_does_not_emit_selection_change(screen: Screen):
     )
     screen.wait_for(lambda: (3, 1) in events)
     assert len(events) == before + 1
+
+    # Inserting a line above the cursor remaps it from line 3 to line 4.
+    editor.set_value('NEW\nLine 1\nLine 2 changed\nLine 3')
+    screen.should_contain('NEW')
+    screen.wait_for(lambda: (4, 1) in events)
 
 
 def test_selection_reemits_after_focus_change(screen: Screen):
