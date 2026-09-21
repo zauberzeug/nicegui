@@ -349,7 +349,7 @@ export default {
             // ignore unfocused selection events (programmatic echoes) must still hear
             // about the first post-focus selection even if it matches the last payload.
             if (u.focusChanged) delete this._last["selection-change"];
-            if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
+            if (self.selectionTrackingEnabled && (u.selectionSet || (u.docChanged && self.emitting))) {
               const sel = u.state.selection.main;
               const line = u.state.doc.lineAt(sel.head);
               this._maybeEmit("selection-change", {

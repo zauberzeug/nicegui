@@ -129,6 +129,38 @@ def test_selection_change_event(screen: Screen):
     screen.wait_for(lambda: (1, 1, 1, 3, False) in events)
 
 
+def test_set_value_does_not_emit_selection_change(screen: Screen):
+    """A server-driven value change is not a cursor move.
+
+    The payload carries nothing that lets a host tell the two apart, so a host
+    that reacts to the cursor would act on its own echo.
+    """
+    events: list[tuple[int, int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror(
+            'Line 1\nLine 2\nLine 3',
+            on_selection_change=lambda e: events.append((e.line, e.column)),
+        )
+
+    screen.open('/')
+    screen.should_contain('Line 2')
+    before = len(events)
+    editor.set_value('Line 1\nLine 2 changed\nLine 3')
+    screen.should_contain('Line 2 changed')
+    # A real cursor move afterwards must still emit; waiting for it proves the
+    # assertion below gave any echo from set_value time to arrive.
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.editor.dispatch({selection: {anchor: el.editor.state.doc.line(3).from}});'
+    )
+    screen.wait_for(lambda: (3, 1) in events)
+    assert len(events) == before + 1
+
+
 def test_selection_reemits_after_focus_change(screen: Screen):
     """The first post-focus selection emits even when it matches the last payload.
 
