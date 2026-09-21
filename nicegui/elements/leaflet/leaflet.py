@@ -85,13 +85,12 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         self._send_update_on_value_change = True
 
     def __enter__(self) -> Self:
-        if not self.is_deleted:
-            Layer.current_leaflet = self
+        Layer.current_leaflet = self
         return super().__enter__()
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
-        if isinstance(attribute, type) and issubclass(attribute, Layer) and not self.is_deleted:
+        if isinstance(attribute, type) and issubclass(attribute, Layer):
             Layer.current_leaflet = self
         return attribute
 
