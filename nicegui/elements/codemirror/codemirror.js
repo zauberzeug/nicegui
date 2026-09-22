@@ -548,9 +548,13 @@ export default {
               const payload = (state) => {
                 const sel = state.selection.main;
                 const line = state.doc.lineAt(sel.head);
+                const prefix = state.doc.sliceString(line.from, sel.head);
                 return {
                   line: line.number,
-                  column: Array.from(state.doc.sliceString(line.from, sel.head)).length + 1,
+                  // Code units equal code points unless the prefix holds a high surrogate, which is
+                  // the only way a character above U+FFFF reaches a JS string. Array.from() allocates
+                  // an entry per code point, so only pay for it when one is actually there.
+                  column: (/[\uD800-\uDBFF]/.test(prefix) ? Array.from(prefix).length : prefix.length) + 1,
                   from_line: state.doc.lineAt(sel.from).number,
                   to_line: state.doc.lineAt(sel.to).number,
                   empty: sel.empty,
