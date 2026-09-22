@@ -277,6 +277,19 @@ def test_geometry_change_event(screen: Screen):
     )
     screen.wait_for(lambda: any(height >= 200 for _, height, _ in events))
 
+    # `content_height` comes off CodeMirror in scaled pixels while the width and
+    # height beside it are layout pixels. A CSS transform changes neither the
+    # document nor the space it is laid out in, so all three have to sit still.
+    baseline = next(c for _, h, c in events if h >= 200)
+    screen.selenium.execute_script(
+        f'const el = getElement({editor.id});'
+        'el.$el.style.transform = "scale(0.5)";'
+        'el.$el.style.height = "300px";'
+        'el.editor.requestMeasure();'
+    )
+    screen.wait_for(lambda: any(height == 300 for _, height, _ in events))
+    assert next(c for _, h, c in events if h == 300) == baseline
+
 
 def test_no_handler_no_traffic(screen: Screen):
     """Verify that dispatching a selection change emits NO event when no handler is registered.

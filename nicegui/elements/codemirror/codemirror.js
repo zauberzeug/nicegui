@@ -583,7 +583,9 @@ export default {
                 read: (view) => ({
                   width: view.dom.clientWidth,
                   height: view.dom.clientHeight,
-                  content_height: Math.round(view.contentHeight),
+                  // contentHeight is in scaled pixels while clientWidth/clientHeight are layout
+                  // pixels, so under a CSS transform the three disagree unless this is undone.
+                  content_height: Math.round(view.contentHeight / view.scaleY),
                 }),
                 // beforeUnmount keeps the view alive, so a queued measure can outlive the editor's
                 // DOM. Without this guard a detached editor would report a 0x0 geometry.
