@@ -56,6 +56,8 @@ def dynamic_series() -> None:
 
 @doc.demo('Chart with extra dependencies', '''
     To use a chart type that is not included in the default dependencies, you can specify extra dependencies.
+    Prerequisites like the "treemap" module for a "treegraph" chart are loaded automatically,
+    so the order of the extras does not matter.
     This demo shows a solid gauge chart.
 ''')
 def extra_dependencies() -> None:
@@ -80,6 +82,10 @@ def extra_dependencies() -> None:
     - `on_point_drag_start`: called when a point drag starts
     - `on_point_drag`: called when a point is dragged
     - `on_point_drop`: called when a point is dropped
+
+    **Note:** The ``point_index`` in these events is Highcharts' internal point index.
+    After an update it can differ from the position in ``options``, e.g. for heatmaps or other series with duplicate x values.
+    Give each point an explicit ``id`` to keep the order stable, or look up points by ``point_x`` and ``point_y``.
 ''')
 def drag() -> None:
     ui.highchart(

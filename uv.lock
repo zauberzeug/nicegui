@@ -2251,7 +2251,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6,<4" },
     { name = "markdown2", specifier = ">=2.4.7,!=2.4.11" },
     { name = "matplotlib", marker = "extra == 'matplotlib'", specifier = ">=3.5.0,<4" },
-    { name = "nicegui-highcharts", marker = "extra == 'highcharts'", specifier = ">=3.3.0,<4" },
+    { name = "nicegui-highcharts", marker = "extra == 'highcharts'", specifier = ">=3.5.0,<4" },
     { name = "orjson", marker = "platform_machine != 'i386' and platform_machine != 'i686' and platform_python_implementation != 'PyPy'", specifier = ">=3.11.5" },
     { name = "pillow", marker = "extra == 'matplotlib'", specifier = ">=12.3.0" },
     { name = "plotly", marker = "extra == 'plotly'", specifier = ">=5.13,<7.0" },
@@ -2286,7 +2286,7 @@ dev = [
     { name = "lxml-html-clean", specifier = ">=0.4.4" },
     { name = "matplotlib", specifier = ">=3.5.0,<4" },
     { name = "mypy", specifier = ">=1.13.0,<2" },
-    { name = "nicegui-highcharts", specifier = ">=3.3.0,<4" },
+    { name = "nicegui-highcharts", specifier = ">=3.5.0,<4" },
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "pandas", marker = "python_full_version < '3.13'", specifier = ">=2.0.0,<3" },
     { name = "pandas", marker = "python_full_version == '3.13.*'", specifier = ">=2.2.3,<3" },
@@ -2347,14 +2347,14 @@ website = [
 
 [[package]]
 name = "nicegui-highcharts"
-version = "3.3.0"
+version = "3.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nicegui" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/28/87/4495760fed63f113361e5ff52507460fbb39d7ab63375b1dce72b47e33e1/nicegui_highcharts-3.3.0.tar.gz", hash = "sha256:84848fe15c54bd7a8ff491a96f4627cf0db1b44a2da89611100237046337125d", size = 2073111, upload-time = "2026-07-04T16:31:40.385Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a2/01/115c4fcdf88970aec78cfe57a2e9da20982c2a5fa30dcddab82f317f64f5/nicegui_highcharts-3.5.0.tar.gz", hash = "sha256:cf47ba4584cc93f9df5b1b96bc1d217777e5aad6331ac806d65d1719c34c6ddd", size = 2187898, upload-time = "2026-09-21T13:41:48.338Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1b/4a/a0525c4bf3d8361cbb6fbe5c2d7b446cc6734dd9a0e7040e846c4961b79a/nicegui_highcharts-3.3.0-py3-none-any.whl", hash = "sha256:13fb5865f441efd200c874b1d40ae5679425fd732ea09ae634c6e5f930e2d920", size = 2189802, upload-time = "2026-07-04T16:31:39.011Z" },
+    { url = "https://files.pythonhosted.org/packages/97/4e/469d2762f24ac988b78c93f6cd9c5df33fba16c36860eb36634d3b4826f9/nicegui_highcharts-3.5.0-py3-none-any.whl", hash = "sha256:ad4a5fd0a52a59c3dd023378034e7a8cc81b4c509ca21ac169cf3846a9e97c21", size = 2387103, upload-time = "2026-09-21T13:41:46.817Z" },
 ]
 
 [[package]]
