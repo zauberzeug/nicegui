@@ -5,6 +5,7 @@ from typing import NamedTuple
 
 from nicegui import app
 from nicegui.helpers import remove_indentation
+from nicegui.language import Language as LanguageCode
 
 TRANSLATIONS_PATH = Path(__file__).parent / 'translations'
 
@@ -12,12 +13,12 @@ TRANSLATIONS_PATH = Path(__file__).parent / 'translations'
 class Language(NamedTuple):
     name: str
     '''native display name, e.g. for the language switcher'''
-    iso: str
-    '''ISO code for hreflang links and the ``lang`` attribute of the ``html`` tag'''
+    code: LanguageCode
+    '''language code for hreflang links, the ``lang`` attribute of the ``html`` tag and Quasar's language pack'''
 
 
 LANGUAGES = {
-    'en': Language('English', 'en'),
+    'en': Language('English', 'en-US'),
     'zh': Language('中文', 'zh-CN'),
 }
 

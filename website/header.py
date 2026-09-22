@@ -148,7 +148,7 @@ def _theme_toggle(dark_mode: ui.dark_mode) -> None:
 
 def _language_switcher() -> None:
     """Language menu navigating to the current page in the chosen language."""
-    with ui.button().props('flat round').classes(f'size-9 {SM_UP}'):
+    with ui.button().props('flat round').classes('size-9'):
         phosphor_icon('ph-globe').classes('text-[1.125rem]')
         with ui.menu().classes(f'rounded-xl {d.BG_SURFACE} {d.BORDER} no-shadow'):
             for slug, language in i18n.LANGUAGES.items():

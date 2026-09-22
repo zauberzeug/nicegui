@@ -77,11 +77,11 @@ def _create_language_page(language: str):
     return page
 
 
-for _language in i18n.LANGUAGES:
-    if _language != 'en':
-        _page = _create_language_page(_language)
+for _slug, _language in i18n.LANGUAGES.items():
+    if _slug != 'en':
+        _page = _create_language_page(_slug)
         for _route in ('', '/examples', '/documentation', '/documentation/{path:path}', '/imprint_privacy'):
-            _page = ui.page(f'/{_language}{_route}')(_page)
+            _page = ui.page(f'/{_slug}{_route}', language=_language.code)(_page)
 
 
 def _build_page(language: str) -> None:
@@ -144,7 +144,8 @@ def _build_page(language: str) -> None:
 def _add_hreflang_links(language: str) -> None:
     """Declare the language alternates of the current page for search engines."""
     base_path = ui.context.client.request.url.path.removeprefix(f'/{language}') or '/'
-    links = [(lang.iso, i18n.url(base_path, language=slug)) for slug, lang in i18n.LANGUAGES.items()]
+    links: list[tuple[str, str]] = [(lang.code, i18n.url(base_path, language=slug))
+                                    for slug, lang in i18n.LANGUAGES.items()]
     links.append(('x-default', base_path))
     ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="https://nicegui.io{path}">'
                                for iso, path in links))
@@ -169,4 +170,5 @@ def _status():
 
 
 # do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0, markdown=True)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0, markdown=True,
+       language=i18n.LANGUAGES['en'].code)
