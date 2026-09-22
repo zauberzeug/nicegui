@@ -2130,14 +2130,12 @@ dependencies = [
     { name = "pydantic-core" },
     { name = "pygments" },
     { name = "python-dotenv" },
-    { name = "python-engineio" },
     { name = "python-multipart" },
     { name = "python-socketio", extra = ["asyncio-client"] },
     { name = "starlette" },
     { name = "tinycss2" },
     { name = "typing-extensions" },
     { name = "uvicorn", extra = ["standard"] },
-    { name = "watchfiles" },
 ]
 
 [package.optional-dependencies]
@@ -2260,7 +2258,6 @@ requires-dist = [
     { name = "pydantic-core", specifier = ">=2.35.0" },
     { name = "pygments", specifier = ">=2.20.0,<3.0.0" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "python-engineio", specifier = ">=4.13.2" },
     { name = "python-multipart", specifier = ">=0.0.31" },
     { name = "python-socketio", extras = ["asyncio-client"], specifier = ">=5.16.2" },
     { name = "pywebview", marker = "extra == 'native'", specifier = ">=5.0.1,<7" },
@@ -2269,7 +2266,6 @@ requires-dist = [
     { name = "tinycss2", specifier = ">=1.4.0,<2" },
     { name = "typing-extensions", specifier = ">=4.0.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.22.0" },
-    { name = "watchfiles", specifier = ">=0.18.1" },
 ]
 provides-extras = ["altair", "anywidget", "highcharts", "matplotlib", "native", "plotly", "redis"]
 
