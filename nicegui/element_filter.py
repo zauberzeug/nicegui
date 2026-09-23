@@ -9,15 +9,25 @@ from .context import context
 from .element import Element
 from .elements.chat_message import ChatMessage
 from .elements.choice_element import ChoiceElement
+from .elements.color_input import ColorInput
+from .elements.dark_mode import DarkMode
+from .elements.date_input import DateInput
 from .elements.icon import Icon
+from .elements.input_chips import InputChips
 from .elements.mixins.content_element import ContentElement
 from .elements.mixins.source_element import SourceElement
 from .elements.mixins.text_element import TextElement
 from .elements.notification import Notification
+from .elements.number import Number
+from .elements.progress import CircularProgress, LinearProgress
 from .elements.select import Select
+from .elements.time_input import TimeInput
 from .elements.tree import Tree
 
 T = TypeVar('T', bound=Element)
+
+HIDDEN_VALUE_KINDS = (LinearProgress, CircularProgress, DarkMode)  # value prop is not displayed as text
+MODEL_VALUE_KINDS = (Number, ColorInput, DateInput, TimeInput)  # model-value prop is displayed as text
 
 
 class ElementFilter(Generic[T]):
@@ -121,7 +131,8 @@ class ElementFilter(Generic[T]):
                     element.props.get('label'),
                     element.props.get('icon'),
                     element.props.get('placeholder'),
-                    element.props.get('value'),
+                    element.props.get('value') if not isinstance(element, HIDDEN_VALUE_KINDS) else None,
+                    element.props.get('model-value') if isinstance(element, MODEL_VALUE_KINDS) else None,
                     element.props.get('error-message'),
                     element.text if isinstance(element, TextElement) else None,
                     element.content if isinstance(element, ContentElement) else None,
@@ -129,6 +140,8 @@ class ElementFilter(Generic[T]):
                 ) if content]
                 if isinstance(element, Notification):
                     element_contents.append(element.message)
+                if isinstance(element, InputChips):
+                    element_contents.extend(element.value)
                 if isinstance(element, ChoiceElement):
                     if isinstance(element, Select):
                         values = element.value if element.multiple else [element.value]
