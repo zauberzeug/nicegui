@@ -238,6 +238,19 @@ The `color` parameter (on button, badge, chip, etc.) accepts, in priority order:
 2. Tailwind color names (`red-500`, `blue-200`, …)
 3. CSS color values (`#ff0000`, `rgb(255,0,0)`, `red`)
 
+### Custom colors
+
+For brand or domain colors, register named colors with `ui.colors` (per page) or `app.colors` (app-wide) instead of repeating hex values in inline styles.
+A registered name then works like a Quasar color name: in the `color` parameter, in the `color` and `text-color` props, and in the `text-<name>` and `bg-<name>` classes.
+These classes are `!important`, so no `!important` inline styles are needed to override Quasar.
+
+```python
+app.colors(brand='#187C61', warn_soft='#FDE68A')  # underscores become dashes: warn-soft
+ui.button('Save', color='brand')
+ui.button('Details').props('flat text-color=brand')
+ui.label('Hint').classes('bg-warn-soft')
+```
+
 ---
 
 ## Layout Elements (Context Managers)
@@ -1074,7 +1087,7 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.fullscreen()`         | Programmatic fullscreen control (since 2.11.0) |
 | `ui.parallax(source)`     | Parallax-image header (Quasar QParallax)       |
 | `ui.dark_mode()`          | Dark mode toggle                               |
-| `ui.colors(primary, ...)` | Global theme colors                            |
+| `ui.colors(primary, ...)` | Theme colors and custom named colors           |
 | `ui.query(selector)`      | Style arbitrary DOM elements                   |
 
 ### Global Functions
