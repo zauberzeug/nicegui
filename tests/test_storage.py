@@ -247,6 +247,19 @@ def test_clear_tab_storage(screen: Screen):
     assert not tab_storages
 
 
+async def test_tab_storage_in_sync_connect_handler(user: User):
+    values = []
+
+    @ui.page('/')
+    def page():
+        ui.context.client.on_connect(lambda: values.append(app.storage.tab.setdefault('x', 1)))
+        ui.label('hello')
+
+    await user.open('/')
+    await user.should_see('hello')
+    assert values == [1]
+
+
 async def test_client_is_pinned_to_one_tab_id(user: User):
     @ui.page('/', reconnect_timeout=10)
     def page():

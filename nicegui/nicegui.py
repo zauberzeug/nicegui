@@ -217,10 +217,11 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     else:
         client.environ = environ
         await sio.enter_room(sid, client.id)
-    client.handle_handshake(sid, data['document_id'],
-                            int(data['next_message_id']) if 'next_message_id' in data else None)
+    # create the tab storage before invoking connect handlers, which may access it synchronously
     assert client.tab_id is not None
     await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
+    client.handle_handshake(sid, data['document_id'],
+                            int(data['next_message_id']) if 'next_message_id' in data else None)
     return True
 
 
