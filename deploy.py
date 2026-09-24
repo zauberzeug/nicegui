@@ -41,18 +41,12 @@ instances = {
     'cdg': 3,  # Paris, France
     'lhr': 2,  # London, England (UK)
     'jnb': 1,  # Johannesburg, South Africa
-    'bom': 1,  # Mumbai, India
+    'bom': 0,  # Mumbai, India (deprecated by Fly, use sin instead)
     'nrt': 4,  # Tokyo, Japan
-    'sin': 4,  # Singapore
+    'sin': 5,  # Singapore
     'syd': 1,  # Sydney, Australia
     'gru': 1,  # Sao Paulo, Brazil
 }
-
-
-def destroy_and_rescale(machine_id: str, region: str) -> None:
-    """Destroy a machine and re-scale the region to replace it."""
-    run(['fly', 'machine', 'destroy', machine_id, '--force'])
-    run(['fly', 'scale', 'count', f'app={instances.get(region, 1)}', '--region', region, '-y'])
 
 
 parser = argparse.ArgumentParser(description='Deploy NiceGUI to Fly.io')
@@ -69,7 +63,10 @@ if not args.scale_only:
 
 print('scaling regions...')
 for region, count in instances.items():
-    run(['fly', 'scale', 'count', f'app={count}', '--region', region, '-y'])
+    try:
+        run(['fly', 'scale', 'count', f'app={count}', '--region', region, '-y'])
+    except subprocess.CalledProcessError:
+        print(f'  could not scale {region}, continuing')
     time.sleep(2)
 
 # wait for machines to become healthy before pinning
@@ -90,73 +87,41 @@ else:
     missing = expected_regions - healthy_regions
     print(f'  timed out waiting for: {", ".join(sorted(missing))}')
 
-# pin first machine per region to avoid cold-start latency
+# pin one machine per region to avoid cold-start latency
 print('pinning machines...')
-machines_json = run(['fly', 'machines', 'list', '--json'], capture=True)
-machines = json.loads(machines_json)
-pinned_regions: set[str] = set()
-recovered_regions: list[str] = []
+machines = json.loads(run(['fly', 'machines', 'list', '--json'], capture=True))
+by_region: dict[str, list[dict]] = {}
 for m in machines:
-    region = m.get('region', 'unknown')
-    if region in pinned_regions or region in recovered_regions:
+    by_region.setdefault(m.get('region', 'unknown'), []).append(m)
+
+failed_regions: list[str] = []
+for region, count in instances.items():
+    if count == 0:
         continue
-    machine_id = m.get('id')
-    if not machine_id:
+    region_machines = by_region.get(region, [])
+    for m in region_machines:
+        if m.get('state') not in ('started', 'stopped'):
+            print(f'  {m["id"]} in {region} is in state {m.get("state")}, needs manual intervention')
+    pinned = next((m for m in region_machines if is_pinned(m)), None)
+    if pinned:
+        print(f'  {pinned["id"]} in {region} already pinned')
         continue
-    if not is_healthy(m):
-        if instances.get(region, 0) == 0:
-            print(f'  {machine_id} in {region} is unhealthy but region is scaled to 0, destroying...')
-            run(['fly', 'machine', 'destroy', machine_id, '--force'])
+    # prefer healthy running machines, but a stopped machine is fine too: the update starts it
+    candidates = sorted(region_machines, key=lambda m: (not is_healthy(m), m.get('state') != 'started'))
+    for m in candidates:
+        if m.get('state') not in ('started', 'stopped'):
             continue
-        print(f'  {machine_id} in {region} is unhealthy (state={m.get("state")}), destroying and re-provisioning...')
         try:
-            destroy_and_rescale(machine_id, region)
+            run(['fly', 'machine', 'update', m['id'], '--autostop=false', f'--wait-timeout={PIN_TIMEOUT}', '-y'])
+            print(f'  pinned {m["id"]} in {region}')
+            break
         except subprocess.CalledProcessError:
-            print(f'  could not recover {region}')
-        recovered_regions.append(region)
-        continue
-    if is_pinned(m):
-        print(f'  {machine_id} in {region} already pinned')
-        pinned_regions.add(region)
-        continue
-    try:
-        run(['fly', 'machine', 'update', machine_id, '--autostop=false', f'--wait-timeout={PIN_TIMEOUT}', '-y'])
-        print(f'  pinned {machine_id} in {region}')
-        pinned_regions.add(region)
-    except subprocess.CalledProcessError:
-        print(f'  {machine_id} in {region} failed to pin, destroying and re-provisioning...')
-        try:
-            destroy_and_rescale(machine_id, region)
-        except subprocess.CalledProcessError:
-            print(f'  could not recover {region}')
-        recovered_regions.append(region)
+            print(f'  {m["id"]} in {region} failed to pin, trying next machine')
+    else:
+        failed_regions.append(region)
     time.sleep(2)
 
-if recovered_regions:
-    print(f'\nre-pinning recovered regions ({", ".join(recovered_regions)})...')
-    time.sleep(10)
-    machines_json = run(['fly', 'machines', 'list', '--json'], capture=True)
-    machines = json.loads(machines_json)
-    for m in machines:
-        region = m.get('region', 'unknown')
-        if region not in recovered_regions or region in pinned_regions:
-            continue
-        machine_id = m.get('id')
-        if not machine_id:
-            continue
-        if not is_healthy(m):
-            print(f'  {machine_id} in {region} still unhealthy, needs manual intervention')
-            continue
-        try:
-            run(['fly', 'machine', 'update', machine_id, '--autostop=false', f'--wait-timeout={PIN_TIMEOUT}', '-y'])
-            print(f'  pinned {machine_id} in {region}')
-            pinned_regions.add(region)
-        except subprocess.CalledProcessError:
-            print(f'  {machine_id} in {region} still failing, needs manual intervention')
-        time.sleep(2)
-
-still_failed = [r for r in recovered_regions if r not in pinned_regions]
-if still_failed:
-    print(f'\nWARNING: could not pin machines in: {", ".join(still_failed)}')
+if failed_regions:
+    print(f'\nWARNING: could not pin machines in: {", ".join(failed_regions)}')
 else:
     print('all machines pinned successfully')

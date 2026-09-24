@@ -124,13 +124,17 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
     raise ValueError(f'Unsupported component type "{path.suffix}"')
 
 
-def register_library(path: Path, *, max_time: float | None) -> Library:
+def register_library(path: Path, *, import_name: str | None = None, max_time: float | None) -> Library:
     """Register a *.js library."""
     key = compute_key(path, max_time=max_time)
-    name = _get_name(path)
+    name = import_name or _get_name(path)
     if path.suffix in {'.js', '.mjs'}:
         if key in libraries and libraries[key].path == path:
             return libraries[key]
+        if import_name is not None:
+            for library in libraries.values():
+                if library.name == import_name and library.path != path:
+                    raise ValueError(f'The import name "{import_name}" is already used for "{library.path}"')
         libraries[key] = Library(key=key, name=name, path=path)
         return libraries[key]
     raise ValueError(f'Unsupported library type "{path.suffix}"')

@@ -98,6 +98,12 @@ print(f'Star count: {stars}')
 
 json_path = Path('website/github_stats.json')
 special_sponsors = json.loads(json_path.read_text(encoding='utf-8'))['special']
+# NOTE: match against the directory listing instead of using Path.exists(),
+# which is case-insensitive on macOS and would miss a mismatch that breaks the logo on the Linux server
+logo_names = {path.name for path in Path('website/static/sponsors').iterdir()}
+for sponsor in special_sponsors:
+    assert f'{sponsor}.webp' in logo_names or {f'{sponsor}.light.webp', f'{sponsor}.dark.webp'} <= logo_names, \
+        f'Logo for special sponsor "{sponsor}" is missing in website/static/sponsors'
 top_sponsors = [
     s['login']
     for s in sponsors
@@ -112,10 +118,15 @@ json_path.write_text(json.dumps({
     'stars': stars,
 }, indent=2) + '\n', encoding='utf-8')
 
+URL_OVERRIDES = {
+    'LambdaTest-Inc': 'https://www.testmuai.com/?utm_medium=sponsor&utm_source=nicegui',
+}
+
 sponsor_html = '<p align="center">\n'
 for sponsor in sponsors:
     if sponsor['tier_amount'] >= 25 and not sponsor['tier_is_one_time']:
-        sponsor_html += f'  <a href="{sponsor["url"]}"><img src="{sponsor["url"]}.png" width="50px" alt="{sponsor["name"]}" /></a>\n'
+        href = URL_OVERRIDES.get(sponsor['login'], sponsor['url'])
+        sponsor_html += f'  <a href="{href}"><img src="{sponsor["url"]}.png" width="50px" alt="{sponsor["name"]}" /></a>\n'
 sponsor_html += '</p>'
 readme_path = Path('README.md')
 readme_content = readme_path.read_text(encoding='utf-8')
