@@ -176,6 +176,13 @@ def test_validate_route_rejects_unsupported_patterns():
             ui.sub_pages._validate_route(pattern)
 
 
+def test_validate_route_rejects_duplicate_parameter_names():
+    """Repeated parameter names would raise re.error when matched, so they are rejected at registration time."""
+    for pattern in ['/{a}/{a}', '/{id}/x/{id}']:
+        with pytest.raises(ValueError, match='must be unique'):
+            ui.sub_pages._validate_route(pattern)
+
+
 def test_adjacent_parameters():
     """Test patterns with parameters that are adjacent (no static separators)."""
     # This is an edge case - adjacent parameters without separators

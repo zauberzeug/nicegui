@@ -270,6 +270,12 @@ Run these from the project root:
 > 3. Your `main` branch should stay in sync with the upstream repository.
 
 > [!NOTE]
+> **Limit of open pull requests:** contributors without write access can have at most **three** non-draft pull requests open at a time.
+> Draft pull requests don't count, so you can prepare as many as you like — but we only review pull requests that are marked "ready for review".
+> Drafts are your workspace; if you hit the limit, mark ready what matters most to you and keep the rest as drafts.
+> This tells us where to focus our review time.
+
+> [!NOTE]
 > **AI co-authorship:** if you used an AI assistant to help write your PR, please check that the commit message includes a `Co-authored-by:` trailer.
 > Some agents add it automatically; others don't, and some silently **remove** existing ones when amending or rebasing.
 > If missing, add the appropriate line (PRs are welcome to add lines for other agents):

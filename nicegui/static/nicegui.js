@@ -504,6 +504,7 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
             if (!(id in this.elements)) continue;
+            if (id === "0") continue; // the layout's event props are refreshed without remounting (see #6248)
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];

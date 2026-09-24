@@ -3,7 +3,7 @@ import asyncio
 import httpx
 import pytest
 
-from nicegui import Client, Event, app, ui
+from nicegui import Client, Event, app, background_tasks, ui
 from nicegui.testing import Screen, User
 
 
@@ -95,8 +95,9 @@ async def test_await_emitted(user: User):
         number = await event.emitted()
         ui.label(f'Emitted number: {number}')
 
-    await user.open('/')
+    client = await user.open('/')
     await user.should_see('Emitted number: 42')
+    assert not client.delete_handlers, 'a completed await must not leave a delete handler behind'
 
 
 async def test_emitted_timeout(user: User):
@@ -111,6 +112,50 @@ async def test_emitted_timeout(user: User):
 
     await user.open('/')
     await user.should_see('caught: Timed out waiting for event after 0.1 seconds')
+
+
+@pytest.mark.parametrize('deleted_before_awaiting', [False, True])
+async def test_emitted_is_cancelled_when_client_is_deleted(user: User, deleted_before_awaiting: bool):
+    """The task awaiting an event must be cancelled when the client is deleted, e.g. after a disconnect,
+    no matter whether the deletion happens during the await or before the handler even reaches it."""
+    event = Event()
+    results = []
+
+    @ui.page('/')
+    def page():
+        async def wait_for_event() -> None:
+            if deleted_before_awaiting:
+                await asyncio.sleep(0.1)  # the client is deleted while the handler is still busy
+            await event.emitted()
+            results.append('emitted')  # must not run: the event was never fired
+
+        ui.button('Wait', on_click=wait_for_event)
+
+    client = await user.open('/')
+    user.find('Wait').click()
+    if not deleted_before_awaiting:
+        await asyncio.sleep(0.1)  # let the handler start awaiting the event
+    client.delete()
+    await asyncio.sleep(0.2)  # let the handler reach the await and the cancellation take effect
+    assert not results, 'code after emitted() must not run for an event that never happened'
+    assert not any('wait_for_event' in task.get_name() for task in background_tasks.running_tasks), \
+        'the awaiting task should be cancelled, not leaked'
+
+
+def test_unsubscribe_during_emit():
+    """A callback that unsubscribes during an emit must not cause the remaining callbacks to be skipped."""
+    event = Event()
+    results = []
+
+    def one_shot() -> None:
+        results.append('one-shot')
+        event.unsubscribe(one_shot)
+
+    event.subscribe(one_shot)
+    event.subscribe(lambda: results.append('regular'))
+    event.emit()
+    event.emit()
+    assert results == ['one-shot', 'regular', 'regular']
 
 
 async def test_exception_during_call(user: User):
@@ -204,3 +249,84 @@ async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
     await asyncio.sleep(0.1)
     assert len(exceptions) == 2 and 'sync error' in str(exceptions[0]) and 'async error' in str(exceptions[1])
     caplog.records.clear()
+
+
+async def test_failing_exception_handler_does_not_skip_other_handlers(user: User, caplog: pytest.LogCaptureFixture):
+    page_exceptions: list[Exception] = []
+    app_exceptions: list[Exception] = []
+    app.on_exception(lambda: 1 / 0)
+    app.on_exception(app_exceptions.append)
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(lambda: 1 / 0)
+        ui.on_exception(page_exceptions.append)
+
+        def raise_error():
+            raise RuntimeError('some error')
+
+        ui.button('Click me', on_click=raise_error)
+
+    await user.open('/')
+    user.find('Click me').click()
+    assert len(page_exceptions) == 1 and 'some error' in str(page_exceptions[0])
+    assert len(app_exceptions) == 1 and 'some error' in str(app_exceptions[0])
+    assert [record.message for record in caplog.records] == [
+        'Exception handler <lambda> raised an exception',
+        'some error',
+        'Exception handler <lambda> raised an exception',
+    ]
+    caplog.records.clear()
+
+
+async def test_exception_after_deleting_the_handler_container(user: User, caplog: pytest.LogCaptureFixture):
+    exceptions: list[Exception] = []
+    app.on_exception(exceptions.append)
+
+    @ui.page('/')
+    def page():
+        async def slow_handler():
+            await asyncio.sleep(0.1)
+            raise ValueError('real error')
+
+        columns = []  # keep the column out of the lambda's closure so it is really gone after deletion
+        with ui.column() as column:
+            ui.button('start', on_click=slow_handler)
+        columns.append(column)
+        ui.button('delete', on_click=lambda: columns.pop().delete())
+
+    await user.open('/')
+    user.find('start').click()
+    user.find('delete').click()
+    await asyncio.sleep(0.3)
+    assert [type(e) for e in exceptions] == [ValueError]
+    assert len(caplog.records) == 1 and 'real error' in caplog.records[0].message
+    caplog.records.pop(0)
+
+
+async def test_exception_after_deleting_the_client(user: User, caplog: pytest.LogCaptureFixture):
+    app_exceptions: list[Exception] = []
+    page_exceptions: list[Exception] = []
+    app.on_exception(app_exceptions.append)
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(page_exceptions.append)
+        ui.on_exception(lambda: ui.notify('error'))
+
+        async def slow_handler():
+            await asyncio.sleep(0.1)
+            raise ValueError('real error')
+
+        ui.button('start', on_click=slow_handler)
+        ui.button('delete', on_click=lambda: ui.context.client.delete())
+
+    await user.open('/')
+    user.find('start').click()
+    user.find('delete').click()
+    await asyncio.sleep(0.3)
+    assert [type(e) for e in app_exceptions] == [ValueError]
+    assert not page_exceptions, 'handlers of a deleted page should not run'
+    assert not user.notify.messages, 'handlers of a deleted page should not run'
+    assert len(caplog.records) == 1 and 'real error' in caplog.records[0].message
+    caplog.records.pop(0)

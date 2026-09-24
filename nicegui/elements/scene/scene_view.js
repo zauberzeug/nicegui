@@ -124,20 +124,7 @@ export default {
         this.look_at.y,
         this.look_at.z,
       ])
-        .to(
-          [
-            x === null ? this.camera.position.x : x,
-            y === null ? this.camera.position.y : y,
-            z === null ? this.camera.position.z : z,
-            up_x === null ? this.camera.up.x : up_x,
-            up_y === null ? this.camera.up.y : up_y,
-            up_z === null ? this.camera.up.z : up_z,
-            look_at_x === null ? this.look_at.x : look_at_x,
-            look_at_y === null ? this.look_at.y : look_at_y,
-            look_at_z === null ? this.look_at.z : look_at_z,
-          ],
-          duration * 1000,
-        )
+        .to([x, y, z, up_x, up_y, up_z, look_at_x, look_at_y, look_at_z], duration * 1000)
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
           this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
