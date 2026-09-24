@@ -1,10 +1,12 @@
 import base64
+import gc
 import time
+import weakref
 
 from fastapi import Response
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_leaflet(screen: Screen):
@@ -78,3 +80,36 @@ def test_leaflet_unhide(screen: Screen):
     screen.click('Show map card')
     screen.wait(0.5)
     assert len(requested_tiles) == 8
+
+
+async def test_leaflet_is_collected_after_client_deletion(user: User):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        m = ui.leaflet(center=(51.5, -0.09))
+        m.marker(latlng=(51.5, -0.09))  # accessing a layer class re-arms Layer.current_leaflet
+        objects.add(m)
+
+    await user.open('/')
+    user.client.delete()
+    gc.collect()
+    assert len(objects) == 0
+
+
+async def test_leaflet_is_collected_after_late_layer_access(user: User):
+    held = []  # stands in for a timer or handler holding the map
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        m = ui.leaflet(center=(51.5, -0.09))
+        held.append(m)
+        objects.add(m)
+
+    await user.open('/')
+    user.client.delete()
+    held[0].marker(latlng=(51.5, -0.09))  # late access after the client is gone
+    held.clear()  # the timer finishes and drops its reference
+    gc.collect()
+    assert len(objects) == 0

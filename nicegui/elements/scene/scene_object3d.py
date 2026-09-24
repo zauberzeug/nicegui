@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import math
 import uuid
+import weakref
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class Object3D:
-    current_scene: Scene | None = None
+    current_scene: ClassVar[weakref.ref[Scene] | None] = None
     _component_url: ClassVar[str | None] = None
     _file_stem: ClassVar[str | None] = None
 
@@ -54,8 +55,9 @@ class Object3D:
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
-        assert self.current_scene is not None
-        self.scene: Scene = self.current_scene
+        scene = Object3D.current_scene() if Object3D.current_scene else None
+        assert scene is not None
+        self.scene: Scene = scene
         self.scene.objects[self.id] = self
         self.parent: Object3D | SceneObject = self.scene.stack[-1]
         self.args: list = list(args)
