@@ -296,6 +296,7 @@ class Table(FilterElement, component='table.js'):
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
+        from numpy.typing import NDArray
 
         if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
             df = df.reset_index()
@@ -316,7 +317,31 @@ class Table(FilterElement, component='table.js'):
                              'You can convert them to strings using something like '
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
-        return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        duplicate_column_labels: list[bool] = df.columns.duplicated(False).tolist()
+
+        if not any(duplicate_column_labels):
+            # Short way when no columns have duplicate names
+            return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+
+        warn('A pandas DataFrame with duplicate column names is converted to a NiceGUI table. The duplicate label '
+             'names of the DataFrame columns are kept but all duplicates names are numbered as "name_of_the_column_x '
+             'where x is a incremental number for all duplicates starting at 0. If the duplicates are intended, you '
+             'can suppress this warning.')
+
+        new_column_names: list[str] = []
+        duplicate_counter: int = 0
+        for column_label, is_duplicate in itertools.zip_longest(df.columns, duplicate_column_labels):
+            column_suffix: str = ""
+            if is_duplicate:
+                column_suffix = f"_{duplicate_counter}"
+                duplicate_counter += 1
+            new_column_names.append(column_label + column_suffix)
+
+        rows = [{name: val for name, val in itertools.zip_longest(new_column_names, row)}
+                for row in df.itertuples(index=False)]
+        columns = [{'name': name, 'label': label, 'field': name}
+                   for name, label in itertools.zip_longest(new_column_names, df.columns)]
+        return rows, columns
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
