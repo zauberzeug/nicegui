@@ -146,6 +146,10 @@ export default {
     decorations: Array,
     decorationHtml: Boolean,
     lineAnchors: Object,
+    selectionTrackingEnabled: Boolean,
+    focusTrackingEnabled: Boolean,
+    viewportTrackingEnabled: Boolean,
+    geometryTrackingEnabled: Boolean,
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
@@ -434,6 +438,18 @@ export default {
       this._lastAnchors = positions;
       this.$emit("anchor-positions", { anchors: positions });
     },
+    revealLine(lineNumber) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      if (!Number.isInteger(lineNumber) || lineNumber < 1 || lineNumber > doc.lines) {
+        logAndEmit("warning", `reveal_line: line ${lineNumber} is not an integer in [1, ${doc.lines}]`);
+      }
+      const lineNum = Math.min(Math.max(Math.trunc(lineNumber) || 1, 1), doc.lines);
+      const line = doc.line(lineNum);
+      this.editor.dispatch({
+        effects: CM.EditorView.scrollIntoView(line.from, { y: "center" }),
+      });
+    },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
         key,
@@ -514,6 +530,84 @@ export default {
         },
       );
 
+      // Dispatches per-signal events for ViewUpdate flags the host has opted into via
+      // <signal>-tracking-enabled props. Each signal is deduped against its last payload, so an
+      // update that leaves a signal unchanged costs nothing on the wire. Rate limiting is the
+      // Python side's job, via Element.on(..., throttle=...).
+      const updateDispatcher = CM.ViewPlugin.fromClass(
+        class {
+          constructor() {
+            this._last = {};
+          }
+          update(u) {
+            // A focus transition makes selection state meaningful again: hosts that
+            // ignore unfocused selection events (programmatic echoes) must still hear
+            // about the first post-focus selection even if it matches the last payload.
+            if (u.focusChanged) delete this._last["selection-change"];
+            if (self.selectionTrackingEnabled && (u.selectionSet || u.docChanged)) {
+              const payload = (state) => {
+                const sel = state.selection.main;
+                const line = state.doc.lineAt(sel.head);
+                const prefix = state.doc.sliceString(line.from, sel.head);
+                return {
+                  line: line.number,
+                  // Code units equal code points unless the prefix holds a high surrogate, which is
+                  // the only way a character above U+FFFF reaches a JS string. Array.from() allocates
+                  // an entry per code point, so only pay for it when one is actually there.
+                  column: (/[\uD800-\uDBFF]/.test(prefix) ? Array.from(prefix).length : prefix.length) + 1,
+                  from_line: state.doc.lineAt(sel.from).number,
+                  to_line: state.doc.lineAt(sel.to).number,
+                  empty: sel.empty,
+                };
+              };
+              // An edit remaps the selection, so a server-driven change can move the cursor for real.
+              // Comparing the whole payload against the pre-edit state tells the two apart, where the
+              // _maybeEmit dedupe cannot: it compares against the last payload sent, which may be none.
+              const now = payload(u.state);
+              if (u.selectionSet || JSON.stringify(now) !== JSON.stringify(payload(u.startState))) {
+                this._maybeEmit("selection-change", now);
+              }
+            }
+            if (self.focusTrackingEnabled && u.focusChanged) {
+              this._maybeEmit("focus-change", { focused: u.view.hasFocus });
+            }
+            if (self.viewportTrackingEnabled && u.viewportChanged) {
+              const vp = u.view.viewport;
+              this._maybeEmit("viewport-change", {
+                from_line: u.state.doc.lineAt(vp.from).number,
+                to_line: u.state.doc.lineAt(vp.to).number,
+              });
+            }
+            // CodeMirror forbids DOM layout reads in update(), and geometryChanged is set by every
+            // document change, so reading clientWidth/clientHeight here forces a layout per keystroke.
+            // requestMeasure defers the read into CM's own measure cycle, where it is already batched.
+            if (self.geometryTrackingEnabled && u.geometryChanged) {
+              u.view.requestMeasure({
+                key: "nicegui-codemirror-geometry",
+                read: (view) => ({
+                  width: view.dom.clientWidth,
+                  height: view.dom.clientHeight,
+                  // contentHeight is in scaled pixels while clientWidth/clientHeight are layout
+                  // pixels, so under a CSS transform the three disagree unless this is undone.
+                  content_height: Math.round(view.contentHeight / view.scaleY),
+                }),
+                // beforeUnmount keeps the view alive, so a queued measure can outlive the editor's
+                // DOM. Without this guard a detached editor would report a 0x0 geometry.
+                write: (payload) => {
+                  if (u.view.dom.isConnected) this._maybeEmit("geometry-change", payload);
+                },
+              });
+            }
+          }
+          _maybeEmit(name, payload) {
+            const last = this._last[name];
+            if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
+            this._last[name] = payload;
+            self.$emit(name, payload);
+          }
+        },
+      );
+
       const lineTooltip = CM.hoverTooltip((view, pos) => {
         const set = view.state.field(tooltipField);
         const line = view.state.doc.lineAt(pos);
@@ -540,6 +634,7 @@ export default {
         changeSender,
         anchorTracker,
         anchorField,
+        updateDispatcher,
         tooltipField,
         decorationField,
         CM.EditorView.decorations.from(decorationField),
