@@ -240,6 +240,11 @@
   width: 100%;
   height: 16rem;
 }
+.nicegui-uplot {
+  width: var(--nicegui-uplot-width, 100%);
+  height: var(--nicegui-uplot-height, 16rem);
+  max-width: 100%;
+}
 .nicegui-leaflet video.leaflet-image-layer {
   max-width: none; /* HACK: make the video show up */
 }
