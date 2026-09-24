@@ -92,7 +92,7 @@ def run(root: Callable | None = None, *,
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers).
+    :param favicon: path to a local image file, absolute `http(s)://` URL, data URL, inline SVG or emoji (e.g. `'🚀'`, works for most browsers; default: `None`, NiceGUI icon will be used).
         In Windows native mode, a local `.ico` file path is also applied as the native window icon.
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements and the ``lang`` attribute of the ``html`` tag
