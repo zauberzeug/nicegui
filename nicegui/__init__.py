@@ -3,6 +3,7 @@ from .api_router import APIRouter
 from .app.app import App
 from .client import Client
 from .context import context
+from .distributed_event import DistributedEvent
 from .element_filter import ElementFilter
 from .event import Event
 from .nicegui import app
@@ -13,6 +14,7 @@ __all__ = [
     'APIRouter',
     'App',
     'Client',
+    'DistributedEvent',
     'ElementFilter',
     'Event',
     'PageArguments',
