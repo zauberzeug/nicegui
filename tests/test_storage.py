@@ -260,6 +260,28 @@ async def test_tab_storage_in_sync_connect_handler(user: User):
     assert values == [1]
 
 
+async def test_disconnect_while_creating_tab_storage(user: User, monkeypatch):
+    connected = []
+
+    @ui.page('/', reconnect_timeout=10)
+    def page():
+        ui.context.client.on_connect(lambda: connected.append(True))
+
+    client = await user.open('/')
+    connected.clear()
+    original_create_tab_storage = app.storage._create_tab_storage  # pylint: disable=protected-access
+
+    async def create_tab_storage(tab_id: str) -> None:  # e.g. Redis, where creating the storage really awaits
+        client.handle_disconnect('test-early-disconnect')
+        await original_create_tab_storage(tab_id)
+
+    monkeypatch.setattr(app.storage, '_create_tab_storage', create_tab_storage)
+    assert await _on_handshake('test-early-disconnect',
+                               {'client_id': client.id, 'tab_id': user.tab_id, 'document_id': 'doc'})
+    assert client._num_connections['doc'] == 0, 'the disconnect must be counted'  # pylint: disable=protected-access
+    assert not connected, 'connect handlers must not run for a socket that already disconnected'
+
+
 async def test_client_is_pinned_to_one_tab_id(user: User):
     @ui.page('/', reconnect_timeout=10)
     def page():
