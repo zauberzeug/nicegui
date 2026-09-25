@@ -388,7 +388,10 @@ class Client:
         return self._pinned_tab_id == tab_id
 
     def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
-        """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
+        """Cancel pending disconnect task and register the socket. (For internal use only.)
+
+        The connect handlers are invoked separately by ``invoke_connect_handlers``.
+        """
         self._waiting_for_connection.clear()
         self._connected.set()
         self._socket_to_document_id[socket_id] = document_id
@@ -396,6 +399,11 @@ class Client:
         self._num_connections[document_id] += 1
         if next_message_id is not None:
             self.outbox.try_rewind(next_message_id)
+
+    def invoke_connect_handlers(self, socket_id: str) -> None:
+        """Invoke connect handlers unless the socket has disconnected in the meantime. (For internal use only.)"""
+        if socket_id not in self._socket_to_document_id:
+            return
         storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
