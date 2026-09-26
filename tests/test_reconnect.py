@@ -5,6 +5,7 @@ from nicegui.testing import Screen
 
 
 def test_reconnecting_without_page_reload(screen: Screen):
+    # A connectivity drop must not cause a page reload — regression guard for #6289.
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')
@@ -12,8 +13,12 @@ def test_reconnecting_without_page_reload(screen: Screen):
 
     screen.open('/')
     screen.type('hello')
+    initial_doc_id = screen.selenium.execute_script('return window.documentId;')
+
     screen.click('drop connection')
     screen.wait(2.0)
+
+    assert screen.selenium.execute_script('return window.documentId;') == initial_doc_id
     element = screen.selenium.find_element(By.XPATH, '//*[@aria-label="Input"]')
     assert element.get_attribute('value') == 'hello', 'input should be preserved after reconnect (i.e. no page reload)'
 
