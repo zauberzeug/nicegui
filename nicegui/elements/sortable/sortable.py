@@ -28,6 +28,8 @@ class Sortable(Element, component='sortable.js', esm={'nicegui-sortable': 'dist'
         super().__init__()
         self._element = element
         self._props['element-id'] = element.html_id
+        element._props[':onVnodeMounted'] = f'() => mounted_app?.$refs.r{self.id}?.bind()'  # re-bind after (re-)mount
+        element.update()
         self._props['options'] = {
             'animation': animation * 1000,
             'ghostClass': ghost_class,
