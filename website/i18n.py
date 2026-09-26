@@ -51,6 +51,15 @@ def url(path: str, *, language: str | None = None) -> str:
     return f'/{language}{path}'
 
 
+def alternates(path: str) -> list[tuple[str, str]]:
+    """Return the ``hreflang`` alternates of an unprefixed *path* as (language code, prefixed path) pairs.
+
+    The list ends with the ``x-default`` entry pointing to the English page.
+    """
+    links = [(language.code, url(path, language=slug)) for slug, language in LANGUAGES.items()]
+    return [*links, ('x-default', path)]
+
+
 def t(english: str) -> str:
     """Return the translation of the dedented *english* text for the current client's language.
 

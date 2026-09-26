@@ -5,12 +5,23 @@ from pathlib import Path
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import FileResponse, Response
+from starlette.responses import FileResponse, PlainTextResponse, Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
 from website import design as d
-from website import documentation, examples_page, fly, header, i18n, imprint_privacy, main_page, rate_limits, svg
+from website import (
+    documentation,
+    examples_page,
+    fly,
+    header,
+    i18n,
+    imprint_privacy,
+    main_page,
+    rate_limits,
+    sitemap,
+    svg,
+)
 from website.components import footer_section
 from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
@@ -47,6 +58,16 @@ documentation.build_tree()
 @app.get('/llms.txt')
 def _get_llms() -> FileResponse:
     return FileResponse(Path(__file__).parent / 'nicegui' / 'llms.md', media_type='text/markdown; charset=utf-8')
+
+
+@app.get('/sitemap.xml')
+def _get_sitemap() -> Response:
+    return Response(sitemap.build(), media_type='application/xml')
+
+
+@app.get('/robots.txt')
+def _get_robots() -> PlainTextResponse:
+    return PlainTextResponse(f'User-agent: *\nAllow: /\nSitemap: {sitemap.SITE_URL}/sitemap.xml\n')
 
 
 @app.post('/dark_mode')
@@ -144,11 +165,8 @@ def _build_page(language: str) -> None:
 def _add_hreflang_links(language: str) -> None:
     """Declare the language alternates of the current page for search engines."""
     base_path = ui.context.client.request.url.path.removeprefix(f'/{language}') or '/'
-    links: list[tuple[str, str]] = [(lang.code, i18n.url(base_path, language=slug))
-                                    for slug, lang in i18n.LANGUAGES.items()]
-    links.append(('x-default', base_path))
-    ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="https://nicegui.io{path}">'
-                               for iso, path in links))
+    ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="{sitemap.SITE_URL}{path}">'
+                               for iso, path in i18n.alternates(base_path)))
 
 
 def _documentation_detail_page(name: str, tree: ui.tree) -> None:
