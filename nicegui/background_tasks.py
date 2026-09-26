@@ -11,6 +11,7 @@ running_tasks: set[asyncio.Task] = set()
 lazy_tasks_running: dict[str, asyncio.Task] = {}
 lazy_coroutines_waiting: dict[str, Awaitable[Any]] = {}
 _await_tasks_on_shutdown: set[asyncio.Task] = set()
+_deferred_awaitables: list[Awaitable[Any]] = []
 
 
 @overload
@@ -59,7 +60,7 @@ def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> None
     if core.is_loop_running():
         create(awaitable, name=name)
     else:
-        core.app.on_startup(lambda: create(awaitable, name=name))
+        _defer(awaitable, lambda: create(awaitable, name=name))
 
 
 @overload
@@ -100,7 +101,25 @@ def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
     if core.is_loop_running():
         create_lazy(awaitable, name=name)
     else:
-        core.app.on_startup(lambda: create_lazy(awaitable, name=name))
+        _defer(awaitable, lambda: create_lazy(awaitable, name=name))
+
+
+def _defer(awaitable: Awaitable[Any], start: Callable[[], Any]) -> None:
+    """Start the awaitable on app startup and remember it until then so that ``reset()`` can close it."""
+    _deferred_awaitables.append(awaitable)
+
+    def start_deferred() -> None:
+        _deferred_awaitables.remove(awaitable)
+        start()
+    core.app.on_startup(start_deferred)
+
+
+def reset() -> None:
+    """Close awaitables which were deferred to app startup but will never be started. (Useful for testing.)"""
+    for awaitable in _deferred_awaitables:
+        if asyncio.iscoroutine(awaitable):
+            awaitable.close()
+    _deferred_awaitables.clear()
 
 
 class _AwaitOnShutdown:
