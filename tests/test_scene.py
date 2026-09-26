@@ -560,6 +560,8 @@ def test_pointer_event_dispatches_to_object_handler(screen: Screen):
     )
     screen.wait_for(lambda: any('over:' in msg for msg in received))
     assert received == [f'over:{box.id}']
+
+
 def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
     scene = None
 
