@@ -25,3 +25,6 @@ class Icon(NameElement, TextColorElement):
         super().__init__(tag='q-icon', name=name, text_color=color)
 
         self._props.set_optional('size', size)
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self.name]

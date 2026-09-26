@@ -7,27 +7,8 @@ from typing_extensions import Self
 
 from .context import context
 from .element import Element
-from .elements.chat_message import ChatMessage
-from .elements.choice_element import ChoiceElement
-from .elements.color_input import ColorInput
-from .elements.dark_mode import DarkMode
-from .elements.date_input import DateInput
-from .elements.icon import Icon
-from .elements.input_chips import InputChips
-from .elements.mixins.content_element import ContentElement
-from .elements.mixins.source_element import SourceElement
-from .elements.mixins.text_element import TextElement
-from .elements.notification import Notification
-from .elements.number import Number
-from .elements.progress import CircularProgress, LinearProgress
-from .elements.select import Select
-from .elements.time_input import TimeInput
-from .elements.tree import Tree
 
 T = TypeVar('T', bound=Element)
-
-HIDDEN_VALUE_KINDS = (LinearProgress, CircularProgress, DarkMode)  # value prop is not displayed as text
-MODEL_VALUE_KINDS = (Number, ColorInput, DateInput, TimeInput)  # model-value prop is displayed as text
 
 
 class ElementFilter(Generic[T]):
@@ -126,36 +107,8 @@ class ElementFilter(Generic[T]):
                 continue
 
             if self._contents or self._exclude_content:
-                element_contents = [content for content in (
-                    element.props.get('text'),
-                    element.props.get('label'),
-                    element.props.get('icon'),
-                    element.props.get('placeholder'),
-                    element.props.get('value') if not isinstance(element, HIDDEN_VALUE_KINDS) else None,
-                    element.props.get('model-value') if isinstance(element, MODEL_VALUE_KINDS) else None,
-                    element.props.get('error-message'),
-                    element.text if isinstance(element, TextElement) else None,
-                    element.content if isinstance(element, ContentElement) else None,
-                    element.source if isinstance(element, SourceElement) else None,
-                ) if content]
-                if isinstance(element, Notification):
-                    element_contents.append(element.message)
-                if isinstance(element, InputChips):
-                    element_contents.extend(element.value)
-                if isinstance(element, ChoiceElement):
-                    if isinstance(element, Select):
-                        values = element.value if element.multiple else [element.value]
-                        labels = [value if isinstance(element.options, list) else element.options.get(value, '')
-                                  for value in values]
-                        element_contents.extend(labels)
-                    if not isinstance(element, Select) or element.is_showing_popup:
-                        element_contents.extend(element._labels)  # pylint: disable=protected-access
-                if isinstance(element, Tree):
-                    LABEL_KEY = element.props.get('label-key')
-                    nodes = element.nodes(visible=True if self._only_visible else None)
-                    element_contents.extend(node[LABEL_KEY] for node in nodes)
-                if isinstance(element, (Icon, ChatMessage)):
-                    element_contents.append(element.props.get('name'))
+                element_contents = [content for content in element._displayed_contents(only_visible=self._only_visible)  # pylint: disable=protected-access
+                                    if content]
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

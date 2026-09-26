@@ -223,3 +223,6 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
                 codepoint_parts.append(self._encode_codepoints(joined_insert))
         self._codepoints = b''.join(codepoint_parts)
         return ''.join(document_parts)
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

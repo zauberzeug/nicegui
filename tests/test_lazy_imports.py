@@ -32,9 +32,9 @@ def test_module_access_does_not_import_others():
         import sys
         from nicegui import ui
         ui.label
-        sys.exit('button' in sys.modules.keys())
+        sys.exit('nicegui.elements.button' in sys.modules or 'nicegui.elements.number' in sys.modules)
     ''')], capture_output=True, text=True, timeout=30, check=False)
-    assert result.returncode == 0, 'button should not be imported when accessing label'
+    assert result.returncode == 0, 'accessing ui.label should not import other elements'
 
 
 def test_esm_modules_registered_on_import():
