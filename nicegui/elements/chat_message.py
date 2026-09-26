@@ -65,3 +65,6 @@ class ChatMessage(LabelElement):
         name = self._props.get('name', '')
         text = '\n'.join(self._original_text)
         return f'**{name}**: {text}' if name else text
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get('name')]

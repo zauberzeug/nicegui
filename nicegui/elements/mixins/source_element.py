@@ -128,3 +128,6 @@ class SourceElement(Element):
         if self.auto_route:
             core.app.remove_route(self.auto_route)
         return super()._handle_delete()
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self.source]

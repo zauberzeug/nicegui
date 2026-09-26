@@ -102,6 +102,40 @@ async def test_find_select(user: User):
     await user.open('/')
 
 
+async def test_find_displayed_value(user: User):
+    @ui.page('/')
+    def page():
+        number = ui.number(value=42)
+        formatted_number = ui.number(value=3.1, format='%.2f')
+        color_input = ui.color_input(value='#abcdef')
+        date_input = ui.date_input(value='2026-09-23')
+        time_input = ui.time_input(value='12:34')
+        input_chips = ui.input_chips(value=['alpha', 'beta'])
+
+        assert next(iter(ElementFilter(content='42'))) is number
+        assert next(iter(ElementFilter(content='3.10'))) is formatted_number
+        assert next(iter(ElementFilter(content='#abcdef'))) is color_input
+        assert next(iter(ElementFilter(content='2026-09-23'))) is date_input
+        assert next(iter(ElementFilter(content='12:34'))) is time_input
+        assert next(iter(ElementFilter(content='beta'))) is input_chips
+
+    await user.open('/')
+
+
+async def test_ignore_hidden_value(user: User):
+    @ui.page('/')
+    def page():
+        ui.linear_progress(0.66, show_value=False)
+        ui.circular_progress(0.77, show_value=False)
+        ui.dark_mode(True)
+
+        assert not list(ElementFilter(content='0.66'))
+        assert not list(ElementFilter(content='0.77'))
+        assert not list(ElementFilter(content='True'))
+
+    await user.open('/')
+
+
 async def test_find_marker(user: User):
     @ui.page('/')
     def page():

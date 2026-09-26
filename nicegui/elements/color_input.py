@@ -78,3 +78,6 @@ class ColorInput(LabelElement, ValueElement[str | None], DisableableElement):
         luminance = rgb_to_yiq(r, g, b)[0]
         icon_color = 'grey-10' if luminance > 0.5 else 'grey-3'
         self.button.style(f'background-color: {color}').props(f'color="{icon_color}"')
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]
