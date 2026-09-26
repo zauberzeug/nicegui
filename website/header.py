@@ -161,8 +161,10 @@ def _switch_language(language: str) -> None:
     path = ui.context.client.sub_pages_router.current_path
     current = i18n.get_language()
     if current != 'en':
-        path = path.removeprefix(f'/{current}') or '/'
-    ui.navigate.to(i18n.url(path, language=language))
+        path = '/' + path.removeprefix(f'/{current}').lstrip('/')
+    # full reload instead of ui.navigate.to: the language lives in the client storage, so a new client is needed,
+    # and the sub pages would otherwise keep rendering the current language under the new URL
+    ui.context.client.open(i18n.url(path, language=language), new_tab=False)
 
 
 def _github_badge() -> None:
