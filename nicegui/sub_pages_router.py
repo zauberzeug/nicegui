@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from typing import TYPE_CHECKING
+from urllib.parse import urlsplit
 
 from fastapi import Request
 from starlette.routing import Match, Route
@@ -98,6 +99,9 @@ class SubPagesRouter:
             getattr(client_route.endpoint, '__func__', client_route.endpoint) if client_route is not None else None
 
         other_routes = [route for route in core.app.routes if isinstance(route, Route)]
+        parsed = urlsplit(path)  # ignore query string and fragment which would prevent route matching
+        if parsed.netloc:
+            return False  # a protocol-relative link like "//host/path" points to another host, not to one of our routes
         for other_route in other_routes:
             other_func = getattr(other_route.endpoint, '__func__', other_route.endpoint)
             if (
@@ -108,7 +112,7 @@ class SubPagesRouter:
             ):
                 continue  # client route and other route point to the same page builder, so they don't count
 
-            match, _ = other_route.matches({'type': 'http', 'path': path, 'method': 'GET'})
+            match, _ = other_route.matches({'type': 'http', 'path': parsed.path, 'method': 'GET'})
             if match == Match.FULL:
                 return True
 

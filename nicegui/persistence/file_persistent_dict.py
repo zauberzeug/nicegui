@@ -1,7 +1,6 @@
+import asyncio
 import contextlib
 from pathlib import Path
-
-import aiofiles
 
 from .. import background_tasks, core, json
 from ..helpers import unlink_with_retry, unlink_with_retry_async
@@ -21,8 +20,8 @@ class FilePersistentDict(PersistentDict):
     async def initialize(self) -> None:
         try:
             if self.filepath.exists():
-                async with aiofiles.open(self.filepath, encoding=self.encoding) as f:
-                    data = json.loads(await f.read())
+                # read in a worker thread: see the cancellation note in async_backup below
+                data = json.loads(await asyncio.to_thread(self.filepath.read_text, encoding=self.encoding))
             else:
                 data = {}
             self.update(data)
@@ -54,8 +53,11 @@ class FilePersistentDict(PersistentDict):
                 tmp_filepath.unlink(missing_ok=True)
                 await unlink_with_retry_async(self.filepath, missing_ok=True)
                 return
-            async with aiofiles.open(tmp_filepath, 'w', encoding=self.encoding) as f:
-                await f.write(dumps(self, str(self.filepath), indent=self.indent))
+            # open, write and close in a single worker-thread call: any cancellation point between
+            # opening and closing the file could strand an open handle, surfacing as a ResourceWarning
+            # (not run.io_bound, which would skip the write while the app is stopping)
+            await asyncio.to_thread(tmp_filepath.write_text,
+                                    dumps(self, str(self.filepath), indent=self.indent), encoding=self.encoding)
             with contextlib.suppress(FileNotFoundError):  # a concurrent Storage.clear() may have swept the temp file
                 tmp_filepath.replace(self.filepath)
 
