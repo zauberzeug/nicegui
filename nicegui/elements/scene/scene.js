@@ -653,7 +653,8 @@ export default {
         return true;
       }
       const tc = new TransformControls(this.camera, this.renderer.domElement);
-      tc.attach(record.mesh);
+      const object = record.mesh;
+      tc.attach(object);
       tc.setMode(mode);
       if (size !== undefined && size !== null) tc.setSize(size);
       if (space !== undefined && space !== null) tc.setSpace(space);
