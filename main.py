@@ -10,7 +10,7 @@ from starlette.responses import FileResponse, Response
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
 from website import design as d
-from website import documentation, examples_page, fly, header, imprint_privacy, main_page, rate_limits, svg
+from website import documentation, examples_page, fly, header, i18n, imprint_privacy, main_page, rate_limits, svg
 from website.components import footer_section
 from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
@@ -67,12 +67,34 @@ class custom_sub_pages(ui.sub_pages):
 @ui.page('/documentation/{path:path}')
 @ui.page('/imprint_privacy')
 def _main_page() -> None:
+    _build_page('en')
+
+
+def _create_language_page(language: str):
+    def page() -> None:
+        _build_page(language)
+    page.__name__ = f'_main_page_{language}'
+    return page
+
+
+for _slug, _language in i18n.LANGUAGES.items():
+    if _slug != 'en':
+        _page = _create_language_page(_slug)
+        for _route in ('', '/examples', '/documentation', '/documentation/{path:path}', '/imprint_privacy'):
+            _page = ui.page(f'/{_slug}{_route}', language=_language.code)(_page)
+
+
+def _build_page(language: str) -> None:
+    i18n.set_language(language)
+    prefix = '' if language == 'en' else f'/{language}'
+
     ui.context.client.content.classes('p-0 gap-0')
 
     header.add_head_html()
+    _add_hreflang_links(language)
 
     with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} {d.BORDER_R} p-8') as menu:
-        tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'/documentation/{e.value}')) \
+        tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'{prefix}/documentation/{e.value}')) \
             .classes(r'w-full [&_.q-tree\_\_children]:pl-4') \
             .props('accordion no-connectors no-selection-unset icon=chevron_right color=primary')
         tree.visible = False
@@ -102,13 +124,13 @@ def _main_page() -> None:
         '/documentation': lambda: documentation.render_page(documentation.registry['']),
         '/documentation/{name}': lambda name: _documentation_detail_page(name, tree),
         '/imprint_privacy': imprint_privacy.create,
-    }, show_404=False).classes('w-full')
+    }, root_path=prefix or None, show_404=False).classes('w-full')
     ui.skip_link(target=main_content)
 
     footer_section.create()
 
     def _update_menu(path: str):
-        if path.startswith('/documentation/'):
+        if path.removeprefix(prefix).startswith('/documentation/'):
             menu_button.visible = True
             if window_state['is_desktop'] is not None:
                 menu.value = window_state['is_desktop']
@@ -119,17 +141,27 @@ def _main_page() -> None:
     _update_menu(ui.context.client.sub_pages_router.current_path)
 
 
+def _add_hreflang_links(language: str) -> None:
+    """Declare the language alternates of the current page for search engines."""
+    base_path = ui.context.client.request.url.path.removeprefix(f'/{language}') or '/'
+    links: list[tuple[str, str]] = [(lang.code, i18n.url(base_path, language=slug))
+                                    for slug, lang in i18n.LANGUAGES.items()]
+    links.append(('x-default', base_path))
+    ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="https://nicegui.io{path}">'
+                               for iso, path in links))
+
+
 def _documentation_detail_page(name: str, tree: ui.tree) -> None:
     tree.props.update(expanded=documentation.tree.ancestors(name))
     tree.update()
     if name in documentation.registry:
         documentation.render_page(documentation.registry[name])
     elif name in documentation.redirects:
-        ui.navigate.to('/documentation/' + documentation.redirects[name])
+        ui.navigate.to(i18n.url('/documentation/' + documentation.redirects[name]))
     else:
         ui.status_code(404)
         with ui.column().classes('w-full min-h-[50vh] items-center justify-center text-center p-16'):
-            ui.label(f'Documentation for "{name}" could not be found.')
+            ui.label(i18n.t('Documentation for "{name}" could not be found.').format(name=name))
 
 
 @app.get('/status')
@@ -138,4 +170,5 @@ def _status():
 
 
 # do not reload on fly.io (see https://github.com/zauberzeug/nicegui/discussions/1720#discussioncomment-7288741)
-ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0, markdown=True)
+ui.run(uvicorn_reload_includes='*.py, *.css, *.html', reload=not on_fly, reconnect_timeout=10.0, markdown=True,
+       language=i18n.LANGUAGES['en'].code)

@@ -5,14 +5,15 @@ from nicegui import ui
 from .. import design as d
 from ..documentation.content.sub_pages_documentation import FakeSubPages
 from ..documentation.demo import demo
+from ..i18n import t
 from .shared import section, section_heading
 
 
 def create() -> None:
     """Create the demos section with tab-based interactive demos."""
     with section('demos'):
-        section_heading('demos', 'See it in action.',
-                        "Interactive examples that showcase NiceGUI's power and flexibility.")
+        section_heading('demos', t('See it in action.'),
+                        t("Interactive examples that showcase NiceGUI's power and flexibility."))
 
         with ui.column().classes('w-full reveal'):
             tab_classes = (
@@ -22,9 +23,9 @@ def create() -> None:
                 f' [&.q-tab--active]:!text-[{d.BLUE}]'
             )
             with ui.tabs().classes(f'w-full {d.BORDER_B}').props('no-caps align=left') as tabs:
-                spa_tab = ui.tab('Single Page App').classes(tab_classes)
-                reactive_tab = ui.tab('Reactive UI').classes(tab_classes)
-                events_tab = ui.tab('Custom Events').classes(tab_classes)
+                spa_tab = ui.tab(t('Single Page App')).classes(tab_classes)
+                reactive_tab = ui.tab(t('Reactive UI')).classes(tab_classes)
+                events_tab = ui.tab(t('Custom Events')).classes(tab_classes)
 
             with ui.tab_panels(tabs, value=spa_tab).classes('w-full bg-transparent'):
                 with ui.tab_panel(spa_tab).classes('p-0'):
