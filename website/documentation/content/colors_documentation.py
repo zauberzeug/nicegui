@@ -16,6 +16,13 @@ def main_demo() -> None:
     You can add custom color definitions for branding.
     In this case, `ui.colors` must be called before the custom color is ever used.
 
+    A custom color name works wherever Quasar accepts a color name,
+    e.g. the `color` parameter and the `color` and `text-color` props,
+    as well as the classes `text-<name>` and `bg-<name>`.
+    Underscores in the name become dashes, e.g. `warn_soft` is used as `warn-soft`.
+    These classes are marked `!important`, so they override Quasar's default colors
+    and there is no need for inline styles.
+
     *Added in version 2.2.0*
 ''')
 def custom_color_demo() -> None:
@@ -25,6 +32,7 @@ def custom_color_demo() -> None:
     ui.label('This is your custom brand color').classes('text-brand')
     ui.button('Randomize', color='brand',
               on_click=lambda: ui.colors(brand=f'#{randint(0, 0xffffff):06x}'))
+    ui.button('Outline', icon='palette').props('outline text-color=brand')
 
 
 @doc.demo('App-wide colors', '''
