@@ -107,7 +107,8 @@ def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
 def _defer(awaitable: Awaitable[Any], start: Callable[[], Any]) -> None:
     """Start the awaitable on app startup and remember it until then so that ``reset()`` can close it."""
     def start_deferred() -> None:
-        _deferred_awaitables.remove(awaitable)
+        if awaitable in _deferred_awaitables:
+            _deferred_awaitables.remove(awaitable)
         start()
     core.app.on_startup(start_deferred)
     _deferred_awaitables.append(awaitable)
