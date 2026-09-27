@@ -106,16 +106,19 @@ def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
 
 def _defer(awaitable: Awaitable[Any], start: Callable[[], Any]) -> None:
     """Start the awaitable on app startup and remember it until then so that ``reset()`` can close it."""
-    _deferred_awaitables.append(awaitable)
-
     def start_deferred() -> None:
         _deferred_awaitables.remove(awaitable)
         start()
     core.app.on_startup(start_deferred)
+    _deferred_awaitables.append(awaitable)
 
 
 def reset() -> None:
-    """Close awaitables which were deferred to app startup but will never be started. (Useful for testing.)"""
+    """Close awaitables which were deferred to app startup but will never be started. (Useful for testing.)
+
+    Note: Call this together with ``app.reset()``,
+    which drops the startup handlers that would otherwise start the closed awaitables.
+    """
     for awaitable in _deferred_awaitables:
         if asyncio.iscoroutine(awaitable):
             awaitable.close()
