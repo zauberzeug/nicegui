@@ -22,17 +22,17 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
                  ) -> None:
         """Button
 
-        This element is based on Quasar's QBtn <https://quasar.dev/vue-components/button>_ component.
+        This element is based on Quasar's `QBtn <https://quasar.dev/vue-components/button>`_ component.
 
-        The `color` parameter accepts a Quasar color, a Tailwind color, or a CSS color.
+        The ``color`` parameter accepts a Quasar color, a Tailwind color, or a CSS color.
         If a Quasar color is used, the button will be styled according to the Quasar theme including the color of the text.
         Note that there are colors like "red" being both a Quasar color and a CSS color.
         In such cases the Quasar color will be used.
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or None, default: 'primary')
-        :param icon: the name of an icon to be displayed on the button (default: None)
+        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
+        :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
         self._clicked_waiters: set[asyncio.Event] = set()
         self._clicked_waiters_bound = False
