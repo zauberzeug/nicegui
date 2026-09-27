@@ -178,3 +178,9 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                     self.options.update({key: value})
             self._update_values_and_labels()
             return key
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        values = self.value if self.multiple else [self.value]
+        selected_labels = [value if isinstance(self.options, list) else self.options.get(value, '') for value in values]
+        option_labels = self._labels if self.is_showing_popup else []
+        return [*super()._displayed_contents(only_visible=only_visible), *selected_labels, *option_labels]
