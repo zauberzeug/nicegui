@@ -27,4 +27,4 @@ class Icon(NameElement, TextColorElement):
         self._props.set_optional('size', size)
 
     def _displayed_contents(self, *, only_visible: bool) -> list:
-        return [*super()._displayed_contents(only_visible=only_visible), self.name]
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get('name')]
