@@ -108,7 +108,7 @@ class ElementFilter(Generic[T]):
 
             if self._contents or self._exclude_content:
                 element_contents = [content for content in element._displayed_contents(only_visible=self._only_visible)  # pylint: disable=protected-access
-                                    if content]
+                                    if content is not None and content != '']
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):

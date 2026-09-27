@@ -136,6 +136,18 @@ async def test_ignore_hidden_value(user: User):
     await user.open('/')
 
 
+async def test_find_zero(user: User):
+    @ui.page('/')
+    def page():
+        radio = ui.radio([0, 1])
+        select = ui.select([0, 1], value=0)
+        number = ui.number(value=0)
+
+        assert list(ElementFilter(content='0')) == [radio, select, number]
+
+    await user.open('/')
+
+
 async def test_find_marker(user: User):
     @ui.page('/')
     def page():

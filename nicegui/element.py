@@ -227,7 +227,7 @@ class Element(Visibility):
         The default implementation returns the props that are rendered as text.
         Override to add contents that are stored elsewhere (e.g. values, option labels, tree nodes).
         Entries can be of any type and may be ``None``: the filter compares against ``str()`` of each entry
-        and skips empty ones.
+        and skips ``None`` and empty strings.
 
         :param only_visible: whether to skip contents that are currently hidden (e.g. nodes of collapsed tree branches)
         """
