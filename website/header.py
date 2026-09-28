@@ -25,8 +25,8 @@ FONT_LINKS = '''
 
 SM_UP = 'max-[460px]:hidden'
 MD_UP = 'max-[590px]:hidden'
-LG_UP = 'max-[1050px]:hidden'
-LG_DOWN = 'min-[1050px]:hidden'
+LG_UP = 'max-[1100px]:hidden'
+LG_DOWN = 'min-[1100px]:hidden'
 
 
 class SolarizedLight(SolarizedLightStyle):
@@ -69,7 +69,7 @@ def add_header(menu: ui.left_drawer) -> ui.button:
     with ui.header() \
         .style('background: transparent; box-shadow: none') \
         .classes(
-        'items-center p-0 px-6 no-wrap h-16'
+        'items-center p-0 px-6 no-wrap h-16 max-[590px]:gap-2'
         ' transition-[background,backdrop-filter,box-shadow] duration-200'
         f' [&.fade]:!bg-[color-mix(in_srgb,{d._BG_SURFACE_LIGHT}_80%,transparent)]'
         f' dark:[&.fade]:!bg-[color-mix(in_srgb,{d._BG_SURFACE_DARK}_80%,transparent)]'
@@ -79,25 +79,23 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         f' [.q-layout:has(.q-drawer--standard:not(.q-layout--prevent-focus))_&]:!shadow-[0_1px_0_{d._BORDER_LIGHT}]'
         f' [.q-layout:has(.q-drawer--standard:not(.q-layout--prevent-focus))_&]:dark:!shadow-[0_1px_0_{d._BORDER_DARK}]'
     ):
-        menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat round').classes('lg:hidden')
+        menu_button = ui.button(on_click=menu.toggle, icon='menu').props('flat round dense').classes('lg:hidden')
         with ui.link(target=url('/')):
             ui.markdown('**Nice**GUI').classes(f'{d.TEXT_19PX} {d.TEXT_PRIMARY} tracking-wide')
 
-        ui.space()
-
-        with ui.row().classes(f'{d.TEXT_SECONDARY} gap-8 {LG_UP}'):
+        with ui.row().classes(f'{d.TEXT_SECONDARY} gap-8 no-wrap ml-auto {LG_UP}'):
             for title_, target in _menu_items().items():
                 ui.link(title_, target).classes(d.TEXT_15PX)
 
-        with ui.row().classes('gap-2 items-center ml-8'):
+        with ui.row().classes('gap-2 items-center no-wrap ml-auto min-[1100px]:ml-8'):
             search = Search()
             _search_pill(search)
             _theme_toggle(dark_mode)
             _language_switcher()
             _github_badge()
 
-        with ui.row().classes(LG_DOWN):
-            with ui.button(icon='more_vert').props('flat round'):
+        with ui.row().classes(f'no-wrap {LG_DOWN}'):
+            with ui.button(icon='more_vert').props('flat round dense'):
                 with ui.menu().classes(f'rounded-xl {d.BG_SURFACE} {d.BORDER} no-shadow'):
                     for title_, target in _menu_items().items():
                         ui.menu_item(title_, on_click=lambda target=target: ui.navigate.to(target)) \
@@ -135,20 +133,20 @@ def _theme_toggle(dark_mode: ui.dark_mode) -> None:
     """Single theme toggle button cycling dark → light → auto."""
     with ui.element().classes(f'saturate-0 {SM_UP}'):
         d.tooltip(t('Cycle theme mode through dark, light, and system/auto.'))
-        with ui.button(on_click=lambda: dark_mode.set_value(None)).props('flat round') \
+        with ui.button(on_click=lambda: dark_mode.set_value(None)).props('flat round dense') \
                 .classes('size-9').bind_visibility_from(dark_mode, 'value', value=True):
             phosphor_icon('ph-moon').classes('text-[1.125rem]')
-        with ui.button(on_click=lambda: dark_mode.set_value(True)).props('flat round') \
+        with ui.button(on_click=lambda: dark_mode.set_value(True)).props('flat round dense') \
                 .classes('size-9').bind_visibility_from(dark_mode, 'value', value=False):
             phosphor_icon('ph-sun').classes('text-[1.125rem]')
-        with ui.button(on_click=lambda: dark_mode.set_value(False)).props('flat round') \
+        with ui.button(on_click=lambda: dark_mode.set_value(False)).props('flat round dense') \
                 .classes('size-9').bind_visibility_from(dark_mode, 'value', lambda mode: mode is None):
             phosphor_icon('ph-circle-half').classes('text-[1.125rem]')
 
 
 def _language_switcher() -> None:
     """Language menu navigating to the current page in the chosen language."""
-    with ui.button().props('flat round').classes('size-9'):
+    with ui.button().props('flat round dense').classes('size-9'):
         phosphor_icon('ph-globe').classes('text-[1.125rem]')
         with ui.menu().classes(f'rounded-xl {d.BG_SURFACE} {d.BORDER} no-shadow'):
             for slug, language in i18n.LANGUAGES.items():
