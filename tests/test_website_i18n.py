@@ -1,11 +1,13 @@
 import ast
 import json
+import re
 from pathlib import Path
 
 from nicegui.helpers import remove_indentation
 
 ROOT = Path(__file__).parent.parent
 TRANSLATIONS_PATH = ROOT / 'website' / 'translations'
+GAP_AFTER_FULL_WIDTH_PUNCTUATION = re.compile('[。，、！？：；）]\n(?=[^\n])')  # noqa: RUF001
 
 
 def test_translations_match_t_call_sites():
@@ -22,6 +24,10 @@ def test_translations_match_t_call_sites():
         prefixed = [text for text, translation in translations.items() if f'](/{language}/' in translation]
         assert not prefixed, \
             f'{path.name} should not prefix links with "/{language}" (t() adds the prefix): {prefixed}'
+        gaps = [text for text, translation in translations.items()
+                if GAP_AFTER_FULL_WIDTH_PUNCTUATION.search(translation)]
+        assert not gaps, \
+            f'{path.name} should not break lines after full-width punctuation (Markdown renders a visible gap): {gaps}'
 
 
 def _collect_translatable_texts() -> set[str]:
