@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import html
 import os
 from pathlib import Path
 
@@ -147,7 +148,7 @@ def _add_hreflang_links(language: str) -> None:
     links: list[tuple[str, str]] = [(lang.code, i18n.url(base_path, language=slug))
                                     for slug, lang in i18n.LANGUAGES.items()]
     links.append(('x-default', base_path))
-    ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="https://nicegui.io{path}">'
+    ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="https://nicegui.io{html.escape(path)}">'
                                for iso, path in links))
 
 
