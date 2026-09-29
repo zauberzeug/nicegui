@@ -451,21 +451,6 @@ async def test_bound_object_is_released_on_delete(user: User):
 
 
 async def test_scene_is_collected_after_client_deletion(user: User):
-    objects: weakref.WeakSet = weakref.WeakSet()
-
-    @ui.page('/')
-    def page():
-        scene = ui.scene()
-        objects.add(scene)
-        objects.add(scene.box())
-
-    await user.open('/')
-    user.client.delete()
-    gc.collect()
-    assert len(objects) == 0
-
-
-async def test_scene_is_collected_after_late_object_access(user: User):
     held = []  # stands in for a timer or handler holding the scene
     objects: weakref.WeakSet = weakref.WeakSet()
 
