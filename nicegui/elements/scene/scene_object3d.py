@@ -55,7 +55,7 @@ class Object3D:
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
-        scene = Object3D.current_scene() if Object3D.current_scene else None
+        scene = Object3D.current_scene() if Object3D.current_scene is not None else None
         assert scene is not None
         self.scene: Scene = scene
         self.scene.objects[self.id] = self

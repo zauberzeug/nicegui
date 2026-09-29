@@ -88,7 +88,7 @@ async def test_leaflet_is_collected_after_client_deletion(user: User):
     @ui.page('/')
     def page():
         m = ui.leaflet(center=(51.5, -0.09))
-        m.marker(latlng=(51.5, -0.09))  # accessing a layer class re-arms Layer.current_leaflet
+        m.marker(latlng=(51.5, -0.09))  # a layer puts the map into a reference cycle that must still be collectable
         objects.add(m)
 
     await user.open('/')

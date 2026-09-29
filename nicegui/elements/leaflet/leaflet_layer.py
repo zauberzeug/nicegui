@@ -20,7 +20,7 @@ class Layer:
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())
-        leaflet = Layer.current_leaflet() if Layer.current_leaflet else None
+        leaflet = Layer.current_leaflet() if Layer.current_leaflet is not None else None
         assert leaflet is not None
         self.leaflet = leaflet
         self.leaflet.layers.append(self)
