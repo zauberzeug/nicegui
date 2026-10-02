@@ -260,6 +260,30 @@ async def test_tab_storage_in_sync_connect_handler(user: User):
     assert values == [1]
 
 
+async def test_reconnect_after_reload_keeps_tab_storage(user: User):
+    @ui.page('/', reconnect_timeout=10)
+    def page():
+        pass
+
+    client = await user.open('/')
+    with client:
+        app.storage.tab['x'] = 'before reload'
+
+    await user.http_client.get('/')  # a reload requests the page anew...
+    reloaded_client = next(c for c in Client.instances.values() if c is not client)
+    reload = {'client_id': reloaded_client.id, 'tab_id': 'new-tab', 'old_tab_id': user.tab_id, 'document_id': 'doc'}
+    assert await _on_handshake('test-reload', reload)  # ...and announces the old tab ID along with a new one
+    with reloaded_client:
+        assert app.storage.tab['x'] == 'before reload', 'a reload must carry the tab storage over'
+        app.storage.tab['x'] = 'after reload'
+        tab_storage = app.storage.tab
+
+    assert await _on_handshake('test-reconnect', reload)  # a reconnect repeats the same query
+    with reloaded_client:
+        assert app.storage.tab is tab_storage, 'a reconnect must keep the tab storage object'
+        assert app.storage.tab['x'] == 'after reload', 'a reconnect must not reset the tab storage'
+
+
 async def test_client_is_pinned_to_one_tab_id(user: User):
     @ui.page('/', reconnect_timeout=10)
     def page():

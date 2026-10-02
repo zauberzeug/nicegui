@@ -177,24 +177,22 @@ class Storage:
         assert client.tab_id in self._tabs, f'tab storage for {client.tab_id} should be created before accessing it'
         return self._tabs[client.tab_id]
 
-    async def _create_tab_storage(self, tab_id: str) -> None:
-        """Create tab storage for the given tab ID."""
-        if tab_id not in self._tabs:
-            if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
-                tab = self._tabs[tab_id]
-                assert isinstance(tab, PersistentDict)
-                await tab.initialize()
-            else:
-                self._tabs[tab_id] = ObservableDict()
+    async def _create_tab_storage(self, tab_id: str, old_tab_id: str | None = None) -> None:
+        """Create tab storage for the given tab ID unless it exists already.
 
-    def copy_tab(self, old_tab_id: str, tab_id: str) -> None:
-        """Copy the tab storage to a new tab. (For internal use only.)"""
+        A new storage takes over the data of ``old_tab_id`` if that tab's storage is still around,
+        which is how a reloaded page keeps its tab storage.
+        """
+        if tab_id in self._tabs:
+            return
+        if Storage.redis_url:
+            self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
+            tab = self._tabs[tab_id]
+            assert isinstance(tab, PersistentDict)
+            await tab.initialize()
+        else:
+            self._tabs[tab_id] = ObservableDict()
         if old_tab_id in self._tabs:
-            if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
-            else:
-                self._tabs[tab_id] = ObservableDict()
             self._tabs[tab_id].update(self._tabs[old_tab_id])
 
     async def close_tab(self, tab_id: str | None) -> None:
