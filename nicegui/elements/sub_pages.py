@@ -118,25 +118,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
         self._handle_scrolling(match, behavior='instant')
         if helpers.should_await(result):
-            async def background_task():
-                with self:
-                    try:
-                        await result
-                    except Exception as e:
-                        client = self._client()
-                        if client is not None:
-                            client.handle_exception(e)
-                        raise
-
-            task = background_tasks.create(background_task(), name=f'building sub_page {match.pattern}')
+            task = background_tasks.create(result, name=f'building sub_page {match.pattern}', context=self)
             self._active_tasks.add(task)
-
-            def _close_if_canceled(t: asyncio.Task) -> None:
-                if t.cancelled() and asyncio.iscoroutine(result):
-                    result.close()
-                self._active_tasks.discard(t)
-
-            task.add_done_callback(_close_if_canceled)
+            task.add_done_callback(self._active_tasks.discard)
         return True
 
     def _render_404(self) -> None:
