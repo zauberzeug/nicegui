@@ -146,6 +146,7 @@ class Air:
                 client.tab_id = data['tab_id']
                 client.on_air = True
                 client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
+                client.invoke_connect_handlers(data['sid'])
                 return True
             return False
 
