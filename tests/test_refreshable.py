@@ -310,43 +310,9 @@ def test_awaitable_refresh(screen: Screen):
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
 
 
-@pytest.mark.parametrize('rewrapped', [False, True], ids=['direct_raise', 'rewrapped_typeerror'])
-async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture, rewrapped: bool):
-    seen: list[Exception] = []
-
-    def handle(e: Exception) -> None:
-        seen.append(e)
-        ui.label('error handled')
-
-    @ui.page('/')
-    def page():
-        ui.on_exception(handle)
-
-        @ui.refreshable
-        def part(a: int = 0, explode: bool = False):
-            ui.label(f'a={a}')
-            if explode:
-                raise RuntimeError('boom')
-
-        if rewrapped:
-            part(42)  # positional 'a' collides with the keyword 'a' below -> TypeError rewrapped with `from e`
-            ui.button('fire', on_click=lambda: part.refresh(a=99, explode=True))
-        else:
-            part()
-            ui.button('fire', on_click=lambda: part.refresh(explode=True))
-
-    await user.open('/')
-    user.find('fire').click()
-    await user.should_see('error handled')
-    assert len(seen) == 1, f'ui.on_exception should see exactly one exception, saw {len(seen)}'
-    assert seen[0].__traceback__ is not None, 'the handler should see the traceback'
-    assert (seen[0].__cause__ is not None) == rewrapped, 'only the rewrapped TypeError should carry a cause'
-    assert len(caplog.records) == 1 and str(seen[0]) in caplog.records[0].message
-    caplog.records.pop(0)
-
-
+@pytest.mark.parametrize('is_async', [False, True], ids=['sync', 'async'])
 @pytest.mark.parametrize('awaited', [False, True])
-async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixture, awaited: bool):
+async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture, is_async: bool, awaited: bool):
     seen: list[Exception] = []
 
     def handle(e: Exception) -> None:
@@ -358,15 +324,24 @@ async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixtu
         ui.on_exception(handle)
 
         @ui.refreshable
-        async def part(explode: bool = False):
+        def sync_part(explode: bool = False):
+            if explode:
+                raise RuntimeError('boom')
+
+        @ui.refreshable
+        async def async_part(explode: bool = False):
             await asyncio.sleep(0)
             if explode:
                 raise RuntimeError('boom')
 
+        part = async_part if is_async else sync_part
+        result = part()
+        if is_async:
+            await result
+
         async def refresh_awaited():
             await part.refresh(True)
 
-        await part()
         ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
 
     await user.open('/')

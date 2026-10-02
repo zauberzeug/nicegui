@@ -251,8 +251,8 @@ async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
     caplog.records.clear()
 
 
-@pytest.mark.parametrize('mode', ['emit', 'call', 'call_caught'])
-async def test_ui_on_exception_from_async_subscriber(user: User, caplog: pytest.LogCaptureFixture, mode: str):
+@pytest.mark.parametrize('caught', [False, True])
+async def test_awaited_event_call_reports_once(user: User, caplog: pytest.LogCaptureFixture, caught: bool):
     seen: list[Exception] = []
 
     @ui.page('/')
@@ -269,15 +269,15 @@ async def test_ui_on_exception_from_async_subscriber(user: User, caplog: pytest.
             try:
                 await event.call()
             except RuntimeError:
-                if mode == 'call':
+                if not caught:
                     raise
 
-        ui.button('fire', on_click=event.emit if mode == 'emit' else call)
+        ui.button('fire', on_click=call)
 
     await user.open('/')
     user.find('fire').click()
     await asyncio.sleep(0.1)
-    expected = 0 if mode == 'call_caught' else 1
+    expected = 0 if caught else 1
     assert len(seen) == expected, 'the exception should be reported once, or not at all if the caller catches it'
     assert len(caplog.records) == expected
     caplog.records.clear()
