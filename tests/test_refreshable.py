@@ -1,7 +1,9 @@
 import asyncio
 
+import pytest
+
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_refreshable(screen: Screen) -> None:
@@ -306,3 +308,70 @@ def test_awaitable_refresh(screen: Screen):
     screen.click('Try 0')
     screen.should_contain('error handled')
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
+
+
+@pytest.mark.parametrize('rewrapped', [False, True], ids=['direct_raise', 'rewrapped_typeerror'])
+async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture, rewrapped: bool):
+    seen: list[Exception] = []
+
+    def handle(e: Exception) -> None:
+        seen.append(e)
+        ui.label('error handled')
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(handle)
+
+        @ui.refreshable
+        def part(a: int = 0, explode: bool = False):
+            ui.label(f'a={a}')
+            if explode:
+                raise RuntimeError('boom')
+
+        if rewrapped:
+            part(42)  # positional 'a' collides with the keyword 'a' below -> TypeError rewrapped with `from e`
+            ui.button('fire', on_click=lambda: part.refresh(a=99, explode=True))
+        else:
+            part()
+            ui.button('fire', on_click=lambda: part.refresh(explode=True))
+
+    await user.open('/')
+    user.find('fire').click()
+    await user.should_see('error handled')
+    assert len(seen) == 1, f'ui.on_exception should see exactly one exception, saw {len(seen)}'
+    assert seen[0].__traceback__ is not None, 'the handler should see the traceback'
+    assert (seen[0].__cause__ is not None) == rewrapped, 'only the rewrapped TypeError should carry a cause'
+    assert len(caplog.records) == 1 and str(seen[0]) in caplog.records[0].message
+    caplog.records.pop(0)
+
+
+@pytest.mark.parametrize('awaited', [False, True])
+async def test_report_exception_async(user: User, caplog: pytest.LogCaptureFixture, awaited: bool):
+    seen: list[Exception] = []
+
+    def handle(e: Exception) -> None:
+        seen.append(e)
+        ui.label('error handled')
+
+    @ui.page('/')
+    async def page():
+        ui.on_exception(handle)
+
+        @ui.refreshable
+        async def part(explode: bool = False):
+            await asyncio.sleep(0)
+            if explode:
+                raise RuntimeError('boom')
+
+        async def refresh_awaited():
+            await part.refresh(True)
+
+        await part()
+        ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
+
+    await user.open('/')
+    user.find('fire').click()
+    await user.should_see('error handled')
+    assert len(seen) == 1, f'ui.on_exception should see exactly one exception, saw {len(seen)}'
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)

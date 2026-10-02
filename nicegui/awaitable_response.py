@@ -1,6 +1,8 @@
 from collections.abc import Callable
+from inspect import isawaitable
 
 from . import background_tasks
+from .slot import Slot
 
 
 class AwaitableResponse:
@@ -11,20 +13,27 @@ class AwaitableResponse:
         This class can be used to run one of two different callables, depending on whether the response is awaited or not.
         It must be awaited immediately after creation or not at all.
 
-        :param fire_and_forget: The callable to run if the response is not awaited.
+        If the response is not awaited, nobody could catch exceptions raised by ``fire_and_forget``.
+        They are therefore reported to the exception handlers of the client in whose context the response was created,
+        in addition to the global exception handlers.
+
+        :param fire_and_forget: The callable to run if the response is not awaited (it may return an awaitable).
         :param wait_for_result: The callable to run if the response is awaited.
         """
         self.fire_and_forget = fire_and_forget
         self.wait_for_result = wait_for_result
         self._is_fired = False
         self._is_awaited = False
-        background_tasks.create(self._fire(), name='fire')
+        stack = Slot.get_stack()  # don't enter script mode by accessing `context.slot_stack`
+        background_tasks.create(self._fire(), name='fire', context=stack[-1] if stack else None)
 
     async def _fire(self) -> None:
         if self._is_awaited:
             return
         self._is_fired = True
-        self.fire_and_forget()
+        result = self.fire_and_forget()
+        if isawaitable(result):
+            await result
 
     def __await__(self):
         if self._is_fired:

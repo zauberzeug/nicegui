@@ -251,6 +251,38 @@ async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
     caplog.records.clear()
 
 
+@pytest.mark.parametrize('mode', ['emit', 'call', 'call_caught'])
+async def test_ui_on_exception_from_async_subscriber(user: User, caplog: pytest.LogCaptureFixture, mode: str):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        event: Event[[]] = Event()
+
+        async def subscriber():
+            raise RuntimeError('boom')
+
+        event.subscribe(subscriber)
+        ui.on_exception(seen.append)
+
+        async def call():
+            try:
+                await event.call()
+            except RuntimeError:
+                if mode == 'call':
+                    raise
+
+        ui.button('fire', on_click=event.emit if mode == 'emit' else call)
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    expected = 0 if mode == 'call_caught' else 1
+    assert len(seen) == expected, 'the exception should be reported once, or not at all if the caller catches it'
+    assert len(caplog.records) == expected
+    caplog.records.clear()
+
+
 async def test_failing_exception_handler_does_not_skip_other_handlers(user: User, caplog: pytest.LogCaptureFixture):
     page_exceptions: list[Exception] = []
     app_exceptions: list[Exception] = []

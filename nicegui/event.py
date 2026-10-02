@@ -27,14 +27,19 @@ class Callback(Generic[P]):
     line: int
     slot: weakref.ref[Slot] | None = None
 
+    @property
+    def context(self) -> Slot | nullcontext:
+        """The slot context the callback runs in (or a null context if it was subscribed outside of any slot)."""
+        return (self.slot and self.slot()) or nullcontext()
+
     def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
         """Run the callback."""
-        with (self.slot and self.slot()) or nullcontext():
+        with self.context:
             return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
 
     async def await_result(self, result: Awaitable) -> Any:
         """Await the result of the callback."""
-        with (self.slot and self.slot()) or nullcontext():
+        with self.context:
             return await result
 
 
@@ -151,7 +156,8 @@ def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs)
     try:
         result = callback.run(*args, **kwargs)
         if helpers.should_await(result):
-            background_tasks.create_or_defer(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
+            background_tasks.create_or_defer(
+                result, name=f'{callback.filepath}:{callback.line}', context=callback.context)
     except Exception as e:
         core.app.handle_exception(e)
 

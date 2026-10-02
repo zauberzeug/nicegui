@@ -1,6 +1,7 @@
 """inspired from https://quantlane.com/blog/ensure-asyncio-task-exceptions-get-logged/"""
 import asyncio
 from collections.abc import Awaitable, Callable, Coroutine, Generator
+from contextlib import AbstractContextManager
 from typing import Any, TypeVar, cast, overload
 
 from . import core
@@ -16,18 +17,19 @@ _deferred_awaitables: list[Awaitable[Any]] = []
 
 @overload
 def create(awaitable: Awaitable[Any], *, name: str = 'unnamed task',
-           handle_exceptions: bool = True) -> asyncio.Task: ...
+           handle_exceptions: bool = True, context: AbstractContextManager | None = None) -> asyncio.Task: ...
 
 
 @overload
 def create(*, coroutine: Awaitable[Any], name: str = 'unnamed task',
-           handle_exceptions: bool = True) -> asyncio.Task: ...
+           handle_exceptions: bool = True, context: AbstractContextManager | None = None) -> asyncio.Task: ...
 
 
 def create(awaitable: Awaitable[Any] | None = None, *,
            coroutine: Awaitable[Any] | None = None,
            name: str = 'unnamed task',
-           handle_exceptions: bool = True) -> asyncio.Task:
+           handle_exceptions: bool = True,
+           context: AbstractContextManager | None = None) -> asyncio.Task:
     """Wraps a loop.create_task call and ensures there is an exception handler added to the task.
 
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
@@ -36,12 +38,18 @@ def create(awaitable: Awaitable[Any] | None = None, *,
     :param awaitable: the awaitable to wrap
     :param coroutine: deprecated alias for ``awaitable``; will be removed in NiceGUI 4.0
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
-    :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the global exception handlers
+    :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the exception handlers
+        (within the ``context`` if given, so that the client's handlers are reached as well; otherwise only the global ones)
+    :param context: a slot to await the awaitable in (default: ``None``)
     """
     awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create')
     assert core.loop is not None
-    task = core.loop.create_task(_ensure_coroutine(awaitable), name=name)
-    if handle_exceptions:
+    if context is not None:
+        coro = _await_in_context(awaitable, context, handle_exceptions=handle_exceptions)
+    else:
+        coro = _ensure_coroutine(awaitable)
+    task = core.loop.create_task(coro, name=name)
+    if handle_exceptions and context is None:
         task.add_done_callback(_handle_exceptions)
     running_tasks.add(task)
     task.add_done_callback(running_tasks.discard)
@@ -51,16 +59,18 @@ def create(awaitable: Awaitable[Any] | None = None, *,
     return task
 
 
-def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> None:
+def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task',
+                    context: AbstractContextManager | None = None) -> None:
     """Create a background task, or defer to app startup if the event loop isn't running yet.
 
     :param awaitable: the awaitable to schedule
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
+    :param context: a slot to await the awaitable in, see ``create()`` (default: ``None``)
     """
     if core.is_loop_running():
-        create(awaitable, name=name)
+        create(awaitable, name=name, context=context)
     else:
-        _defer(awaitable, lambda: create(awaitable, name=name))
+        _defer(awaitable, lambda: create(awaitable, name=name, context=context))
 
 
 @overload
@@ -170,6 +180,17 @@ def _resolve_awaitable(awaitable: Awaitable[Any] | None,
     if coroutine is not None:
         raise TypeError(f'{function_name}() received both awaitable and deprecated coroutine arguments')
     return awaitable
+
+
+async def _await_in_context(awaitable: Awaitable[Any], context: AbstractContextManager, *, handle_exceptions: bool) -> None:
+    """Await an awaitable within a slot context, handling exceptions in-context so that the client's handlers are reached."""
+    with context:
+        try:
+            await awaitable
+        except Exception as e:
+            if not handle_exceptions:
+                raise
+            core.app.handle_exception(e)
 
 
 def _handle_exceptions(task: asyncio.Task) -> None:
