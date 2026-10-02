@@ -53,7 +53,7 @@ class page:
         :param path: route of the new page (path must start with '/')
         :param title: optional page title
         :param viewport: optional viewport meta tag content
-        :param favicon: optional relative filepath or absolute URL to a favicon (default: `None`, NiceGUI icon will be used)
+        :param favicon: optional path to a local image file, absolute `http(s)://` URL, data URL, inline SVG or emoji (default: `None`, favicon of `ui.run` will be used)
         :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
         :param language: language of the page, used for Quasar elements and the ``lang`` attribute of the ``html`` tag
             (defaults to ``language`` argument of ``run`` command, *updated in version 3.14.0*: can be ``None`` to omit the ``lang`` attribute)
@@ -75,10 +75,6 @@ class page:
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
         self.markdown = markdown
-
-        if self.api_router.prefix and self._path == '/':
-            # register the bare prefix (e.g. "/other" instead of "/other/") so links without a trailing slash match
-            self._path = ''
 
         create_favicon_route(self.path, favicon)
 

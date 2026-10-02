@@ -257,7 +257,7 @@ async def test_tab_storage_in_sync_connect_handler(user: User):
 
     await user.open('/')
     await user.should_see('hello')
-    assert values == [1], 'a sync connect handler must find the tab storage in place'
+    assert values == [1]
 
 
 async def test_reconnect_after_reload_keeps_tab_storage(user: User):

@@ -220,6 +220,19 @@ class Element(Visibility):
             if child.visible and (markdown := child._render_markdown())  # pylint: disable=protected-access
         )
 
+    def _displayed_contents(self, *, only_visible: bool) -> list:  # pylint: disable=unused-argument
+        """Collect the contents this element displays as text.
+
+        ``ElementFilter`` (and with it ``user.should_see`` and friends) matches its ``content`` against these.
+        The default implementation returns the props that are rendered as text.
+        Override to add contents that are stored elsewhere (e.g. values, option labels, tree nodes).
+        Entries can be of any type and may be ``None``: the filter compares against ``str()`` of each entry
+        and skips ``None`` and empty strings.
+
+        :param only_visible: whether to skip contents that are currently hidden (e.g. nodes of collapsed tree branches)
+        """
+        return [self._props.get(key) for key in ('text', 'label', 'icon', 'placeholder', 'error-message')]
+
     def _collect_slot_dict(self) -> dict[str, Any]:
         return {
             name: {
@@ -398,7 +411,8 @@ class Element(Visibility):
                 request=storage.request_contextvar.get(),
             )
             self._event_listeners[listener.id] = listener
-            self.update()
+            if not self._props._suspend_count:  # pylint: disable=protected-access
+                self.update()
         return self
 
     def _handle_event(self, msg: dict) -> None:
@@ -427,7 +441,10 @@ class Element(Visibility):
         return True
 
     def update(self) -> None:
-        """Update the element on the client side."""
+        """Update the element on the client side.
+
+        Subclasses can override this to rebuild derived state before calling ``super().update()``.
+        """
         if not self._is_safe_to_interact():
             return
         self.client.outbox.enqueue_update(self)

@@ -10,7 +10,15 @@ If no numbers are given or the user asks for "all new" alerts, fetch all open on
 gh api 'repos/zauberzeug/nicegui/dependabot/alerts?state=open'
 ```
 
-## Steps
+## Python alerts (`uv.lock`)
+
+Alerts on `uv.lock` are fixed by a pin in `pyproject.toml`, not by only re-locking:
+add `"<pkg>>=<patched>",  # https://github.com/zauberzeug/nicegui/security/dependabot/<number>` to the section that pulls the package in
+(`dependencies` for runtime deps, the `dev` group for test-only deps; append `, for <parent>` if it is transitive — `uv tree --invert --package <pkg>` shows the parents),
+then run `uv lock` and check that the patched version satisfies `requires-python`.
+Commit `pyproject.toml` and `uv.lock` together; `DEPENDENCIES.md` only covers npm packages and stays unchanged.
+
+## Steps (npm alerts)
 
 01. **Fetch each alert** to identify the package, manifest path, and first patched version:
 

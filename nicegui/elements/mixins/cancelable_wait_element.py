@@ -1,6 +1,4 @@
 import asyncio
-from collections.abc import Iterator
-from contextlib import contextmanager
 from typing import Any
 
 from ...element import Element
@@ -20,13 +18,15 @@ class CancelableWaitElement(Element):
         self._waiting_tasks: dict[asyncio.Task, asyncio.Event] = {}
         super().__init__(**kwargs)
 
-    @contextmanager
-    def _cancel_when_deleted(self, event: asyncio.Event) -> Iterator[None]:
-        """Cancel the current task if this element is deleted before ``event`` is set.
+    async def _wait_for(self, event: asyncio.Event) -> None:
+        """Wait until ``event`` is set, cancelling the current task if this element is deleted first.
 
-        A deleted element can never fire the awaited interaction,
+        An interaction that already happened wins over the deletion: a set event returns immediately.
+        Otherwise a deleted element can never fire the awaited interaction,
         so the task is cancelled rather than resolved to keep the code after the ``await`` from running.
         """
+        if event.is_set():
+            return
         if self.is_deleted:
             # raise directly instead of task.cancel() so a caller catching the CancelledError keeps a clean task,
             # just like when the deletion happens during the wait
@@ -35,7 +35,8 @@ class CancelableWaitElement(Element):
         assert task is not None
         self._waiting_tasks[task] = event
         try:
-            yield
+            await self.client.connected()
+            await event.wait()
         finally:
             self._waiting_tasks.pop(task, None)
 
