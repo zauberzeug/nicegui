@@ -1,6 +1,5 @@
 """inspired from https://quantlane.com/blog/ensure-asyncio-task-exceptions-get-logged/"""
 import asyncio
-import inspect
 from collections.abc import Awaitable, Callable, Coroutine, Generator
 from contextlib import AbstractContextManager
 from typing import Any, TypeVar, cast, overload
@@ -55,7 +54,7 @@ def create(awaitable: Awaitable[Any] | None = None, *,
         task = core.loop.create_task(coro, name=name)
         if handle_exceptions:
             task.add_done_callback(_retrieve_exception)  # the exception has already been handled in-context
-        if inspect.iscoroutine(awaitable):
+        if asyncio.iscoroutine(awaitable):
             inner = awaitable
             # the task may have been cancelled before awaiting the coroutine
             task.add_done_callback(lambda _: inner.close())

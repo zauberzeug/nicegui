@@ -100,7 +100,7 @@ class refreshable(Generic[_P, _T]):
             if awaitables := self._execute_refresh(args, kwargs, instance=instance):
                 await asyncio.gather(*awaitables)
 
-        return AwaitableResponse(execute, execute)
+        return AwaitableResponse(execute, execute, name=f'refresh {self.func.__name__}')
 
     def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any], *, instance: Any) -> list[Awaitable[Any]]:
         """Execute the refresh and return a list of awaitables for async functions."""
