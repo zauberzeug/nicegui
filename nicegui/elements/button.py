@@ -66,22 +66,18 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         for event in self._clicked_waiters:
             event.set()
 
-    def _ensure_clicked_waiter_listener(self) -> None:
-        if self._clicked_waiters_bound:
-            return
-        self._clicked_waiters_bound = True
-        self.on('click', self._wake_clicked_waiters, [])
-
     async def clicked(self) -> None:
         """Wait until the button is clicked.
 
         *Updated in version 3.17.0: Awaiting the button click cancels the awaiting task
         when the button is deleted, e.g. because the client disconnected.*
         """
+        if not self._clicked_waiters_bound:
+            self._clicked_waiters_bound = True
+            self.on('click', self._wake_clicked_waiters, [])
         event = asyncio.Event()
         self._clicked_waiters.add(event)
         try:
-            self._ensure_clicked_waiter_listener()
             await self._wait_for(event)
         finally:
             self._clicked_waiters.discard(event)
