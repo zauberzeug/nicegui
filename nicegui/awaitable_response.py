@@ -19,7 +19,7 @@ class AwaitableResponse:
 
         :param fire_and_forget: The callable to run if the response is not awaited (it may return an awaitable).
         :param wait_for_result: The callable to run if the response is awaited.
-        :param name: The name of the background task running ``fire_and_forget`` (default: "fire").
+        :param name: The name of the background task running ``fire_and_forget`` (default: "fire", *added in version 3.18.0*)
         """
         self.fire_and_forget = fire_and_forget
         self.wait_for_result = wait_for_result

@@ -161,8 +161,8 @@ def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs)
         try:
             result = callback.invoke(*args, **kwargs)
             if helpers.should_await(result):
-                background_tasks.create_or_defer(
-                    result, name=f'{callback.filepath}:{callback.line}', context=callback.context)
+                background_tasks.create_or_defer(result, name=f'{callback.filepath}:{callback.line}',
+                                                 context=callback.context)
         except Exception as e:
             core.app.handle_exception(e)
 

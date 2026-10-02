@@ -41,7 +41,7 @@ def create(awaitable: Awaitable[Any] | None = None, *,
     :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the exception handlers
         (within the ``context`` if given, so that the client's handlers are reached as well; otherwise only the global ones)
     :param context: a context manager to await the awaitable in, e.g. a container element or ``ui.context.client``
-        (default: ``None``)
+        (default: ``None``, *added in version 3.18.0*)
     """
     awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create')
     assert core.loop is not None
@@ -72,7 +72,7 @@ def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task',
 
     :param awaitable: the awaitable to schedule
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
-    :param context: a context manager to await the awaitable in, see ``create()`` (default: ``None``)
+    :param context: a context manager to await the awaitable in, see ``create()`` (default: ``None``, *added in version 3.18.0*)
     """
     if core.is_loop_running():
         create(awaitable, name=name, context=context)
