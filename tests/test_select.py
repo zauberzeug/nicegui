@@ -78,6 +78,23 @@ def test_multi_select(screen: Screen):
     screen.should_contain("['Bob']")
 
 
+def test_remove_chip_with_custom_slot(screen: Screen):
+    @ui.page('/')
+    def page():
+        s = ui.select(['Apple', 'Banana', 'Cherry'],
+                      multiple=True, value=['Apple', 'Banana', 'Cherry'], with_input=True).props('use-chips')
+        s.add_slot('selected-item',
+                   '<q-chip removable @remove="props.removeAtIndex(props.index)">{{ props.opt.label }}</q-chip>')
+        ui.label().bind_text_from(s, 'value', backward=str)
+
+    screen.open('/')
+    screen.should_contain("['Apple', 'Banana', 'Cherry']")
+
+    # #6284: focusing the field on the first click must not remount the chip and swallow the click
+    screen.find_by_css('.q-chip__icon--remove').click()
+    screen.should_contain("['Banana', 'Cherry']")
+
+
 def test_changing_options(screen: Screen):
     @ui.page('/')
     def page():
