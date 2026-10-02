@@ -33,9 +33,13 @@ class Callback(Generic[P]):
         return (self.slot and self.slot()) or nullcontext()
 
     def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
-        """Run the callback."""
+        """Run the callback within its slot context."""
         with self.context:
-            return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
+            return self.invoke(*args, **kwargs)
+
+    def invoke(self, *args: P.args, **kwargs: P.kwargs) -> Any:
+        """Call the callback function, with or without arguments as it expects them."""
+        return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
 
     async def await_result(self, result: Awaitable) -> Any:
         """Await the result of the callback."""
@@ -153,13 +157,14 @@ class Event(Generic[P]):
 
 
 def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
-    try:
-        result = callback.run(*args, **kwargs)
-        if helpers.should_await(result):
-            background_tasks.create_or_defer(
-                result, name=f'{callback.filepath}:{callback.line}', context=callback.context)
-    except Exception as e:
-        core.app.handle_exception(e)
+    with callback.context:  # handle exceptions in the subscriber's context so that its client's handlers are reached
+        try:
+            result = callback.invoke(*args, **kwargs)
+            if helpers.should_await(result):
+                background_tasks.create_or_defer(
+                    result, name=f'{callback.filepath}:{callback.line}', context=callback.context)
+        except Exception as e:
+            core.app.handle_exception(e)
 
 
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:

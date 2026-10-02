@@ -283,6 +283,32 @@ async def test_ui_on_exception_from_async_subscriber(user: User, caplog: pytest.
     caplog.records.clear()
 
 
+@pytest.mark.parametrize('is_async', [False, True], ids=['sync', 'async'])
+async def test_ui_on_exception_from_subscriber_when_emitted_outside_ui(user: User, caplog: pytest.LogCaptureFixture,
+                                                                       is_async: bool):
+    seen: list[Exception] = []
+    event: Event[[]] = Event()
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        def sync_subscriber():
+            raise RuntimeError('boom')
+
+        async def async_subscriber():
+            raise RuntimeError('boom')
+
+        event.subscribe(async_subscriber if is_async else sync_subscriber)
+
+    await user.open('/')
+    app.timer(0.01, event.emit, once=True)  # no UI context, like a data model would emit
+    await asyncio.sleep(0.1)
+    assert len(seen) == 1 and 'boom' in str(seen[0]), "the subscriber's page should see the exception"
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
+
+
 async def test_failing_exception_handler_does_not_skip_other_handlers(user: User, caplog: pytest.LogCaptureFixture):
     page_exceptions: list[Exception] = []
     app_exceptions: list[Exception] = []
