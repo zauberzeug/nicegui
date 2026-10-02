@@ -141,12 +141,9 @@ class Air:
                 if not client.accept_handshake(data['sid'], data['tab_id'], data['environ']):
                     return False
                 client.environ = data['environ']
-                if data.get('old_tab_id'):
-                    core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
-                client.tab_id = data['tab_id']
                 client.on_air = True
-                client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
-                await core.app.storage._create_tab_storage(data['tab_id'])  # pylint: disable=protected-access
+                await client.handle_handshake(data['sid'], data['tab_id'], data.get('old_tab_id'),
+                                              data['document_id'], data.get('next_message_id'))
                 return True
             return False
 

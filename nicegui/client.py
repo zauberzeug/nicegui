@@ -376,15 +376,25 @@ class Client:
             self._pinned_tab_id = tab_id
         return self._pinned_tab_id == tab_id
 
-    def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
-        """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
-        self._waiting_for_connection.clear()
-        self._connected.set()
+    async def handle_handshake(self, socket_id: str, tab_id: str, old_tab_id: str | None,
+                               document_id: str, next_message_id: int | str | None) -> None:
+        """Register the socket, create the tab storage and invoke connect handlers.
+
+        Both transports (local Socket.IO and On Air) call this after ``accept_handshake`` succeeded.
+        (For internal use only.)
+        """
+        self.tab_id = tab_id
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
         if next_message_id is not None:
-            self.outbox.try_rewind(next_message_id)
+            self.outbox.try_rewind(int(next_message_id))  # the implicit handshake takes it from the query string
+        # create the tab storage before anyone can observe the connection: sync connect handlers may access it
+        await core.app.storage._create_tab_storage(tab_id, old_tab_id)  # pylint: disable=protected-access
+        if socket_id not in self._socket_to_document_id:
+            return  # the socket disconnected while the tab storage was being created
+        self._waiting_for_connection.clear()
+        self._connected.set()
         storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
