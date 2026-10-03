@@ -309,7 +309,7 @@ def aggrid_with_dynamic_row_height():
     (see [JavaScript expressions in options](#javascript_expressions_in_options)).
     If `getRowId` is not defined, AG Grid uses the row index as a string, e.g. `'0'`.
     A stable row ID is also what lets AG Grid match rows sent from Python against rows already in the grid,
-    e.g. for `applyTransaction` with `update` or `remove`, or to preserve the selection across updates.
+    e.g. for `applyTransaction` with `update` or `remove`, or to preserve the selection when replacing `rowData` via `setGridOption`.
     If no row with the given ID exists, an error is logged in the browser console and on the server.
 
     The following demo shows how to use it to update cell values.
