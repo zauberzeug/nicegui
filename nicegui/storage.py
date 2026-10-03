@@ -201,7 +201,7 @@ class Storage:
         else:
             self._tabs[tab_id] = ObservableDict()
         if old_tab_id in self._tabs:
-            self._tabs[tab_id].update(self._tabs[old_tab_id])
+            self._tabs[tab_id].update(_copy_collections(self._tabs[old_tab_id]))
 
     async def close_tab(self, tab_id: str | None) -> None:
         """Close the tab storage. (For internal use only.)"""
@@ -227,3 +227,14 @@ class Storage:
         for user in self._users.values():
             await user.close()
         await self._general.close()
+
+
+def _copy_collections(value: Any) -> Any:
+    """Copy nested dicts, lists and sets into plain ones, so that the copy shares none of them with the original."""
+    if isinstance(value, dict):
+        return {key: _copy_collections(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_copy_collections(item) for item in value]
+    if isinstance(value, set):
+        return set(value)
+    return value
