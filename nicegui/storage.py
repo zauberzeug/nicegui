@@ -206,6 +206,7 @@ class Storage:
     async def close_tab(self, tab_id: str | None) -> None:
         """Close the tab storage. (For internal use only.)"""
         if tab_id and isinstance(tab := self._tabs.get(tab_id), PersistentDict):
+            del self._tabs[tab_id]  # a tab that returns later creates and loads its storage anew
             await tab.close()
 
     def clear(self) -> None:

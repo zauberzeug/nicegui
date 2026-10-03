@@ -434,7 +434,9 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                await core.app.storage.close_tab(tab_id_to_close)
+                other_clients = (client for client in Client.instances.values() if client is not self)
+                if all(client.tab_id != tab_id_to_close for client in other_clients):  # e.g. not after a reload
+                    await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
