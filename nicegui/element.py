@@ -39,7 +39,22 @@ TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
-class Element(Visibility):
+class ElementMetaclass(type):
+    """Metaclass for Element that unregisters half-built elements if construction fails (#6343)."""
+
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
+        element = cls.__new__(cls, *args, **kwargs)  # type: ignore[call-overload]
+        if isinstance(element, cls):
+            try:
+                element.__init__(*args, **kwargs)
+            except Exception:
+                if hasattr(element, '_unregister'):
+                    element._unregister()
+                raise
+        return element
+
+
+class Element(Visibility, metaclass=ElementMetaclass):
     component: Component | None = None
     exposed_libraries: ClassVar[list[Library]] = []
     _default_props: ClassVar[dict[str, Any]] = {}
@@ -575,6 +590,37 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
+
+    def _unregister(self) -> None:
+        """Unregister a half-built element if its constructor raises after Element.__init__ (#6343)."""
+        client_ref = getattr(self, '_client', None)
+        client = client_ref() if client_ref is not None else None
+        if client is None or getattr(self, '_deleted', False):
+            return
+
+        descendants: list[Element] = []
+        if hasattr(self, 'slots'):
+            try:
+                descendants = list(self.descendants(include_self=True))
+            except Exception:
+                descendants = [self]
+        else:
+            descendants = [self]
+
+        from . import binding
+        try:
+            binding.remove(descendants)
+        except Exception:
+            pass
+
+        for el in descendants:
+            el._deleted = True
+            client.elements.pop(el.id, None)
+            client.outbox.updates.pop(el.id, None)
+            if hasattr(el, '_parent_slot') and el._parent_slot is not None:
+                parent_slot = el._parent_slot()
+                if parent_slot is not None and el in parent_slot.children:
+                    parent_slot.children.remove(el)
 
     def __str__(self) -> str:
         result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck

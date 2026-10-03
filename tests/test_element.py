@@ -1,3 +1,4 @@
+from pathlib import Path
 import platform
 import weakref
 
@@ -542,3 +543,43 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
     screen.open('/')
     screen.click('Check IDs')
     screen.should_contain('All IDs found')
+
+
+async def test_element_unregistered_when_constructor_raises(user: User):
+    created_elements_before: int = 0
+    created_elements_after: int = 0
+
+    class FailingSubclass(ui.element):
+
+        def __init__(self) -> None:
+            super().__init__()
+            with self:
+                ui.label('nested child')
+            raise RuntimeError('Constructor failed after super().__init__')
+
+    @ui.page('/')
+    def page():
+        nonlocal created_elements_before, created_elements_after
+        with ui.column() as col:
+            ui.label('before')
+            created_elements_before = len(ui.context.client.elements)
+
+            with pytest.raises(ValueError):
+                ui.html('<script>alert("xss")</script>')
+
+            with pytest.raises(FileNotFoundError):
+                ui.image(Path('does_not_exist_file.png'))
+
+            with pytest.raises(RuntimeError):
+                FailingSubclass()
+
+            created_elements_after = len(ui.context.client.elements)
+            ui.label('after')
+
+            # Ensure failed elements were removed from parent slot
+            assert len(col.default_slot.children) == 2  # 'before' and 'after' only
+
+    await user.open('/')
+    assert created_elements_before == created_elements_after
+    await user.should_see('before')
+    await user.should_see('after')
