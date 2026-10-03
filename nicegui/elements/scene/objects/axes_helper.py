@@ -11,6 +11,6 @@ class AxesHelper(Object3D, component='axes_helper.js'):
         The Y axis is green.
         The Z axis is blue.
 
-        :param length: length of the the axes (default: 1.0)
+        :param length: length of the axes (default: 1.0)
         """
         super().__init__(length)
