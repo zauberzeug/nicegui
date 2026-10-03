@@ -400,7 +400,7 @@ class Client:
         self._num_connections[document_id] += 1
         if next_message_id is not None:
             self.outbox.try_rewind(int(next_message_id))  # the implicit handshake takes it from the query string
-        # create the tab storage before anyone can observe the connection: sync connect handlers may access it
+        # create the tab storage before waking connected() waiters and invoking connect handlers, which may access it
         await core.app.storage._create_tab_storage(tab_id, old_tab_id)  # pylint: disable=protected-access
         if socket_id not in self._socket_to_document_id:
             return  # the socket disconnected while the tab storage was being created
