@@ -25,6 +25,9 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         That means it is not removed when closed, but only hidden.
         You should either create it only once and then reuse it, or remove it with `.clear()` after dismissal.
 
+        *Updated in version 3.16.0: Awaiting a dialog resolves with ``None`` when the dialog is deleted,
+        e.g. because the client disconnected.*
+
         :param value: whether the dialog should be opened on creation (default: `False`)
         """
         with context.client.layout:
@@ -42,7 +45,10 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
 
     @property
     def submitted(self) -> asyncio.Event:
-        """An event that is set when the dialog is submitted."""
+        """An event that is set when the dialog is submitted.
+
+        *Updated in version 3.16.0: The event is also set when the dialog is deleted.*
+        """
         if self._submitted is None:
             self._submitted = asyncio.Event()
         return self._submitted
@@ -55,12 +61,16 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         return super().toggle()
 
     def __await__(self):
+        if not self._is_safe_to_interact():
+            return None  # the dialog cannot be submitted anymore, so we resolve immediately instead of waiting forever
         self._result = None
         self.submitted.clear()
         self.open()
         yield from self.submitted.wait().__await__()  # pylint: disable=no-member
         result = self._result
-        self.close()
+        self._result = None  # release the result so a deleted dialog does not keep it alive (close() would do the same)
+        if not self.is_deleted:  # closing a deleted dialog would warn about using a deleted element
+            self.close()
         return result
 
     def submit(self, result: Any) -> None:
@@ -73,3 +83,9 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         if not self.value:
             self._result = None
             self.submitted.set()
+
+    def _handle_delete(self) -> None:
+        # resolve pending awaits so their tasks don't wait forever, e.g. when the client is deleted after a disconnect
+        # (keep self._result untouched: a result submitted just before deletion should still reach the awaiting task)
+        self.submitted.set()
+        super()._handle_delete()

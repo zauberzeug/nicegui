@@ -9,8 +9,9 @@ from .logging import log
 
 running_tasks: set[asyncio.Task] = set()
 lazy_tasks_running: dict[str, asyncio.Task] = {}
-lazy_coroutines_waiting: dict[str, Coroutine[Any, Any, Any]] = {}
+lazy_coroutines_waiting: dict[str, Awaitable[Any]] = {}
 _await_tasks_on_shutdown: set[asyncio.Task] = set()
+_deferred_awaitables: list[Awaitable[Any]] = []
 
 
 @overload
@@ -59,7 +60,7 @@ def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task') -> None
     if core.is_loop_running():
         create(awaitable, name=name)
     else:
-        core.app.on_startup(lambda: create(awaitable, name=name))
+        _defer(awaitable, lambda: create(awaitable, name=name))
 
 
 @overload
@@ -79,9 +80,11 @@ def create_lazy(awaitable: Awaitable[Any] | None = None, *,
     """
     awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create_lazy')
     if name in lazy_tasks_running:
-        if name in lazy_coroutines_waiting:
-            lazy_coroutines_waiting[name].close()
-        lazy_coroutines_waiting[name] = _ensure_coroutine(awaitable)
+        waiting = lazy_coroutines_waiting.get(name)
+        if asyncio.iscoroutine(waiting):
+            waiting.close()
+        # NOTE: store the original awaitable so an _AwaitOnShutdown marker survives requeueing in finalize()
+        lazy_coroutines_waiting[name] = awaitable
         return
 
     def finalize(_) -> None:
@@ -98,7 +101,29 @@ def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
     if core.is_loop_running():
         create_lazy(awaitable, name=name)
     else:
-        core.app.on_startup(lambda: create_lazy(awaitable, name=name))
+        _defer(awaitable, lambda: create_lazy(awaitable, name=name))
+
+
+def _defer(awaitable: Awaitable[Any], start: Callable[[], Any]) -> None:
+    """Start the awaitable on app startup and remember it until then so that ``reset()`` can close it."""
+    def start_deferred() -> None:
+        if awaitable in _deferred_awaitables:
+            _deferred_awaitables.remove(awaitable)
+        start()
+    core.app.on_startup(start_deferred)
+    _deferred_awaitables.append(awaitable)
+
+
+def reset() -> None:
+    """Close awaitables which were deferred to app startup but will never be started. (Useful for testing.)
+
+    Note: Call this together with ``app.reset()``,
+    which drops the startup handlers that would otherwise start the closed awaitables.
+    """
+    for awaitable in _deferred_awaitables:
+        if asyncio.iscoroutine(awaitable):
+            awaitable.close()
+    _deferred_awaitables.clear()
 
 
 class _AwaitOnShutdown:
@@ -174,5 +199,6 @@ async def teardown() -> None:
                           ', '.join(t.get_name() for t in tasks if not t.done()))
             except Exception:
                 log.exception('Error while cancelling tasks')
-    for coro in lazy_coroutines_waiting.values():
-        coro.close()
+    for awaitable in lazy_coroutines_waiting.values():
+        if asyncio.iscoroutine(awaitable):
+            awaitable.close()

@@ -254,6 +254,38 @@ def aggrid_with_complex_objects():
     })
 
 
+@doc.demo('JavaScript expressions in options', '''
+    The options dictionary is sent to the browser as JSON, so a string value stays a string.
+    Many AG Grid options expect a JavaScript function instead, e.g. `getRowId`, `getRowHeight` or a column's `valueFormatter`.
+    Prefix such a key with a colon and NiceGUI evaluates the value as a JavaScript expression on the client.
+    The expression can be anything JavaScript understands: an arrow function, an object, a regular expression, etc.
+
+    Without the colon, `'getRowId': 'params.data.name'` hands AG Grid a plain string where it expects a function.
+    The grid then shows no rows and a `TypeError` in the browser console, while nothing is reported in Python.
+
+    Note that AG Grid has its own expression strings, e.g. `'x < 21'` in `cellClassRules`
+    (see [Conditional Cell Formatting](#ag_grid_with_conditional_cell_formatting) above).
+    These are evaluated by AG Grid itself and need no colon.
+
+    The `getRowId` callback gives each row a stable ID, which is needed to address rows from Python,
+    e.g. with `run_row_method` (see [Run row methods](#run_row_methods) below).
+''')
+def javascript_expressions():
+    grid = ui.aggrid({
+        'columnDefs': [
+            {'field': 'name'},
+            {'field': 'age', ':valueFormatter': 'params => `${params.value} years`'},
+        ],
+        'rowData': [
+            {'name': 'Alice', 'age': 18},
+            {'name': 'Bob', 'age': 21},
+            {'name': 'Carol', 'age': 42},
+        ],
+        ':getRowId': 'params => params.data.name',
+    })
+    ui.button('Update Bob', on_click=lambda: grid.run_row_method('Bob', 'setDataValue', 'age', 99))
+
+
 @doc.demo('AG Grid with dynamic row height', '''
     You can set the height of individual rows by passing a function to the `getRowHeight` argument.
 ''')
@@ -272,7 +304,13 @@ def aggrid_with_dynamic_row_height():
 @doc.demo('Run row methods', '''
     You can run methods on individual rows by using the `run_row_method` method.
     This method takes the row ID, the method name and the method arguments as arguments.
-    The row ID is either the row index (as a string) or the value of the `getRowId` function.
+
+    The row ID is the value returned by the `getRowId` option, a JavaScript callback
+    (see [JavaScript expressions in options](#javascript_expressions_in_options)).
+    If `getRowId` is not defined, AG Grid uses the row index as a string, e.g. `'0'`.
+    A stable row ID is also what lets AG Grid match rows sent from Python against rows already in the grid,
+    e.g. for `applyTransaction` with `update` or `remove`, or to preserve the selection when replacing `rowData` via `setGridOption`.
+    If no row with the given ID exists, an error is logged in the browser console and on the server.
 
     The following demo shows how to use it to update cell values.
     Note that the row selection is preserved when the value is updated.
@@ -364,6 +402,29 @@ def project_code():
     #     ],
     # }, modules='enterprise')
     ui.label('This demo does not run online due to licensing restrictions.')  # HIDE
+
+
+doc.text('Debugging', '''
+    If the grid does not behave as expected, open the developer console in your browser.
+    Typical errors you will find there (the last two are also forwarded to the server log):
+
+    - `TypeError: ... is not a function` from AG Grid if an option expecting a function received a plain string (missing colon)
+    - `Error while converting :getRowId attribute to function` if a JavaScript expression in the options does not evaluate
+    - `Method "..." not found` if `run_grid_method` or `run_row_method` is called with an unknown method name
+    - `Row "..." not found` if `run_row_method` is called with an unknown row ID
+
+    To inspect the arguments of an event, register a JavaScript handler
+    (see [Respond to an AG Grid event](#respond_to_an_ag_grid_event)):
+    ```
+    .on('rowDataUpdated', js_handler='console.log')
+    ```
+
+    To poke at the grid directly, access the [AG Grid API](https://www.ag-grid.com/javascript-data-grid/grid-api/)
+    via `ui.run_javascript` (see [Access grid API via JavaScript](#access_grid_api_via_javascript)):
+    ```
+    await ui.run_javascript(f'return getElement({grid.id}).api.getDisplayedRowCount()')
+    ```
+''')
 
 
 doc.reference(ui.aggrid)

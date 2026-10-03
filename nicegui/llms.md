@@ -238,6 +238,19 @@ The `color` parameter (on button, badge, chip, etc.) accepts, in priority order:
 2. Tailwind color names (`red-500`, `blue-200`, …)
 3. CSS color values (`#ff0000`, `rgb(255,0,0)`, `red`)
 
+### Custom colors
+
+For brand or domain colors, register named colors with `ui.colors` (per page) or `app.colors` (app-wide) instead of repeating hex values in inline styles.
+A registered name then works like a Quasar color name: in the `color` parameter, in the `color` and `text-color` props, and in the `text-<name>` and `bg-<name>` classes.
+These classes are `!important`, so no `!important` inline styles are needed to override Quasar.
+
+```python
+app.colors(brand='#187C61', warn_soft='#FDE68A')  # underscores become dashes: warn-soft
+ui.button('Save', color='brand')
+ui.button('Details').props('flat text-color=brand')
+ui.label('Hint').classes('bg-warn-soft')
+```
+
 ---
 
 ## Layout Elements (Context Managers)
@@ -338,6 +351,19 @@ ui.markdown('```mermaid\ngraph TD; A-->B\n```',
             extras=['fenced-code-blocks', 'tables', 'mermaid'])  # `extras` REPLACES the default ['fenced-code-blocks', 'tables']
 ui.markdown.default_extras = ['fenced-code-blocks', 'tables', 'mermaid']  # change the default for all ui.markdown (since 3.14)
 ui.code('print("hello")', language='python')
+editor = ui.codemirror('def f():\n    return 42', language='Python')  # editable code editor
+editor.line_anchors = {'a': 2}          # line anchors (since 3.16): stable {id: line} references that follow
+                                        # their line through edits; read back for the current positions,
+                                        # on_anchor_change= fires whenever a tracked position moves
+editor.decorations = [                  # decorations (since 3.17): style, hide or annotate text without changing it
+    {'kind': 'mark', 'from': 4, 'to': 5, 'class': 'bg-yellow-200'},        # style a character range
+    {'kind': 'line', 'line': 2, 'class': 'bg-red-100'},                    # style a whole line (1-indexed)
+    {'kind': 'replace', 'from': 13, 'to': 22, 'text': '…'},                 # hide a range, or show `text` instead (block=True folds lines)
+    {'kind': 'widget', 'position': 0, 'text': '# hint', 'side': -1},       # insert text at a position (side: -1 before, 1 after)
+]                                       # from/to/position are Python str indices into editor.value; `class` takes Tailwind
+                                        # or your own CSS; in-place list edits sync too; reading back returns the specs as
+                                        # declared (positions are not tracked like line anchors); decoration_html=True
+                                        # renders `text` as sanitized HTML; `attributes` is applied raw — never pass untrusted input
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -433,6 +459,47 @@ with ui.scene() as scene:
     scene.sphere().move(x=1)
     scene.box().material('#ff0000')
 ```
+
+### Custom Three.js objects (since 3.16)
+
+Subclass `Object3D` and pair it with a sibling JS module.
+The `component=` path is resolved relative to the Python file — no manual registration needed.
+`super().__init__(...)` args are forwarded positionally to the JS factory; `self.run_method('<name>', *args)` dispatches to a same-named method on the component instance.
+
+```python
+# pulsing_sphere.py
+from nicegui.elements.scene import Object3D
+
+class PulsingSphere(Object3D, component='pulsing_sphere.js'):
+    def __init__(self, radius: float = 1.0) -> None:
+        super().__init__(radius)
+    def set_scale(self, s: float):
+        self.run_method('set_scale', s)
+```
+
+```js
+// pulsing_sphere.js — default-export a class
+import { THREE } from "nicegui-scene";
+
+export default class PulsingSphere {
+  mesh;
+  // or: create_geometry(...) for a plain BufferGeometry
+  create_mesh(radius) {
+    this.mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 32, 16),
+      new THREE.MeshPhongMaterial({ transparent: true }),
+    );
+    return this.mesh;
+  }
+  set_scale(s) { this.mesh.scale.set(s, s, s); }
+  // optional hooks: apply_material({ color, opacity, side }), created()
+}
+```
+
+Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
+Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
+
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
 
 ---
 
@@ -789,7 +856,8 @@ app.add_middleware(BaseHTTPMiddleware, dispatch=auth_dispatch)
 # Run — most relevant flags (the values shown are examples; the default follows in the comment)
 ui.run(
     host='0.0.0.0',                  # default: '0.0.0.0', or '127.0.0.1' in native mode
-    port=8080,                       # default: 8080, or an open port in native mode
+    port=8080,                       # default: 8080, or an open port in native mode; set it here —
+                                     # NICEGUI_HOST/NICEGUI_PORT env vars are internal, ignored and warned about (since 3.17)
     title='My App',                  # default: 'NiceGUI'; can be overwritten per page
     favicon='🚀',                    # default: None (NiceGUI icon); emoji, file path or URL
     dark=None,                       # default: False; None = follow system
@@ -951,6 +1019,7 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.footer()`                                                       | Page footer                                                                  |
 | `ui.left_drawer()`                                                  | Left sidebar drawer                                                          |
 | `ui.right_drawer()`                                                 | Right sidebar drawer                                                         |
+| `ui.drawer(side)`                                                   | Sidebar drawer with `side='left'` / `'right'` (base of the two above)        |
 | `ui.page_sticky(position)`                                          | Fixed-position overlay                                                       |
 | `ui.page_scroller()`                                                | Scroll-to-top button                                                         |
 | `ui.teleport(to)`                                                   | Render child in different DOM location                                       |
@@ -1018,7 +1087,7 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.fullscreen()`         | Programmatic fullscreen control (since 2.11.0) |
 | `ui.parallax(source)`     | Parallax-image header (Quasar QParallax)       |
 | `ui.dark_mode()`          | Dark mode toggle                               |
-| `ui.colors(primary, ...)` | Global theme colors                            |
+| `ui.colors(primary, ...)` | Theme colors and custom named colors           |
 | `ui.query(selector)`      | Style arbitrary DOM elements                   |
 
 ### Global Functions
@@ -1219,6 +1288,12 @@ ui.query('body').classes('bg-grey-2')
 ui.button().style('background-color: var(--q-primary)')
 # GOOD: let NiceGUI handle Quasar theme
 ui.button(color='primary')
+
+# BAD: configuring host/port via NICEGUI_* environment variables — they are internal to NiceGUI,
+#      ui.run() overwrites them and (since 3.17) logs a warning; the app serves on port= (default 8080)
+os.environ['NICEGUI_PORT'] = '8113'   # or: NICEGUI_PORT=8113 python main.py
+# GOOD: read your own variable and pass it explicitly
+ui.run(port=int(os.environ.get('PORT', 8080)))
 ```
 
 ---
@@ -1232,6 +1307,15 @@ async def test_counter(user: User) -> None:
     await user.open('/')
     await user.click('Increment')
     await user.should_see('Count: 1')
+```
+
+`user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` always search the whole page (including header, drawers and footer).
+When markers or content repeat across the page, limit them to one subtree with `user.scope(...)` (since 3.16):
+
+```python
+with user.scope(marker='left-card'):  # same filter args as user.find(), must match exactly one element
+    await user.should_see('Apple')
+    user.find('Buy').click()
 ```
 
 Use `Screen` fixture only when JavaScript or real browser rendering is required:
@@ -1353,6 +1437,7 @@ ui.button('Click me') \
 - **Raw CSS/JS** when a NiceGUI Python API exists
 - **`ui.add_head_html` / `ui.add_body_html`** for things `.classes()`, `.style()`, or `ui.query()` can handle
 - **`ui.run_javascript()`** for styling or visibility (use Python API)
+- **`NICEGUI_PORT` / `NICEGUI_HOST` environment variables** — internal only and ignored; pass `ui.run(host=..., port=...)`
 - **Creating new files** when editing existing ones suffices
 - **Over-engineering**: three similar lines beat a premature abstraction
 

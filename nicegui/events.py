@@ -158,6 +158,11 @@ class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
 
 
 @dataclass(kw_only=True, slots=True)
+class CodeMirrorAnchorChangeEventArguments(UiEventArguments):
+    anchors: dict[str, int]  # mapping of anchor id to its current 1-indexed line, as reported by the browser
+
+
+@dataclass(kw_only=True, slots=True)
 class TableSelectionEventArguments(UiEventArguments):
     selection: list[Any]
 

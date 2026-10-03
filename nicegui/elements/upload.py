@@ -58,7 +58,8 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         super().__init__(label=label)
         self._props.set_bool('multiple', multiple)
         self._props.set_bool('auto-upload', auto_upload)
-        self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
+        self._registered_url = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
+        self._props['url'] = self._registered_url
 
         self._props.set_optional('max-file-size', max_file_size)
         self._props.set_optional('max-total-size', max_total_size)
@@ -71,7 +72,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._upload_handlers = [on_upload] if on_upload else []
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
-        @app.post(self._props['url'], include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
+        @app.post(self._registered_url, include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
         async def upload_route(request: Request) -> dict[str, str]:
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
@@ -123,5 +124,5 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         return self
 
     def _handle_delete(self) -> None:
-        app.remove_route(self._props['url'])
+        app.remove_route(self._registered_url)
         super()._handle_delete()

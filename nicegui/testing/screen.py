@@ -12,6 +12,7 @@ import pytest
 from selenium import webdriver
 from selenium.common.exceptions import (
     ElementNotInteractableException,
+    JavascriptException,
     NoSuchElementException,
     StaleElementReferenceException,
 )
@@ -149,6 +150,25 @@ class Screen:
                     pass  # element became stale, retry
                 self.wait(0.1)
             raise AssertionError('Condition not met')
+
+    def wait_for_js(self, expression: str, expected: Any, *, timeout: float | None = None) -> None:
+        """Wait until the given JavaScript expression evaluates to the expected value.
+
+        :param expression: JavaScript expression to evaluate
+        :param expected: expected value of the expression
+        :param timeout: maximum time to wait in seconds (default: ``IMPLICIT_WAIT``)
+        """
+        value = None
+        deadline = time.time() + (self.IMPLICIT_WAIT if timeout is None else timeout)
+        while time.time() < deadline:
+            try:
+                value = self.selenium.execute_script(f'return {expression}')
+                if value == expected:
+                    return
+            except JavascriptException:
+                pass  # e.g. the expression accesses something which does not exist yet, retry
+            self.wait(0.1)
+        raise AssertionError(f'"{expression}" is {value!r}, expected {expected!r}')
 
     def should_not_contain(self, text: str, wait: float = 0.5) -> None:
         """Assert that the page does not contain the given text."""

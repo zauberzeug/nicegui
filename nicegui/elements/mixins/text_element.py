@@ -102,3 +102,6 @@ class TextElement(Element):
 
     def _text_to_model_text(self, text: str) -> None:
         self._text = text
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self.text]
