@@ -1,3 +1,4 @@
+import asyncio
 import contextvars
 import os
 import uuid
@@ -96,6 +97,7 @@ class Storage:
         self._general = Storage._create_persistent_dict(GENERAL_ID)
         self._users: dict[str, PersistentDict] = {}
         self._tabs: dict[str, ObservableDict] = {}
+        self._tab_creations: dict[str, asyncio.Event] = {}
         self._active_request_sessions: Counter[str] = Counter()
         '''Number of in-flight HTTP requests per session id, so prune_user_storage does not remove
         user storage out from under a request that has not yet accessed app.storage.user.'''
@@ -181,15 +183,21 @@ class Storage:
         """Create tab storage for the given tab ID unless it exists already.
 
         A new storage takes over the data of ``old_tab_id`` if that tab's storage is still around,
-        which is how a reloaded page keeps its tab storage.
+        which is how a duplicated tab inherits the storage of the tab it was duplicated from.
         """
+        if creation := self._tab_creations.get(tab_id):
+            await creation.wait()  # a reconnect must not overtake a creation that is still loading from Redis
         if tab_id in self._tabs:
             return
         if Storage.redis_url:
             self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
             tab = self._tabs[tab_id]
             assert isinstance(tab, PersistentDict)
-            await tab.initialize()
+            self._tab_creations[tab_id] = asyncio.Event()
+            try:
+                await tab.initialize()
+            finally:
+                self._tab_creations.pop(tab_id).set()
         else:
             self._tabs[tab_id] = ObservableDict()
         if old_tab_id in self._tabs:
