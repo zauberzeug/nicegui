@@ -323,26 +323,28 @@ async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture, is
     async def page():
         ui.on_exception(handle)
 
-        @ui.refreshable
-        def sync_part(explode: bool = False):
+        async def refresh_awaited():
+            await part.refresh(True)
+
+        def build(explode: bool) -> None:
             if explode:
                 raise RuntimeError('boom')
+            with ui.row():  # the refresh deletes this row and thereby the slot of the button
+                ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
+
+        @ui.refreshable
+        def sync_part(explode: bool = False):
+            build(explode)
 
         @ui.refreshable
         async def async_part(explode: bool = False):
             await asyncio.sleep(0)
-            if explode:
-                raise RuntimeError('boom')
+            build(explode)
 
         part = async_part if is_async else sync_part
         result = part()
         if is_async:
             await result
-
-        async def refresh_awaited():
-            await part.refresh(True)
-
-        ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
 
     await user.open('/')
     user.find('fire').click()

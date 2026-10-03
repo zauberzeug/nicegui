@@ -339,10 +339,13 @@ async def test_failing_exception_handler_does_not_skip_other_handlers(user: User
 
 async def test_exception_after_deleting_the_handler_container(user: User, caplog: pytest.LogCaptureFixture):
     exceptions: list[Exception] = []
+    page_exceptions: list[Exception] = []
     app.on_exception(exceptions.append)
 
     @ui.page('/')
     def page():
+        ui.on_exception(page_exceptions.append)
+
         async def slow_handler():
             await asyncio.sleep(0.1)
             raise ValueError('real error')
@@ -358,6 +361,7 @@ async def test_exception_after_deleting_the_handler_container(user: User, caplog
     user.find('delete').click()
     await asyncio.sleep(0.3)
     assert [type(e) for e in exceptions] == [ValueError]
+    assert [type(e) for e in page_exceptions] == [ValueError], 'the page still exists and should see the exception'
     assert len(caplog.records) == 1 and 'real error' in caplog.records[0].message
     caplog.records.pop(0)
 

@@ -1,12 +1,13 @@
 """inspired from https://quantlane.com/blog/ensure-asyncio-task-exceptions-get-logged/"""
 import asyncio
 from collections.abc import Awaitable, Callable, Coroutine, Generator
-from contextlib import AbstractContextManager
+from contextlib import AbstractContextManager, nullcontext, suppress
 from typing import Any, TypeVar, cast, overload
 
 from . import core
 from .helpers.warnings import warn_once
 from .logging import log
+from .slot import Slot
 
 running_tasks: set[asyncio.Task] = set()
 lazy_tasks_running: dict[str, asyncio.Task] = {}
@@ -50,7 +51,11 @@ def create(awaitable: Awaitable[Any] | None = None, *,
         if handle_exceptions:
             task.add_done_callback(_handle_exceptions)
     else:
-        coro = _await_in_context(awaitable, context, handle_exceptions=handle_exceptions)
+        client = None
+        with context, suppress(RuntimeError):  # the element of the slot or its client may have been deleted
+            if stack := Slot.get_stack():
+                client = stack[-1].parent.client  # resolve it now, because the element may be deleted while awaiting
+        coro = _await_in_context(awaitable, context, client or nullcontext(), handle_exceptions=handle_exceptions)
         task = core.loop.create_task(coro, name=name)
         if handle_exceptions:
             task.add_done_callback(_retrieve_exception)  # the exception has already been handled in-context
@@ -189,15 +194,17 @@ def _resolve_awaitable(awaitable: Awaitable[Any] | None,
     return awaitable
 
 
-async def _await_in_context(awaitable: Awaitable[Any], context: AbstractContextManager, *, handle_exceptions: bool) -> Any:
-    """Await an awaitable within a context, handling exceptions in-context so that the client's handlers are reached."""
-    with context:
-        try:
+async def _await_in_context(awaitable: Awaitable[Any], context: AbstractContextManager,
+                            client: AbstractContextManager, *, handle_exceptions: bool) -> Any:
+    """Await an awaitable within a context, handling exceptions within the client so that its handlers are reached."""
+    try:
+        with context:
             return await awaitable
-        except Exception as e:
-            if handle_exceptions:
+    except Exception as e:
+        if handle_exceptions:
+            with client:
                 core.app.handle_exception(e)
-            raise
+        raise
 
 
 def _retrieve_exception(task: asyncio.Task) -> None:
