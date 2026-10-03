@@ -1,0 +1,2 @@
+import{_ as e,l as r,D as a,e as t}from"./index-Dsdgi-VK.js";import{p as s}from"./cynefin-VYW2F7L2-B-9CeVSD.js";var n="11.16.1",i={parser:{parse:e(async e=>{const a=await s("info",e);r.debug(a)},"parse")},db:{getVersion:e(()=>n,"getVersion")},renderer:{draw:e((e,s,n)=>{r.debug("rendering info diagram\n"+e);const i=a(s);t(i,100,400,!0);i.append("g").append("text").attr("x",100).attr("y",40).attr("class","version").attr("font-size",32).style("text-anchor","middle").text(`v${n}`)},"draw")}};export{i as diagram};
+//# sourceMappingURL=infoDiagram-6WML65LV-OmBX0Xy0.js.map
