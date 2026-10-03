@@ -196,15 +196,14 @@ def _resolve_awaitable(awaitable: Awaitable[Any] | None,
 
 async def _await_in_context(awaitable: Awaitable[Any], context: AbstractContextManager,
                             client: AbstractContextManager, *, handle_exceptions: bool) -> Any:
-    """Await an awaitable within a context, handling exceptions within the client so that its handlers are reached."""
-    try:
-        with context:
+    """Await an awaitable within a context, handling exceptions in-context so that the client's handlers are reached."""
+    with client, context:  # the client is still found if the element of the context is deleted while awaiting
+        try:
             return await awaitable
-    except Exception as e:
-        if handle_exceptions:
-            with client:
+        except Exception as e:
+            if handle_exceptions:
                 core.app.handle_exception(e)
-        raise
+            raise
 
 
 def _retrieve_exception(task: asyncio.Task) -> None:

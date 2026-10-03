@@ -17,7 +17,6 @@ from fastapi.responses import FileResponse
 
 from .. import background_tasks, binding, core, helpers
 from ..client import Client
-from ..context import context
 from ..elements.mixins.color_elements import QUASAR_COLORS
 from ..logging import log
 from ..native import NativeConfig
@@ -178,9 +177,10 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
-        if Slot.get_stack():  # don't enter script mode by accessing `context.slot_stack`
+        for slot in reversed(Slot.get_stack()):  # don't enter script mode by accessing `context.slot_stack`
             with contextlib.suppress(RuntimeError):  # the slot's parent element or its client may have been deleted
-                context.client.handle_exception(exception)
+                slot.parent.client.handle_exception(exception)
+                break
 
         for handler in self._exception_handlers:
             name = getattr(handler, '__name__', handler)
