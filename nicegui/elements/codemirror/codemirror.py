@@ -18,15 +18,16 @@ from ...events import (
     GenericEventArguments,
     Handler,
     ValueChangeEventArguments,
-    handle_event,
 )
 from .constants import SUPPORTED_LANGUAGES, SUPPORTED_THEMES
 from .decorations import DecorationElement
 from .keybindings import KeyBindingElement
 from .line_anchors import LineAnchorElement
+from .signals import SignalElement
 
 
-class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueElement[str], DisableableElement,
+class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, SignalElement,
+                 ValueElement[str], DisableableElement,
                  component='codemirror.js',
                  esm={'nicegui-codemirror': 'dist'},
                  default_classes='nicegui-codemirror'):
@@ -85,16 +86,18 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
         *Since version 3.17.0:*
         Decorations style, hide or annotate parts of the document without changing it.
         Assign a list of specs to ``decorations`` or mutate ``decorations`` in place.
+
+        *Since version 3.18.0:*
         Editor signals report the cursor selection, focus, visible line range and geometry,
         and ``reveal_line`` scrolls a given line into view.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
-        :param on_selection_change: callback when cursor line or column changes (throttled to 30 ms) (*added in version 3.17.0*)
-        :param on_focus_change: callback when the editor gains or loses focus (*added in version 3.17.0*)
-        :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms) (*added in version 3.17.0*)
-        :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms) (*added in version 3.17.0*)
+        :param on_selection_change: callback when cursor line or column changes (throttled to 30 ms) (*added in version 3.18.0*)
+        :param on_focus_change: callback when the editor gains or loses focus (*added in version 3.18.0*)
+        :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms) (*added in version 3.18.0*)
+        :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms) (*added in version 3.18.0*)
         :param language: initial language of the editor (case-insensitive, default: `None`)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
@@ -110,7 +113,9 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
         """
         super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap,
                          decorations=decorations, decoration_html=decoration_html,
-                         line_anchors=line_anchors, on_anchor_change=on_anchor_change)
+                         line_anchors=line_anchors, on_anchor_change=on_anchor_change,
+                         on_selection_change=on_selection_change, on_focus_change=on_focus_change,
+                         on_viewport_change=on_viewport_change, on_geometry_change=on_geometry_change)
         self._codepoints = b''
         self._update_codepoints()
         if on_change is not None:
@@ -121,10 +126,6 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
-        self._props['selection-tracking-enabled'] = False
-        self._props['focus-tracking-enabled'] = False
-        self._props['viewport-tracking-enabled'] = False
-        self._props['geometry-tracking-enabled'] = False
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
@@ -132,86 +133,16 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, ValueE
         self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
 
-        if on_selection_change is not None:
-            self.on_selection_change(on_selection_change)
-        if on_focus_change is not None:
-            self.on_focus_change(on_focus_change)
-        if on_viewport_change is not None:
-            self.on_viewport_change(on_viewport_change)
-        if on_geometry_change is not None:
-            self.on_geometry_change(on_geometry_change)
-
-    def on_selection_change(self, handler: Handler[CodeMirrorSelectionChangeEventArguments]) -> Self:
-        """Add a callback for cursor selection changes (line + column).
-
-        Fires on selection moves and on document edits that shift the cursor line or column.
-        ``from_line``/``to_line`` span the main selection (equal and ``empty`` is ``True`` for a bare cursor).
-        ``column`` counts Unicode code points, so it indexes ``value`` the same way Python does.
-
-        *Added in version 3.17.0*
-        """
-        self.on('selection-change', lambda e: handle_event(handler, CodeMirrorSelectionChangeEventArguments(
-            sender=self,
-            client=self.client,
-            line=e.args['line'],
-            column=e.args['column'],
-            from_line=e.args['from_line'],
-            to_line=e.args['to_line'],
-            empty=e.args['empty'],
-        )), throttle=0.03)
-        self._props['selection-tracking-enabled'] = True
-        return self
-
-    def on_focus_change(self, handler: Handler[CodeMirrorFocusChangeEventArguments]) -> Self:
-        """Add a callback for editor focus changes.
-
-        *Added in version 3.17.0*
-        """
-        self.on('focus-change', lambda e: handle_event(handler, CodeMirrorFocusChangeEventArguments(
-            sender=self,
-            client=self.client,
-            focused=e.args['focused'],
-        )))
-        self._props['focus-tracking-enabled'] = True
-        return self
-
-    def on_viewport_change(self, handler: Handler[CodeMirrorViewportChangeEventArguments]) -> Self:
-        """Add a callback for viewport (visible line range) changes.
-
-        *Added in version 3.17.0*
-        """
-        self.on('viewport-change', lambda e: handle_event(handler, CodeMirrorViewportChangeEventArguments(
-            sender=self,
-            client=self.client,
-            from_line=e.args['from_line'],
-            to_line=e.args['to_line'],
-        )), throttle=0.1)
-        self._props['viewport-tracking-enabled'] = True
-        return self
-
-    def on_geometry_change(self, handler: Handler[CodeMirrorGeometryChangeEventArguments]) -> Self:
-        """Add a callback for editor geometry changes (width, height, content height).
-
-        *Added in version 3.17.0*
-        """
-        self.on('geometry-change', lambda e: handle_event(handler, CodeMirrorGeometryChangeEventArguments(
-            sender=self,
-            client=self.client,
-            width=e.args['width'],
-            height=e.args['height'],
-            content_height=e.args['content_height'],
-        )), throttle=0.1)
-        self._props['geometry-tracking-enabled'] = True
-        return self
-
     def reveal_line(self, line_number: int) -> None:
         """Scroll the editor so the given 1-indexed line is visible.
 
+        A line outside the visible range ends up in the middle of the editor.
+        The surrounding page is only scrolled if the line would otherwise remain out of sight.
         A line number outside the document logs a warning and scrolls to the nearest line.
 
         :param line_number: 1-indexed line number to scroll into view
 
-        *Added in version 3.17.0*
+        *Added in version 3.18.0*
         """
         self.run_method('revealLine', line_number)
 
