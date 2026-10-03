@@ -148,4 +148,31 @@ def large_datasets():
     ui.plotly(fig).classes('w-full h-40')
 
 
+@doc.demo('Dynamic resampling', '''
+    While the binary encoding above makes _transferring_ many points cheap,
+    plotly.js still has to _render_ every point it receives.
+    The opt-in `n_samples` parameter raises this rendering ceiling:
+    only a downsampled representation with at most `n_samples` points per trace is sent to the client,
+    selected with the LTTB algorithm to preserve the visual shape of the data.
+    When zooming or panning, the visible range is resampled on the server and the chart is updated,
+    so you can drill down to full resolution.
+    Double-click the chart to reset the axes and resample the full dataset.
+
+    Only "scatter" and "scattergl" traces are resampled, including line plots using `mode='lines'`.
+    Install `nicegui[tsdownsample]` for a much faster Rust-based implementation of the algorithm.
+
+    *Added in version 3.14.0*
+''')
+def dynamic_resampling():
+    import numpy as np
+
+    x = np.arange(100_000)
+    y = np.cumsum(np.random.normal(size=x.size))  # a noisy random walk
+    fig = {
+        'data': [{'type': 'scattergl', 'mode': 'lines', 'x': x, 'y': y}],
+        'layout': {'margin': {'l': 30, 'r': 0, 't': 0, 'b': 15}},
+    }
+    ui.plotly(fig, n_samples=1000).classes('w-full h-40')
+
+
 doc.reference(ui.plotly)
