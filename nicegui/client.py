@@ -473,7 +473,7 @@ class Client:
                 result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
                 if helpers.should_await(result):
                     name = f'func with client {self.id} {func.__name__ if hasattr(func, "__name__") else func}'
-                    background_tasks.create(helpers.await_with_context(result, self), name=name)
+                    background_tasks.create(result, name=name, context=self)
         except Exception as e:
             core.app.handle_exception(e)
 

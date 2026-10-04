@@ -1,7 +1,9 @@
 import asyncio
 
+import pytest
+
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_refreshable(screen: Screen) -> None:
@@ -306,3 +308,47 @@ def test_awaitable_refresh(screen: Screen):
     screen.click('Try 0')
     screen.should_contain('error handled')
     assert events == ['update started', 'refresh started', 'refresh failed', 'update finished']
+
+
+@pytest.mark.parametrize('is_async', [False, True], ids=['sync', 'async'])
+@pytest.mark.parametrize('awaited', [False, True])
+async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture, is_async: bool, awaited: bool):
+    seen: list[Exception] = []
+
+    def handle(e: Exception) -> None:
+        seen.append(e)
+        ui.label('error handled')
+
+    @ui.page('/')
+    async def page():
+        ui.on_exception(handle)
+
+        async def refresh_awaited():
+            await part.refresh(True)
+
+        def build(explode: bool) -> None:
+            if explode:
+                raise RuntimeError('boom')
+            with ui.row():  # the refresh deletes this row and thereby the slot of the button
+                ui.button('fire', on_click=refresh_awaited if awaited else lambda: part.refresh(True))
+
+        @ui.refreshable
+        def sync_part(explode: bool = False):
+            build(explode)
+
+        @ui.refreshable
+        async def async_part(explode: bool = False):
+            await asyncio.sleep(0)
+            build(explode)
+
+        part = async_part if is_async else sync_part
+        result = part()
+        if is_async:
+            await result
+
+    await user.open('/')
+    user.find('fire').click()
+    await user.should_see('error handled')
+    assert len(seen) == 1, f'ui.on_exception should see exactly one exception, saw {len(seen)}'
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
