@@ -719,9 +719,6 @@ export default {
       });
       tc.addEventListener("mouseUp", () => emitTransform("transform_end"));
       this.scene.add(tc.getHelper());
-      tc.getHelper().traverse((child) => {
-        child.object_id = `transformcontrols:${object_id}`;
-      });
       this.transform_controls.set(object_id, tc);
       return true;
     },

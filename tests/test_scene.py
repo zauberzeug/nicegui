@@ -606,6 +606,28 @@ def test_dragging_transform_controls(screen: Screen):
     assert misses == ['pointerdown', 'click'], 'grabbing the gizmo is not a miss, only the click into empty space is'
 
 
+def test_clicking_an_object_with_transform_controls(screen: Screen):
+    hits: list[list[str]] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(on_click=lambda e: hits.append([hit.object_id for hit in e.hits])) as scene:
+            box = scene.box()
+        box.enable_transform_controls()
+
+    screen.open('/')
+    screen.wait_for_js(f'getElement({scene.id}).has_transform_controls("{box.id}")', True)
+    x, y = _viewport_point(screen, scene, 0.3, 0.3, 0.5)
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y).click()
+    actions.perform()
+    screen.wait_for(lambda: hits)
+    assert hits == [[box.id, 'ground']]
+
+
 def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
     scene = None
 
