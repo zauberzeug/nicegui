@@ -247,7 +247,12 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        :param row_id: id of the row (as defined by the ``getRowId`` option)
+        The row ID is the value returned by the ``getRowId`` option,
+        e.g. ``':getRowId': 'params => params.data.name'``.
+        If ``getRowId`` is not defined, AG Grid uses the row index as a string, e.g. ``'0'``.
+        If no row with the given ID exists, an error is logged and nothing happens.
+
+        :param row_id: ID of the row (as defined by the ``getRowId`` option, or the row index as a string)
         :param name: name of the method
         :param args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)

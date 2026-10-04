@@ -136,16 +136,14 @@ class Air:
             print('Error:', data['message'], flush=True)
 
         @relay.on('handshake')
-        def _handle_handshake(data: dict[str, Any]) -> bool:
+        async def _handle_handshake(data: dict[str, Any]) -> bool:
             if client := Client.instances.get(data['client_id']):
                 if not client.accept_handshake(data['sid'], data['tab_id'], data['environ']):
                     return False
                 client.environ = data['environ']
-                if data.get('old_tab_id'):
-                    core.app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
-                client.tab_id = data['tab_id']
                 client.on_air = True
-                client.handle_handshake(data['sid'], data['document_id'], data.get('next_message_id'))
+                await client.handle_handshake(data['sid'], data['tab_id'], data.get('old_tab_id'),
+                                              data['document_id'], data.get('next_message_id'))
                 return True
             return False
 

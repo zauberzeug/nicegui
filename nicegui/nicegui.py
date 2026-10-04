@@ -209,18 +209,13 @@ async def _on_handshake(sid: str, data: dict[str, Any]) -> bool:
     environ = None if is_test else sio.get_environ(sid)
     if not client.accept_handshake(sid, data['tab_id'], environ):
         return False
-    if data.get('old_tab_id'):
-        app.storage.copy_tab(data['old_tab_id'], data['tab_id'])
-    client.tab_id = data['tab_id']
     if is_test:
         client.environ = {'asgi.scope': {'description': 'test client', 'type': 'test'}}
     else:
         client.environ = environ
         await sio.enter_room(sid, client.id)
-    client.handle_handshake(sid, data['document_id'],
-                            int(data['next_message_id']) if 'next_message_id' in data else None)
-    assert client.tab_id is not None
-    await core.app.storage._create_tab_storage(client.tab_id)  # pylint: disable=protected-access
+    await client.handle_handshake(sid, data['tab_id'], data.get('old_tab_id'),
+                                  data['document_id'], data.get('next_message_id'))
     return True
 
 
