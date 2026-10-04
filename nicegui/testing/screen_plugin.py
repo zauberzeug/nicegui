@@ -138,6 +138,7 @@ def _reset_browser_state(driver: webdriver.Chrome) -> None:
         driver.switch_to.window(driver.window_handles[-1])
         driver.close()
     driver.switch_to.window(driver.window_handles[0])
+    driver.execute_cdp_cmd('Page.bringToFront', {})  # closing the tab switched to does not give focus back
     driver.execute_cdp_cmd('Storage.clearDataForOrigin', {
         'origin': f'http://localhost:{Screen.PORT}',
         'storageTypes': 'cookies,local_storage,session_storage',
