@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import functools
 import inspect
 import re
 import weakref
@@ -39,22 +41,7 @@ TAG_CHAR = TAG_START_CHAR + r'|-|\.|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]
 TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 
 
-class ElementMetaclass(type):
-    """Metaclass for Element that unregisters half-built elements if construction fails (#6343)."""
-
-    def __call__(cls: Any, *args: Any, **kwargs: Any) -> Any:
-        element: Any = cls.__new__(cls, *args, **kwargs)
-        if isinstance(element, cls):
-            try:
-                element.__init__(*args, **kwargs)
-            except Exception:
-                if hasattr(element, '_unregister'):
-                    element._unregister()
-                raise
-        return element
-
-
-class Element(Visibility, metaclass=ElementMetaclass):
+class Element(Visibility):
     component: Component | None = None
     exposed_libraries: ClassVar[list[Library]] = []
     _default_props: ClassVar[dict[str, Any]] = {}
@@ -113,6 +100,18 @@ class Element(Visibility, metaclass=ElementMetaclass):
                           default_props: str | None = None,
                           ) -> None:
         super().__init_subclass__()
+        if '__init__' in cls.__dict__:
+            original_init = cls.__dict__['__init__']
+
+            @functools.wraps(original_init)
+            def init(self: Element, *args: Any, **kwargs: Any) -> None:
+                try:
+                    original_init(self, *args, **kwargs)
+                except Exception:
+                    self._unregister()  # pylint: disable=protected-access
+                    raise
+            cls.__init__ = init  # type: ignore[method-assign]
+
         base = Path(inspect.getfile(cls)).parent
 
         def glob_absolute_paths(file: str | Path) -> list[Path]:
@@ -598,28 +597,22 @@ class Element(Visibility, metaclass=ElementMetaclass):
         if client is None or getattr(self, '_deleted', False):
             return
 
-        descendants: list[Element] = []
         if hasattr(self, 'slots'):
-            try:
-                descendants = list(self.descendants(include_self=True))
-            except Exception:
-                descendants = [self]
-        else:
-            descendants = [self]
+            client.remove_elements(self.descendants())
 
-        try:
-            binding.remove(descendants)
-        except Exception:
-            pass
+        with contextlib.suppress(Exception):
+            self._handle_delete()
 
-        for el in descendants:
-            el._deleted = True  # pylint: disable=protected-access
-            client.elements.pop(el.id, None)
-            client.outbox.updates.pop(el.id, None)
-            if hasattr(el, '_parent_slot') and el._parent_slot is not None:  # pylint: disable=protected-access
-                parent_slot = el._parent_slot()  # pylint: disable=protected-access
-                if parent_slot is not None and el in parent_slot.children:
-                    parent_slot.children.remove(el)
+        binding.remove([self])
+        self._deleted = True
+        client.elements.pop(self.id, None)
+        client.outbox.enqueue_delete(self)
+
+        parent_slot = getattr(self, '_parent_slot', None)
+        if parent_slot is not None:
+            slot = parent_slot()
+            if slot is not None and self in slot.children:
+                slot.children.remove(self)
 
     def __str__(self) -> str:
         result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck
