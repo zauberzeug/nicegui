@@ -259,6 +259,14 @@ export default {
       return null;
     };
 
+    this._showEffect = (object_id) => {
+      const spec = this.objectEffects.get(object_id);
+      const root = this.objects.get(object_id)?.mesh;
+      if (!spec || !root) return;
+      const artifact = this._buildEffectArtifact(object_id, root, spec);
+      if (artifact) this.effectArtifacts.set(object_id, artifact);
+    };
+
     this._clearEffectArtifact = (object_id) => {
       const artifact = this.effectArtifacts.get(object_id);
       if (!artifact) return;
@@ -385,12 +393,7 @@ export default {
           emitPointerEvent("pointerout", this.hoveredObjectId, null, null, e);
         }
         if (newHoveredId) {
-          const spec = this.objectEffects.get(newHoveredId);
-          const root = this.objects.get(newHoveredId)?.mesh;
-          if (spec && root) {
-            const artifact = this._buildEffectArtifact(newHoveredId, root, spec);
-            if (artifact) this.effectArtifacts.set(newHoveredId, artifact);
-          }
+          this._showEffect(newHoveredId);
           emitPointerEvent("pointerover", newHoveredId, point, localPoint, e);
         }
         this.renderer.domElement.style.cursor = newHoveredId ? "pointer" : "";
@@ -542,6 +545,9 @@ export default {
     async material(object_id, color, opacity, side) {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
+      // A tint swaps in material clones, so it is lifted while the change lands on the original materials.
+      const tinted = this.effectArtifacts.get(this.hoveredObjectId)?.effect === "tint" ? this.hoveredObjectId : null;
+      if (tinted) this._clearEffectArtifact(tinted);
       if (typeof object.component.apply_material === "function") {
         await object.component.apply_material({ color, opacity, side });
       } else if (object.mesh.material) {
@@ -549,6 +555,7 @@ export default {
       } else {
         console.warn(`A material change was requested for object ${object_id} but the mesh doesn't support materials`);
       }
+      if (tinted && this.hoveredObjectId === tinted) this._showEffect(tinted);
     },
     async move(object_id, x, y, z) {
       const object = await get_object(this.objects, object_id);
@@ -620,11 +627,7 @@ export default {
       }
       if (this.hoveredObjectId === object_id) {
         this._clearEffectArtifact(object_id);
-        const spec = this.objectEffects.get(object_id);
-        if (spec) {
-          const artifact = this._buildEffectArtifact(object_id, obj, spec);
-          if (artifact) this.effectArtifacts.set(object_id, artifact);
-        }
+        this._showEffect(object_id);
         if (!isInteractive) {
           this.renderer.domElement.style.cursor = "";
           this.hoveredObjectId = null;

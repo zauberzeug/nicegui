@@ -628,6 +628,33 @@ def test_clicking_an_object_with_transform_controls(screen: Screen):
     assert hits == [[box.id, 'ground']]
 
 
+def test_changing_the_material_of_a_tinted_object(screen: Screen):
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box().hover_effect('tint').on_click(lambda _: box.material('#ff0000'))
+
+    screen.open('/')
+    screen.wait_for_js(f'getElement({scene.id}).has_effect("{box.id}")', True)
+    material = f'getElement({scene.id}).objects.get("{box.id}").mesh.material'
+    x, y = _viewport_point(screen, scene, 0, 0, 0.5)
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y).click()
+    actions.perform()
+    screen.wait_for_js(f'{material}.color.getHexString()', 'ff0000')
+
+    x, y = _viewport_point(screen, scene, -2, 0, 0)
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y)
+    actions.perform()
+    screen.wait_for_js(f'{material}.emissive.getHexString()', '000000')  # the tint is gone
+    assert screen.selenium.execute_script(f'return {material}.color.getHexString()') == 'ff0000'
+
+
 def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
     scene = None
 
