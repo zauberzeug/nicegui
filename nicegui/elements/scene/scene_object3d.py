@@ -457,6 +457,7 @@ class Object3D:
 
         Drag events are emitted on the parent :class:`ui.scene` via the ``on_transform``,
         ``on_transform_start``, and ``on_transform_end`` callbacks.
+        When a drag ends, the object takes on the position, rotation or scale the user left it at.
 
         :param mode: gizmo mode (``'translate'``, ``'rotate'``, or ``'scale'``, default: ``'translate'``)
         :param size: optional gizmo size multiplier

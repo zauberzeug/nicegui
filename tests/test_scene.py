@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
 from selenium.webdriver import ActionChains
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
@@ -560,6 +561,40 @@ def test_pointer_event_dispatches_to_object_handler(screen: Screen):
     )
     screen.wait_for(lambda: any('over:' in msg for msg in received))
     assert received == [f'over:{box.id}']
+
+
+def _viewport_point(screen: Screen, scene: ui.scene, x: float, y: float, z: float) -> tuple[int, int]:
+    return screen.selenium.execute_script(
+        f'const el = getElement({scene.id});'
+        f'const p = el.camera.position.clone().set({x}, {y}, {z}).project(el.camera);'
+        'const r = el.renderer.domElement.getBoundingClientRect();'
+        'return [Math.round(r.left + (p.x + 1) / 2 * r.width), Math.round(r.top + (1 - p.y) / 2 * r.height)];'
+    )
+
+
+def test_dragging_transform_controls(screen: Screen):
+    ends: list[tuple[float, float]] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(on_transform_end=lambda e: ends.append((e.x, box.x))) as scene:
+            box = scene.box()
+        box.enable_transform_controls()
+
+    screen.open('/')
+    screen.wait_for_js(f'getElement({scene.id}).has_transform_controls("{box.id}")', True)
+    x, y = _viewport_point(screen, scene, 1, 0, 0)  # on the X arrow, past the box
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y).pointer_down().move_to_location(x + 30, y) \
+        .move_to_location(x + 60, y).pointer_up()
+    actions.perform()
+    screen.wait_for(lambda: ends)
+    reported_x, object_x = ends[0]
+    assert reported_x > 0
+    assert object_x == reported_x
 
 
 def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):

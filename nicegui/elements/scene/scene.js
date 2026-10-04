@@ -205,6 +205,7 @@ export default {
     this._hoverWorldQuat = new THREE.Quaternion();
     this._hoverWorldScale = new THREE.Vector3();
     this._transformWP = new THREE.Vector3();
+    this._transformRotation = new THREE.Matrix4();
 
     this._buildEffectArtifact = (object_id, rootObject, spec) => {
       const color = spec.color ?? this.hoverColor ?? "#ffffff";
@@ -675,6 +676,7 @@ export default {
       });
       const emitTransform = (type) => {
         object.getWorldPosition(this._transformWP);
+        const r = this._transformRotation.makeRotationFromQuaternion(object.quaternion).elements;
         this.$emit(type, {
           type,
           mode: tc.mode,
@@ -689,6 +691,14 @@ export default {
           wx: this._transformWP.x,
           wy: this._transformWP.y,
           wz: this._transformWP.z,
+          R: [
+            [r[0], r[4], r[8]],
+            [r[1], r[5], r[9]],
+            [r[2], r[6], r[10]],
+          ],
+          sx: object.scale.x,
+          sy: object.scale.y,
+          sz: object.scale.z,
         });
       };
       tc.addEventListener("change", () => {

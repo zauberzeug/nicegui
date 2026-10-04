@@ -358,6 +358,14 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
             wy=e.args['wy'],
             wz=e.args['wz'],
         )
+        if arguments.type == 'transform_end' and arguments.object_id in self.objects:
+            target = self.objects[arguments.object_id]
+            if arguments.mode == 'translate':
+                target.move(arguments.x, arguments.y, arguments.z)
+            elif arguments.mode == 'rotate':
+                target.rotate_R(e.args['R'])
+            else:
+                target.scale(e.args['sx'], e.args['sy'], e.args['sz'])
         if arguments.type == 'transform':
             handlers = self._transform_handlers
         elif arguments.type == 'transform_start':
