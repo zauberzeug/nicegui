@@ -435,7 +435,8 @@ class Client:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
                 other_clients = (client for client in Client.instances.values() if client is not self)
-                if all(client.tab_id != tab_id_to_close for client in other_clients):  # e.g. not after a reload
+                # pylint: disable-next=protected-access
+                if all(client._pinned_tab_id != tab_id_to_close for client in other_clients):  # e.g. not after a reload
                     await core.app.storage.close_tab(tab_id_to_close)
                 self.delete()
         self._delete_tasks[document_id] = \
