@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from typing_extensions import Self
 
-from . import core, events, helpers, json, storage
+from . import binding, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
@@ -42,8 +42,8 @@ TAG_PATTERN = re.compile(fr'^({TAG_START_CHAR})({TAG_CHAR})*$')
 class ElementMetaclass(type):
     """Metaclass for Element that unregisters half-built elements if construction fails (#6343)."""
 
-    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
-        element = cls.__new__(cls, *args, **kwargs)  # type: ignore[call-overload]
+    def __call__(cls: Any, *args: Any, **kwargs: Any) -> Any:
+        element: Any = cls.__new__(cls, *args, **kwargs)
         if isinstance(element, cls):
             try:
                 element.__init__(*args, **kwargs)
@@ -607,18 +607,17 @@ class Element(Visibility, metaclass=ElementMetaclass):
         else:
             descendants = [self]
 
-        from . import binding
         try:
             binding.remove(descendants)
         except Exception:
             pass
 
         for el in descendants:
-            el._deleted = True
+            el._deleted = True  # pylint: disable=protected-access
             client.elements.pop(el.id, None)
             client.outbox.updates.pop(el.id, None)
-            if hasattr(el, '_parent_slot') and el._parent_slot is not None:
-                parent_slot = el._parent_slot()
+            if hasattr(el, '_parent_slot') and el._parent_slot is not None:  # pylint: disable=protected-access
+                parent_slot = el._parent_slot()  # pylint: disable=protected-access
                 if parent_slot is not None and el in parent_slot.children:
                     parent_slot.children.remove(el)
 

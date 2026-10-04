@@ -1,6 +1,6 @@
-from pathlib import Path
 import platform
 import weakref
+from pathlib import Path
 
 import pytest
 from selenium.webdriver.common.by import By
