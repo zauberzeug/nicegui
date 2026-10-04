@@ -52,9 +52,10 @@ def create(awaitable: Awaitable[Any] | None = None, *,
             task.add_done_callback(_handle_exceptions)
     else:
         client = None
-        with context, suppress(RuntimeError):  # the element of the slot or its client may have been deleted
-            if stack := Slot.get_stack():
-                client = stack[-1].parent.client  # resolve it now, because the element may be deleted while awaiting
+        slots = [context] if isinstance(context, Slot) else Slot.get_stack()
+        with suppress(RuntimeError):  # the element of the slot or its client may have been deleted
+            if slots:
+                client = slots[-1].parent.client  # resolve it now, because the element may be deleted while awaiting
         coro = _await_in_context(awaitable, context, client or nullcontext(), handle_exceptions=handle_exceptions)
         task = core.loop.create_task(coro, name=name)
         if handle_exceptions:
