@@ -388,181 +388,6 @@ def test_transform_controls_mode_change(screen: Screen):
     ))
 
 
-def test_set_orbit_enabled_survives_transform_drag(screen: Screen):
-    """Locks in the regression for the orbit drag-counter race: a TransformControls drag-end must
-    not silently re-enable OrbitControls if the user has explicitly disabled them."""
-    scene = None
-    box = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, box
-        scene = ui.scene()
-        with scene:
-            box = scene.box()
-        ui.button('Disable orbit', on_click=lambda: scene.set_orbit_enabled(False))
-        ui.button('Enable transform', on_click=lambda: box.enable_transform_controls(mode='translate'))
-
-    screen.open('/')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && !!el.renderer'
-    ))
-    screen.click('Disable orbit')
-    screen.wait_for(lambda: not screen.selenium.execute_script(
-        f'return getElement({scene.id}).controls.enabled'
-    ))
-    screen.click('Enable transform')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).has_transform_controls("{box.id}")'
-    ))
-    # Simulate a TransformControls drag start + end via JS, mimicking what the gizmo does on
-    # mouse-down + mouse-up. The fix under test ensures controls.enabled stays false afterward.
-    screen.selenium.execute_script(
-        f'const el = getElement({scene.id});'
-        f'const tc = el.transform_controls.get("{box.id}");'
-        'tc.dispatchEvent({type: "dragging-changed", value: true});'
-        'tc.dispatchEvent({type: "dragging-changed", value: false});'
-    )
-    assert screen.selenium.execute_script(
-        f'return getElement({scene.id}).controls.enabled'
-    ) is False
-
-
-def test_interactive_state_survives_context_loss(screen: Screen):
-    """_resend() replays handler registrations and hover effects when the scene remounts."""
-    scene = None
-    box = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, box
-        with ui.scene() as scene:
-            box = scene.box().on_pointer_over(lambda _: None).hover_effect('glow', color='#ff0000')
-
-    screen.open('/')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && !!el.renderer'
-    ))
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id});'
-        f'return el.objectHandlers.has("{box.id}") && el.objectEffects.has("{box.id}")'
-    ))
-    screen.selenium.execute_script(
-        'document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();'
-    )
-    screen.click('Click to re-initialize')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id});'
-        'if (!el || !el.objectHandlers) return false;'
-        f'return el.objectHandlers.has("{box.id}") && el.objectEffects.has("{box.id}")'
-    ))
-
-
-def test_interactive_list_maintained_on_handler_register(screen: Screen):
-    """Registering a handler from Python adds the underlying three.js object to the JS interactiveObjects list."""
-    scene = None
-    box = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, box
-        with ui.scene() as scene:
-            box = scene.box()
-        ui.button('Add handler', on_click=lambda: box.on_pointer_over(lambda _: None))
-        ui.button('Add effect', on_click=lambda: box.hover_effect('outline'))
-
-    screen.open('/')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && !!el.renderer'
-    ))
-    # Initially neither handlers nor effect set, so not interactive.
-    assert screen.selenium.execute_script(
-        f'return getElement({scene.id}).is_interactive("{box.id}")'
-    ) is False
-    screen.click('Add handler')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).has_handler("{box.id}", "pointerover")'
-    ))
-    assert screen.selenium.execute_script(
-        f'return getElement({scene.id}).interactiveObjects.length'
-    ) == 1
-    screen.click('Add effect')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return getElement({scene.id}).has_effect("{box.id}")'
-    ))
-    # Adding an effect to an already-interactive object doesn't double-add it.
-    assert screen.selenium.execute_script(
-        f'return getElement({scene.id}).interactiveObjects.length'
-    ) == 1
-
-
-def test_hover_effect_named_variants(screen: Screen):
-    """Each named effect installs the right kind of three.js artifact when hovered, and tears down cleanly."""
-    scene = None
-    box = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, box
-        with ui.scene() as scene:
-            box = scene.box()
-        ui.button('Glow', on_click=lambda: box.hover_effect('glow'))
-        ui.button('Outline', on_click=lambda: box.hover_effect('outline'))
-        ui.button('Tint', on_click=lambda: box.hover_effect('tint', color='#ff0000'))
-        ui.button('Off', on_click=lambda: box.hover_effect(False))
-
-    screen.open('/')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && !!el.renderer'
-    ))
-
-    def get_effect_spec() -> dict | None:
-        return screen.selenium.execute_script(
-            f'return getElement({scene.id}).objectEffects.get("{box.id}") ?? null'
-        )
-
-    screen.click('Glow')
-    screen.wait_for(lambda: get_effect_spec() == {'effect': 'glow', 'color': None})
-
-    screen.click('Outline')
-    screen.wait_for(lambda: get_effect_spec() == {'effect': 'outline', 'color': None})
-
-    screen.click('Tint')
-    screen.wait_for(lambda: get_effect_spec() == {'effect': 'tint', 'color': '#ff0000'})
-
-    screen.click('Off')
-    screen.wait_for(lambda: get_effect_spec() is None)
-
-
-def test_pointer_event_dispatches_to_object_handler(screen: Screen):
-    """Synthesizing a JS-side pointerevent should invoke the registered per-object Python handler."""
-    received: list[str] = []
-    scene = None
-    box = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, box
-        with ui.scene() as scene:
-            box = scene.box().on_pointer_over(lambda e: received.append(f'over:{e.object_id}'))
-
-    screen.open('/')
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id}); return el && !!el.renderer'
-    ))
-    # Synthesize the event directly on the element. Bypasses the actual pointer raycast,
-    # but exercises the Python dispatch path end-to-end.
-    screen.selenium.execute_script(
-        f'getElement({scene.id}).$emit("pointerevent", {{'
-        f'  type: "pointerover", object_id: "{box.id}", object_name: "",'
-        '  button: 0, alt_key: false, ctrl_key: false, meta_key: false, shift_key: false,'
-        '  x: 0, y: 0, z: 0, wx: 0, wy: 0, wz: 0,'
-        '});'
-    )
-    screen.wait_for(lambda: any('over:' in msg for msg in received))
-    assert received == [f'over:{box.id}']
-
-
 def _viewport_point(screen: Screen, scene: ui.scene, x: float, y: float, z: float) -> tuple[int, int]:
     return screen.selenium.execute_script(
         f'const el = getElement({scene.id});'
@@ -570,6 +395,132 @@ def _viewport_point(screen: Screen, scene: ui.scene, x: float, y: float, z: floa
         'const r = el.renderer.domElement.getBoundingClientRect();'
         'return [Math.round(r.left + (p.x + 1) / 2 * r.width), Math.round(r.top + (1 - p.y) / 2 * r.height)];'
     )
+
+
+def _move_pointer(screen: Screen, x: int, y: int) -> None:
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y)
+    actions.perform()
+
+
+def _drag(screen: Screen, x: int, y: int, dx: int, dy: int) -> None:
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y).pointer_down() \
+        .move_to_location(x + dx // 2, y + dy // 2).move_to_location(x + dx, y + dy).pointer_up()
+    actions.perform()
+
+
+def test_disabled_orbit_survives_a_gizmo_drag(screen: Screen):
+    ends: list[float] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(on_transform_end=lambda e: ends.append(e.x)) as scene:
+            box = scene.box()
+        box.enable_transform_controls()
+
+    screen.open('/')
+    screen.wait_for_js(f'getElement({scene.id}).has_transform_controls("{box.id}")', True)
+    scene.set_orbit_enabled(False)
+    screen.wait_for_js(f'getElement({scene.id}).controls.enabled', False)
+    x, y = _viewport_point(screen, scene, 1, 0, 0)  # on the X arrow, past the box
+    _drag(screen, x, y, 60, 0)
+    screen.wait_for(lambda: ends)
+
+    camera = f'getElement({scene.id}).camera.position.toArray()'
+    before = screen.selenium.execute_script(f'return {camera}')
+    x, y = _viewport_point(screen, scene, -2, 1, 0)
+    _drag(screen, x, y, 80, 40)
+    assert screen.selenium.execute_script(f'return {camera}') == pytest.approx(before), 'orbiting must stay disabled'
+
+
+def test_interactive_state_survives_context_loss(screen: Screen):
+    overs: list[str] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box().on_pointer_over(lambda e: overs.append(e.object_id)).hover_effect('glow')
+
+    screen.open('/')
+    screen.wait_for_js(f'getElement({scene.id}).has_effect("{box.id}")', True)
+    screen.selenium.execute_script(
+        'document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();'
+    )
+    screen.click('Click to re-initialize')
+    screen.wait_for_js(f'getElement({scene.id})?.has_effect?.("{box.id}") ?? false', True)
+
+    _move_pointer(screen, *_viewport_point(screen, scene, 0, 0, 0.5))
+    screen.wait_for(lambda: overs == [box.id])
+    glow = f'scene_{scene.html_id}.children.some(c => c.isGroup && c.children.some(m => m.material?.side === 1))'
+    screen.wait_for_js(glow, True)
+
+
+def test_hover_effects(screen: Screen):
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene() as scene:
+            box = scene.box()
+
+    screen.open('/')
+    # what a hover adds: a back-face glow mesh, outline edges, and the box's emissive tint
+    shown = (
+        '(() => {'
+        f'  const added = scene_{scene.html_id}.children.filter(c => c.isGroup).flatMap(g => g.children);'
+        f'  const tint = getElement({scene.id}).objects.get("{box.id}").mesh.material.emissive.getHexString();'
+        '  return [added.some(m => m.isMesh && m.material.side === 1), added.some(m => m.isLineSegments), tint];'
+        '})()'
+    )
+    on_box = _viewport_point(screen, scene, 0, 0, 0.5)
+    off_box = _viewport_point(screen, scene, -2, 0, 0)
+    for effect, hovered in [('glow', [True, False, '000000']),
+                            ('outline', [False, True, '000000']),
+                            ('tint', [False, False, 'ffffff'])]:
+        box.hover_effect(effect)
+        screen.wait_for_js(f'getElement({scene.id}).objectEffects.get("{box.id}")?.effect', effect)
+        _move_pointer(screen, *on_box)
+        screen.wait_for_js(shown, hovered)
+        _move_pointer(screen, *off_box)
+        screen.wait_for_js(shown, [False, False, '000000'])
+
+
+def test_pointer_events_of_an_object(screen: Screen):
+    events: list[str] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(on_pointer_missed=lambda e: events.append(f'missed {e.type}')) as scene:
+            box = scene.box()
+        for register in (box.on_pointer_over, box.on_pointer_out, box.on_click, box.on_double_click,
+                         box.on_context_menu):
+            register(lambda e: events.append(e.type if e.object_id == box.id else 'another object'))
+
+    screen.open('/')
+    screen.wait_for_js(f'getElement({scene.id}).has_handler("{box.id}", "contextmenu")', True)
+    x, y = _viewport_point(screen, scene, 0, 0, 0.5)
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y).double_click().context_click()
+    actions.perform()
+    x, y = _viewport_point(screen, scene, -2, 0, 0)
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y).click()
+    actions.perform()
+    screen.wait_for(lambda: 'missed click' in events)
+    assert events == ['pointerover', 'click', 'click', 'dblclick', 'contextmenu', 'pointerout',
+                      'missed pointerdown', 'missed click']
 
 
 def test_dragging_transform_controls(screen: Screen):
@@ -588,11 +539,7 @@ def test_dragging_transform_controls(screen: Screen):
 
     screen.open('/')
     screen.wait_for_js(f'getElement({scene.id}).has_transform_controls("{box.id}")', True)
-    x, y = _viewport_point(screen, scene, 1, 0, 0)  # on the X arrow, past the box
-    actions = ActionBuilder(screen.selenium)
-    actions.pointer_action.move_to_location(x, y).pointer_down().move_to_location(x + 30, y) \
-        .move_to_location(x + 60, y).pointer_up()
-    actions.perform()
+    _drag(screen, *_viewport_point(screen, scene, 1, 0, 0), 60, 0)  # by the X arrow, past the box
     screen.wait_for(lambda: ends)
     reported_x, object_x = ends[0]
     assert reported_x > 0
@@ -647,10 +594,7 @@ def test_changing_the_material_of_a_tinted_object(screen: Screen):
     actions.perform()
     screen.wait_for_js(f'{material}.color.getHexString()', 'ff0000')
 
-    x, y = _viewport_point(screen, scene, -2, 0, 0)
-    actions = ActionBuilder(screen.selenium)
-    actions.pointer_action.move_to_location(x, y)
-    actions.perform()
+    _move_pointer(screen, *_viewport_point(screen, scene, -2, 0, 0))
     screen.wait_for_js(f'{material}.emissive.getHexString()', '000000')  # the tint is gone
     assert screen.selenium.execute_script(f'return {material}.color.getHexString()') == 'ff0000'
 
@@ -667,10 +611,7 @@ def test_glow_of_an_object_at_the_origin(screen: Screen):
 
     screen.open('/')
     screen.wait_for_js(f'getElement({scene.id}).has_effect("{box.id}")', True)
-    x, y = _viewport_point(screen, scene, 0, 0, 0.5)
-    actions = ActionBuilder(screen.selenium)
-    actions.pointer_action.move_to_location(x, y)
-    actions.perform()
+    _move_pointer(screen, *_viewport_point(screen, scene, 0, 0, 0.5))
     glow = f'scene_{scene.html_id}.children.flatMap(c => c.children).find(m => m.material?.side === 1)'
     screen.wait_for_js(f'{glow}?.scale.toArray() ?? null', [1.2, 1.2, 1.2])
 
