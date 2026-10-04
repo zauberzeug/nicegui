@@ -226,7 +226,7 @@ export default {
           group.add(glow);
         });
         this.scene.add(group);
-        return { effect: "glow", group, source: rootObject, lastMatrix: new THREE.Matrix4() };
+        return { effect: "glow", group, source: rootObject, lastMatrix: null };
       }
       if (spec.effect === "outline") {
         const group = new THREE.Group();
@@ -240,7 +240,7 @@ export default {
           group.add(line);
         });
         this.scene.add(group);
-        return { effect: "outline", group, source: rootObject, lastMatrix: new THREE.Matrix4() };
+        return { effect: "outline", group, source: rootObject, lastMatrix: null };
       }
       if (spec.effect === "tint") {
         // Per-instance material clone so shared materials aren't mutated.
@@ -291,8 +291,8 @@ export default {
       for (const [object_id, artifact] of this.effectArtifacts) {
         if (artifact.effect !== "glow" && artifact.effect !== "outline") continue;
         artifact.source.updateMatrixWorld();
-        if (artifact.lastMatrix.equals(artifact.source.matrixWorld)) continue;
-        artifact.lastMatrix.copy(artifact.source.matrixWorld);
+        if (artifact.lastMatrix?.equals(artifact.source.matrixWorld)) continue;
+        artifact.lastMatrix = (artifact.lastMatrix ?? new THREE.Matrix4()).copy(artifact.source.matrixWorld);
         for (const child of artifact.group.children) {
           const src = child.userData.effectSource;
           if (!src) continue;

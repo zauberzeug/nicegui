@@ -655,6 +655,26 @@ def test_changing_the_material_of_a_tinted_object(screen: Screen):
     assert screen.selenium.execute_script(f'return {material}.color.getHexString()') == 'ff0000'
 
 
+def test_glow_of_an_object_at_the_origin(screen: Screen):
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(hover_scale=1.2) as scene:
+            box = scene.box().hover_effect('glow')
+
+    screen.open('/')
+    screen.wait_for_js(f'getElement({scene.id}).has_effect("{box.id}")', True)
+    x, y = _viewport_point(screen, scene, 0, 0, 0.5)
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y)
+    actions.perform()
+    glow = f'scene_{scene.html_id}.children.flatMap(c => c.children).find(m => m.material?.side === 1)'
+    screen.wait_for_js(f'{glow}?.scale.toArray() ?? null', [1.2, 1.2, 1.2])
+
+
 def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
     scene = None
 
