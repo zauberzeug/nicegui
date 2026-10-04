@@ -244,6 +244,23 @@ def fps_stats_configuration() -> None:
         scene_view.move_camera(x=1, y=-3, z=5)
 
 
+@doc.demo('Render on Demand', '''
+    By default, the scene is redrawn at its target frame rate, even when nothing changes.
+    With `render_on_demand=True`, it is only redrawn after a change:
+    to an object, to the camera, to the size of the scene, or by the user navigating it.
+    This saves CPU and GPU time while the scene is idle.
+    Changes made through NiceGUI are tracked automatically.
+    JavaScript code that changes the three.js scene directly calls the `request_render()` method of the scene element.
+    A `ui.scene_view` is redrawn whenever its scene is.
+
+    *Added in version X.Y.Z*
+''')
+def render_on_demand() -> None:
+    with ui.scene(render_on_demand=True).classes('w-full h-64') as scene:
+        box = scene.box()
+    ui.slider(min=0, max=6.28, step=0.01, on_change=lambda e: box.rotate(0, 0, e.value))
+
+
 @doc.demo('Camera Parameters', '''
     You can use the `camera` argument to `ui.scene` to use a custom camera.
     This allows you to set the field of view of a perspective camera or the size of an orthographic camera.
@@ -372,6 +389,10 @@ def custom_object_javascript_module() -> None:
         - `create_mesh(...args)` returns a `THREE.Object3D` for full control.
           Use it when the object is more than a single geometry
           or when your own methods need ongoing access to the mesh, like `update_topology` below.
+
+        An object that changes on its own, for example when a resource has finished loading,
+        dispatches a `change` event on its mesh (`this.mesh.dispatchEvent({ type: "change" })`),
+        so that a scene with `render_on_demand=True` redraws it.
     ''')
 
     code_window(title='torus_knot.js', language='js', code=TORUS_KNOT_JS).classes('w-full')

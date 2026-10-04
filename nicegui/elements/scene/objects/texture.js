@@ -49,7 +49,8 @@ export default class Texture {
   busy = false;
 
   create_mesh(url, coords) {
-    this.mesh = new THREE.Mesh(texture_geometry(coords), texture_material(texture_loader.load(url)));
+    const texture = texture_loader.load(url, () => this.mesh.dispatchEvent({ type: "change" }));
+    this.mesh = new THREE.Mesh(texture_geometry(coords), texture_material(texture));
     return this.mesh;
   }
   set_url(url) {
@@ -60,6 +61,7 @@ export default class Texture {
     this.busy = true;
     const on_success = (texture) => {
       this.mesh.material = texture_material(texture);
+      this.mesh.dispatchEvent({ type: "change" });
       this.busy = false;
     };
     const on_error = () => (this.busy = false);
