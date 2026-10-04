@@ -1,6 +1,7 @@
 from nicegui import ui
 
 from .. import design as d
+from ..i18n import t
 from .shared import section, section_label, section_title
 
 
@@ -12,21 +13,21 @@ def create() -> None:
         ):
             with ui.column().classes('gap-0'):
                 section_label('about')
-                section_title('Interact with Python through buttons, dialogs, 3D\u00a0scenes, plots and much more.')
-                ui.markdown('''
+                section_title(t('Interact with Python through buttons, dialogs, 3D\u00a0scenes, plots and much more.'))
+                ui.markdown(t('''
                     NiceGUI manages web development details, letting you focus on Python code.
                     Connect peripherals like webcams and GPIO pins, build interactive UIs,
                     and run your entire application from a single script.
-                ''').classes(f'{d.TEXT_SECONDARY} max-lg:hidden')
-                ui.markdown('''
+                ''')).classes(f'{d.TEXT_SECONDARY} max-lg:hidden')
+                ui.markdown(t('''
                     Focus on Python - connect peripherals, build interactive UIs, and run everything from a single script.
-                ''').classes(f'{d.TEXT_SECONDARY} lg:hidden')
-                ui.markdown('''
+                ''')).classes(f'{d.TEXT_SECONDARY} lg:hidden')
+                ui.markdown(t('''
                     Available on
                     [PyPI](https://pypi.org/project/nicegui/),
                     [Docker](https://hub.docker.com/r/zauberzeug/nicegui) and
                     [GitHub](https://github.com/zauberzeug/nicegui).
-                ''').classes(d.TEXT_SECONDARY)
+                ''')).classes(d.TEXT_SECONDARY)
 
             with ui.column().classes(f'rounded-2xl p-8 w-full max-w-120 {d.BG_SURFACE} {d.BORDER} {d.SHADOW_CARD}'):
                 _simple_demo()
@@ -35,9 +36,9 @@ def create() -> None:
 def _simple_demo() -> None:
     """Create a simplified interactive demo matching the click dummy style."""
     with ui.column().classes('w-full items-stretch'):
-        output = ui.label('Try it out!') \
+        output = ui.label(t('Try it out!')) \
             .classes(f'min-h-14 p-3 text-center text-lg rounded-lg overflow-auto {d.BG} {d.TEXT_SECONDARY} {d.BORDER}')
-        ui.button('Click me!', on_click=lambda: output.set_text('Clicked!')).props('unelevated no-caps')
-        ui.input(placeholder='Type here...', on_change=lambda e: output.set_text(e.value)).props('outlined dense')
+        ui.button(t('Click me!'), on_click=lambda: output.set_text(t('Clicked!'))).props('unelevated no-caps')
+        ui.input(placeholder=t('Type here...'), on_change=lambda e: output.set_text(e.value)).props('outlined dense')
         ui.slider(min=0, max=100, value=50, on_change=lambda e: output.set_text(f'{e.value:.0f}%'))
-        ui.checkbox('Check me', on_change=lambda e: output.set_text('Checked' if e.value else 'Unchecked'))
+        ui.checkbox(t('Check me'), on_change=lambda e: output.set_text(t('Checked') if e.value else t('Unchecked')))

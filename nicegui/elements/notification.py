@@ -202,3 +202,6 @@ class Notification(Element, component='notification.js'):
 
     def _render_markdown(self) -> str:
         return self.message
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self.message]

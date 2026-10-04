@@ -55,7 +55,12 @@ export default {
     },
     run_row_method(row_id, name, ...args) {
       convertDynamicProperties(args, true);
-      return runMethod(this.api.getRowNode(row_id), name, args);
+      const node = this.api.getRowNode(row_id);
+      if (node === undefined) {
+        logAndEmit("error", `Row "${row_id}" not found.`);
+        return;
+      }
+      return runMethod(node, name, args);
     },
     handle_event(type, args) {
       this.$emit(type, {

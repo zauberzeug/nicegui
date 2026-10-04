@@ -8,13 +8,18 @@ Even if automated testing needs a lot of infrastructure and results in long exec
 
 ## Setup
 
-Please be aware that the below commands install the latest version of the ChromeDriver binary, which is compatible with the version of Google Chrome installed on your system.
-If you have a different version of Chrome installed, you may need to install a different version of ChromeDriver or update your Chrome installation to be compatible with the installed ChromeDriver version.
+Usually you don't need to install ChromeDriver at all.
+The `selenium` test dependency comes with a helper called Selenium Manager that downloads a matching Chrome and ChromeDriver for you the first time the tests run.
+Our tests use this helper first, so on most systems installing the test dependencies is enough.
+
+You only need to install a browser and driver by hand in two cases: on ARM machines other than Apple Silicon Macs (like a Raspberry Pi or an ARM dev container), where the helper has nothing to download, or when you'd rather use a browser that your system installed.
+If you do install ChromeDriver yourself, make sure its version matches your Chrome or Chromium — otherwise the tests won't start.
+If the browser isn't picked up automatically, point the tests at it with the `CHROME_BINARY_LOCATION` environment variable (our dev container sets it to `/usr/bin/chromium`).
 
 ### Mac
 
 ```bash
-brew install cask chromedriver
+brew install --cask chromedriver
 ```
 
 Note: The above instructions assume that you have already installed Homebrew (a package manager for macOS) on your system.
@@ -31,12 +36,15 @@ If you haven't, you can follow the instructions on https://chocolatey.org/instal
 
 ### Linux
 
-For Debian-based Linux distribution:
+For Debian:
 
 ```bash
 sudo apt-get update
-sudo apt-get install chromium-chromedriver
+sudo apt-get install chromium-driver
 ```
+
+On Ubuntu, both `chromium-chromedriver` and `chromium-driver` resolve to the same transitional stub that pulls in the Chromium snap, which is a dead end in containers, WSL, and minimal CI images.
+Prefer Selenium Manager (see above), or install a matching ChromeDriver manually.
 
 For Arch-based Linux distribution:
 

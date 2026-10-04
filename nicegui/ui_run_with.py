@@ -48,7 +48,7 @@ def run_with(
     :param root: root page function (*added in version 3.0.0*)
     :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
     :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers)
+    :param favicon: path to a local image file, absolute `http(s)://` URL, data URL, inline SVG or emoji (e.g. `'🚀'`, works for most browsers; default: `None`, NiceGUI icon will be used)
     :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
     :param language: language for Quasar elements and the ``lang`` attribute of the ``html`` tag
         (default: ``None``, in which case Quasar elements use ``'en-US'`` and the ``lang`` attribute is omitted, *updated in version 3.14.0*)

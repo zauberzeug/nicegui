@@ -32,3 +32,6 @@ class Radio(ChoiceElement, DisableableElement):
 
     def _value_to_model_value(self, value: Any) -> Any:
         return self._values.index(value) if value in self._values else None
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), *self._labels]
