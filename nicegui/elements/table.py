@@ -394,7 +394,6 @@ class Table(FilterElement, component='table.js'):
 
     @pagination.setter
     def pagination(self, value: int | dict | None) -> None:
-        self._props['hide-pagination'] = value is None
         self._props['pagination'] = value if isinstance(value, dict) else {'rowsPerPage': value or 0}
 
     @property
