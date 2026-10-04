@@ -284,6 +284,29 @@ async def test_reconnect_of_duplicated_tab_keeps_tab_storage(user: User):
         assert app.storage.tab['x'] == 'changed', 'a reconnect must not reset the tab storage'
 
 
+async def test_duplicated_tab_gets_its_own_nested_values(user: User):
+    @ui.page('/')
+    def page():
+        pass
+
+    client = await user.open('/')
+    changes = []
+    with client:
+        app.storage.tab['items'] = [1]
+        app.storage.tab.on_change(lambda: changes.append('original'))
+
+    await user.http_client.get('/')  # a duplicated tab requests the page anew...
+    duplicate = next(c for c in Client.instances.values() if c is not client)
+    handshake = {'client_id': duplicate.id, 'tab_id': 'new-tab', 'old_tab_id': user.tab_id, 'document_id': 'doc'}
+    assert await _on_handshake('test-duplicate', handshake)  # ...and announces the original tab ID along with a new one
+    with duplicate:
+        app.storage.tab['items'].append(2)
+
+    with client:
+        assert app.storage.tab['items'] == [1], 'a change in the duplicated tab must not reach the original tab'
+    assert not changes, 'the original tab must not be notified about changes in the duplicated tab'
+
+
 async def test_client_is_pinned_to_one_tab_id(user: User):
     @ui.page('/', reconnect_timeout=10)
     def page():
