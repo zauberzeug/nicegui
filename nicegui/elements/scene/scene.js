@@ -407,12 +407,17 @@ export default {
       }
     });
 
+    let pressGrabbedGizmo = false;
     const handlePerObjectMouseEvent = (eventType) => (e) => {
+      if (e.target !== this.renderer.domElement) return;
+      if (eventType === "pointerdown") {
+        pressGrabbedGizmo = [...this.transform_controls.values()].some((tc) => tc.dragging);
+      }
       const { id, point, localPoint } = findHit(e.clientX, e.clientY);
       if (id) {
         emitPointerEvent(eventType, id, point, localPoint, e);
-      } else if (eventType === "click" || eventType === "dblclick" ||
-                 eventType === "contextmenu" || eventType === "pointerdown") {
+      } else if (!pressGrabbedGizmo && (eventType === "click" || eventType === "dblclick" ||
+                 eventType === "contextmenu" || eventType === "pointerdown")) {
         this.$emit("pointermissed", {
           type: eventType,
           button: e.button ?? 0,
@@ -424,11 +429,11 @@ export default {
       }
     };
 
-    this.renderer.domElement.addEventListener("pointerdown", handlePerObjectMouseEvent("pointerdown"));
-    this.renderer.domElement.addEventListener("pointerup", handlePerObjectMouseEvent("pointerup"));
-    this.renderer.domElement.addEventListener("click", handlePerObjectMouseEvent("click"));
-    this.renderer.domElement.addEventListener("dblclick", handlePerObjectMouseEvent("dblclick"));
-    this.renderer.domElement.addEventListener("contextmenu", handlePerObjectMouseEvent("contextmenu"));
+    // Listening on the wrapper rather than the canvas lets TransformControls, which listens on the canvas,
+    // grab a press first, so that grabbing the gizmo does not count as a miss.
+    for (const eventType of ["pointerdown", "pointerup", "click", "dblclick", "contextmenu"]) {
+      this.$el.addEventListener(eventType, handlePerObjectMouseEvent(eventType));
+    }
 
     const click_handler = (mouseEvent) => {
       let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;

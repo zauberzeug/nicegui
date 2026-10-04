@@ -574,14 +574,16 @@ def _viewport_point(screen: Screen, scene: ui.scene, x: float, y: float, z: floa
 
 def test_dragging_transform_controls(screen: Screen):
     ends: list[tuple[float, float]] = []
+    misses: list[str] = []
     scene = None
     box = None
 
     @ui.page('/')
     def page():
         nonlocal scene, box
-        with ui.scene(on_transform_end=lambda e: ends.append((e.x, box.x))) as scene:
-            box = scene.box()
+        with ui.scene(on_transform_end=lambda e: ends.append((e.x, box.x)),
+                      on_pointer_missed=lambda e: misses.append(e.type)) as scene:
+            box = scene.box().on_click(lambda _: None)
         box.enable_transform_controls()
 
     screen.open('/')
@@ -595,6 +597,13 @@ def test_dragging_transform_controls(screen: Screen):
     reported_x, object_x = ends[0]
     assert reported_x > 0
     assert object_x == reported_x
+
+    x, y = _viewport_point(screen, scene, -2, 0, 0)
+    actions = ActionBuilder(screen.selenium)
+    actions.pointer_action.move_to_location(x, y).click()
+    actions.perform()
+    screen.wait_for(lambda: 'click' in misses)
+    assert misses == ['pointerdown', 'click'], 'grabbing the gizmo is not a miss, only the click into empty space is'
 
 
 def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
