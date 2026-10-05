@@ -85,6 +85,36 @@ def test_default_table_hides_pagination(screen: Screen):
     screen.should_not_contain('Records per page')
 
 
+def test_hidden_controls_survive_setter(screen: Screen):
+    @ui.page('/')
+    def page():
+        def assign_none():
+            table.pagination = None
+
+        def reset():
+            table.pagination = {'rowsPerPage': 2, 'page': 2}
+
+        table = ui.table(columns=columns(), rows=rows(), row_key='id', pagination=2).props('hide-pagination')
+        reset()  # should have no effect on 'hide-pagination'
+
+        ui.button('Assign None', on_click=assign_none)
+        ui.button('Reset pagination', on_click=reset)
+
+    # Pagination is initially hidden
+    screen.open('/')
+    screen.should_not_contain('Records per page')
+
+    # Pagination still hidden
+    screen.click('Assign None')
+    screen.should_not_contain('Records per page')
+
+    # Pagination re-enabled on page 2
+    screen.click('Reset pagination')
+    screen.should_contain('Records per page')
+    screen.should_not_contain('Alice')  # page 1 hidden
+    screen.should_contain('Lionel')     # page 2 showen
+
+
 def test_filter(screen: Screen):
     @ui.page('/')
     def page():
