@@ -138,7 +138,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
 
         A line outside the visible range ends up in the middle of the editor.
         The surrounding page is only scrolled if the line would otherwise remain out of sight.
-        A line number outside the document logs a warning and scrolls to the nearest line.
+        A line number outside the document logs a warning and is ignored.
 
         :param line_number: 1-indexed line number to scroll into view
 

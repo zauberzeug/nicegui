@@ -437,13 +437,11 @@ export default {
     revealLine(lineNumber) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
-      if (!Number.isInteger(lineNumber)) {
-        logAndEmit("warning", `reveal_line: line ${lineNumber} is not an integer in [1, ${doc.lines}]`);
-      } else if (lineNumber < 1 || lineNumber > doc.lines) {
+      if (lineNumber < 1 || lineNumber > doc.lines) {
         logAndEmit("warning", `reveal_line: line ${lineNumber} out of range [1, ${doc.lines}]`);
+        return;
       }
-      const lineNum = Math.min(Math.max(Math.trunc(lineNumber) || 1, 1), doc.lines);
-      const line = doc.line(lineNum);
+      const line = doc.line(lineNumber);
       // "center" would also re-center every scrollable ancestor, the window included, whenever the editor
       // cannot scroll far enough itself (first and last lines, short documents). "nearest" with a margin of
       // half the editor height centers the line just the same, but moves an ancestor only to bring the line

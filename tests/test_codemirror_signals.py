@@ -142,10 +142,9 @@ def test_viewport_change_event_follows_reveal_line(screen: Screen):
     from_line, to_line = events[-1]
     assert to_line - from_line < 30, 'only the lines on screen should be reported, not the whole document'
 
-    editor.reveal_line(2.5)
+    editor.reveal_line(500)
     screen.wait_for(lambda: any('reveal_line' in record.message for record in screen.caplog.records))
-    screen.assert_py_logger('WARNING', re.compile(r'reveal_line: line 2\.5 is not an integer in \[1, 200\]'))
-    screen.wait_for(lambda: events[-1][0] == 1)
+    screen.assert_py_logger('WARNING', re.compile(r'reveal_line: line 500 out of range \[1, 200\]'))
 
 
 def test_geometry_change_event(screen: Screen):
