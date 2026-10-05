@@ -120,6 +120,38 @@ async def test_queued_lazy_task_is_awaited_on_shutdown(user: User):
     assert events == ['first', 'second']
 
 
+async def test_awaiting_task_created_with_context(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+    results: list = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        async def compute() -> int:
+            return 42
+
+        async def boom() -> None:
+            raise RuntimeError('boom')
+
+        async def run() -> None:
+            results.append(await background_tasks.create(compute(), context=ui.context.client))
+            try:
+                await background_tasks.create(boom(), context=ui.context.client)
+            except RuntimeError as e:
+                results.append(str(e))
+
+        ui.button('run', on_click=run)
+
+    await user.open('/')
+    user.find('run').click()
+    await asyncio.sleep(0.1)
+    assert results == [42, 'boom'], 'awaiting the task should yield its result or raise its exception'
+    assert len(seen) == 1 and 'boom' in str(seen[0]), 'the exception should still reach ui.on_exception'
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
+
+
 def test_create_tasks(screen: Screen) -> None:
     events: list[str] = []
 

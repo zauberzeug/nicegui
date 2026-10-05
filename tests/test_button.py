@@ -206,3 +206,20 @@ async def test_click_that_deletes_the_button_is_still_delivered(user: User):
     user.find('Click me').click()
     await asyncio.sleep(0.1)  # let the async on_click handler delete the button
     assert results == ['clicked'], 'a real click must not be swallowed by the deletion it triggers'
+
+
+def test_awaiting_clicked_again_does_not_re_render_the_button(screen: Screen):
+    """A second clicked() on a rendered button must not rebuild its DOM (#6312)."""
+    @ui.page('/')
+    async def page():
+        button = ui.button('Click me')
+        await button.clicked()
+        ui.label('clicked')
+        await button.clicked()
+
+    screen.open('/')
+    screen.selenium.execute_script("document.querySelector('button.q-btn').dataset.mark = 'original'")
+    screen.click('Click me')
+    screen.should_contain('clicked')
+    mark = screen.selenium.execute_script("return document.querySelector('button.q-btn').dataset.mark")
+    assert mark == 'original', 'the button must not be re-rendered (see #6312)'

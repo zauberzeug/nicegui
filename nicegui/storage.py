@@ -1,3 +1,4 @@
+import asyncio
 import contextvars
 import os
 import uuid
@@ -96,6 +97,7 @@ class Storage:
         self._general = Storage._create_persistent_dict(GENERAL_ID)
         self._users: dict[str, PersistentDict] = {}
         self._tabs: dict[str, ObservableDict] = {}
+        self._tab_creations: dict[str, asyncio.Event] = {}
         self._active_request_sessions: Counter[str] = Counter()
         '''Number of in-flight HTTP requests per session id, so prune_user_storage does not remove
         user storage out from under a request that has not yet accessed app.storage.user.'''
@@ -177,29 +179,36 @@ class Storage:
         assert client.tab_id in self._tabs, f'tab storage for {client.tab_id} should be created before accessing it'
         return self._tabs[client.tab_id]
 
-    async def _create_tab_storage(self, tab_id: str) -> None:
-        """Create tab storage for the given tab ID."""
-        if tab_id not in self._tabs:
-            if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
-                tab = self._tabs[tab_id]
-                assert isinstance(tab, PersistentDict)
-                await tab.initialize()
-            else:
-                self._tabs[tab_id] = ObservableDict()
+    async def _create_tab_storage(self, tab_id: str, old_tab_id: str | None = None) -> None:
+        """Create tab storage for the given tab ID unless it exists already.
 
-    def copy_tab(self, old_tab_id: str, tab_id: str) -> None:
-        """Copy the tab storage to a new tab. (For internal use only.)"""
+        A new storage takes over the data of ``old_tab_id`` if that tab's storage is still around, in memory or in Redis,
+        which is how a duplicated tab inherits the storage of the tab it was duplicated from.
+        """
+        if creation := self._tab_creations.get(tab_id):
+            await creation.wait()  # a reconnect must not overtake a creation that is still loading from Redis
+        if tab_id in self._tabs:
+            return
+        if Storage.redis_url:
+            self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
+            tab = self._tabs[tab_id]
+            assert isinstance(tab, RedisPersistentDict)
+            self._tab_creations[tab_id] = asyncio.Event()
+            try:
+                await tab.initialize()
+                if old_tab_id and old_tab_id not in self._tabs:  # e.g. closed already or held by another instance
+                    await tab.inherit(f'{TAB_PREFIX}{old_tab_id}')
+            finally:
+                self._tab_creations.pop(tab_id).set()
+        else:
+            self._tabs[tab_id] = ObservableDict()
         if old_tab_id in self._tabs:
-            if Storage.redis_url:
-                self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
-            else:
-                self._tabs[tab_id] = ObservableDict()
-            self._tabs[tab_id].update(self._tabs[old_tab_id])
+            self._tabs[tab_id].update(_copy_collections(self._tabs[old_tab_id]))
 
     async def close_tab(self, tab_id: str | None) -> None:
         """Close the tab storage. (For internal use only.)"""
         if tab_id and isinstance(tab := self._tabs.get(tab_id), PersistentDict):
+            del self._tabs[tab_id]  # a tab that returns later creates and loads its storage anew
             await tab.close()
 
     def clear(self) -> None:
@@ -221,3 +230,14 @@ class Storage:
         for user in self._users.values():
             await user.close()
         await self._general.close()
+
+
+def _copy_collections(value: Any) -> Any:
+    """Copy nested dicts, lists and sets into plain ones, so that the copy shares none of them with the original."""
+    if isinstance(value, dict):
+        return {key: _copy_collections(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_copy_collections(item) for item in value]
+    if isinstance(value, set):
+        return set(value)
+    return value

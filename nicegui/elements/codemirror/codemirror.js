@@ -195,6 +195,8 @@ export default {
         if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
         if (element.props.decorations?.length) element.props.decorations = this.currentDecorationSpecs();
       }
+      // CodeMirror listens on the window, so a view that is merely detached stays alive and keeps measuring.
+      this.editor.destroy();
     }
     clearTimeout(this._anchorTimer);
   },

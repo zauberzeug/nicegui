@@ -7,7 +7,7 @@ from typing import Any, ClassVar, Concatenate, Generic, TypeVar, cast
 
 from typing_extensions import ParamSpec, Self
 
-from .. import background_tasks, helpers
+from .. import helpers
 from ..awaitable_response import AwaitableResponse
 from ..element import Element
 
@@ -96,15 +96,11 @@ class refreshable(Generic[_P, _T]):
         self.prune()
         instance = self.instance
 
-        def fire_and_forget() -> None:
-            if awaitables := self._execute_refresh(args, kwargs, instance=instance):
-                background_tasks.create_or_defer(asyncio.gather(*awaitables), name=f'refresh {self.func.__name__}')
-
-        async def wait_for_completion() -> None:
+        async def execute() -> None:
             if awaitables := self._execute_refresh(args, kwargs, instance=instance):
                 await asyncio.gather(*awaitables)
 
-        return AwaitableResponse(fire_and_forget, wait_for_completion)
+        return AwaitableResponse(execute, execute, name=f'refresh {self.func.__name__}')
 
     def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any], *, instance: Any) -> list[Awaitable[Any]]:
         """Execute the refresh and return a list of awaitables for async functions."""

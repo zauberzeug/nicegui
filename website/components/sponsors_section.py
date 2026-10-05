@@ -5,30 +5,31 @@ from nicegui import ui
 from .. import design as d
 from ..design import phosphor_icon, themed_image
 from ..github_stats import STARS_STRING, STATS
+from ..i18n import t
 from .shared import cta_button, section, section_heading
 
 
 def create() -> None:
     """Create the sponsors section with logos and contributor info."""
     with section('sponsors'), ui.column().classes(f'reveal w-full {d.BG_BLUE}/25 rounded-xl py-16 {d.SHADOW_CARD}'):
-        section_heading('sponsors', 'Supported by the community.', center=True)
+        section_heading('sponsors', t('Supported by the community.'), center=True)
 
-        ui.label('Join thousands of developers building with NiceGUI!') \
+        ui.label(t('Join thousands of developers building with NiceGUI!')) \
             .classes(f'self-center text-center {d.TEXT_SECONDARY}')
 
         with ui.row(align_items='center').classes('gap-12 justify-center my-10 w-full'):
             with ui.column(align_items='center').classes('gap-0'):
                 phosphor_icon('ph-star').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
                 ui.label(STARS_STRING).classes(d.TEXT_24PX)
-                ui.label('GitHub Stars').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
+                ui.label(t('GitHub Stars')).classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
             with ui.column(align_items='center').classes('gap-0'):
                 phosphor_icon('ph-github-logo').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
                 ui.label(str(STATS['contributors'])).classes(d.TEXT_24PX)
-                ui.label('Contributors').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
+                ui.label(t('Contributors')).classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
             with ui.column(align_items='center').classes('gap-0'):
                 phosphor_icon('ph-heart').classes(f'{d.TEXT_32PX} {d.TEXT_ACCENT}')
                 ui.label(str(STATS['total'])).classes(d.TEXT_24PX)
-                ui.label('Sponsors').classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
+                ui.label(t('Sponsors')).classes(f'{d.TEXT_13PX} {d.TEXT_SECONDARY}')
 
         with ui.row(align_items='center').classes('gap-10 justify-center my-5 w-full'):
             for sponsor in STATS['special']:
@@ -44,6 +45,6 @@ def create() -> None:
                     ui.image(f'https://github.com/{sponsor}.png').classes('size-12 border')
                     ui.label(f'@{sponsor}')
 
-            cta_button('Become a sponsor', left_icon='ph-heart', filled=False,
+            cta_button(t('Become a sponsor'), left_icon='ph-heart', filled=False,
                        on_click=lambda: ui.navigate.to('https://github.com/sponsors/zauberzeug')) \
                 .classes(f'{d.BORDER_ACCENT} [&_.ph-heart]:{d.TEXT_ACCENT}')
