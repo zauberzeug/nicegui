@@ -100,18 +100,6 @@ class Element(Visibility):
                           default_props: str | None = None,
                           ) -> None:
         super().__init_subclass__()
-        if '__init__' in cls.__dict__:
-            original_init = cls.__dict__['__init__']
-
-            @functools.wraps(original_init)
-            def init(self: Element, *args: Any, **kwargs: Any) -> None:
-                try:
-                    original_init(self, *args, **kwargs)
-                except Exception:
-                    self._unregister()  # pylint: disable=protected-access
-                    raise
-            cls.__init__ = init  # type: ignore[method-assign]
-
         base = Path(inspect.getfile(cls)).parent
 
         def glob_absolute_paths(file: str | Path) -> list[Path]:
@@ -143,6 +131,27 @@ class Element(Visibility):
         cls.default_classes(default_classes)
         cls.default_style(default_style)
         cls.default_props(default_props)
+
+        @functools.wraps(original_init := cls.__init__)
+        def init(self: Element, *args: Any, **kwargs: Any) -> None:
+            # pylint: disable=protected-access,unidiomatic-typecheck
+            try:
+                original_init(self, *args, **kwargs)
+            except Exception:
+                # roll back a registered element (#6343); base classes pass so a subclass can still catch the exception
+                client = self._client() if hasattr(self, '_client') else None
+                if type(self) is cls and client is not None and client.elements.get(self.id) is self:
+                    client.remove_elements(self.descendants())
+                    with contextlib.suppress(Exception):
+                        self._handle_delete()  # overrides may rely on attributes which have not been set yet
+                    binding.remove([self])
+                    self._deleted = True
+                    del client.elements[self.id]
+                    client.outbox.enqueue_delete(self)
+                    if self.parent_slot:
+                        self.parent_slot.children.remove(self)
+                raise
+        cls.__init__ = init  # type: ignore[method-assign]
 
     @property
     def client(self) -> Client:
@@ -589,30 +598,6 @@ class Element(Visibility):
     def is_deleted(self) -> bool:
         """Whether the element has been deleted."""
         return self._deleted
-
-    def _unregister(self) -> None:
-        """Unregister a half-built element if its constructor raises after Element.__init__ (#6343)."""
-        client_ref = getattr(self, '_client', None)
-        client = client_ref() if client_ref is not None else None
-        if client is None or getattr(self, '_deleted', False):
-            return
-
-        if hasattr(self, 'slots'):
-            client.remove_elements(self.descendants())
-
-        with contextlib.suppress(Exception):
-            self._handle_delete()
-
-        binding.remove([self])
-        self._deleted = True
-        client.elements.pop(self.id, None)
-        client.outbox.enqueue_delete(self)
-
-        parent_slot = getattr(self, '_parent_slot', None)
-        if parent_slot is not None:
-            slot = parent_slot()
-            if slot is not None and self in slot.children:
-                slot.children.remove(self)
 
     def __str__(self) -> str:
         result = self.tag if type(self) is Element else self.__class__.__name__  # pylint: disable=unidiomatic-typecheck
