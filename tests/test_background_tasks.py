@@ -173,6 +173,19 @@ async def test_timer_invocation_is_awaited_on_shutdown(user: User):
     assert events == ['done']
 
 
+async def test_protected_timer_callback_keeps_its_context(user: User):
+    @background_tasks.await_on_shutdown
+    async def work() -> None:
+        ui.label('added by protected timer')
+
+    @ui.page('/')
+    def page():
+        ui.timer(0.01, work, once=True)
+
+    await user.open('/')
+    await user.should_see('added by protected timer')
+
+
 def test_create_tasks(screen: Screen) -> None:
     events: list[str] = []
 
