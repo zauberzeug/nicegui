@@ -479,6 +479,7 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
+        # NOTE: the rollback of a failed constructor in `Element.__init_subclass__` mirrors these steps
         element_list = list(elements)  # we need to iterate over the elements multiple times
         binding.remove(element_list)
         for element in element_list:

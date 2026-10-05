@@ -1,3 +1,4 @@
+import contextlib
 import platform
 import weakref
 from pathlib import Path
@@ -547,11 +548,18 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
 
 async def test_element_unregistered_when_constructor_raises(user: User):
     class FailingComponent(ui.element):
-        def __init__(self) -> None:
+
+        def __init__(self, text: str) -> None:
             super().__init__()
             with self:
-                ui.label('nested child')
+                ui.label(text)
             raise RuntimeError
+
+    class RecoveringComponent(FailingComponent):
+
+        def __init__(self, text: str) -> None:
+            with contextlib.suppress(RuntimeError):
+                super().__init__(text)
 
     @ui.page('/')
     def page():
@@ -560,10 +568,11 @@ async def test_element_unregistered_when_constructor_raises(user: User):
         with pytest.raises(FileNotFoundError):
             ui.image(Path('does_not_exist.png'))
         with pytest.raises(RuntimeError):
-            FailingComponent()
+            FailingComponent('failed')
+        RecoveringComponent('recovered')
 
     await user.open('/')
     await user.should_not_see(kind=ui.html)
     await user.should_not_see(kind=ui.image)
-    await user.should_not_see(kind=FailingComponent)
-    await user.should_not_see('nested child')
+    await user.should_not_see('failed')
+    await user.should_see('recovered')
