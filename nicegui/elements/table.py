@@ -72,7 +72,7 @@ class Table(FilterElement, component='table.js'):
         self._props['rows'] = rows
         self._props['row-key'] = row_key
         self._props.set_optional('title', title)
-        self._loosely_hidden_pagination = True  # becomes False when 'hide-pagination' prop is set by the user
+        self._pagination_hidden = False  # whether 'hide-pagination' was set by `pagination=None`
         self.pagination = pagination
         self._props['selection'] = selection or 'none'
         self._props['selected'] = []
@@ -395,15 +395,9 @@ class Table(FilterElement, component='table.js'):
 
     @pagination.setter
     def pagination(self, value: int | dict | None) -> None:
-        page = self._props.get('pagination', None)
-        hide = self._props.get('hide-pagination', False)
-        if hide and not (page is None or (isinstance(page, dict) and page['rowsPerPage'] == 0)):
-            # e.g. user sets 'hide-pagination'
-            self._loosely_hidden_pagination = False
-        elif not self._loosely_hidden_pagination:
-            self._props.setdefault('hide-pagination', value is None)
-        else:
+        if value is None or self._pagination_hidden:  # never undo a 'hide-pagination' set via `.props()`
             self._props['hide-pagination'] = value is None
+        self._pagination_hidden = value is None
         self._props['pagination'] = value if isinstance(value, dict) else {'rowsPerPage': value or 0}
 
     @property
