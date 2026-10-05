@@ -115,7 +115,8 @@ class Timer:
                         # cancelling it together with this timer, and shield it so that cancelling the
                         # timer's invocation does not propagate into it; exceptions are handled here,
                         # in context, like for unprotected callbacks (hence handle_exceptions=False)
-                        task = background_tasks.create(result, name=str(self.callback), handle_exceptions=False)
+                        task = background_tasks.create(result, name=str(self.callback), handle_exceptions=False,
+                                                       context=self._get_context())
                         await asyncio.shield(task)
                     else:
                         await result
