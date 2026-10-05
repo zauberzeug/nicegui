@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import functools
 import inspect
 import re
 import weakref
@@ -10,7 +12,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from typing_extensions import Self
 
-from . import core, events, helpers, json, storage
+from . import binding, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
@@ -129,6 +131,31 @@ class Element(Visibility):
         cls.default_classes(default_classes)
         cls.default_style(default_style)
         cls.default_props(default_props)
+
+        own_init = cls.__init__ if '__init__' in cls.__dict__ else None
+
+        @functools.wraps(cls.__init__)
+        def init(self: Element, *args: Any, **kwargs: Any) -> None:
+            # pylint: disable=protected-access,unidiomatic-typecheck
+            try:
+                # an inherited constructor is resolved when called, so replacing it later still takes effect
+                (own_init or super(cls, type(self)).__init__)(self, *args, **kwargs)
+            except Exception:
+                # roll back a registered element (#6343); base classes pass so a subclass can still catch the exception
+                client = self._client() if hasattr(self, '_client') else None
+                if type(self) is cls and client is not None and client.elements.get(self.id) is self:
+                    # NOTE: the steps for the element itself mirror `Client.remove_elements`
+                    client.remove_elements(self.descendants())
+                    with contextlib.suppress(Exception):
+                        self._handle_delete()  # overrides may rely on attributes which have not been set yet
+                    binding.remove([self])
+                    self._deleted = True
+                    del client.elements[self.id]
+                    client.outbox.enqueue_delete(self)
+                    if self.parent_slot:
+                        self.parent_slot.children.remove(self)
+                raise
+        cls.__init__ = init  # type: ignore[method-assign]
 
     @property
     def client(self) -> Client:

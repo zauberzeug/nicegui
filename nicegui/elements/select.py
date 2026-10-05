@@ -63,8 +63,6 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                 value = [value]
             else:
                 value = value[:]  # avoid modifying the original list which could be the list of options (#3014)
-        # NOTE: validate arguments before super().__init__() registers the element,
-        # otherwise a half-built element stays in client.elements
         if isinstance(options, dict) and new_value_mode == 'add' and key_generator is None:
             raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
         if isinstance(key_generator, Generator):
