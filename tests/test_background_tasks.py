@@ -152,6 +152,27 @@ async def test_awaiting_task_created_with_context(user: User, caplog: pytest.Log
     caplog.records.pop(0)
 
 
+async def test_timer_invocation_is_awaited_on_shutdown(user: User):
+    events: list[str] = []
+
+    @background_tasks.await_on_shutdown
+    async def work() -> None:
+        try:
+            await asyncio.sleep(0.5)
+            events.append('done')
+        except asyncio.CancelledError:
+            events.append('cancelled')
+
+    @ui.page('/')
+    def page():
+        ui.timer(0.01, work, once=True)
+
+    await user.open('/')
+    await asyncio.sleep(0.2)  # let the timer fire so the invocation is in flight
+    await background_tasks.teardown()
+    assert events == ['done']
+
+
 def test_create_tasks(screen: Screen) -> None:
     events: list[str] = []
 

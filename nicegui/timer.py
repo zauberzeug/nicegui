@@ -110,7 +110,15 @@ class Timer:
                 assert self.callback is not None
                 result = self.callback()
                 if helpers.should_await(result):
-                    await result
+                    if isinstance(result, background_tasks._AwaitOnShutdown):  # pylint: disable=protected-access
+                        # NOTE: run protected work as a background task so teardown() awaits it instead of
+                        # cancelling it together with this timer, and shield it so that cancelling the
+                        # timer's invocation does not propagate into it; exceptions are handled here,
+                        # in context, like for unprotected callbacks (hence handle_exceptions=False)
+                        task = background_tasks.create(result, name=str(self.callback), handle_exceptions=False)
+                        await asyncio.shield(task)
+                    else:
+                        await result
             except Exception as e:
                 core.app.handle_exception(e)
 
