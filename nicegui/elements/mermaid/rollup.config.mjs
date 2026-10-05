@@ -1,4 +1,5 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 
 export default {
@@ -10,6 +11,7 @@ export default {
   },
   plugins: [
     nodeResolve(),
+    commonjs(),
     { name: "strip-trailing-whitespace", transform: (code) => ({ code: code.replace(/[ \t]+$/gm, ""), map: null }) },
     terser({
       mangle: true,

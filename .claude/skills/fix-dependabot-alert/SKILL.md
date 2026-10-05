@@ -18,6 +18,19 @@ add `"<pkg>>=<patched>",  # https://github.com/zauberzeug/nicegui/security/depen
 then run `uv lock` and check that the patched version satisfies `requires-python`.
 Commit `pyproject.toml` and `uv.lock` together; `DEPENDENCIES.md` only covers npm packages and stays unchanged.
 
+## Prebuilt bundles (plotly, json_editor)
+
+Two elements ship code that upstream built with dependencies compiled in:
+
+- plotly imports `plotly.js/dist/plotly.min.js`, which contains all of plotly's dependencies (e.g. `maplibre-gl`, `probe-image-size`).
+- json_editor imports `vanilla-jsoneditor`, which contains svelte; its other dependencies are bundled from our lockfile.
+
+Alerts on these compiled-in dependencies can not be fixed in the lockfile:
+`npm update` or an override closes the alert, but `dist/` still ships the vulnerable code.
+Leave such an alert open and tell the user;
+it is fixed by upgrading the parent package once a release contains the patched version (grep the upstream file to check).
+All other elements are built from package sources, so their lockfiles decide what ships.
+
 ## Steps (npm alerts)
 
 01. **Fetch each alert** to identify the package, manifest path, and first patched version:
