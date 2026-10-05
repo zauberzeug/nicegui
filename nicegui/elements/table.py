@@ -36,6 +36,7 @@ class Table(FilterElement, component='table.js'):
                  title: str | None = DEFAULT_PROP | None,
                  selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROP | None,
                  pagination: int | dict | None = None,
+                 pagination_controls: bool | None = None,
                  on_select: Handler[TableSelectionEventArguments] | None = None,
                  on_pagination_change: Handler[ValueChangeEventArguments[dict]] | None = None,
                  ) -> None:
@@ -57,6 +58,7 @@ class Table(FilterElement, component='table.js'):
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param pagination_controls: whether to show pagination controls, *added in version 4.0.0*
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
         """
@@ -72,8 +74,9 @@ class Table(FilterElement, component='table.js'):
         self._props['rows'] = rows
         self._props['row-key'] = row_key
         self._props.set_optional('title', title)
-        self._pagination_hidden = False  # whether 'hide-pagination' was set by `pagination=None`
-        self.pagination = pagination
+        self._pagination_controls = pagination_controls
+        self._props['hide-pagination'] = pagination is None if pagination_controls is None else not pagination_controls
+        self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
         self._props['selected'] = []
         self._props['fullscreen'] = False
@@ -394,11 +397,20 @@ class Table(FilterElement, component='table.js'):
         return self._props['pagination']
 
     @pagination.setter
-    def pagination(self, value: int | dict | None) -> None:
-        if value is None or self._pagination_hidden:  # never undo a 'hide-pagination' set via `.props()`
-            self._props['hide-pagination'] = value is None
-        self._pagination_hidden = value is None
-        self._props['pagination'] = value if isinstance(value, dict) else {'rowsPerPage': value or 0}
+    def pagination(self, value: dict) -> None:
+        self._props['pagination'] = value
+        if self._pagination_controls is None:
+            self.pagination_controls = True
+
+    @property
+    def pagination_controls(self) -> bool:
+        """Whether the pagination controls are shown."""
+        return self._pagination_controls or False
+
+    @pagination_controls.setter
+    def pagination_controls(self, value: bool) -> None:
+        self._pagination_controls = value
+        self._props['hide-pagination'] = not value
 
     @property
     def is_fullscreen(self) -> bool:
