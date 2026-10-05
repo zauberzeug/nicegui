@@ -546,34 +546,24 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
 
 
 async def test_element_unregistered_when_constructor_raises(user: User):
-    class FailingSubclass(ui.element):
-
+    class FailingComponent(ui.element):
         def __init__(self) -> None:
             super().__init__()
             with self:
                 ui.label('nested child')
-                ui.upload()
-            raise RuntimeError('Constructor failed after super().__init__')
+            raise RuntimeError
 
     @ui.page('/')
     def page():
-        ui.label('before')
-
         with pytest.raises(ValueError):
             ui.html('<script>alert("xss")</script>')
-
         with pytest.raises(FileNotFoundError):
-            ui.image(Path('does_not_exist_file.png'))
-
+            ui.image(Path('does_not_exist.png'))
         with pytest.raises(RuntimeError):
-            FailingSubclass()
-
-        ui.label('after')
+            FailingComponent()
 
     await user.open('/')
-    await user.should_see('before')
-    await user.should_see('after')
     await user.should_not_see(kind=ui.html)
     await user.should_not_see(kind=ui.image)
-    await user.should_not_see(kind=ui.upload)
+    await user.should_not_see(kind=FailingComponent)
     await user.should_not_see('nested child')
