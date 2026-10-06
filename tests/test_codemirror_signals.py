@@ -121,7 +121,8 @@ def test_focus_change_event(screen: Screen):
     assert events == [True, (2, 1), False, True, (2, 1)]
 
 
-def test_viewport_change_event_follows_reveal_line(screen: Screen):
+@pytest.mark.parametrize('transform', ['none', 'scale(0.5)'])
+def test_viewport_change_event_follows_reveal_line(screen: Screen, transform: str):
     events: list[tuple[int, int]] = []
     editor = None
 
@@ -131,7 +132,7 @@ def test_viewport_change_event_follows_reveal_line(screen: Screen):
         editor = ui.codemirror(
             '\n'.join(f'Line {i}' for i in range(1, 201)),
             on_viewport_change=lambda e: events.append((e.from_line, e.to_line)),
-        )
+        ).style(f'transform: {transform}')
 
     screen.open('/')
     screen.should_contain('Line 1')

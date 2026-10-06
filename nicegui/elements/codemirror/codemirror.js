@@ -627,9 +627,11 @@ export default {
               read: (view) => {
                 const scroller = view.scrollDOM;
                 if (!scroller.clientHeight) return null; // a hidden editor shows no lines
-                const top = scroller.scrollTop - view.documentPadding.top;
+                // The scroller measures in layout pixels, CodeMirror's height map in scaled ones.
+                const top = scroller.scrollTop * view.scaleY - view.documentPadding.top;
+                const height = scroller.clientHeight * view.scaleY;
                 const lineAt = (height) => view.state.doc.lineAt(view.lineBlockAtHeight(height).from).number;
-                return { from_line: lineAt(top), to_line: lineAt(top + scroller.clientHeight - 1) };
+                return { from_line: lineAt(top), to_line: lineAt(top + height - 1) };
               },
               write: (payload, view) => {
                 if (payload && view.dom.isConnected) this._maybeEmit("viewport-change", payload);
