@@ -179,3 +179,23 @@ def test_node_click_handler(screen: Screen):
 
     screen.click('Node With Hyphen')
     screen.should_contain('Node-With-Hyphen clicked')  # make sure our ID extraction works even with hyphens
+
+
+def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            architecture-beta
+                service db(database)[Database]
+                service cache(database)[Cache]
+                service server(server)[Server]
+                db:R -- L:server
+                cache:T -- B:server
+        ''')
+        for i in range(30):
+            ui.label(f'Label {i}')
+
+    screen.open('/')
+    screen.should_contain('Database')
+    ids = screen.selenium.execute_script('return Array.from(document.querySelectorAll("[id]"), e => e.id)')
+    assert len(ids) == len(set(ids)), 'every id on the page should be unique'
