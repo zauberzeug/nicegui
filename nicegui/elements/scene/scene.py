@@ -208,8 +208,9 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
             self.run_method('run_methods', calls)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        # the client might not be mounted yet (e.g. in an inactive tab panel); `_handle_init` sends the full state
         if not self._initialized_event.is_set():
-            return NullResponse()  # the client might not be mounted yet (e.g. in an inactive tab panel); `_handle_init` sends the full state
+            return NullResponse()
         if self._batched_calls is not None:
             self._batched_calls.append([name, *args])
             return NullResponse()
