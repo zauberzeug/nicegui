@@ -18,18 +18,20 @@ add `"<pkg>>=<patched>",  # https://github.com/zauberzeug/nicegui/security/depen
 then run `uv lock` and check that the patched version satisfies `requires-python`.
 Commit `pyproject.toml` and `uv.lock` together; `DEPENDENCIES.md` only covers npm packages and stays unchanged.
 
-## Prebuilt bundles (plotly, json_editor)
+## Prebuilt bundles (plotly, json_editor, mermaid)
 
-Two elements ship code that upstream built with dependencies compiled in:
+Three elements ship code that upstream built with dependencies compiled in:
 
 - plotly imports `plotly.js/dist/plotly.min.js`, which contains all of plotly's dependencies (e.g. `maplibre-gl`, `probe-image-size`).
-- json_editor imports `vanilla-jsoneditor`, which contains svelte; its other dependencies are bundled from our lockfile.
+- json_editor imports `vanilla-jsoneditor`, which contains svelte and its UI dependencies (e.g. `svelte-select`, `@floating-ui/dom`); its other dependencies are bundled from our lockfile.
+- mermaid depends on `@mermaid-js/parser`, which contains `langium`, `chevrotain`, `vscode-jsonrpc` and its own copy of `lodash-es`; mermaid's other dependencies are bundled from our lockfile.
 
 Alerts on these compiled-in dependencies can not be fixed in the lockfile:
 `npm update` or an override closes the alert, but `dist/` still ships the vulnerable code.
 Leave such an alert open and tell the user;
 it is fixed by upgrading the parent package once a release contains the patched version (grep the upstream file to check).
-All other elements are built from package sources, so their lockfiles decide what ships.
+All other dependencies are built from package sources, so their lockfiles decide what ships.
+The `@iconify/utils` override in mermaid is deliberate: 3.1 generates short icon ids such as `c1` that collide with NiceGUI's element ids, so do not bump it to fix an alert without checking the ids.
 
 ## Steps (npm alerts)
 
@@ -45,7 +47,7 @@ All other elements are built from package sources, so their lockfiles decide wha
 03. **Escalate to an npm override** if the patched version is outside the declared range (common for transitive deps).
     Add the package to the `overrides` section of the manifest's `package.json` with a range that includes the patched version, then run `npm install`.
 
-04. **Rebuild if the element has a `dist/`** — run `npm run build` in the manifest's directory.
+04. **Rebuild if the element has a `dist/`** — run `npm run clean && npm run build` in the manifest's directory, so that chunks with old content hashes do not stay behind.
     Don't hand-revert the `dist/` changes; let pre-commit hooks normalize any whitespace-only noise (the end-of-file-fixer will handle source-map trailing newlines).
 
 05. **Rebuild vendored core libraries if the root manifest changed** — run `npm run build` in the repository root; it runs `extract_core_libraries.py` to refresh `nicegui/static/`.
