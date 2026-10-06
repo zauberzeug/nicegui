@@ -1,5 +1,7 @@
 import re
 
+import pytest
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -145,6 +147,36 @@ def test_viewport_change_event_follows_reveal_line(screen: Screen):
     editor.reveal_line(500)
     screen.wait_for(lambda: any('reveal_line' in record.message for record in screen.caplog.records))
     screen.assert_py_logger('WARNING', re.compile(r'reveal_line: line 500 out of range \[1, 200\]'))
+
+
+@pytest.mark.parametrize('layout', ['scrolling editor', 'scrolling page', 'scroll area'])
+def test_reveal_line_brings_the_line_into_sight(screen: Screen, layout: str):
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        text = '\n'.join(f'Line {i}' for i in range(1, 201))
+        if layout == 'scrolling editor':
+            editor = ui.codemirror(text)
+        elif layout == 'scrolling page':
+            editor = ui.codemirror(text).classes('h-auto')
+        else:
+            with ui.scroll_area().classes('h-64'):
+                editor = ui.codemirror(text).classes('h-[600px]')
+
+    screen.open('/')
+    screen.should_contain('Line 1')
+    editor.reveal_line(150)
+    # Visible means not clipped by the editor, a surrounding scroll area or the window,
+    # which is what the element at the line's on-screen position tells.
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        f'const view = getElement({editor.id}).editor;'
+        'const block = view.lineBlockAt(view.state.doc.line(150).from);'
+        'const y = view.documentTop + block.top + block.height / 2;'
+        'const hit = document.elementFromPoint(view.contentDOM.getBoundingClientRect().left + 8, y);'
+        'return hit?.closest(".cm-line")?.textContent;'
+    ) == 'Line 150')
 
 
 def test_geometry_change_event(screen: Screen):

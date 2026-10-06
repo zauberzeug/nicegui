@@ -444,9 +444,19 @@ export default {
       const line = doc.line(lineNumber);
       // "center" would also re-center every scrollable ancestor, the window included, whenever the editor
       // cannot scroll far enough itself (first and last lines, short documents). "nearest" with a margin of
-      // half the editor height centers the line just the same, but moves an ancestor only to bring the line
-      // into view at all.
-      const yMargin = Math.max(0, (this.editor.scrollDOM.clientHeight - this.editor.defaultLineHeight) / 2);
+      // half the visible height centers the line just the same, but moves an ancestor only to bring the line
+      // into view at all. CodeMirror applies the margin to every scrollable ancestor, so it is taken from the
+      // smallest one: half of a larger one would push the line past the edges of the smaller.
+      // The walk mirrors CodeMirror's own, and the heights are in screen pixels like the line's rectangle.
+      let visibleHeight = window.innerHeight;
+      for (let el = this.editor.scrollDOM; el && el !== document.body; el = el.parentElement) {
+        if (el.scrollHeight > el.clientHeight) {
+          const scaleY = el.offsetHeight ? el.getBoundingClientRect().height / el.offsetHeight : 1;
+          visibleHeight = Math.min(visibleHeight, el.clientHeight * scaleY);
+        }
+        if (/^(fixed|sticky)$/.test(getComputedStyle(el).position)) break;
+      }
+      const yMargin = Math.max(0, (visibleHeight - this.editor.defaultLineHeight) / 2);
       this.editor.dispatch({
         effects: CM.EditorView.scrollIntoView(line.from, { y: "nearest", yMargin }),
       });
