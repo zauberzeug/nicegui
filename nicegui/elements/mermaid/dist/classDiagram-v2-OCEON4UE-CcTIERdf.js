@@ -1,0 +1,2 @@
+import{s as r,c as s,a,C as e}from"./chunk-GF5L2VYU-BxsATXzZ.js";import{_ as t}from"./index-C6_oXyon.js";import"./chunk-5VM5RSS4-VYY7_JKe.js";import"./chunk-XXDRQBXY-DVIeZkYU.js";import"./chunk-KBJHAD2P-vVhCmtb4.js";import"./chunk-2GRJ4B5K-DXuB1T0N.js";var o={parser:a,get db(){return new e},renderer:s,styles:r,init:t(r=>{r.class||(r.class={}),r.class.arrowMarkerAbsolute=r.arrowMarkerAbsolute},"init")};export{o as diagram};
+//# sourceMappingURL=classDiagram-v2-OCEON4UE-CcTIERdf.js.map
