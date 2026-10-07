@@ -326,10 +326,6 @@ class Table(FilterElement, component='table.js'):
 
         col_labels = df.columns.copy()
         if any(duplicate_columns):
-            warn_once(f'The pandas DataFrame has duplicate column names '
-                      f'({[label for label, is_duplicate in itertools.zip_longest(df.columns, duplicate_columns)
-                           if duplicate_columns]}). '
-                      f'The row fields are numbered to keep them unique, while the column labels stay unchanged.')
             new_col_names: list[str] = []
             duplicate_counter: int = 0
             for col, is_duplicate in itertools.zip_longest(df.columns, duplicate_columns):
@@ -339,6 +335,10 @@ class Table(FilterElement, component='table.js'):
                     duplicate_counter += 1
                 new_col_names.append(col + column_suffix)
             df.columns = new_col_names
+            warn_once(f'The pandas DataFrame has duplicate column names '
+                      f'({[label for label, is_duplicate in itertools.zip_longest(df.columns, duplicate_columns)
+                           if duplicate_columns]}). '
+                      f'The row fields are numbered to keep them unique, while the column labels stay unchanged.')
 
             # special_cols need update due to changes
             special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
