@@ -120,6 +120,8 @@ def _get_esm(key: str, path: str) -> FileResponse:
 
 async def _startup() -> None:
     """Handle the startup event."""
+    from .elements.upload import Upload  # pylint: disable=import-outside-toplevel
+
     if not app.config.has_run_config:
         argv0 = Path(sys.argv[0]) if sys.argv else Path()
         is_dash_m_package = argv0.name == '__main__.py' and (argv0.parent / '__init__.py').is_file()
@@ -133,6 +135,10 @@ async def _startup() -> None:
                            'remove the guard or replace it with\n'
                            '   if __name__ in {"__main__", "__mp_main__"}:\n'
                            'to allow for multiprocessing.')
+    upload_route = Upload._upload_route  # pylint: disable=protected-access
+    if not any(getattr(route, 'endpoint', None) is upload_route for route in app.routes):
+        app.add_api_route('/_nicegui/client/{client_id}/upload/{element_id}', upload_route,
+                          methods=['POST'], include_in_schema=app.config.endpoint_documentation in {'internal', 'all'})
     await welcome.collect_urls()
     # ping interval and timeout need to be lower than the reconnect timeout, but can't be too low
     sio.eio.ping_interval = max(app.config.reconnect_timeout * 0.8, 4)

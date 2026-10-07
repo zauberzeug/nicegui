@@ -1,4 +1,7 @@
+import asyncio
+import gc
 import tempfile
+import weakref
 from io import BytesIO
 from pathlib import Path
 
@@ -13,6 +16,103 @@ from nicegui.testing import Screen, User
 
 test_path1 = Path('tests/test_upload.py').resolve()
 test_path2 = Path('tests/test_scene.py').resolve()
+
+
+async def test_deleted_uploads_are_collectable(user: User):
+    uploads = []
+
+    @ui.page('/')
+    def page():
+        uploads.append(weakref.ref(ui.upload()))
+
+    for _ in range(4):
+        client = await user.open('/')
+        client.delete()
+        await asyncio.sleep(0)
+    gc.collect()
+    assert all(upload() is None for upload in uploads)
+
+
+async def test_upload_route_count_is_constant(user: User):
+    @ui.page('/')
+    def page():
+        pass
+
+    client = await user.open('/')
+    route_count = len(app.routes)
+    for count in (1, 10, 10):
+        with client:
+            uploads = [ui.upload() for _ in range(count)]
+        assert len(app.routes) == route_count
+        for upload in uploads:
+            upload.delete()
+        assert len(app.routes) == route_count
+
+
+async def test_upload_requests_are_isolated(user: User):
+    uploads = []
+    results = []
+
+    @ui.page('/')
+    def page():
+        for _ in range(2):
+            uploads.append(ui.upload(on_upload=lambda e: results.append((e.sender, e.file.name))))
+
+    first = await user.open('/')
+    second = await user.open('/')
+    assert uploads[0].id == uploads[2].id  # the client ID must disambiguate identical element IDs
+    for index, upload in enumerate(uploads):
+        response = await user.http_client.post(upload.props['url'], files={'file': (f'{index}.txt', b'test')})
+        assert response.status_code == 200
+        assert response.json() == {'upload': 'success'}
+        assert results[-1] == (upload, f'{index}.txt')
+    first.delete()
+    response = await user.http_client.post(uploads[0].props['url'], files={'file': ('stale.txt', b'test')})
+    assert response.status_code == 404
+    response = await user.http_client.post(uploads[2].props['url'], files={'file': ('live.txt', b'test')})
+    assert response.status_code == 200
+    assert results[-1] == (uploads[2], 'live.txt')
+    second.delete()
+
+
+@pytest.mark.parametrize('target', ['missing_client', 'missing_element', 'wrong_type', 'malformed', 'deleted'])
+async def test_invalid_upload_target(user: User, target: str):
+    elements = []
+    results = []
+
+    @ui.page('/')
+    def page():
+        elements.extend([ui.upload(on_upload=results.append), ui.label('Not an upload')])
+
+    client = await user.open('/')
+    upload = elements[0]
+    client_id = 'missing' if target == 'missing_client' else client.id
+    element_id = {'missing_element': '-1',
+                  'wrong_type': str(elements[1].id), 'malformed': 'invalid'}.get(target, str(upload.id))
+    if target == 'deleted':
+        upload.delete()
+    response = await user.http_client.post(f'/_nicegui/client/{client_id}/upload/{element_id}',
+                                           files={'file': ('test.txt', b'test')})
+    assert response.status_code == (422 if target == 'malformed' else 404)
+    assert not results
+
+
+def test_uploads_are_collectable_after_reload(screen: Screen):
+    uploads = []
+
+    @ui.page('/', reconnect_timeout=1)
+    def page():
+        uploads.append(weakref.ref(ui.upload(label='Upload')))
+
+    screen.open('/')
+    for _ in range(3):
+        screen.should_contain('Upload')
+        screen.selenium.refresh()
+    screen.should_contain('Upload')
+    screen.wait(5)
+    gc.collect()
+    assert len(uploads) == 4
+    assert sum(upload() is not None for upload in uploads) == 1
 
 
 async def test_uploading_text_file(screen: Screen):
@@ -120,7 +220,7 @@ def test_replace_upload(screen: Screen):
     screen.should_not_contain('A')
 
 
-async def test_route_removal_when_deleting_upload_with_custom_url(user: User):
+async def test_deleting_upload_with_custom_url(user: User):
     @app.post('/custom/upload')
     def custom_upload() -> None:
         pass
@@ -132,12 +232,13 @@ async def test_route_removal_when_deleting_upload_with_custom_url(user: User):
         nonlocal upload
         upload = ui.upload().props('url=/custom/upload')
 
-    await user.open('/')
-    assert any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
-
+    client = await user.open('/')
+    original_url = f'/_nicegui/client/{client.id}/upload/{upload.id}'
+    assert (await user.http_client.post(original_url)).status_code == 200
+    assert (await user.http_client.post('/custom/upload')).status_code == 200
     upload.delete()
-    assert not any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
-    assert any(getattr(route, 'path', None) == '/custom/upload' for route in app.routes)
+    assert (await user.http_client.post(original_url)).status_code == 404
+    assert (await user.http_client.post('/custom/upload')).status_code == 200
 
 
 def test_reset_upload(screen: Screen):

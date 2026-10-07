@@ -4,10 +4,9 @@ from fastapi import HTTPException, Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
-from .. import core
+from ..client import Client
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
-from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .upload_files import create_file_upload
@@ -58,8 +57,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         super().__init__(label=label)
         self._props.set_bool('multiple', multiple)
         self._props.set_bool('auto-upload', auto_upload)
-        self._registered_url = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
-        self._props['url'] = self._registered_url
+        self._props['url'] = f'/_nicegui/client/{self.client.id}/upload/{self.id}'
 
         self._props.set_optional('max-file-size', max_file_size)
         self._props.set_optional('max-total-size', max_total_size)
@@ -72,19 +70,23 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         self._upload_handlers = [on_upload] if on_upload else []
         self._multi_upload_handlers = [on_multi_upload] if on_multi_upload else []
 
-        @app.post(self._registered_url, include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
-        async def upload_route(request: Request) -> dict[str, str]:
-            if self.is_ignoring_events:
-                raise HTTPException(status_code=403, detail='Upload is disabled or hidden')
-            for begin_upload_handler in self._begin_upload_handlers:
-                handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
-            async with request.form() as form:
-                files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
-            await self.handle_uploads(files)
-            return {'upload': 'success'}
-
         if on_rejected:
             self.on_rejected(on_rejected)
+
+    @staticmethod
+    async def _upload_route(client_id: str, element_id: int, request: Request) -> dict[str, str]:
+        client = Client.instances.get(client_id)
+        upload = client.elements.get(element_id) if client is not None else None
+        if not isinstance(upload, Upload) or upload.is_deleted:
+            raise HTTPException(status_code=404, detail='Upload not found')
+        if upload.is_ignoring_events:
+            raise HTTPException(status_code=403, detail='Upload is disabled or hidden')
+        for begin_upload_handler in upload._begin_upload_handlers:  # pylint: disable=protected-access
+            handle_event(begin_upload_handler, UiEventArguments(sender=upload, client=upload.client))
+        async with request.form() as form:
+            files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
+        await upload.handle_uploads(files)
+        return {'upload': 'success'}
 
     async def handle_uploads(self, files: list[FileUpload]) -> None:
         """Handle the uploaded files.
@@ -124,7 +126,3 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         """Clear the upload queue."""
         self.run_method('reset')
         return self
-
-    def _handle_delete(self) -> None:
-        app.remove_route(self._registered_url)
-        super()._handle_delete()
