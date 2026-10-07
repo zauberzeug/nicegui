@@ -99,10 +99,6 @@ def test_geometry_change_event(screen: Screen):
     screen.selenium.execute_script(
         f'const el = getElement({editor.id}); el.$el.style.height = "400px";'
     )
-    # Force CM to notice the size change.
-    screen.selenium.execute_script(
-        f'const el = getElement({editor.id}); el.editor.requestMeasure();'
-    )
     screen.wait_for(lambda: any(height >= 200 for _, height, _ in events))
 
     # `content_height` comes off CodeMirror in scaled pixels while the width and
@@ -113,7 +109,6 @@ def test_geometry_change_event(screen: Screen):
         f'const el = getElement({editor.id});'
         'el.$el.style.transform = "scale(0.5)";'
         'el.$el.style.height = "300px";'
-        'el.editor.requestMeasure();'
     )
     screen.wait_for(lambda: any(height == 300 for _, height, _ in events))
     assert next(c for _, h, c in events if h == 300) == baseline

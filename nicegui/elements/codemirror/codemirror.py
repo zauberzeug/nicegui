@@ -133,7 +133,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
     def reveal_line(self, line_number: int) -> None:
         """Scroll the editor so the given 1-indexed line is visible.
 
-        A line outside the visible range ends up in the middle of the editor.
+        A line outside the visible range ends up in the middle of the visible part of the editor.
         The surrounding page is only scrolled if the line would otherwise remain out of sight.
         A line number outside the document logs a warning and is ignored.
 
