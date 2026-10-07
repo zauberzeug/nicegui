@@ -472,7 +472,9 @@ class Object3D:
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        Note that the client dispatches the call only once the object has been created.
+        Note that calls made before the scene is initialized are dropped;
+        keep ``self.args`` up to date if the state must survive.
+        Once the scene is initialized, the client dispatches the call only after the object has been created.
         When awaiting a result right after creating an object with a slow-loading component
         (e.g. a large glTF model), you may need to increase the ``timeout``.
 
