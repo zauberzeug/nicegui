@@ -1,6 +1,6 @@
 from typing import cast
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
@@ -74,6 +74,8 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
 
         @app.post(self._registered_url, include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
         async def upload_route(request: Request) -> dict[str, str]:
+            if self.is_ignoring_events:
+                raise HTTPException(status_code=403, detail='Upload is disabled or hidden')
             for begin_upload_handler in self._begin_upload_handlers:
                 handle_event(begin_upload_handler, UiEventArguments(sender=self, client=self.client))
             async with request.form() as form:

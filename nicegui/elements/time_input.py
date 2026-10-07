@@ -39,3 +39,6 @@ class TimeInput(LabelElement, ValueElement[str | None], DisableableElement):
                     self.picker = time()
 
         self.picker.bind_value(self)
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

@@ -1332,15 +1332,15 @@ def test_navigate_from_root_page_to_other_page(screen: Screen):
     assert screen.current_path == '/other'
 
 
-@pytest.mark.xfail(reason='#6281: a link without trailing slash to a page registered as "/" on a prefixed APIRouter stays in the SPA')
-def test_navigate_from_sub_pages_to_api_router_page(screen: Screen):
-    router = APIRouter(prefix='/other')
+@pytest.mark.parametrize('router_prefix, include_prefix', [('/other', ''), ('', '/other')])
+def test_navigate_from_sub_pages_to_api_router_page(screen: Screen, router_prefix: str, include_prefix: str):
+    router = APIRouter(prefix=router_prefix)
 
     @router.page('/')
     def other_page():
         ui.label('Other')
 
-    app.include_router(router)
+    app.include_router(router, prefix=include_prefix)
 
     @ui.page('/')
     def index():
@@ -1352,7 +1352,7 @@ def test_navigate_from_sub_pages_to_api_router_page(screen: Screen):
 
     screen.click('Go to other page')
     screen.should_contain('Other')
-    assert screen.current_path == '/other'
+    assert screen.current_path == '/other/'
 
 
 @pytest.mark.parametrize('suffix', ['?x=1', '#section'])

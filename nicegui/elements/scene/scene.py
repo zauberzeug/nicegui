@@ -1,4 +1,5 @@
 import asyncio
+import weakref
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -170,24 +171,24 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
 
     def __enter__(self) -> Self:
-        Object3D.current_scene = self
+        Object3D.current_scene = weakref.ref(self)
         super().__enter__()
         return self
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
         if isinstance(attribute, type) and issubclass(attribute, Object3D):
-            Object3D.current_scene = self
+            Object3D.current_scene = weakref.ref(self)
         return attribute
 
     def _handle_init(self) -> None:
-        if self._initialized_event.is_set():
-            # a second init event implies a JS remount (e.g. after WebGL context loss) with an empty scene graph;
-            # re-send parents before children (dict order can deviate after attach())
-            with self._batch_calls():
-                for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
-                    obj._resend()  # pylint: disable=protected-access
         self._initialized_event.set()
+        # the client starts with an empty scene graph, both on the first init (method calls issued before the component
+        # was mounted are dropped, see `run_method`) and after a JS remount (e.g. after WebGL context loss);
+        # re-send parents before children (dict order can deviate after attach())
+        with self._batch_calls():
+            for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
+                obj._resend()  # pylint: disable=protected-access
         self.move_camera(duration=0)
 
     @contextmanager
@@ -207,6 +208,9 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
             self.run_method('run_methods', calls)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        # the client might not be mounted yet (e.g. in an inactive tab panel); `_handle_init` sends the full state
+        if not self._initialized_event.is_set():
+            return NullResponse()
         if self._batched_calls is not None:
             self._batched_calls.append([name, *args])
             return NullResponse()

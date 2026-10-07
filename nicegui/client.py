@@ -387,15 +387,25 @@ class Client:
             self._pinned_tab_id = tab_id
         return self._pinned_tab_id == tab_id
 
-    def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
-        """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
-        self._waiting_for_connection.clear()
-        self._connected.set()
+    async def handle_handshake(self, socket_id: str, tab_id: str, old_tab_id: str | None,
+                               document_id: str, next_message_id: int | str | None) -> None:
+        """Register the socket, create the tab storage and invoke connect handlers.
+
+        Both transports (local Socket.IO and On Air) call this after ``accept_handshake`` succeeded.
+        (For internal use only.)
+        """
+        self.tab_id = tab_id
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
         if next_message_id is not None:
-            self.outbox.try_rewind(next_message_id)
+            self.outbox.try_rewind(int(next_message_id))  # the implicit handshake takes it from the query string
+        # create the tab storage before waking connected() waiters and invoking connect handlers, which may access it
+        await core.app.storage._create_tab_storage(tab_id, old_tab_id)  # pylint: disable=protected-access
+        if socket_id not in self._socket_to_document_id:
+            return  # the socket disconnected while the tab storage was being created
+        self._waiting_for_connection.clear()
+        self._connected.set()
         storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
@@ -424,8 +434,10 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                await core.app.storage.close_tab(tab_id_to_close)
-                self.delete()
+                self.delete()  # before closing the tab storage, so a reconnect in between cannot create a new one
+                # pylint: disable-next=protected-access
+                if all(client._pinned_tab_id != tab_id_to_close for client in Client.instances.values()):
+                    await core.app.storage.close_tab(tab_id_to_close)  # unless still in use, e.g. after a reload
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
@@ -463,12 +475,13 @@ class Client:
                 result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
                 if helpers.should_await(result):
                     name = f'func with client {self.id} {func.__name__ if hasattr(func, "__name__") else func}'
-                    background_tasks.create(helpers.await_with_context(result, self), name=name)
+                    background_tasks.create(result, name=name, context=self)
         except Exception as e:
             core.app.handle_exception(e)
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
+        # NOTE: the rollback of a failed constructor in `Element.__init_subclass__` mirrors these steps
         element_list = list(elements)  # we need to iterate over the elements multiple times
         binding.remove(element_list)
         for element in element_list:

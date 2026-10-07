@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import math
 import uuid
+import weakref
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class Object3D:
-    current_scene: Scene | None = None
+    current_scene: ClassVar[weakref.ref[Scene] | None] = None
     _component_url: ClassVar[str | None] = None
     _file_stem: ClassVar[str | None] = None
 
@@ -54,8 +55,9 @@ class Object3D:
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
-        assert self.current_scene is not None
-        self.scene: Scene = self.current_scene
+        scene = Object3D.current_scene() if Object3D.current_scene is not None else None
+        assert scene is not None
+        self.scene: Scene = scene
         self.scene.objects[self.id] = self
         self.parent: Object3D | SceneObject = self.scene.stack[-1]
         self.args: list = list(args)
@@ -201,7 +203,7 @@ class Object3D:
 
         :param color: CSS color string (default: '#ffffff')
         :param opacity: opacity between 0.0 and 1.0 (default: 1.0)
-        :param side: 'front', 'back', or 'double' (default: 'front')
+        :param side: 'front', 'back', or 'both' (default: 'front')
         """
         if self.color != color or self.opacity != opacity or self.side_ != side or not self.material_is_set:
             self.color = color
@@ -470,7 +472,9 @@ class Object3D:
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
-        Note that the client dispatches the call only once the object has been created.
+        Note that calls made before the scene is initialized are dropped;
+        keep ``self.args`` up to date if the state must survive.
+        Once the scene is initialized, the client dispatches the call only after the object has been created.
         When awaiting a result right after creating an object with a slow-loading component
         (e.g. a large glTF model), you may need to increase the ``timeout``.
 

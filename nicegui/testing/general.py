@@ -5,7 +5,7 @@ from copy import copy
 
 from starlette.routing import Route
 
-from .. import app, binding, core, dependencies, event, run, ui
+from .. import app, background_tasks, binding, core, dependencies, event, run, ui
 from ..client import Client
 from ..helpers import warnings
 from ..slot import Slot
@@ -41,6 +41,8 @@ def nicegui_reset_globals():
             or route.path.startswith('/_nicegui/client/')
         ):
             app.remove_route(route.path)
+        if hasattr(route, 'original_router'):  # a router that FastAPI 0.141+ keeps as a single lazy route
+            app.routes.remove(route)
 
     app.openapi_schema = None
     app.middleware_stack = None
@@ -61,6 +63,7 @@ def nicegui_reset_globals():
     Client.shared_head_html = ''
     Client.shared_body_html = ''
     app.reset()
+    background_tasks.reset()
     binding.reset()
     warnings.reset()
 
@@ -72,6 +75,7 @@ def nicegui_reset_globals():
         gc.collect()
 
         app.reset()
+        background_tasks.reset()
         event.reset()
         run.reset()
 

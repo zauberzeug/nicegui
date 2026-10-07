@@ -20,9 +20,9 @@ class SpotLight(Object3D, component='spot_light.js'):
 
         :param color: CSS color string (default: '#ffffff')
         :param intensity: light intensity (default: 1.0)
-        :param distance: maximum distance of light (default: 0.0)
-        :param angle: maximum angle of light (default: π/2)
+        :param distance: maximum distance of light (default: 0.0, no limit)
+        :param angle: maximum angle of light in radians (default: π/3)
         :param penumbra: penumbra (default: 0.0)
-        :param decay: decay (default: 2.0)
+        :param decay: decay (default: 1.0)
         """
         super().__init__(color, intensity, distance, angle, penumbra, decay)

@@ -123,6 +123,7 @@ NiceGUI runs in a single asyncio event loop. Every page, every user, every timer
 - CPU-heavy work must leave the event loop: `await run.cpu_bound(fn, *args)` runs it in a separate process (arguments and return value must be picklable)
 - `run.io_bound` / `run.cpu_bound` come from `from nicegui import run` — prefer them over `asyncio.to_thread()` or a hand-rolled `run_in_executor`, because NiceGUI manages the pools and their shutdown
 - `background_tasks.create()` for fire-and-forget coroutines — wraps `create_task` but keeps a reference (so the GC won't cancel it) and routes exceptions through NiceGUI's exception handler. Avoid bare `asyncio.create_task()` or `asyncio.ensure_future()` for this reason.
+- Pass `context=` (a container element or `ui.context.client`, since 3.18) to run the task inside that context: elements it creates land in the container, and exceptions also reach the page's `ui.on_exception` handlers instead of only the global `app.on_exception` ones.
 - Timers (`ui.timer()`) are safe: they schedule callbacks without blocking
 
 ### 8. Why `ui.storage.user` and not a global dict
@@ -238,6 +239,19 @@ The `color` parameter (on button, badge, chip, etc.) accepts, in priority order:
 2. Tailwind color names (`red-500`, `blue-200`, …)
 3. CSS color values (`#ff0000`, `rgb(255,0,0)`, `red`)
 
+### Custom colors
+
+For brand or domain colors, register named colors with `ui.colors` (per page) or `app.colors` (app-wide) instead of repeating hex values in inline styles.
+A registered name then works like a Quasar color name: in the `color` parameter, in the `color` and `text-color` props, and in the `text-<name>` and `bg-<name>` classes.
+These classes are `!important`, so no `!important` inline styles are needed to override Quasar.
+
+```python
+app.colors(brand='#187C61', warn_soft='#FDE68A')  # underscores become dashes: warn-soft
+ui.button('Save', color='brand')
+ui.button('Details').props('flat text-color=brand')
+ui.label('Hint').classes('bg-warn-soft')
+```
+
 ---
 
 ## Layout Elements (Context Managers)
@@ -351,6 +365,11 @@ editor.decorations = [                  # decorations (since 3.17): style, hide 
                                         # or your own CSS; in-place list edits sync too; reading back returns the specs as
                                         # declared (positions are not tracked like line anchors); decoration_html=True
                                         # renders `text` as sanitized HTML; `attributes` is applied raw — never pass untrusted input
+editor.reveal_line(42)                  # scroll a 1-indexed line into view (since 3.18)
+editor.on_focus_change(lambda e: ...)   # editor signals (since 3.18): e.focused
+editor.on_viewport_change(lambda e: ...)  # e.from_line / e.to_line, first and last visible line (throttled to 100 ms)
+editor.on_geometry_change(lambda e: ...)  # e.width / e.height / e.content_height (throttled to 100 ms)
+                                        # all three also as constructor kwargs; a signal is only computed while a listener exists
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -389,16 +408,24 @@ ui.table(columns=columns, rows=rows, row_key='name')
 
 # AG Grid (advanced grid)
 grid = ui.aggrid({
-    'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+    'columnDefs': [
+        {'field': 'name'},
+        {'field': 'age', ':valueFormatter': 'params => `${params.value} years`'},
+    ],
     'rowData': rows,
+    ':getRowId': 'params => params.data.name',  # stable row IDs; needed for run_row_method and row updates
 })
+# Options are sent as JSON, so a string stays a string. Prefix a key with ':' to have its value
+# evaluated as a JavaScript expression (functions, regexes, objects) — without the colon, AG Grid
+# gets a plain string where it expects a function, shows no rows and only logs a TypeError in the browser.
+# AG Grid's own expression strings (e.g. 'x < 21' in cellClassRules) need no colon.
 # Build from a pandas DataFrame (auto column defs):
 # grid = ui.aggrid.from_pandas(df)
 
 # Drive the client-side AG Grid API from Python (from inside an async handler):
 async def select_all():
     await grid.run_grid_method('selectAll')
-    await grid.run_row_method('row-id', 'setSelected', True)
+    await grid.run_row_method('Alice', 'setSelected', True)  # row ID from getRowId (or the row index as a string)
 
 # Tree
 ui.tree([
@@ -820,7 +847,7 @@ app.on_startup(async_function)
 app.on_shutdown(async_function)
 app.on_connect(handler)         # new client connects
 app.on_disconnect(handler)      # client disconnects
-app.on_exception(handler)       # unhandled exceptions (any context)
+app.on_exception(handler)       # unhandled exceptions (any context); per-page counterpart: ui.on_exception
 app.on_page_exception(handler)  # unhandled exceptions raised inside a @ui.page builder
 app.on_delete(handler)          # @ui.page client instance is being deleted (per-page teardown)
 
@@ -846,7 +873,7 @@ ui.run(
     port=8080,                       # default: 8080, or an open port in native mode; set it here —
                                      # NICEGUI_HOST/NICEGUI_PORT env vars are internal, ignored and warned about (since 3.17)
     title='My App',                  # default: 'NiceGUI'; can be overwritten per page
-    favicon='🚀',                    # default: None (NiceGUI icon); emoji, file path or URL
+    favicon='🚀',                    # default: None (NiceGUI icon); emoji, local image path, http(s) URL, data URL or inline SVG
     dark=None,                       # default: False; None = follow system
     language='en-US',                # default: None (Quasar element language)
     storage_secret='my-secret',      # default: None; required for app.storage.user and app.storage.browser
@@ -895,6 +922,10 @@ from nicegui import background_tasks
 # NEVER use asyncio.create_task() — the GC may cancel it
 # ALWAYS use background_tasks.create()
 background_tasks.create(my_coroutine(), name='my-task')
+
+# Run the task inside a page context (since 3.18): elements it creates go into `container`,
+# and exceptions reach the page's ui.on_exception handlers (not only the global app.on_exception)
+background_tasks.create(my_coroutine(), context=container)   # or context=ui.context.client
 
 # Inside a @ui.page handler, run something after the page is built
 async def long_work():
@@ -1074,33 +1105,33 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.fullscreen()`         | Programmatic fullscreen control (since 2.11.0) |
 | `ui.parallax(source)`     | Parallax-image header (Quasar QParallax)       |
 | `ui.dark_mode()`          | Dark mode toggle                               |
-| `ui.colors(primary, ...)` | Global theme colors                            |
+| `ui.colors(primary, ...)` | Theme colors and custom named colors           |
 | `ui.query(selector)`      | Style arbitrary DOM elements                   |
 
 ### Global Functions
 
-| Function                                | Description                                    |
-| --------------------------------------- | ---------------------------------------------- |
-| `ui.notify(msg)`                        | Toast notification                             |
-| `ui.navigate.to(url)`                   | Navigate to URL                                |
-| `ui.navigate.back/forward/reload()`     | Browser history navigation                     |
-| `ui.run_javascript(code)`               | Execute JS (await for result)                  |
-| `ui.download(src)`                      | Trigger file download                          |
-| `ui.clipboard.write(text)`              | Write to clipboard                             |
-| `ui.clipboard.read()`                   | Read from clipboard (await)                    |
-| `ui.update(element)`                    | Force push element update                      |
-| `ui.refreshable`                        | Decorator for rebuilding UI sections           |
-| `ui.refreshable_method`                 | Same, for class methods                        |
-| `ui.state(value)`                       | Local state inside `@ui.refreshable`           |
-| `ui.page_title(title)`                  | Set browser tab title                          |
-| `ui.add_css/add_scss/add_sass(code)`    | Global styles                                  |
-| `ui.add_head_html(html)`                | Inject into `<head>`                           |
-| `ui.add_body_html(html)`                | Inject into `<body>`                           |
-| `ui.on(event, handler)`                 | Global app event listener                      |
-| `ui.on_exception(handler)`              | Global exception handler                       |
-| `ui.status_code(code)`                  | Set HTTP response status                       |
-| `ui.context.client` / `ui.context.slot` | Access current client / slot from utility code |
-| `ui.run_with(fastapi_app, ...)`         | Mount NiceGUI inside an existing FastAPI app   |
+| Function                                | Description                                               |
+| --------------------------------------- | --------------------------------------------------------- |
+| `ui.notify(msg)`                        | Toast notification                                        |
+| `ui.navigate.to(url)`                   | Navigate to URL                                           |
+| `ui.navigate.back/forward/reload()`     | Browser history navigation                                |
+| `ui.run_javascript(code)`               | Execute JS (await for result)                             |
+| `ui.download(src)`                      | Trigger file download                                     |
+| `ui.clipboard.write(text)`              | Write to clipboard                                        |
+| `ui.clipboard.read()`                   | Read from clipboard (await)                               |
+| `ui.update(element)`                    | Force push element update                                 |
+| `ui.refreshable`                        | Decorator for rebuilding UI sections                      |
+| `ui.refreshable_method`                 | Same, for class methods                                   |
+| `ui.state(value)`                       | Local state inside `@ui.refreshable`                      |
+| `ui.page_title(title)`                  | Set browser tab title                                     |
+| `ui.add_css/add_scss/add_sass(code)`    | Global styles                                             |
+| `ui.add_head_html(html)`                | Inject into `<head>`                                      |
+| `ui.add_body_html(html)`                | Inject into `<body>`                                      |
+| `ui.on(event, handler)`                 | Global app event listener                                 |
+| `ui.on_exception(handler)`              | Per-page exception handler (`app.on_exception` is global) |
+| `ui.status_code(code)`                  | Set HTTP response status                                  |
+| `ui.context.client` / `ui.context.slot` | Access current client / slot from utility code            |
+| `ui.run_with(fastapi_app, ...)`         | Mount NiceGUI inside an existing FastAPI app              |
 
 ---
 
@@ -1297,6 +1328,8 @@ async def test_counter(user: User) -> None:
 ```
 
 `user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` always search the whole page (including header, drawers and footer).
+They match what the user would read: text, labels, placeholders, option labels, and (since 3.18) the values that input fields display — `ui.number(value=42)` is found by `'42'`, `ui.input`, `ui.textarea`, `ui.date_input` etc. by their value, `ui.input_chips` by each chip.
+Values that are not shown as text (sliders, checkboxes, hidden progress values) are deliberately not matched.
 When markers or content repeat across the page, limit them to one subtree with `user.scope(...)` (since 3.16):
 
 ```python
@@ -1392,13 +1425,9 @@ requests.get(url)         # synchronous HTTP — use httpx, or await run.io_boun
 from nicegui import background_tasks
 background_tasks.create(my_coroutine(), name='descriptive-name')
 
-# Handle exceptions in background tasks
-from nicegui import core
-async def safe_task():
-    try:
-        await do_work()
-    except Exception as e:
-        core.app.handle_exception(e)
+# Exceptions in background tasks reach app.on_exception automatically;
+# pass context= so the page's ui.on_exception handlers see them too (since 3.18)
+background_tasks.create(do_work(), context=ui.context.client)
 ```
 
 ### Fluent Interface Formatting

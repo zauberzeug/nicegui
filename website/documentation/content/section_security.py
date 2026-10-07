@@ -161,6 +161,21 @@ doc.text('', '''
 ''')
 
 
+doc.text('Hidden and Disabled Elements', '''
+    Elements which are hidden (`visible = False`) or disabled (`disable()`) ignore events from the client:
+    a click on a disabled button or an upload to a hidden `ui.upload` is rejected on the server,
+    even if the element has been re-enabled in the browser's developer tools.
+
+    This check only covers the element itself.
+    It does not look at the element's ancestors, so an element inside a hidden container still accepts events.
+    It also does not know about closed dialogs, inactive tab panels or collapsed expansions, whose content stays reachable.
+
+    Therefore, do not use visibility as access control.
+    If a user is not allowed to trigger an action, do not create the element for them in the first place,
+    and check the permission again in the handler if the action is sensitive.
+''')
+
+
 doc.text('Client-Side Secrets', '''
     NiceGUI assigns each client session a unique `client_id` (a random UUID).
 

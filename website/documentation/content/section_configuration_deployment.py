@@ -165,6 +165,10 @@ def env_var_demo():
     By default the task will be automatically cancelled during shutdown.
     You can prevent this by using the `@background_tasks.await_on_shutdown` decorator (added in version 2.16.0).
     This is useful for tasks that need to be completed even when the app is shutting down.
+
+    Exceptions in background tasks are passed to `app.on_exception` handlers.
+    If you pass a `context` like a container element or `ui.context.client`, the task runs within this context
+    and exceptions are also passed to the `ui.on_exception` handlers of the corresponding page (added in version 3.18.0).
 ''')
 def background_tasks_demo():
     # import aiofiles

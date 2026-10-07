@@ -1,5 +1,7 @@
+import contextlib
 import platform
 import weakref
+from pathlib import Path
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -542,3 +544,35 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
     screen.open('/')
     screen.click('Check IDs')
     screen.should_contain('All IDs found')
+
+
+async def test_element_unregistered_when_constructor_raises(user: User):
+    class FailingComponent(ui.element):
+
+        def __init__(self, text: str) -> None:
+            super().__init__()
+            with self:
+                ui.label(text)
+            raise RuntimeError
+
+    class RecoveringComponent(FailingComponent):
+
+        def __init__(self, text: str) -> None:
+            with contextlib.suppress(RuntimeError):
+                super().__init__(text)
+
+    @ui.page('/')
+    def page():
+        with pytest.raises(ValueError):
+            ui.html('<script>alert("xss")</script>')
+        with pytest.raises(FileNotFoundError):
+            ui.image(Path('does_not_exist.png'))
+        with pytest.raises(RuntimeError):
+            FailingComponent('failed')
+        RecoveringComponent('recovered')
+
+    await user.open('/')
+    await user.should_not_see(kind=ui.html)
+    await user.should_not_see(kind=ui.image)
+    await user.should_not_see('failed')
+    await user.should_see('recovered')

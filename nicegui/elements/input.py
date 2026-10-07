@@ -123,3 +123,6 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
         if self.label:
             return f'{self.label}: {value}'
         return value
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

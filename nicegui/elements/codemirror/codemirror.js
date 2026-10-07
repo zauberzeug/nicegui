@@ -195,6 +195,8 @@ export default {
         if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
         if (element.props.decorations?.length) element.props.decorations = this.currentDecorationSpecs();
       }
+      // CodeMirror listens on the window, so a view that is merely detached stays alive and keeps measuring.
+      this.editor.destroy();
     }
     clearTimeout(this._anchorTimer);
   },
@@ -434,6 +436,39 @@ export default {
       this._lastAnchors = positions;
       this.$emit("anchor-positions", { anchors: positions });
     },
+    revealLine(lineNumber) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      if (lineNumber < 1 || lineNumber > doc.lines) {
+        logAndEmit("warning", `reveal_line: line ${lineNumber} out of range [1, ${doc.lines}]`);
+        return;
+      }
+      const line = doc.line(lineNumber);
+      // "center" would also re-center every scrollable ancestor, the window included, whenever the editor
+      // cannot scroll far enough itself (first and last lines, short documents). "nearest" with a margin of
+      // half the visible height centers the line just the same, but moves an ancestor only to bring the line
+      // into view at all. CodeMirror applies the margin to every scrollable ancestor, so it is taken from the
+      // smallest one: half of a larger one would push the line past the edges of the smaller.
+      // The walk mirrors CodeMirror's own, and the heights are in screen pixels like the line's rectangle.
+      let visibleHeight = window.innerHeight;
+      for (let el = this.editor.scrollDOM; el && el !== document.body; el = el.parentElement) {
+        if (el.scrollHeight > el.clientHeight) {
+          const scaleY = el.offsetHeight ? el.getBoundingClientRect().height / el.offsetHeight : 1;
+          visibleHeight = Math.min(visibleHeight, el.clientHeight * scaleY);
+        }
+        if (/^(fixed|sticky)$/.test(getComputedStyle(el).position)) break;
+      }
+      const yMargin = Math.max(0, (visibleHeight - this.editor.defaultLineHeight) / 2);
+      this.editor.dispatch({
+        effects: CM.EditorView.scrollIntoView(line.from, { y: "nearest", yMargin }),
+      });
+    },
+    // Whether the host listens to the given event; the listeners arrive as camel-cased "on<Event>" attributes,
+    // followed by their modifiers if there are any.
+    hasListener(event) {
+      const prop = "on" + event.replace(/(?:^|-)(\w)/g, (_, char) => char.toUpperCase());
+      return Object.keys(this.$attrs).some((key) => key.startsWith(prop));
+    },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
         key,
@@ -514,6 +549,76 @@ export default {
         },
       );
 
+      // Dispatches per-signal events for the signals the host listens to. Each signal is deduped against
+      // its last payload, so an update that leaves a signal unchanged costs nothing on the wire.
+      // Rate limiting is the Python side's job, via Element.on(..., throttle=...).
+      const updateDispatcher = CM.ViewPlugin.fromClass(
+        class {
+          constructor(view) {
+            this._last = {};
+            // CodeMirror's own viewport is the rendered range (visible plus a margin) and only changes when
+            // scrolling gets near its edge, so the visible lines are tracked through the scroller instead.
+            this._scroller = view.scrollDOM;
+            this._onScroll = () => this._measureViewport(view);
+            this._scroller.addEventListener("scroll", this._onScroll, { passive: true });
+          }
+          destroy() {
+            this._scroller.removeEventListener("scroll", this._onScroll);
+          }
+          update(u) {
+            if (u.focusChanged && self.hasListener("focus-change")) {
+              this._maybeEmit("focus-change", { focused: u.view.hasFocus });
+            }
+            // Edits, folds and resizes all change which lines are visible without scrolling.
+            if (u.geometryChanged) this._measureViewport(u.view);
+            // CodeMirror forbids DOM layout reads in update(), and geometryChanged is set by every
+            // document change, so reading clientWidth/clientHeight here forces a layout per keystroke.
+            // requestMeasure defers the read into CM's own measure cycle, where it is already batched.
+            if (u.geometryChanged && self.hasListener("geometry-change")) {
+              u.view.requestMeasure({
+                key: "nicegui-codemirror-geometry",
+                read: (view) => ({
+                  width: view.dom.clientWidth,
+                  height: view.dom.clientHeight,
+                  // contentHeight is in scaled pixels while clientWidth/clientHeight are layout
+                  // pixels, so under a CSS transform the three disagree unless this is undone.
+                  content_height: Math.round(view.contentHeight / view.scaleY),
+                }),
+                // beforeUnmount keeps the view alive, so a queued measure can outlive the editor's
+                // DOM. Without this guard a detached editor would report a 0x0 geometry.
+                write: (payload, view) => {
+                  if (view.dom.isConnected) this._maybeEmit("geometry-change", payload);
+                },
+              });
+            }
+          }
+          _measureViewport(view) {
+            if (!self.hasListener("viewport-change")) return;
+            view.requestMeasure({
+              key: "nicegui-codemirror-viewport",
+              read: (view) => {
+                const scroller = view.scrollDOM;
+                if (!scroller.clientHeight) return null; // a hidden editor shows no lines
+                // The scroller measures in layout pixels, CodeMirror's height map in scaled ones.
+                const top = scroller.scrollTop * view.scaleY - view.documentPadding.top;
+                const height = scroller.clientHeight * view.scaleY;
+                const lineAt = (height) => view.state.doc.lineAt(view.lineBlockAtHeight(height).from).number;
+                return { from_line: lineAt(top), to_line: lineAt(top + height - 1) };
+              },
+              write: (payload, view) => {
+                if (payload && view.dom.isConnected) this._maybeEmit("viewport-change", payload);
+              },
+            });
+          }
+          _maybeEmit(name, payload) {
+            const last = this._last[name];
+            if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
+            this._last[name] = payload;
+            self.$emit(name, payload);
+          }
+        },
+      );
+
       const lineTooltip = CM.hoverTooltip((view, pos) => {
         const set = view.state.field(tooltipField);
         const line = view.state.doc.lineAt(pos);
@@ -540,6 +645,7 @@ export default {
         changeSender,
         anchorTracker,
         anchorField,
+        updateDispatcher,
         tooltipField,
         decorationField,
         CM.EditorView.decorations.from(decorationField),
