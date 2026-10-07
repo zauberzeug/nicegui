@@ -333,7 +333,7 @@ class Table(FilterElement, component='table.js'):
                 if is_duplicate:
                     column_suffix = f'_{duplicate_counter}'
                     duplicate_counter += 1
-                new_col_names.append(col + column_suffix)
+                new_col_names.append(f'{col}{column_suffix}')
             df.columns = new_col_names
             warn_once(f'The pandas DataFrame has duplicate column names '
                       f'({[label for label, is_duplicate in itertools.zip_longest(df.columns, duplicate_columns)
