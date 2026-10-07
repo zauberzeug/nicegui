@@ -13,7 +13,6 @@ from ...events import (
     CodeMirrorFocusChangeEventArguments,
     CodeMirrorGeometryChangeEventArguments,
     CodeMirrorKeyBindingEventArguments,
-    CodeMirrorSelectionChangeEventArguments,
     CodeMirrorViewportChangeEventArguments,
     GenericEventArguments,
     Handler,
@@ -41,7 +40,6 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
         keymap: dict[str, Handler[CodeMirrorKeyBindingEventArguments] | CodeMirror.KeyBinding] | None = None,
-        on_selection_change: Handler[CodeMirrorSelectionChangeEventArguments] | None = None,
         on_focus_change: Handler[CodeMirrorFocusChangeEventArguments] | None = None,
         on_viewport_change: Handler[CodeMirrorViewportChangeEventArguments] | None = None,
         on_geometry_change: Handler[CodeMirrorGeometryChangeEventArguments] | None = None,
@@ -88,13 +86,12 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         Assign a list of specs to ``decorations`` or mutate ``decorations`` in place.
 
         *Since version 3.18.0:*
-        Editor signals report the cursor selection, focus, visible line range and geometry,
+        Editor signals report the focus, visible line range and geometry,
         and ``reveal_line`` scrolls a given line into view.
 
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: `None`)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
-        :param on_selection_change: callback when cursor line or column changes (throttled to 30 ms) (*added in version 3.18.0*)
         :param on_focus_change: callback when the editor gains or loses focus (*added in version 3.18.0*)
         :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms) (*added in version 3.18.0*)
         :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms) (*added in version 3.18.0*)
@@ -114,7 +111,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap,
                          decorations=decorations, decoration_html=decoration_html,
                          line_anchors=line_anchors, on_anchor_change=on_anchor_change,
-                         on_selection_change=on_selection_change, on_focus_change=on_focus_change,
+                         on_focus_change=on_focus_change,
                          on_viewport_change=on_viewport_change, on_geometry_change=on_geometry_change)
         self._codepoints = b''
         self._update_codepoints()

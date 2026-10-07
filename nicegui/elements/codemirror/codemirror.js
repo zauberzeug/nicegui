@@ -564,38 +564,8 @@ export default {
             this._scroller.removeEventListener("scroll", this._onScroll);
           }
           update(u) {
-            // Focus goes first: a click into an unfocused editor focuses and selects in the same update,
-            // and a host tracking focus has to hear about it before the selection arrives.
             if (u.focusChanged && self.hasListener("focus-change")) {
               this._maybeEmit("focus-change", { focused: u.view.hasFocus });
-            }
-            // A focus transition makes selection state meaningful again: hosts that
-            // ignore unfocused selection events (programmatic echoes) must still hear
-            // about the first post-focus selection even if it matches the last payload.
-            if (u.focusChanged) delete this._last["selection-change"];
-            if ((u.selectionSet || u.docChanged) && self.hasListener("selection-change")) {
-              const payload = (state) => {
-                const sel = state.selection.main;
-                const line = state.doc.lineAt(sel.head);
-                const prefix = state.doc.sliceString(line.from, sel.head);
-                return {
-                  line: line.number,
-                  // Code units equal code points unless the prefix holds a high surrogate, which is
-                  // the only way a character above U+FFFF reaches a JS string. Array.from() allocates
-                  // an entry per code point, so only pay for it when one is actually there.
-                  column: (/[\uD800-\uDBFF]/.test(prefix) ? Array.from(prefix).length : prefix.length) + 1,
-                  from_line: state.doc.lineAt(sel.from).number,
-                  to_line: state.doc.lineAt(sel.to).number,
-                  empty: sel.empty,
-                };
-              };
-              // An edit remaps the selection, so a server-driven change can move the cursor for real.
-              // Comparing the whole payload against the pre-edit state tells the two apart, where the
-              // _maybeEmit dedupe cannot: it compares against the last payload sent, which may be none.
-              const now = payload(u.state);
-              if (u.selectionSet || JSON.stringify(now) !== JSON.stringify(payload(u.startState))) {
-                this._maybeEmit("selection-change", now);
-              }
             }
             // Edits, folds and resizes all change which lines are visible without scrolling.
             if (u.geometryChanged) this._measureViewport(u.view);

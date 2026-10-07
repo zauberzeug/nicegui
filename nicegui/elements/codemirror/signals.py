@@ -8,7 +8,6 @@ from ...element import Element
 from ...events import (
     CodeMirrorFocusChangeEventArguments,
     CodeMirrorGeometryChangeEventArguments,
-    CodeMirrorSelectionChangeEventArguments,
     CodeMirrorViewportChangeEventArguments,
     Handler,
     handle_event,
@@ -16,7 +15,7 @@ from ...events import (
 
 
 class SignalElement(Element):
-    """Mixin reporting CodeMirror editor state (selection, focus, visible lines, geometry) to Python.
+    """Mixin reporting CodeMirror editor state (focus, visible lines, geometry) to Python.
 
     The frontend emits a signal only while a listener for its event is registered
     and only when its payload differs from the last one sent.
@@ -26,41 +25,18 @@ class SignalElement(Element):
     def __init__(
         self,
         *,
-        on_selection_change: Handler[CodeMirrorSelectionChangeEventArguments] | None = None,
         on_focus_change: Handler[CodeMirrorFocusChangeEventArguments] | None = None,
         on_viewport_change: Handler[CodeMirrorViewportChangeEventArguments] | None = None,
         on_geometry_change: Handler[CodeMirrorGeometryChangeEventArguments] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if on_selection_change is not None:
-            self.on_selection_change(on_selection_change)
         if on_focus_change is not None:
             self.on_focus_change(on_focus_change)
         if on_viewport_change is not None:
             self.on_viewport_change(on_viewport_change)
         if on_geometry_change is not None:
             self.on_geometry_change(on_geometry_change)
-
-    def on_selection_change(self, handler: Handler[CodeMirrorSelectionChangeEventArguments]) -> Self:
-        """Add a callback for cursor selection changes (line + column).
-
-        Fires on selection moves and on document edits that shift the cursor line or column.
-        ``from_line``/``to_line`` span the main selection (equal and ``empty`` is ``True`` for a bare cursor).
-        ``column`` counts Unicode code points, so it indexes ``value`` the same way Python does.
-
-        *Added in version 3.18.0*
-        """
-        self.on('selection-change', lambda e: handle_event(handler, CodeMirrorSelectionChangeEventArguments(
-            sender=self,
-            client=self.client,
-            line=e.args['line'],
-            column=e.args['column'],
-            from_line=e.args['from_line'],
-            to_line=e.args['to_line'],
-            empty=e.args['empty'],
-        )), throttle=0.03)
-        return self
 
     def on_focus_change(self, handler: Handler[CodeMirrorFocusChangeEventArguments]) -> Self:
         """Add a callback for editor focus changes.
