@@ -1,5 +1,7 @@
+import contextlib
 import platform
 import weakref
+from pathlib import Path
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -559,3 +561,33 @@ def test_template_slot_survives_rerender(screen: Screen):
     screen.click('Update')  # #6284: an unrelated re-render must not discard the slot's DOM
     screen.wait(0.5)
     assert element.get_attribute('value') == 'hello'
+async def test_element_unregistered_when_constructor_raises(user: User):
+    class FailingComponent(ui.element):
+
+        def __init__(self, text: str) -> None:
+            super().__init__()
+            with self:
+                ui.label(text)
+            raise RuntimeError
+
+    class RecoveringComponent(FailingComponent):
+
+        def __init__(self, text: str) -> None:
+            with contextlib.suppress(RuntimeError):
+                super().__init__(text)
+
+    @ui.page('/')
+    def page():
+        with pytest.raises(ValueError):
+            ui.html('<script>alert("xss")</script>')
+        with pytest.raises(FileNotFoundError):
+            ui.image(Path('does_not_exist.png'))
+        with pytest.raises(RuntimeError):
+            FailingComponent('failed')
+        RecoveringComponent('recovered')
+
+    await user.open('/')
+    await user.should_not_see(kind=ui.html)
+    await user.should_not_see(kind=ui.image)
+    await user.should_not_see('failed')
+    await user.should_see('recovered')

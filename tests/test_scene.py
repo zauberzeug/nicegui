@@ -489,6 +489,27 @@ def test_context_loss_recovery_restores_objects(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
 
 
+def test_objects_created_before_the_scene_is_mounted(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.tabs() as tabs:
+            one = ui.tab('one')
+            two = ui.tab('two')
+        with ui.tab_panels(tabs, value=one):
+            with ui.tab_panel(one):
+                ui.label('first panel')
+            with ui.tab_panel(two):
+                with ui.scene() as scene:
+                    scene.box().move(1, 2, 3).with_name('box')
+
+    screen.open('/')
+    screen.click('two')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+
+
 def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
     hits: list[str] = []
 

@@ -27,6 +27,22 @@ def preserve_cursor_demo() -> None:
     ))
 
 
+@doc.demo('Editor Signals and Reveal Line', '''
+    `on_viewport_change` reports the visible line range — useful for confirming that
+    `reveal_line` actually scrolled the requested line into view.
+    Other signal hooks include `on_focus_change` and `on_geometry_change`.
+
+    *Added in version 3.18.0*
+''')
+def signals_and_reveal_demo() -> None:
+    viewport_status = ui.label('Viewport: ?')
+    editor = ui.codemirror(
+        '\n'.join(f'Line {i}' for i in range(1, 51)),
+        on_viewport_change=lambda e: viewport_status.set_text(f'Viewport: lines {e.from_line}–{e.to_line}'),
+    ).classes('h-32')
+    ui.button('Reveal line 40', on_click=lambda: editor.reveal_line(40))
+
+
 @doc.demo('Custom Keybindings', '''
     Map keystrokes to Python callbacks via the `keymap` constructor parameter or the `map_key` method.
     Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) —

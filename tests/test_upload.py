@@ -2,6 +2,7 @@ import tempfile
 from io import BytesIO
 from pathlib import Path
 
+import httpx
 import pytest
 from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartParser
@@ -31,6 +32,28 @@ async def test_uploading_text_file(screen: Screen):
     assert results[0].file.name == test_path1.name
     assert results[0].file.content_type in {'text/x-python', 'text/x-python-script'}
     assert await results[0].file.read() == test_path1.read_bytes()
+
+
+@pytest.mark.parametrize('state', ['enabled', 'disabled', 'hidden'])
+def test_upload_route_respects_disabled_and_hidden_state(screen: Screen, state: str):
+    results: list[events.UploadEventArguments] = []
+    upload: ui.upload = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal upload
+        upload = ui.upload(on_upload=results.append, label='Test Title')
+        if state == 'disabled':
+            upload.disable()
+        if state == 'hidden':
+            upload.set_visibility(False)
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        response = http_client.post(f'http://localhost:{Screen.PORT}{upload.props["url"]}',
+                                    files={'file': ('test.txt', b'content')})
+    assert response.status_code == (200 if state == 'enabled' else 403)
+    assert len(results) == (1 if state == 'enabled' else 0)
 
 
 def test_two_upload_elements(screen: Screen):

@@ -41,6 +41,8 @@ def nicegui_reset_globals():
             or route.path.startswith('/_nicegui/client/')
         ):
             app.remove_route(route.path)
+        if hasattr(route, 'original_router'):  # a router that FastAPI 0.141+ keeps as a single lazy route
+            app.routes.remove(route)
 
     app.openapi_schema = None
     app.middleware_stack = None

@@ -182,7 +182,7 @@ class Storage:
     async def _create_tab_storage(self, tab_id: str, old_tab_id: str | None = None) -> None:
         """Create tab storage for the given tab ID unless it exists already.
 
-        A new storage takes over the data of ``old_tab_id`` if that tab's storage is still around,
+        A new storage takes over the data of ``old_tab_id`` if that tab's storage is still around, in memory or in Redis,
         which is how a duplicated tab inherits the storage of the tab it was duplicated from.
         """
         if creation := self._tab_creations.get(tab_id):
@@ -192,10 +192,12 @@ class Storage:
         if Storage.redis_url:
             self._tabs[tab_id] = Storage._create_persistent_dict(f'{TAB_PREFIX}{tab_id}')
             tab = self._tabs[tab_id]
-            assert isinstance(tab, PersistentDict)
+            assert isinstance(tab, RedisPersistentDict)
             self._tab_creations[tab_id] = asyncio.Event()
             try:
                 await tab.initialize()
+                if old_tab_id and old_tab_id not in self._tabs:  # e.g. closed already or held by another instance
+                    await tab.inherit(f'{TAB_PREFIX}{old_tab_id}')
             finally:
                 self._tab_creations.pop(tab_id).set()
         else:
@@ -206,6 +208,7 @@ class Storage:
     async def close_tab(self, tab_id: str | None) -> None:
         """Close the tab storage. (For internal use only.)"""
         if tab_id and isinstance(tab := self._tabs.get(tab_id), PersistentDict):
+            del self._tabs[tab_id]  # a tab that returns later creates and loads its storage anew
             await tab.close()
 
     def clear(self) -> None:

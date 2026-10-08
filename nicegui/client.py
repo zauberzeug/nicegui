@@ -434,8 +434,10 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                await core.app.storage.close_tab(tab_id_to_close)
-                self.delete()
+                self.delete()  # before closing the tab storage, so a reconnect in between cannot create a new one
+                # pylint: disable-next=protected-access
+                if all(client._pinned_tab_id != tab_id_to_close for client in Client.instances.values()):
+                    await core.app.storage.close_tab(tab_id_to_close)  # unless still in use, e.g. after a reload
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
@@ -479,6 +481,7 @@ class Client:
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
+        # NOTE: the rollback of a failed constructor in `Element.__init_subclass__` mirrors these steps
         element_list = list(elements)  # we need to iterate over the elements multiple times
         binding.remove(element_list)
         for element in element_list:

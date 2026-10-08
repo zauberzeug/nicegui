@@ -32,8 +32,6 @@ class DecorationElement(Element):
         decoration_html: bool = False,
         **kwargs: Any,
     ) -> None:
-        # NOTE: validate before super().__init__ registers the element, so a rejected argument
-        # does not leave a half-built element behind in the element tree
         _validate_decorations(decorations or [])
         super().__init__(**kwargs)
         self._props['decorations'] = decorations or []
