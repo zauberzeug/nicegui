@@ -88,13 +88,16 @@ const DECLARED_SPEC = Symbol("declared spec");
 const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet();
 
 // Python addresses the document by str index (one per code point), CodeMirror by UTF-16 code unit.
-// The two only differ once the document contains a character outside the Basic Multilingual Plane.
+// The two only differ once the document contains a character outside the Basic Multilingual Plane,
+// whose high surrogate is the only way such a character shows up in a JavaScript string.
+const HIGH_SURROGATE = /[\uD800-\uDBFF]/;
+const identity = (offset) => offset;
 function documentOffsets(doc) {
   const text = doc.toString();
   let length = text.length; // in Python str indices
-  let toUnit = (index) => index;
-  let toIndex = (unit) => unit;
-  if (/[\uD800-\uDBFF]/.test(text)) {
+  let toUnit = identity;
+  let toIndex = identity;
+  if (HIGH_SURROGATE.test(text)) {
     const units = []; // units[i] = UTF-16 offset of the i-th code point
     let unit = 0;
     for (const character of text) {
@@ -572,10 +575,19 @@ export default {
               this._maybeEmit("focus-change", { focused: u.view.hasFocus });
             }
             if ((u.selectionSet || u.docChanged) && self.hasListener("selection-change")) {
-              // An edit maps the selection through it, so a server-driven change can move it for real. Starting the
-              // dedupe from the selection before the first change reports such a move, but not an edit leaving it be.
-              this._last["selection-change"] ??= this._selection(u.startState);
-              this._maybeEmit("selection-change", this._selection(u.state));
+              // Without a high surrogate before or in the edit, offsets and str indices stay equal: no scan needed.
+              if (u.docChanged && this._toIndex.get(u.startState.doc) === identity) {
+                let inserted = "";
+                u.changes.iterChanges((_fromA, _toA, _fromB, _toB, text) => (inserted += text.toString()));
+                if (!HIGH_SURROGATE.test(inserted)) this._toIndex.set(u.state.doc, identity);
+              }
+              // An edit maps the selection through it, so a server-driven change can move it for real.
+              // Comparing against the pre-edit state tells the two apart, where the _maybeEmit dedupe cannot:
+              // it compares against the last payload sent, which may be none, e.g. right after a remount.
+              const now = this._selection(u.state);
+              if (u.selectionSet || JSON.stringify(now) !== JSON.stringify(this._selection(u.startState))) {
+                this._maybeEmit("selection-change", now);
+              }
             }
             // Edits, folds and resizes all change which lines are visible without scrolling.
             if (u.geometryChanged) this._measureViewport(u.view);

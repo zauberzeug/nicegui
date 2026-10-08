@@ -167,7 +167,7 @@ class TableSelectionEventArguments(UiEventArguments):
     selection: list[Any]
 
 
-@dataclass(kw_only=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class CodeMirrorSelectionRange:
     anchor: int  # str index into the value where the selection started
     head: int  # str index into the value where the cursor is

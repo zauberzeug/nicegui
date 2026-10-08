@@ -13,8 +13,15 @@ def test_selection_change_event(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal editor
-        editor = ui.codemirror('ab\ncd', on_selection_change=lambda e: events.append(
-            ([(r.anchor, r.head) for r in e.ranges], e.main_index)))
+        with ui.tabs() as tabs:
+            ui.tab('One')
+            ui.tab('Two')
+        with ui.tab_panels(tabs, value='One', keep_alive=False):
+            with ui.tab_panel('One'):
+                editor = ui.codemirror('ab\ncd', on_selection_change=lambda e: events.append(
+                    ([(r.anchor, r.head) for r in e.ranges], e.main_index)))
+            with ui.tab_panel('Two'):
+                ui.label('Second tab')
 
     def run(js: str) -> None:
         screen.selenium.execute_script(f'const view = getElement({editor.id}).editor; {js}')
@@ -47,6 +54,15 @@ def test_selection_change_event(screen: Screen):
     run('const S = view.state.selection.constructor, cd = view.state.doc.toString().indexOf("cd");'
         'view.dispatch({selection: S.create([S.cursor(1), S.range(cd, cd + 2)], 1)});')
     screen.wait_for(lambda: events[-1] == ([(1, 1), (editor.value.index('cd'), editor.value.index('cd') + 2)], 1))
+
+    # Leaving the tab destroys the editor client-side; the one built on return has its cursor at the start
+    # and has sent nothing yet, so selecting there is reported, replacing the selection from before.
+    screen.click('Two')
+    screen.should_contain('Second tab')
+    screen.click('One')
+    screen.should_contain('cd changed')
+    run('view.dispatch({selection: {anchor: 0}});')
+    screen.wait_for(lambda: events[-1] == ([(0, 0)], 0))
 
 
 def test_focus_change_event(screen: Screen):
