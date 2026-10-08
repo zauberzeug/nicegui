@@ -55,8 +55,9 @@ def selection_demo() -> None:
         value, head = editor.value, e.main.head
         line = value.count('\n', 0, head) + 1
         column = head - value.rfind('\n', 0, head)
-        selected = value[e.main.from_:e.main.to]
-        status.text = f'Line {line}, column {column}' + (f', selected {selected!r}' if selected else '')
+        status.text = f'Line {line}, column {column}'
+        if not e.main.empty:
+            status.text += f', selected {value[e.main.from_:e.main.to]!r}'
 
     status = ui.label('Line 1, column 1')
     editor = ui.codemirror('Hello 😎\nworld', on_selection_change=show).classes('h-24')
