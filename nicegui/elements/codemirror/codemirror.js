@@ -117,6 +117,7 @@ function documentOffsets(doc) {
   }
   return {
     length,
+    toIndex,
     toUtf16(spec) {
       if (spec.kind === "mark" || spec.kind === "replace")
         return { ...spec, from: toUnit(spec.from), to: toUnit(spec.to) };
@@ -556,6 +557,7 @@ export default {
         class {
           constructor(view) {
             this._last = {};
+            this._bmpDocs = new WeakSet();
             // CodeMirror's own viewport is the rendered range (visible plus a margin) and only changes when
             // scrolling gets near its edge, so the visible lines are tracked through the scroller instead.
             this._scroller = view.scrollDOM;
@@ -568,6 +570,22 @@ export default {
           update(u) {
             if (u.focusChanged && self.hasListener("focus-change")) {
               this._maybeEmit("focus-change", { focused: u.view.hasFocus });
+            }
+            if ((u.selectionSet || u.docChanged) && self.hasListener("selection-change")) {
+              if (u.docChanged && this._bmpDocs.has(u.startState.doc)) {
+                let bmp = true;
+                u.changes.iterChanges((_fromA, _toA, _fromB, _toB, inserted) => {
+                  if (/[\uD800-\uDBFF]/.test(inserted.toString())) bmp = false;
+                });
+                if (bmp) this._bmpDocs.add(u.state.doc);
+              }
+              // An edit remaps the selection, so a server-driven change can move it for real.
+              // Comparing against the pre-edit state tells the two apart, where the _maybeEmit dedupe cannot:
+              // it compares against the last payload sent, which may be none.
+              const now = this._selection(u.state);
+              if (u.selectionSet || JSON.stringify(now) !== JSON.stringify(this._selection(u.startState))) {
+                this._maybeEmit("selection-change", now);
+              }
             }
             // Edits, folds and resizes all change which lines are visible without scrolling.
             if (u.geometryChanged) this._measureViewport(u.view);
@@ -591,6 +609,22 @@ export default {
                 },
               });
             }
+          }
+          // CodeMirror's EditorSelection with its positions as Python str indices. These only differ from
+          // CodeMirror's past a character outside the Basic Multilingual Plane, so a document known to hold
+          // none, or derived from one by edits inserting none, is not scanned on every selection change.
+          _selection(state) {
+            let toIndex = (unit) => unit;
+            if (!this._bmpDocs.has(state.doc)) {
+              const offsets = documentOffsets(state.doc);
+              if (offsets.length === state.doc.length) this._bmpDocs.add(state.doc);
+              else toIndex = offsets.toIndex;
+            }
+            const { ranges, mainIndex } = state.selection;
+            return {
+              ranges: ranges.map((range) => ({ anchor: toIndex(range.anchor), head: toIndex(range.head) })),
+              main_index: mainIndex,
+            };
           }
           _measureViewport(view) {
             if (!self.hasListener("viewport-change")) return;

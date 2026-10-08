@@ -43,6 +43,25 @@ def signals_and_reveal_demo() -> None:
     ui.button('Reveal line 40', on_click=lambda: editor.reveal_line(40))
 
 
+@doc.demo('Selection', '''
+    `on_selection_change` reports the selection the way CodeMirror's `EditorSelection` does:
+    `ranges` holds one range per cursor, and `main` is the primary one.
+    A range's `anchor` and `head` are `str` indices into the value, so they slice it directly.
+
+    *Added in version 3.19.0*
+''')
+def selection_demo() -> None:
+    def show(e):
+        value, head = editor.value, e.main.head
+        line = value.count('\n', 0, head) + 1
+        column = head - value.rfind('\n', 0, head)
+        selected = value[e.main.from_:e.main.to]
+        status.text = f'Line {line}, column {column}' + (f', selected {selected!r}' if selected else '')
+
+    status = ui.label('Line 1, column 1')
+    editor = ui.codemirror('Hello 😎\nworld', on_selection_change=show).classes('h-24')
+
+
 @doc.demo('Custom Keybindings', '''
     Map keystrokes to Python callbacks via the `keymap` constructor parameter or the `map_key` method.
     Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) —
