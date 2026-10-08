@@ -561,6 +561,8 @@ def test_template_slot_survives_rerender(screen: Screen):
     screen.click('Update')  # #6284: an unrelated re-render must not discard the slot's DOM
     screen.wait(0.5)
     assert element.get_attribute('value') == 'hello'
+
+
 async def test_element_unregistered_when_constructor_raises(user: User):
     class FailingComponent(ui.element):
 
