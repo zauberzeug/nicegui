@@ -323,6 +323,7 @@ class Table(FilterElement, component='table.js'):
 
         if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
             df = df.reset_index()
+            duplicate_columns = df.columns.duplicated(False).tolist()
 
         col_labels = df.columns.copy()
         if any(duplicate_columns):
