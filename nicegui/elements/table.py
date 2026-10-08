@@ -57,8 +57,8 @@ class Table(FilterElement, component='table.js'):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
-        :param pagination_controls: whether to show pagination controls, *added in version 4.0.0*
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination unless ``pagination_controls`` is `True`, 0 means "infinite"; default: `None`).
+        :param pagination_controls: whether to show pagination controls (defaults to `None` which hides pagination controls unless ``pagination`` is provided), *added in version 4.0.0*
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
         """
@@ -97,6 +97,8 @@ class Table(FilterElement, component='table.js'):
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
             previous_value = self.pagination
+            # Quasar emits update:pagination event on mount
+            # using the setter here would show the pagination controls on every default table
             self._props['pagination'] = e.args
             arguments = ValueChangeEventArguments(sender=self, client=self.client,
                                                   value=self.pagination, previous_value=previous_value)
@@ -400,17 +402,21 @@ class Table(FilterElement, component='table.js'):
     def pagination(self, value: dict) -> None:
         self._props['pagination'] = value
         if self._pagination_controls is None:
-            self.pagination_controls = True
+            self._props['hide-pagination'] = False
 
     @property
-    def pagination_controls(self) -> bool:
+    def pagination_controls(self) -> bool | None:
         """Whether the pagination controls are shown."""
-        return self._pagination_controls or False
+        return self._pagination_controls
 
     @pagination_controls.setter
-    def pagination_controls(self, value: bool) -> None:
+    def pagination_controls(self, value: bool | None) -> None:
         self._pagination_controls = value
-        self._props['hide-pagination'] = not value
+        if value is None:
+            # hide pagination if rowsPerPage is 0 (infinite)
+            self._props['hide-pagination'] = self.pagination['rowsPerPage'] == 0
+        else:
+            self._props['hide-pagination'] = not value
 
     @property
     def is_fullscreen(self) -> bool:
