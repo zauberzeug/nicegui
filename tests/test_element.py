@@ -546,6 +546,23 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
     screen.should_contain('All IDs found')
 
 
+def test_template_slot_survives_rerender(screen: Screen):
+    @ui.page('/')
+    def page():
+        element = ui.element()
+        element.add_slot('default', '<input placeholder="type here">')
+        ui.button('Update', on_click=lambda: element.classes('bg-red-100'))
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//input[@placeholder="type here"]')
+    element.send_keys('hello')
+    assert element.get_attribute('value') == 'hello'
+
+    screen.click('Update')  # #6284: an unrelated re-render must not discard the slot's DOM
+    screen.wait(0.5)
+    assert element.get_attribute('value') == 'hello'
+
+
 async def test_element_unregistered_when_constructor_raises(user: User):
     class FailingComponent(ui.element):
 
