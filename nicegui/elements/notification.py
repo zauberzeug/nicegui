@@ -102,7 +102,8 @@ class Notification(Element, component='notification.js'):
 
     @message.setter
     def message(self, value: Any) -> None:
-        self._props['options']['message'] = str(value)
+        if str(value) != self.message:
+            self._props['options']['message'] = str(value)
 
     @property
     def position(self) -> NotificationPosition:
@@ -177,7 +178,8 @@ class Notification(Element, component='notification.js'):
 
     @timeout.setter
     def timeout(self, value: float | None) -> None:
-        self._props['options']['timeout'] = (value or 0) * 1000
+        if (value or 0) != self.timeout:
+            self._props['options']['timeout'] = (value or 0) * 1000
 
     @property
     def close_button(self) -> bool | str:

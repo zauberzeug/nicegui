@@ -313,6 +313,32 @@ async def test_nested_propagation(user: User):
     await user.should_see('a = 2')  # the final value of a should be 2
 
 
+@pytest.mark.parametrize('element_type, kwargs, name, value', [
+    (ui.table, {'rows': [], 'column_defaults': {'align': 'left'}}, 'columns', [{'name': 'a', 'field': 'a'}]),
+    (ui.codemirror, {}, 'decorations', None),
+    (ui.codemirror, {}, 'line_anchors', None),
+    (ui.notification, {}, 'message', 42),
+    (ui.notification, {}, 'timeout', None),
+])
+async def test_polled_binding_to_normalizing_setter(element_type: type, kwargs: dict, name: str, value: Any, user: User):
+    updates = []
+
+    class Element(element_type):
+        def update(self) -> None:
+            updates.append(name)
+            super().update()
+
+    @ui.page('/')
+    def page():
+        binding.bind_from(Element(**kwargs), name, {'value': value}, 'value')
+
+    await user.open('/')
+    updates.clear()
+    for _ in range(3):
+        binding._refresh_step()  # pylint: disable=protected-access
+    assert not updates
+
+
 def test_binding_other_dict_is_strict(screen: Screen):
     data: dict[str, str] = {}
 
