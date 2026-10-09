@@ -311,44 +311,26 @@ class Table(FilterElement, component='table.js'):
                     pd.api.types.is_object_dtype(dtype) or
                     isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
-
-        duplicate_columns: list[bool] = df.columns.duplicated(False).tolist()
-
-        # Any condition where df will be changed
-        if (not special_cols.empty or any(duplicate_columns) or
-                not isinstance(df.index, pd.RangeIndex) or df.index.name is not None):
-            df = df.copy()
-
         if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
             df = df.reset_index()
-            duplicate_columns = df.columns.duplicated(False).tolist()
 
-        col_labels = df.columns.copy()
-        if any(duplicate_columns):
-            new_col_names: list[str] = []
-            duplicate_counter: int = 0
-            for col, is_duplicate in itertools.zip_longest(df.columns, duplicate_columns):
-                column_suffix: str = ''
-                if is_duplicate:
-                    column_suffix = f'_{duplicate_counter}'
-                    duplicate_counter += 1
-                new_col_names.append(f'{col}{column_suffix}')
-            df.columns = new_col_names
-            duplicate_labels = sorted({str(label) for label, is_dup in zip(col_labels, duplicate_columns) if is_dup})
+        col_labels = df.columns
+        duplicate_columns = col_labels.duplicated(False)
+        if duplicate_columns.any():
+            counter = iter(range(len(col_labels)))
+            df = df.set_axis([f'{label}_{next(counter)}' if is_duplicate else label
+                              for label, is_duplicate in zip(col_labels, duplicate_columns, strict=True)], axis=1)
+            duplicate_labels = sorted({str(label) for label in col_labels[duplicate_columns]})
             warn_once(f'The pandas DataFrame has duplicate column names ({duplicate_labels}). '
                       f'The row fields are numbered to keep them unique, while the column labels stay unchanged.')
 
-            # special_cols need update due to changes
-            special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
-
+        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
+            df = df.copy()
             df[special_cols] = df[special_cols].astype(str)
 
-        rows = [{name: val for name, val in itertools.zip_longest(df.columns, row)}
-                for row in df.itertuples(index=False)]
-        cols = [{'name': name, 'label': label, 'field': name}
-                for name, label in itertools.zip_longest(df.columns, col_labels)]
-        return rows, cols
+        return df.to_dict('records'), [{'name': name, 'label': label, 'field': name}
+                                       for name, label in zip(df.columns, col_labels, strict=True)]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
