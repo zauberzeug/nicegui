@@ -1,0 +1,106 @@
+from __future__ import annotations
+
+import inspect
+import json
+
+from typing_extensions import ParamSpec
+
+from .event import Event, _invoke_and_forget
+
+P = ParamSpec('P')
+
+
+class DistributedEvent(Event[P]):
+    """Distributed Event
+
+    A subclass of Event that automatically shares events across all NiceGUI instances
+    in the same network when distributed mode is enabled via `ui.run(distributed=True)`.
+
+    All instances of the same DistributedEvent (determined by creation location)
+    across different processes will receive emitted events.
+
+    *Added in version 3.x.x*
+    """
+
+    def __init__(self) -> None:
+        """Create a distributed event that will be shared across instances."""
+        super().__init__()
+        # NOTE: Use creation location for topic so the same DistributedEvent in different processes shares it.
+        # We deliberately use module name + line number only (not the absolute file path), so events sync across
+        # hosts where the source happens to live at different paths. The session's storage_secret-derived
+        # namespace keeps unrelated deployments from accidentally cross-talking (collision-avoidance,
+        # not a security boundary - see DistributedSession's trust model).
+        frame = inspect.currentframe()
+        assert frame is not None
+        frame = frame.f_back
+        assert frame is not None
+        # NOTE: Skip frames from typing module (when using DistributedEvent[T]() syntax)
+        while frame and 'typing.py' in frame.f_code.co_filename:
+            frame = frame.f_back
+        assert frame is not None
+        module = inspect.getmodule(frame)
+        module_name = module.__name__ if module else 'unknown'
+        self.topic = f'event_{module_name}:{frame.f_lineno}'
+        self._subscribed_session_id: str | None = None
+        self._setup_distributed()
+
+    def _setup_distributed(self) -> None:
+        """Set up distributed event handling if enabled.
+
+        This method is safe to call multiple times: it subscribes once per distributed session.
+        It's called during DistributedEvent initialization, retroactively
+        when DistributedSession.initialize() is called, and before emitting -
+        so an event also follows a session that has been replaced since it last emitted.
+        Events emitted before distributed mode is initialized will only be local.
+        """
+        from .distributed import DistributedSession  # pylint: disable=import-outside-toplevel,cyclic-import
+        session = DistributedSession.get()
+        if session is None or session.instance_id == self._subscribed_session_id:
+            return
+
+        # NOTE: The session only references this bound method weakly, so subscribing does not
+        # keep a per-client event alive after the page that created it is gone.
+        session.subscribe(self.topic, self._handle_remote)
+        self._subscribed_session_id = session.instance_id
+
+    def _handle_remote(self, data: dict) -> None:
+        """Handle an event received from a remote instance."""
+        for callback in self.callbacks:
+            _invoke_and_forget(callback, *data.get('args', ()), **data.get('kwargs', {}))
+
+    def _validate_distributable(self, args: tuple, kwargs: dict) -> None:
+        """Raise ``TypeError`` upfront if the payload cannot be sent to remote peers."""
+        from .distributed import DistributedSession  # pylint: disable=import-outside-toplevel,cyclic-import
+        if DistributedSession.get() is None:
+            return
+        try:
+            json.dumps({'args': args, 'kwargs': kwargs})
+        except (TypeError, ValueError) as e:
+            raise TypeError(
+                f'DistributedEvent payload is not JSON-serializable: {e}. '
+                f'Allowed: str, int, float, bool, list, dict, None.'
+            ) from e
+
+    def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
+        """Fire the event without waiting for the subscribed callbacks to complete."""
+        self._setup_distributed()
+        self._validate_distributable(args, kwargs)
+
+        super().emit(*args, **kwargs)
+
+        from .distributed import DistributedSession  # pylint: disable=import-outside-toplevel,cyclic-import
+        session = DistributedSession.get()
+        if session is not None:
+            session.publish(self.topic, {'args': args, 'kwargs': kwargs})
+
+    async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
+        """Fire the event and wait asynchronously until all subscribed callbacks are completed."""
+        self._setup_distributed()
+        self._validate_distributable(args, kwargs)
+
+        await super().call(*args, **kwargs)
+
+        from .distributed import DistributedSession  # pylint: disable=import-outside-toplevel,cyclic-import
+        session = DistributedSession.get()
+        if session is not None:
+            session.publish(self.topic, {'args': args, 'kwargs': kwargs})
