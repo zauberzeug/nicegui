@@ -8,7 +8,7 @@ import signal
 import threading
 import time
 import urllib
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -398,6 +398,33 @@ class App(FastAPI):
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
+        if iter_route_contexts is None:
+            return
+        stale = {id(context.original_route) for context in iter_route_contexts(self.routes) if context.path == path}
+        for router in self._iter_included_routers(self.routes):
+            if any(id(route) in stale for route in router.routes):
+                router.routes[:] = [route for route in router.routes if id(route) not in stale]
+                self._mark_router_changed(router)
+
+    def _iter_included_routers(self, routes: Sequence[Any]) -> Iterator[Any]:
+        """Iterate over the routers that FastAPI 0.141+ keeps as lazy entries in ``routes``, including nested ones."""
+        for route in routes:
+            router = getattr(route, 'original_router', None)
+            if router is not None:
+                yield router
+                yield from self._iter_included_routers(router.routes)
+
+    def _refresh_included_routers(self) -> None:
+        """Make FastAPI 0.141+ notice that routes of included routers have been modified."""
+        for router in self._iter_included_routers(self.routes):
+            self._mark_router_changed(router)
+
+    @staticmethod
+    def _mark_router_changed(router: Any) -> None:
+        mark_routes_changed = getattr(router, '_mark_routes_changed', None)  # private API of FastAPI 0.141+
+        if mark_routes_changed is not None:
+            mark_routes_changed()
 
     def _iter_http_routes(self) -> Iterator[Any]:
         """Iterate over all HTTP routes, including those of included routers.

@@ -1,3 +1,5 @@
+import httpx2
+
 from nicegui import APIRouter, app, ui
 from nicegui.testing import Screen
 
@@ -46,3 +48,24 @@ def test_relative_navigation_from_router_root_page(screen: Screen):
     screen.click('Go')
     screen.should_contain('Detail 4711')
     assert screen.current_path == '/some-prefix/4711'
+
+
+def test_remove_route_of_included_router(screen: Screen):
+    router = APIRouter(prefix='/some-prefix')
+
+    @router.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    app.include_router(router)
+
+    @ui.page('/')
+    def index():
+        ui.label('Index')
+
+    screen.open('/')
+    url = f'http://localhost:{Screen.PORT}/some-prefix/'
+    assert httpx2.get(url, timeout=5).status_code == 200
+
+    app.remove_route('/some-prefix/')
+    assert httpx2.get(url, timeout=5).status_code == 404

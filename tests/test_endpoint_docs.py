@@ -1,7 +1,7 @@
 import httpx2
 import pytest
 
-from nicegui import __version__, ui
+from nicegui import APIRouter, __version__, app, ui
 from nicegui.testing import Screen
 
 
@@ -44,3 +44,22 @@ def test_endpoint_documentation(screen: Screen, endpoint_documentation: str):
         raise ValueError(f'Unknown endpoint documentation setting: {endpoint_documentation}')
 
     assert set(httpx2.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths']) == expected_paths
+
+
+def test_endpoint_documentation_for_included_router(screen: Screen):
+    screen.ui_run_kwargs['fastapi_docs'] = True
+    screen.ui_run_kwargs['endpoint_documentation'] = 'page'
+    router = APIRouter(prefix='/sub')
+
+    @router.page('/')
+    def sub_page():
+        ui.label('Sub page')
+
+    app.include_router(router)
+
+    @ui.page('/')
+    def index():
+        ui.label('Index')
+
+    screen.open('/')
+    assert set(httpx2.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths']) == {'/', '/sub/'}

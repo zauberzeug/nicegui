@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Literal, TypedDict
 
 from fastapi.middleware.gzip import GZipMiddleware
-from starlette.routing import Route
 from starlette.types import ASGIApp
 from uvicorn.main import STARTUP_FAILURE
 from uvicorn.supervisors import ChangeReload, Multiprocess
@@ -184,13 +183,13 @@ def run(root: Callable | None = None, *,
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
-    for route in core.app.routes:
-        if not isinstance(route, Route):
-            continue
+    for route in core.app._iter_http_routes():  # pylint: disable=protected-access
+        original_route = getattr(route, 'original_route', route)
         if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
-            route.include_in_schema = endpoint_documentation in {'internal', 'all'}
+            original_route.include_in_schema = endpoint_documentation in {'internal', 'all'}
         if route.path == '/' or route.path in Client.page_routes.values():
-            route.include_in_schema = endpoint_documentation in {'page', 'all'}
+            original_route.include_in_schema = endpoint_documentation in {'page', 'all'}
+    core.app._refresh_included_routers()  # pylint: disable=protected-access
 
     if fastapi_docs:
         if not core.app.docs_url:
