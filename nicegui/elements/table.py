@@ -295,8 +295,6 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
-        import itertools
-
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
         from ..helpers import warn_once
