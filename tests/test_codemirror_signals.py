@@ -6,6 +6,65 @@ from nicegui import ui
 from nicegui.testing import Screen
 
 
+def test_selection_change_event(screen: Screen):
+    events: list[tuple[list[tuple[int, int]], int]] = []
+    editor = None
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        with ui.tabs() as tabs:
+            ui.tab('One')
+            ui.tab('Two')
+        with ui.tab_panels(tabs, value='One', keep_alive=False):
+            with ui.tab_panel('One'):
+                editor = ui.codemirror('ab\ncd', on_selection_change=lambda e: events.append(
+                    ([(r.anchor, r.head) for r in e.ranges], e.main_index)))
+            with ui.tab_panel('Two'):
+                ui.label('Second tab')
+
+    def run(js: str) -> None:
+        screen.selenium.execute_script(f'const view = getElement({editor.id}).editor; {js}')
+
+    def cursor_before_cd():
+        i = editor.value.index('cd')
+        return ([(i, i)], 0)
+
+    screen.open('/')
+    screen.should_contain('cd')
+    # An edit after the cursor leaves it in place, so it is not reported, even before anything was sent.
+    editor.set_value('ab\ncd changed')
+    screen.should_contain('cd changed')
+    run('view.dispatch({selection: {anchor: 3}});')
+    screen.wait_for(lambda: events == [cursor_before_cd()])
+
+    # An edit before the cursor moves it.
+    editor.set_value('NEW\nab\ncd changed')
+    screen.wait_for(lambda: len(events) == 2 and events[-1] == cursor_before_cd())
+
+    # Positions are str indices: the emoji takes the two UTF-16 code units of "ab", but only one str index.
+    editor.set_value('NEW\n😎\ncd changed')
+    screen.wait_for(lambda: len(events) == 3 and events[-1] == cursor_before_cd())
+
+    # A backward selection keeps the anchor where it started and the head at the cursor.
+    run('view.dispatch({selection: {anchor: view.state.doc.length, head: 0}});')
+    screen.wait_for(lambda: events[-1] == ([(len(editor.value), 0)], 0))
+
+    # With several cursors, every range is reported along with the index of the main one.
+    run('const S = view.state.selection.constructor, cd = view.state.doc.toString().indexOf("cd");'
+        'view.dispatch({selection: S.create([S.cursor(1), S.range(cd, cd + 2)], 1)});')
+    screen.wait_for(lambda: events[-1] == ([(1, 1), (editor.value.index('cd'), editor.value.index('cd') + 2)], 1))
+
+    # Leaving the tab destroys the editor client-side; the one built on return has its cursor at the start
+    # and has sent nothing yet, so selecting there is reported, replacing the selection from before.
+    screen.click('Two')
+    screen.should_contain('Second tab')
+    screen.click('One')
+    screen.should_contain('cd changed')
+    run('view.dispatch({selection: {anchor: 0}});')
+    screen.wait_for(lambda: events[-1] == ([(0, 0)], 0))
+
+
 def test_focus_change_event(screen: Screen):
     events: list[bool] = []
     editor = None
