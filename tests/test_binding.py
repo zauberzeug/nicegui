@@ -319,6 +319,7 @@ async def test_nested_propagation(user: User):
     (ui.codemirror, {}, 'line_anchors', None),
     (ui.notification, {}, 'message', 42),
     (ui.notification, {}, 'timeout', None),
+    (ui.notification, {}, 'timeout', 0.0021),
 ])
 async def test_polled_binding_to_normalizing_setter(element_type: type, kwargs: dict, name: str, value: Any, user: User):
     updates = []

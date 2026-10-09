@@ -63,7 +63,7 @@ class LineAnchorElement(Element):
     def line_anchors(self, anchors: dict[str, int] | None) -> None:
         anchors = anchors or {}
         _validate(anchors)
-        if anchors != self._props.get('line-anchors'):
+        if anchors or self._props.get('line-anchors') != {}:
             self._anchors_pending = True
             self._props['line-anchors'] = anchors
 

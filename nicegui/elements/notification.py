@@ -102,7 +102,7 @@ class Notification(Element, component='notification.js'):
 
     @message.setter
     def message(self, value: Any) -> None:
-        if str(value) != self.message:
+        if str(value) != self._props['options'].get('message'):
             self._props['options']['message'] = str(value)
 
     @property
@@ -178,7 +178,7 @@ class Notification(Element, component='notification.js'):
 
     @timeout.setter
     def timeout(self, value: float | None) -> None:
-        if (value or 0) != self.timeout:
+        if (value or 0) * 1000 != self._props['options'].get('timeout'):
             self._props['options']['timeout'] = (value or 0) * 1000
 
     @property
