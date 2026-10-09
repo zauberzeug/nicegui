@@ -399,11 +399,13 @@ class App(FastAPI):
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
         iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
-        routers = list(self._iter_included_routers(self.routes))
-        if iter_route_contexts is None or not any(path.endswith(getattr(route, 'path', None) or '\0')
-                                                  for router in routers for route in router.routes):
+        if iter_route_contexts is None:
             return
-        stale = {id(context.original_route) for context in iter_route_contexts(self.routes) if context.path == path}
+        routers = list(self._iter_included_routers(self.routes))
+        if not any(path.endswith(getattr(route, 'path', None) or '\0') for router in routers for route in router.routes):
+            return
+        contexts = iter_route_contexts(self.routes)  # pylint: disable=not-callable
+        stale = {id(context.original_route) for context in contexts if context.path == path}
         for router in routers:
             if any(id(route) in stale for route in router.routes):
                 router.routes[:] = [route for route in router.routes if id(route) not in stale]
