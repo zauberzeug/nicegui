@@ -297,8 +297,12 @@ class Table(FilterElement, component='table.js'):
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
         import pandas as pd  # pylint: disable=import-outside-toplevel
 
-        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
-            df = df.reset_index()
+        from ..helpers import warn_once
+
+        if isinstance(df.columns, pd.MultiIndex):
+            raise ValueError('MultiIndex columns are not supported. '
+                             'You can convert them to strings using something like '
+                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
         def is_special_dtype(dtype):
             return (pd.api.types.is_datetime64_any_dtype(dtype) or
@@ -307,16 +311,26 @@ class Table(FilterElement, component='table.js'):
                     pd.api.types.is_object_dtype(dtype) or
                     isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
+        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
+            df = df.reset_index()
+
+        col_labels = df.columns
+        duplicate_columns = col_labels.duplicated(False)
+        if duplicate_columns.any():
+            counter = iter(range(len(col_labels)))
+            df = df.set_axis([f'{label}_{next(counter)}' if is_duplicate else label
+                              for label, is_duplicate in zip(col_labels, duplicate_columns, strict=True)], axis=1)
+            duplicate_labels = sorted({str(label) for label in col_labels[duplicate_columns]})
+            warn_once(f'The pandas DataFrame has duplicate column names ({duplicate_labels}). '
+                      f'The row fields are numbered to keep them unique, while the column labels stay unchanged.')
+
+        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
             df = df.copy()
             df[special_cols] = df[special_cols].astype(str)
 
-        if isinstance(df.columns, pd.MultiIndex):
-            raise ValueError('MultiIndex columns are not supported. '
-                             'You can convert them to strings using something like '
-                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
-
-        return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        return df.to_dict('records'), [{'name': name, 'label': label, 'field': name}
+                                       for name, label in zip(df.columns, col_labels, strict=True)]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:

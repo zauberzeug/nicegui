@@ -354,6 +354,7 @@ def test_columns_from_df(screen: Screen, df_type: str):
             DataFrame = pd.DataFrame
             update_persons_from_df = persons.update_from_pandas
             update_cars_from_df = cars.update_from_pandas
+            ui.table.from_pandas(pd.DataFrame([['Foo', 'Bar']], columns=['SameColName', 'SameColName']))
         else:
             persons = ui.table.from_polars(pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_polars(pl.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
@@ -382,6 +383,10 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.should_contain('age')
     screen.should_contain('make')
     screen.should_not_contain('model')
+
+    if df_type == 'pandas':
+        screen.should_contain('Foo')
+        screen.should_not_contain('SameColName_0')
 
     screen.click('Update persons without columns')  # infer columns (like during instantiation)
     screen.should_contain('Dan')
