@@ -75,6 +75,7 @@ class Table(FilterElement, component='table.js'):
         self._props['row-key'] = row_key
         self._props.set_optional('title', title)
         self._pagination_controls = pagination_controls
+        self._has_pagination = pagination is not None
         self._props['hide-pagination'] = pagination is None if pagination_controls is None else not pagination_controls
         self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
@@ -401,22 +402,19 @@ class Table(FilterElement, component='table.js'):
     @pagination.setter
     def pagination(self, value: dict) -> None:
         self._props['pagination'] = value
+        self._has_pagination = True
         if self._pagination_controls is None:
             self._props['hide-pagination'] = False
 
     @property
     def pagination_controls(self) -> bool | None:
-        """Whether the pagination controls are shown."""
+        """Whether the pagination controls are shown (`None`: shown if the table has pagination)."""
         return self._pagination_controls
 
     @pagination_controls.setter
     def pagination_controls(self, value: bool | None) -> None:
         self._pagination_controls = value
-        if value is None:
-            # hide pagination if rowsPerPage is 0 (infinite)
-            self._props['hide-pagination'] = self.pagination['rowsPerPage'] == 0
-        else:
-            self._props['hide-pagination'] = not value
+        self._props['hide-pagination'] = not self._has_pagination if value is None else not value
 
     @property
     def is_fullscreen(self) -> bool:
