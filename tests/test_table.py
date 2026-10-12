@@ -253,7 +253,9 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
                 'Timedelta_col': [timedelta(days=5)],
                 'Complex_col': [1 + 2j],
                 'Period_col': pd.Series([pd.Period('2021-01')]),
+                'Int64_col': pd.array([None], dtype='Int64'),
             })
+            df.index = pd.DatetimeIndex(['2024-01-01'], name='date')
             ui.table.from_pandas(df)
         else:
             df = pl.DataFrame({
@@ -274,6 +276,9 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         screen.should_contain('(1+2j)')
         screen.should_contain('Period_col')
         screen.should_contain('2021-01')
+        screen.should_contain('2024-01-01')
+        screen.should_contain('date')
+        screen.should_contain('Int64_col')
 
 
 def test_table_computed_props(screen: Screen):
