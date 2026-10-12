@@ -304,13 +304,6 @@ class Table(FilterElement, component='table.js'):
                              'You can convert them to strings using something like '
                              '`df.columns = ["_".join(col) for col in df.columns.values]`.')
 
-        def is_special_dtype(dtype):
-            return (pd.api.types.is_datetime64_any_dtype(dtype) or
-                    pd.api.types.is_timedelta64_dtype(dtype) or
-                    pd.api.types.is_complex_dtype(dtype) or
-                    pd.api.types.is_object_dtype(dtype) or
-                    isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
-        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
             df = df.reset_index()
 
@@ -324,6 +317,12 @@ class Table(FilterElement, component='table.js'):
             warn_once(f'The pandas DataFrame has duplicate column names ({duplicate_labels}). '
                       f'The row fields are numbered to keep them unique, while the column labels stay unchanged.')
 
+        def is_special_dtype(dtype):
+            return (pd.api.types.is_datetime64_any_dtype(dtype) or
+                    pd.api.types.is_timedelta64_dtype(dtype) or
+                    pd.api.types.is_complex_dtype(dtype) or
+                    pd.api.types.is_object_dtype(dtype) or
+                    isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
             df = df.copy()
