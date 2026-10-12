@@ -325,7 +325,7 @@ class Table(FilterElement, component='table.js'):
                     isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
         special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
         if not special_cols.empty:
-            df = df.copy()
+            df = df.copy(deep=False)
             df[special_cols] = df[special_cols].astype(str)
 
         return df.to_dict('records'), [{'name': name, 'label': label, 'field': name}
