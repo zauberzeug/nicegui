@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ...element import Element
 from ...events import (

@@ -1,6 +1,4 @@
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ...element import Element
 from ...events import GenericEventArguments, Handler, JoystickEventArguments, handle_event

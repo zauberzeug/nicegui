@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pandas as pd
@@ -249,7 +249,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         if df_type == 'pandas':
             df = pd.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
-                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
                 'Timedelta_col': [timedelta(days=5)],
                 'Complex_col': [1 + 2j],
                 'Period_col': pd.Series([pd.Period('2021-01')]),
@@ -258,7 +258,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         else:
             df = pl.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
-                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
             })
             ui.table.from_polars(df)
 

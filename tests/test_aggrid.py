@@ -1,5 +1,5 @@
 import inspect
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -248,7 +248,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         if df_type == 'pandas':
             df = pd.DataFrame({
                 'datetime_col': [datetime(2020, 1, 1)],
-                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
                 'timedelta_col': [timedelta(days=5)],
                 'complex_col': [1 + 2j],
                 'period_col': pd.Series([pd.Period('2021-01')]),
@@ -257,7 +257,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         else:
             df = pl.DataFrame({
                 'datetime_col': [datetime(2020, 1, 1)],
-                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
             })
             ui.aggrid.from_polars(df)
 

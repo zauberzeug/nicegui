@@ -1,4 +1,4 @@
-from typing_extensions import Self
+from typing import Self
 
 from ..events import ClickEventArguments, Handler, handle_event
 from .mixins.disableable_element import DisableableElement

@@ -1,6 +1,4 @@
-from typing import TYPE_CHECKING, Any, Literal
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Literal, Self
 
 from .. import optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults

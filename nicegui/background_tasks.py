@@ -234,7 +234,7 @@ async def teardown() -> None:
             await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it shuts down
             try:
                 await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 log.error('Could not cancel %s tasks within timeout: %s',
                           len(tasks),
                           ', '.join(t.get_name() for t in tasks if not t.done()))

@@ -5,9 +5,7 @@ import math
 import uuid
 import weakref
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse

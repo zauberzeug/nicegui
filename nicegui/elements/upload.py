@@ -1,8 +1,7 @@
-from typing import cast
+from typing import Self, cast
 
 from fastapi import HTTPException, Request
 from starlette.datastructures import UploadFile
-from typing_extensions import Self
 
 from .. import core
 from ..client import Client

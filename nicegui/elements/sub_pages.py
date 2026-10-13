@@ -2,11 +2,10 @@ import asyncio
 import inspect
 import re
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Self
 from urllib.parse import urlparse
 
 from starlette.datastructures import QueryParams
-from typing_extensions import Self
 
 from .. import background_tasks, helpers, json
 from ..context import context

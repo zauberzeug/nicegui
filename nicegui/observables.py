@@ -5,9 +5,7 @@ import time
 import weakref
 from collections.abc import Callable, Collection, Iterable
 from copy import deepcopy
-from typing import Any, SupportsIndex, cast
-
-from typing_extensions import Self
+from typing import Any, Self, SupportsIndex, cast
 
 from . import events, helpers
 

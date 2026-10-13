@@ -1,6 +1,4 @@
-from typing import TYPE_CHECKING, Literal, cast
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Literal, Self, cast
 
 from ... import helpers, optional_features
 from ...awaitable_response import AwaitableResponse

@@ -1,6 +1,5 @@
 from pathlib import Path
-
-from typing_extensions import Self
+from typing import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .mixins.source_element import SourceElement

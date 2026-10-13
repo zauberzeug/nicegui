@@ -1,9 +1,7 @@
 import asyncio
 import weakref
 from pathlib import Path
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse

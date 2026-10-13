@@ -1,6 +1,5 @@
 import asyncio
-
-from typing_extensions import Self
+from typing import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...events import (

@@ -7,14 +7,13 @@ import uuid
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 from urllib.parse import parse_qs, quote
 
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
-from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
@@ -277,7 +276,7 @@ class Client:
         self._connected.clear()
         try:
             await asyncio.wait_for(self._connected.wait(), timeout=None if _is_prefetch(self.request) else timeout)
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
     async def disconnected(self) -> None:

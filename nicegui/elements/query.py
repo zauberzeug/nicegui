@@ -1,6 +1,5 @@
 import weakref
-
-from typing_extensions import Self
+from typing import Self
 
 from ..classes import Classes
 from ..context import context

@@ -1,7 +1,5 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, TypeAlias, cast
-
-from typing_extensions import Self
+from typing import Any, Self, TypeAlias, cast
 
 from ... import background_tasks, helpers
 from ...events import ValueT
