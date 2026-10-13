@@ -24,7 +24,7 @@ jobs:
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/_test.yml
     with:
-      python-versions: '["3.11", "3.12", "3.13", "3.14"]'
+      python-versions: '["3.11", "3.12", "3.13", "3.14", "3.15"]'
       scope: '["pytest", "startup"]'
 
   windows-test:
