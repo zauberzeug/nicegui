@@ -23,7 +23,7 @@ It's designed to be simple, powerful, and fun to use.
 
 ### Tech Stack
 
-- **Python 3.10+** - Core language
+- **Python 3.11+** - Core language
 - **FastAPI/Starlette** - Web framework
 - **Vue 3** - Frontend framework
 - **Quasar** - UI component framework
@@ -94,7 +94,7 @@ Then pick a development setup that fits your workflow:
 4. Wait until the image has been built. (On first launch, watch the terminal for a GitHub authentication prompt.)
 5. Happy coding.
 
-**Option 2: Locally** — you need Python 3.10+ and [uv](https://docs.astral.sh/uv/) installed.
+**Option 2: Locally** — you need Python 3.11+ and [uv](https://docs.astral.sh/uv/) installed.
 
 Install uv:
 
@@ -122,7 +122,7 @@ By default, the development server listens to http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
-We use Python 3.10 as a base to ensure compatibility (see `development.dockerfile`).
+We use Python 3.11 as a base to ensure compatibility (see `development.dockerfile`).
 
 To view the log output, use the command:
 
@@ -231,7 +231,7 @@ Run these from the project root:
    They run autopep8 (120 char line length), `ruff check . --fix`, trailing-whitespace removal, end-of-file fixing, and single-quote enforcement.
 
    > [!TIP]
-   > If pre-commit fails with `RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.10'`, install Python 3.10 and make sure it's available in your `PATH`.
+   > If pre-commit fails with `RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.11'`, install Python 3.11 and make sure it's available in your `PATH`.
 
 2. **Run tests** with pytest:
 

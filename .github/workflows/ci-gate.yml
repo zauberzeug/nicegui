@@ -17,14 +17,14 @@ jobs:
     if: github.event_name != 'merge_group'
     uses: ./.github/workflows/_test.yml
     with:
-      python-versions: '["3.10"]'
+      python-versions: '["3.11"]'
       scope: '["pytest"]'
 
   full-test:
     if: github.event_name == 'merge_group'
     uses: ./.github/workflows/_test.yml
     with:
-      python-versions: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
+      python-versions: '["3.11", "3.12", "3.13", "3.14"]'
       scope: '["pytest", "startup"]'
 
   windows-test:
@@ -38,7 +38,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       - name: Install Python
-        run: uv python install 3.10
+        run: uv python install 3.11
       - name: Install dependencies
         run: uv sync --locked
       - name: pytest tests/test_storage.py -m "not screen"
