@@ -559,7 +559,7 @@ def test_template_slot_survives_rerender(screen: Screen):
     assert element.get_attribute('value') == 'hello'
 
     screen.click('Update')  # #6284: an unrelated re-render must not discard the slot's DOM
-    screen.wait(0.5)
+    screen.find_by_class('bg-red-100')  # the re-render has reached the browser
     assert element.get_attribute('value') == 'hello'
 
 
