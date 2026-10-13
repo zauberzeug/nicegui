@@ -4,9 +4,11 @@ from fastapi import HTTPException, Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
+from .. import core
 from ..client import Client
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, MultiUploadEventArguments, UiEventArguments, UploadEventArguments, handle_event
+from ..nicegui import app
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .upload_files import create_file_upload
@@ -73,21 +75,6 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         if on_rejected:
             self.on_rejected(on_rejected)
 
-    @staticmethod
-    async def _upload_route(client_id: str, element_id: int, request: Request) -> dict[str, str]:
-        client = Client.instances.get(client_id)
-        upload = client.elements.get(element_id) if client is not None else None
-        if not isinstance(upload, Upload) or upload.is_deleted:
-            raise HTTPException(status_code=404, detail='Upload not found')
-        if upload.is_ignoring_events:
-            raise HTTPException(status_code=403, detail='Upload is disabled or hidden')
-        for begin_upload_handler in upload._begin_upload_handlers:  # pylint: disable=protected-access
-            handle_event(begin_upload_handler, UiEventArguments(sender=upload, client=upload.client))
-        async with request.form() as form:
-            files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
-        await upload.handle_uploads(files)
-        return {'upload': 'success'}
-
     async def handle_uploads(self, files: list[FileUpload]) -> None:
         """Handle the uploaded files.
 
@@ -126,3 +113,20 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         """Clear the upload queue."""
         self.run_method('reset')
         return self
+
+
+@app.post('/_nicegui/client/{client_id}/upload/{element_id}',
+          include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
+async def _upload_route(client_id: str, element_id: int, request: Request) -> dict[str, str]:
+    client = Client.instances.get(client_id)
+    upload = client.elements.get(element_id) if client is not None else None
+    if not isinstance(upload, Upload):
+        raise HTTPException(status_code=404, detail='Upload not found')
+    if upload.is_ignoring_events:
+        raise HTTPException(status_code=403, detail='Upload is disabled or hidden')
+    for begin_upload_handler in upload._begin_upload_handlers:  # pylint: disable=protected-access
+        handle_event(begin_upload_handler, UiEventArguments(sender=upload, client=upload.client))
+    async with request.form() as form:
+        files = [await create_file_upload(cast(UploadFile, data)) for data in form.values()]
+    await upload.handle_uploads(files)
+    return {'upload': 'success'}
