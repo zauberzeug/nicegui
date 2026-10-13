@@ -313,7 +313,7 @@ function renderRecursively(elements, id, propsContext) {
       if (data.template) {
         if (!slotComponents.has(data.template)) {
           slotComponents.set(data.template, {
-            props: { props: { type: Object, default: {} } },
+            props: { props: { type: Object, default: () => ({}) } },
             template: data.template,
           });
         }
