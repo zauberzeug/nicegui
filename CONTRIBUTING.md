@@ -235,7 +235,7 @@ Run these from the project root:
 
    CI additionally runs `uv run mypy ./nicegui` and `uv run pylint ./nicegui` on Python 3.11.
    mypy checks against the Python version it runs on,
-   so use a Python 3.11 environment (`uv sync --python 3.11`) to reproduce the CI result locally.
+   so run `uv run --isolated --python 3.11 mypy ./nicegui` to reproduce the CI result locally without touching your `.venv`.
 
 2. **Run tests** with pytest:
 
