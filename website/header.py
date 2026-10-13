@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -63,7 +64,7 @@ def add_header(menu: ui.left_drawer) -> ui.button:
         fetch('/dark_mode', {{
             method: 'POST',
             headers: {{'Content-Type': 'application/json'}},
-            body: JSON.stringify({{value: {e.value}}}),
+            body: JSON.stringify({{value: {json.dumps(e.value)}}}),
         }});
     '''))
     with ui.header() \
