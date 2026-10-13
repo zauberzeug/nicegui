@@ -4,7 +4,7 @@ Unlike test_scene.py, which mostly checks scene structure (child counts, names, 
 these tests pin the observable Three.js state produced by each object type and method:
 geometry types, visibility, material color/opacity/side, position/scale/rotation, texture and point cloud updates.
 
-Assertions go through ``scene_<html_id>.getObjectByName(...)``
+Assertions go through ``scene_<id>.getObjectByName(...)``
 so they only depend on the public scene graph, not on implementation details.
 All state checks poll instead of sleeping, because object creation and method dispatch may be asynchronous on the client.
 
@@ -30,7 +30,7 @@ TEXTURE_COORDS_3X3: list[list[list[float] | None]] = [[[0.0, 0.0, 0.0], [0.5, 0.
 
 def wait_until(screen: Screen, scene: ui.scene, name: str, expression: str, expected: Any):
     """Poll the JS expression on the named object until it equals the expected value."""
-    lookup = f'scene_{scene.html_id}.getObjectByName("{name}")'
+    lookup = f'scene_{scene.id}.getObjectByName("{name}")'
     screen.wait_for_js(f'(() => {{ const o = {lookup}; return o ? ({expression}) : null; }})()', expected, timeout=5.0)
 
 

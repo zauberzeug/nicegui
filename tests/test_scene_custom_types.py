@@ -30,13 +30,13 @@ def test_custom_type_create_and_method_dispatch(screen: Screen):
         ui.button('Set value to 3', on_click=lambda: first.set_value(3))
 
     screen.open('/')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("a")?.userData.label', 'first')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("b")?.userData.label', 'second')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("a")?.userData.label', 'first')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("b")?.userData.label', 'second')
     screen.wait_for_js('window.__tracer_load_count', 1)  # the module top-level runs only once for multiple instances
 
     screen.click('Set value to 3')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("a").scale.x', 3)
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("b").scale.x', 1)  # dispatch only reaches instance "a"
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("a").scale.x', 3)
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("b").scale.x', 1)  # dispatch only reaches instance "a"
 
 
 def test_two_classes_sharing_one_component(screen: Screen):
@@ -54,8 +54,8 @@ def test_two_classes_sharing_one_component(screen: Screen):
             Marker('second').with_name('b')
 
     screen.open('/')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("a")?.userData.label', 'first')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("b")?.userData.label', 'second')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("a")?.userData.label', 'first')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("b")?.userData.label', 'second')
 
 
 def test_class_registered_after_page_render(screen: Screen):
@@ -76,7 +76,7 @@ def test_class_registered_after_page_render(screen: Screen):
 
     screen.open('/')
     screen.click('Create')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("late")?.geometry.parameters.width', 0.5)
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("late")?.geometry.parameters.width', 0.5)
 
 
 def test_component_file_must_exist():
@@ -111,8 +111,8 @@ def test_bare_subclass_with_legacy_type_string_creates_group(screen: Screen):
                 scene.box().with_name('child')
 
     screen.open('/')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("legacy")?.type', 'Group')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("legacy")?.getObjectByName("child")?.type', 'Mesh')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("legacy")?.type', 'Group')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("legacy")?.getObjectByName("child")?.type', 'Mesh')
 
 
 def test_legacy_type_string_consumes_a_trailing_wireframe_flag(screen: Screen):
@@ -126,8 +126,8 @@ def test_legacy_type_string_consumes_a_trailing_wireframe_flag(screen: Screen):
             Object3D('box', 1, 2, 3).with_name('solid')
 
     screen.open('/')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("wireframe")?.type', 'LineSegments')
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("solid")?.geometry.parameters.depth', 3)
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("wireframe")?.type', 'LineSegments')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("solid")?.geometry.parameters.depth', 3)
 
 
 async def test_deprecated_type_property_reports_the_legacy_type_string(user: User, caplog: pytest.LogCaptureFixture) -> None:

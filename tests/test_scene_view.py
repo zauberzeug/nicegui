@@ -77,7 +77,7 @@ def test_click_on_stl_with_untagged_children(screen: Screen):
         ui.scene_view(scene, width=200, height=150, on_click=lambda e: hits.extend(hit.object_id for hit in e.hits))
 
     screen.open('/')
-    query = f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0'
+    query = f'scene_{scene.id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0'
     screen.wait_for_js(query, True)  # the click must hit the child mesh created by the STL loader
     screen.find_all_by_tag('canvas')[1].click()
     screen.wait_for(lambda: obj.id in hits)

@@ -106,15 +106,21 @@ function replaceUndefinedAttributes(element) {
   };
 }
 
+const HTML_ID_PREFIX = "ng-";
+
+function parseHtmlId(htmlId) {
+  return htmlId.startsWith(HTML_ID_PREFIX) ? Number(htmlId.slice(HTML_ID_PREFIX.length)) : NaN;
+}
+
 function getElement(id) {
-  const _id = id instanceof Element ? id.id.slice(1) : id;
+  const _id = id instanceof Element ? parseHtmlId(id.id) : id;
   return mounted_app.$refs["r" + _id];
 }
 
 function getHtmlElement(id) {
   let id_as_a_string = id.toString();
-  if (!id_as_a_string.startsWith("c")) {
-    id_as_a_string = "c" + id_as_a_string;
+  if (!id_as_a_string.startsWith(HTML_ID_PREFIX)) {
+    id_as_a_string = HTML_ID_PREFIX + id_as_a_string;
   }
   return document.getElementById(id_as_a_string);
 }
@@ -243,7 +249,7 @@ function renderRecursively(elements, id, propsContext) {
   }
 
   const props = {
-    id: "c" + id,
+    id: HTML_ID_PREFIX + id,
     ref: "r" + id,
     key: id, // HACK: workaround for #600 and #898
     class: element.class.join(" ") || undefined,

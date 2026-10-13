@@ -62,7 +62,7 @@ export default {
       this.$el.appendChild(this.stats.domElement);
     }
 
-    window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
+    window["scene_" + parseHtmlId(this.$el.id)] = this.scene; // NOTE: for selenium tests only
 
     if (this.cameraType === "perspective") {
       this.camera = new THREE.PerspectiveCamera(
@@ -118,7 +118,7 @@ export default {
       this.$el.addEventListener(
         "click",
         () => {
-          const elementDefinition = mounted_app.elements[this.$el.id.slice(1)];
+          const elementDefinition = mounted_app.elements[parseHtmlId(this.$el.id)];
           const originalTag = elementDefinition.tag;
           elementDefinition.tag = "";
           this.$nextTick(() => (elementDefinition.tag = originalTag));

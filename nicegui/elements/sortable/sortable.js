@@ -15,8 +15,8 @@ export default {
       this.sortable = this.Sortable.create(element, {
         ...this.options,
         onEnd: (evt) => {
-          const fromId = parseInt(evt.from.id.substring(1));
-          const toId = parseInt(evt.to.id.substring(1));
+          const fromId = parseHtmlId(evt.from.id);
+          const toId = parseHtmlId(evt.to.id);
           if (isNaN(fromId) || isNaN(toId)) return;
           const fromSlot = mounted_app?.elements?.[fromId]?.slots?.default;
           const toSlot = mounted_app?.elements?.[toId]?.slots?.default;
@@ -31,7 +31,7 @@ export default {
           element.dispatchEvent(
             new CustomEvent("sortend", {
               detail: {
-                item_id: parseInt(evt.item.id.substring(1)),
+                item_id: parseHtmlId(evt.item.id),
                 from_id: fromId,
                 to_id: toId,
                 old_index: evt.oldIndex,
