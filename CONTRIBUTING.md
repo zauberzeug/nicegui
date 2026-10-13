@@ -189,7 +189,7 @@ The conventions below cover both general Python style and NiceGUI-specific patte
   - **Triple underscore storage**: BindableProperty stores values in `___property_name` attributes
   - **Batch updates**: Use `suspend_updates()` context manager when changing properties in `update()` to avoid infinite cycles
 
-- **Method chaining**: Methods that support chaining (fluent interface) return `Self` from `typing_extensions`, enabling the builder pattern.
+- **Method chaining**: Methods that support chaining (fluent interface) return `Self` from `typing`, enabling the builder pattern.
   When chaining, use backslash line continuation:
 
   ```python

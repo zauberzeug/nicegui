@@ -140,7 +140,7 @@ def _generate_method_signature_description(method: Callable) -> str:
     return_annotation = inspect.signature(method).return_annotation
     if return_annotation != inspect.Parameter.empty:
         return_type = inspect.formatannotation(return_annotation)
-        description += f''' -> {return_type.strip("'").replace("typing_extensions.", "").replace("typing.", "")}'''
+        description += f''' -> {return_type.strip("'").replace("typing.", "")}'''
     return description
 
 
