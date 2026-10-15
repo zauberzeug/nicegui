@@ -57,8 +57,8 @@ class Table(FilterElement, component='table.js'):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination unless ``pagination_controls`` is `True`, 0 means "infinite"; default: `None`).
-        :param pagination_controls: whether to show the pagination controls (default: `None` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
+        :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
         """
@@ -190,8 +190,8 @@ class Table(FilterElement, component='table.js'):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination unless ``pagination_controls`` is `True`, 0 means "infinite"; default: `None`).
-        :param pagination_controls: whether to show the pagination controls (default: `None` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
+        :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes (*added in version 4.0.0*)
         :return: table element
@@ -239,8 +239,8 @@ class Table(FilterElement, component='table.js'):
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
         :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination unless ``pagination_controls`` is `True`, 0 means "infinite"; default: `None`).
-        :param pagination_controls: whether to show the pagination controls (default: `None` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
+        :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes (*added in version 4.0.0*)
         :return: table element
@@ -420,7 +420,7 @@ class Table(FilterElement, component='table.js'):
 
     @property
     def pagination_controls(self) -> bool | None:
-        """Whether the pagination controls are shown (`None`: shown if the table has pagination)."""
+        """Whether the pagination controls are shown (``None``: shown if the table has pagination)."""
         return self._pagination_controls
 
     @pagination_controls.setter
