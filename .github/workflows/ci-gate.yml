@@ -14,17 +14,17 @@ jobs:
     uses: ./.github/workflows/_check.yml
 
   quick-test:
-    if: github.event_name != 'merge_group'
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/_test.yml
     with:
-      python-versions: '["3.10"]'
+      python-versions: '["3.11"]'
       scope: '["pytest"]'
 
   full-test:
-    if: github.event_name == 'merge_group'
+    if: github.event_name != 'pull_request'
     uses: ./.github/workflows/_test.yml
     with:
-      python-versions: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
+      python-versions: '["3.11", "3.12", "3.13", "3.14"]'
       scope: '["pytest", "startup"]'
 
   windows-test:
@@ -38,7 +38,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       - name: Install Python
-        run: uv python install 3.10
+        run: uv python install 3.11
       - name: Install dependencies
         run: uv sync --locked
       - name: pytest tests/test_storage.py -m "not screen"
@@ -47,7 +47,7 @@ jobs:
   quick-test-gate:
     runs-on: ubuntu-latest
     needs: [check, quick-test, windows-test]
-    if: always() && github.event_name != 'merge_group'
+    if: always() && github.event_name == 'pull_request'
     steps:
       - name: Verify all dependencies passed
         if: needs.check.result != 'success' || needs.quick-test.result != 'success' || needs.windows-test.result != 'success'
@@ -58,7 +58,7 @@ jobs:
   full-test-gate:
     runs-on: ubuntu-latest
     needs: [check, full-test, windows-test]
-    if: always() && github.event_name == 'merge_group'
+    if: always() && github.event_name != 'pull_request'
     steps:
       - name: Verify all dependencies passed
         if: needs.check.result != 'success' || needs.full-test.result != 'success' || needs.windows-test.result != 'success'

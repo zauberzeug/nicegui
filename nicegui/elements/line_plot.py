@@ -1,6 +1,4 @@
-from typing import Any, Literal
-
-from typing_extensions import Self
+from typing import Any, Literal, Self
 
 from .pyplot import Pyplot
 

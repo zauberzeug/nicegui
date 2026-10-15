@@ -8,9 +8,7 @@ import weakref
 from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
 from . import binding, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse

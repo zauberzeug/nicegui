@@ -1,7 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, cast
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Generic, Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element

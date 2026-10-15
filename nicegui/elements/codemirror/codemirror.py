@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from itertools import accumulate, chain, repeat
-from typing import get_args
-
-from typing_extensions import Self
+from typing import Self, get_args
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement

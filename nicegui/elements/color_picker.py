@@ -1,4 +1,4 @@
-from typing_extensions import Self
+from typing import Self
 
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element

@@ -1,8 +1,6 @@
 import asyncio
 import weakref
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..context import context
 from ..defaults import DEFAULT_PROPS, resolve_defaults

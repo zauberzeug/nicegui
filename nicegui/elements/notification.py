@@ -1,6 +1,4 @@
-from typing import Any, Literal, TypeAlias
-
-from typing_extensions import Self
+from typing import Any, Literal, Self, TypeAlias
 
 from ..context import context
 from ..element import Element

@@ -1,4 +1,4 @@
-from typing_extensions import Self
+from typing import Self
 
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults

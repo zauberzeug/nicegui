@@ -11,9 +11,7 @@ from contextlib import suppress
 from functools import partial
 from multiprocessing.context import BaseContext
 from pickle import PicklingError
-from typing import Any, Literal, TypeVar
-
-from typing_extensions import ParamSpec
+from typing import Any, Literal, ParamSpec, TypeVar
 
 from . import core, helpers
 

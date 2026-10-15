@@ -1,7 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from .leaflet_layer import Layer
 

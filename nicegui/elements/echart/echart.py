@@ -1,8 +1,6 @@
 from collections.abc import Callable
 from contextlib import suppress
-from typing import Literal
-
-from typing_extensions import Self
+from typing import Literal, Self
 
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ...element import Element
 from ...events import CodeMirrorKeyBindingEventArguments, GenericEventArguments, Handler, handle_event

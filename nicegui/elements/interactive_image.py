@@ -4,9 +4,7 @@ import time
 from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
-from typing import cast
-
-from typing_extensions import Self
+from typing import Self, cast
 
 from .. import helpers, optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults

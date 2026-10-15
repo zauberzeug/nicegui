@@ -1,7 +1,5 @@
 from collections.abc import Iterator
-from typing import Any, Literal
-
-from typing_extensions import Self
+from typing import Any, Literal, Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event

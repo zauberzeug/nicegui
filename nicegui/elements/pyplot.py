@@ -4,9 +4,7 @@ import io
 import os
 import weakref
 from contextlib import suppress
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from .. import optional_features
 from ..element import Element

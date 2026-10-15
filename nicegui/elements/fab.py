@@ -1,6 +1,4 @@
-from typing import Literal
-
-from typing_extensions import Self
+from typing import Literal, Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event

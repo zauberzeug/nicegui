@@ -3,9 +3,7 @@ import weakref
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Literal
-
-from typing_extensions import Self
+from typing import Any, Literal, Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
