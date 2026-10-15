@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import httpx
+import httpx2
 
 from .. import background_tasks
 from ..functions.download import Download
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class UserDownload(Download):
 
     def __init__(self, user: User) -> None:
-        self.http_responses: list[httpx.Response] = []
+        self.http_responses: list[httpx2.Response] = []
         self.user = user
 
     def __call__(self, src: str | Path | bytes, filename: str | None = None, media_type: str = '') -> Any:
@@ -36,12 +36,12 @@ class UserDownload(Download):
     async def _get(self,  src: str | Path | bytes) -> None:
         if isinstance(src, bytes):
             await asyncio.sleep(0)
-            response = httpx.Response(httpx.codes.OK, content=src)
+            response = httpx2.Response(httpx2.codes.OK, content=src)
         else:
             response = await self.user.http_client.get(str(src))
         self.http_responses.append(response)
 
-    async def next(self, *, timeout: float = 1.0) -> httpx.Response:
+    async def next(self, *, timeout: float = 1.0) -> httpx2.Response:
         """Wait for a new download to happen.
 
         :param timeout: the maximum time to wait (default: 1.0)

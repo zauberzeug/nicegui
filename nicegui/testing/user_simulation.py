@@ -4,7 +4,7 @@ from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-import httpx
+import httpx2
 
 from .. import core, ui
 from ..functions.download import download
@@ -40,7 +40,7 @@ async def user_simulation(
                 ui.run(root, storage_secret='simulated secret')
 
             async with core.app.router.lifespan_context(core.app):
-                async with httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test') as client:
+                async with httpx2.AsyncClient(transport=httpx2.ASGITransport(core.app), base_url='http://test') as client:
                     yield User(client)
         finally:
             os.environ.pop('NICEGUI_USER_SIMULATION', None)

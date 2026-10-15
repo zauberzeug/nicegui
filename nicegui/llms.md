@@ -119,7 +119,7 @@ Use `ui.run_javascript()` only for things that are truly impossible via the Pyth
 
 NiceGUI runs in a single asyncio event loop. Every page, every user, every timer shares it. Blocking the loop (with `time.sleep()`, `requests.get()`, heavy CPU work) freezes the **entire application** for all users. Rules:
 
-- All I/O must be async (`httpx`, `aiofiles`, `asyncio.sleep()`) — or wrap a blocking call with `await run.io_bound(fn, *args)`, which runs it in a thread
+- All I/O must be async (`httpx2`, `aiofiles`, `asyncio.sleep()`) — or wrap a blocking call with `await run.io_bound(fn, *args)`, which runs it in a thread
 - CPU-heavy work must leave the event loop: `await run.cpu_bound(fn, *args)` runs it in a separate process (arguments and return value must be picklable)
 - `run.io_bound` / `run.cpu_bound` come from `from nicegui import run` — prefer them over `asyncio.to_thread()` or a hand-rolled `run_in_executor`, because NiceGUI manages the pools and their shutdown
 - `background_tasks.create()` for fire-and-forget coroutines — wraps `create_task` but keeps a reference (so the GC won't cancel it) and routes exceptions through NiceGUI's exception handler. Avoid bare `asyncio.create_task()` or `asyncio.ensure_future()` for this reason.
@@ -1280,7 +1280,7 @@ async def on_click():
     data = requests.get(url).json()  # blocks the event loop!
 # GOOD: an async client, …
 async def on_click():
-    async with httpx.AsyncClient() as client:
+    async with httpx2.AsyncClient() as client:
         data = (await client.get(url)).json()
 # … or the blocking call wrapped in a thread
 async def on_click():
@@ -1419,7 +1419,7 @@ These follow NiceGUI project conventions and work well for NiceGUI-based apps:
 # NEVER block the event loop
 import time
 time.sleep(5)             # blocks everything — never do this in async context
-requests.get(url)         # synchronous HTTP — use httpx, or await run.io_bound(requests.get, url)
+requests.get(url)         # synchronous HTTP — use httpx2, or await run.io_bound(requests.get, url)
 
 # ALWAYS use background_tasks for fire-and-forget coroutines
 from nicegui import background_tasks

@@ -886,19 +886,6 @@ wheels = [
 ]
 
 [[package]]
-name = "httpcore"
-version = "1.0.9"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "certifi" },
-    { name = "h11" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/06/94/82699a10bca87a5556c9c59b5963f2d039dbd239f25bc2a63907a05a14cb/httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8", size = 85484, upload-time = "2025-04-24T22:06:22.219Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl", hash = "sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55", size = 78784, upload-time = "2025-04-24T22:06:20.566Z" },
-]
-
-[[package]]
 name = "httpcore2"
 version = "2.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -945,21 +932,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/4d/31/14df99e1c43bd132eec921c2e7e11cda7852f65619bc0fc5bdc2d0cb126c/httptools-0.7.1-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:f084813239e1eb403ddacd06a30de3d3e09a9b76e7894dcda2b22f8a726e9c60", size = 452631, upload-time = "2025-10-10T03:54:58.219Z" },
     { url = "https://files.pythonhosted.org/packages/22/d2/b7e131f7be8d854d48cb6d048113c30f9a46dca0c9a8b08fcb3fcd588cdc/httptools-0.7.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:7347714368fb2b335e9063bc2b96f2f87a9ceffcd9758ac295f8bbcd3ffbc0ca", size = 452910, upload-time = "2025-10-10T03:54:59.366Z" },
     { url = "https://files.pythonhosted.org/packages/53/cf/878f3b91e4e6e011eff6d1fa9ca39f7eb17d19c9d7971b04873734112f30/httptools-0.7.1-cp314-cp314-win_amd64.whl", hash = "sha256:cfabda2a5bb85aa2a904ce06d974a3f30fb36cc63d7feaddec05d2050acede96", size = 88205, upload-time = "2025-10-10T03:55:00.389Z" },
-]
-
-[[package]]
-name = "httpx"
-version = "0.28.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "certifi" },
-    { name = "httpcore" },
-    { name = "idna" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
 ]
 
 [[package]]
@@ -1857,11 +1829,10 @@ dependencies = [
     { name = "aiofiles" },
     { name = "aiohttp" },
     { name = "anyio" },
-    { name = "certifi" },
     { name = "docutils" },
     { name = "fastapi" },
     { name = "h11" },
-    { name = "httpx" },
+    { name = "httpx2" },
     { name = "idna" },
     { name = "ifaddr" },
     { name = "itsdangerous" },
@@ -1914,7 +1885,6 @@ dev = [
     { name = "dnspython" },
     { name = "fonttools" },
     { name = "html-sanitizer" },
-    { name = "httpx2" },
     { name = "isort" },
     { name = "latex2mathml" },
     { name = "lxml" },
@@ -1980,12 +1950,11 @@ requires-dist = [
     { name = "altair", marker = "extra == 'altair'", specifier = ">=6.0.0" },
     { name = "anyio", specifier = ">=4.14.2" },
     { name = "anywidget", marker = "extra == 'anywidget'", specifier = ">=0.9.21" },
-    { name = "certifi", specifier = ">=2024.7.4" },
     { name = "docutils", specifier = ">=0.19.0" },
     { name = "fastapi", specifier = ">=0.109.1,!=0.123.5" },
     { name = "fonttools", marker = "extra == 'matplotlib'", specifier = ">=4.60.2" },
     { name = "h11", specifier = ">=0.16.0" },
-    { name = "httpx", specifier = ">=0.24.0" },
+    { name = "httpx2", specifier = ">=2.12.0" },
     { name = "idna", specifier = ">=3.15" },
     { name = "ifaddr", specifier = ">=0.2.0" },
     { name = "itsdangerous", specifier = ">=2.1.2,<3" },
@@ -2020,7 +1989,6 @@ dev = [
     { name = "dnspython", specifier = ">=2.4.0,<3" },
     { name = "fonttools", specifier = ">=4.60.2" },
     { name = "html-sanitizer", specifier = ">=2.6.0,<3" },
-    { name = "httpx2", specifier = ">=2.12.0" },
     { name = "isort", specifier = ">=6.0.0,<7.0.0" },
     { name = "latex2mathml", specifier = ">=3.78.1,<4.0.0" },
     { name = "lxml", specifier = ">=6.1.0" },

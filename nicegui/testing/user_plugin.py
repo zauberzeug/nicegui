@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator, Callable
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import core, ui
@@ -36,7 +36,7 @@ async def create_user(user: User) -> AsyncGenerator[Callable[[], User], None]:  
     prepare_simulation()
     try:
         async with core.app.router.lifespan_context(core.app):
-            yield lambda: User(httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test'))
+            yield lambda: User(httpx2.AsyncClient(transport=httpx2.ASGITransport(core.app), base_url='http://test'))
     finally:
         ui.navigate = Navigate()
         ui.notify = notify

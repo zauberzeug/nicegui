@@ -7,7 +7,7 @@ from contextlib import AbstractContextManager, contextmanager
 from typing import Any, TypeVar, overload
 from uuid import uuid4
 
-import httpx
+import httpx2
 import socketio
 
 from nicegui import Client, ElementFilter, ui
@@ -29,7 +29,7 @@ T = TypeVar('T', bound=ui.element)
 class User:
     current_user: User | None = None
 
-    def __init__(self, client: httpx.AsyncClient) -> None:
+    def __init__(self, client: httpx2.AsyncClient) -> None:
         self.http_client = client
         self.sio = socketio.AsyncClient()
         self.client: Client | None = None

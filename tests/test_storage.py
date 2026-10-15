@@ -8,7 +8,7 @@ import time
 import warnings
 from collections.abc import Callable
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import Client, app, background_tasks, context, core, ui
@@ -101,7 +101,7 @@ def test_access_user_storage_from_fastapi(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.get(f'http://localhost:{Screen.PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
@@ -453,7 +453,7 @@ async def test_user_storage_is_pruned(screen: Screen):
     assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/status')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
     assert len(Client.instances) == 1
@@ -589,7 +589,7 @@ def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
     if custom_cookie_headers:
         screen.ui_run_kwargs['session_middleware_kwargs'] = {'same_site': 'none', 'https_only': True}
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.get(f'http://localhost:{Screen.PORT}/')
         assert response.status_code == 200
         cookie_settings = str(response.headers.get('set-cookie')).lower()

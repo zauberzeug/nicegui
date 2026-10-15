@@ -1,7 +1,7 @@
 import asyncio
 import re
 
-import httpx
+import httpx2
 import pytest
 import socketio
 
@@ -105,7 +105,7 @@ async def test_disconnect_without_client_id_in_connect_query(screen: Screen):
     app.on_disconnect(lambda: events.append('disconnect'))
 
     screen.start_server()
-    httpx.get(screen.url, timeout=5)
+    httpx2.get(screen.url, timeout=5)
     client_id = next(reversed(Client.instances))
     sio = socketio.AsyncClient()
     await sio.connect(screen.url, socketio_path='/_nicegui_ws/socket.io')  # no query parameters at all
@@ -212,5 +212,5 @@ def test_warning_about_ignored_environment_variable(screen: Screen, monkeypatch:
     monkeypatch.setenv(name, 'x')
 
     screen.start_server()
-    httpx.get(screen.url, timeout=5)
+    httpx2.get(screen.url, timeout=5)
     screen.assert_py_logger('WARNING', re.compile(f'Ignoring {name}=x, which is only used internally.'))

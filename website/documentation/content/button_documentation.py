@@ -43,7 +43,7 @@ async def await_button_click() -> None:
 def disable_context_manager() -> None:
     from contextlib import contextmanager
 
-    import httpx
+    import httpx2
 
     @contextmanager
     def disable(button: ui.button):
@@ -55,7 +55,7 @@ def disable_context_manager() -> None:
 
     async def get_slow_response(button: ui.button) -> None:
         with disable(button):
-            async with httpx.AsyncClient() as client:
+            async with httpx2.AsyncClient() as client:
                 response = await client.get('https://httpbin.org/delay/1', timeout=5)
                 ui.notify(f'Response code: {response.status_code}')
 
