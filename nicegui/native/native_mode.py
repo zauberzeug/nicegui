@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import atexit
 import multiprocessing as mp
 import pickle
 import queue
+import shutil
 import socket
 import sys
+import tempfile
 import time
 import warnings
 from collections.abc import Callable
@@ -17,7 +20,7 @@ from typing import Any
 
 from .. import core, helpers, optional_features
 from ..logging import log
-from . import native, window_icon
+from . import chromium, native, window_icon
 from .event_manager import event_manager
 
 with suppress(ImportError):
@@ -28,6 +31,9 @@ with suppress(ImportError):
         import webview.dom
     optional_features.register('webview')
 
+if not optional_features.has('webview'):
+    from . import chromium as webview  # type: ignore[no-redef] # drives an installed browser instead
+
 
 def _open_window(
     protocol: str, host: str, port: int, title: str, width: int, height: int, fullscreen: bool, frameless: bool,
@@ -37,6 +43,7 @@ def _open_window(
     settings: dict[str, Any] | None = None,
     start_args: dict[str, Any] | None = None,
     dropped_keys: dict[str, list[str]] | None = None,
+    profile_dir: str | None = None,
 ) -> None:
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
@@ -65,6 +72,8 @@ def _open_window(
         'frameless': frameless,
         **window_args,
     }
+    if profile_dir is not None:
+        window_kwargs['profile_dir'] = profile_dir
     webview.settings.update(**settings)
     window = webview.create_window(**window_kwargs)
     assert window is not None
@@ -74,7 +83,8 @@ def _open_window(
 
     if sys.platform == 'win32' and favicon is not None:
         def on_shown() -> None:
-            window_icon.apply_icon(window.native.Handle.ToInt32(), title, str(favicon))
+            if window.native is not None:  # the fallback backend has no native handle to decorate
+                window_icon.apply_icon(window.native.Handle.ToInt32(), title, str(favicon))
             window.events.shown -= on_shown
         window.events.shown += on_shown
 
@@ -178,16 +188,41 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
     def check_shutdown() -> None:
         while process.is_alive():
             time.sleep(0.1)
+        remove_profile_dir()
         if shutdown_event is not None:
             shutdown_event.set()
         core.stop_and_exit()
 
-    if not optional_features.has('webview'):
+    if not optional_features.has('webview') and chromium.find_browser() is None:
         log.error('Native mode is not supported in this configuration.\n'
-                  'Please run "pip install pywebview" to use it.')
+                  'Please run "pip install nicegui[native]" to use it, '
+                  'or install a Chromium-based browser (Chrome, Chromium, Edge) '
+                  'to run it on the fallback backend, '
+                  f'or set {chromium.BROWSER_ENV_VAR} to the path of a browser.')
         sys.exit(1)
 
     mp.freeze_support()
+    profile_dir = None if optional_features.has('webview') else tempfile.mkdtemp(prefix='nicegui-native-')
+
+    def remove_profile_dir() -> None:
+        nonlocal profile_dir
+        if profile_dir is None:
+            return
+        try:
+            shutil.rmtree(profile_dir)
+        except FileNotFoundError:
+            pass
+        except OSError as e:
+            log.warning(f'could not remove fallback native browser profile "{profile_dir}": {e}')
+        else:
+            profile_dir = None
+
+    def remove_profile_dir_on_exit() -> None:
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=5)
+        remove_profile_dir()
+
     native.create_queues()
     event_manager.start()
     window_args, dropped_window_args = _split_picklable(core.app.native.window_args)
@@ -196,9 +231,15 @@ def activate(protocol: str, host: str, port: int, title: str, width: int, height
     dropped_keys = {'window_args': dropped_window_args, 'settings': dropped_settings, 'start_args': dropped_start_args}
     args = (protocol, host, port, title, width, height, fullscreen, frameless,
             native.method_queue, native.response_queue, native.event_sender, favicon,
-            window_args, settings, start_args, dropped_keys)
+            window_args, settings, start_args, dropped_keys, profile_dir)
     process = native.SPAWN_CONTEXT.Process(target=_open_window, args=args, daemon=True)
-    process.start()
+    try:
+        process.start()
+    except Exception:
+        remove_profile_dir()
+        raise
+    if profile_dir is not None:
+        atexit.register(remove_profile_dir_on_exit)
 
     Thread(target=check_shutdown, daemon=True).start()
 
