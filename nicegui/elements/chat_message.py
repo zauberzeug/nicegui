@@ -1,7 +1,6 @@
 import html
 from collections.abc import Callable
 
-from .. import helpers
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from .html import Html
 from .mixins.label_element import LabelElement
@@ -18,7 +17,7 @@ class ChatMessage(LabelElement):
                  avatar: str | None = DEFAULT_PROP | None,
                  sent: bool = DEFAULT_PROP | False,
                  text_html: bool = False,
-                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
+                 sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
         """Chat Message
 
@@ -37,10 +36,6 @@ class ChatMessage(LabelElement):
             or pass a callable to apply server-side sanitization
         """
         super().__init__(tag='q-chat-message', label=label)
-
-        if sanitize is None:
-            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
-            sanitize = True  # DEPRECATED: remove this block in version 4.0.0
 
         if text is None:
             text = []
