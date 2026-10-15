@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 from pathlib import Path
 
@@ -85,78 +84,10 @@ def test_component_file_must_exist():
             pass
 
 
-def test_deprecated_scene_objects_module_keeps_working(screen: Screen):
-    """Deep imports from the removed scene_objects module must keep working with a deprecation warning."""
-    sys.modules.pop('nicegui.elements.scene.scene_objects', None)
-    from nicegui.elements.scene.objects.group import Group as CanonicalGroup  # pylint: disable=import-outside-toplevel
-    from nicegui.elements.scene.scene_objects import Group  # pylint: disable=import-outside-toplevel
-    assert Group is CanonicalGroup
-    screen.assert_py_logger('WARNING',
-                            'The module `nicegui.elements.scene.scene_objects` is deprecated and will be removed in NiceGUI 4.0. '
-                            'Import scene objects from `nicegui.elements.scene.objects` instead.')
-
-
-def test_bare_subclass_with_legacy_type_string_creates_group(screen: Screen):
-    class LegacyObject(Object3D):
-        def __init__(self) -> None:
-            super().__init__('group')
-
-    scene: ui.scene = None  # type: ignore
-
-    @ui.page('/')
-    def page():
-        nonlocal scene
-        with ui.scene() as scene:
-            with LegacyObject().with_name('legacy'):
-                scene.box().with_name('child')
-
-    screen.open('/')
-    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("legacy")?.type', 'Group')
-    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("legacy")?.getObjectByName("child")?.type', 'Mesh')
-
-
-def test_legacy_type_string_consumes_a_trailing_wireframe_flag(screen: Screen):
-    scene: ui.scene = None  # type: ignore
-
-    @ui.page('/')
-    def page():
-        nonlocal scene
-        with ui.scene() as scene:
-            Object3D('box', 1, 2, 3, True).with_name('wireframe')
-            Object3D('box', 1, 2, 3).with_name('solid')
-
-    screen.open('/')
-    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("wireframe")?.type', 'LineSegments')
-    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("solid")?.geometry.parameters.depth', 3)
-
-
-async def test_deprecated_type_property_reports_the_legacy_type_string(user: User, caplog: pytest.LogCaptureFixture) -> None:
-    types: list[str | None] = []
-
-    @ui.page('/')
-    def page():
-        with ui.scene() as scene:
-            types.append(scene.box().type)
-            types.append(Object3D('group').type)
-
-    await user.open('/')
-    assert types == ['box', 'group']
-    assert any('The `type` property of `Object3D` is deprecated' in record.message for record in caplog.records)
-
-
-async def test_unknown_legacy_type_string_raises(user: User) -> None:
-    errors: list[str] = []
-
-    @ui.page('/')
-    def page():
-        with ui.scene():
-            try:
-                Object3D('teapot')
-            except TypeError as e:
-                errors.append(str(e))
-
-    await user.open('/')
-    assert errors == ['Unknown object type "teapot".']
+def test_subclass_without_component_raises():
+    with pytest.raises(TypeError, match='without a `component` parameter'):
+        class Bare(Object3D):  # pylint: disable=unused-variable
+            pass
 
 
 async def test_editing_a_component_file_keeps_its_page_working(user: User, tmp_path: Path) -> None:
