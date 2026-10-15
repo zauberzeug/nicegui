@@ -30,8 +30,6 @@ class Fullscreen(ValueElement[bool], component='fullscreen.js'):
         super().__init__(value=False, on_value_change=on_value_change)
         self._props['require-escape-hold'] = require_escape_hold
 
-        self._props.add_rename('requireEscapeHold', 'require-escape-hold')  # DEPRECATED: remove in NiceGUI 4.0
-
     @property
     def require_escape_hold(self) -> bool:
         """Whether the user needs to long-press of the escape key to exit fullscreen mode.

@@ -60,8 +60,6 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         self._update_method = 'update_grid'
         self._props['modules'] = modules[:]
 
-        self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
-
     @staticmethod
     def _uses_flex(options: dict) -> bool:
         col_defs = [options.get('defaultColDef', {}), *options.get('columnDefs', [])]

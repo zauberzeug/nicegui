@@ -47,8 +47,6 @@ class Header(ValueElement[bool], component='header.js', default_classes='nicegui
 
         self.move(target_index=0)
 
-        self._props.add_rename('add_scroll_padding', 'add-scroll-padding')  # DEPRECATED: remove in NiceGUI 4.0
-
     def toggle(self) -> Self:
         """Toggle the header"""
         self.value = not self.value
