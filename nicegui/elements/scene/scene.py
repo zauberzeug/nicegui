@@ -64,7 +64,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     def __init__(self,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
-                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 *,
                  grid: bool | tuple[int, int] = DEFAULT_PROP | True,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,

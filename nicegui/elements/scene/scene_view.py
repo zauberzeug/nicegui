@@ -20,7 +20,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
     @resolve_defaults
     def __init__(self,
                  scene: Scene,
-                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 *,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
                  camera: SceneCamera | None = None,
