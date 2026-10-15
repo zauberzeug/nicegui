@@ -1,6 +1,6 @@
 from typing import Any
 
-from .. import helpers
+from ..context import context
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.disableable_element import DisableableElement
@@ -21,17 +21,14 @@ class Tab(LabelElement, IconElement, DisableableElement):
         :param label: label of the tab (default: `None`, meaning the same as `name`)
         :param icon: icon of the tab (default: `None`)
         """
+        tabs = next((e for e in context.slot.parent.ancestors(include_self=True) if isinstance(e, Tabs)), None)
+        if tabs is None:
+            raise RuntimeError('A ui.tab must be a child of a ui.tabs element.')
         if label is None:
             label = name
         super().__init__(tag='q-tab', label=label, icon=icon)
         self._props['name'] = name
-        self.tabs = next(
-            (e for e in self.ancestors() if isinstance(e, Tabs)),
-            None,  # DEPRECATED: raise an error in NiceGUI 4.0 if no ui.tabs ancestor is found
-        )
-        if self.tabs is None:
-            helpers.warn_once('A ui.tab should be a child of a ui.tabs element. '
-                              'This will raise an error in NiceGUI 4.0.')
+        self.tabs = tabs
 
 
 class TabPanel(DisableableElement, default_classes='nicegui-tab-panel'):

@@ -117,8 +117,7 @@ class UserInteraction(Generic[T]):
                 element.value = target_value
 
             elif isinstance(element, ui.tab):
-                if element.tabs is not None:  # DEPRECATED: check not needed once ui.tab requires a ui.tabs ancestor
-                    element.tabs.value = element.props['name']
+                element.tabs.value = element.props['name']
                 self._dispatch_click(element)
 
             elif isinstance(element, (ui.checkbox, ui.switch)):
