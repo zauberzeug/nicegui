@@ -303,6 +303,9 @@ def toggle_fullscreen():
     - `sortBy`: The column name to sort by.
     - `descending`: Whether to sort in descending order.
     - `page`: The current page (1-based).
+
+    The pagination controls are shown if pagination is provided.
+    Use `pagination_controls=False` to paginate the rows without showing the controls.
 ''')
 def pagination() -> None:
     columns = [
