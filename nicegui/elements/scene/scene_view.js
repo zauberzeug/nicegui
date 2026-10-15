@@ -8,7 +8,8 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    this.scene = getElement(this.sceneId).scene;
+    const scene_element = getElement(this.sceneId);
+    this.scene = scene_element.scene;
     if (this.showStats) {
       this.stats = new Stats();
       this.stats.domElement.style.position = "absolute";
@@ -60,9 +61,21 @@ export default {
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
 
+    this.render_version = 0;
+    let rendered_version = -1;
+    let rendered_scene_version = -1;
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
+      if (
+        scene_element.renderOnDemand &&
+        rendered_version === this.render_version &&
+        rendered_scene_version === scene_element.render_version
+      ) {
+        return;
+      }
+      rendered_version = this.render_version;
+      rendered_scene_version = scene_element.render_version;
       this.renderer.render(this.scene, this.camera);
       if (this.showStats) this.stats.update();
     };
@@ -111,6 +124,9 @@ export default {
       this.resize();
       this.$el.removeAttribute("data-initializing");
     },
+    request_render() {
+      this.render_version++;
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (this.camera_tween) this.camera_tween.stop();
       this.camera_tween = new TWEEN.Tween([
@@ -130,6 +146,7 @@ export default {
           this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
+          this.request_render();
         })
         .start();
     },
@@ -142,6 +159,7 @@ export default {
         this.camera.right = (this.camera.aspect * this.cameraParams.size) / 2;
       }
       this.camera.updateProjectionMatrix();
+      this.request_render();
     },
   },
 
