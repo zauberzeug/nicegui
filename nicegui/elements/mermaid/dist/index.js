@@ -1,2 +1,2 @@
-export{bq as mermaid}from"./index-C6_oXyon.js";
+export{bq as mermaid}from"./index-ZUJS-iV8.js";
 //# sourceMappingURL=index.js.map

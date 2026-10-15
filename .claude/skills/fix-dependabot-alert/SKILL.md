@@ -31,7 +31,6 @@ Alerts on these compiled-in dependencies can not be fixed in the lockfile:
 Leave such an alert open and tell the user;
 it is fixed by upgrading the parent package once a release contains the patched version (grep the upstream file to check).
 All other dependencies are built from package sources, so their lockfiles decide what ships.
-The `@iconify/utils` override in mermaid is deliberate: 3.1 generates short icon ids such as `c1` that collide with NiceGUI's element ids, so do not bump it to fix an alert without checking the ids.
 
 ## Steps (npm alerts)
 

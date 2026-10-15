@@ -636,6 +636,6 @@ class Element(Visibility):
     def html_id(self) -> str:
         """The ID of the element in the HTML DOM.
 
-        *Added in version 2.16.0*
+        *Added in version 2.16.0*, *updated in version 4.0.0*: ``ng-<id>`` instead of ``c<id>``
         """
-        return f'c{self.id}'
+        return f'ng-{self.id}'

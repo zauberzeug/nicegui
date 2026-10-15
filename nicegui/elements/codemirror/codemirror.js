@@ -187,7 +187,7 @@ export default {
   },
   beforeUnmount() {
     if (this.editor) {
-      const element = mounted_app.elements[this.$el.id.slice(1)];
+      const element = mounted_app.elements[parseHtmlId(this.$el.id)];
       if (element) {
         element.props.value = this.editor.state.doc.toString();
         // A client-side remount (e.g. a v-if container) re-applies these props against the restored
