@@ -304,7 +304,8 @@ def toggle_fullscreen():
     - `descending`: Whether to sort in descending order.
     - `page`: The current page (1-based).
 
-    The pagination controls are shown if pagination is provided.
+    *Since version 4.0.0:*
+    The pagination controls are shown if pagination is provided, also when assigning `table.pagination` later.
     Use `pagination_controls=False` to paginate the rows without showing the controls.
 ''')
 def pagination() -> None:
