@@ -36,6 +36,7 @@ def test_table(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
+    screen.should_not_contain('Records per page')
 
 
 def test_pagination_int(screen: Screen):
@@ -60,6 +61,41 @@ def test_pagination_dict(screen: Screen):
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
     screen.should_contain('1-2 of 3')
+
+
+@pytest.mark.parametrize('pagination,pagination_controls,expected', [
+    (None, None, False),
+    (5, None, True),
+    (5, False, False),
+    (None, True, True),
+])
+def test_pagination(screen: Screen, pagination: int | None, pagination_controls: bool | None, expected: bool):
+    @ui.page('/')
+    def page():
+        ui.table(columns=columns(), rows=rows(), pagination=pagination, pagination_controls=pagination_controls)
+
+    screen.open('/')
+    if expected:
+        screen.should_contain('Records per page')
+    else:
+        screen.should_not_contain('Records per page')
+
+
+@pytest.mark.parametrize('pagination_controls', [None, False])
+def test_pagination_setter(screen: Screen, pagination_controls: bool | None):
+    @ui.page('/')
+    def page():
+        table = ui.table(columns=columns(), rows=rows(), pagination_controls=pagination_controls)
+        table.pagination = {'rowsPerPage': 2}
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_not_contain('Lionel')
+    if pagination_controls is None:
+        screen.should_contain('1-2 of 3')
+    else:
+        screen.should_not_contain('Records per page')
 
 
 def test_filter(screen: Screen):
