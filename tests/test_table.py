@@ -253,7 +253,9 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
                 'Timedelta_col': [timedelta(days=5)],
                 'Complex_col': [1 + 2j],
                 'Period_col': pd.Series([pd.Period('2021-01')]),
+                'Int64_col': pd.array([None], dtype='Int64'),
             })
+            df.index = pd.DatetimeIndex(['2024-01-01'], name='date')
             ui.table.from_pandas(df)
         else:
             df = pl.DataFrame({
@@ -274,6 +276,9 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         screen.should_contain('(1+2j)')
         screen.should_contain('Period_col')
         screen.should_contain('2021-01')
+        screen.should_contain('2024-01-01')
+        screen.should_contain('date')
+        screen.should_contain('Int64_col')
 
 
 def test_table_computed_props(screen: Screen):
@@ -354,6 +359,7 @@ def test_columns_from_df(screen: Screen, df_type: str):
             DataFrame = pd.DataFrame
             update_persons_from_df = persons.update_from_pandas
             update_cars_from_df = cars.update_from_pandas
+            ui.table.from_pandas(pd.DataFrame([['Foo', 'Bar']], columns=['SameColName', 'SameColName']))
         else:
             persons = ui.table.from_polars(pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_polars(pl.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
@@ -382,6 +388,10 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.should_contain('age')
     screen.should_contain('make')
     screen.should_not_contain('model')
+
+    if df_type == 'pandas':
+        screen.should_contain('Foo')
+        screen.should_not_contain('SameColName_0')
 
     screen.click('Update persons without columns')  # infer columns (like during instantiation)
     screen.should_contain('Dan')
