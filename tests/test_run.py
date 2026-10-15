@@ -2,10 +2,14 @@ import asyncio
 import multiprocessing
 import multiprocessing.forkserver
 import os
+import subprocess
+import sys
 import time
 from collections.abc import Callable, Generator
 from concurrent.futures.process import BrokenProcessPool
+from pathlib import Path
 from pickle import PicklingError
+from textwrap import dedent
 
 import pytest
 
@@ -196,3 +200,30 @@ async def test_warning_reflects_pool_not_later_setting_change(caplog):
     run.process_pool_start_method = 'spawn'  # too late, the pool is already built
     assert await run.cpu_bound(good_function)
     assert 'process_pool_start_method' in caplog.text
+
+
+@pytest.mark.parametrize(('stdout_available', 'stderr_available'), [
+    (True, True), (False, True), (True, False), (False, False),
+])
+def test_stop_and_exit_with_optional_standard_streams(tmp_path: Path, stdout_available: bool, stderr_available: bool):
+    result = subprocess.run([sys.executable, '-c', dedent('''\
+        import sys
+        from threading import Thread
+        from nicegui import core
+
+        sys.stdout = open('stdout', 'w', encoding='utf-8') if sys.argv[1] == 'True' else None
+        sys.stderr = open('stderr', 'w', encoding='utf-8') if sys.argv[2] == 'True' else None
+        for stream in (sys.stdout, sys.stderr):
+            if stream is not None:
+                stream.write('pending output')
+
+        thread = Thread(target=core.stop_and_exit, daemon=True)
+        thread.start()
+        thread.join()
+        sys.exit(1)  # Returning from the shutdown thread must not look like a successful process exit.
+    '''), str(stdout_available), str(stderr_available)], cwd=tmp_path,
+        capture_output=True, text=True, timeout=30, check=False)
+    assert result.returncode == 0, result.stderr
+    for name, available in (('stdout', stdout_available), ('stderr', stderr_available)):
+        if available:
+            assert (tmp_path / name).read_text() == 'pending output'
