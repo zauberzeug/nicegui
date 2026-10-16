@@ -61,6 +61,7 @@ class Screen:
             if time.time() > deadline:
                 raise TimeoutError(f'The NiceGUI server did not accept connections within {timeout} seconds')
             time.sleep(0.01)
+        raise RuntimeError('The NiceGUI server has stopped running')
 
     @property
     def is_open(self) -> bool:
