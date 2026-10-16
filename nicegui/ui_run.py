@@ -80,6 +80,7 @@ def run(root: Callable | None = None, *,
         session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
         markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
+        distributed: bool | list[str] | dict | None = None,
         **kwargs: Any,
         ) -> None:
     """ui.run
@@ -123,6 +124,10 @@ def run(root: Callable | None = None, *,
     :param show_welcome_message: whether to show the welcome message (default: `True`)
     :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
         (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
+    :param distributed: enable :class:`~nicegui.DistributedEvent` synchronisation across instances - ``True`` for
+        Zenoh's defaults (UDP-multicast peer scout), a list of ``"host"`` / ``"host:port"`` peers for explicit
+        unicast (which also listens on port 7447, so the peers can reach this instance),
+        or a raw Zenoh config dict for full control (default: ``None``, requires the ``distributed`` extra)
     :param kwargs: additional keyword arguments are passed to `uvicorn.run`
     """
     if core.script_mode:
@@ -212,8 +217,24 @@ def run(root: Callable | None = None, *,
         core.app.setup()
 
     if helpers.is_user_simulation():
+        if distributed is not None:
+            raise RuntimeError(
+                'ui.run(distributed=...) is not supported under user simulation. '
+                'Tests that need a DistributedSession should construct one explicitly '
+                'in the fixture via DistributedSession.initialize(...).'
+            )
         set_storage_secret(storage_secret, session_middleware_kwargs)
         return
+
+    if distributed is not None:
+        from .distributed import IMPORT_ERROR, DistributedSession  # pylint: disable=import-outside-toplevel
+        if IMPORT_ERROR:
+            log.warning(IMPORT_ERROR)
+        else:
+            # NOTE: Open the session on startup, i.e. only in the process that actually serves the app.
+            # `run.cpu_bound` workers re-import __main__ and so re-run this call, and in reload mode the
+            # serving process is the reloader's child, not the one that gets past the MainProcess guard below.
+            core.app.on_startup(lambda: DistributedSession.initialize(distributed, storage_secret=storage_secret))
 
     if on_air:
         core.air = Air('' if on_air is True else on_air)
