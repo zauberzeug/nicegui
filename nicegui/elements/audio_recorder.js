@@ -5,31 +5,49 @@ export default {
   },
   methods: {
     async start() {
-      if (this.recorder?.state === "recording") return;
+      if (this.session) return;
+      const session = (this.session = { cancelled: false });
+      let stream;
       try {
-        this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (session.cancelled) return stream.getTracks().forEach((track) => track.stop());
+        const recorder = new MediaRecorder(stream, this.mime_type ? { mimeType: this.mime_type } : {});
+        const chunks = [];
+        recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data);
+        recorder.onstop = () => {
+          stream.getTracks().forEach((track) => track.stop());
+          if (!session.discard) this.upload(new Blob(chunks, { type: recorder.mimeType }));
+        };
+        recorder.start();
+        session.recorder = recorder;
       } catch (error) {
+        stream?.getTracks().forEach((track) => track.stop());
+        if (this.session === session) this.session = null;
         this.$emit("error", { name: error.name, message: error.message });
-        return;
       }
-      const chunks = [];
-      this.recorder = new MediaRecorder(this.stream, this.mime_type ? { mimeType: this.mime_type } : {});
-      this.recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data);
-      this.recorder.onstop = () => {
-        this.stream.getTracks().forEach((track) => track.stop());
-        const type = this.recorder.mimeType;
-        const extension = type.split("/")[1]?.split(";")[0] || "bin";
-        const form = new FormData();
-        form.append("file", new Blob(chunks, { type }), `recording.${extension}`);
-        fetch((this.url.startsWith("/") ? window.path_prefix : "") + this.url, { method: "POST", body: form });
-      };
-      this.recorder.start();
     },
-    stop() {
-      if (this.recorder?.state === "recording") this.recorder.stop();
+    stop(discard = false) {
+      const session = this.session;
+      if (!session) return;
+      this.session = null;
+      session.cancelled = true;
+      session.discard = discard;
+      session.recorder?.stop();
+    },
+    async upload(blob) {
+      const extension = blob.type.split("/")[1]?.split(";")[0] || "bin";
+      const form = new FormData();
+      form.append("file", blob, `recording.${extension}`);
+      try {
+        const url = (this.url.startsWith("/") ? window.path_prefix : "") + this.url;
+        const response = await fetch(url, { method: "POST", body: form });
+        if (!response.ok) throw new Error(`Upload failed with status ${response.status}`);
+      } catch (error) {
+        this.$emit("error", { name: "UploadError", message: error.message });
+      }
     },
   },
   unmounted() {
-    this.stop();
+    this.stop(true);
   },
 };

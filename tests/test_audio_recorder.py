@@ -15,7 +15,18 @@ async def test_recording_arrives_on_server(screen: Screen):
     screen.click('Start')
     screen.wait(1.0)
     screen.click('Stop')
-    screen.wait(0.5)
-    assert len(results) == 1
+    screen.wait_for(lambda: len(results) == 1)
     assert results[0].file.content_type.startswith('audio/')
     assert len(await results[0].file.read()) > 1000
+
+
+def test_unsupported_mime_type_reports_error(screen: Screen):
+    @ui.page('/')
+    def page():
+        recorder = ui.audio_recorder(mime_type='audio/x-unsupported',
+                                     on_error=lambda e: ui.label(f'Error: {e.args["name"]}'))
+        ui.button('Start', on_click=recorder.start)
+
+    screen.open('/')
+    screen.click('Start')
+    screen.should_contain('Error: NotSupportedError')

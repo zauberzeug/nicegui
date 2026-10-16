@@ -27,12 +27,12 @@ class AudioRecorder(Element, component='audio_recorder.js'):
 
         When a recording is stopped, it is uploaded to the server and ``on_audio_ready`` is called
         with an ``UploadEventArguments`` object whose ``file`` attribute holds the recording.
-        If the microphone cannot be accessed (e.g. because the user denied the permission),
-        ``on_error`` is called with the error's ``name`` and ``message`` in ``e.args``.
+        If the microphone cannot be accessed (e.g. because the user denied the permission, ``name`` is "NotAllowedError")
+        or the upload fails (``name`` is "UploadError"), ``on_error`` is called with ``name`` and ``message`` in ``e.args``.
 
         :param mime_type: preferred MIME type like "audio/webm" (default: `None`, i.e. the browser's choice)
         :param on_audio_ready: callback to execute when a recording is available
-        :param on_error: callback to execute when the microphone cannot be accessed
+        :param on_error: callback to execute when recording or uploading fails
         """
         super().__init__()
         self._props.set_optional('mime_type', mime_type)
@@ -57,7 +57,7 @@ class AudioRecorder(Element, component='audio_recorder.js'):
         return self
 
     def on_error(self, callback: Handler[GenericEventArguments]) -> Self:
-        """Add a callback to be invoked when the microphone cannot be accessed."""
+        """Add a callback to be invoked when recording or uploading fails."""
         self.on('error', callback)
         return self
 
