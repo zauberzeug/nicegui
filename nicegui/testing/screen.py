@@ -1,5 +1,6 @@
 import re
 import runpy
+import socket
 import threading
 import time
 from collections.abc import Callable, Generator
@@ -44,8 +45,8 @@ class Screen:
         self.url = f'http://localhost:{self.PORT}'
         self.allowed_js_errors: list[str] = []
 
-    def start_server(self) -> None:
-        """Start the webserver in a separate thread."""
+    def start_server(self, timeout: float = 3.0) -> None:
+        """Start the webserver in a separate thread and wait until it accepts connections."""
         main_path = get_path_to_main_file(self.pytest_request) if self.pytest_request else None
         if main_path is None:
             prepare_simulation()
@@ -53,6 +54,14 @@ class Screen:
         else:
             self.server_thread = threading.Thread(target=lambda: runpy.run_path(str(main_path), run_name='__main__'))
         self.server_thread.start()
+        deadline = time.time() + timeout
+        while self.server_thread.is_alive():
+            with suppress(OSError), socket.create_connection(('localhost', self.PORT), timeout=0.1):
+                return
+            if time.time() > deadline:
+                raise TimeoutError(f'The NiceGUI server did not accept connections within {timeout} seconds')
+            time.sleep(0.01)
+        raise RuntimeError('The NiceGUI server has stopped running')
 
     @property
     def is_open(self) -> bool:

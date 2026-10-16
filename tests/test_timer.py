@@ -1,7 +1,7 @@
 import asyncio
 import gc
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import Client, app, background_tasks, ui
@@ -270,7 +270,7 @@ def test_no_leak_when_client_deleted(screen: Screen):
         ui.timer(0.1, lambda: None)
 
     screen.start_server()
-    httpx.get(screen.url)
+    httpx2.get(screen.url)
     screen.wait(1)
     Client.prune_instances(client_age_threshold=0)
     screen.wait(1)

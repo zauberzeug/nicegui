@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 import pytest
 
 from nicegui import __version__, ui
@@ -43,4 +43,4 @@ def test_endpoint_documentation(screen: Screen, endpoint_documentation: str):
     else:
         raise ValueError(f'Unknown endpoint documentation setting: {endpoint_documentation}')
 
-    assert set(httpx.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths']) == expected_paths
+    assert set(httpx2.get(f'http://localhost:{Screen.PORT}/openapi.json', timeout=5).json()['paths']) == expected_paths

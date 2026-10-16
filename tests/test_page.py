@@ -2,7 +2,7 @@ import asyncio
 import re
 from typing import Literal
 
-import httpx
+import httpx2
 import pytest
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
@@ -184,7 +184,7 @@ def test_api_http_exception_404_returns_json(screen: Screen, exception_class: ty
         raise exception_class(404, 'item not found')
 
     screen.start_server()
-    response = httpx.get(f'http://localhost:{Screen.PORT}/api/missing')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/api/missing')
     assert response.status_code == 404, 'status code should be forwarded'
     assert response.headers['content-type'].startswith('application/json'), \
         "endpoints raising HTTPException(404) should get FastAPI's default JSON response, not NiceGUI's HTML error page"
@@ -199,7 +199,7 @@ def test_ui_page_http_exception_404_keeps_html(screen: Screen):
         ui.label(f'Blog post {id_}')
 
     screen.start_server()
-    response = httpx.get(f'http://localhost:{Screen.PORT}/blog/99')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/blog/99')
     assert response.status_code == 404, 'status code should be forwarded'
     assert response.headers['content-type'].startswith('text/html'), \
         'ui.page raising HTTPException(404) should render the HTML error page for browsers'
@@ -212,7 +212,7 @@ def test_normal_response_when_async_page_is_cancelled(screen: Screen):
         ui.label('The end')
 
     screen.start_server()
-    response = httpx.get(f'http://localhost:{Screen.PORT}/')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/')
     assert response.status_code == 200, 'page cancelling its own task should still return a normal response'
     assert 'The end' in response.text, 'elements created before the cancellation takes effect should be served'
     screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled'))
@@ -226,7 +226,7 @@ def test_error_page_when_client_is_deleted_during_page_build(screen: Screen):
         await button.clicked()
 
     screen.start_server()
-    response = httpx.get(f'http://localhost:{Screen.PORT}/')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/')
     assert response.status_code == 500, 'a deleted client must be served an error page, not a normal page ' \
                                         'whose handshake would fail and reload-loop'
     screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled because the client was deleted'))
@@ -388,7 +388,7 @@ def test_html_lang_attribute(screen: Screen, global_lang: str):
         ui.label('Ciao')
 
     def html_tag(path: str) -> str:
-        response = httpx.get(f'http://localhost:{Screen.PORT}{path}')
+        response = httpx2.get(f'http://localhost:{Screen.PORT}{path}')
         return re.search(r'<html[^>]*>', response.text).group()  # type: ignore
 
     screen.open('/')

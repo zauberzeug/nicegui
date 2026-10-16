@@ -5,7 +5,7 @@ import weakref
 from io import BytesIO
 from pathlib import Path
 
-import httpx
+import httpx2
 import pytest
 from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartParser
@@ -52,7 +52,7 @@ def test_upload_route_respects_disabled_and_hidden_state(screen: Screen, state: 
             upload.set_visibility(False)
 
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.post(f'http://localhost:{Screen.PORT}{upload.props["url"]}',
                                     files={'file': ('test.txt', b'content')})
     assert response.status_code == (200 if state == 'enabled' else 403)

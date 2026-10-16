@@ -1,7 +1,7 @@
 import asyncio
 import sys
 
-import httpx
+import httpx2
 import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -1146,8 +1146,8 @@ def test_http_404_on_initial_request(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
@@ -1167,8 +1167,8 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
@@ -1196,11 +1196,11 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
         ui.label('async sub page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/sub')
@@ -1218,7 +1218,7 @@ def test_http_404_with_root_function_and_sub_pages(screen: Screen):
     screen.open('/')
     screen.should_contain('Home')
 
-    httpx.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
+    httpx2.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
 
 
 def test_clearing_sub_pages_element(screen: Screen):
