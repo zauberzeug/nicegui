@@ -16,6 +16,7 @@ export default {
         recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data);
         recorder.onstop = () => {
           stream.getTracks().forEach((track) => track.stop());
+          if (this.session === session) this.session = null;
           if (!session.discard) this.upload(new Blob(chunks, { type: recorder.mimeType }));
         };
         recorder.start();
