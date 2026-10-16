@@ -26,13 +26,12 @@ def main_demo() -> None:
 ''')
 def refreshable_with_parameters():
     from datetime import datetime
-
-    import pytz
+    from zoneinfo import ZoneInfo
 
     @ui.refreshable
     def clock_ui(timezone: str):
         ui.label(f'Current time in {timezone}:')
-        ui.label(datetime.now(tz=pytz.timezone(timezone)).strftime('%H:%M:%S'))
+        ui.label(datetime.now(tz=ZoneInfo(timezone)).strftime('%H:%M:%S'))
 
     clock_ui('Europe/Berlin')
     ui.button('Refresh', on_click=clock_ui.refresh)

@@ -233,6 +233,10 @@ Run these from the project root:
    > [!TIP]
    > If pre-commit fails with `RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.11'`, install Python 3.11 and make sure it's available in your `PATH`.
 
+   CI additionally runs `uv run mypy ./nicegui` and `uv run pylint ./nicegui` on Python 3.11.
+   mypy checks against the Python version it runs on,
+   so run `uv run --isolated --python 3.11 mypy ./nicegui` to reproduce the CI result locally without touching your `.venv`.
+
 2. **Run tests** with pytest:
 
    ```bash
