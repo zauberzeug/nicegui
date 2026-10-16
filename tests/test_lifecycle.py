@@ -133,13 +133,13 @@ def test_startup_and_shutdown_handlers(screen: Screen):
 
     app.on_startup(startup)
     app.on_startup(startup_async)
-    app.on_startup(startup_async())
     app.on_shutdown(shutdown)
     app.on_shutdown(shutdown_async)
-    app.on_shutdown(shutdown_async())
 
-    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_startup.. is deprecated'))
-    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_shutdown.. is deprecated'))
+    coroutine = startup_async()
+    with pytest.raises(TypeError, match='expects a synchronous or asynchronous function'):
+        app.on_startup(coroutine)  # type: ignore[arg-type]
+    coroutine.close()
 
     @ui.page('/')
     def page():
@@ -147,11 +147,11 @@ def test_startup_and_shutdown_handlers(screen: Screen):
 
     screen.open('/')
     screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async']
+    assert events == ['startup', 'startup_async']
 
     app.shutdown()
     screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
+    assert events == ['startup', 'startup_async', 'shutdown', 'shutdown_async']
 
 
 def test_all_lifecycle_handlers_are_called(screen: Screen):

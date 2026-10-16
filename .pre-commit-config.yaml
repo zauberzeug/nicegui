@@ -33,7 +33,6 @@ repos:
             .*/package-lock.json|
             nicegui/static/vue\..*|
             nicegui/static/quasar\..*|
-            nicegui/static/sass\..*|
             nicegui/static/dompurify\..*|
             nicegui/static/unocss/.*|
             nicegui/translations\.py|

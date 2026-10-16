@@ -6,7 +6,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Self, cast
 
-from .. import helpers, optional_features
+from .. import optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
 from ..logging import log
@@ -31,7 +31,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  on_mouse: Handler[MouseEventArguments] | None = None,
                  events: list[str] = DEFAULT_PROP | ['click'],
                  cross: bool | str = DEFAULT_PROP | False,
-                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
+                 sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
         """Interactive Image
 
@@ -63,9 +63,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             or pass a callable to apply server-side sanitization
         """
         if sanitize is None:
-            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
-            sanitize = True
-
+            raise TypeError('`sanitize` must be `True`, `False` or a callable; `None` is no longer supported')
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
@@ -141,7 +139,7 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
                  source: str,
                  content: str,
                  size: tuple[float, float] | None,
-                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
+                 sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
         """Interactive Image Layer
 
@@ -149,9 +147,6 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
 
         *Added in version 2.17.0*
         """
-        if sanitize is None:
-            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
-            sanitize = True
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['size'] = size

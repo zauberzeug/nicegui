@@ -177,3 +177,8 @@ def test_xss_sanitization(screen: Screen):
 
     screen.open('/')
     assert screen.find_all_by_tag('rect')[0].get_attribute('onclick') is None
+
+
+def test_sanitize_none_raises():
+    with pytest.raises(TypeError, match='`None` is no longer supported'):
+        ui.interactive_image(URL_PATH1, sanitize=None)  # type: ignore[arg-type]

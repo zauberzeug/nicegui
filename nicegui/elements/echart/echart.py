@@ -57,8 +57,6 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         if on_click:
             self.on_click(on_click)
 
-        self._props.add_rename('enable_3d', 'enable-3d')  # DEPRECATED: remove in NiceGUI 4.0
-
     def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""
         def handle_point_click(e: GenericEventArguments) -> None:

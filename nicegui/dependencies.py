@@ -237,8 +237,6 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     vue_styles: list[str] = []
     imports: dict[str, str] = {
         'vue': f'{prefix}/_nicegui/{__version__}/static/vue.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
-        'sass': f'{prefix}/_nicegui/{__version__}/static/sass.default.js',
-        'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
         'dompurify': f'{prefix}/_nicegui/{__version__}/static/dompurify.mjs',
     }
     js_imports: list[str] = []

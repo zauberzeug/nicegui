@@ -828,7 +828,6 @@ value = await element.get_computed_prop('propName')
 
 # Add global CSS
 ui.add_css('body { font-family: monospace; }')
-ui.add_scss('$primary: blue; body { color: $primary; }')
 
 # Add raw HTML to <head> or <body> (last resort)
 ui.add_head_html('<link rel="preconnect" href="...">')
@@ -1124,7 +1123,7 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.refreshable_method`                 | Same, for class methods                                   |
 | `ui.state(value)`                       | Local state inside `@ui.refreshable`                      |
 | `ui.page_title(title)`                  | Set browser tab title                                     |
-| `ui.add_css/add_scss/add_sass(code)`    | Global styles                                             |
+| `ui.add_css(code)`                      | Global styles                                             |
 | `ui.add_head_html(html)`                | Inject into `<head>`                                      |
 | `ui.add_body_html(html)`                | Inject into `<body>`                                      |
 | `ui.on(event, handler)`                 | Global app event listener                                 |

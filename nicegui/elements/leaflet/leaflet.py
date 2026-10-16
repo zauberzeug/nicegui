@@ -68,10 +68,6 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         self._props['hide-drawn-items'] = hide_drawn_items
         self._props['additional-resources'] = additional_resources or []
 
-        self._props.add_rename('draw_control', 'draw-control')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('hide_drawn_items', 'hide-drawn-items')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('additional_resources', 'additional-resources')  # DEPRECATED: remove in NiceGUI 4.0
-
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_move_or_zoom_end)
         self.on('map-zoomend', self._handle_move_or_zoom_end)

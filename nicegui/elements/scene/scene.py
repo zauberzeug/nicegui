@@ -64,7 +64,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     def __init__(self,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
-                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 *,
                  grid: bool | tuple[int, int] = DEFAULT_PROP | True,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
@@ -122,13 +122,6 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self.on('dragend', self._handle_drag)
         self._props['drag-constraints'] = drag_constraints
         self._props['control-type'] = control_type
-
-        self._props.add_rename('background_color', 'background-color')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""

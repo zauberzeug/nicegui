@@ -7,7 +7,6 @@ from inspect import Parameter, signature
 from typing import Any, TypeGuard, TypeVar
 
 from ..awaitable_response import AwaitableResponse
-from .warnings import warn_once
 
 if sys.version_info < (3, 13):
     from asyncio import iscoroutinefunction
@@ -60,17 +59,8 @@ async def await_with_context(awaitable: Awaitable[_T], context: AbstractContextM
         return await awaitable
 
 
-def normalize_lifecycle_handler(handler: Callable[..., Any] | Awaitable[Any], registration: str) -> Callable[..., Any]:
-    """Normalize lifecycle handler registration for callable-only and deprecated-awaitable paths."""
-    if callable(handler):
-        return handler
-    if not isinstance(handler, Awaitable):
+def normalize_lifecycle_handler(handler: Callable[..., Any], registration: str) -> Callable[..., Any]:
+    """Make sure that a lifecycle handler is a synchronous or asynchronous function."""
+    if not callable(handler):
         raise TypeError(f'{registration} expects a synchronous or asynchronous function.')
-
-    # DEPRECATED: remove direct awaitable lifecycle registrations in NiceGUI 4.0
-    def wrapped_handler() -> Awaitable[Any]:
-        return handler
-    warn_once(f'Passing an awaitable directly to {registration} is deprecated and will be removed in NiceGUI 4.0. '
-              'Pass a synchronous or asynchronous function instead.')
-    wrapped_handler.__name__ = f'deprecated {registration} awaitable'
-    return wrapped_handler
+    return handler
