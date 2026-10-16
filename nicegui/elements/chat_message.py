@@ -35,6 +35,8 @@ class ChatMessage(LabelElement):
             ``False`` disables sanitization (use only with trusted content),
             or pass a callable to apply server-side sanitization
         """
+        if sanitize is None:
+            raise TypeError('`sanitize` must be `True`, `False` or a callable; `None` is no longer supported')
         super().__init__(tag='q-chat-message', label=label)
 
         if text is None:

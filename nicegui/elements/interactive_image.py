@@ -62,6 +62,8 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             ``False`` disables sanitization (use only with trusted content),
             or pass a callable to apply server-side sanitization
         """
+        if sanitize is None:
+            raise TypeError('`sanitize` must be `True`, `False` or a callable; `None` is no longer supported')
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
