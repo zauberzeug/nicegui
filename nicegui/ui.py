@@ -13,6 +13,7 @@ _LAZY_IMPORTS = {
     'altair': ('.elements.altair', 'Altair'),
     'anywidget': ('.elements.anywidget', 'AnyWidget'),
     'audio': ('.elements.audio', 'Audio'),
+    'audio_recorder': ('.elements.audio_recorder', 'AudioRecorder'),
     'avatar': ('.elements.avatar', 'Avatar'),
     'badge': ('.elements.badge', 'Badge'),
     'button': ('.elements.button', 'Button'),
@@ -161,6 +162,7 @@ __all__ = [
     'altair',
     'anywidget',
     'audio',
+    'audio_recorder',
     'avatar',
     'badge',
     'button',
@@ -303,6 +305,7 @@ if TYPE_CHECKING:
     from .elements.altair import Altair as altair
     from .elements.anywidget import AnyWidget as anywidget
     from .elements.audio import Audio as audio
+    from .elements.audio_recorder import AudioRecorder as audio_recorder
     from .elements.avatar import Avatar as avatar
     from .elements.badge import Badge as badge
     from .elements.button import Button as button
