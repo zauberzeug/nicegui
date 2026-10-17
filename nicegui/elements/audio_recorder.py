@@ -1,10 +1,11 @@
 from typing import cast
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from starlette.datastructures import UploadFile
 from typing_extensions import Self
 
 from .. import core
+from ..client import Client
 from ..element import Element
 from ..events import GenericEventArguments, Handler, UploadEventArguments, handle_event
 from ..nicegui import app
@@ -36,17 +37,8 @@ class AudioRecorder(Element, component='audio_recorder.js'):
         """
         super().__init__()
         self._props.set_optional('mime_type', mime_type)
-        self._registered_url = f'/_nicegui/client/{self.client.id}/audio_recorder/{self.id}'
-        self._props['url'] = self._registered_url
+        self._props['url'] = f'/_nicegui/client/{self.client.id}/audio_recorder/{self.id}'
         self._audio_ready_handlers = [on_audio_ready] if on_audio_ready else []
-
-        @app.post(self._registered_url, include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
-        async def upload_route(request: Request) -> dict[str, str]:
-            async with request.form() as form:
-                file = await create_file_upload(cast(UploadFile, form['file']))
-            for handler in self._audio_ready_handlers:
-                handle_event(handler, UploadEventArguments(sender=self, client=self.client, file=file))
-            return {'upload': 'success'}
 
         if on_error:
             self.on_error(on_error)
@@ -69,6 +61,16 @@ class AudioRecorder(Element, component='audio_recorder.js'):
         """Stop recording and upload the audio."""
         self.run_method('stop')
 
-    def _handle_delete(self) -> None:
-        app.remove_route(self._registered_url)
-        super()._handle_delete()
+
+@app.post('/_nicegui/client/{client_id}/audio_recorder/{element_id}',
+          include_in_schema=core.app.config.endpoint_documentation in {'internal', 'all'})
+async def _audio_recorder_route(client_id: str, element_id: int, request: Request) -> dict[str, str]:
+    client = Client.instances.get(client_id)
+    recorder = client.elements.get(element_id) if client is not None else None
+    if not isinstance(recorder, AudioRecorder):
+        raise HTTPException(status_code=404, detail='Audio recorder not found')
+    async with request.form() as form:
+        file = await create_file_upload(cast(UploadFile, form['file']))
+    for handler in recorder._audio_ready_handlers:  # pylint: disable=protected-access
+        handle_event(handler, UploadEventArguments(sender=recorder, client=recorder.client, file=file))
+    return {'upload': 'success'}
