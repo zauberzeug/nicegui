@@ -27,8 +27,6 @@ class LineAnchorElement(Element):
         on_anchor_change: Handler[CodeMirrorAnchorChangeEventArguments] | None = None,
         **kwargs: Any,
     ) -> None:
-        # NOTE: validate before super().__init__ registers the element, so a rejected argument
-        # does not leave a half-built element behind in the element tree
         _validate(line_anchors or {})
         super().__init__(**kwargs)
         self._anchor_positions: dict[str, int] = {}
@@ -55,7 +53,7 @@ class LineAnchorElement(Element):
 
         Lines beyond the end of the document are dropped on the JS side with a warning via NiceGUI's
         logger, just like ``line_tooltips``, so a read never reports a position that was not applied.
-        A line below 1 is rejected right away with a ``ValueError``.
+        A line below 1 or not a whole number is rejected right away with a ``ValueError``.
 
         *Added in version 3.16.0*
         """
@@ -96,5 +94,5 @@ class LineAnchorElement(Element):
 
 def _validate(anchors: dict[str, int]) -> None:
     for id_, line in anchors.items():
-        if line < 1:
-            raise ValueError(f'line_anchors: anchor {id_!r} has line {line}, but lines are 1-indexed')
+        if not isinstance(line, int) or line < 1:
+            raise ValueError(f'line_anchors: anchor {id_!r} has line {line!r}, but lines are 1-indexed whole numbers')

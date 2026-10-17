@@ -4,6 +4,15 @@ This file augments any review prompt — the built-in `/review` command, Cursor 
 It defines _what to look for_ and _how to label severity_, but leaves the layout to whatever invokes the review.
 For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guidance, see [AGENTS.md](AGENTS.md).
 
+## Question the approach
+
+Before checking whether the diff does what it sets out to do, take a moment to check whether it should.
+Most pull requests pass this quickly; raise it only with a concrete reason, not as a routine finding.
+
+- Is there a simpler or more direct way to solve the problem from the issue?
+- Does the change go out of its way to preserve behavior that was never designed, only because no code touched it so far?
+- Signs that the approach itself is the problem: the code has to guess intent, special cases keep piling up, or each review round fixes one case and breaks another.
+
 ## What to look for
 
 - **Security**

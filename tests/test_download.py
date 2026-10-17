@@ -76,3 +76,16 @@ def test_download_raw_data(screen: Screen):
     screen.click('Download 3')
     screen.wait(0.5)
     assert (screen_plugin.DOWNLOAD_DIR / 'test3.txt').read_text(encoding='utf-8') == 'test 3'
+
+
+def test_unfetched_download_route_is_removed_with_client(screen: Screen):
+    @ui.page('/', reconnect_timeout=1.0)
+    def page():
+        ui.label('Hello, world!')
+        ui.context.client.on_disconnect(lambda: ui.download.file(Path(__file__)))  # nobody is left to fetch it
+
+    screen.open('/')
+    route_count = len(app.routes)
+    screen.close()
+    screen.wait_for(lambda: len(app.routes) == route_count + 1)  # the download registers a single-use route
+    screen.wait_for(lambda: len(app.routes) == route_count)  # which goes with the client after reconnect_timeout

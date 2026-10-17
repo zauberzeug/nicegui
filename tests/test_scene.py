@@ -450,6 +450,24 @@ async def test_bound_object_is_released_on_delete(user: User):
     assert len(objects) == 0
 
 
+async def test_scene_is_collected_after_client_deletion(user: User):
+    held = []  # stands in for a timer or handler holding the scene
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+        held.append(scene)
+        objects.add(scene)
+
+    await user.open('/')
+    user.client.delete()
+    objects.add(held[0].box())  # late access after the client is gone
+    held.clear()  # the timer finishes and drops its reference
+    gc.collect()
+    assert len(objects) == 0
+
+
 def test_context_loss_recovery_restores_objects(screen: Screen):
     scene = None
 
@@ -469,6 +487,27 @@ def test_context_loss_recovery_restores_objects(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id} !== window.sceneBeforeRecovery', True)  # remounting replaces the scene
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
+
+
+def test_objects_created_before_the_scene_is_mounted(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.tabs() as tabs:
+            one = ui.tab('one')
+            two = ui.tab('two')
+        with ui.tab_panels(tabs, value=one):
+            with ui.tab_panel(one):
+                ui.label('first panel')
+            with ui.tab_panel(two):
+                with ui.scene() as scene:
+                    scene.box().move(1, 2, 3).with_name('box')
+
+    screen.open('/')
+    screen.click('two')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
 
 
 def test_clicking_the_grid_reports_only_the_ground(screen: Screen):

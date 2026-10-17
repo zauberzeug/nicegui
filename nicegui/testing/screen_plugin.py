@@ -107,6 +107,8 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
     """Create a new SeleniumScreen fixture."""
     assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
     _reset_browser_state(nicegui_driver)
+    for name in ('NICEGUI_HOST', 'NICEGUI_PORT', 'NICEGUI_PROTOCOL'):
+        os.environ.pop(name, None)  # inherited from the shell or a parent NiceGUI app; would trigger a warning
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
     screen_ = Screen(nicegui_driver, caplog, request)

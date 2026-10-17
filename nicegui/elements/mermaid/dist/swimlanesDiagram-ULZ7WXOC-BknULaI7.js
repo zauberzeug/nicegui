@@ -1,0 +1,2 @@
+import{c as t,s as r}from"./flowDiagram-UKHOOZJN-C56AqToO.js";import{_ as n}from"./index-C6_oXyon.js";import"./chunk-5VM5RSS4-VYY7_JKe.js";import"./chunk-XXDRQBXY-DVIeZkYU.js";import"./chunk-KBJHAD2P-vVhCmtb4.js";import"./chunk-2GRJ4B5K-DXuB1T0N.js";import"./channel-axb3YgKs.js";var s=t({defaultLayout:"swimlane",styles:n(t=>`${r(t)}\n  .swimlane.cluster rect {\n    stroke: ${t.clusterBorder} !important;\n  }\n  [data-look="neo"].cluster rect {\n    filter: none;\n  }\n`,"getStyles")});export{s as diagram};
+//# sourceMappingURL=swimlanesDiagram-ULZ7WXOC-BknULaI7.js.map

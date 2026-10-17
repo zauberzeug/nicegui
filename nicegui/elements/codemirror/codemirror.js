@@ -1,5 +1,32 @@
 import * as CM from "nicegui-codemirror";
 
+// Caller-supplied text is either sanitized HTML (via the setHTML polyfill) or plain text.
+function setContent(dom, text, asHtml) {
+  if (asHtml) dom.setHTML(text);
+  else dom.textContent = text;
+}
+
+class TextWidget extends CM.WidgetType {
+  constructor(text, cls, html) {
+    super();
+    this.text = text;
+    this.cls = cls || "";
+    this.html = !!html;
+  }
+  eq(other) {
+    return other.text === this.text && other.cls === this.cls && other.html === this.html;
+  }
+  toDOM() {
+    const span = document.createElement("span");
+    if (this.cls) span.className = this.cls;
+    setContent(span, this.text, this.html);
+    return span;
+  }
+  ignoreEvent() {
+    return false;
+  }
+}
+
 // A RangeSet StateField whose ranges remap through document edits.
 // Dispatching setEffect.of(ranges) replaces the whole set.
 function defineRemappableRangeSet() {
@@ -46,6 +73,64 @@ class TooltipValue extends CM.RangeValue {
 }
 const { setEffect: setTooltipsEffect, field: tooltipField } = defineRemappableRangeSet();
 
+// Decorations live in a StateField (not a static facet) so `.map(tr.changes)` carries each
+// range through document edits — a mark on "beta" follows the text, and the mark/replace
+// inclusivity options actually affect how ranges grow at their edges. A new decoration list
+// from the server replaces the whole set via setDecorationsEffect.
+// Every decoration carries the spec it was declared with, so a client-side remount can rebuild
+// the list from where the state field has since mapped each one.
+const DECLARED_SPEC = Symbol("declared spec");
+
+// A DecorationSet is a RangeSet: Decoration.none is RangeSet.empty and Decoration.set(v, true)
+// is RangeSet.of(v, true), so the shared factory covers decorations as well.
+// Providing them from a field (rather than a plugin) is what CM6 requires for block
+// replace/widget decorations to work.
+const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet();
+
+// Python addresses the document by str index (one per code point), CodeMirror by UTF-16 code unit.
+// The two only differ once the document contains a character outside the Basic Multilingual Plane.
+function documentOffsets(doc) {
+  const text = doc.toString();
+  let length = text.length; // in Python str indices
+  let toUnit = (index) => index;
+  let toIndex = (unit) => unit;
+  if (/[\uD800-\uDBFF]/.test(text)) {
+    const units = []; // units[i] = UTF-16 offset of the i-th code point
+    let unit = 0;
+    for (const character of text) {
+      units.push(unit);
+      unit += character.length;
+    }
+    units.push(unit); // an offset may address the end of the document
+    length = units.length - 1;
+    toUnit = (index) => units[Math.max(0, Math.min(index, units.length - 1))];
+    toIndex = (unit) => {
+      let low = 0;
+      let high = units.length - 1;
+      while (low < high) {
+        const middle = (low + high + 1) >> 1;
+        if (units[middle] <= unit) low = middle;
+        else high = middle - 1;
+      }
+      return low;
+    };
+  }
+  return {
+    length,
+    toUtf16(spec) {
+      if (spec.kind === "mark" || spec.kind === "replace")
+        return { ...spec, from: toUnit(spec.from), to: toUnit(spec.to) };
+      if (spec.kind === "widget") return { ...spec, position: toUnit(spec.position) };
+      return spec;
+    },
+    toPython(spec, from, to) {
+      if (spec.kind === "line") return { ...spec, line: doc.lineAt(from).number };
+      if (spec.kind === "widget") return { ...spec, position: toIndex(from) };
+      return { ...spec, from: toIndex(from), to: toIndex(to) };
+    },
+  };
+}
+
 export default {
   template: `
     <div></div>
@@ -58,11 +143,12 @@ export default {
     disable: Boolean,
     indent: String,
     highlightWhitespace: Boolean,
+    decorations: Array,
+    decorationHtml: Boolean,
     lineAnchors: Object,
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
-    id: String,
   },
   watch: {
     language(newLanguage) {
@@ -77,14 +163,17 @@ export default {
     lineWrapping(newLineWrapping) {
       this.setLineWrapping(newLineWrapping);
     },
-    lineAnchors(newAnchors) {
-      this.applyLineAnchors(newAnchors);
+    decorations() {
+      this._decorationsPending = true; // applied from setEditorValueFromProps
+    },
+    lineAnchors() {
+      this._anchorsPending = true; // applied from setEditorValueFromProps
     },
     keymap() {
       this.setKeymap();
     },
-    lineTooltips(newTooltips) {
-      this.setLineTooltips(newTooltips);
+    lineTooltips() {
+      this._tooltipsPending = true; // applied from setEditorValueFromProps
     },
   },
   data() {
@@ -98,13 +187,16 @@ export default {
   },
   beforeUnmount() {
     if (this.editor) {
-      const element = mounted_app.elements[this.$props.id.slice(1)];
+      const element = mounted_app.elements[this.$el.id.slice(1)];
       if (element) {
         element.props.value = this.editor.state.doc.toString();
         // A client-side remount (e.g. a v-if container) re-applies these props against the restored
         // document, so they have to describe where the anchors are now, not where they were declared.
         if (element.props["line-anchors"]) element.props["line-anchors"] = this.currentAnchorPositions();
+        if (element.props.decorations?.length) element.props.decorations = this.currentDecorationSpecs();
       }
+      // CodeMirror listens on the window, so a view that is merely detached stays alive and keeps measuring.
+      this.editor.destroy();
     }
     clearTimeout(this._anchorTimer);
   },
@@ -164,6 +256,20 @@ export default {
     },
     setEditorValueFromProps() {
       this.setEditorValue(this.value);
+      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors, tooltips
+      // and decorations sent together with a new value would otherwise be applied to the old document.
+      if (this._anchorsPending) {
+        this._anchorsPending = false;
+        this.applyLineAnchors(this.lineAnchors);
+      }
+      if (this._tooltipsPending) {
+        this._tooltipsPending = false;
+        this.setLineTooltips(this.lineTooltips);
+      }
+      if (this._decorationsPending) {
+        this._decorationsPending = false;
+        this.setDecorations(this.decorations);
+      }
     },
     setEditorValue(value) {
       if (!this.editor) return;
@@ -194,6 +300,97 @@ export default {
       this.editor.dispatch({
         effects: this.lineWrappingConfig.reconfigure(wrap ? [CM.EditorView.lineWrapping] : []),
       });
+    },
+    setDecorations(decorations) {
+      // The server marks `decorations` as a preserved prop on unrelated updates, so this only runs on a
+      // deliberate write, which re-applies every spec at its declared offset, as line anchors do.
+      if (!this.editor) return;
+      const offsets = documentOffsets(this.editor.state.doc);
+      const all = [];
+      for (const spec of decorations || []) {
+        if (!this._fitsDocument(spec, offsets.length)) continue;
+        const dec = this._createDecoration(offsets.toUtf16(spec), spec);
+        if (dec) all.push(dec);
+      }
+      this.editor.dispatch({ effects: setDecorationsEffect.of(all) });
+    },
+    // The specs as declared, with their offsets moved to where the state field has mapped each decoration.
+    // A decoration that vanished with its text is left out.
+    currentDecorationSpecs() {
+      const offsets = documentOffsets(this.editor.state.doc);
+      const specs = [];
+      for (const cursor = this.editor.state.field(decorationField).iter(); cursor.value; cursor.next()) {
+        const declared = cursor.value.spec[DECLARED_SPEC];
+        // CodeMirror keeps an inclusive mark whose text was deleted as an empty range; it renders
+        // nothing, so it is left out rather than resurrected (with a warning) on remount.
+        if (declared.kind === "mark" && cursor.from === cursor.to) continue;
+        specs.push(offsets.toPython(declared, cursor.from, cursor.to));
+      }
+      return specs;
+    },
+    // An offset past the end of the document is warned-and-skipped, like a line past the last one,
+    // rather than clamped: a spec computed from a longer value than the browser holds by now would
+    // otherwise land silently at the end. `length` counts Python str indices, as the spec does.
+    _fitsDocument(spec, length) {
+      if (spec.kind === "line") return true;
+      const end = spec.kind === "widget" ? spec.position : spec.to;
+      if (end <= length) return true;
+      const where = spec.kind === "widget" ? `position ${spec.position}` : `range ${spec.from}..${spec.to}`;
+      logAndEmit("warning", `decorations: ${spec.kind} ${where} is past the end of the document (length ${length})`);
+      return false;
+    },
+    _createDecoration(spec, declared) {
+      const doc = this.editor.state.doc;
+      // The server refuses structurally broken specs before they get here; only what depends on the
+      // document is checked. Such specs are warned-and-skipped (returning null) rather than thrown,
+      // so one unusable entry never voids the rest of the batch.
+      if (spec.kind === "mark") {
+        const { from, to } = spec;
+        if (from === to) {
+          // CodeMirror rejects zero-length mark ranges.
+          logAndEmit("warning", `decorations: mark range is empty (from=${declared.from}, to=${declared.to})`);
+          return null;
+        }
+        // Only the documented fields reach CodeMirror; stray keys in a user spec are dropped, not forwarded.
+        const markSpec = { [DECLARED_SPEC]: declared };
+        if (spec.class) markSpec.class = spec.class;
+        if (spec.attributes) markSpec.attributes = spec.attributes;
+        if (spec.inclusiveStart !== undefined) markSpec.inclusiveStart = spec.inclusiveStart;
+        if (spec.inclusiveEnd !== undefined) markSpec.inclusiveEnd = spec.inclusiveEnd;
+        return CM.Decoration.mark(markSpec).range(from, to);
+      }
+      if (spec.kind === "line") {
+        if (spec.line > doc.lines) {
+          logAndEmit("warning", `decorations: line ${spec.line} out of range [1, ${doc.lines}]`);
+          return null;
+        }
+        const lineSpec = { [DECLARED_SPEC]: declared };
+        if (spec.class) lineSpec.class = spec.class;
+        if (spec.attributes) lineSpec.attributes = spec.attributes;
+        return CM.Decoration.line(lineSpec).range(doc.line(spec.line).from);
+      }
+      if (spec.kind === "replace") {
+        const { from, to } = spec;
+        // CodeMirror rejects an empty replace range unless it is inclusive, which `block` implies.
+        if (from === to && !(spec.inclusive ?? !!spec.block)) {
+          logAndEmit("warning", `decorations: replace range is empty (from=${declared.from}, to=${declared.to})`);
+          return null;
+        }
+        const replaceSpec = { [DECLARED_SPEC]: declared };
+        if (spec.inclusive !== undefined) replaceSpec.inclusive = spec.inclusive;
+        if (spec.block) replaceSpec.block = true;
+        if (spec.text !== undefined)
+          replaceSpec.widget = new TextWidget(spec.text, spec.class, this.decorationHtml);
+        return CM.Decoration.replace(replaceSpec).range(from, to);
+      }
+      if (spec.kind === "widget") {
+        return CM.Decoration.widget({
+          [DECLARED_SPEC]: declared,
+          widget: new TextWidget(spec.text, spec.class, this.decorationHtml),
+          side: spec.side ?? 1,
+        }).range(spec.position);
+      }
+      return null;
     },
     async applyLineAnchors(anchors) {
       // The server marks `line-anchors` as a preserved prop on unrelated updates, so the watcher
@@ -238,6 +435,39 @@ export default {
       if (!force && this._lastAnchors && sameAnchorPositions(this._lastAnchors, positions)) return;
       this._lastAnchors = positions;
       this.$emit("anchor-positions", { anchors: positions });
+    },
+    revealLine(lineNumber) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      if (lineNumber < 1 || lineNumber > doc.lines) {
+        logAndEmit("warning", `reveal_line: line ${lineNumber} out of range [1, ${doc.lines}]`);
+        return;
+      }
+      const line = doc.line(lineNumber);
+      // "center" would also re-center every scrollable ancestor, the window included, whenever the editor
+      // cannot scroll far enough itself (first and last lines, short documents). "nearest" with a margin of
+      // half the visible height centers the line just the same, but moves an ancestor only to bring the line
+      // into view at all. CodeMirror applies the margin to every scrollable ancestor, so it is taken from the
+      // smallest one: half of a larger one would push the line past the edges of the smaller.
+      // The walk mirrors CodeMirror's own, and the heights are in screen pixels like the line's rectangle.
+      let visibleHeight = window.innerHeight;
+      for (let el = this.editor.scrollDOM; el && el !== document.body; el = el.parentElement) {
+        if (el.scrollHeight > el.clientHeight) {
+          const scaleY = el.offsetHeight ? el.getBoundingClientRect().height / el.offsetHeight : 1;
+          visibleHeight = Math.min(visibleHeight, el.clientHeight * scaleY);
+        }
+        if (/^(fixed|sticky)$/.test(getComputedStyle(el).position)) break;
+      }
+      const yMargin = Math.max(0, (visibleHeight - this.editor.defaultLineHeight) / 2);
+      this.editor.dispatch({
+        effects: CM.EditorView.scrollIntoView(line.from, { y: "nearest", yMargin }),
+      });
+    },
+    // Whether the host listens to the given event; the listeners arrive as camel-cased "on<Event>" attributes,
+    // followed by their modifiers if there are any.
+    hasListener(event) {
+      const prop = "on" + event.replace(/(?:^|-)(\w)/g, (_, char) => char.toUpperCase());
+      return Object.keys(this.$attrs).some((key) => key.startsWith(prop));
     },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
@@ -319,6 +549,76 @@ export default {
         },
       );
 
+      // Dispatches per-signal events for the signals the host listens to. Each signal is deduped against
+      // its last payload, so an update that leaves a signal unchanged costs nothing on the wire.
+      // Rate limiting is the Python side's job, via Element.on(..., throttle=...).
+      const updateDispatcher = CM.ViewPlugin.fromClass(
+        class {
+          constructor(view) {
+            this._last = {};
+            // CodeMirror's own viewport is the rendered range (visible plus a margin) and only changes when
+            // scrolling gets near its edge, so the visible lines are tracked through the scroller instead.
+            this._scroller = view.scrollDOM;
+            this._onScroll = () => this._measureViewport(view);
+            this._scroller.addEventListener("scroll", this._onScroll, { passive: true });
+          }
+          destroy() {
+            this._scroller.removeEventListener("scroll", this._onScroll);
+          }
+          update(u) {
+            if (u.focusChanged && self.hasListener("focus-change")) {
+              this._maybeEmit("focus-change", { focused: u.view.hasFocus });
+            }
+            // Edits, folds and resizes all change which lines are visible without scrolling.
+            if (u.geometryChanged) this._measureViewport(u.view);
+            // CodeMirror forbids DOM layout reads in update(), and geometryChanged is set by every
+            // document change, so reading clientWidth/clientHeight here forces a layout per keystroke.
+            // requestMeasure defers the read into CM's own measure cycle, where it is already batched.
+            if (u.geometryChanged && self.hasListener("geometry-change")) {
+              u.view.requestMeasure({
+                key: "nicegui-codemirror-geometry",
+                read: (view) => ({
+                  width: view.dom.clientWidth,
+                  height: view.dom.clientHeight,
+                  // contentHeight is in scaled pixels while clientWidth/clientHeight are layout
+                  // pixels, so under a CSS transform the three disagree unless this is undone.
+                  content_height: Math.round(view.contentHeight / view.scaleY),
+                }),
+                // beforeUnmount keeps the view alive, so a queued measure can outlive the editor's
+                // DOM. Without this guard a detached editor would report a 0x0 geometry.
+                write: (payload, view) => {
+                  if (view.dom.isConnected) this._maybeEmit("geometry-change", payload);
+                },
+              });
+            }
+          }
+          _measureViewport(view) {
+            if (!self.hasListener("viewport-change")) return;
+            view.requestMeasure({
+              key: "nicegui-codemirror-viewport",
+              read: (view) => {
+                const scroller = view.scrollDOM;
+                if (!scroller.clientHeight) return null; // a hidden editor shows no lines
+                // The scroller measures in layout pixels, CodeMirror's height map in scaled ones.
+                const top = scroller.scrollTop * view.scaleY - view.documentPadding.top;
+                const height = scroller.clientHeight * view.scaleY;
+                const lineAt = (height) => view.state.doc.lineAt(view.lineBlockAtHeight(height).from).number;
+                return { from_line: lineAt(top), to_line: lineAt(top + height - 1) };
+              },
+              write: (payload, view) => {
+                if (payload && view.dom.isConnected) this._maybeEmit("viewport-change", payload);
+              },
+            });
+          }
+          _maybeEmit(name, payload) {
+            const last = this._last[name];
+            if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
+            this._last[name] = payload;
+            self.$emit(name, payload);
+          }
+        },
+      );
+
       const lineTooltip = CM.hoverTooltip((view, pos) => {
         const set = view.state.field(tooltipField);
         const line = view.state.doc.lineAt(pos);
@@ -334,8 +634,7 @@ export default {
           above: true,
           create() {
             const dom = document.createElement("div");
-            if (renderHtml) dom.setHTML(content);
-            else dom.textContent = content;
+            setContent(dom, content, renderHtml);
             return { dom };
           },
         };
@@ -346,7 +645,10 @@ export default {
         changeSender,
         anchorTracker,
         anchorField,
+        updateDispatcher,
         tooltipField,
+        decorationField,
+        CM.EditorView.decorations.from(decorationField),
         lineTooltip,
         // Enables the Tab key to indent the current lines https://codemirror.net/examples/tab/
         CM.keymap.of([CM.indentWithTab]),
@@ -398,6 +700,9 @@ export default {
     this.setTheme(this.theme);
     this.setDisabled(this.disable);
     this.setLineWrapping(this.lineWrapping);
+    if (this.decorations && this.decorations.length > 0) {
+      this.setDecorations(this.decorations);
+    }
     if (this.lineAnchors && Object.keys(this.lineAnchors).length > 0) {
       this.applyLineAnchors(this.lineAnchors);
     }

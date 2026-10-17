@@ -27,19 +27,20 @@ def preserve_cursor_demo() -> None:
     ))
 
 
-@doc.demo('Line Anchors', '''
-    Line anchors give you a more stable reference to specific lines than line numbers.
-    The browser tracks each anchor's position through every change — insertions, deletions, reformatting
-    — and reading `line_anchors` back returns the current line on the Python side.
-    Add or remove lines above the anchored one and watch the reported number follow it.
-    Pass `on_anchor_change` to be notified whenever a tracked position moves.
+@doc.demo('Editor Signals and Reveal Line', '''
+    `on_viewport_change` reports the visible line range — useful for confirming that
+    `reveal_line` actually scrolled the requested line into view.
+    Other signal hooks include `on_focus_change` and `on_geometry_change`.
 
-    *Added in version 3.16.0*
+    *Added in version 3.18.0*
 ''')
-def line_anchors_demo() -> None:
-    editor = ui.codemirror('def answer():\n    return 42', line_anchors={'return': 2}).classes('h-40')
-    ui.label().bind_text_from(editor, 'line_anchors',
-                              lambda anchors: f'"return" is on line {anchors.get("return", "—")}')
+def signals_and_reveal_demo() -> None:
+    viewport_status = ui.label('Viewport: ?')
+    editor = ui.codemirror(
+        '\n'.join(f'Line {i}' for i in range(1, 51)),
+        on_viewport_change=lambda e: viewport_status.set_text(f'Viewport: lines {e.from_line}–{e.to_line}'),
+    ).classes('h-32')
+    ui.button('Reveal line 40', on_click=lambda: editor.reveal_line(40))
 
 
 @doc.demo('Custom Keybindings', '''
@@ -100,6 +101,83 @@ def line_tooltip_html_demo() -> None:
         line_tooltip_html=True,
     ).classes('h-32')
     editor.line_tooltips[2] = '<b>returns</b> the sum of <code>a</code> and <code>b</code>'
+
+
+@doc.demo('Decorations', '''
+    The `decorations` property is a mutable list of styled overlays on top of the editor's text,
+    without modifying the document.
+    There are four kinds:
+
+    - **mark** — style a character range
+    - **line** — style an entire line
+    - **replace** — hide a range (no `text`) or replace it visually with text
+    - **widget** — insert a text annotation at a position
+
+    The `from`, `to` and `position` fields are Python `str` indices into the editor's value.
+    Reading `decorations` back returns the specs as declared, not where the browser has since
+    mapped them as the document changed.
+
+    The `class` field accepts any CSS class, Tailwind utilities as well as classes you define
+    yourself via `ui.add_css`.
+    Widget and replace `text` values render as plain text by default; pass
+    `decoration_html=True` to the constructor to render them as sanitized HTML.
+    That flag only covers `text`: the `attributes` field on mark and line decorations is always
+    applied as raw DOM attributes (including handlers like `onclick`) and is never sanitized,
+    so never pass untrusted input through it.
+
+    *Added in version 3.17.0*
+''')
+def decorations_demo() -> None:
+    ui.codemirror(
+        'alpha\n'
+        'beta\n'
+        'gamma\n'
+        'delta\n'
+        'epsilon\n'
+        'zeta',
+        decorations=[
+            {
+                'kind': 'mark',
+                'from': 6,
+                'to': 10,
+                'class': 'bg-red-200',
+            },
+            {
+                'kind': 'line',
+                'line': 3,
+                'class': 'bg-yellow-100',
+            },
+            {
+                'kind': 'widget',
+                'position': 5,
+                'text': '← first line',
+                'class': 'text-gray-500 text-xs ml-2',
+            },
+            {
+                'kind': 'replace',
+                'from': 17,
+                'to': 30,
+                'text': '{ 2 lines folded }',
+                'class': 'text-gray-500 italic',
+                'block': True,
+            },
+        ],
+    )
+
+
+@doc.demo('Line Anchors', '''
+    Line anchors give you a more stable reference to specific lines than line numbers.
+    The browser tracks each anchor's position through every change — insertions, deletions, reformatting
+    — and reading `line_anchors` back returns the current line on the Python side.
+    Add or remove lines above the anchored one and watch the reported number follow it.
+    Pass `on_anchor_change` to be notified whenever a tracked position moves.
+
+    *Added in version 3.16.0*
+''')
+def line_anchors_demo() -> None:
+    editor = ui.codemirror('def answer():\n    return 42', line_anchors={'return': 2}).classes('h-40')
+    ui.label().bind_text_from(editor, 'line_anchors',
+                              lambda anchors: f'"return" is on line {anchors.get("return", "—")}')
 
 
 doc.reference(ui.codemirror)

@@ -24,6 +24,9 @@
         blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
           margin: revert-layer; /* HACK: revert Quasar's margin styles */
         }
+        code, kbd, pre, samp {
+          font-family: revert-layer; /* HACK: revert Quasar's monospace font so Tailwind's mono font stack applies */
+        }
         /* DEPRECATED: mirror of quasarframework/quasar#18413 + #18419, remove with the Quasar bump for NiceGUI 4.0 */
         [dir="rtl"] .q-fab__actions--right {
           transform-origin: 0 50%;
