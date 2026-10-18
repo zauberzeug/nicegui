@@ -398,7 +398,7 @@ class App(FastAPI):
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
-        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
+        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.137.2
         if iter_route_contexts is None:
             return
         routers = list(self._iter_included_routers(self.routes))
@@ -412,7 +412,7 @@ class App(FastAPI):
                 self._mark_router_changed(router)
 
     def _iter_included_routers(self, routes: Sequence[Any]) -> Iterator[Any]:
-        """Iterate over the routers that FastAPI 0.141+ keeps as lazy entries in ``routes``, including nested ones."""
+        """Iterate over the routers that FastAPI 0.137+ keeps as lazy entries in ``routes``, including nested ones."""
         for route in routes:
             router = getattr(route, 'original_router', None)
             if router is not None:
@@ -420,23 +420,23 @@ class App(FastAPI):
                 yield from self._iter_included_routers(router.routes)
 
     def _refresh_included_routers(self) -> None:
-        """Make FastAPI 0.141+ notice that routes of included routers have been modified."""
+        """Make FastAPI 0.137+ notice that routes of included routers have been modified."""
         for router in self._iter_included_routers(self.routes):
             self._mark_router_changed(router)
 
     @staticmethod
     def _mark_router_changed(router: Any) -> None:
-        mark_routes_changed = getattr(router, '_mark_routes_changed', None)  # private API of FastAPI 0.141+
+        mark_routes_changed = getattr(router, '_mark_routes_changed', None)  # private API of FastAPI 0.137+
         if mark_routes_changed is not None:
             mark_routes_changed()
 
     def _iter_http_routes(self) -> Iterator[Any]:
         """Iterate over all HTTP routes, including those of included routers.
 
-        FastAPI 0.141+ keeps an included router as a single lazy entry in ``routes``.
+        FastAPI 0.137+ keeps an included router as a single lazy entry in ``routes``.
         This method looks inside and yields its routes with their full paths.
         """
-        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
+        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.137.2
         if iter_route_contexts is None:
             yield from (route for route in self.routes if isinstance(route, Route))
         else:
