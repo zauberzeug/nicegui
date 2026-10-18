@@ -1,11 +1,14 @@
+import asyncio
 import base64
 import gc
 import time
 import weakref
+from collections.abc import Callable
 
 from fastapi import Response
 
 from nicegui import app, ui
+from nicegui.elements.leaflet.leaflet_layers import Marker
 from nicegui.testing import Screen, User
 
 
@@ -98,3 +101,25 @@ async def test_leaflet_is_collected_after_client_deletion(user: User):
     held.clear()  # the timer finishes and drops its reference
     gc.collect()
     assert len(objects) == 0
+
+
+async def test_layer_constructed_after_await_lands_in_own_map(create_user: Callable[[], User]):
+    first_waiting = asyncio.Event()
+    other_map_entered = asyncio.Event()
+    results: list[bool] = []
+
+    @ui.page('/first')
+    async def first():
+        with ui.leaflet() as m:
+            first_waiting.set()
+            await other_map_entered.wait()
+            results.append(Marker(latlng=(51.5, -0.09)).leaflet is m)
+
+    @ui.page('/second')
+    async def second():
+        await first_waiting.wait()
+        with ui.leaflet():
+            other_map_entered.set()
+
+    await asyncio.gather(create_user().open('/first'), create_user().open('/second'))
+    assert results == [True]

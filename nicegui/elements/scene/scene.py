@@ -169,14 +169,14 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
 
     def __enter__(self) -> Self:
-        Object3D.current_scene = weakref.ref(self)
+        Object3D.current_scene.set(weakref.ref(self))
         super().__enter__()
         return self
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
         if isinstance(attribute, type) and issubclass(attribute, Object3D):
-            Object3D.current_scene = weakref.ref(self)
+            Object3D.current_scene.set(weakref.ref(self))
         return attribute
 
     def _handle_init(self) -> None:

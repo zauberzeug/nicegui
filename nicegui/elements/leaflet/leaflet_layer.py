@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 import weakref
 from abc import abstractmethod
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -14,13 +15,14 @@ if TYPE_CHECKING:
 
 @dataclass(kw_only=True, slots=True)
 class Layer:
-    current_leaflet: ClassVar[weakref.ref[Leaflet] | None] = None
+    current_leaflet: ClassVar[ContextVar[weakref.ref[Leaflet] | None]] = ContextVar('current_leaflet', default=None)
     leaflet: Leaflet = field(init=False)
     id: str = field(init=False)
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())
-        leaflet = Layer.current_leaflet() if Layer.current_leaflet is not None else None
+        leaflet_ref = Layer.current_leaflet.get()
+        leaflet = leaflet_ref() if leaflet_ref is not None else None
         assert leaflet is not None
         self.leaflet = leaflet
         self.leaflet.layers.append(self)

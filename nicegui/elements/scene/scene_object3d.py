@@ -4,6 +4,7 @@ import inspect
 import math
 import uuid
 import weakref
+from contextvars import ContextVar
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class Object3D:
-    current_scene: ClassVar[weakref.ref[Scene] | None] = None
+    current_scene: ClassVar[ContextVar[weakref.ref[Scene] | None]] = ContextVar('current_scene', default=None)
     _component_url: ClassVar[str | None] = None
     _file_stem: ClassVar[str | None] = None
 
@@ -53,7 +54,8 @@ class Object3D:
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
-        scene = Object3D.current_scene() if Object3D.current_scene is not None else None
+        scene_ref = Object3D.current_scene.get()
+        scene = scene_ref() if scene_ref is not None else None
         assert scene is not None
         self.scene: Scene = scene
         self.scene.objects[self.id] = self
