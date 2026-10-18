@@ -550,6 +550,37 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     assert screen.current_path.rstrip('/') == '/foo/sub'
 
 
+def test_navigating_to_path_outside_root_path(screen: Screen):
+    # regression test for https://github.com/zauberzeug/nicegui/issues/6385
+    @ui.page('/')
+    def index():
+        ui.label('Index page')
+
+    @ui.page('/other')
+    def other():
+        ui.label('Other page')
+
+    @ui.page('/admin')
+    def admin():
+        ui.sub_pages({'/': lambda: ui.label('Admin overview')}, root_path='/admin')
+        ui.link('Go to index', '/')
+        ui.link('Go to other', '/other')
+
+    screen.open('/admin')
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to index')
+    screen.should_contain('Index page')
+    screen.should_not_contain('Admin overview')
+
+    screen.open('/admin')
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to other')
+    screen.should_contain('Other page')
+    screen.should_not_contain('Admin overview')
+
+
 @pytest.mark.parametrize('show_404', [True, False])
 def test_links_pointing_to_path_which_is_not_a_sub_page(screen: Screen, show_404: bool):
     calls = {'index': 0, 'main': 0, 'sub': 0, 'other': 0}
