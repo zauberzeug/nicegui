@@ -64,7 +64,7 @@ def test_worker_gets_stubs(tmp_path):
 # The goal function (#5684): when an official example spawns a worker, re-importing the example module must NOT
 # pull in the web framework. 'progress' defines its UI inside @ui.page; 'menu_and_tabs' defines it at module level
 # with `with ui.x():` blocks — between them they cover both idiomatic shapes, each ending in a bare ui.run().
-@pytest.mark.parametrize('example', ['progress', 'menu_and_tabs'])
+@pytest.mark.parametrize('example', ['progress', 'menu_and_tabs', 'custom_vue_component'])
 def test_official_example_worker_reimport_is_framework_free(example, tmp_path):
     example_main = EXAMPLES / example / 'main.py'
     assert example_main.is_file(), f'missing example: {example_main}'
@@ -74,6 +74,7 @@ def test_official_example_worker_reimport_is_framework_free(example, tmp_path):
         os.environ['NICEGUI_WORKER_STUBS'] = '1'
 
         def worker(q):
+            sys.path.insert(0, {str(example_main.parent)!r})  # like running `python main.py` from the example dir
             with contextlib.suppress(SystemExit):
                 runpy.run_path({str(example_main)!r}, run_name='__mp_main__')  # what mp.spawn does to the user's main
             q.put({{'fastapi': 'fastapi' in sys.modules,
@@ -117,6 +118,34 @@ def test_bindable_dataclass_survives_worker_roundtrip(tmp_path):
             p = ctx.Process(target=child, args=(q, Point))
             p.start()
             assert q.get(timeout=30) == (True, 1)
+            p.join()
+    '''))
+    result = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, timeout=60, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_stub_derived_instance_keeps_its_state_in_worker(tmp_path):
+    script = tmp_path / 'event_app.py'
+    script.write_text(dedent('''\
+        import multiprocessing as mp
+        import os
+        os.environ['NICEGUI_WORKER_STUBS'] = '1'
+        from nicegui import Event
+
+        class Model(Event):
+            pass
+
+        def child(queue, model):
+            queue.put(model.__dict__.get('value'))
+
+        if __name__ == '__main__':
+            model = Model()
+            model.value = 42
+            ctx = mp.get_context('spawn')
+            q = ctx.Queue()
+            p = ctx.Process(target=child, args=(q, model))
+            p.start()
+            assert q.get(timeout=30) == 42
             p.join()
     '''))
     result = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, timeout=60, check=False)

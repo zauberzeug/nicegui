@@ -18,7 +18,8 @@ Modules listed in ``REAL_MODULES`` are NOT stubbed:
 Known limitations (by design — workers should not consume UI state):
 
 - worker code that READS values from stubbed modules gets ``WHATEVER`` objects: equality comparisons,
-  truthiness and containment are ``False``, iteration is empty — conditions silently take the negative branch
+  truthiness and containment are ``False``, iteration is empty, item assignment is discarded
+  — conditions silently take the negative branch
 - operations that are not stubbed (``len()``, ``int()``, ``+`` with a real left operand, format specs)
   raise loudly, which is preferable to silent corruption
 - ``import nicegui.elements.button``-style submodule imports and ``from nicegui import App``-style lazy
@@ -63,7 +64,12 @@ class Whatever:
     def __init__(self, *args, **kwargs) -> None:
         pass  # accept any arguments so that user classes subclassing a stub (via __mro_entries__) can instantiate
 
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__()  # swallow class keywords like `class X(ui.element, component='x.js')`
+
     def __getattr__(self, name: str) -> 'Whatever':
+        if name.startswith('__') and name.endswith('__'):
+            raise AttributeError(name)  # e.g. a stub `__setstate__` would swallow the state of unpickled instances
         return WHATEVER
 
     def __call__(self, *args, **kwargs) -> 'Whatever':
@@ -80,6 +86,9 @@ class Whatever:
 
     def __getitem__(self, item) -> 'Whatever':
         return WHATEVER  # e.g. generic subscription like Handler[X] in annotations evaluated at class definition
+
+    def __setitem__(self, key, value) -> None:
+        pass  # e.g. `self._props['value'] = ...` in a custom element instantiated at module level
 
     def __eq__(self, other: object) -> bool:
         return False  # two unrelated stub values must not compare equal just because they share the singleton
