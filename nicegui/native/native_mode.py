@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import multiprocessing as mp
 import pickle
 import queue
@@ -38,6 +39,13 @@ def _open_window(
     start_args: dict[str, Any] | None = None,
     dropped_keys: dict[str, list[str]] | None = None,
 ) -> None:
+    if sys.platform == 'win32':
+        # uvicorn restarts the worker with a console-wide Ctrl+C, which makes pywebview >= 6.2 close the window (#6381).
+        # Ignore it on the Windows level, because signal.SIG_IGN is not enough: webview.start() overwrites the handler.
+        # Child processes inherit this setting. NiceGUI only starts WebView2 here, but subprocesses spawned via
+        # app.native.start_args['func'] inherit it as well.
+        ctypes.windll.kernel32.SetConsoleCtrlHandler(None, True)
+
     while not helpers.is_port_open(host, port):
         time.sleep(0.1)
 
@@ -80,12 +88,6 @@ def _open_window(
 
     _start_window_method_executor(window, method_queue, response_queue, closed)
     _warn_if_esm_unsupported(window)
-
-    if sys.platform == 'win32':
-        import ctypes
-        # Ignore uvicorn's console-wide Ctrl+C during worker reloads.
-        # Child processes inherit this setting; this process only starts WebView2.
-        ctypes.windll.kernel32.SetConsoleCtrlHandler(None, True)
 
     webview.start(**start_args)
 
