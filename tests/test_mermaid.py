@@ -202,22 +202,23 @@ def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
     assert len(ids) == len(set(ids)), 'every id on the page should be unique'
 
 
-@pytest.mark.parametrize(('svg_id', 'html_id', 'node_id'), [
-    ('c4_mermaid', 'c4_mermaid-flowchart-A-0', 'A'),
-    ('c4_mermaid', 'c4_mermaid-flowchart-Node-With-Hyphen-1', 'Node-With-Hyphen'),
-    ('c7_mermaid', 'c7_mermaid-state-s1-0', 's1'),
-    ('c8_mermaid', 'c8_mermaid-classId-Animal-0', 'Animal'),
-    ('c9_mermaid', 'c9_mermaid-entity-CUSTOMER-ORDER-0', 'CUSTOMER-ORDER'),
-    ('c13_mermaid', 'c13_mermaid-A', 'A'),  # block, mindmap and requirement: no type token, no index
-    ('c10_mermaid', 'c10_mermaid-node_0', 'node_0'),
-    ('c11_mermaid', 'c11_mermaid-test_req', 'test_req'),
-    ('c4_mermaid', 'c4_mermaid-flowchart-A-123-0', 'A-123'),  # a node ID may end in digits: the index is still last
-    ('c13_mermaid', 'c13_mermaid-A-B-123', 'B'),  # known limit: indistinguishable from <type>-<node_id>-<index>
+@pytest.mark.parametrize(('svg_id', 'html_id', 'diagram_type', 'node_id'), [
+    ('c4_mermaid', 'c4_mermaid-flowchart-A-0', 'flowchart-v2', 'A'),
+    ('c4_mermaid', 'c4_mermaid-flowchart-Node-With-Hyphen-1', 'flowchart-v2', 'Node-With-Hyphen'),
+    ('c7_mermaid', 'c7_mermaid-state-s1-0', 'stateDiagram', 's1'),
+    ('c8_mermaid', 'c8_mermaid-classId-Animal-0', 'class', 'Animal'),
+    ('c9_mermaid', 'c9_mermaid-entity-CUSTOMER-ORDER-0', 'er', 'CUSTOMER-ORDER'),
+    ('c13_mermaid', 'c13_mermaid-A', 'block', 'A'),  # block, mindmap and requirement: no type token, no index
+    ('c10_mermaid', 'c10_mermaid-node_0', 'mindmap', 'node_0'),
+    ('c11_mermaid', 'c11_mermaid-test_req', 'requirement', 'test_req'),
+    ('c4_mermaid', 'c4_mermaid-flowchart-A-123-0', 'flowchart-v2', 'A-123'),  # a node ID may end in digits
+    ('c13_mermaid', 'c13_mermaid-A-B-123', 'requirement', 'A-B-123'),  # verbatim, even when it looks indexed
+    ('c13_mermaid', 'c13_mermaid-A-B-124', 'block', 'A-B-124'),
     # an unknown prefix must yield the raw ID, never a positional guess that recreates the old bug
-    ('c4_mermaid', 'custom_mermaid-flowchart-A-0', 'custom_mermaid-flowchart-A-0'),
+    ('c4_mermaid', 'custom_mermaid-flowchart-A-0', 'flowchart-v2', 'custom_mermaid-flowchart-A-0'),
 ])
-def test_extract_node_id(svg_id: str, html_id: str, node_id: str):
-    assert _extract_node_id(html_id, svg_id) == node_id
+def test_extract_node_id(svg_id: str, html_id: str, diagram_type: str, node_id: str):
+    assert _extract_node_id(html_id, svg_id, diagram_type) == node_id
 
 
 @pytest.mark.parametrize(('content', 'label', 'node_id'), [
@@ -236,3 +237,22 @@ def test_node_click_handler_with_other_diagram_types(screen: Screen, content: st
     screen.open('/')
     screen.click(label)
     screen.should_contain(f'clicked [{node_id}]')
+
+
+def test_node_click_handler_with_requirement_ids(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.mermaid('''
+            requirementDiagram
+            requirement "A-B-123" {
+                id: 1
+            }
+            requirement "A-B-124" {
+                id: 2
+            }
+        ''', on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
+
+    screen.open('/')
+    for node_id in ['A-B-123', 'A-B-124']:
+        screen.find_by_css(f'[id="c4_mermaid-{node_id}"]').click()  # requirement labels can't be clicked by text
+        screen.should_contain(f'clicked [{node_id}]')

@@ -30,13 +30,13 @@ export default {
       while (queue.length) {
         const { element, content, clickable } = queue.shift();
         try {
-          const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", content);
+          const { svg, bindFunctions, diagramType } = await mermaid.render(element.id + "_mermaid", content);
           element.innerHTML = svg;
           bindFunctions?.(element);
           if (clickable) {
             element.querySelectorAll("g.node").forEach((node) => {
               node.style.cursor = "pointer";
-              node.addEventListener("click", () => getElement(element).$emit("node_click", node.id));
+              node.addEventListener("click", () => getElement(element).$emit("node_click", node.id, diagramType));
             });
           }
         } catch (error) {
