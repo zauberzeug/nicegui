@@ -160,6 +160,35 @@ def env_var_demo():
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
 
 
+@doc.demo('Custom JSON Serialization', '''
+    NiceGUI serializes everything it sends to the browser as JSON:
+    element properties, event arguments, arguments of `ui.run_javascript`, and FastAPI responses.
+    Basic Python types, dataclasses, enums, dates and NumPy arrays are supported out of the box.
+    For other types you can register a converter with `json.register_type`
+    that turns an object into something JSON-serializable, like a dict or a string.
+    Converters also apply to subclasses, so one registration covers a whole class hierarchy such as Pydantic's `BaseModel`.
+
+    Note that converters cannot override types which are supported natively, like dataclasses or datetimes.
+    And the conversion is one-way: when reading from `app.storage`, you get the converted JSON structure, not the original object.
+
+    *Added in version 3.19.0*
+''')
+def custom_json_demo():
+    from pydantic import BaseModel
+    from nicegui import json
+
+    class Person(BaseModel):
+        name: str
+        age: int
+
+    json.register_type(BaseModel, BaseModel.model_dump)
+
+    ui.aggrid({
+        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+        'rowData': [Person(name='Alice', age=18), Person(name='Bob', age=21)],
+    })
+
+
 @doc.demo('Background Tasks', '''
     `background_tasks.create()` allows you to run an async function in the background and return a task object.
     By default the task will be automatically cancelled during shutdown.
