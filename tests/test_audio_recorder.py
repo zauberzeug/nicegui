@@ -30,3 +30,20 @@ def test_unsupported_mime_type_reports_error(screen: Screen):
     screen.open('/')
     screen.click('Start')
     screen.should_contain('Error: NotSupportedError')
+
+
+def test_stop_before_microphone_is_ready_reports_error(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.add_head_html('''<script>
+            const getUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+            navigator.mediaDevices.getUserMedia = (c) => new Promise((r) => setTimeout(r, 1000)).then(() => getUserMedia(c));
+        </script>''')
+        recorder = ui.audio_recorder(on_error=lambda e: ui.label(f'Error: {e.args["name"]}'))
+        ui.button('Start', on_click=recorder.start)
+        ui.button('Stop', on_click=recorder.stop)
+
+    screen.open('/')
+    screen.click('Start')
+    screen.click('Stop')
+    screen.should_contain('Error: AbortError')

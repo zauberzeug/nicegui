@@ -28,7 +28,8 @@ class AudioRecorder(Element, component='audio_recorder.js'):
 
         When a recording is stopped, it is uploaded to the server and ``on_audio_ready`` is called
         with an ``UploadEventArguments`` object whose ``file`` attribute holds the recording.
-        If the microphone cannot be accessed (e.g. because the user denied the permission, ``name`` is "NotAllowedError")
+        If the microphone cannot be accessed (e.g. because the user denied the permission, ``name`` is "NotAllowedError"),
+        the recording is stopped before the microphone is ready (``name`` is "AbortError")
         or the upload fails (``name`` is "UploadError"), ``on_error`` is called with ``name`` and ``message`` in ``e.args``.
 
         :param mime_type: preferred MIME type like "audio/webm" (default: `None`, i.e. the browser's choice)

@@ -10,7 +10,10 @@ export default {
       let stream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (session.cancelled) return stream.getTracks().forEach((track) => track.stop());
+        if (session.cancelled) {
+          if (session.discard) return stream.getTracks().forEach((track) => track.stop());
+          throw new DOMException("Recording was stopped before it started", "AbortError");
+        }
         const recorder = new MediaRecorder(stream, this.mime_type ? { mimeType: this.mime_type } : {});
         const chunks = [];
         recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data);
