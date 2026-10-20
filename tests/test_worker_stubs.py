@@ -9,7 +9,7 @@ import pytest
 EXAMPLES = Path(__file__).resolve().parent.parent / 'examples'
 
 WORKER_CODE = dedent('''\
-    import os, sys
+    import asyncio, os, sys
     os.environ['NICEGUI_WORKER_STUBS'] = '1'
     import multiprocessing as mp
 
@@ -21,17 +21,24 @@ WORKER_CODE = dedent('''\
         with ui.row():                     # context manager must work
             ui.button('x')
         ui.run()                           # must be a no-op
+        try:
+            bool(app.storage.user)
+            truthiness = 'silent'
+        except TypeError as e:
+            truthiness = str(e)
+        run.setup()
         queue.put({
             'ui_is_stub': type(sys.modules['nicegui.ui']).__name__ == 'WhateverModule',
             'run_is_real': type(sys.modules['nicegui.run']).__name__ != 'WhateverModule',
             'cpu_bound_callable': callable(run.cpu_bound) and run.cpu_bound.__name__ == 'cpu_bound',
             'fastapi_loaded': 'fastapi' in sys.modules,
-            'stub_is_falsy': not label,
+            'truthiness_raises': truthiness.startswith('app.storage.user has no truth value'),
             'stub_iterates_empty': list(label) == [],
             'stub_contains_nothing': 'key' not in label,
-            'stubs_never_equal': not (label == ui.button('y')),  # unrelated stub values share one singleton
+            'stubs_never_equal': not (label == ui.button('y')),  # unrelated stub values must not look alike
             'stub_hashable': isinstance(hash(label), int),  # so stub values can be dict keys
-            'is_stopping_is_falsy': not core.app.is_stopping,  # so run.io_bound works in workers
+            'io_bound_works': asyncio.run(run.io_bound(abs, -1)) == 1,
+            'cpu_bound_works': asyncio.run(run.cpu_bound(abs, -2)) == 2,
         })
 
     if __name__ == '__main__':
@@ -46,12 +53,13 @@ WORKER_CODE = dedent('''\
         assert result['run_is_real'], 'run must be the real module in worker'
         assert result['cpu_bound_callable'], 'run.cpu_bound must be the real function in worker'
         assert not result['fastapi_loaded'], 'fastapi must not load in worker'
-        assert result['stub_is_falsy'], 'stub values must be falsy'
+        assert result['truthiness_raises'], 'truthiness of stub values must raise, naming the attribute'
         assert result['stub_iterates_empty'], 'stub values must iterate empty'
         assert result['stub_contains_nothing'], 'stub containment checks must be False'
         assert result['stubs_never_equal'], 'stub values must not compare equal to each other'
         assert result['stub_hashable'], 'stub values must remain hashable'
-        assert result['is_stopping_is_falsy'], 'core.app.is_stopping must be falsy in stub mode'
+        assert result['io_bound_works'], 'run.io_bound must work in a worker'
+        assert result['cpu_bound_works'], 'run.cpu_bound must work in a worker'
 ''')
 
 

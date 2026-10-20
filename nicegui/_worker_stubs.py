@@ -17,11 +17,14 @@ Modules listed in ``REAL_MODULES`` are NOT stubbed:
 
 Known limitations (by design — workers should not consume UI state):
 
-- worker code that READS values from stubbed modules gets ``WHATEVER`` objects: equality comparisons,
-  truthiness and containment are ``False``, iteration is empty, item assignment is discarded
-  — conditions silently take the negative branch
-- operations that are not stubbed (``len()``, ``int()``, ``+`` with a real left operand, format specs)
-  raise loudly, which is preferable to silent corruption
+- module-level UI construction (``ui.label(...)``, ``with ui.row():``, ``ui.run()``) silently no-ops
+- worker code that READS values from stubbed modules gets stub objects: equality comparisons and containment are
+  ``False``, iteration is empty, item assignment is discarded
+- truthiness (``if app.storage.user:``) raises a ``TypeError`` naming the attribute, because silently taking the
+  negative branch would decide for the user; the one exception is ``core.app.is_stopping``, which is ``False``
+  so that ``run.io_bound`` and ``run.cpu_bound`` keep working in workers
+- other operations that are not stubbed (``len()``, ``int()``, ``+`` with a real left operand, format specs)
+  raise loudly as well, which is preferable to silent corruption
 - ``import nicegui.elements.button``-style submodule imports and ``from nicegui import App``-style lazy
   attributes of stubbed submodules raise ``ModuleNotFoundError`` in stub mode (``from nicegui import ui`` works)
 - ``nicegui.testing`` is stubbed, which is fine: the pytest plugin loads in pytest's main process, never in workers
@@ -56,11 +59,11 @@ REAL_MODULES = {
 
 
 class Whatever:
-    """A universal no-op object: every operation yields the no-op singleton ``WHATEVER``.
+    """A universal no-op object: attributes are stubs named after the attribute, calls return the stub itself.
 
-    Truthiness is ``False``, iteration is empty and containment checks are ``False``,
-    so conditions and loops over stub values silently take the empty/negative branch.
+    Iteration is empty and containment checks are ``False``, but truthiness raises a ``TypeError``.
     """
+    _stub_name = 'value'  # class default, so that instances of user subclasses have one without __getattr__
 
     def __init__(self, *args, **kwargs) -> None:
         pass  # accept any arguments so that user classes subclassing a stub (via __mro_entries__) can instantiate
@@ -71,22 +74,22 @@ class Whatever:
     def __getattr__(self, name: str) -> 'Whatever':
         if name.startswith('__') and name.endswith('__'):
             raise AttributeError(name)  # e.g. a stub `__setstate__` would swallow the state of unpickled instances
-        return WHATEVER
+        return _named(f'{self._stub_name}.{name}')
 
     def __call__(self, *args, **kwargs) -> 'Whatever':
-        return WHATEVER
+        return self
 
     def __mro_entries__(self, *args, **kwargs) -> tuple:  # pylint: disable=unused-argument
         return (Whatever,)  # so module-level `class X(ui.element)` survives class creation
 
     def __enter__(self) -> 'Whatever':
-        return WHATEVER  # so module-level `with ui.row():` no-ops (e.g. examples/menu_and_tabs)
+        return self  # so module-level `with ui.row():` no-ops (e.g. examples/menu_and_tabs)
 
     def __exit__(self, *args) -> Literal[False]:
         return False
 
     def __getitem__(self, item) -> 'Whatever':
-        return WHATEVER  # e.g. generic subscription like Handler[X] in annotations evaluated at class definition
+        return self  # e.g. generic subscription like Handler[X] in annotations evaluated at class definition
 
     def __setitem__(self, key, value) -> None:
         pass  # e.g. `self._props['value'] = ...` in a custom element instantiated at module level
@@ -97,7 +100,8 @@ class Whatever:
     __hash__ = object.__hash__  # would be unset by defining __eq__; identity hashing keeps stubs usable as dict keys
 
     def __bool__(self) -> bool:
-        return False  # so module-level `if app.storage...:` and the like take the negative branch
+        raise TypeError(f'{self._stub_name} has no truth value in a worker process, where NiceGUI is stubbed '
+                        '(see https://github.com/zauberzeug/nicegui/issues/5684)')
 
     def __iter__(self):
         return iter(())  # without this, `__getitem__` would make the legacy sequence protocol iterate forever
@@ -109,14 +113,17 @@ class Whatever:
         return '<nicegui worker stub>'
 
 
-WHATEVER = Whatever()
+def _named(name: str, **attributes: object) -> Whatever:
+    stub = Whatever()
+    vars(stub).update(_stub_name=name, **attributes)
+    return stub
 
 
 class WhateverModule(ModuleType):
-    """A module whose every attribute is the ``WHATEVER`` no-op object."""
+    """A module whose every attribute is a ``Whatever`` no-op object."""
 
     def __getattr__(self, name: str) -> Whatever:
-        return WHATEVER
+        return _named(f'{self.__name__.rsplit(".", 1)[-1]}.{name}')
 
 
 def install() -> None:
@@ -126,3 +133,5 @@ def install() -> None:
         if name.startswith('_') or name in REAL_MODULES:
             continue
         sys.modules[f'nicegui.{name}'] = WhateverModule(f'nicegui.{name}')
+    # the real `run._run` reads `core.app.is_stopping` as a bool, so it must not raise like other stub truthiness
+    sys.modules['nicegui.nicegui'].app = _named('app', is_stopping=False)  # type: ignore[attr-defined]
