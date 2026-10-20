@@ -1,4 +1,5 @@
 import importlib.util
+from collections.abc import Callable
 from decimal import Decimal
 from typing import Any
 
@@ -51,6 +52,14 @@ def loads(value: str) -> Any:
     return orjson.loads(value)
 
 
+_user_types: dict[type, Callable] = {}
+
+
+def register_type(t: type, converter: Callable):
+    """Register a serializer/converter for the given type."""
+    _user_types[t] = converter
+
+
 def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for NumPy object arrays."""
     if HAS_NUMPY:
@@ -59,6 +68,8 @@ def _orjson_converter(obj):
             return obj.tolist()
     if isinstance(obj, Decimal):
         return float(obj)
+    if conv := _user_types.get(type(obj)):
+        return conv(obj)
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
 

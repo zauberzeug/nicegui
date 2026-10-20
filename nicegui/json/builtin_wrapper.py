@@ -1,5 +1,6 @@
 import importlib.util
 import json
+from collections.abc import Callable
 from datetime import date, datetime
 from typing import Any
 
@@ -28,7 +29,7 @@ def dumps(obj: Any,
         indent=2 if indent else None,
         allow_nan=False,
         ensure_ascii=False,
-        cls=NumpyJsonEncoder)
+        cls=NiceGUIJsonEncoder)
 
 
 def loads(value: str) -> Any:
@@ -46,8 +47,16 @@ class NiceGUIJSONResponse(JSONResponse):
         return dumps(content).encode('utf-8')
 
 
-class NumpyJsonEncoder(json.JSONEncoder):
-    """Special json encoder that supports NumPy arrays and date/datetime objects."""
+_user_types: dict[type, Callable] = {}
+
+
+def register_type(t: type, converter: Callable):
+    """Register a serializer/converter for the given type."""
+    _user_types[t] = converter
+
+
+class NiceGUIJsonEncoder(json.JSONEncoder):
+    """Special json encoder that supports NumPy arrays, date/datetime objects and custom types."""
 
     def default(self, o):
         if HAS_NUMPY:
@@ -60,4 +69,6 @@ class NumpyJsonEncoder(json.JSONEncoder):
                 return o.tolist()
         if isinstance(o, (datetime, date)):
             return o.isoformat()
+        if conv := _user_types.get(type(o)):
+            return conv(o)
         return json.JSONEncoder.default(self, o)
