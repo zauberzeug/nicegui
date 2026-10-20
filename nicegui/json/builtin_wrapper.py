@@ -1,10 +1,11 @@
 import importlib.util
 import json
-from collections.abc import Callable
 from datetime import date, datetime
 from typing import Any
 
 from fastapi.responses import JSONResponse
+
+from .registry import find_converter
 
 try:
     HAS_NUMPY = importlib.util.find_spec('numpy') is not None
@@ -29,7 +30,7 @@ def dumps(obj: Any,
         indent=2 if indent else None,
         allow_nan=False,
         ensure_ascii=False,
-        cls=NiceGUIJsonEncoder)
+        cls=NiceGUIJSONEncoder)
 
 
 def loads(value: str) -> Any:
@@ -41,24 +42,18 @@ def loads(value: str) -> Any:
 
 
 class NiceGUIJSONResponse(JSONResponse):
-    """FastAPI response class to support our custom json serializer implementation."""
+    """FastAPI response class to support our custom JSON serializer implementation."""
 
     def render(self, content: Any) -> bytes:
         return dumps(content).encode('utf-8')
 
 
-_user_types: dict[type, Callable] = {}
-
-
-def register_type(t: type, converter: Callable):
-    """Register a serializer/converter for the given type."""
-    _user_types[t] = converter
-
-
-class NiceGUIJsonEncoder(json.JSONEncoder):
-    """Special json encoder that supports NumPy arrays, date/datetime objects and custom types."""
+class NiceGUIJSONEncoder(json.JSONEncoder):
+    """Special JSON encoder that supports NumPy arrays, date/datetime objects and registered custom types."""
 
     def default(self, o):
+        if converter := find_converter(o):
+            return converter(o)
         if HAS_NUMPY:
             import numpy as np  # pylint: disable=import-outside-toplevel
             if isinstance(o, np.integer):
@@ -69,6 +64,4 @@ class NiceGUIJsonEncoder(json.JSONEncoder):
                 return o.tolist()
         if isinstance(o, (datetime, date)):
             return o.isoformat()
-        if conv := _user_types.get(type(o)):
-            return conv(o)
         return json.JSONEncoder.default(self, o)

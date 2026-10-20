@@ -1,11 +1,12 @@
 import importlib.util
-from collections.abc import Callable
 from decimal import Decimal
 from typing import Any
 
 # pylint: disable=no-member
 import orjson
 from fastapi.responses import JSONResponse
+
+from .registry import find_converter
 
 try:
     HAS_NUMPY = importlib.util.find_spec('numpy') is not None
@@ -52,24 +53,16 @@ def loads(value: str) -> Any:
     return orjson.loads(value)
 
 
-_user_types: dict[type, Callable] = {}
-
-
-def register_type(t: type, converter: Callable):
-    """Register a serializer/converter for the given type."""
-    _user_types[t] = converter
-
-
 def _orjson_converter(obj):
-    """Custom serializer/converter, e.g. for NumPy object arrays."""
+    """Custom serializer/converter, e.g. for NumPy object arrays and registered custom types."""
+    if converter := find_converter(obj):
+        return converter(obj)
     if HAS_NUMPY:
         import numpy as np  # pylint: disable=import-outside-toplevel
         if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
             return obj.tolist()
     if isinstance(obj, Decimal):
         return float(obj)
-    if conv := _user_types.get(type(obj)):
-        return conv(obj)
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
 

@@ -23,21 +23,18 @@ def test_json():
     # or architectures where orjson is not supported.
 
     # pylint: disable=import-outside-toplevel
+    from nicegui.json import register_type
     from nicegui.json.builtin_wrapper import dumps as builtin_dumps
-    from nicegui.json.builtin_wrapper import register_type as builtin_register_type
     from nicegui.json.orjson_wrapper import dumps as orjson_dumps
-    from nicegui.json.orjson_wrapper import register_type as orjson_register_type
 
     class MyClass:
         def __init__(self, i):
             self.i = i
 
-        @staticmethod
-        def json_converter(obj):
-            return {'i': obj.i}
+    class MySubclass(MyClass):
+        pass
 
-    builtin_register_type(MyClass, MyClass.json_converter)
-    orjson_register_type(MyClass, MyClass.json_converter)
+    register_type(MyClass, lambda obj: {'i': obj.i})
 
     # test different scalar and array types
     tests = [
@@ -59,6 +56,7 @@ def test_json():
         np.array(['2010-10-17 07:15:30', '2011-05-13 08:20:35', '2013-01-15 09:09:09'], dtype=np.datetime64),
         np.array([1.0, None, 'test'], dtype=np.object_),
         MyClass(i=123),
+        MySubclass(i=456),
     ]
 
     for test in tests:
