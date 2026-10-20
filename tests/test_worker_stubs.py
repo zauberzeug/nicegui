@@ -40,6 +40,7 @@ WORKER_CODE = dedent('''\
             'io_bound_works': asyncio.run(run.io_bound(abs, -1)) == 1,
             'cpu_bound_works': asyncio.run(run.cpu_bound(abs, -2)) == 2,
         })
+        run.process_pool.shutdown()  # its workers would otherwise block this process's exit
 
     if __name__ == '__main__':
         ctx = mp.get_context('spawn')
