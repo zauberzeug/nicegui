@@ -16,7 +16,7 @@ from . import core
 from .logging import log
 
 if TYPE_CHECKING:
-    from _typeshed import DataclassInstance, IdentityFunction
+    from _typeshed import DataclassInstance
 
 MAX_PROPAGATION_TIME = 0.01
 
@@ -351,13 +351,13 @@ def bindable_dataclass(cls: type[T], /, *,
 @overload
 def bindable_dataclass(cls: None = ..., /, *,
                        bindable_fields: Iterable[str] | None = ...,
-                       **kwargs: Any) -> IdentityFunction: ...
+                       **kwargs: Any) -> Callable[[type[T]], type[T]]: ...
 
 
 @dataclass_transform()
 def bindable_dataclass(cls: type[T] | None = None, /, *,
                        bindable_fields: Iterable[str] | None = None,
-                       **kwargs: Any) -> type[T] | IdentityFunction:
+                       **kwargs: Any) -> type[T] | Callable[[type[T]], type[T]]:
     """A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
@@ -374,7 +374,7 @@ def bindable_dataclass(cls: type[T] | None = None, /, *,
     :return: resulting dataclass type
     """
     if cls is None:
-        def wrap(cls_):
+        def wrap(cls_: type[T]) -> type[T]:
             return bindable_dataclass(cls_, bindable_fields=bindable_fields, **kwargs)
         return wrap
 
