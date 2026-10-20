@@ -159,7 +159,7 @@ async def test_protected_timer_callback_is_awaited_on_shutdown(user: User):
     async def work() -> None:
         ui.label('added by protected timer')  # needs the timer's context
         try:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
             events.append('done')
         except asyncio.CancelledError:
             events.append('cancelled')
