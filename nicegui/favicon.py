@@ -102,6 +102,10 @@ def _svg_to_data_url(svg: str) -> str:
 
 
 def _data_url_to_bytes(data_url: str) -> tuple[str, bytes]:
-    media_type, base64_image = data_url.split(',', 1)
-    media_type = media_type.split(':')[1].split(';')[0]
-    return media_type, base64.b64decode(base64_image)
+    header, comma, data = data_url.partition(',')
+    if not comma:
+        raise ValueError(f'invalid data URL: {data_url}')
+    media_type = header.split(':')[1].split(';')[0]
+    if header.endswith(';base64'):
+        return media_type, base64.b64decode(data)
+    return media_type, urllib.parse.unquote_to_bytes(data)

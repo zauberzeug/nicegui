@@ -1,12 +1,14 @@
 import asyncio
 import gc
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 
 import httpx
 import pytest
 
-from nicegui import __version__, app, ui
+from nicegui import __version__, app, helpers, ui
 from nicegui.app.range_response import get_range_response
 from nicegui.testing import Screen
 
@@ -148,6 +150,45 @@ def test_adding_single_static_file(screen: Screen):
         r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
         assert r.status_code == 200
         assert 'max-age=3456' in r.headers['Cache-Control']
+
+
+@pytest.mark.parametrize('add_file', [app.add_static_file, app.add_media_file], ids=['static', 'media'])
+def test_single_use_file_is_served_exactly_once(screen: Screen, secret_file: Path, add_file: Callable[..., str]):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    url_path = add_file(local_file=secret_file, single_use=True)
+    assert helpers.hash_file_path(secret_file.resolve()) not in url_path, 'URL must not be derivable from the file path'
+    assert add_file(local_file=secret_file, single_use=True) != url_path, 'URLs must not repeat'
+    route_count = len(app.routes)
+
+    with httpx.Client() as http_client:
+        url = f'http://localhost:{Screen.PORT}{url_path}'
+        with ThreadPoolExecutor(max_workers=12) as pool:
+            responses = list(pool.map(lambda _: http_client.get(url), range(12)))
+        served = [r for r in responses if r.status_code == 200]
+        assert len(served) == 1, 'a single-use route must be served exactly once'
+        assert all(r.status_code == 404 for r in responses if r is not served[0]), 'all other requests must get 404'
+        assert served[0].text == 'TOP SECRET DATA'
+        assert served[0].headers['Cache-Control'] == 'no-store'
+        assert len(app.routes) == route_count - 1, 'the consumed route should be gone'
+        assert http_client.get(url).status_code == 404
+
+
+def test_single_use_media_file_partial_content_is_not_cacheable(screen: Screen, secret_file: Path):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    url_path = app.add_media_file(local_file=secret_file, single_use=True)
+
+    with httpx.Client() as http_client:
+        ranged = http_client.get(f'http://localhost:{Screen.PORT}{url_path}', headers={'Range': 'bytes=0-3'})
+        assert ranged.status_code == 206
+        assert ranged.headers['Cache-Control'] == 'no-store', 'partial content must not be cacheable either'
 
 
 def test_auto_serving_file_from_image_source(screen: Screen):

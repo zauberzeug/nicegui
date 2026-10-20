@@ -32,3 +32,6 @@ class Editor(ValueElement[str], DisableableElement, component='editor.js', defau
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

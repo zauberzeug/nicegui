@@ -1,9 +1,10 @@
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 from nicegui import app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 example_file = Path(__file__).parent / '../examples/slideshow/slides/slide1.jpg'
 example_data = ('data:image/png;base64,'
@@ -131,3 +132,26 @@ def test_pil_image_cleanup(screen: Screen):
 
     screen.click('Delete')
     screen.wait_for(lambda: not Path(temp_path_str).exists())
+
+
+@pytest.mark.parametrize('element_class,route_prefix', [
+    (ui.image, '/_nicegui/auto/static/'),
+    (ui.video, '/_nicegui/auto/media/'),
+])
+async def test_removal_of_generated_route_when_switching_to_non_file(user: User,
+                                                                     element_class: type,
+                                                                     route_prefix: str) -> None:
+    holder: dict = {}
+
+    @ui.page('/')
+    def page():
+        holder['element'] = element_class(example_file)
+
+    await user.open('/')
+    element = holder['element']
+    assert element.auto_route is not None
+    assert any(route_prefix in getattr(route, 'path', '') for route in app.routes)
+
+    element.set_source('https://example.com/x.png')
+    assert element.auto_route is None
+    assert not any(route_prefix in getattr(route, 'path', '') for route in app.routes)

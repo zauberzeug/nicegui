@@ -4,6 +4,15 @@ This file augments any review prompt — the built-in `/review` command, Cursor 
 It defines _what to look for_ and _how to label severity_, but leaves the layout to whatever invokes the review.
 For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guidance, see [AGENTS.md](AGENTS.md).
 
+## Question the approach
+
+Before checking whether the diff does what it sets out to do, take a moment to check whether it should.
+Most pull requests pass this quickly; raise it only with a concrete reason, not as a routine finding.
+
+- Is there a simpler or more direct way to solve the problem from the issue?
+- Does the change go out of its way to preserve behavior that was never designed, only because no code touched it so far?
+- Signs that the approach itself is the problem: the code has to guess intent, special cases keep piling up, or each review round fixes one case and breaks another.
+
 ## What to look for
 
 - **Security**
@@ -29,9 +38,11 @@ For coding rules, see [CONTRIBUTING.md](CONTRIBUTING.md); for general agent guid
 - **Logging & observability**
   - Noisy logs, missing error context, debug prints in library code
 - **Tests**
-  - New features and bug fixes need tests (see CONTRIBUTING.md for `User` vs `Screen` fixture choice)
-  - Edge cases: empty/None, large payloads, cancellation
-  - Flakiness, time-dependence, hidden network deps
+  - Missing test for a new feature or bug fix, with no reason given in the pull request
+  - Tests coupled to implementation details — private attributes, call counts, patched internals, fake request objects — where the user-visible effect could be asserted instead
+  - Test cost out of proportion to the risk: a `Screen` test where the `User` fixture would do, elaborate scaffolding for a marginal edge case (see [CONTRIBUTING.md](CONTRIBUTING.md#coding-conventions))
+  - Untested edge cases: empty/None, large payloads, cancellation
+  - Flaky, time-dependent, or network-dependent tests
 - **Docs & examples**
   - Code that diverges from documented behavior
   - Examples that no longer run

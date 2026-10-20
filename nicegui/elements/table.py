@@ -100,6 +100,7 @@ class Table(FilterElement, component='table.js'):
             for handler in self._pagination_change_handlers:
                 handle_event(handler, arguments)
         self.on('update:pagination', handle_pagination_change)
+        self.on('update:fullscreen', lambda e: self.set_fullscreen(e.args))
 
     def _to_dict(self) -> dict[str, Any]:
         # scan rows for lists and add slot templates if needed

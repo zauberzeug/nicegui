@@ -1,10 +1,18 @@
+import asyncio
+import gc
+import tempfile
+import weakref
+from io import BytesIO
 from pathlib import Path
 
+import httpx
 import pytest
+from starlette.datastructures import UploadFile
+from starlette.formparsers import MultiPartParser
 
 from nicegui import events, ui
-from nicegui.elements.upload_files import _sanitize_filename
-from nicegui.testing import Screen
+from nicegui.elements.upload_files import _sanitize_filename, create_file_upload
+from nicegui.testing import Screen, User
 
 test_path1 = Path('tests/test_upload.py').resolve()
 test_path2 = Path('tests/test_scene.py').resolve()
@@ -27,6 +35,28 @@ async def test_uploading_text_file(screen: Screen):
     assert results[0].file.name == test_path1.name
     assert results[0].file.content_type in {'text/x-python', 'text/x-python-script'}
     assert await results[0].file.read() == test_path1.read_bytes()
+
+
+@pytest.mark.parametrize('state', ['enabled', 'disabled', 'hidden'])
+def test_upload_route_respects_disabled_and_hidden_state(screen: Screen, state: str):
+    results: list[events.UploadEventArguments] = []
+    upload: ui.upload = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal upload
+        upload = ui.upload(on_upload=results.append, label='Test Title')
+        if state == 'disabled':
+            upload.disable()
+        if state == 'hidden':
+            upload.set_visibility(False)
+
+    screen.open('/')
+    with httpx.Client() as http_client:
+        response = http_client.post(f'http://localhost:{Screen.PORT}{upload.props["url"]}',
+                                    files={'file': ('test.txt', b'content')})
+    assert response.status_code == (200 if state == 'enabled' else 403)
+    assert len(results) == (1 if state == 'enabled' else 0)
 
 
 def test_two_upload_elements(screen: Screen):
@@ -176,3 +206,60 @@ async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
 ])
 def test_upload_filename_sanitization(input_name: str | None, expected: str):
     assert _sanitize_filename(input_name) == expected
+
+
+async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.setattr(MultiPartParser, 'spool_max_size', 8)  # spill to a temp file after the first chunk
+    monkeypatch.setattr(tempfile, 'tempdir', str(tmp_path))
+
+    class FlakyUpload(UploadFile):  # one chunk (triggers the spill), then errors mid-upload
+        _read = False
+
+        async def read(self, size: int = -1) -> bytes:
+            if self._read:
+                assert any(tmp_path.iterdir()), 'first chunk should have been spilled to the temp directory'
+                raise OSError('No space left on device')
+            self._read = True
+            return b'x' * 16
+
+    with pytest.raises(OSError):
+        await create_file_upload(FlakyUpload(BytesIO(b''), filename='big.bin'), chunk_size=16)
+
+    assert not any(tmp_path.iterdir()), 'spilled temp file should be removed when the upload fails'
+
+
+async def test_deleted_uploads_are_collectable(user: User):
+    uploads: list[weakref.ref[ui.upload]] = []
+
+    @ui.page('/')
+    def page():
+        uploads.append(weakref.ref(ui.upload()))
+
+    for _ in range(3):
+        client = await user.open('/')
+        client.delete()
+        await asyncio.sleep(0)
+    gc.collect()
+    assert all(upload() is None for upload in uploads), 'deleted uploads are garbage collected'
+
+
+@pytest.mark.parametrize('target', ['missing_client', 'missing_element', 'wrong_type', 'malformed', 'deleted'])
+async def test_invalid_upload_target(user: User, target: str):
+    results: list[events.UploadEventArguments] = []
+
+    @ui.page('/')
+    def page():
+        ui.upload(on_upload=results.append)
+        ui.label('Not an upload')
+
+    client = await user.open('/')
+    upload = user.find(ui.upload).elements.pop()
+    label = user.find(ui.label).elements.pop()
+    if target == 'deleted':
+        upload.delete()
+    client_id = 'missing' if target == 'missing_client' else client.id
+    element_id = {'missing_element': '-1', 'wrong_type': label.id, 'malformed': 'invalid'}.get(target, str(upload.id))
+    files = {'file': ('test.txt', b'test')}
+    response = await user.http_client.post(f'/_nicegui/client/{client_id}/upload/{element_id}', files=files)
+    assert response.status_code == (422 if target == 'malformed' else 404)
+    assert not results

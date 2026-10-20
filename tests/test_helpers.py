@@ -105,3 +105,5 @@ def test_event_type_to_camel_case():
     assert helpers.event_type_to_camel_case('keydown.enter') == 'keydown.enter'
     assert helpers.event_type_to_camel_case('keydown.+') == 'keydown.+'
     assert helpers.event_type_to_camel_case('keydown.-') == 'keydown.-'
+    assert helpers.event_type_to_camel_case('keydown.page-down') == 'keydown.page-down'
+    assert helpers.event_type_to_camel_case('keydown.arrow-left') == 'keydown.arrow-left'

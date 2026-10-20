@@ -57,3 +57,6 @@ class InputChips(LabelElement, ValidationElement[list[str]], DisableableElement)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> list[str]:
         return e.args or []
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), *(self.value or [])]

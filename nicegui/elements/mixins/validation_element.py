@@ -18,7 +18,8 @@ class ValidationElement(ValueElement[ValueT]):
         self._auto_validation = True
         self._error: str | None = None
         super().__init__(**kwargs)
-        self._props['error'] = None if validation is None else False  # reserve bottom space for error message
+        with self._props.suspend_updates():
+            self._props['error'] = None if validation is None else False  # reserve bottom space for error message
 
     @property
     def validation(self) -> ValidationFunction | ValidationDict | None:
@@ -71,7 +72,7 @@ class ValidationElement(ValueElement[ValueT]):
             if helpers.should_await(result):
                 async def await_error():
                     self.error = await result
-                background_tasks.create(await_error(), name=f'validate {self.id}')
+                background_tasks.create(await_error(), name=f'validate {self.id}', context=self)
                 return True
             self.error = cast(str | None, result)
             return self.error is None

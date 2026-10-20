@@ -191,12 +191,16 @@ def test_app_timer(screen: Screen):
     assert counter.value > value, 'timer is also incrementing when opening another page'
 
 
-def test_cancel_current_invocation(screen: Screen):
+@pytest.mark.parametrize('protected', [False, True])
+def test_cancel_current_invocation(screen: Screen, protected: bool):
     counter = Counter()
 
     async def update():
         await asyncio.sleep(1.0)
         counter.increment()
+
+    if protected:
+        update = background_tasks.await_on_shutdown(update)
 
     @ui.page('/')
     def page():
@@ -275,3 +279,22 @@ def test_no_leak_when_client_deleted(screen: Screen):
     Client.prune_instances(client_age_threshold=0)
     screen.wait(1)
     assert not any(isinstance(obj, ui.timer) for obj in gc.get_objects())
+
+
+@pytest.mark.parametrize('kwargs', [{}, {'once': True}, {'immediate': False}], ids=['repeating', 'once', 'delayed'])
+async def test_no_error_when_timer_is_deleted_while_waiting_for_connection(user: User, kwargs: dict):
+    containers: list[ui.column] = []
+
+    @ui.page('/')
+    def page():
+        with ui.column() as container:
+            ui.timer(0.2, lambda: None, **kwargs)
+        containers.append(container)
+
+    await user.http_client.get('/')  # request the page without ever opening the websocket
+    await asyncio.sleep(0)
+    containers.pop().delete()  # delete the timer and drop the last reference to its parent slot
+    Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
+    gc.collect()
+    await asyncio.sleep(0.3)
+    # no assertion needed: the user fixture fails the test if the woken timer raises and logs an ERROR

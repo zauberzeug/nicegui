@@ -15,10 +15,16 @@ Work as a pair programmer, not a silent code generator:
 
 ## What to Avoid
 
+- **Hard-wrapping prose on GitHub** — in issues, pull requests and comments, GitHub renders every line break, so keep each paragraph on a single line.
 - **Overwriting `.env` files** without explicit user confirmation
 - **Creating new files** when editing existing ones would suffice
 - **Global mutable state** in library code
 - **Unnecessary dependencies** — check if existing code suffices first
+- **Reflexive regression tests** — not every bug fix earns a test, and a test coupled to implementation details can be worse than none.
+  Assert observable behavior, not internals: no private attributes, no patched machinery, no fake objects mirroring the code under test.
+  If you catch yourself building scaffolding to observe an internal mechanism, stop — find the user-visible effect to assert on, or skip the test and give the reason in the pull request.
+  Before writing a test, read a recent one in the same file and copy its shape.
+  (Details in [CONTRIBUTING.md](CONTRIBUTING.md#coding-conventions).)
 
 ## Before Claiming a Task Complete
 

@@ -1,7 +1,7 @@
 export default {
   mounted() {
-    for (const event of this.events) {
-      document.addEventListener(event, (evt) => {
+    this.handlers = this.events.map((event) => {
+      const handler = (evt) => {
         // https://github.com/zauberzeug/nicegui/issues/4290
         if (!(evt instanceof KeyboardEvent)) return;
 
@@ -24,7 +24,14 @@ export default {
           repeat: evt.repeat,
           locale: evt.locale,
         });
-      });
+      };
+      document.addEventListener(event, handler);
+      return [event, handler];
+    });
+  },
+  unmounted() {
+    for (const [event, handler] of this.handlers) {
+      document.removeEventListener(event, handler);
     }
   },
   props: {
