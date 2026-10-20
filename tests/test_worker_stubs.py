@@ -125,7 +125,7 @@ def test_bindable_dataclass_survives_worker_roundtrip(tmp_path):
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_stub_derived_instance_keeps_its_state_in_worker(tmp_path):
+def test_events_survive_worker_roundtrip(tmp_path):
     script = tmp_path / 'event_app.py'
     script.write_text(dedent('''\
         import multiprocessing as mp
@@ -136,17 +136,22 @@ def test_stub_derived_instance_keeps_its_state_in_worker(tmp_path):
         class Model(Event):
             pass
 
-        def child(queue, model):
-            queue.put(model.__dict__.get('value'))
+        def handler():
+            pass
+
+        def child(queue, event, model, subscribed):
+            queue.put((type(event).__name__, model.value, [c.func.__name__ for c in subscribed.callbacks]))
 
         if __name__ == '__main__':
             model = Model()
             model.value = 42
+            subscribed = Model()
+            subscribed.subscribe(handler)
             ctx = mp.get_context('spawn')
             q = ctx.Queue()
-            p = ctx.Process(target=child, args=(q, model))
+            p = ctx.Process(target=child, args=(q, Event(), model, subscribed))
             p.start()
-            assert q.get(timeout=30) == 42
+            assert q.get(timeout=30) == ('Event', 42, ['handler'])
             p.join()
     '''))
     result = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, timeout=60, check=False)

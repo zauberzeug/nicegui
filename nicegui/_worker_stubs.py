@@ -9,7 +9,7 @@ Modules listed in ``REAL_MODULES`` are NOT stubbed:
 
 - ``run`` must be real because unpickling a ``run.cpu_bound`` payload imports it in the worker
 - ``native`` must be real because the native-mode window subprocess executes its entry point
-- data-bearing modules (``binding``, ``dataclasses``, ``events``, ``observables``, ...) must be real so that
+- data-bearing modules (``binding``, ``dataclasses``, ``event``, ``events``, ``observables``, ...) must be real so that
   classes derived from them (e.g. via ``@binding.bindable_dataclass``) keep working in workers,
   including unpickling ``run.cpu_bound`` payloads that reference such classes
 - the set is closed under imports (enforced by ``tests/test_worker_stubs.py``):
@@ -41,6 +41,7 @@ REAL_MODULES = {
     'context',
     'core',
     'dataclasses',
+    'event',
     'events',
     'helpers',
     'json',
