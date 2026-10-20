@@ -67,7 +67,8 @@ class Sortable(Element, component='sortable.js', esm={'nicegui-sortable': 'dist'
 
     @animation.setter
     def animation(self, value: float) -> None:
-        self._props['options']['animation'] = value * 1000
+        if value * 1000 != self._props['options'].get('animation'):
+            self._props['options']['animation'] = value * 1000
 
     @property
     def handle(self) -> str | None:

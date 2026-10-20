@@ -6,6 +6,7 @@ import pytest
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import binding, ui
+from nicegui.elements.sortable import Sortable
 from nicegui.testing import Screen, User
 
 
@@ -320,6 +321,13 @@ async def test_nested_propagation(user: User):
     (ui.notification, {}, 'message', 42),
     (ui.notification, {}, 'timeout', None),
     (ui.notification, {}, 'timeout', 0.0021),
+    (Sortable, {'element': ui.row, 'options': None, 'on_end': None, 'animation': 0.15, 'handle': None, 'group': None,
+                'ghost_class': ''}, 'animation', 0.0021),
+    (ui.select, {'options': [1, 2]}, 'value', 7),
+    (ui.select, {'options': {1: 'a'}}, 'value', '1'),
+    (ui.select, {'options': [1, 2], 'multiple': True}, 'value', [1, 7]),
+    (ui.toggle, {'options': [1, 2]}, 'value', 9),
+    (ui.radio, {'options': [1, 2]}, 'value', 9),
 ])
 async def test_polled_binding_to_normalizing_setter(element_type: type, kwargs: dict, name: str, value: Any, user: User):
     updates = []
@@ -331,7 +339,8 @@ async def test_polled_binding_to_normalizing_setter(element_type: type, kwargs: 
 
     @ui.page('/')
     def page():
-        binding.bind_from(Element(**kwargs), name, {'value': value}, 'value')
+        element = Element(**{key: arg() if arg is ui.row else arg for key, arg in kwargs.items()})
+        binding.bind_from(element, name, {'value': value}, 'value')
 
     await user.open('/')
     updates.clear()

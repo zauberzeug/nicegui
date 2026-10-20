@@ -1,12 +1,21 @@
-from typing import Any
+from typing import Any, cast
 
 from typing_extensions import Self
 
+from ..binding import BindableProperty
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
+class _ChoiceValue(BindableProperty):
+
+    def __set__(self, owner: Any, value: Any) -> None:
+        super().__set__(owner, owner._to_valid_value(value))  # pylint: disable=protected-access
+
+
 class ChoiceElement(ValueElement[Any]):
+    value = _ChoiceValue(
+        on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
     def __init__(self, *,
                  tag: str | None = None,
@@ -37,6 +46,12 @@ class ChoiceElement(ValueElement[Any]):
         display = ', '.join(labels)
         form_label = getattr(self, 'label', None) or ''
         return f'{form_label}: {display}' if form_label else display
+
+    def _to_valid_value(self, value: Any) -> Any:
+        self._update_values_and_labels()
+        if getattr(self, 'multiple', False) and isinstance(value, list):
+            return [v for v in value if v in self._values]
+        return value if value in self._values else None
 
     def _update_values_and_labels(self) -> None:
         self._values = self.options if isinstance(self.options, list) else list(self.options.keys())

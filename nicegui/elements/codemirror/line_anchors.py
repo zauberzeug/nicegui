@@ -55,6 +55,8 @@ class LineAnchorElement(Element):
         logger, just like ``line_tooltips``, so a read never reports a position that was not applied.
         A line below 1 or not a whole number is rejected right away with a ``ValueError``.
 
+        It is not suited as a binding target, because a binding resets moved anchors to the declared lines.
+
         *Added in version 3.16.0*
         """
         return self._anchor_positions
