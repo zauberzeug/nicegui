@@ -214,6 +214,7 @@ def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
     ('c4_mermaid', 'c4_mermaid-flowchart-A-123-0', 'flowchart-v2', 'A-123'),  # a node ID may end in digits
     ('c13_mermaid', 'c13_mermaid-A-B-123', 'requirement', 'A-B-123'),  # verbatim, even when it looks indexed
     ('c13_mermaid', 'c13_mermaid-A-B-124', 'block', 'A-B-124'),
+    ('c13_mermaid', 'c13_mermaid-A-B-125', 'kanban', 'A-B-125'),
     # an unknown prefix must yield the raw ID, never a positional guess that recreates the old bug
     ('c4_mermaid', 'custom_mermaid-flowchart-A-0', 'flowchart-v2', 'custom_mermaid-flowchart-A-0'),
 ])
@@ -239,20 +240,16 @@ def test_node_click_handler_with_other_diagram_types(screen: Screen, content: st
     screen.should_contain(f'clicked [{node_id}]')
 
 
-def test_node_click_handler_with_requirement_ids(screen: Screen):
+@pytest.mark.parametrize('content', [
+    'requirementDiagram\n requirement "A-B-123" {\n id: 1\n }\n requirement "A-B-124" {\n id: 2\n }',
+    'kanban\n todo[Todo]\n  A-B-123[Task 1]\n  A-B-124[Task 2]',
+])
+def test_node_click_handler_with_verbatim_ids(screen: Screen, content: str):
     @ui.page('/')
     def page():
-        ui.mermaid('''
-            requirementDiagram
-            requirement "A-B-123" {
-                id: 1
-            }
-            requirement "A-B-124" {
-                id: 2
-            }
-        ''', on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
+        ui.mermaid(content, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
 
     screen.open('/')
-    for node_id in ['A-B-123', 'A-B-124']:
+    for node_id in ['A-B-123', 'A-B-124']:  # used to be truncated to "B" and to collide
         screen.find_by_css(f'[id="c4_mermaid-{node_id}"]').click()  # requirement labels can't be clicked by text
         screen.should_contain(f'clicked [{node_id}]')

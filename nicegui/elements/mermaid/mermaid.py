@@ -10,13 +10,13 @@ def _extract_node_id(html_id: str, svg_id: str, diagram_type: str) -> str:
     """Extract the Mermaid node ID from a clicked node's HTML ID.
 
     Mermaid prefixes every node ID with the SVG ID. Most diagram types then add a type token and a
-    trailing index (``<svg_id>-<type>-<node_id>-<index>``), but block, mindmap and requirement
-    diagrams emit ``<svg_id>-<node_id>`` verbatim.
+    trailing index (``<svg_id>-<type>-<node_id>-<index>``), but block, kanban, mindmap and
+    requirement diagrams emit ``<svg_id>-<node_id>`` verbatim.
     """
     prefix = f'{svg_id}-'
     if not html_id.startswith(prefix):
         return html_id  # unexpected shape: hand back the raw ID rather than mis-parse it
-    if diagram_type in {'block', 'mindmap', 'requirement'}:
+    if diagram_type in {'block', 'kanban', 'mindmap', 'requirement'}:
         return html_id[len(prefix):]
     parts = html_id[len(prefix):].split('-')
     return '-'.join(parts[1:-1] if len(parts) >= 3 and parts[-1].isdigit() else parts)
