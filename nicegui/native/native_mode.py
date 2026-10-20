@@ -80,6 +80,13 @@ def _open_window(
 
     _start_window_method_executor(window, method_queue, response_queue, closed)
     _warn_if_esm_unsupported(window)
+
+    if sys.platform == 'win32':
+        import ctypes
+        # Ignore uvicorn's console-wide Ctrl+C during worker reloads.
+        # Child processes inherit this setting; this process only starts WebView2.
+        ctypes.windll.kernel32.SetConsoleCtrlHandler(None, True)
+
     webview.start(**start_args)
 
 
