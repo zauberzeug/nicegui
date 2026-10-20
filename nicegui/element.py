@@ -86,9 +86,6 @@ class Element(Visibility):
         if self._parent_slot:
             client.outbox.enqueue_update(parent_slot.parent)
 
-        self._props.add_rename('resource_path', 'resource-path')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('dynamic_resource_path', 'dynamic-resource-path')  # DEPRECATED: remove in NiceGUI 4.0
-
     def __init_subclass__(cls, *,
                           component: str | Path | None = None,
                           dependencies: list[str | Path] = [],  # noqa: B006

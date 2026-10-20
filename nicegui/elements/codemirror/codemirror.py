@@ -125,9 +125,6 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
 
-        self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
-
     def reveal_line(self, line_number: int) -> None:
         """Scroll the editor so the given 1-indexed line is visible.
 

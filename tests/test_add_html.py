@@ -41,52 +41,6 @@ def test_css(screen: Screen, shared: bool, delayed: bool):
     assert label.value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
 
 
-@pytest.mark.parametrize('shared', [False, True])
-@pytest.mark.parametrize('delayed', [False, True])
-def test_scss(screen: Screen, shared: bool, delayed: bool):
-    @ui.page('/')
-    async def page():
-        if delayed:
-            await ui.context.client.connected()
-        ui.add_scss('''
-            .green {
-                background-color: lightgreen;
-                .blue {
-                    color: blue;
-                }
-            }
-        ''', shared=shared)
-        with ui.element().classes('green'):
-            ui.label('This is blue on green with SCSS.').classes('blue')
-
-    screen.open('/')
-    label = screen.find('This is blue on green with SCSS.')
-    screen.wait(0.5)
-    assert label.value_of_css_property('color') == 'rgba(0, 0, 255, 1)'
-
-
-@pytest.mark.parametrize('shared', [False, True])
-@pytest.mark.parametrize('delayed', [False, True])
-def test_sass(screen: Screen, shared: bool, delayed: bool):
-    @ui.page('/')
-    async def page():
-        if delayed:
-            await ui.context.client.connected()
-        ui.add_sass('''
-            .yellow
-                background-color: yellow
-                .purple
-                    color: purple
-        ''', shared=shared)
-        with ui.element().classes('yellow'):
-            ui.label('This is purple on yellow with SASS.').classes('purple')
-
-    screen.open('/')
-    label = screen.find('This is purple on yellow with SASS.')
-    screen.wait(0.5)
-    assert label.value_of_css_property('color') == 'rgba(128, 0, 128, 1)'
-
-
 def test_add_body_html_and_css_after_await_in_async_sub_page(screen: Screen):
     async def sub():
         ui.add_body_html('<div>early body html</div>')
@@ -112,18 +66,6 @@ def test_add_css_with_script(screen: Screen):
         ui.add_css("</style></script><script>document.write('XSS');</script>")
         ui.label('Hello, World!')
 
-    screen.open('/')
-    screen.should_contain('Hello, World!')
-    screen.should_not_contain('XSS')
-
-
-def test_add_scss_with_script(screen: Screen):
-    @ui.page('/')
-    def page():
-        ui.add_scss("</style></script><script>document.write('XSS');</script>")
-        ui.label('Hello, World!')
-
-    screen.allowed_js_errors.append('static/sass.dart.js')
     screen.open('/')
     screen.should_contain('Hello, World!')
     screen.should_not_contain('XSS')

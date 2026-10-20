@@ -148,13 +148,7 @@ ValueT = TypeVar('ValueT')
 @dataclass(kw_only=True, slots=True)
 class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
     value: ValueT
-    previous_value: ValueT = ...  # type: ignore[assignment]
-
-    def __post_init__(self):
-        # DEPRECATED: previous_value will be required in NiceGUI 4.0
-        if self.previous_value is ...:
-            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
-                              'In NiceGUI 4.0 this will raise an error.')
+    previous_value: ValueT
 
 
 @dataclass(kw_only=True, slots=True)
