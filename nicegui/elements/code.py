@@ -1,4 +1,5 @@
 import asyncio
+import re
 import time
 
 from ..helpers import remove_indentation
@@ -25,7 +26,7 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
 
         with self:
             self.markdown = markdown(extras=['fenced-code-blocks']).style('overflow: auto; height: 100%') \
-                .bind_content_from(self, 'content', lambda content: f'```{language}\n{content}\n```')
+                .bind_content_from(self, 'content', lambda _: self._render_markdown())
             self.copy_button = button(icon='content_copy', on_click=self.show_checkmark) \
                 .props('round flat size=sm').classes('nicegui-code-copy') \
                 .on('click', js_handler=f'() => navigator.clipboard.writeText(getElement("{self.id}").content)')
@@ -49,7 +50,9 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
         self.copy_button.set_visibility(time.time() > self._last_scroll + 1.0)
 
     def _render_markdown(self) -> str:
-        return f'```{self._language or ""}\n{self.content}\n```'
+        max_backticks = max((len(match) for match in re.findall(r'`+', self.content)), default=0)
+        fence = '`' * max(3, max_backticks + 1)
+        return f'{fence}{self._language or ""}\n{self.content}\n{fence}'
 
     def _handle_content_change(self, content: str) -> None:
         self._props['content'] = content
