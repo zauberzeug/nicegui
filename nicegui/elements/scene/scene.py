@@ -114,11 +114,14 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self.stack: list[Object3D | SceneObject] = [SceneObject()]
         self._batched_calls: list[list[Any]] | None = None
         self._initialized_event = asyncio.Event()
+        self._settled_event = asyncio.Event()
+        self._init_error: str | None = None
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)
+        self.on('init-failed', self._handle_init_failed)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
@@ -182,7 +185,9 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         return attribute
 
     def _handle_init(self) -> None:
+        self._init_error = None
         self._initialized_event.set()
+        self._settled_event.set()
         # the client starts with an empty scene graph, both on the first init (method calls issued before the component
         # was mounted are dropped, see `run_method`) and after a JS remount (e.g. after WebGL context loss);
         # re-send parents before children (dict order can deviate after attach())
@@ -216,13 +221,22 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
             return NullResponse()
         return super().run_method(name, *args, timeout=timeout)
 
+    def _handle_init_failed(self) -> None:
+        if not self._initialized_event.is_set():
+            self._init_error = 'Could not create WebGL renderer.'
+            self._settled_event.set()
+
     async def initialized(self) -> None:
         """Wait until the scene is initialized.
 
         *Updated in version 3.17.0: Awaiting scene initialization cancels the awaiting task
         when the scene is deleted, e.g. because the client disconnected.*
+
+        *Updated in version 3.19.0: Raises a ``RuntimeError`` if the browser could not create a WebGL renderer.*
         """
-        await self._wait_for(self._initialized_event)
+        await self._wait_for(self._settled_event)
+        if self._init_error is not None:
+            raise RuntimeError(self._init_error)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

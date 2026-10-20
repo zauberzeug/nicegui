@@ -1,5 +1,7 @@
+import asyncio
 import gc
 import weakref
+from collections.abc import Callable
 from typing import Literal
 
 import numpy as np
@@ -487,6 +489,69 @@ def test_context_loss_recovery_restores_objects(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id} !== window.sceneBeforeRecovery', True)  # remounting replaces the scene
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
+
+
+def test_initialized_raises_without_webgl(screen: Screen):
+    @ui.page('/')
+    async def page():
+        scene = ui.scene()
+        view = ui.scene_view(scene)
+        for element in (scene, view):
+            try:
+                await element.initialized()
+            except RuntimeError as e:
+                ui.label(f'{type(element).__name__}: {e}')
+
+    script = screen.selenium.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': '''
+        const getContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+            return type.startsWith('webgl') ? null : getContext.call(this, type, ...args);
+        };
+    '''})
+    screen.allowed_js_errors.append('Error creating WebGL context.')
+    try:
+        screen.open('/')
+        screen.should_contain('Scene: Could not create WebGL renderer.')
+        screen.should_contain('SceneView: Could not create WebGL renderer.')
+        for name in ('nicegui-scene', 'nicegui-scene-view'):
+            assert screen.find_by_class(name).text == 'Could not create WebGL renderer.', 'the fallback is visible'
+    finally:
+        screen.selenium.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', script)
+
+
+@pytest.mark.parametrize('create_element', [ui.scene, lambda: ui.scene_view(ui.scene())], ids=['scene', 'scene_view'])
+async def test_initialized_after_failed_and_successful_init(user: User,
+                                                            create_element: Callable[[], ui.scene | ui.scene_view]):
+    results = []
+
+    @ui.page('/')
+    def page():
+        element = create_element().mark('element')
+
+        async def wait_for_init() -> None:
+            try:
+                await element.initialized()
+                results.append('initialized')
+            except RuntimeError:
+                results.append('failed')
+
+        ui.button('Wait', on_click=wait_for_init)
+
+    await user.open('/')
+    user.find('Wait').click()
+    user.find('element').trigger('initFailed')
+    await asyncio.sleep(0.1)
+    assert results == ['failed'], 'a pending wait raises on failure'
+
+    user.find('element').trigger('init')
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)
+    assert results == ['failed', 'initialized'], 'a later successful init clears the failure'
+
+    user.find('element').trigger('initFailed')
+    user.find('Wait').click()
+    await asyncio.sleep(0.1)
+    assert results == ['failed', 'initialized', 'initialized'], 'a failure after a successful init affects no one'
 
 
 def test_objects_created_before_the_scene_is_mounted(screen: Screen):
