@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -203,4 +204,20 @@ def test_marker_not_set_means_real_import_in_child(tmp_path):
             p.join()
     '''))
     result = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, timeout=60, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_marker_removed_when_run_fails_before_serving():
+    code = dedent('''\
+        import os
+        from nicegui import ui
+        try:
+            ui.run(workers=2, reload=False, show=False)
+        except ValueError:
+            pass
+        assert 'NICEGUI_WORKER_STUBS' not in os.environ
+    ''')
+    env = {k: v for k, v in os.environ.items() if not k.startswith(('PYTEST', 'NICEGUI'))}  # run outside test mode
+    result = subprocess.run([sys.executable, '-c', code], capture_output=True, text=True, timeout=30, check=False,
+                            env=env)
     assert result.returncode == 0, result.stdout + result.stderr
