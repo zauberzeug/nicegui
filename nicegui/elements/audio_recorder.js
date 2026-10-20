@@ -10,10 +10,7 @@ export default {
       let stream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        if (session.cancelled) {
-          if (session.discard) return stream.getTracks().forEach((track) => track.stop());
-          throw new DOMException("Recording was stopped before it started", "AbortError");
-        }
+        if (session.cancelled) return stream.getTracks().forEach((track) => track.stop());
         const recorder = new MediaRecorder(stream, this.mime_type ? { mimeType: this.mime_type } : {});
         const chunks = [];
         recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data);
@@ -27,7 +24,7 @@ export default {
       } catch (error) {
         stream?.getTracks().forEach((track) => track.stop());
         if (this.session === session) this.session = null;
-        this.$emit("error", { name: error.name, message: error.message });
+        if (!session.cancelled) this.$emit("error", { name: error.name, message: error.message });
       }
     },
     stop(discard = false) {
@@ -36,7 +33,8 @@ export default {
       this.session = null;
       session.cancelled = true;
       session.discard = discard;
-      session.recorder?.stop();
+      if (session.recorder) session.recorder.stop();
+      else if (!discard) this.$emit("error", { name: "AbortError", message: "Recording was stopped before it started" });
     },
     async upload(blob) {
       const extension = blob.type.split("/")[1]?.split(";")[0] || "bin";
