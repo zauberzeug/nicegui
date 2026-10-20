@@ -50,7 +50,7 @@ class Code(ContentElement, component='code.js', default_classes='nicegui-code'):
         self.copy_button.set_visibility(time.time() > self._last_scroll + 1.0)
 
     def _render_markdown(self) -> str:
-        max_backticks = max((len(match) for match in re.findall(r'`+', self.content)), default=0)
+        max_backticks = max(map(len, re.findall(r'`+', self.content)), default=0)
         fence = '`' * max(3, max_backticks + 1)
         return f'{fence}{self._language or ""}\n{self.content}\n{fence}'
 
