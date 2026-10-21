@@ -14,8 +14,8 @@ _MISSING = object()
 
 class ObservableCollection(abc.ABC):  # noqa: B024
     # pylint: disable=assigning-non-slot
-    if not TYPE_CHECKING:
-        __slots__ = ()
+    if not TYPE_CHECKING:  # hidden from mypy, which would otherwise reject the attribute assignments in __init__
+        __slots__ = ()  # non-empty slots would conflict with dict/list/set; the concrete subclasses declare them
 
     def __init__(self, *,
                  factory: Callable,

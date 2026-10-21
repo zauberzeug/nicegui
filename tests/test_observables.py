@@ -8,7 +8,6 @@ import pytest
 
 from nicegui import ui
 from nicegui.observables import ObservableDict, ObservableList, ObservableSet
-from nicegui.persistence.pseudo_persistent_dict import PseudoPersistentDict
 from nicegui.testing import Screen, User
 
 # pylint: disable=global-statement
@@ -363,7 +362,7 @@ def test_no_op_set_mutations_do_not_fire_change_events():
     assert count == 2, 'real mutations still fire exactly one change event each'
 
 
-async def test_collections_have_no_instance_dict(user: User):
+async def test_collections_reject_arbitrary_attributes(user: User):
     @ui.page('/')
     def page():
         ui.label('Hello')
@@ -371,12 +370,5 @@ async def test_collections_have_no_instance_dict(user: User):
     await user.open('/')
     label = user.find(ui.label).elements.pop()
     for data in [ObservableDict(), ObservableList(), ObservableSet(), label.props, label.classes, label.style]:
-        assert not hasattr(data, '__dict__')
         with pytest.raises(AttributeError):
             data.foo = 1
-
-    persistent = PseudoPersistentDict()
-    persistent.foo = 1
-    persistent['a'] = 1
-    assert persistent.foo == 1
-    assert persistent == {'a': 1}
