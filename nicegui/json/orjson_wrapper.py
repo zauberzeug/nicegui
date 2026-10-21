@@ -4,7 +4,6 @@ from typing import Any
 
 # pylint: disable=no-member
 import orjson
-from fastapi.responses import JSONResponse
 
 from .registry import find_converter
 
@@ -53,6 +52,14 @@ def loads(value: str) -> Any:
     return orjson.loads(value)
 
 
+def _dumps_bytes(obj: Any) -> bytes:
+    """Serialize a Python object directly to JSON-encoded bytes.
+
+    Uses package `orjson` internally.
+    """
+    return orjson.dumps(obj, option=ORJSON_OPTS, default=_orjson_converter)
+
+
 def _orjson_converter(obj):
     """Custom serializer/converter, e.g. for NumPy object arrays and registered custom types."""
     if converter := find_converter(obj):
@@ -64,13 +71,3 @@ def _orjson_converter(obj):
     if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
-
-
-class NiceGUIJSONResponse(JSONResponse):
-    """FastAPI response class to support our custom json serializer implementation.
-
-    Uses package `orjson` internally.
-    """
-
-    def render(self, content: Any) -> bytes:
-        return orjson.dumps(content, option=ORJSON_OPTS, default=_orjson_converter)
