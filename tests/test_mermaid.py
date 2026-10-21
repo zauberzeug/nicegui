@@ -2,7 +2,6 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import events, ui
-from nicegui.elements.mermaid.mermaid import _extract_node_id
 from nicegui.testing import Screen
 
 
@@ -169,6 +168,7 @@ def test_node_click_handler(screen: Screen):
                 A[Node A];
                 B[Node B];
                 Node-With-Hyphen[Node With Hyphen];
+                A-123[Node A-123];
         ''', on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
 
     screen.open('/')
@@ -180,6 +180,9 @@ def test_node_click_handler(screen: Screen):
 
     screen.click('Node With Hyphen')
     screen.should_contain('clicked [Node-With-Hyphen]')  # make sure our ID extraction works even with hyphens
+
+    screen.click('Node A-123')
+    screen.should_contain('clicked [A-123]')  # a trailing number must not be mistaken for Mermaid's node index
 
 
 def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
@@ -202,33 +205,15 @@ def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
     assert len(ids) == len(set(ids)), 'every id on the page should be unique'
 
 
-@pytest.mark.parametrize(('svg_id', 'html_id', 'diagram_type', 'node_id'), [
-    ('c4_mermaid', 'c4_mermaid-flowchart-A-0', 'flowchart-v2', 'A'),
-    ('c4_mermaid', 'c4_mermaid-flowchart-Node-With-Hyphen-1', 'flowchart-v2', 'Node-With-Hyphen'),
-    ('c7_mermaid', 'c7_mermaid-state-s1-0', 'stateDiagram', 's1'),
-    ('c8_mermaid', 'c8_mermaid-classId-Animal-0', 'class', 'Animal'),
-    ('c9_mermaid', 'c9_mermaid-entity-CUSTOMER-ORDER-0', 'er', 'CUSTOMER-ORDER'),
-    ('c13_mermaid', 'c13_mermaid-A', 'block', 'A'),  # block, mindmap and requirement: no type token, no index
-    ('c10_mermaid', 'c10_mermaid-node_0', 'mindmap', 'node_0'),
-    ('c11_mermaid', 'c11_mermaid-test_req', 'requirement', 'test_req'),
-    ('c4_mermaid', 'c4_mermaid-flowchart-A-123-0', 'flowchart-v2', 'A-123'),  # a node ID may end in digits
-    ('c13_mermaid', 'c13_mermaid-A-B-123', 'requirement', 'A-B-123'),  # verbatim, even when it looks indexed
-    ('c13_mermaid', 'c13_mermaid-A-B-124', 'block', 'A-B-124'),
-    ('c13_mermaid', 'c13_mermaid-A-B-125', 'kanban', 'A-B-125'),
-    # an unknown prefix must yield the raw ID, never a positional guess that recreates the old bug
-    ('c4_mermaid', 'custom_mermaid-flowchart-A-0', 'flowchart-v2', 'custom_mermaid-flowchart-A-0'),
-])
-def test_extract_node_id(svg_id: str, html_id: str, diagram_type: str, node_id: str):
-    assert _extract_node_id(html_id, svg_id, diagram_type) == node_id
-
-
 @pytest.mark.parametrize(('content', 'label', 'node_id'), [
+    # every diagram type that adds a type token and an index ("<svg_id>-<type>-<node_id>-<index>")
+    ('flowchart-elk TD\n A-1', 'A-1', 'A-1'),
     ('classDiagram\n class Animal', 'Animal', 'Animal'),  # type token is "classId", not "flowchart"
+    ('classDiagram-v2\n class Animal', 'Animal', 'Animal'),
+    ('stateDiagram\n s1 --> s2', 's1', 's1'),
     ('stateDiagram-v2\n s1 --> s2', 's1', 's1'),
     ('erDiagram\n CUSTOMER-ORDER ||--o{ LINE-ITEM : has', 'CUSTOMER-ORDER', 'CUSTOMER-ORDER'),
-    # block, mindmap and requirement diagrams emit "<svg_id>-<node_id>": no type token, no index.
-    # Only block is exercised here because Selenium cannot click the other two's SVG labels.
-    ('block-beta\n columns 1\n A', 'A', 'A'),
+    ('block-beta\n columns 1\n A', 'A', 'A'),  # block diagrams emit "<svg_id>-<node_id>": no type token, no index
 ])
 def test_node_click_handler_with_other_diagram_types(screen: Screen, content: str, label: str, node_id: str):
     @ui.page('/')
@@ -240,16 +225,21 @@ def test_node_click_handler_with_other_diagram_types(screen: Screen, content: st
     screen.should_contain(f'clicked [{node_id}]')
 
 
-@pytest.mark.parametrize('content', [
-    'requirementDiagram\n requirement "A-B-123" {\n id: 1\n }\n requirement "A-B-124" {\n id: 2\n }',
-    'kanban\n todo[Todo]\n  A-B-123[Task 1]\n  A-B-124[Task 2]',
+@pytest.mark.parametrize(('content', 'node_ids'), [
+    ('requirementDiagram\n requirement "A-B-123" {\n id: 1\n }\n requirement "A-B-124" {\n id: 2\n }',
+     ['A-B-123', 'A-B-124']),
+    ('kanban\n todo[Todo]\n  A-B-123[Task 1]\n  A-B-124[Task 2]', ['A-B-123', 'A-B-124']),
+    ('mindmap\n root((Root))\n  Child', ['node_0', 'node_1']),  # mindmap generates its own node IDs
 ])
-def test_node_click_handler_with_verbatim_ids(screen: Screen, content: str):
+def test_node_click_handler_with_verbatim_ids(screen: Screen, content: str, node_ids: list[str]):
+    m = None
+
     @ui.page('/')
     def page():
-        ui.mermaid(content, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
+        nonlocal m
+        m = ui.mermaid(content, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
 
     screen.open('/')
-    for node_id in ['A-B-123', 'A-B-124']:  # used to be truncated to "B" and to collide
-        screen.find_by_css(f'[id="c4_mermaid-{node_id}"]').click()  # requirement labels can't be clicked by text
+    for node_id in node_ids:  # "A-B-123" used to be truncated to "B" and to collide with "A-B-124"
+        screen.find_by_css(f'[id="{m.html_id}_mermaid-{node_id}"]').click()  # these labels can't be clicked by text
         screen.should_contain(f'clicked [{node_id}]')
