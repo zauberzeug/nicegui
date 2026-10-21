@@ -205,41 +205,30 @@ def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
     assert len(ids) == len(set(ids)), 'every id on the page should be unique'
 
 
-@pytest.mark.parametrize(('content', 'label', 'node_id'), [
-    # every diagram type that adds a type token and an index ("<svg_id>-<type>-<node_id>-<index>")
-    ('flowchart-elk TD\n A-1', 'A-1', 'A-1'),
-    ('classDiagram\n class Animal', 'Animal', 'Animal'),  # type token is "classId", not "flowchart"
-    ('classDiagram-v2\n class Animal', 'Animal', 'Animal'),
-    ('stateDiagram\n s1 --> s2', 's1', 's1'),
-    ('stateDiagram-v2\n s1 --> s2', 's1', 's1'),
-    ('erDiagram\n CUSTOMER-ORDER ||--o{ LINE-ITEM : has', 'CUSTOMER-ORDER', 'CUSTOMER-ORDER'),
-    ('block-beta\n columns 1\n A', 'A', 'A'),  # block diagrams emit "<svg_id>-<node_id>": no type token, no index
-])
-def test_node_click_handler_with_other_diagram_types(screen: Screen, content: str, label: str, node_id: str):
-    @ui.page('/')
-    def page():
-        ui.mermaid(content, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
-
-    screen.open('/')
-    screen.click(label)
-    screen.should_contain(f'clicked [{node_id}]')
-
-
-@pytest.mark.parametrize(('content', 'node_ids'), [
+@pytest.mark.parametrize(('content', 'nodes', 'config'), [
+    # the other diagram types that add a type token and an index ("<svg_id>-<type>-<node_id>-<index>")
+    ('graph TD\n A-1', {'A-1': 'A-1'}, {'flowchart': {'defaultRenderer': 'dagre-d3'}}),  # legacy "flowchart" detector
+    ('flowchart-elk TD\n A-1', {'A-1': 'A-1'}, None),
+    ('classDiagram\n class Animal', {'Animal': 'Animal'}, None),  # type token is "classId", not "flowchart"
+    ('classDiagram-v2\n class Animal', {'Animal': 'Animal'}, None),
+    ('stateDiagram\n s1 --> s2', {'s1': 's1'}, None),
+    ('stateDiagram-v2\n s1 --> s2', {'s1': 's1'}, None),
+    ('erDiagram\n CUSTOMER-ORDER ||--o{ LINE-ITEM : has', {'CUSTOMER-ORDER': 'CUSTOMER-ORDER'}, None),
+    # all other diagram types use the node ID verbatim ("<svg_id>-<node_id>")
+    ('block-beta\n columns 1\n A', {'A': 'A'}, None),
     ('requirementDiagram\n requirement "A-B-123" {\n id: 1\n }\n requirement "A-B-124" {\n id: 2\n }',
-     ['A-B-123', 'A-B-124']),
-    ('kanban\n todo[Todo]\n  A-B-123[Task 1]\n  A-B-124[Task 2]', ['A-B-123', 'A-B-124']),
-    ('mindmap\n root((Root))\n  Child', ['node_0', 'node_1']),  # mindmap generates its own node IDs
+     {'A-B-123': 'A-B-123', 'A-B-124': 'A-B-124'}, None),  # used to be truncated to "B" and to collide with each other
+    ('kanban\n todo[Todo]\n  A-B-123[Task 1]\n  A-B-124[Task 2]', {'Task 1': 'A-B-123', 'Task 2': 'A-B-124'}, None),
+    # mindmap generates its own node IDs
+    ('mindmap\n root((Root))\n  Child', {'Root': 'node_0', 'Child': 'node_1'}, None),
 ])
-def test_node_click_handler_with_verbatim_ids(screen: Screen, content: str, node_ids: list[str]):
-    m = None
-
+def test_node_click_handler_with_other_diagram_types(screen: Screen,
+                                                     content: str, nodes: dict[str, str], config: dict | None):
     @ui.page('/')
     def page():
-        nonlocal m
-        m = ui.mermaid(content, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
+        ui.mermaid(content, config, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
 
     screen.open('/')
-    for node_id in node_ids:  # "A-B-123" used to be truncated to "B" and to collide with "A-B-124"
-        screen.find_by_css(f'[id="{m.html_id}_mermaid-{node_id}"]').click()  # these labels can't be clicked by text
+    for label, node_id in nodes.items():
+        screen.click(label)
         screen.should_contain(f'clicked [{node_id}]')

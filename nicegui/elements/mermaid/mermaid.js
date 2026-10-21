@@ -4,7 +4,8 @@ let is_running = false;
 const queue = [];
 
 // These diagram types build their DOM IDs as "<svg_id>-<type>-<node_id>-<index>"; all others use "<svg_id>-<node_id>".
-const INDEXED_DIAGRAM_TYPES = ["flowchart-v2", "flowchart-elk", "class", "classDiagram", "stateDiagram", "er"];
+// "flowchart" is the legacy detector for "graph" diagrams with config.flowchart.defaultRenderer = "dagre-d3".
+const INDEXED_DIAGRAM_TYPES = ["flowchart", "flowchart-v2", "flowchart-elk", "class", "classDiagram", "stateDiagram", "er"];
 
 function extractNodeId(domId, svgId, diagramType) {
   const prefix = svgId + "-";
@@ -39,21 +40,20 @@ export default {
       is_running = true;
       while (queue.length) {
         const { element, content, clickable } = queue.shift();
+        const svgId = element.id + "_mermaid";
         try {
-          const svgId = element.id + "_mermaid";
           const { svg, bindFunctions, diagramType } = await mermaid.render(svgId, content);
           element.innerHTML = svg;
           bindFunctions?.(element);
           if (clickable) {
             element.querySelectorAll("g.node").forEach((node) => {
+              const nodeId = extractNodeId(node.id, svgId, diagramType);
               node.style.cursor = "pointer";
-              node.addEventListener("click", () =>
-                getElement(element).$emit("node_click", extractNodeId(node.id, svgId, diagramType)),
-              );
+              node.addEventListener("click", () => getElement(element).$emit("node_click", nodeId));
             });
           }
         } catch (error) {
-          const { svg, bindFunctions } = await mermaid.render(element.id + "_mermaid", "error");
+          const { svg, bindFunctions } = await mermaid.render(svgId, "error");
           element.innerHTML = svg;
           bindFunctions?.(element);
           const mermaidErrorFormat = { str: error.message, message: error.message, hash: error.name, error };
