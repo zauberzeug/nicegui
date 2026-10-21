@@ -2,6 +2,7 @@ from nicegui import ui
 
 from . import (
     audio_documentation,
+    audio_recorder_documentation,
     avatar_documentation,
     doc,
     icon_documentation,
@@ -37,6 +38,7 @@ def captions_and_overlays_demo():
 doc.intro(interactive_image_documentation)
 doc.intro(parallax_documentation)
 doc.intro(audio_documentation)
+doc.intro(audio_recorder_documentation)
 doc.intro(video_documentation)
 doc.intro(icon_documentation)
 doc.intro(avatar_documentation)
