@@ -6,6 +6,7 @@ import pytest
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import binding, ui
+from nicegui.elements.sortable import Sortable
 from nicegui.testing import Screen, User
 
 
@@ -311,6 +312,41 @@ async def test_nested_propagation(user: User):
 
     await user.open('/')
     await user.should_see('a = 2')  # the final value of a should be 2
+
+
+@pytest.mark.parametrize('element_type, kwargs, name, value', [
+    (ui.table, {'rows': [], 'column_defaults': {'align': 'left'}}, 'columns', [{'name': 'a', 'field': 'a'}]),
+    (ui.codemirror, {}, 'decorations', None),
+    (ui.codemirror, {}, 'line_anchors', None),
+    (ui.notification, {}, 'message', 42),
+    (ui.notification, {}, 'timeout', None),
+    (ui.notification, {}, 'timeout', 0.0021),
+    (Sortable, {'element': ui.row, 'options': None, 'on_end': None, 'animation': 0.15, 'handle': None, 'group': None,
+                'ghost_class': ''}, 'animation', 0.0021),
+    (ui.select, {'options': [1, 2]}, 'value', 7),
+    (ui.select, {'options': {1: 'a'}}, 'value', '1'),
+    (ui.select, {'options': [1, 2], 'multiple': True}, 'value', [1, 7]),
+    (ui.toggle, {'options': [1, 2]}, 'value', 9),
+    (ui.radio, {'options': [1, 2]}, 'value', 9),
+])
+async def test_polled_binding_to_normalizing_setter(element_type: type, kwargs: dict, name: str, value: Any, user: User):
+    updates = []
+
+    class Element(element_type):
+        def update(self) -> None:
+            updates.append(name)
+            super().update()
+
+    @ui.page('/')
+    def page():
+        element = Element(**{key: arg() if arg is ui.row else arg for key, arg in kwargs.items()})
+        binding.bind_from(element, name, {'value': value}, 'value')
+
+    await user.open('/')
+    updates.clear()
+    for _ in range(3):
+        binding._refresh_step()  # pylint: disable=protected-access
+    assert not updates
 
 
 def test_binding_other_dict_is_strict(screen: Screen):
