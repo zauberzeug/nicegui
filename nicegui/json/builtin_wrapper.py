@@ -3,6 +3,8 @@ import json
 from datetime import date, datetime
 from typing import Any
 
+from .registry import find_converter
+
 try:
     HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 except (ModuleNotFoundError, ValueError):
@@ -26,7 +28,7 @@ def dumps(obj: Any,
         indent=2 if indent else None,
         allow_nan=False,
         ensure_ascii=False,
-        cls=NumpyJsonEncoder)
+        cls=NiceGUIJSONEncoder)
 
 
 def loads(value: str) -> Any:
@@ -45,10 +47,12 @@ def _dumps_bytes(obj: Any) -> bytes:
     return dumps(obj).encode('utf-8')
 
 
-class NumpyJsonEncoder(json.JSONEncoder):
-    """Special json encoder that supports NumPy arrays and date/datetime objects."""
+class NiceGUIJSONEncoder(json.JSONEncoder):
+    """Special JSON encoder that supports NumPy arrays, date/datetime objects and registered custom types."""
 
     def default(self, o):
+        if converter := find_converter(o):
+            return converter(o)
         if HAS_NUMPY:
             import numpy as np  # pylint: disable=import-outside-toplevel
             if isinstance(o, np.integer):

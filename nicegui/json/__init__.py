@@ -11,6 +11,7 @@ to override Python's default json module.
 from typing import TYPE_CHECKING
 
 from .. import _lazy
+from .registry import register_type
 
 try:
     from .orjson_wrapper import _dumps_bytes, dumps, loads  # _dumps_bytes is re-exported for response.py
@@ -30,6 +31,7 @@ __all__ = [
     'NiceGUIJSONResponse',
     'dumps',
     'loads',
+    'register_type',
 ]
 
 
