@@ -360,3 +360,15 @@ def test_no_op_set_mutations_do_not_fire_change_events():
     data.add(3)
     data.discard(3)
     assert count == 2, 'real mutations still fire exactly one change event each'
+
+
+async def test_collections_reject_arbitrary_attributes(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    await user.open('/')
+    label = user.find(ui.label).elements.pop()
+    for data in [ObservableDict(), ObservableList(), ObservableSet(), label.props, label.classes, label.style]:
+        with pytest.raises(AttributeError):
+            data.foo = 1

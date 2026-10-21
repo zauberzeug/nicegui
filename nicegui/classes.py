@@ -12,6 +12,7 @@ T = TypeVar('T', bound='Element')
 
 
 class Classes(ObservableList, Generic[T]):
+    __slots__ = ('_element', '_suspend_count')
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, on_change=self._update, **kwargs)
