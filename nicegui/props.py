@@ -56,6 +56,7 @@ T = TypeVar('T', bound='Element')
 
 
 class Props(ObservableDict, Generic[T]):
+    __slots__ = ('_element', '_renames', '_suspend_count', '_warnings')
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, on_change=self._update, **kwargs)
