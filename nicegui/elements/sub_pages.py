@@ -3,7 +3,7 @@ import inspect
 import re
 from collections.abc import Callable
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit
 
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
@@ -147,7 +147,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         # paths outside our root_path are not ours to handle (see https://github.com/zauberzeug/nicegui/issues/6385)
         normalized_root = root_path.rstrip('/')
         if normalized_root:
-            path = urlparse(self._router.current_path).path
+            path = urlsplit(self._router.current_path).path
             if path != normalized_root and not path.startswith(normalized_root + '/'):
                 return None
         match: RouteMatch | None = None

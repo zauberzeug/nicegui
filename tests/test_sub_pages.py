@@ -550,7 +550,8 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     assert screen.current_path.rstrip('/') == '/foo/sub'
 
 
-def test_navigating_to_path_outside_root_path(screen: Screen):
+@pytest.mark.parametrize('root_path', ['/admin', '/admin;v1'])
+def test_navigating_to_path_outside_root_path(screen: Screen, root_path: str):
     # regression test for https://github.com/zauberzeug/nicegui/issues/6385
     @ui.page('/')
     def index():
@@ -560,20 +561,20 @@ def test_navigating_to_path_outside_root_path(screen: Screen):
     def other():
         ui.label('Other page')
 
-    @ui.page('/admin')
+    @ui.page(root_path)
     def admin():
-        ui.sub_pages({'/': lambda: ui.label('Admin overview')}, root_path='/admin')
+        ui.sub_pages({'/': lambda: ui.label('Admin overview')}, root_path=root_path)
         ui.link('Go to index', '/')
         ui.link('Go to other', '/other')
 
-    screen.open('/admin')
+    screen.open(root_path)
     screen.should_contain('Admin overview')
 
     screen.click('Go to index')
     screen.should_contain('Index page')
     screen.should_not_contain('Admin overview')
 
-    screen.open('/admin')
+    screen.open(root_path)
     screen.should_contain('Admin overview')
 
     screen.click('Go to other')
