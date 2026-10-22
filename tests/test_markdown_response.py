@@ -150,8 +150,13 @@ async def test_button(user: User):
     await _assert_markdown(user, blank_button, '[Button]')
 
 
-async def test_code_element(user: User):
-    await _assert_markdown(user, lambda: ui.code('print("hello")', language='python'), '```python\nprint("hello")\n```')
+@pytest.mark.parametrize('content, language, expected', [
+    ('print("hello")', 'python', '```python\nprint("hello")\n```'),
+    ('```python\nprint(42)\n```', 'markdown', '````markdown\n```python\nprint(42)\n```\n````'),
+    ('````python\nprint(42)\n````', 'markdown', '`````markdown\n````python\nprint(42)\n````\n`````'),
+])
+async def test_code_element(user: User, content: str, language: str, expected: str):
+    await _assert_markdown(user, lambda: ui.code(content, language=language), expected)
 
 
 async def test_input(user: User):
