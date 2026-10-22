@@ -1,5 +1,6 @@
 import os
 
+from .dataframes import prepare_pandas_df
 from .elements import require_top_level_layout
 from .files import hash_file_path, is_file, unlink_with_retry, unlink_with_retry_async
 from .functions import (

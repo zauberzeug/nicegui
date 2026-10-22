@@ -356,10 +356,14 @@ def test_columns_from_df(screen: Screen, df_type: str):
             persons = ui.table.from_pandas(pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_pandas(pd.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
                                         columns=[{'name': 'make', 'label': 'make', 'field': 'make'}])
+            duplicate_cols = ui.table.from_pandas(pd.DataFrame([['Foo', 'Bar', 'Baz', 'Baz', 'Baz']],
+                                                  columns=['SameColName', 'SameColName', 'AnotherDuplicate',
+                                                  'AnotherDuplicate', 'SameColName_1']))
             DataFrame = pd.DataFrame
             update_persons_from_df = persons.update_from_pandas
             update_cars_from_df = cars.update_from_pandas
-            ui.table.from_pandas(pd.DataFrame([['Foo', 'Bar']], columns=['SameColName', 'SameColName']))
+            update_duplicate_cols = duplicate_cols.update_rows
+
         else:
             persons = ui.table.from_polars(pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_polars(pl.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
@@ -382,13 +386,17 @@ def test_columns_from_df(screen: Screen, df_type: str):
                   on_click=lambda: update_cars_from_df(DataFrame({'make': ['Hyundai'], 'model': ['i30']}),
                                                        columns=[{'name': 'make', 'label': 'make', 'field': 'make'},
                                                                 {'name': 'model', 'label': 'model', 'field': 'model'}]))
+        if df_type == 'pandas':
+            ui.button('Update duplicate columns',
+                      on_click=lambda: update_duplicate_cols([{'SameColName_0': 'a', 'SameColName_2': 'b',
+                                                               'AnotherDuplicate_0': 'c', 'AnotherDuplicate_1': 'd',
+                                                               'SameColName_1': 'e'}]))
 
     screen.open('/')
     screen.should_contain('name')
     screen.should_contain('age')
     screen.should_contain('make')
     screen.should_not_contain('model')
-
     if df_type == 'pandas':
         screen.should_contain('Foo')
         screen.should_not_contain('SameColName_0')
@@ -409,6 +417,10 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.click('Update cars with columns')  # updated columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
+
+    screen.click('Update duplicate columns')
+    screen.should_contain('a')
+    screen.should_not_contain('Baz')
 
 
 def test_new_slots(screen: Screen):
