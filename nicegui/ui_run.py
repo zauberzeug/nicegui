@@ -184,13 +184,15 @@ def run(root: Callable | None = None, *,
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
-    for route in core.app.routes:
-        if not isinstance(route, Route):
+    for context in core.app._iter_routes():  # pylint: disable=protected-access
+        route = context.original_route
+        if not isinstance(route, Route) or context.path is None:
             continue
-        if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
+        if context.path.startswith('/_nicegui'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
-        if route.path == '/' or route.path in Client.page_routes.values():
+        if context.path == '/' or context.path in Client.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
+    core.app._mark_routes_changed()  # pylint: disable=protected-access
 
     if fastapi_docs:
         if not core.app.docs_url:

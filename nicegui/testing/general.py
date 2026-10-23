@@ -3,6 +3,7 @@ import gc
 import sys
 from copy import copy
 
+from fastapi.dependencies import models as fastapi_dependency_models
 from starlette.routing import Route
 
 from .. import app, background_tasks, binding, core, dependencies, event, run, ui
@@ -40,8 +41,16 @@ def nicegui_reset_globals():
             or route.path.startswith('/_nicegui/auto/')
         ):
             app.remove_route(route.path)
-        if hasattr(route, 'original_router'):  # a router that FastAPI 0.141+ keeps as a single lazy route
+        if hasattr(route, 'original_router'):  # a router that FastAPI keeps as a single lazy route
             app.routes.remove(route)
+
+    # FastAPI caches callables like page functions with strong references, which would keep them alive across tests
+    for name in ('_is_gen_callable_cached', '_is_async_gen_callable_cached', '_is_coroutine_callable_cached'):
+        cached_function = getattr(fastapi_dependency_models, name, None)
+        if cached_function is None:
+            warnings.warn_once(f'FastAPI has no {name}(), so page functions may stay alive between tests.')
+            continue
+        cached_function.cache_clear()
 
     app.openapi_schema = None
     app.middleware_stack = None
