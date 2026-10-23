@@ -145,47 +145,28 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._match = None
 
     def _find_matching_path(self) -> RouteMatch | None:
-        if self._root_path:
-            path = urlsplit(self._router.current_path).path
-            if path != self._root_path and not path.startswith(self._root_path + '/'):
-                return None  # paths outside our root_path are not ours to handle (see #6385)
-        match: RouteMatch | None = None
-        relative_path = self._router.current_path[len(self._root_path):]
-        if not relative_path.startswith('/'):
-            relative_path = '/' + relative_path
+        url = urlsplit(self._router.current_path)
+        if self._root_path and url.path != self._root_path and not url.path.startswith(self._root_path + '/'):
+            return None  # paths outside our root_path are not ours to handle (see #6385)
+        relative_path = url.path[len(self._root_path):].rstrip('/') or '/'
+        query_params = QueryParams(url.query)
         segments = relative_path.split('/')
-        query_params: QueryParams | None = None
         while segments:
-            path = '/'.join(segments)
-            if not path:
-                path = '/'
-            match, query_params = self._match_route(path, query_params)
-            if match is not None:
-                match.remaining_path = urlsplit(relative_path).path.rstrip('/')[len(match.path):]
-                break
+            path = '/'.join(segments) or '/'
+            for route, builder in self._routes.items():
+                parameters = self._match_path(route, path)
+                if parameters is not None:
+                    return RouteMatch(
+                        path=path,
+                        pattern=route,
+                        builder=builder,
+                        parameters=parameters,
+                        query_params=query_params,
+                        fragment=url.fragment,
+                        remaining_path=relative_path[len(path):],
+                    )
             segments.pop()
-        return match
-
-    def _match_route(self, path: str, query_params: QueryParams | None) -> tuple[RouteMatch | None, QueryParams | None]:
-        parsed_url = urlsplit(path)
-        path_only = parsed_url.path.rstrip('/')
-        query_params = query_params or QueryParams(parsed_url.query)
-        fragment = parsed_url.fragment
-        if not path_only.startswith('/'):
-            path_only = '/' + path_only
-
-        for route, builder in self._routes.items():
-            parameters = self._match_path(route, path_only)
-            if parameters is not None:
-                return RouteMatch(
-                    path=path_only,
-                    pattern=route,
-                    builder=builder,
-                    parameters=parameters,
-                    query_params=query_params,
-                    fragment=fragment,
-                ), query_params
-        return None, query_params
+        return None
 
     @staticmethod
     def _validate_route(path: str) -> None:
