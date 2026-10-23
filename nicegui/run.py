@@ -109,21 +109,19 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
         raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
 
 
-async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
+async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     if core.app.is_stopping:
-        return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
+        raise asyncio.CancelledError('The app is shutting down.')
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
     except RuntimeError as e:
         if 'cannot schedule new futures after shutdown' not in str(e):
             raise
-    except asyncio.CancelledError:
-        pass
-    return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
+        raise asyncio.CancelledError('The app is shutting down.') from e
 
 
-async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
+async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run a CPU-bound function in a separate process.
 
     `run.cpu_bound` needs to execute the function in a separate process.
@@ -134,9 +132,8 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     The pool's multiprocessing start method can be configured via ``run.process_pool_start_method``
     ("spawn", "fork", "forkserver", or ``None`` to inherit the platform default) before the app starts up.
 
-    Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
-    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
-    so ``if result is None: ...`` checks should be treated as temporary.
+    Raises ``asyncio.CancelledError`` when the call is cancelled or the app is shutting down
+    (*updated in version 4.0.0*: before it returned ``None`` in these cases).
     """
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
 
@@ -160,12 +157,11 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
             raise e
 
 
-async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
+async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run an I/O-bound function in a separate thread.
 
-    Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
-    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
-    so ``if result is None: ...`` checks should be treated as temporary.
+    Raises ``asyncio.CancelledError`` when the call is cancelled or the app is shutting down
+    (*updated in version 4.0.0*: before it returned ``None`` in these cases).
     """
     return await _run(thread_pool, callback, *args, **kwargs)
 
