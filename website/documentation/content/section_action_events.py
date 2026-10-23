@@ -63,11 +63,11 @@ doc.intro(generic_events_documentation)
     It is encouraged to create free functions or static methods which get all the data as simple parameters (i.e. no class or UI logic)
     and return the result, instead of writing it in class properties or global variables.
 
-    By default, the process pool uses the platform's multiprocessing start method — "fork" on Linux up to Python 3.13, which is unsafe in threaded processes.
-    Set `run.process_pool_start_method = 'spawn'` before `ui.run()` to opt into the safer "spawn" method (the default in NiceGUI 4.0),
-    to "fork" to keep fork and silence the corresponding warning, or to "forkserver" if you prefer it.
-    Note that spawned workers start from a fresh import and do not inherit module globals or other process state,
-    so switching from fork can change behavior. *Added in version 3.15.0*
+    The process pool uses the "spawn" start method by default (*updated in version 4.0.0*, before it was the platform's default),
+    so workers start from a fresh import and do not inherit module globals or other process state.
+    Set `run.process_pool_start_method` before `ui.run()` to "fork" or "forkserver" if you need them,
+    or to `None` to use the platform's default ("fork" on Linux up to Python 3.13, which is unsafe in threaded processes).
+    *Added in version 3.15.0*
 ''')
 def cpu_bound_demo():
     import time
