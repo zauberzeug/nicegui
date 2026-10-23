@@ -8,7 +8,7 @@ import signal
 import threading
 import time
 import urllib
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from enum import Enum
 from pathlib import Path
 
@@ -396,12 +396,16 @@ class App(FastAPI):
 
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path, including those of included routers."""
-        removed = {id(route.original_route) for route in self._iter_routes() if route.path == path}
-        if not removed:
+        routers = list(self._iter_routers())
+        # check the raw routes first: building the effective routes of included routers is expensive
+        if not any(path.endswith(route_path) for router in routers for route in router.routes
+                   if isinstance(route_path := getattr(route, 'path', None), str)):
             return
-        for router in self._iter_routers():
-            router.routes[:] = [route for route in router.routes if id(route) not in removed]
-        self._mark_routes_changed()
+        removed = {id(route.original_route) for route in self._iter_routes() if route.path == path}
+        for router in routers:
+            if any(id(route) in removed for route in router.routes):
+                router.routes[:] = [route for route in router.routes if id(route) not in removed]
+                self._mark_routes_changed([router])
 
     def _iter_routes(self) -> Iterator[RouteContext]:
         """Iterate over all routes, including those of included routers.
@@ -425,16 +429,19 @@ class App(FastAPI):
             if included_router is not None:
                 yield from self._iter_routers(included_router)
 
-    def _mark_routes_changed(self) -> None:
-        """Make FastAPI notice that routes of included routers have been removed or modified.
+    def _mark_routes_changed(self, routers: Iterable[APIRouter] | None = None) -> None:
+        """Make FastAPI notice that routes of the given routers (default: all) have been removed or modified.
 
         FastAPI caches the effective routes of each included router and only rebuilds them when a private counter changes.
         There is no public API for this (https://github.com/fastapi/fastapi/issues/16301).
         """
-        for router in self._iter_routers():
+        for router in routers if routers is not None else self._iter_routers():
             mark_routes_changed = getattr(router, '_mark_routes_changed', None)
-            if mark_routes_changed is not None:
-                mark_routes_changed()
+            if mark_routes_changed is None:
+                helpers.warn_once('FastAPI has no APIRouter._mark_routes_changed(), '
+                                  'so routes of included routers cannot be removed or modified.')
+                return
+            mark_routes_changed()
 
     def _single_use_guard(self, path: str) -> Callable[[], None]:
         """Return a callable that lets exactly one request pass and removes the route behind it."""
