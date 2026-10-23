@@ -79,7 +79,7 @@ def run(root: Callable | None = None, *,
         storage_secret: str | None = None,
         session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
-        markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
+        markdown: bool = False,
         **kwargs: Any,
         ) -> None:
     """ui.run
