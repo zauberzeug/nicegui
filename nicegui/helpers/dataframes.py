@@ -5,11 +5,11 @@ import pandas as pd
 from .warnings import warn_once
 
 
-def prepare_pandas_df(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+def prepare_pandas_df(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Index[str]]:
     """Prepare a pandas dataframe for use in elements
 
     This function checks if the df is a MultiIndex which is not supported, resets the index, renames duplicate column
-    names and converts special datatypes. The return value contains the new dataframe and a list of the old column
+    names and converts special datatypes. The return value contains the new dataframe and an index with the old column
     names."""
 
     if isinstance(df.columns, pd.MultiIndex):
