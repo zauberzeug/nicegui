@@ -191,12 +191,16 @@ def test_app_timer(screen: Screen):
     assert counter.value > value, 'timer is also incrementing when opening another page'
 
 
-def test_cancel_current_invocation(screen: Screen):
+@pytest.mark.parametrize('protected', [False, True])
+def test_cancel_current_invocation(screen: Screen, protected: bool):
     counter = Counter()
 
     async def update():
         await asyncio.sleep(1.0)
         counter.increment()
+
+    if protected:
+        update = background_tasks.await_on_shutdown(update)
 
     @ui.page('/')
     def page():

@@ -232,6 +232,10 @@ function throttle(callback, time, leading, trailing, id) {
   }
 }
 
+// One component per slot template, so Vue sees the same component type on every render
+// and patches the slot in place instead of unmounting and remounting it (#6284).
+const slotComponents = new Map();
+
 function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
@@ -307,17 +311,13 @@ function renderRecursively(elements, id, propsContext) {
     slots[name] = (props) => {
       const rendered = [];
       if (data.template) {
-        rendered.push(
-          Vue.h(
-            {
-              props: { props: { type: Object, default: {} } },
-              template: data.template,
-            },
-            {
-              props: props,
-            },
-          ),
-        );
+        if (!slotComponents.has(data.template)) {
+          slotComponents.set(data.template, {
+            props: { props: { type: Object, default: () => ({}) } },
+            template: data.template,
+          });
+        }
+        rendered.push(Vue.h(slotComponents.get(data.template), { props: props }));
       }
       const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
       if (name === "default" && element.text !== null) {

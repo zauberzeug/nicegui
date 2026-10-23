@@ -1,4 +1,7 @@
+import asyncio
+import gc
 import tempfile
+import weakref
 from io import BytesIO
 from pathlib import Path
 
@@ -7,7 +10,7 @@ import pytest
 from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartParser
 
-from nicegui import app, events, ui
+from nicegui import events, ui
 from nicegui.elements.upload_files import _sanitize_filename, create_file_upload
 from nicegui.testing import Screen, User
 
@@ -120,26 +123,6 @@ def test_replace_upload(screen: Screen):
     screen.should_not_contain('A')
 
 
-async def test_route_removal_when_deleting_upload_with_custom_url(user: User):
-    @app.post('/custom/upload')
-    def custom_upload() -> None:
-        pass
-
-    upload: ui.upload = None  # type: ignore[assignment]
-
-    @ui.page('/')
-    def page():
-        nonlocal upload
-        upload = ui.upload().props('url=/custom/upload')
-
-    await user.open('/')
-    assert any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
-
-    upload.delete()
-    assert not any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
-    assert any(getattr(route, 'path', None) == '/custom/upload' for route in app.routes)
-
-
 def test_reset_upload(screen: Screen):
     @ui.page('/')
     def page():
@@ -243,3 +226,40 @@ async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyP
         await create_file_upload(FlakyUpload(BytesIO(b''), filename='big.bin'), chunk_size=16)
 
     assert not any(tmp_path.iterdir()), 'spilled temp file should be removed when the upload fails'
+
+
+async def test_deleted_uploads_are_collectable(user: User):
+    uploads: list[weakref.ref[ui.upload]] = []
+
+    @ui.page('/')
+    def page():
+        uploads.append(weakref.ref(ui.upload()))
+
+    for _ in range(3):
+        client = await user.open('/')
+        client.delete()
+        await asyncio.sleep(0)
+    gc.collect()
+    assert all(upload() is None for upload in uploads), 'deleted uploads are garbage collected'
+
+
+@pytest.mark.parametrize('target', ['missing_client', 'missing_element', 'wrong_type', 'malformed', 'deleted'])
+async def test_invalid_upload_target(user: User, target: str):
+    results: list[events.UploadEventArguments] = []
+
+    @ui.page('/')
+    def page():
+        ui.upload(on_upload=results.append)
+        ui.label('Not an upload')
+
+    client = await user.open('/')
+    upload = user.find(ui.upload).elements.pop()
+    label = user.find(ui.label).elements.pop()
+    if target == 'deleted':
+        upload.delete()
+    client_id = 'missing' if target == 'missing_client' else client.id
+    element_id = {'missing_element': '-1', 'wrong_type': label.id, 'malformed': 'invalid'}.get(target, str(upload.id))
+    files = {'file': ('test.txt', b'test')}
+    response = await user.http_client.post(f'/_nicegui/client/{client_id}/upload/{element_id}', files=files)
+    assert response.status_code == (422 if target == 'malformed' else 404)
+    assert not results
