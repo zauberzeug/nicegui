@@ -36,7 +36,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         *Added in version 2.22.0*
 
         :param routes: dictionary mapping path patterns to page builder functions
-        :param root_path: path prefix to strip from incoming paths (ignored by nested ``ui.sub_pages`` elements)
+        :param root_path: path prefix to strip from incoming paths; paths outside it are not handled
+            (ignored by nested ``ui.sub_pages`` elements)
         :param data: arbitrary data passed to all page builder functions
         :param show_404: whether to show a 404 error message if the full path could not be consumed
             (can be useful for dynamically created nested sub pages) (default: ``True``)
