@@ -11,11 +11,10 @@ import urllib
 from collections.abc import Callable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi import routing as fastapi_routing
+from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
+from fastapi.routing import RouteContext, iter_route_contexts
 from starlette.routing import Route
 
 from .. import background_tasks, binding, core, helpers
@@ -396,20 +395,46 @@ class App(FastAPI):
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
 
     def remove_route(self, path: str) -> None:
-        """Remove routes with the given path."""
-        self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+        """Remove routes with the given path, including those of included routers."""
+        removed = {id(route.original_route) for route in self._iter_routes() if route.path == path}
+        if not removed:
+            return
+        for router in self._iter_routers():
+            router.routes[:] = [route for route in router.routes if id(route) not in removed]
+        self._mark_routes_changed()
 
-    def _iter_http_routes(self) -> Iterator[Any]:
-        """Iterate over all HTTP routes, including those of included routers.
+    def _iter_routes(self) -> Iterator[RouteContext]:
+        """Iterate over all routes, including those of included routers.
 
-        FastAPI 0.141+ keeps an included router as a single lazy entry in ``routes``.
+        FastAPI keeps an included router as a single lazy entry in ``routes``.
         This method looks inside and yields its routes with their full paths.
+        Use ``original_route`` to modify a route and call ``_mark_routes_changed`` afterwards.
         """
-        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
-        if iter_route_contexts is None:
-            yield from (route for route in self.routes if isinstance(route, Route))
-        else:
-            yield from (route for route in iter_route_contexts(self.routes) if isinstance(route.original_route, Route))
+        yield from iter_route_contexts(self.routes)
+
+    def _iter_http_routes(self) -> Iterator[RouteContext]:
+        """Iterate over all HTTP routes, including those of included routers."""
+        yield from (route for route in self._iter_routes() if isinstance(route.original_route, Route))
+
+    def _iter_routers(self, router: APIRouter | None = None) -> Iterator[APIRouter]:
+        """Iterate over the app's router and all routers included into it, including nested ones."""
+        router = router or self.router
+        yield router
+        for route in router.routes:
+            included_router = getattr(route, 'original_router', None)
+            if included_router is not None:
+                yield from self._iter_routers(included_router)
+
+    def _mark_routes_changed(self) -> None:
+        """Make FastAPI notice that routes of included routers have been removed or modified.
+
+        FastAPI caches the effective routes of each included router and only rebuilds them when a private counter changes.
+        There is no public API for this (https://github.com/fastapi/fastapi/issues/16301).
+        """
+        for router in self._iter_routers():
+            mark_routes_changed = getattr(router, '_mark_routes_changed', None)
+            if mark_routes_changed is not None:
+                mark_routes_changed()
 
     def _single_use_guard(self, path: str) -> Callable[[], None]:
         """Return a callable that lets exactly one request pass and removes the route behind it."""
