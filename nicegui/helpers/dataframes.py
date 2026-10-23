@@ -5,7 +5,7 @@ import pandas as pd
 from .warnings import warn_once
 
 
-def prepare_pandas_df(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Index[str]]:
+def prepare_pandas_df(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Index]:
     """Prepare a pandas dataframe for use in elements
 
     This function checks if the df is a MultiIndex which is not supported, resets the index, renames duplicate column
