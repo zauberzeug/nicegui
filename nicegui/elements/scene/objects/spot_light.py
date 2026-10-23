@@ -11,7 +11,7 @@ class SpotLight(Object3D, component='spot_light.js'):
         distance: float = 0.0,
         angle: float = math.pi / 3,
         penumbra: float = 0.0,
-        decay: float = 1.0,
+        decay: float = 2.0,
     ) -> None:
         """Spot Light
 
@@ -23,6 +23,6 @@ class SpotLight(Object3D, component='spot_light.js'):
         :param distance: maximum distance of light (default: 0.0, no limit)
         :param angle: maximum angle of light in radians (default: π/3)
         :param penumbra: penumbra (default: 0.0)
-        :param decay: decay (default: 1.0)
+        :param decay: how fast the light dims along the distance (default: 2.0, physically correct inverse-square falloff)
         """
         super().__init__(color, intensity, distance, angle, penumbra, decay)
