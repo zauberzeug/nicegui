@@ -3,7 +3,7 @@ import inspect
 import re
 from collections.abc import Callable
 from typing import Any
-from urllib.parse import urlparse, urlsplit
+from urllib.parse import urlsplit
 
 from starlette.datastructures import QueryParams
 from typing_extensions import Self
@@ -161,13 +161,13 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                 path = '/'
             match, query_params = self._match_route(path, query_params)
             if match is not None:
-                match.remaining_path = urlparse(relative_path).path.rstrip('/')[len(match.path):]
+                match.remaining_path = urlsplit(relative_path).path.rstrip('/')[len(match.path):]
                 break
             segments.pop()
         return match
 
     def _match_route(self, path: str, query_params: QueryParams | None) -> tuple[RouteMatch | None, QueryParams | None]:
-        parsed_url = urlparse(path)
+        parsed_url = urlsplit(path)
         path_only = parsed_url.path.rstrip('/')
         query_params = query_params or QueryParams(parsed_url.query)
         fragment = parsed_url.fragment
