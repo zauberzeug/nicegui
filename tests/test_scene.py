@@ -11,7 +11,6 @@ from selenium.webdriver import ActionChains
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
-from nicegui.elements.scene.objects.box import Box
 from nicegui.events import GenericEventArguments
 from nicegui.testing import Screen, User
 
@@ -481,7 +480,7 @@ async def test_object_constructed_after_await_lands_in_own_scene(create_user: Ca
         with ui.scene() as scene:
             first_waiting.set()
             await other_scene_entered.wait()
-            results.append(Box().scene is scene)
+            results.append(ui.scene.box().scene is scene)
 
     @ui.page('/second')
     async def second():

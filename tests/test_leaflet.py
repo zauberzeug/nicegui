@@ -8,7 +8,6 @@ from collections.abc import Callable
 from fastapi import Response
 
 from nicegui import app, ui
-from nicegui.elements.leaflet.leaflet_layers import Marker
 from nicegui.testing import Screen, User
 
 
@@ -113,7 +112,7 @@ async def test_layer_constructed_after_await_lands_in_own_map(create_user: Calla
         with ui.leaflet() as m:
             first_waiting.set()
             await other_map_entered.wait()
-            results.append(Marker(latlng=(51.5, -0.09)).leaflet is m)
+            results.append(ui.leaflet.marker(latlng=(51.5, -0.09)).leaflet is m)
 
     @ui.page('/second')
     async def second():
