@@ -313,6 +313,31 @@ def test_async_nested_sub_pages(screen: Screen):
     assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
 
 
+def test_nested_sub_pages_rebuilt_after_navigation(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/users': users})
+
+    def users():
+        ui.link('Go to user 43', '/users/43')
+        ui.button('Rebuild', on_click=details.refresh)
+        details()
+
+    @ui.refreshable
+    def details():
+        ui.sub_pages({'/{id}': lambda id: ui.label(f'User {id}')})
+
+    screen.open('/users/42')
+    screen.should_contain('User 42')
+
+    screen.click('Go to user 43')
+    screen.should_contain('User 43')
+
+    screen.click('Rebuild')
+    screen.should_contain('User 43')
+
+
 def test_parameterized_sub_pages(screen: Screen):
     calls = {'index': 0, 'main': 0}
 

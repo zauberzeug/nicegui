@@ -81,7 +81,6 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
 
     def _show(self) -> None:
         """Display the page matching the current URL path."""
-        self._rendered_path = ''
         match = self._find_matching_path()
         has_nested_sub_pages = any(isinstance(el, SubPages) for el in self.descendants())
         # if path and query params are the same, only update fragment without re-rendering
