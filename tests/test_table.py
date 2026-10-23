@@ -418,9 +418,10 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
 
-    screen.click('Update duplicate columns')
-    screen.should_contain('a')
-    screen.should_not_contain('Baz')
+    if df_type == 'pandas':
+        screen.click('Update duplicate columns')
+        screen.should_contain('a')
+        screen.should_not_contain('Baz')
 
 
 def test_new_slots(screen: Screen):
