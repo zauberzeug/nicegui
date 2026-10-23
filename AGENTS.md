@@ -15,6 +15,7 @@ Work as a pair programmer, not a silent code generator:
 
 ## What to Avoid
 
+- **Hard-wrapping prose on GitHub** — in issues, pull requests and comments, GitHub renders every line break, so keep each paragraph on a single line.
 - **Overwriting `.env` files** without explicit user confirmation
 - **Creating new files** when editing existing ones would suffice
 - **Global mutable state** in library code
