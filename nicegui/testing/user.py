@@ -112,12 +112,11 @@ class User:
     def _simulate_browser(self, message_type: MessageType, data: Payload) -> None:
         """Simulate the browser's reaction to messages sent by `ui.navigate`, `ui.notify`, `ui.download` and `ui.sub_pages`."""
         if message_type == 'open':
-            if not data['path'].startswith('#'):  # scrolling to an element is pointless since everything is visible
-                self.navigate.to(data['path'])
+            self.navigate.to(data['path'])
         elif message_type == 'notify':
-            self.notify(data['message'])
+            self.notify.messages.append(data['message'])
         elif message_type == 'download':
-            self.download(data['src'])
+            self.download._start(data['src'])
         elif message_type == 'run_javascript':
             self._simulate_javascript(data['code'])
 
