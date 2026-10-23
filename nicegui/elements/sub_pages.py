@@ -148,7 +148,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         url = urlsplit(self._router.current_path)
         if self._root_path and url.path != self._root_path and not url.path.startswith(self._root_path + '/'):
             return None  # paths outside our root_path are not ours to handle (see #6385)
-        relative_path = url.path[len(self._root_path):].rstrip('/') or '/'
+        relative_path = '/' + url.path[len(self._root_path):].strip('/')
         query_params = QueryParams(url.query)
         segments = relative_path.split('/')
         while segments:
