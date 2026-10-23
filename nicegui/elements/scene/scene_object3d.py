@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class Object3D:
-    current_scene: ClassVar[ContextVar[weakref.ref[Scene] | None]] = ContextVar('current_scene', default=None)
+    _current_scene: ClassVar[ContextVar[weakref.ref[Scene] | None]] = ContextVar('_current_scene', default=None)
     _component_url: ClassVar[str | None] = None
     _file_stem: ClassVar[str | None] = None
 
@@ -54,9 +54,13 @@ class Object3D:
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
-        scene_ref = Object3D.current_scene.get()
+        scene_ref = Object3D._current_scene.get()
         scene = scene_ref() if scene_ref is not None else None
-        assert scene is not None
+        if scene is None:
+            raise RuntimeError('The current scene cannot be determined because no scene has been entered in this task '
+                               'or the scene has been deleted.\n'
+                               'This may happen if you create a 3D object from an event handler or a timer.\n'
+                               'To fix this, enter the target scene explicitly using `with scene:`.')
         self.scene: Scene = scene
         self.scene.objects[self.id] = self
         self.parent: Object3D | SceneObject = self.scene.stack[-1]

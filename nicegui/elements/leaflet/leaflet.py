@@ -84,13 +84,13 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         self._send_update_on_value_change = True
 
     def __enter__(self) -> Self:
-        Layer.current_leaflet.set(weakref.ref(self))
+        Layer._current_leaflet.set(weakref.ref(self))  # pylint: disable=protected-access
         return super().__enter__()
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
         if isinstance(attribute, type) and issubclass(attribute, Layer):
-            Layer.current_leaflet.set(weakref.ref(self))
+            Layer._current_leaflet.set(weakref.ref(self))  # pylint: disable=protected-access
         return attribute
 
     def _handle_init(self) -> None:
