@@ -1,5 +1,7 @@
+import asyncio
 import gc
 import weakref
+from collections.abc import Callable
 from typing import Literal
 
 import numpy as np
@@ -466,6 +468,28 @@ async def test_scene_is_collected_after_client_deletion(user: User):
     held.clear()  # the timer finishes and drops its reference
     gc.collect()
     assert len(objects) == 0
+
+
+async def test_object_constructed_after_await_lands_in_own_scene(create_user: Callable[[], User]):
+    first_waiting = asyncio.Event()
+    other_scene_entered = asyncio.Event()
+    results: list[bool] = []
+
+    @ui.page('/first')
+    async def first():
+        with ui.scene() as scene:
+            first_waiting.set()
+            await other_scene_entered.wait()
+            results.append(ui.scene.box().scene is scene)
+
+    @ui.page('/second')
+    async def second():
+        await first_waiting.wait()
+        with ui.scene():
+            other_scene_entered.set()
+
+    await asyncio.gather(create_user().open('/first'), create_user().open('/second'))
+    assert results == [True]
 
 
 def test_context_loss_recovery_restores_objects(screen: Screen):
