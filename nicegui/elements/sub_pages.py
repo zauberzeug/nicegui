@@ -49,7 +49,9 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._routes = routes
         parent_sub_pages_element = next((el for el in self.ancestors() if isinstance(el, SubPages)), None)
         self._rendered_path = ''
-        self._root_path = parent_sub_pages_element._rendered_path if parent_sub_pages_element else root_path
+        if parent_sub_pages_element:
+            root_path = parent_sub_pages_element._rendered_path
+        self._root_path = (root_path or '').rstrip('/')
         self._data = data or {}
         self._match: RouteMatch | None = None
         self._active_tasks: set[asyncio.Task] = set()
@@ -106,7 +108,7 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
                     self._set_match(None)
 
     def _render_page(self, match: RouteMatch) -> bool:
-        self._rendered_path = f'{self._root_path or ""}{match.path}'
+        self._rendered_path = f'{self._root_path}{match.path}'
         try:
             kwargs = PageArguments.build_kwargs(match, self, self._data)
             result = match.builder(**kwargs)
@@ -143,15 +145,12 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
         self._match = None
 
     def _find_matching_path(self) -> RouteMatch | None:
-        root_path = self._root_path or ''
-        # paths outside our root_path are not ours to handle (see https://github.com/zauberzeug/nicegui/issues/6385)
-        normalized_root = root_path.rstrip('/')
-        if normalized_root:
+        if self._root_path:
             path = urlsplit(self._router.current_path).path
-            if path != normalized_root and not path.startswith(normalized_root + '/'):
-                return None
+            if path != self._root_path and not path.startswith(self._root_path + '/'):
+                return None  # paths outside our root_path are not ours to handle (see #6385)
         match: RouteMatch | None = None
-        relative_path = self._router.current_path[len(root_path):]
+        relative_path = self._router.current_path[len(self._root_path):]
         if not relative_path.startswith('/'):
             relative_path = '/' + relative_path
         segments = relative_path.split('/')
