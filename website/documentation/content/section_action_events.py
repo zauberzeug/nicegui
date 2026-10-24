@@ -65,6 +65,8 @@ doc.intro(generic_events_documentation)
 
     The process pool uses the "spawn" start method by default (*updated in version 4.0.0*, before it was the platform's default),
     so workers start from a fresh import and do not inherit module globals or other process state.
+    The function must also be importable there: define it at module level in a script file or module,
+    not via `python -c`, stdin, a zipapp or a package's `__main__.py`, and not under `if __name__ == '__main__':`.
     Set `run.process_pool_start_method` before `ui.run()` to "fork" or "forkserver" if you need them,
     or to `None` to use the platform's default ("fork" on Linux up to Python 3.13, which is unsafe in threaded processes).
     *Added in version 3.15.0*
