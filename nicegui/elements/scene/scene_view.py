@@ -55,8 +55,11 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
+        self._settled_event = asyncio.Event()
+        self._init_error: str | None = None
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
+        self.on('init-failed', self._handle_init_failed)
         self.on('click3d', self._handle_click)
 
         self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
@@ -70,17 +73,28 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         return self
 
     def _handle_init(self) -> None:
+        self._init_error = None
         self._initialized_event.set()
+        self._settled_event.set()
         self.move_camera(duration=0)
         self.run_method('init')
+
+    def _handle_init_failed(self) -> None:
+        if not self._initialized_event.is_set():
+            self._init_error = 'Could not create WebGL renderer.'
+            self._settled_event.set()
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized.
 
         *Updated in version 3.17.0: Awaiting scene view initialization cancels the awaiting task
         when the scene view is deleted, e.g. because the client disconnected.*
+
+        *Updated in version 3.19.0: Raises a ``RuntimeError`` if the browser could not create a WebGL renderer.*
         """
-        await self._wait_for(self._initialized_event)
+        await self._wait_for(self._settled_event)
+        if self._init_error is not None:
+            raise RuntimeError(self._init_error)
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
