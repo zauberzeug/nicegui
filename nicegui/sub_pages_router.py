@@ -83,6 +83,7 @@ class SubPagesRouter:
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
             current_path_string = json.dumps(self.current_path)
+            # NOTE: the user simulation recognizes this JavaScript in `User._simulate_javascript`
             client.run_javascript(f'''
                 const fullPath = (window.path_prefix || '') + {current_path_string};
                 if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
