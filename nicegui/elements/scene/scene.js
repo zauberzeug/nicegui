@@ -433,6 +433,9 @@ export default {
       };
     },
     resize() {
+      // skip while the element has no layout box (e.g. hidden), otherwise the canvas would end up 0x0;
+      // the initial size from the props is kept until the element is rendered
+      if (!this.$el.getClientRects().length) return;
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
       this.text_renderer.setSize(clientWidth, clientHeight);

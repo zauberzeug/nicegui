@@ -520,3 +520,24 @@ def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
     screen.open('/')
     screen.find_by_tag('canvas').click()
     screen.wait_for(lambda: hits == ['ground'])
+
+
+def test_scene_initializes_when_created_hidden(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene(width=200, height=100).set_visibility(False) as scene:
+            scene.box().move(1, 2, 3).with_name('box')
+        ui.button('Show', on_click=lambda: scene.set_visibility(True))
+
+    screen.open('/')
+    screen.click('Show')
+
+    # the init event is emitted once when the component mounts, so it must not be dropped while the scene is hidden;
+    # otherwise the server never re-sends the objects and the box never shows up
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+
+    # resizing while hidden would have shrunk the canvas to 0x0
+    assert screen.find_by_tag('canvas').size == {'width': 200, 'height': 100}

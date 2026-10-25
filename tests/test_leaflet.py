@@ -82,6 +82,21 @@ def test_leaflet_unhide(screen: Screen):
     assert len(requested_tiles) == 8
 
 
+def test_leaflet_initializes_when_created_hidden(screen: Screen):
+    @ui.page('/')
+    def page():
+        with ui.leaflet(center=(51.505, -0.09), zoom=13).set_visibility(False) as leaflet:
+            leaflet.marker(latlng=(51.505, -0.09))
+        ui.button('Show', on_click=lambda: leaflet.set_visibility(True))
+
+    screen.open('/')
+    screen.click('Show')
+
+    # the init event is emitted once when the component mounts, so it must not be dropped while the map is hidden;
+    # otherwise the map is never created and the marker never shows up
+    screen.wait_for(lambda: screen.find_all_by_class('leaflet-marker-icon'))
+
+
 async def test_leaflet_is_collected_after_client_deletion(user: User):
     held = []  # stands in for a timer or handler holding the map
     objects: weakref.WeakSet = weakref.WeakSet()
