@@ -1,6 +1,7 @@
 import contextlib
 import gc
 import sys
+import weakref
 from copy import copy
 
 from starlette.routing import Route
@@ -49,11 +50,14 @@ def nicegui_reset_globals():
     app.urls.clear()
     core.reset()
 
-    element_types: list[type[ui.element]] = [ui.element, *_find_all_subclasses(ui.element)]
-    default_classes = {t: copy(t._default_classes) for t in element_types}  # pylint: disable=protected-access
-    default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
-    default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
+    # weak keys, so that the snapshot does not keep element classes of earlier simulations alive
+    element_defaults = weakref.WeakKeyDictionary({
+        # pylint: disable-next=protected-access
+        t: (copy(t._default_classes), copy(t._default_style), copy(t._default_props))
+        for t in _find_all_element_types()
+    })
     default_markdown_extras = ui.markdown.default_extras[:]
+    exception_handlers = dict(app.exception_handlers)
 
     dependencies.importmap_overrides.clear()
     Client.instances.clear()
@@ -78,17 +82,22 @@ def nicegui_reset_globals():
         event.reset()
         run.reset()
 
-        for t in element_types:
-            t._default_classes = default_classes[t]  # pylint: disable=protected-access
-            t._default_style = default_styles[t]  # pylint: disable=protected-access
-            t._default_props = default_props[t]  # pylint: disable=protected-access
+        for t, (classes, style, props) in element_defaults.items():
+            t._default_classes = classes  # pylint: disable=protected-access
+            t._default_style = style  # pylint: disable=protected-access
+            t._default_props = props  # pylint: disable=protected-access
         ui.markdown.default_extras = default_markdown_extras
+        app.exception_handlers = exception_handlers
 
         for func in Client.page_routes:
             if not func.__module__.startswith('tests.'):
                 parts = func.__module__.split('.')
                 for i in range(len(parts)):
                     sys.modules.pop('.'.join(parts[:i+1]), None)  # remove the module and all its parents
+
+
+def _find_all_element_types() -> list[type[ui.element]]:
+    return [ui.element, *_find_all_subclasses(ui.element)]
 
 
 def _find_all_subclasses(cls: type) -> list[type]:
