@@ -3,6 +3,7 @@ import gc
 import sys
 import weakref
 from copy import copy
+from typing import cast
 
 from starlette.routing import Route
 
@@ -54,7 +55,7 @@ def nicegui_reset_globals():
     element_defaults = weakref.WeakKeyDictionary({
         # pylint: disable-next=protected-access
         t: (copy(t._default_classes), copy(t._default_style), copy(t._default_props))
-        for t in [ui.element, *_find_all_subclasses(ui.element)]
+        for t in cast(list[type[ui.element]], [ui.element, *_find_all_subclasses(ui.element)])
     })
     default_markdown_extras = ui.markdown.default_extras[:]
     exception_handlers = dict(app.exception_handlers)
