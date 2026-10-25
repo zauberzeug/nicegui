@@ -54,7 +54,7 @@ def nicegui_reset_globals():
     element_defaults = weakref.WeakKeyDictionary({
         # pylint: disable-next=protected-access
         t: (copy(t._default_classes), copy(t._default_style), copy(t._default_props))
-        for t in _find_all_element_types()
+        for t in [ui.element, *_find_all_subclasses(ui.element)]
     })
     default_markdown_extras = ui.markdown.default_extras[:]
     exception_handlers = dict(app.exception_handlers)
@@ -94,10 +94,6 @@ def nicegui_reset_globals():
                 parts = func.__module__.split('.')
                 for i in range(len(parts)):
                     sys.modules.pop('.'.join(parts[:i+1]), None)  # remove the module and all its parents
-
-
-def _find_all_element_types() -> list[type[ui.element]]:
-    return [ui.element, *_find_all_subclasses(ui.element)]
 
 
 def _find_all_subclasses(cls: type) -> list[type]:
