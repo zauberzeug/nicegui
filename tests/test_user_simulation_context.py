@@ -1,3 +1,5 @@
+import asyncio
+import gc
 import textwrap
 from pathlib import Path
 
@@ -81,6 +83,40 @@ async def test_main_file(tmp_path: Path, file_content: str):
     async with user_simulation(main_file=main_file) as user:
         await user.open('/')
         await user.should_see('Main file content')
+
+
+async def test_earlier_runs_of_main_file_are_freed(tmp_path: Path):
+    main_file = tmp_path / 'main.py'
+    main_file.write_text(textwrap.dedent('''
+        from fastapi.responses import PlainTextResponse
+        from nicegui import app, ui
+
+        class Greeting(ui.label):
+            pass
+
+        class NotFound(Exception):
+            pass
+
+        @app.exception_handler(NotFound)
+        async def handle_not_found(request, error):
+            return PlainTextResponse(str(error), status_code=404)
+
+        @ui.page("/")
+        def page():
+            Greeting("Main file content")
+
+        ui.run()
+    '''), encoding='utf-8')
+
+    async def count_greeting_classes() -> int:
+        async with user_simulation(main_file=main_file) as user:
+            await user.open('/')
+            await user.should_see('Main file content')
+            gc.collect()
+            return [cls.__name__ for cls in ui.label.__subclasses__()].count('Greeting')
+
+    # Like separate tests, each simulation runs in its own task, so the request kept in a context variable ends with it.
+    assert [await asyncio.create_task(count_greeting_classes()) for _ in range(3)] == [1, 1, 1]
 
 
 async def test_adding_page_to_root_function():
