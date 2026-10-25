@@ -94,11 +94,15 @@ def test_leaflet_rehide(screen: Screen):
     def mock_tile(z: str, x: str, y: str) -> Response:
         return Response(base64.b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='))
 
+    tile_width = 'return document.querySelector(".leaflet-tile")?.offsetWidth'
     screen.open('/')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script(tile_width) == 256
     screen.click('Hide')
+    screen.wait(0.5)
     screen.click('Show')
     screen.wait(0.5)
-    assert screen.selenium.execute_script('return document.querySelector(".leaflet-tile").offsetWidth') == 256
+    assert screen.selenium.execute_script(tile_width) == 256
 
 
 async def test_leaflet_is_collected_after_client_deletion(user: User):
