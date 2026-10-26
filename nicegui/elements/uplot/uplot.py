@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from ...element import Element
 
@@ -12,13 +11,7 @@ if TYPE_CHECKING:
 
 class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, default_classes='nicegui-uplot'):
 
-    def __init__(
-        self,
-        options: dict,
-        data: Sequence[Any] | np.ndarray,
-        *,
-        keep_zoom: bool = True,
-    ) -> None:
+    def __init__(self, options: dict, data: list | np.ndarray, *, keep_zoom: bool = True) -> None:
         """uPlot
 
         An element to create a chart using `uPlot <https://leeoniya.github.io/uPlot/>`_.
@@ -46,10 +39,10 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         self._props['options'] = value
 
     @property
-    def data(self) -> Sequence[Any] | np.ndarray:
+    def data(self) -> list | np.ndarray:
         """The data array."""
         return self._props['data']
 
     @data.setter
-    def data(self, value: Sequence[Any] | np.ndarray) -> None:
+    def data(self, value: list | np.ndarray) -> None:
         self._props['data'] = value

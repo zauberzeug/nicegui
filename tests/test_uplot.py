@@ -69,7 +69,7 @@ def test_chart_fits_in_box(screen: Screen, case: str):
     def page():
         if case == 'title_and_padding':
             with ui.element().style('width: 400px; height: 300px'):
-                options = {'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
+                options: dict = {'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
                 ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full p-4 border')
         if case == 'wrapping_legend':
             colors = ['red', 'blue', 'green', 'orange', 'purple', 'teal', 'brown', 'magenta']
