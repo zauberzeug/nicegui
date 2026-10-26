@@ -5,6 +5,8 @@ from typing import Any
 
 from fastapi.responses import JSONResponse
 
+from .registry import find_converter
+
 try:
     HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 except (ModuleNotFoundError, ValueError):
@@ -28,7 +30,7 @@ def dumps(obj: Any,
         indent=2 if indent else None,
         allow_nan=False,
         ensure_ascii=False,
-        cls=NumpyJsonEncoder)
+        cls=NiceGUIJSONEncoder)
 
 
 def loads(value: str) -> Any:
@@ -40,16 +42,18 @@ def loads(value: str) -> Any:
 
 
 class NiceGUIJSONResponse(JSONResponse):
-    """FastAPI response class to support our custom json serializer implementation."""
+    """FastAPI response class to support our custom JSON serializer implementation."""
 
     def render(self, content: Any) -> bytes:
         return dumps(content).encode('utf-8')
 
 
-class NumpyJsonEncoder(json.JSONEncoder):
-    """Special json encoder that supports NumPy arrays and date/datetime objects."""
+class NiceGUIJSONEncoder(json.JSONEncoder):
+    """Special JSON encoder that supports NumPy arrays, date/datetime objects and registered custom types."""
 
     def default(self, o):
+        if converter := find_converter(o):
+            return converter(o)
         if HAS_NUMPY:
             import numpy as np  # pylint: disable=import-outside-toplevel
             if isinstance(o, np.integer):

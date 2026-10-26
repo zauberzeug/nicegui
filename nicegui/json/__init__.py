@@ -8,6 +8,8 @@ in socketio.AsyncServer, which expects a module as parameter
 to override Python's default json module.
 """
 
+from .registry import register_type
+
 try:
     from .orjson_wrapper import NiceGUIJSONResponse, dumps, loads
 except ImportError:
@@ -18,4 +20,5 @@ __all__ = [
     'NiceGUIJSONResponse',
     'dumps',
     'loads',
+    'register_type',
 ]

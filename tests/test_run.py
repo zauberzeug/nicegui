@@ -202,28 +202,41 @@ async def test_warning_reflects_pool_not_later_setting_change(caplog):
     assert 'process_pool_start_method' in caplog.text
 
 
-@pytest.mark.parametrize(('stdout_available', 'stderr_available'), [
-    (True, True), (False, True), (True, False), (False, False),
+@pytest.mark.parametrize(('stdout_state', 'stderr_state'), [
+    ('open', 'open'), ('missing', 'open'), ('open', 'missing'), ('missing', 'missing'),
+    ('closed', 'missing'), ('missing', 'closed'), ('broken', 'missing'), ('missing', 'broken'),
 ])
-def test_stop_and_exit_with_optional_standard_streams(tmp_path: Path, stdout_available: bool, stderr_available: bool):
+def test_stop_and_exit_with_unusable_standard_streams(tmp_path: Path, stdout_state: str, stderr_state: str):
     result = subprocess.run([sys.executable, '-c', dedent('''\
+        import os
         import sys
         from threading import Thread
         from nicegui import core
 
-        sys.stdout = open('stdout', 'w', encoding='utf-8') if sys.argv[1] == 'True' else None
-        sys.stderr = open('stderr', 'w', encoding='utf-8') if sys.argv[2] == 'True' else None
-        for stream in (sys.stdout, sys.stderr):
-            if stream is not None:
-                stream.write('pending output')
+        def prepare_stream(name, state):
+            if state == 'missing':
+                return None
+            if state == 'broken':
+                reader, writer = os.pipe()
+                os.close(reader)
+                stream = os.fdopen(writer, 'w', encoding='utf-8')
+            else:
+                stream = open(name, 'w', encoding='utf-8')
+            stream.write('pending output')
+            if state == 'closed':
+                stream.close()
+            return stream
+
+        sys.stdout = prepare_stream('stdout', sys.argv[1])
+        sys.stderr = prepare_stream('stderr', sys.argv[2])
 
         thread = Thread(target=core.stop_and_exit, daemon=True)
         thread.start()
         thread.join()
         sys.exit(1)  # Returning from the shutdown thread must not look like a successful process exit.
-    '''), str(stdout_available), str(stderr_available)], cwd=tmp_path,
-        capture_output=True, text=True, timeout=30, check=False)
+    '''), stdout_state, stderr_state], cwd=tmp_path,
+                            capture_output=True, text=True, timeout=30, check=False)
     assert result.returncode == 0, result.stderr
-    for name, available in (('stdout', stdout_available), ('stderr', stderr_available)):
-        if available:
+    for name, state in (('stdout', stdout_state), ('stderr', stderr_state)):
+        if state in {'open', 'closed'}:
             assert (tmp_path / name).read_text() == 'pending output'

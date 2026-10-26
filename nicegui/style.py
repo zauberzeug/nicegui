@@ -14,7 +14,8 @@ T = TypeVar('T', bound='Element')
 class Style(ObservableDict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, on_change=self._update, **kwargs)
+        super().__init__(*args, **kwargs)
+        self._change_handlers.append((self._update, False))  # _update takes no arguments, so skip the signature check
         self._element = weakref.ref(element)
         self._suspend_count = 0
 
