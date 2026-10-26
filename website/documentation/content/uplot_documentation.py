@@ -88,7 +88,7 @@ def sizing_demo() -> None:
     data = [[x / 10 for x in range(100)], [math.cos(x / 10) for x in range(100)]]
 
     ui.uplot(options, data).classes('bg-white text-black')
-    ui.uplot(options, data).classes('w-full h-40 bg-white text-black')
+    ui.uplot(options, data).classes('bg-white text-black w-full h-40')
 
 
 doc.reference(ui.uplot)
