@@ -26,7 +26,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         :param data: chart data (see `uPlot data format <https://github.com/leeoniya/uPlot/tree/master/docs#data-format>`_)
         :param scale_mode: how scales are updated on data changes: "reset" (always recompute, default), "preserve_all" (never recompute), or "preserve_zoom" (recompute unless the user is zoomed)
 
-        *Added in version 3.17.0*
+        *Added in version 3.19.0*
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'dist')
