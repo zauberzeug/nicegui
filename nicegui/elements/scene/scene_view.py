@@ -56,7 +56,6 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
         self._settled_event = asyncio.Event()
-        self._init_error: str | None = None
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
         self.on('init-failed', self._handle_init_failed)
@@ -73,16 +72,13 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         return self
 
     def _handle_init(self) -> None:
-        self._init_error = None
         self._initialized_event.set()
         self._settled_event.set()
         self.move_camera(duration=0)
         self.run_method('init')
 
     def _handle_init_failed(self) -> None:
-        if not self._initialized_event.is_set():
-            self._init_error = 'Could not create WebGL renderer.'
-            self._settled_event.set()
+        self._settled_event.set()
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized.
@@ -93,8 +89,8 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         *Updated in version 3.19.0: Raises a ``RuntimeError`` if the browser could not create a WebGL renderer.*
         """
         await self._wait_for(self._settled_event)
-        if self._init_error is not None:
-            raise RuntimeError(self._init_error)
+        if not self._initialized_event.is_set():
+            raise RuntimeError('Could not create WebGL renderer.')
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
