@@ -1,7 +1,7 @@
 import { toRaw } from "vue";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 import { loadResource } from "../../static/utils/resources.js";
-import { uPlot, optionsChanged, dataMatch } from "nicegui-uplot";
+import { uPlot } from "nicegui-uplot";
 
 // Based on uplot-vue by @skalinichev (https://github.com/skalinichev/uplot-wrappers)
 export default {
@@ -39,14 +39,18 @@ export default {
   watch: {
     options(options, prevOptions) {
       if (!this.chart) return;
-      // compare the raw options, so ":"-prefixed functions are compared by their source strings
-      if (optionsChanged(toRaw(prevOptions), toRaw(options))) this._create();
+      // width and height only set the initial size; ":"-prefixed functions are still source strings here
+      const withoutSize = ({ width, height, ...rest }) => JSON.stringify(rest);
+      if (withoutSize(prevOptions) !== withoutSize(options)) this._create();
     },
     data(data, prevData) {
       if (!this.chart) return;
       data = toRaw(data);
       prevData = toRaw(prevData);
-      if (dataMatch(prevData, data)) return;
+      // NiceGUI sends all props on every update, so unchanged data must not trigger setData
+      const same = (a, b) =>
+        a.length === b.length && a.every((s, i) => s.length === b[i].length && s.every((v, j) => v === b[i][j]));
+      if (same(prevData, data)) return;
       const keepScales = this.keepZoom && this._isZoomed(prevData[0]);
       this.chart.setData(data, !keepScales);
       if (keepScales) this.chart.redraw(); // setData(data, false) does not redraw

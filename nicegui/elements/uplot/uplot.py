@@ -50,7 +50,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         self._props['options'] = value
 
     @property
-    def data(self) -> list:
+    def data(self) -> Sequence[Any] | np.ndarray:
         """The data array."""
         return self._props['data']
 
