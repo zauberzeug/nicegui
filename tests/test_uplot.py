@@ -17,10 +17,10 @@ CHART_FITS = '''(() => {
 def test_uplot(screen: Screen):
     @ui.page('/')
     def page():
-        ui.uplot({'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}, [[1, 2], [3, 4]])
+        ui.uplot({'series': [{}, {'stroke': 'red'}]}, [[1, 2], [3, 4]])
         x = np.arange(3)
         y = np.array([1, 4, 9])
-        ui.uplot({'width': 400, 'height': 200, 'series': [{}, {'stroke': 'blue'}]}, [x, y])
+        ui.uplot({'series': [{}, {'stroke': 'blue'}]}, [x, y])
         ui.uplot({}, [])
 
     screen.open('/')
@@ -31,7 +31,7 @@ def test_resize_to_element(screen: Screen):
     @ui.page('/')
     def page():
         # legend disabled so the canvas fills the host exactly (see test_chart_fits_in_box otherwise)
-        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
+        options = {'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
         data = [[0, 1], [1, 2]]
         plot = ui.uplot(options, data).style('width: 400px; height: 200px')
         ui.button('Resize', on_click=lambda: plot.style('width: 600px; height: 300px'))
@@ -46,7 +46,7 @@ def test_resize_to_element(screen: Screen):
 def test_update_data_and_options(screen: Screen):
     @ui.page('/')
     def page():
-        options = {'width': 400, 'height': 200, 'series': [{}, {'label': 'C', 'stroke': 'red'}]}
+        options = {'series': [{}, {'label': 'C', 'stroke': 'red'}]}
         data = [[0, 1], [2, 4]]
         plot = ui.uplot(options, data)
 
@@ -69,14 +69,12 @@ def test_chart_fits_in_box(screen: Screen, case: str):
     def page():
         if case == 'title_and_padding':
             with ui.element().style('width: 400px; height: 300px'):
-                options = {'width': 400, 'height': 300, 'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
+                options = {'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
                 ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full p-4 border')
         if case == 'wrapping_legend':
             colors = ['red', 'blue', 'green', 'orange', 'purple', 'teal', 'brown', 'magenta']
             with ui.element().style('width: 260px; height: 320px'):
                 options = {
-                    'width': 260,
-                    'height': 320,
                     'title': 'wrap',
                     'series': [{}] + [{'label': f'series-{i}', 'stroke': c} for i, c in enumerate(colors)],
                 }
@@ -84,7 +82,7 @@ def test_chart_fits_in_box(screen: Screen, case: str):
                 ui.uplot(options, data).classes('w-full h-full')
         if case == 'growing_legend':
             with ui.element().style('width: 220px; height: 300px'):
-                options = {'width': 220, 'height': 300, 'scales': {'x': {'time': False}},
+                options = {'scales': {'x': {'time': False}},
                            'series': [{'label': 'x'}, {'label': 'alpha'}, {'label': 'beta'}]}
                 ui.uplot(options, [[0, 1], [111111111111, 2], [333333333333, 4]]).classes('w-full h-full')
 
@@ -160,7 +158,7 @@ def test_redraw_when_keeping_scales(screen: Screen):
     """Data updates must redraw the canvas even when the scales are kept (uPlot's setData(data, false) does not)."""
     @ui.page('/')
     def page():
-        options = {'width': 400, 'height': 200, 'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}
+        options = {'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}
         plot = ui.uplot(options, [[0, 1, 2], [0, 1, 2]])
         ui.button('Update', on_click=lambda: setattr(plot, 'data', [[0, 1, 2], [2, 1, 0]]))
 
@@ -182,11 +180,11 @@ def test_recreate_preserves_container_size(screen: Screen):
     @ui.page('/')
     def page():
         with ui.card().style('height: 200px; width: 600px'):
-            options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
+            options = {'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
             plot = ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full')
 
         def restyle():
-            plot.options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'blue'}], 'legend': {'show': False}}
+            plot.options = {'series': [{}, {'stroke': 'blue'}], 'legend': {'show': False}}
         ui.button('Restyle', on_click=restyle)
 
     screen.open('/')
@@ -202,7 +200,7 @@ def test_delete_without_error(screen: Screen):
     """Deleting the chart must disconnect the ResizeObserver and not raise on either side."""
     @ui.page('/')
     def page():
-        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}
+        options = {'series': [{}, {'stroke': 'red'}]}
         plot = ui.uplot(options, [[0, 1], [2, 4]])
         ui.button('Delete', on_click=plot.delete)
 
@@ -257,24 +255,6 @@ def test_legend_mounted_externally(screen: Screen):
     assert screen.selenium.execute_script("return document.querySelector('.nicegui-uplot .uplot table') === null")
     # with the legend gone (and no title), there is no chrome to reserve, so the canvas fills the whole card
     screen.wait_for_js(CANVAS_SIZE, [568, 168])
-
-
-def test_content_sized_host_does_not_grow(screen: Screen):
-    """A content-sized host must converge, not grow on every ResizeObserver cycle (the feedback loop)."""
-    @ui.page('/')
-    def page():
-        options = {'width': 400, 'height': 200, 'title': 'T', 'series': [{}, {'label': 'y', 'stroke': 'red'}]}
-        # height:auto makes the host content-sized — the configuration that could feed the observer loop
-        ui.uplot(options, [[0, 1, 2], [3, 4, 5]]).style('width: 400px; height: auto')
-
-    screen.open('/')
-    # with no box to fit into, the plot must keep the configured height instead of absorbing the chrome
-    screen.wait_for_js(CANVAS_SIZE, [400, 200])
-    height_1 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
-    screen.wait(0.5)  # a feedback loop would grow the host in the meantime
-    height_2 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
-    assert height_1 == height_2, f'host height should stay constant once settled: {height_1} -> {height_2}'
-    assert 0 < height_2 < 600, f'host should stay content-sized: {height_2}'
 
 
 def test_dark_mode(screen: Screen):

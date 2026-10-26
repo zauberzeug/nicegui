@@ -39,7 +39,7 @@ export default {
   watch: {
     options(options, prevOptions) {
       if (!this.chart) return;
-      // width and height only set the initial size; ":"-prefixed functions are still source strings here
+      // width and height are ignored; ":"-prefixed functions are still source strings here
       const withoutSize = ({ width, height, ...rest }) => JSON.stringify(rest);
       if (withoutSize(prevOptions) !== withoutSize(options)) this._create();
     },
@@ -125,9 +125,9 @@ export default {
       this._updateColors();
       this._applyColorDefaults(options);
       const { width, height } = this._hostSize();
-      options.width = width || options.width;
-      options.height = height || options.height;
-      if (!options.width || !options.height) return; // wait for the host to get a size
+      if (!width || !height) return; // wait for the host to get a size
+      options.width = width;
+      options.height = height;
       this.chart = new uPlot(options, toRaw(this.data), this.$el);
       this._resize();
       // the live legend can grow without resizing the host

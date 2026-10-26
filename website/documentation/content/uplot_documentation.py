@@ -9,8 +9,6 @@ def main_demo() -> None:
 
     ui.uplot(
         options={
-            'width': 600,
-            'height': 300,
             'title': 'Sine wave',
             'scales': {'x': {'time': False}},
             'series': [
@@ -32,8 +30,7 @@ def update_demo() -> None:
     from random import random
 
     chart = ui.uplot(
-        options={'width': 600, 'height': 300, 'scales': {'x': {'time': False}},
-                 'series': [{'label': 'x'}, {'label': 'y', 'stroke': 'blue'}]},
+        options={'scales': {'x': {'time': False}}, 'series': [{'label': 'x'}, {'label': 'y', 'stroke': 'blue'}]},
         data=[[0, 1, 2, 3], [1, 3, 2, 4]],
     )
 
@@ -55,8 +52,7 @@ def live_demo() -> None:
     xs = list(range(100))
     ys = [math.sin(x / 10) for x in xs]
     chart = ui.uplot(
-        options={'width': 600, 'height': 300, 'scales': {'x': {'time': False}},
-                 'series': [{'label': 'x'}, {'label': 'value', 'stroke': 'green'}]},
+        options={'scales': {'x': {'time': False}}, 'series': [{'label': 'x'}, {'label': 'value', 'stroke': 'green'}]},
         data=[xs, ys],
     )
 
@@ -71,20 +67,18 @@ def live_demo() -> None:
 
 
 @doc.demo('Sizing', '''
-    The `width` and `height` in the options are optional: set them for a default size, or omit them to fill the parent.
-    Either way the chart follows its element via a `ResizeObserver`, so you can size it with Tailwind classes or `.style()`.
-    Note that `width` and `height` only apply when the chart is created;
-    to resize it later, change the element's classes or style rather than the options.
+    The chart fills its element, which takes the full width and a height of 16rem by default.
+    Size it with Tailwind classes or `.style()` like other elements; it follows size changes automatically.
+    `width` and `height` in the options are ignored.
 ''')
 def sizing_demo() -> None:
     import math
 
-    options = {'width': 600, 'height': 300, 'scales': {'x': {'time': False}},
-               'series': [{'label': 'x'}, {'label': 'cos(x)', 'stroke': 'purple'}]}
+    options = {'scales': {'x': {'time': False}}, 'series': [{'label': 'x'}, {'label': 'cos(x)', 'stroke': 'purple'}]}
     data = [[x / 10 for x in range(100)], [math.cos(x / 10) for x in range(100)]]
 
     ui.uplot(options, data)
-    ui.uplot(options, data).classes('w-full h-40')
+    ui.uplot(options, data).classes('w-96 h-40')
 
 
 doc.reference(ui.uplot)
