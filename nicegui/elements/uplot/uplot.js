@@ -21,10 +21,17 @@ export default {
     // creates the chart once the host has a size (e.g. when revealed) and keeps it sized to the host afterwards
     this.resizeObserver = new ResizeObserver(() => (this.chart ? this._resize() : this._create()));
     this.resizeObserver.observe(this.$el);
+    // follow the dark mode, which Quasar toggles via a class on the body
+    this.themeObserver = new MutationObserver(() => {
+      this._updateColors();
+      this.chart?.redraw(false);
+    });
+    this.themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
     this._create();
   },
   unmounted() {
     this.resizeObserver?.disconnect();
+    this.themeObserver?.disconnect();
     this._destroy();
   },
   // NiceGUI replaces the whole prop on every update, so the watchers need not be deep.
@@ -74,6 +81,34 @@ export default {
       if (width === this.chart.width && plotHeight === this.chart.height) return; // setSize always redraws
       this.chart.setSize({ width, height: plotHeight });
     },
+    _updateColors() {
+      const [r, g, b] = getComputedStyle(this.$el).color.match(/[\d.]+/g);
+      let background = "#fff";
+      for (let el = this.$el; el; el = el.parentElement) {
+        const color = getComputedStyle(el).backgroundColor;
+        if (color !== "transparent" && !/^rgba\(.*, 0\)$/.test(color)) {
+          background = color;
+          break;
+        }
+      }
+      this.colors = { text: `rgb(${r}, ${g}, ${b})`, faint: `rgba(${r}, ${g}, ${b}, 0.1)`, background };
+    },
+    _applyColorDefaults(options) {
+      // uPlot hard-codes black and white for these, so derive them from the page unless the user sets them
+      const text = () => this.colors.text;
+      const faint = () => this.colors.faint;
+      const background = () => this.colors.background;
+      const axes = options.axes ?? [];
+      options.axes = [axes[0], axes[1], ...axes.slice(2)].map((axis = {}) => ({
+        stroke: text,
+        ...axis,
+        grid: { stroke: faint, ...axis.grid },
+        ticks: { stroke: faint, ...axis.ticks },
+      }));
+      options.series = options.series?.map((series, i) =>
+        i === 0 ? series : { ...series, points: { fill: background, ...series?.points } },
+      );
+    },
     _destroy() {
       this.chart?.destroy();
       this.chart = null;
@@ -83,6 +118,8 @@ export default {
       // convert ":"-prefixed properties on a copy, so the prop keeps its source strings
       const options = structuredClone(toRaw(this.options));
       convertDynamicProperties(options, true);
+      this._updateColors();
+      this._applyColorDefaults(options);
       const { width, height } = this._hostSize();
       options.width = width || options.width;
       options.height = height || options.height;

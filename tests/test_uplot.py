@@ -304,3 +304,35 @@ def test_content_sized_host_does_not_grow(screen: Screen):
     height_2 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
     assert height_1 == height_2, f'host height should stay constant once settled: {height_1} -> {height_2}'
     assert 0 < height_2 < 600, f'host should stay content-sized: {height_2}'
+
+
+def test_dark_mode(screen: Screen):
+    """Axis labels follow the page's text color, also when the dark mode is toggled."""
+    @ui.page('/')
+    def page():
+        dark = ui.dark_mode(True)
+        ui.uplot({'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}, [[0, 1, 2], [1, 3, 2]])
+        ui.button('Light', on_click=dark.disable)
+
+    def count_white_and_black_pixels() -> list[int]:
+        return screen.selenium.execute_script('''
+            const canvas = document.querySelector('.nicegui-uplot canvas');
+            const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+            let white = 0, black = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i + 3] < 200) continue;
+                if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200) white++;
+                if (data[i] < 60 && data[i + 1] < 60 && data[i + 2] < 60) black++;
+            }
+            return [white, black];
+        ''')
+
+    screen.open('/')
+    screen.wait(0.5)
+    white, black = count_white_and_black_pixels()
+    assert white > black, 'axis labels should be light in dark mode'
+
+    screen.click('Light')
+    screen.wait(0.5)
+    white, black = count_white_and_black_pixels()
+    assert black > white, 'axis labels should be dark in light mode'

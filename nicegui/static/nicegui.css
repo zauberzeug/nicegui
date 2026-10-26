@@ -245,6 +245,9 @@
   height: var(--nicegui-uplot-height, 16rem);
   max-width: 100%;
 }
+.body--dark .nicegui-uplot .u-select {
+  background: rgba(255, 255, 255, 0.07);
+}
 .nicegui-leaflet video.leaflet-image-layer {
   max-width: none; /* HACK: make the video show up */
 }
