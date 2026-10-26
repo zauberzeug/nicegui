@@ -5,6 +5,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 from nicegui import ui
 from nicegui.testing import Screen
 
+CANVAS_SIZE = "(canvas => [canvas.width, canvas.height])(document.querySelector('.nicegui-uplot canvas'))"
+CHART = "getElement(document.querySelector('.nicegui-uplot')).chart"
+CHART_FITS = '''(() => {
+    const host = document.querySelector('.nicegui-uplot').getBoundingClientRect();
+    const chart = document.querySelector('.nicegui-uplot .uplot').getBoundingClientRect();
+    return chart.right <= host.right + 1 && chart.bottom <= host.bottom + 1;
+})()'''
+
 
 def test_uplot(screen: Screen):
     @ui.page('/')
@@ -29,15 +37,10 @@ def test_resize_to_element(screen: Screen):
         ui.button('Resize', on_click=lambda: plot.style('width: 600px; height: 300px'))
 
     screen.open('/')
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('width') == '400'
-    assert canvas.get_attribute('height') == '200'
+    screen.wait_for_js(CANVAS_SIZE, [400, 200])
 
     screen.click('Resize')
-    screen.wait(0.5)  # let the ResizeObserver and the next animation frame propagate the new size
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('width') == '600'
-    assert canvas.get_attribute('height') == '300'
+    screen.wait_for_js(CANVAS_SIZE, [600, 300])
 
 
 def test_update_data_and_options(screen: Screen):
@@ -53,15 +56,10 @@ def test_update_data_and_options(screen: Screen):
         ui.button('Update', on_click=update)
 
     screen.open('/')
-    legend = screen.find_by_tag('table')
-    legend_html = legend.get_attribute('outerHTML')
-    assert legend_html is not None and 'C' in legend_html
+    screen.wait_for_js("document.querySelector('.u-legend').innerText.includes('C')", True)
 
     screen.click('Update')
-    screen.wait(0.5)  # let the data/options update round-trip to the client
-    legend = screen.find_by_tag('table')
-    legend_html = legend.get_attribute('outerHTML')
-    assert legend_html is not None and 'D' in legend_html
+    screen.wait_for_js("document.querySelector('.u-legend').innerText.includes('D')", True)
 
 
 @pytest.mark.parametrize('case', ['title_and_padding', 'wrapping_legend', 'growing_legend'])
@@ -91,17 +89,11 @@ def test_chart_fits_in_box(screen: Screen, case: str):
                 ui.uplot(options, [[0, 1], [111111111111, 2], [333333333333, 4]]).classes('w-full h-full')
 
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for_js(CHART_FITS, True)
     if case == 'growing_legend':  # the live legend shows wider values without resizing the host
         ActionChains(screen.selenium).move_to_element(screen.find_by_class('u-over')).perform()
-        screen.wait(0.5)
-    host_right, host_bottom, chart_right, chart_bottom = screen.selenium.execute_script('''
-        const host = document.querySelector('.nicegui-uplot').getBoundingClientRect();
-        const chart = document.querySelector('.nicegui-uplot .uplot').getBoundingClientRect();
-        return [host.right, host.bottom, chart.right, chart.bottom];
-    ''')
-    assert chart_right <= host_right + 1
-    assert chart_bottom <= host_bottom + 1
+        screen.wait(0.5)  # the legend grows without a signal to wait for
+        assert screen.selenium.execute_script(f'return {CHART_FITS}')
 
 
 def test_resize_after_reveal(screen: Screen):
@@ -116,10 +108,7 @@ def test_resize_after_reveal(screen: Screen):
 
     screen.open('/')
     screen.click('Open')
-    screen.wait(0.5)
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('width') == '568'
-    assert canvas.get_attribute('height') == '168'
+    screen.wait_for_js(CANVAS_SIZE, [568, 168])
 
 
 @pytest.mark.parametrize('keep_zoom, x_scale', [
@@ -145,35 +134,26 @@ def test_zoom_on_update(screen: Screen, keep_zoom: bool, x_scale: str):
             plot.data = [[1000 + 10 * i for i in range(n)], list(range(n))]
         ui.button('Update', on_click=update)
 
-    def x_range() -> list:
-        return screen.selenium.execute_script('''
-            const u = getElement(document.querySelector('.nicegui-uplot')).chart;
-            const scale = u.scales[u.series[0].scale];
-            return [scale.min, scale.max];
-        ''')
-
+    x_range = f'(u => [u.scales[u.series[0].scale].min, u.scales[u.series[0].scale].max])({CHART})'
+    n_points = f'{CHART}.data[0].length'
     full_range = [0, 11] if x_scale == 'ordinal' else [1000, 1110]
     zoom_range = [2, 5] if x_scale == 'ordinal' else [1020, 1050]
 
     screen.open('/')
-    screen.wait(0.3)
+    screen.wait_for_js(n_points, 11)
     screen.click('Update')
-    screen.wait(0.3)
-    assert x_range() == full_range, 'an update without zoom should fit the new data'
+    screen.wait_for_js(n_points, 12)
+    screen.wait_for_js(x_range, full_range)  # an update without zoom fits the new data
 
-    screen.selenium.execute_script(f'''
-        const u = getElement(document.querySelector('.nicegui-uplot')).chart;
-        u.setScale(u.series[0].scale, {{min: {zoom_range[0]}, max: {zoom_range[1]}}});
-    ''')
-    screen.wait(0.3)
-    assert x_range() == zoom_range
+    screen.selenium.execute_script(
+        f'(u => u.setScale(u.series[0].scale, {{min: {zoom_range[0]}, max: {zoom_range[1]}}}))({CHART})')
+    screen.wait_for_js(x_range, zoom_range)
     screen.click('Update')
-    screen.wait(0.3)
+    screen.wait_for_js(n_points, 13)
     if keep_zoom:
-        assert x_range() == zoom_range, 'keep_zoom should keep the manual zoom'
+        screen.wait_for_js(x_range, zoom_range)
     else:
-        assert x_range() == [full_range[0], full_range[1] + (1 if x_scale == 'ordinal' else 10)], \
-            'keep_zoom=False should fit the new data'
+        screen.wait_for_js(x_range, [full_range[0], full_range[1] + (1 if x_scale == 'ordinal' else 10)])
 
 
 def test_redraw_when_keeping_scales(screen: Screen):
@@ -188,15 +168,13 @@ def test_redraw_when_keeping_scales(screen: Screen):
         return screen.selenium.execute_script('return document.querySelector(".nicegui-uplot canvas").toDataURL();')
 
     screen.open('/')
-    screen.wait(0.3)
-    screen.selenium.execute_script('''
-        getElement(document.querySelector('.nicegui-uplot')).chart.setScale('x', {min: 0.5, max: 1.5});
-    ''')  # zoom in, so the update keeps the scales
-    screen.wait(0.3)
+    screen.wait_for_js(f'{CHART}.data[0].length', 3)
+    # zoom in, so the update keeps the scales
+    screen.selenium.execute_script(f"{CHART}.setScale('x', {{min: 0.5, max: 1.5}})")
+    screen.wait_for_js(f'{CHART}.scales.x.min', 0.5)
     image_before = canvas_image()
     screen.click('Update')
-    screen.wait(0.3)
-    assert canvas_image() != image_before, 'the canvas should show the new data'
+    screen.wait_for(lambda: canvas_image() != image_before)  # the canvas shows the new data
 
 
 def test_recreate_preserves_container_size(screen: Screen):
@@ -212,15 +190,12 @@ def test_recreate_preserves_container_size(screen: Screen):
         ui.button('Restyle', on_click=restyle)
 
     screen.open('/')
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('width') == '568'
-    assert canvas.get_attribute('height') == '168'
+    screen.wait_for_js(CANVAS_SIZE, [568, 168])
 
     screen.click('Restyle')
-    screen.wait(0.3)
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('width') == '568', 'recreated chart must keep its container width'
-    assert canvas.get_attribute('height') == '168', 'recreated chart must keep its container height'
+    screen.wait_for_js(f'{CHART}.series[1].stroke()', 'blue')
+    assert screen.selenium.execute_script(f'return {CANVAS_SIZE}') == [
+        568, 168], 'recreated chart keeps its container size'
 
 
 def test_delete_without_error(screen: Screen):
@@ -234,8 +209,7 @@ def test_delete_without_error(screen: Screen):
     screen.open('/')
     assert screen.find_by_tag('canvas')
     screen.click('Delete')
-    screen.wait(0.3)
-    assert not screen.find_all_by_tag('canvas')
+    screen.wait_for_js("document.querySelector('canvas') === null", True)
 
 
 def test_update_in_flex_container(screen: Screen):
@@ -258,7 +232,8 @@ def test_update_in_flex_container(screen: Screen):
     assert int(height_before or '0') > 0
 
     screen.click('Update')
-    screen.wait(0.3)
+    screen.wait_for_js(f'{CHART}.data[0].length', 3)
+    screen.wait(0.2)  # give a size change the chance to happen
     canvas = screen.find_by_tag('canvas')
     assert canvas.get_attribute('width') == width_before
     assert canvas.get_attribute('height') == height_before
@@ -277,14 +252,11 @@ def test_legend_mounted_externally(screen: Screen):
             ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full')
 
     screen.open('/')
-    screen.wait(0.5)
     # the legend table is moved out of the uPlot root into the external target
-    assert screen.selenium.execute_script("return document.querySelector('.legend-target table') !== null")
+    screen.wait_for_js("document.querySelector('.legend-target table') !== null", True)
     assert screen.selenium.execute_script("return document.querySelector('.nicegui-uplot .uplot table') === null")
     # with the legend gone (and no title), there is no chrome to reserve, so the canvas fills the whole card
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('width') == '568'
-    assert canvas.get_attribute('height') == '168'
+    screen.wait_for_js(CANVAS_SIZE, [568, 168])
 
 
 def test_content_sized_host_does_not_grow(screen: Screen):
@@ -296,11 +268,10 @@ def test_content_sized_host_does_not_grow(screen: Screen):
         ui.uplot(options, [[0, 1, 2], [3, 4, 5]]).style('width: 400px; height: auto')
 
     screen.open('/')
-    screen.wait(0.8)  # allow the resize observer to settle
     # with no box to fit into, the plot must keep the configured height instead of absorbing the chrome
-    assert screen.find_by_tag('canvas').get_attribute('height') == '200'
+    screen.wait_for_js(CANVAS_SIZE, [400, 200])
     height_1 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
-    screen.wait(1.0)
+    screen.wait(0.5)  # a feedback loop would grow the host in the meantime
     height_2 = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
     assert height_1 == height_2, f'host height should stay constant once settled: {height_1} -> {height_2}'
     assert 0 < height_2 < 600, f'host should stay content-sized: {height_2}'
@@ -314,9 +285,10 @@ def test_dark_mode(screen: Screen):
         ui.uplot({'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}, [[0, 1, 2], [1, 3, 2]])
         ui.button('Light', on_click=dark.disable)
 
-    def count_white_and_black_pixels() -> list[int]:
+    def mostly_light() -> bool:
         return screen.selenium.execute_script('''
             const canvas = document.querySelector('.nicegui-uplot canvas');
+            if (!canvas) return false;
             const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
             let white = 0, black = 0;
             for (let i = 0; i < data.length; i += 4) {
@@ -324,15 +296,11 @@ def test_dark_mode(screen: Screen):
                 if (data[i] > 200 && data[i + 1] > 200 && data[i + 2] > 200) white++;
                 if (data[i] < 60 && data[i + 1] < 60 && data[i + 2] < 60) black++;
             }
-            return [white, black];
+            return white > black;
         ''')
 
     screen.open('/')
-    screen.wait(0.5)
-    white, black = count_white_and_black_pixels()
-    assert white > black, 'axis labels should be light in dark mode'
+    screen.wait_for(mostly_light)  # axis labels are light in dark mode
 
     screen.click('Light')
-    screen.wait(0.5)
-    white, black = count_white_and_black_pixels()
-    assert black > white, 'axis labels should be dark in light mode'
+    screen.wait_for(lambda: not mostly_light())  # axis labels are dark in light mode
