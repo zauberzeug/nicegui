@@ -101,10 +101,14 @@ def _delete_all_clients() -> None:
     """Delete all clients, so that their elements are marked as deleted and e.g. ``refreshable.prune()`` releases them.
 
     Delete handlers are dropped beforehand, because the app has already shut down and they could not run properly.
+    This is a separate function, because in the suspended reset generator the loop variable would keep the last client alive.
     """
-    for client in list(Client.instances.values()):
-        client.delete_handlers.clear()
-        client.delete()
+    try:
+        for client in list(Client.instances.values()):
+            client.delete_handlers.clear()
+            client.delete()
+    finally:
+        Client.instances.clear()  # so that one failing deletion does not break all following tests
 
 
 def _find_all_subclasses(cls: type) -> list[type]:
