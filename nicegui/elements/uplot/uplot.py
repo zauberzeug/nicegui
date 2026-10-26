@@ -16,6 +16,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         self,
         options: dict,
         data: Sequence[Any] | np.ndarray,
+        *,
         scale_mode: Literal['reset', 'preserve_all', 'preserve_zoom'] = 'reset',
     ) -> None:
         """uPlot
