@@ -58,7 +58,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._settled_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
-        self.on('init-failed', self._handle_init_failed)
+        self.on('init-failed', self._settled_event.set)
         self.on('click3d', self._handle_click)
 
         self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
@@ -76,9 +76,6 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._settled_event.set()
         self.move_camera(duration=0)
         self.run_method('init')
-
-    def _handle_init_failed(self) -> None:
-        self._settled_event.set()
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized.

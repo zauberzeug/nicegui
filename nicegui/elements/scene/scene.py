@@ -120,7 +120,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)
-        self.on('init-failed', self._handle_init_failed)
+        self.on('init-failed', self._settled_event.set)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
@@ -218,9 +218,6 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
             self._batched_calls.append([name, *args])
             return NullResponse()
         return super().run_method(name, *args, timeout=timeout)
-
-    def _handle_init_failed(self) -> None:
-        self._settled_event.set()
 
     async def initialized(self) -> None:
         """Wait until the scene is initialized.
