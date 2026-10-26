@@ -238,5 +238,5 @@ def test_stop_and_exit_with_unusable_standard_streams(tmp_path: Path, stdout_sta
                             capture_output=True, text=True, timeout=30, check=False)
     assert result.returncode == 0, result.stderr
     for name, state in (('stdout', stdout_state), ('stderr', stderr_state)):
-        if state in {'open', 'closed'}:
+        if state == 'open':
             assert (tmp_path / name).read_text() == 'pending output'

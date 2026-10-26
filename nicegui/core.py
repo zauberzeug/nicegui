@@ -56,6 +56,9 @@ def stop_and_exit() -> None:
             log.exception('Error or timeout awaiting graceful shutdown before hard exit')
     try:
         run.tear_down()  # kill the process/thread pools before atexit, so multiprocessing's atexit join can't block
+    except Exception:
+        log.exception('Error tearing down process and thread pools before hard exit')
+    try:
         atexit._run_exitfuncs()  # pylint: disable=protected-access
         if sys.stdout is not None:
             sys.stdout.flush()
