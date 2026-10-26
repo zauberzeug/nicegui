@@ -119,6 +119,30 @@ async def test_earlier_runs_of_main_file_are_freed(tmp_path: Path):
     assert [await asyncio.create_task(count_greeting_classes()) for _ in range(3)] == [1, 1, 1]
 
 
+async def test_refreshable_forgets_pages_of_earlier_simulations():
+    renders = 0
+
+    @ui.refreshable
+    def content():
+        nonlocal renders
+        renders += 1
+        ui.label('Content')
+
+    def root():
+        content()
+
+    async def count_renders_on_refresh() -> int:
+        nonlocal renders
+        async with user_simulation(root) as user:
+            await user.open('/')
+            await user.should_see('Content')
+            renders = 0
+            await content.refresh()
+            return renders
+
+    assert [await asyncio.create_task(count_renders_on_refresh()) for _ in range(3)] == [1, 1, 1]
+
+
 async def test_adding_page_to_root_function():
     def root():
         ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
