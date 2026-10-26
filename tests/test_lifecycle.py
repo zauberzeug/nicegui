@@ -2,10 +2,30 @@ import asyncio
 import re
 
 import httpx
+import pytest
 import socketio
 
 from nicegui import Client, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
+
+
+async def test_ui_on_exception_from_async_connect_handler(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        async def on_connect():
+            raise RuntimeError('boom')
+
+        ui.context.client.on_connect(on_connect)
+
+    await user.open('/')
+    await asyncio.sleep(0.1)
+    assert len(seen) == 1 and 'boom' in str(seen[0])
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
 
 
 def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
@@ -185,3 +205,12 @@ def test_no_double_delete(screen: Screen):
     Client.prune_instances(client_age_threshold=0)  # should do nothing because client is still trying to reconnect
     screen.wait(4)  # meanwhile client.delete() will be called without raising KeyError
     assert len(events) == 1, 'delete event should be called only once'
+
+
+@pytest.mark.parametrize('name', ['NICEGUI_HOST', 'NICEGUI_PORT', 'NICEGUI_PROTOCOL'])
+def test_warning_about_ignored_environment_variable(screen: Screen, monkeypatch: pytest.MonkeyPatch, name: str):
+    monkeypatch.setenv(name, 'x')
+
+    screen.start_server()
+    httpx.get(screen.url, timeout=5)
+    screen.assert_py_logger('WARNING', re.compile(f'Ignoring {name}=x, which is only used internally.'))

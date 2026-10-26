@@ -4,13 +4,14 @@ from typing_extensions import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
+from .mixins.cancelable_wait_element import CancelableWaitElement
 from .mixins.color_elements import BackgroundColorElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.icon_element import IconElement
 from .mixins.text_element import TextElement
 
 
-class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement):
+class Button(IconElement, TextElement, DisableableElement, BackgroundColorElement, CancelableWaitElement):
 
     @resolve_defaults
     def __init__(self,
@@ -33,6 +34,8 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: `None`)
         """
+        self._clicked_waiters: set[asyncio.Event] = set()
+        self._clicked_waiters_registered = False
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:
@@ -60,8 +63,20 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         self._props['label'] = text
 
     async def clicked(self) -> None:
-        """Wait until the button is clicked."""
+        """Wait until the button is clicked.
+
+        *Updated in version 3.17.0: Awaiting the button click cancels the awaiting task
+        when the button is deleted, e.g. because the client disconnected.*
+        """
+        if not self._clicked_waiters_registered:
+            def wake_clicked_waiters() -> None:
+                for event in self._clicked_waiters:
+                    event.set()
+            self.on('click', wake_clicked_waiters, [])
+            self._clicked_waiters_registered = True
         event = asyncio.Event()
-        self.on('click', event.set, [])
-        await self.client.connected()
-        await event.wait()
+        self._clicked_waiters.add(event)
+        try:
+            await self._wait_for(event)
+        finally:
+            self._clicked_waiters.discard(event)

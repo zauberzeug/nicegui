@@ -232,6 +232,10 @@ function throttle(callback, time, leading, trailing, id) {
   }
 }
 
+// One component per slot template, so Vue sees the same component type on every render
+// and patches the slot in place instead of unmounting and remounting it (#6284).
+const slotComponents = new Map();
+
 function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
@@ -307,17 +311,13 @@ function renderRecursively(elements, id, propsContext) {
     slots[name] = (props) => {
       const rendered = [];
       if (data.template) {
-        rendered.push(
-          Vue.h(
-            {
-              props: { props: { type: Object, default: {} } },
-              template: data.template,
-            },
-            {
-              props: props,
-            },
-          ),
-        );
+        if (!slotComponents.has(data.template)) {
+          slotComponents.set(data.template, {
+            props: { props: { type: Object, default: () => ({}) } },
+            template: data.template,
+          });
+        }
+        rendered.push(Vue.h(slotComponents.get(data.template), { props: props }));
       }
       const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
       if (name === "default" && element.text !== null) {
@@ -504,6 +504,7 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
             if (!(id in this.elements)) continue;
+            if (id === "0") continue; // the layout's event props are refreshed without remounting (see #6248)
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];

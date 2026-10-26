@@ -6,7 +6,7 @@ import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import PageArguments, background_tasks, ui
+from nicegui import APIRouter, PageArguments, app, background_tasks, ui
 from nicegui.testing import Screen
 
 # pylint: disable=missing-function-docstring
@@ -313,6 +313,31 @@ def test_async_nested_sub_pages(screen: Screen):
     assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
 
 
+def test_nested_sub_pages_rebuilt_after_navigation(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/users': users})
+
+    def users():
+        ui.link('Go to user 43', '/users/43')
+        ui.button('Rebuild', on_click=details.refresh)
+        details()
+
+    @ui.refreshable
+    def details():
+        ui.sub_pages({'/{id}': lambda id: ui.label(f'User {id}')})
+
+    screen.open('/users/42')
+    screen.should_contain('User 42')
+
+    screen.click('Go to user 43')
+    screen.should_contain('User 43')
+
+    screen.click('Rebuild')
+    screen.should_contain('User 43')
+
+
 def test_parameterized_sub_pages(screen: Screen):
     calls = {'index': 0, 'main': 0}
 
@@ -548,6 +573,50 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     screen.click('Go to sub')
     screen.should_contain('sub-content')
     assert screen.current_path.rstrip('/') == '/foo/sub'
+
+
+@pytest.mark.parametrize('root_path', ['/admin', '/admin/', '/admin;v1'])
+def test_navigating_to_path_outside_root_path(screen: Screen, root_path: str):
+    # regression test for https://github.com/zauberzeug/nicegui/issues/6385
+    @ui.page('/')
+    def index():
+        ui.label('Index page')
+
+    @ui.page('/other')
+    def other():
+        ui.label('Other page')
+
+    page_path = root_path.rstrip('/')
+
+    @ui.page(page_path)
+    @ui.page(page_path + '/{_:path}')
+    def admin():
+        ui.sub_pages({'/': overview, '/users': users}, root_path=root_path)
+        ui.link('Go to index', '/')
+        ui.link('Go to other', '/other')
+
+    def overview():
+        ui.label('Admin overview')
+
+    def users():
+        ui.sub_pages({'/{id}': lambda id: ui.label(f'User {id}')})
+
+    screen.open(page_path + '/users/42')
+    screen.should_contain('User 42')
+
+    screen.open(root_path)
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to index')
+    screen.should_contain('Index page')
+    screen.should_not_contain('Admin overview')
+
+    screen.open(root_path)
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to other')
+    screen.should_contain('Other page')
+    screen.should_not_contain('Admin overview')
 
 
 @pytest.mark.parametrize('show_404', [True, False])
@@ -857,40 +926,46 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         ui.link('Go to top', '/page#top')
         ui.link('Back to main', '/')
 
+    def scroll_y() -> int:
+        return screen.selenium.execute_script('return window.scrollY')
+
+    def scroll_has_settled() -> bool:
+        y_before = scroll_y()
+        screen.wait(0.2)
+        return scroll_y() == y_before  # clicking while a smooth scroll is still moving the page would miss its target
+
     # Test 1: Direct navigation with fragment should work
     screen.open('/page#bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page#bottom'
-    screen.wait(1)
-    scroll_y = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y > 500, 'Expected scrolling to occur for fragment navigation'
+    screen.wait_for(lambda: scroll_y() > 500)
+    screen.wait_for(scroll_has_settled)
+    scroll_y_bottom = scroll_y()
     assert calls == {'index': 1, 'main': 0, 'targets': 1}
 
     # Test 2: Same-page fragment navigation should not rebuild pages but should work
     screen.click('Go to top')
     screen.should_contain('Top target content')
-    screen.wait(1)
-    scroll_y_top = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y_top < scroll_y, 'Expected scrolling to top to have smaller scroll position'
+    screen.wait_for(lambda: scroll_y() < scroll_y_bottom)
+    screen.wait_for(scroll_has_settled)
     assert calls == {'index': 1, 'main': 0, 'targets': 1}, 'Fragment navigation should not rebuild page'
 
     # Test 3: Cross-page navigation auto-scrolls to top
     screen.click('Go to bottom')
-    screen.wait(1)
-    assert screen.selenium.execute_script('return window.scrollY') > 500
+    screen.wait_for(lambda: scroll_y() > 500)
+    screen.wait_for(scroll_has_settled)
     screen.click('Back to main')
     screen.should_contain('Main page')
     assert screen.current_path == '/'
     assert calls == {'index': 1, 'main': 1, 'targets': 1}
-    assert screen.selenium.execute_script('return window.scrollY') == 0
+    screen.wait_for_js('window.scrollY', 0)
 
     # Test 4: Cross-page fragment navigation
     screen.click('Go to bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page#bottom'
-    screen.wait(1)
-    scroll_y = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y > 0, 'Expected scrolling after cross-page fragment navigation'
+    screen.wait_for(lambda: scroll_y() > 0)
+    screen.wait_for(scroll_has_settled)
     assert calls == {'index': 1, 'main': 1, 'targets': 2}
 
     # Test 5: Fragment navigation again
@@ -1324,6 +1399,48 @@ def test_navigate_from_root_page_to_other_page(screen: Screen):
     screen.click('Go to other page')
     screen.should_contain('Other')
     assert screen.current_path == '/other'
+
+
+@pytest.mark.parametrize('router_prefix, include_prefix', [('/other', ''), ('', '/other')])
+def test_navigate_from_sub_pages_to_api_router_page(screen: Screen, router_prefix: str, include_prefix: str):
+    router = APIRouter(prefix=router_prefix)
+
+    @router.page('/')
+    def other_page():
+        ui.label('Other')
+
+    app.include_router(router, prefix=include_prefix)
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', '/other')
+
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path == '/other/'
+
+
+@pytest.mark.parametrize('suffix', ['?x=1', '#section'])
+def test_navigate_from_sub_pages_to_page_with_query_or_fragment(screen: Screen, suffix: str):
+    @ui.page('/other')
+    def other_page():
+        ui.label('Other')
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', f'/other{suffix}')
+
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path == f'/other{suffix}'
 
 
 def test_remaining_path_for_wildcard_routing(screen: Screen):

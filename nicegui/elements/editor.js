@@ -1,6 +1,6 @@
 export default {
   template: `
-    <q-editor ref="qRef" :id="id" v-model="inputValue">
+    <q-editor ref="qRef" v-model="inputValue">
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
@@ -8,7 +8,6 @@ export default {
   `,
   props: {
     value: String,
-    id: String,
   },
   data() {
     return {
@@ -17,7 +16,7 @@ export default {
     };
   },
   beforeUnmount() {
-    const element = mounted_app.elements[this.$props.id.slice(1)];
+    const element = mounted_app.elements[this.$el.id.slice(1)];
     if (element) element.props.value = this.inputValue;
   },
   watch: {

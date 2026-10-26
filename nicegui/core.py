@@ -54,11 +54,18 @@ def stop_and_exit() -> None:
             future.result(timeout=30)
         except Exception:
             log.exception('Error or timeout awaiting graceful shutdown before hard exit')
-    run.tear_down()  # kill the process/thread pools before atexit, so multiprocessing's atexit join can't block
-    atexit._run_exitfuncs()  # pylint: disable=protected-access
-    sys.stdout.flush()
-    sys.stderr.flush()
-    os._exit(0)
+    try:
+        run.tear_down()  # kill the process/thread pools before atexit, so multiprocessing's atexit join can't block
+    except Exception:
+        log.exception('Error tearing down process and thread pools before hard exit')
+    try:
+        atexit._run_exitfuncs()  # pylint: disable=protected-access
+        if sys.stdout is not None:
+            sys.stdout.flush()
+        if sys.stderr is not None:
+            sys.stderr.flush()
+    finally:
+        os._exit(0)
 
 
 def reset() -> None:

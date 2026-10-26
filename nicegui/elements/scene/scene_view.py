@@ -3,7 +3,6 @@ import asyncio
 from typing_extensions import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
-from ...element import Element
 from ...events import (
     ClickEventArguments,
     GenericEventArguments,
@@ -12,10 +11,11 @@ from ...events import (
     SceneClickHit,
     handle_event,
 )
+from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .scene import Scene, SceneCamera
 
 
-class SceneView(Element, component='scene_view.js', default_classes='nicegui-scene-view'):
+class SceneView(CancelableWaitElement, component='scene_view.js', default_classes='nicegui-scene-view'):
     # NOTE: The ESM is already registered in scene.py.
 
     @resolve_defaults
@@ -55,8 +55,10 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
+        self._settled_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
+        self.on('init-failed', self._settled_event.set)
         self.on('click3d', self._handle_click)
 
         self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
@@ -71,13 +73,21 @@ class SceneView(Element, component='scene_view.js', default_classes='nicegui-sce
 
     def _handle_init(self) -> None:
         self._initialized_event.set()
+        self._settled_event.set()
         self.move_camera(duration=0)
         self.run_method('init')
 
     async def initialized(self) -> None:
-        """Wait until the scene is initialized."""
-        await self.client.connected()
-        await self._initialized_event.wait()
+        """Wait until the scene is initialized.
+
+        *Updated in version 3.17.0: Awaiting scene view initialization cancels the awaiting task
+        when the scene view is deleted, e.g. because the client disconnected.*
+
+        *Updated in version 3.19.0: Raises a ``RuntimeError`` if the browser could not create a WebGL renderer.*
+        """
+        await self._wait_for(self._settled_event)
+        if not self._initialized_event.is_set():
+            raise RuntimeError('Could not create WebGL renderer.')
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

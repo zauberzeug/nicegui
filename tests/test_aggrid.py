@@ -294,6 +294,24 @@ def test_run_row_method(screen: Screen):
     screen.should_contain('42')
 
 
+def test_run_row_method_with_unknown_row_id(screen: Screen):
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid({
+            'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+            'rowData': [{'name': 'Alice', 'age': 18}],
+            ':getRowId': '(params) => params.data.name',
+        })
+        ui.button('Update', on_click=lambda: grid.run_row_method('Bob', 'setDataValue', 'age', 42))
+
+    screen.allowed_js_errors.append('Row \\"Bob\\" not found.')
+    screen.open('/')
+    screen.click('Update')
+    screen.wait_for(lambda: bool(screen.caplog.records))
+    screen.should_contain('18')
+    screen.assert_py_logger('ERROR', 'Row "Bob" not found.')
+
+
 def test_run_grid_method_xss(screen: Screen):
     @ui.page('/')
     def page():

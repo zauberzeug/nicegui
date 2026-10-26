@@ -130,7 +130,8 @@ doc.text('Error handling', '''
         Handler for in-page exceptions (**after** page sent to browser)
         - Applied per-page.
         - Handler may use UI elements with the original client at `ui.context.client`.
-        - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
+        - Common sources: `ui.button(on_click=...)`, `ui.timer`, `background_tasks.create(..., context=...)`,
+            exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
 
     When an exception occurs:
 
@@ -138,6 +139,7 @@ doc.text('Error handling', '''
     - UI-context exceptions go to _either_, but never both:
         - `@app.on_page_exception` (2) if raised before client connection
         - `ui.on_exception` (3) if raised after client connection
+    - Once the client has been deleted, its `ui.on_exception` handlers are skipped.
 ''')
 
 

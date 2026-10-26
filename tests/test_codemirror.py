@@ -151,6 +151,21 @@ def test_line_tooltip_stick_to_text(screen: Screen):
     screen.should_contain('tooltip')
 
 
+def test_line_tooltip_declared_for_a_value_sent_in_the_same_update(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('abc').classes('w-24')
+
+    screen.open('/')
+    editor.value = 'abc\ndef'
+    editor.line_tooltips = {2: 'tooltip'}
+    ActionChains(screen.selenium).move_to_element(screen.find('def')).perform()
+    screen.should_contain('tooltip')
+
+
 def test_line_tooltip_plain_text_default(screen: Screen):
     @ui.page('/')
     def page():
