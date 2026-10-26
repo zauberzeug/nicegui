@@ -79,7 +79,6 @@ def nicegui_reset_globals():
         gc.collect()
 
         app.reset()
-        _delete_all_clients()
         background_tasks.reset()
         event.reset()
         run.reset()
