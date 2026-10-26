@@ -7,9 +7,9 @@ import { uPlot, optionsChanged, dataMatch } from "nicegui-uplot";
 export default {
   template: "<div></div>",
   props: {
-    options: { type: Object, required: true },
-    data: { type: Array, required: true },
-    scaleMode: { type: String, required: false, default: "reset" },
+    options: Object,
+    data: Array,
+    keepZoom: Boolean,
     resourcePath: String,
   },
   created() {
@@ -40,8 +40,7 @@ export default {
       data = toRaw(data);
       prevData = toRaw(prevData);
       if (dataMatch(prevData, data)) return;
-      const keepScales =
-        this.scaleMode === "preserve_all" || (this.scaleMode === "preserve_zoom" && this._isZoomed(prevData[0]));
+      const keepScales = this.keepZoom && this._isZoomed(prevData[0]);
       this.chart.setData(data, !keepScales);
       if (keepScales) this.chart.redraw(); // setData(data, false) does not redraw
     },

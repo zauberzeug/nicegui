@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 from ...element import Element
 
@@ -17,7 +17,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         options: dict,
         data: Sequence[Any] | np.ndarray,
         *,
-        scale_mode: Literal['reset', 'preserve_all', 'preserve_zoom'] = 'reset',
+        keep_zoom: bool = True,
     ) -> None:
         """uPlot
 
@@ -25,7 +25,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
 
         :param options: chart options (see `uPlot options <https://github.com/leeoniya/uPlot/tree/master/docs#basics>`_); ``width`` and ``height`` only set the initial size, the chart follows its element afterwards
         :param data: chart data (see `uPlot data format <https://github.com/leeoniya/uPlot/tree/master/docs#data-format>`_)
-        :param scale_mode: how scales are updated on data changes: "reset" (always recompute, default), "preserve_all" (never recompute), or "preserve_zoom" (recompute unless the user has zoomed or panned the x axis)
+        :param keep_zoom: whether data updates keep the current scales while the x axis is zoomed or panned; otherwise all scales are refit to the new data (default: ``True``)
 
         *Added in version 3.19.0*
         """
@@ -33,7 +33,7 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
         self.add_resource(Path(__file__).parent / 'dist')
         self._props['options'] = options
         self._props['data'] = data
-        self._props['scaleMode'] = scale_mode
+        self._props['keepZoom'] = keep_zoom
 
         if 'width' in options:
             self.style(f'--nicegui-uplot-width: {options["width"]}px')

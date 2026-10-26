@@ -470,7 +470,7 @@ with ui.line_plot(n=50, update_every=5) as plot:
 
 # uPlot (fast canvas charts for large or streaming time series; data = [x, y1, y2, ...])
 plot = ui.uplot({'width': 600, 'height': 300, 'series': [{}, {'label': 'y', 'stroke': 'red'}]},
-                [[0, 1, 2], [3, 1, 2]], scale_mode='preserve_zoom')  # keep the user's zoom on updates
+                [[0, 1, 2], [3, 1, 2]])  # keeps the user's x zoom on updates (keep_zoom=True)
 plot.data = [[0, 1, 2, 3], [3, 1, 2, 4]]
 
 # 3D Scene (Three.js)

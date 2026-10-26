@@ -45,12 +45,10 @@ def update_demo() -> None:
 
 
 @doc.demo('Live updates with preserved zoom', '''
-    With `scale_mode="preserve_zoom"` the chart keeps the user's current zoom/pan across data updates
-    instead of rescaling to the full data range on every refresh.
-    Try zooming into the chart by dragging across it while it keeps streaming.
-
-    The available modes are `"reset"` (always rescale, the default),
-    `"preserve_zoom"` (rescale only while the x axis is not zoomed) and `"preserve_all"` (never rescale).
+    While the x axis is zoomed or panned, data updates keep the current scales instead of refitting them to the new data.
+    Try zooming into the chart by dragging across it while it keeps streaming, and double-click to zoom out again.
+    Pass `keep_zoom=False` to always refit,
+    or set `auto: False` for a scale in the options to never refit it.
 ''')
 def live_demo() -> None:
     import math
@@ -61,7 +59,6 @@ def live_demo() -> None:
         options={'width': 600, 'height': 300, 'scales': {'x': {'time': False}},
                  'series': [{'label': 'x'}, {'label': 'value', 'stroke': 'green'}]},
         data=[xs, ys],
-        scale_mode='preserve_zoom',
     ).classes('bg-white text-black')
 
     def update() -> None:

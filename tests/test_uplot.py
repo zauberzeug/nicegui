@@ -122,13 +122,13 @@ def test_resize_after_reveal(screen: Screen):
     assert canvas.get_attribute('height') == '168'
 
 
-@pytest.mark.parametrize('mode, x_scale', [
-    ('preserve_zoom', 'numeric'),
-    ('preserve_zoom', 'ordinal'),
-    ('reset', 'numeric'),
+@pytest.mark.parametrize('keep_zoom, x_scale', [
+    (True, 'numeric'),
+    (True, 'ordinal'),
+    (False, 'numeric'),
 ])
-def test_zoom_on_update(screen: Screen, mode: str, x_scale: str):
-    """Data updates refit the x scale, except for a manual zoom with scale_mode='preserve_zoom'."""
+def test_zoom_on_update(screen: Screen, keep_zoom: bool, x_scale: str):
+    """Data updates refit the x scale, except for a manual zoom with keep_zoom=True."""
     @ui.page('/')
     def page():
         # the ordinal case also uses a custom x scale key; the ":value" function must not recreate the chart
@@ -138,7 +138,7 @@ def test_zoom_on_update(screen: Screen, mode: str, x_scale: str):
             'axes': [{'scale': key}, {}],
             'series': [{'scale': key}, {'stroke': 'red', ':value': '(self, v) => v'}],
         }
-        plot = ui.uplot(options, [[1000 + 10 * i for i in range(11)], list(range(11))], scale_mode=mode)
+        plot = ui.uplot(options, [[1000 + 10 * i for i in range(11)], list(range(11))], keep_zoom=keep_zoom)
 
         def update():
             n = len(plot.data[0]) + 1
@@ -169,11 +169,11 @@ def test_zoom_on_update(screen: Screen, mode: str, x_scale: str):
     assert x_range() == zoom_range
     screen.click('Update')
     screen.wait(0.3)
-    if mode == 'preserve_zoom':
-        assert x_range() == zoom_range, 'preserve_zoom should keep the manual zoom'
+    if keep_zoom:
+        assert x_range() == zoom_range, 'keep_zoom should keep the manual zoom'
     else:
         assert x_range() == [full_range[0], full_range[1] + (1 if x_scale == 'ordinal' else 10)], \
-            'reset should fit the new data'
+            'keep_zoom=False should fit the new data'
 
 
 def test_redraw_when_keeping_scales(screen: Screen):
@@ -181,13 +181,17 @@ def test_redraw_when_keeping_scales(screen: Screen):
     @ui.page('/')
     def page():
         options = {'width': 400, 'height': 200, 'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}
-        plot = ui.uplot(options, [[0, 1, 2], [0, 1, 2]], scale_mode='preserve_all')
+        plot = ui.uplot(options, [[0, 1, 2], [0, 1, 2]])
         ui.button('Update', on_click=lambda: setattr(plot, 'data', [[0, 1, 2], [2, 1, 0]]))
 
     def canvas_image() -> str:
         return screen.selenium.execute_script('return document.querySelector(".nicegui-uplot canvas").toDataURL();')
 
     screen.open('/')
+    screen.wait(0.3)
+    screen.selenium.execute_script('''
+        getElement(document.querySelector('.nicegui-uplot')).chart.setScale('x', {min: 0.5, max: 1.5});
+    ''')  # zoom in, so the update keeps the scales
     screen.wait(0.3)
     image_before = canvas_image()
     screen.click('Update')
