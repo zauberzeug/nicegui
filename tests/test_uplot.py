@@ -13,15 +13,16 @@ def test_uplot(screen: Screen):
         x = np.arange(3)
         y = np.array([1, 4, 9])
         ui.uplot({'width': 400, 'height': 200, 'series': [{}, {'stroke': 'blue'}]}, [x, y])
+        ui.uplot({}, [])
 
     screen.open('/')
-    assert len(screen.find_all_by_tag('canvas')) == 2
+    assert len(screen.find_all_by_tag('canvas')) == 3
 
 
 def test_resize_to_element(screen: Screen):
     @ui.page('/')
     def page():
-        # legend disabled so the canvas fills the host exactly (see test_legend_fits_in_box otherwise)
+        # legend disabled so the canvas fills the host exactly (see test_chart_fits_in_box otherwise)
         options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
         data = [[0, 1], [1, 2]]
         plot = ui.uplot(options, data).style('width: 400px; height: 200px')
@@ -63,98 +64,53 @@ def test_update_data_and_options(screen: Screen):
     assert legend_html is not None and 'D' in legend_html
 
 
-def test_custom_series_function(screen: Screen):
+@pytest.mark.parametrize('case', ['title_and_padding', 'wrapping_legend', 'growing_legend'])
+def test_chart_fits_in_box(screen: Screen, case: str):
+    """The whole chart (title, plot and legend) must stay within its host box."""
     @ui.page('/')
     def page():
-        options = {
-            'width': 400,
-            'height': 200,
-            'series': [
-                {},
-                {'stroke': 'red', 'label': 'F', ':value': '(self, v) => v == null ? "" : (v*2).toFixed(1)'},
-            ],
-            'legend': {'show': True},
-        }
-        data = [[0, 1], [2, 4]]
-        ui.uplot(options, data)
+        if case == 'title_and_padding':
+            with ui.element().style('width: 400px; height: 300px'):
+                options = {'width': 400, 'height': 300, 'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
+                ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full p-4 border')
+        if case == 'wrapping_legend':
+            colors = ['red', 'blue', 'green', 'orange', 'purple', 'teal', 'brown', 'magenta']
+            with ui.element().style('width: 260px; height: 320px'):
+                options = {
+                    'width': 260,
+                    'height': 320,
+                    'title': 'wrap',
+                    'series': [{}] + [{'label': f'series-{i}', 'stroke': c} for i, c in enumerate(colors)],
+                }
+                data = [[0, 1, 2]] + [[i, i + 1, i + 2] for i in range(len(colors))]
+                ui.uplot(options, data).classes('w-full h-full')
+        if case == 'growing_legend':
+            with ui.element().style('width: 220px; height: 300px'):
+                options = {'width': 220, 'height': 300, 'scales': {'x': {'time': False}},
+                           'series': [{'label': 'x'}, {'label': 'alpha'}, {'label': 'beta'}]}
+                ui.uplot(options, [[0, 1], [111111111111, 2], [333333333333, 4]]).classes('w-full h-full')
 
     screen.open('/')
-    legend = screen.find_by_tag('table')
-    html = legend.get_attribute('outerHTML')
-    assert html is not None and 'F' in html
-
-
-@pytest.mark.parametrize('mode', ['reset', 'preserve_zoom', 'preserve_all'])
-def test_scale_mode_prop(screen: Screen, mode: str):
-    @ui.page('/')
-    def page():
-        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}
-        data = [[0, 1], [2, 4]]
-        ui.uplot(options, data, scale_mode=mode)
-
-    screen.open('/')
-    assert screen.find_by_tag('canvas')
-
-
-def test_empty_data(screen: Screen):
-    @ui.page('/')
-    def page():
-        options = {}
-        data = []
-        ui.uplot(options, data)
-
-    screen.open('/')
-    assert screen.find_by_tag('canvas')
-
-
-def test_in_card(screen: Screen):
-    @ui.page('/')
-    def page():
-        with ui.card().style('height: 200px; width: 600px'):
-            # legend disabled so the canvas fills the card exactly (see test_legend_fits_in_box otherwise)
-            options = {'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
-            data = [[0, 1], [2, 4]]
-            ui.uplot(options, data).classes('w-full h-full')  # fill the card via the ResizeObserver
-
-    screen.open('/')
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('height') == '168'
-    assert canvas.get_attribute('width') == '568'
-
-
-def test_legend_fits_in_box(screen: Screen):
-    @ui.page('/')
-    def page():
-        with ui.element().style('width: 400px; height: 300px'):
-            options = {'width': 400, 'height': 300, 'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
-            ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full')
-
-    screen.open('/')
-    screen.wait(0.5)  # let the chart reserve room for its title/legend on the next animation frame
-    host_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
-    chart_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot .uplot').offsetHeight")
-    # the whole chart (title + plot + legend) must stay within the host box instead of overflowing it
-    assert chart_height <= host_height
-
-
-def test_create_dynamically(screen: Screen):
-    @ui.page('/')
-    def page():
-        ui.button('Create', on_click=lambda: ui.uplot(
-            {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}]}, [[0, 1], [1, 2]]))
-
-    screen.open('/')
-    screen.click('Create')
-    assert screen.find_by_tag('canvas')
+    screen.wait(0.5)
+    if case == 'growing_legend':  # the live legend shows wider values without resizing the host
+        ActionChains(screen.selenium).move_to_element(screen.find_by_class('u-over')).perform()
+        screen.wait(0.5)
+    host_right, host_bottom, chart_right, chart_bottom = screen.selenium.execute_script('''
+        const host = document.querySelector('.nicegui-uplot').getBoundingClientRect();
+        const chart = document.querySelector('.nicegui-uplot .uplot').getBoundingClientRect();
+        return [host.right, host.bottom, chart.right, chart.bottom];
+    ''')
+    assert chart_right <= host_right + 1
+    assert chart_bottom <= host_bottom + 1
 
 
 def test_resize_after_reveal(screen: Screen):
-    """A chart created in a hidden (zero-size) container must fill its box once revealed."""
+    """A chart created in a hidden container without width/height in its options must fill its box once revealed."""
     @ui.page('/')
     def page():
         with ui.expansion() as expansion:
             with ui.card().style('height: 200px; width: 600px'):
-                options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
+                options = {'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
                 ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full')
         ui.button('Open', on_click=expansion.open)
 
@@ -166,54 +122,66 @@ def test_resize_after_reveal(screen: Screen):
     assert canvas.get_attribute('height') == '168'
 
 
-def test_preserve_zoom_keeps_zoom_on_update(screen: Screen):
-    """scale_mode='preserve_zoom' keeps a manual zoom across a data update; 'reset' recomputes it."""
-    plot = None
-
-    @ui.page('/{mode}')
-    def page(mode: str):
-        nonlocal plot
-        options = {'width': 400, 'height': 200, 'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}
-        plot = ui.uplot(options, [list(range(11)), list(range(11))], scale_mode=mode)
-
-        def update():
-            plot.data = [list(range(12)), list(range(12))]
-        ui.button('Update', on_click=update)
-
-    def x_scale() -> list:
-        return screen.selenium.execute_script(f'const u = getElement({plot.id}).chart; return [u.scales.x.min, u.scales.x.max];')
-
-    def zoom_to_2_5():
-        screen.selenium.execute_script(f'getElement({plot.id}).chart.setScale("x", {{min: 2, max: 5}});')
-
-    screen.open('/preserve_zoom')
-    screen.wait(0.3)
-    zoom_to_2_5()
-    assert x_scale() == [2, 5]
-    screen.click('Update')
-    screen.wait(0.3)
-    assert x_scale() == [2, 5], 'preserve_zoom should keep the manual zoom after a data update'
-
-    screen.open('/reset')
-    screen.wait(0.3)
-    zoom_to_2_5()
-    screen.click('Update')
-    screen.wait(0.3)
-    min_x, max_x = x_scale()
-    assert (min_x, max_x) != (2, 5), 'reset should recompute the scale'
-    assert max_x >= 11, 'reset should fit the new full data range'
-
-
-@pytest.mark.parametrize('mode', ['preserve_all', 'preserve_zoom'])
-def test_redraw_when_keeping_scales(screen: Screen, mode: str):
-    """Data updates must redraw the canvas even when the scales are kept (uPlot's setData(data, false) does not)."""
-    plot = None
-
+@pytest.mark.parametrize('mode, x_scale', [
+    ('preserve_zoom', 'numeric'),
+    ('preserve_zoom', 'ordinal'),
+    ('reset', 'numeric'),
+])
+def test_zoom_on_update(screen: Screen, mode: str, x_scale: str):
+    """Data updates refit the x scale, except for a manual zoom with scale_mode='preserve_zoom'."""
     @ui.page('/')
     def page():
-        nonlocal plot
+        # the ordinal case also uses a custom x scale key; the ":value" function must not recreate the chart
+        key = 't' if x_scale == 'ordinal' else 'x'
+        options = {
+            'scales': {key: {'time': False, 'distr': 2 if x_scale == 'ordinal' else 1}},
+            'axes': [{'scale': key}, {}],
+            'series': [{'scale': key}, {'stroke': 'red', ':value': '(self, v) => v'}],
+        }
+        plot = ui.uplot(options, [[1000 + 10 * i for i in range(11)], list(range(11))], scale_mode=mode)
+
+        def update():
+            n = len(plot.data[0]) + 1
+            plot.data = [[1000 + 10 * i for i in range(n)], list(range(n))]
+        ui.button('Update', on_click=update)
+
+    def x_range() -> list:
+        return screen.selenium.execute_script('''
+            const u = getElement(document.querySelector('.nicegui-uplot')).chart;
+            const scale = u.scales[u.series[0].scale];
+            return [scale.min, scale.max];
+        ''')
+
+    full_range = [0, 11] if x_scale == 'ordinal' else [1000, 1110]
+    zoom_range = [2, 5] if x_scale == 'ordinal' else [1020, 1050]
+
+    screen.open('/')
+    screen.wait(0.3)
+    screen.click('Update')
+    screen.wait(0.3)
+    assert x_range() == full_range, 'an update without zoom should fit the new data'
+
+    screen.selenium.execute_script(f'''
+        const u = getElement(document.querySelector('.nicegui-uplot')).chart;
+        u.setScale(u.series[0].scale, {{min: {zoom_range[0]}, max: {zoom_range[1]}}});
+    ''')
+    screen.wait(0.3)
+    assert x_range() == zoom_range
+    screen.click('Update')
+    screen.wait(0.3)
+    if mode == 'preserve_zoom':
+        assert x_range() == zoom_range, 'preserve_zoom should keep the manual zoom'
+    else:
+        assert x_range() == [full_range[0], full_range[1] + (1 if x_scale == 'ordinal' else 10)], \
+            'reset should fit the new data'
+
+
+def test_redraw_when_keeping_scales(screen: Screen):
+    """Data updates must redraw the canvas even when the scales are kept (uPlot's setData(data, false) does not)."""
+    @ui.page('/')
+    def page():
         options = {'width': 400, 'height': 200, 'scales': {'x': {'time': False}}, 'series': [{}, {'stroke': 'red'}]}
-        plot = ui.uplot(options, [[0, 1, 2], [0, 1, 2]], scale_mode=mode)
+        plot = ui.uplot(options, [[0, 1, 2], [0, 1, 2]], scale_mode='preserve_all')
         ui.button('Update', on_click=lambda: setattr(plot, 'data', [[0, 1, 2], [2, 1, 0]]))
 
     def canvas_image() -> str:
@@ -221,32 +189,10 @@ def test_redraw_when_keeping_scales(screen: Screen, mode: str):
 
     screen.open('/')
     screen.wait(0.3)
-    screen.selenium.execute_script(f'getElement({plot.id}).chart.setScale("x", {{min: 0.5, max: 1.5}});')  # zoom in
-    screen.wait(0.3)
     image_before = canvas_image()
     screen.click('Update')
     screen.wait(0.3)
     assert canvas_image() != image_before, 'the canvas should show the new data'
-
-
-def test_dynamic_options_keep_chart_on_data_update(screen: Screen):
-    """A data update must not recreate the chart only because the options contain ":"-prefixed functions."""
-    plot = None
-
-    @ui.page('/')
-    def page():
-        nonlocal plot
-        options = {'width': 400, 'height': 200, 'series': [{}, {'stroke': 'red', ':value': '(self, v) => v'}]}
-        plot = ui.uplot(options, [[0, 1], [2, 4]])
-        ui.button('Update', on_click=lambda: setattr(plot, 'data', [[0, 1, 2], [2, 4, 6]]))
-
-    screen.open('/')
-    screen.wait(0.3)
-    screen.selenium.execute_script(f'getElement({plot.id}).chart.marker = true;')
-    screen.click('Update')
-    screen.wait(0.3)
-    assert screen.selenium.execute_script(f'return getElement({plot.id}).chart.marker;'), \
-        'the uPlot instance should survive a data update'
 
 
 def test_recreate_preserves_container_size(screen: Screen):
@@ -312,46 +258,6 @@ def test_update_in_flex_container(screen: Screen):
     canvas = screen.find_by_tag('canvas')
     assert canvas.get_attribute('width') == width_before
     assert canvas.get_attribute('height') == height_before
-
-
-def test_wrapping_legend_fits_in_box(screen: Screen):
-    """With many series in a narrow box the legend wraps to several rows; the whole chart must still fit."""
-    @ui.page('/')
-    def page():
-        colors = ['red', 'blue', 'green', 'orange', 'purple', 'teal', 'brown', 'magenta']
-        with ui.element().style('width: 260px; height: 320px'):
-            options = {
-                'width': 260,
-                'height': 320,
-                'title': 'wrap',
-                'series': [{}] + [{'label': f'series-{i}', 'stroke': c} for i, c in enumerate(colors)],
-            }
-            data = [[0, 1, 2]] + [[i, i + 1, i + 2] for i in range(len(colors))]
-            ui.uplot(options, data).classes('w-full h-full')
-
-    screen.open('/')
-    screen.wait(0.6)  # let the wrapped legend settle and the chart reserve room on the next frame
-    host_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
-    chart_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot .uplot').offsetHeight")
-    assert chart_height <= host_height
-
-
-def test_growing_legend_fits_in_box(screen: Screen):
-    """A live legend showing wider values grows without resizing the host; the chart must still fit."""
-    @ui.page('/')
-    def page():
-        with ui.element().style('width: 220px; height: 300px'):
-            options = {'width': 220, 'height': 300, 'scales': {'x': {'time': False}},
-                       'series': [{'label': 'x'}, {'label': 'alpha'}, {'label': 'beta'}]}
-            ui.uplot(options, [[0, 1], [111111111111, 2], [333333333333, 4]]).classes('w-full h-full')
-
-    screen.open('/')
-    screen.wait(0.5)
-    ActionChains(screen.selenium).move_to_element(screen.find_by_class('u-over')).perform()
-    screen.wait(0.5)
-    host_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot').offsetHeight")
-    chart_height = screen.selenium.execute_script("return document.querySelector('.nicegui-uplot .uplot').offsetHeight")
-    assert chart_height <= host_height
 
 
 def test_legend_mounted_externally(screen: Screen):

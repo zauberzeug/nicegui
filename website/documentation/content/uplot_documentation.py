@@ -50,7 +50,7 @@ def update_demo() -> None:
     Try zooming into the chart by dragging across it while it keeps streaming.
 
     The available modes are `"reset"` (always rescale, the default),
-    `"preserve_zoom"` (rescale only while not zoomed) and `"preserve_all"` (never rescale).
+    `"preserve_zoom"` (rescale only while the x axis is not zoomed) and `"preserve_all"` (never rescale).
 ''')
 def live_demo() -> None:
     import math

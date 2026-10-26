@@ -18,55 +18,58 @@ export default {
   async mounted() {
     await this.$nextTick(); // wait for window.path_prefix to be set
     await loadResource(window.path_prefix + `${this.resourcePath}/uPlot.min.css`);
-    // uPlot needs explicit width/height as initial dimensions; the ResizeObserver then keeps the
-    // chart in sync with the host element afterwards (same approach as ui.echart), so it can follow
-    // its container when sized via CSS classes.
-    this.resizeObserver = new ResizeObserver(() => this._resize());
+    // creates the chart once the host has a size (e.g. when revealed) and keeps it sized to the host afterwards
+    this.resizeObserver = new ResizeObserver(() => (this.chart ? this._resize() : this._create()));
+    this.resizeObserver.observe(this.$el);
     this._create();
   },
   unmounted() {
     this.resizeObserver?.disconnect();
     this._destroy();
   },
-  // NiceGUI replaces the whole prop object on every update, so the watchers need not be deep.
-  // The props are also unwrapped (toRaw) before handing them to uPlot, which indexes into the data
-  // arrays in its drawing loops; Vue's reactive proxies would slow these down considerably.
+  // NiceGUI replaces the whole prop on every update, so the watchers need not be deep.
+  // toRaw avoids Vue's reactive proxies, which would slow down uPlot's drawing loops considerably.
   watch: {
     options(options, prevOptions) {
-      if (!this.chart) return; // still loading the CSS; _create will use the current props
+      if (!this.chart) return;
       // compare the raw options, so ":"-prefixed functions are compared by their source strings
       if (optionsChanged(toRaw(prevOptions), toRaw(options))) this._create();
     },
     data(data, prevData) {
-      if (!this.chart) return; // still loading the CSS; _create will use the current props
+      if (!this.chart) return;
       data = toRaw(data);
       prevData = toRaw(prevData);
       if (dataMatch(prevData, data)) return;
-      let keepScales = this.scaleMode === "preserve_all";
-      if (this.scaleMode === "preserve_zoom") {
-        // keep the current scales only while zoomed in, else refit; x-values are sorted ascending,
-        // so first/last are the range
-        const xs = prevData[0];
-        const x = this.chart.scales.x;
-        keepScales = xs?.length > 0 && (x.min > xs[0] || x.max < xs[xs.length - 1]);
-      }
+      const keepScales =
+        this.scaleMode === "preserve_all" || (this.scaleMode === "preserve_zoom" && this._isZoomed(prevData[0]));
       this.chart.setData(data, !keepScales);
-      if (keepScales) this.chart.redraw(); // setData(data, false) updates the data but does not redraw
+      if (keepScales) this.chart.redraw(); // setData(data, false) does not redraw
     },
   },
   methods: {
+    _hostSize() {
+      const style = getComputedStyle(this.$el);
+      return {
+        width: Math.max(0, this.$el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)),
+        height: Math.max(0, this.$el.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)),
+      };
+    },
+    _isZoomed(xs) {
+      // the x scale differs from the range uPlot would fit to the previous data
+      if (!xs?.length) return false;
+      const key = this.chart.series[0].scale;
+      const scale = this.chart.scales[key];
+      const [min, max] = scale.range(
+        this.chart,
+        ...(scale.distr === 2 ? [0, xs.length - 1] : [xs[0], xs[xs.length - 1]]),
+        key,
+      );
+      return scale.min !== min || scale.max !== max;
+    },
     _resize() {
-      // Match the chart to its host element. This runs both from the ResizeObserver (on genuine
-      // container resizes) and right after (re)creating the chart, because a programmatic recreate
-      // does not change the host's size and would otherwise leave the chart at options.width/height.
-      if (!this.chart) return;
-      const width = this.$el.offsetWidth;
-      const height = this.$el.offsetHeight;
+      const { width, height } = this._hostSize();
       if (!width || !height) return;
-      // uPlot renders the title and legend as DOM siblings of the plot, so reserve room for them and
-      // shrink the plot to keep the whole chart inside the host box instead of overflowing it (like
-      // ui.echart). Subtracting the plot from the root measures them without depending on the plot
-      // height, so a single pass settles it.
+      // uPlot sizes only the plot, so reserve room for the title and legend around it
       const chrome = Math.max(0, this.chart.root.offsetHeight - this.chart.height);
       const plotHeight = Math.max(0, height - chrome);
       if (width === this.chart.width && plotHeight === this.chart.height) return; // setSize always redraws
@@ -78,17 +81,16 @@ export default {
     },
     _create() {
       this._destroy();
-      // convert ":"-prefixed properties on a copy, so the prop itself keeps its source strings
+      // convert ":"-prefixed properties on a copy, so the prop keeps its source strings
       const options = structuredClone(toRaw(this.options));
       convertDynamicProperties(options, true);
-      // Create at the host's current size (when laid out) so the title/legend lay out for the final
-      // width from the start. The host defaults to options.width/height via CSS (see uplot.py), so
-      // this normally matches the options; it differs only when CSS classes/.style() resize the host.
-      if (this.$el.offsetWidth) options.width = this.$el.offsetWidth;
-      if (this.$el.offsetHeight) options.height = this.$el.offsetHeight;
+      const { width, height } = this._hostSize();
+      options.width = width || options.width;
+      options.height = height || options.height;
+      if (!options.width || !options.height) return; // wait for the host to get a size
       this.chart = new uPlot(options, toRaw(this.data), this.$el);
       this._resize();
-      // observe the title and legend too: the live legend grows for wider values without resizing the host
+      // the live legend can grow without resizing the host
       this.resizeObserver.disconnect();
       for (const el of [this.$el, ...this.chart.root.querySelectorAll(".u-title, .u-legend")]) {
         this.resizeObserver.observe(el);
