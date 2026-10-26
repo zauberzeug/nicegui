@@ -23,11 +23,11 @@ class UPlot(Element, component='uplot.js', esm={'nicegui-uplot': 'dist'}, defaul
 
         An element to create a chart using `uPlot <https://leeoniya.github.io/uPlot/>`_.
 
+        *Added in version 3.19.0*
+
         :param options: chart options (see `uPlot options <https://github.com/leeoniya/uPlot/tree/master/docs#basics>`_); ``width`` and ``height`` only set the initial size, the chart follows its element afterwards
         :param data: chart data (see `uPlot data format <https://github.com/leeoniya/uPlot/tree/master/docs#data-format>`_)
         :param keep_zoom: whether data updates keep the current scales while the x axis is zoomed or panned; otherwise all scales are refit to the new data (default: ``True``)
-
-        *Added in version 3.19.0*
         """
         super().__init__()
         self.add_resource(Path(__file__).parent / 'dist')
