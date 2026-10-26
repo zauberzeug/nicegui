@@ -26,8 +26,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Updating data and options', '''
-    uPlot data and options are bindable properties.
-    Just assign a new value to `chart.data` or mutate `chart.options` to push an update to the client.
+    Assign new values to `chart.data` or `chart.options`, or modify them in place, to update the chart.
 ''')
 def update_demo() -> None:
     from random import random
