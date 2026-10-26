@@ -366,3 +366,15 @@ async def test_construction_does_not_run_update_override(user: User):
     assert calls_after_init == 0, 'constructing the element must not run the override'
     assert calls_after_props == 1, 'changing props must run the override'
     assert calls == 2, 'changing the value must run the override'
+
+
+def test_clearable_select(screen: Screen):
+    @ui.page('/')
+    def page():
+        select = ui.select(['A', 'B'], value='A', clearable=True)
+        ui.label().bind_text_from(select, 'value', lambda value: f'value: {value}')
+
+    screen.open('/')
+    screen.should_contain('value: A')
+    screen.click('cancel')
+    screen.should_contain('value: None')

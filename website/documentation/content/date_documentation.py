@@ -42,7 +42,7 @@ def date_range_input():
     date_input = ui.input('Date range').classes('w-40')
     ui.date().props('range').bind_value(
         date_input,
-        forward=lambda x: f'{x["from"]} - {x["to"]}' if x else None,
+        forward=lambda x: f'{x["from"]} - {x["to"]}' if x else '',
         backward=lambda x: {
             'from': x.split(' - ')[0],
             'to': x.split(' - ')[1],
