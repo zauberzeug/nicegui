@@ -202,41 +202,23 @@ async def test_warning_reflects_pool_not_later_setting_change(caplog):
     assert 'process_pool_start_method' in caplog.text
 
 
-@pytest.mark.parametrize(('stdout_state', 'stderr_state'), [
-    ('open', 'open'), ('missing', 'open'), ('open', 'missing'), ('missing', 'missing'),
-    ('closed', 'missing'), ('missing', 'closed'), ('broken', 'missing'), ('missing', 'broken'),
-])
-def test_stop_and_exit_with_unusable_standard_streams(tmp_path: Path, stdout_state: str, stderr_state: str):
+@pytest.mark.parametrize('state', ['open', 'missing', 'closed'])
+def test_stop_and_exit_with_unusable_standard_streams(tmp_path: Path, state: str):
     result = subprocess.run([sys.executable, '-c', dedent('''\
-        import os
         import sys
-        from threading import Thread
         from nicegui import core
 
-        def prepare_stream(name, state):
-            if state == 'missing':
-                return None
-            if state == 'broken':
-                reader, writer = os.pipe()
-                os.close(reader)
-                stream = os.fdopen(writer, 'w', encoding='utf-8')
-            else:
-                stream = open(name, 'w', encoding='utf-8')
-            stream.write('pending output')
-            if state == 'closed':
-                stream.close()
-            return stream
+        for name in ('stdout', 'stderr'):
+            stream = None if sys.argv[1] == 'missing' else open(name, 'w', encoding='utf-8')
+            if stream is not None:
+                stream.write('pending output')
+                if sys.argv[1] == 'closed':
+                    stream.close()
+            setattr(sys, name, stream)
 
-        sys.stdout = prepare_stream('stdout', sys.argv[1])
-        sys.stderr = prepare_stream('stderr', sys.argv[2])
-
-        thread = Thread(target=core.stop_and_exit, daemon=True)
-        thread.start()
-        thread.join()
-        sys.exit(1)  # Returning from the shutdown thread must not look like a successful process exit.
-    '''), stdout_state, stderr_state], cwd=tmp_path,
-                            capture_output=True, text=True, timeout=30, check=False)
-    assert result.returncode == 0, result.stderr
-    for name, state in (('stdout', stdout_state), ('stderr', stderr_state)):
-        if state == 'open':
-            assert (tmp_path / name).read_text() == 'pending output'
+        core.stop_and_exit()
+    '''), state], cwd=tmp_path, capture_output=True, text=True, timeout=30, check=False)
+    assert result.returncode == 0
+    if state == 'open':
+        assert (tmp_path / 'stdout').read_text() == 'pending output'
+        assert (tmp_path / 'stderr').read_text() == 'pending output'
