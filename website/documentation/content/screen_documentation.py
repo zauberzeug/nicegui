@@ -37,6 +37,8 @@ doc.text('Configuration', '''
     - `SCREENSHOT_DIR`: The directory to store the screenshots
         (default: `./screenshots/<pid>`, a per-process subdirectory so parallel `pytest` invocations do not collide).
     - `CATCH_JS_ERRORS`: Whether to catch JavaScript errors (default: `True`, *added in version 3.2.0*).
+    - `SCREENSHOT_PASSED_TESTS`: Whether to store a screenshot of passed tests, not only of failed ones
+        (default: `True`, *added in version 4.0.0*).
 ''')
 
 

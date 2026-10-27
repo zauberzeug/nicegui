@@ -33,6 +33,7 @@ class Screen:
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
     CATCH_JS_ERRORS = True
+    SCREENSHOT_PASSED_TESTS = True
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest | None = None) -> None:
         self.selenium = selenium
