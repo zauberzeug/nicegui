@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+from pathlib import Path
+
 from nicegui import app, ui
 
-app.add_static_files('/images', '.')
+app.add_static_files('/images', Path(__file__).parent / 'images')
 
 img_src = '/images/PpIqU.png'
 mask_src = '/images/OfwWp.png'

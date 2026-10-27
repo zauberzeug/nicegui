@@ -954,8 +954,8 @@ response = await run.io_bound(requests.get, url, timeout=3)
 result = await run.cpu_bound(compute, data)
 
 # Optional: choose the multiprocessing start method for the cpu_bound pool (since 3.15).
-# Set it before ui.run(); None keeps the platform default, which will become 'spawn' in 4.0.
-run.process_pool_start_method = 'spawn'
+# Set it before ui.run(); the default is 'spawn' (since 4.0), None keeps the platform default.
+run.process_pool_start_method = 'fork'
 ```
 
 Both must be awaited from an async context and currently return `None` instead of the result when the call is cancelled or the app shuts down (NiceGUI 4.0 will raise `CancelledError` there instead).

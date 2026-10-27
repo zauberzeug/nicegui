@@ -1,5 +1,6 @@
 """inspired from https://quantlane.com/blog/ensure-asyncio-task-exceptions-get-logged/"""
 import asyncio
+import functools
 from collections.abc import Awaitable, Callable, Coroutine, Generator
 from contextlib import AbstractContextManager, nullcontext, suppress
 from typing import Any, TypeVar, cast
@@ -140,6 +141,7 @@ def await_on_shutdown(func: F) -> F:
 
     *Added in version 2.16.0*
     """
+    @functools.wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Awaitable[Any]:
         return _AwaitOnShutdown(lambda: func(*args, **kwargs))
     return cast(F, wrapper)
