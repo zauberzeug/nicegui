@@ -10,7 +10,6 @@ from pickle import PicklingError
 import pytest
 
 from nicegui import app, run, ui
-from nicegui.app.app import State
 from nicegui.helpers import warnings as nicegui_warnings
 from nicegui.testing import User
 
@@ -97,23 +96,6 @@ async def test_run_cpu_bound_survive_bad_function(user: User):
 
     await user.open('/')
     await user.should_see('excellent')
-
-
-@pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
-async def test_raises_cancelled_error_when_app_is_stopping(user: User, func: Callable):
-    @ui.page('/')
-    async def index():
-        original_state = app._state  # pylint: disable=protected-access
-        app._state = State.STOPPING  # pylint: disable=protected-access
-        try:
-            with pytest.raises(asyncio.CancelledError):
-                await func(delayed_hello)
-            ui.label('cancelled')
-        finally:
-            app._state = original_state  # pylint: disable=protected-access
-
-    await user.open('/')
-    await user.should_see('cancelled')
 
 
 @pytest.fixture

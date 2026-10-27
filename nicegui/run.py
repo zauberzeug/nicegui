@@ -110,15 +110,13 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
 
 
 async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-    if core.app.is_stopping:
-        raise asyncio.CancelledError('The app is shutting down.')
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
     except RuntimeError as e:
         if 'cannot schedule new futures after shutdown' not in str(e):
             raise
-        raise asyncio.CancelledError('The app is shutting down.') from e
+        raise asyncio.CancelledError('The app has shut down.') from e
 
 
 async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
@@ -132,8 +130,8 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
     The pool's multiprocessing start method can be configured via ``run.process_pool_start_method``
     ("spawn", "fork", "forkserver", or ``None`` to inherit the platform default) before the app starts up.
 
-    Raises ``asyncio.CancelledError`` when the call is cancelled or the app is shutting down
-    (*updated in version 4.0.0*: before it returned ``None`` in these cases).
+    Raises ``asyncio.CancelledError`` when the call is cancelled or the app has shut down
+    (*updated in version 4.0.0*: before it returned ``None`` in these cases and while the app was shutting down).
     """
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
 
@@ -160,8 +158,8 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
 async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run an I/O-bound function in a separate thread.
 
-    Raises ``asyncio.CancelledError`` when the call is cancelled or the app is shutting down
-    (*updated in version 4.0.0*: before it returned ``None`` in these cases).
+    Raises ``asyncio.CancelledError`` when the call is cancelled or the app has shut down
+    (*updated in version 4.0.0*: before it returned ``None`` in these cases and while the app was shutting down).
     """
     return await _run(thread_pool, callback, *args, **kwargs)
 

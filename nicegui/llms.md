@@ -958,7 +958,7 @@ result = await run.cpu_bound(compute, data)
 run.process_pool_start_method = 'spawn'
 ```
 
-Both must be awaited from an async context and raise `asyncio.CancelledError` when the call is cancelled or the app shuts down (since 4.0; before they returned `None`).
+Both must be awaited from an async context and raise `asyncio.CancelledError` when the call is cancelled or the app has shut down (since 4.0; before they returned `None`). They still work in `app.on_shutdown` handlers.
 
 ---
 
