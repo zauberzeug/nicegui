@@ -28,12 +28,7 @@ class RouteMatch:
     fragment: str
     '''The URL fragment (e.g., "section" from "#section").'''
     remaining_path: str = ''
-    '''The remaining path after the matched path.
-
-    ``path`` and ``remaining_path`` always add up to the full request path, so the
-    root route ``/`` leaves no leading slash while any other route keeps it
-    (e.g. ``'/' + 'x/2/a'`` and ``'/sub' + '/x/2/a'``).
-    '''
+    '''The remaining path after the matched path.'''
 
     @property
     def full_url(self) -> str:
@@ -57,7 +52,7 @@ class PageArguments:
     Automatically injected into sub-page builder functions when the parameter is annotated with ``PageArguments``.
     """
     path: str
-    '''Path from the request.'''
+    '''Matched sub-path, relative to this ``ui.sub_pages`` element (e.g., "/user/123").'''
     frame: SubPages
     '''Reference to the ``ui.sub_pages`` element currently executing this page.'''
     path_parameters: dict[str, str]
@@ -69,8 +64,8 @@ class PageArguments:
     remaining_path: str = ''
     '''Remaining path after the matched route (useful for wildcard routing).
 
-    ``path`` and ``remaining_path`` always add up to the full request path, so the
-    root route ``/`` leaves no leading slash while any other route keeps it
+    ``path`` and ``remaining_path`` always add up to the path handled by this ``ui.sub_pages`` element,
+    so the root route ``/`` leaves no leading slash while any other route keeps it
     (e.g. ``'/' + 'x/2/a'`` and ``'/sub' + '/x/2/a'``).
     '''
 
