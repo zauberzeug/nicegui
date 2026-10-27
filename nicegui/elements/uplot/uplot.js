@@ -75,11 +75,9 @@ export default {
       if (!xs?.length) return false;
       const key = this.chart.series[0].scale;
       const scale = this.chart.scales[key];
-      const [min, max] = scale.range(
-        this.chart,
-        ...(scale.distr === 2 ? [0, xs.length - 1] : [xs[0], xs[xs.length - 1]]),
-        key,
-      );
+      // ordinal scales (distr 2) range over indices instead of values
+      const [first, last] = scale.distr === 2 ? [0, xs.length - 1] : [xs[0], xs[xs.length - 1]];
+      const [min, max] = scale.range(this.chart, first, last, key);
       return scale.min !== min || scale.max !== max;
     },
     _resize() {
