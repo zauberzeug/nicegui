@@ -404,6 +404,9 @@ class App(FastAPI):
         removed = {id(route.original_route) for route in self._iter_routes() if route.path == path}
         for router in routers:
             if any(id(route) in removed for route in router.routes):
+                if sum(candidate is router for candidate in routers) > 1:
+                    helpers.warn_once(f'Removed {path} from a router that is included more than once, '
+                                      'so it is removed from all of its includes.')
                 router.routes[:] = [route for route in router.routes if id(route) not in removed]
                 self._mark_routes_changed([router])
 
