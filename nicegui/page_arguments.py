@@ -28,7 +28,12 @@ class RouteMatch:
     fragment: str
     '''The URL fragment (e.g., "section" from "#section").'''
     remaining_path: str = ''
-    '''The remaining path after the matched path.'''
+    '''The remaining path after the matched path.
+
+    ``path`` and ``remaining_path`` always add up to the full request path, so the
+    root route ``/`` leaves no leading slash while any other route keeps it
+    (e.g. ``'/' + 'x/2/a'`` and ``'/sub' + '/x/2/a'``).
+    '''
 
     @property
     def full_url(self) -> str:
@@ -62,7 +67,12 @@ class PageArguments:
     data: dict[str, Any]
     '''Arbitrary data passed to the ``ui.sub_pages`` element.'''
     remaining_path: str = ''
-    '''Remaining path after the matched route (useful for wildcard routing).'''
+    '''Remaining path after the matched route (useful for wildcard routing).
+
+    ``path`` and ``remaining_path`` always add up to the full request path, so the
+    root route ``/`` leaves no leading slash while any other route keeps it
+    (e.g. ``'/' + 'x/2/a'`` and ``'/sub' + '/x/2/a'``).
+    '''
 
     @classmethod
     def build_kwargs(cls, match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
