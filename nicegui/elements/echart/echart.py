@@ -112,7 +112,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         """Create an echart element from a pyecharts object.
 
         :param chart: pyecharts chart object
-        :param on_click_point: callback which is invoked when a point is clicked
+        :param on_point_click: callback which is invoked when a point is clicked
 
         :return: echart element
         """
