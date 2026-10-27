@@ -168,17 +168,21 @@ def test_node_click_handler(screen: Screen):
                 A[Node A];
                 B[Node B];
                 Node-With-Hyphen[Node With Hyphen];
-        ''', on_node_click=lambda e: ui.notify(f'{e.node_id} clicked'))
+                A-123[Node A-123];
+        ''', on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
 
     screen.open('/')
     screen.click('Node A')
-    screen.should_contain('A clicked')
+    screen.should_contain('clicked [A]')  # the brackets keep a partially stripped ID like "flowchart-A" from matching
 
     screen.click('Node B')
-    screen.should_contain('B clicked')
+    screen.should_contain('clicked [B]')
 
     screen.click('Node With Hyphen')
-    screen.should_contain('Node-With-Hyphen clicked')  # make sure our ID extraction works even with hyphens
+    screen.should_contain('clicked [Node-With-Hyphen]')  # make sure our ID extraction works even with hyphens
+
+    screen.click('Node A-123')
+    screen.should_contain('clicked [A-123]')  # a trailing number must not be mistaken for Mermaid's node index
 
 
 def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
@@ -199,3 +203,32 @@ def test_icon_ids_do_not_collide_with_element_ids(screen: Screen):
     screen.should_contain('Database')
     ids = screen.selenium.execute_script('return Array.from(document.querySelectorAll("[id]"), e => e.id)')
     assert len(ids) == len(set(ids)), 'every id on the page should be unique'
+
+
+@pytest.mark.parametrize(('content', 'nodes', 'config'), [
+    # the other diagram types that add a type token and an index ("<svg_id>-<type>-<node_id>-<index>")
+    ('graph TD\n A-1', {'A-1': 'A-1'}, {'flowchart': {'defaultRenderer': 'dagre-d3'}}),  # legacy "flowchart" detector
+    ('flowchart-elk TD\n A-1', {'A-1': 'A-1'}, None),
+    ('classDiagram\n class Animal', {'Animal': 'Animal'}, None),  # type token is "classId", not "flowchart"
+    ('classDiagram-v2\n class Animal', {'Animal': 'Animal'}, None),
+    ('stateDiagram\n s1 --> s2', {'s1': 's1'}, None),
+    ('stateDiagram-v2\n s1 --> s2', {'s1': 's1'}, None),
+    ('erDiagram\n CUSTOMER-ORDER ||--o{ LINE-ITEM : has', {'CUSTOMER-ORDER': 'CUSTOMER-ORDER'}, None),
+    # all other diagram types use the node ID verbatim ("<svg_id>-<node_id>")
+    ('block-beta\n columns 1\n A', {'A': 'A'}, None),
+    ('requirementDiagram\n requirement "A-B-123" {\n id: 1\n }\n requirement "A-B-124" {\n id: 2\n }',
+     {'A-B-123': 'A-B-123', 'A-B-124': 'A-B-124'}, None),  # used to be truncated to "B" and to collide with each other
+    ('kanban\n todo[Todo]\n  A-B-123[Task 1]\n  A-B-124[Task 2]', {'Task 1': 'A-B-123', 'Task 2': 'A-B-124'}, None),
+    # mindmap generates its own node IDs
+    ('mindmap\n root((Root))\n  Child', {'Root': 'node_0', 'Child': 'node_1'}, None),
+])
+def test_node_click_handler_with_other_diagram_types(screen: Screen,
+                                                     content: str, nodes: dict[str, str], config: dict | None):
+    @ui.page('/')
+    def page():
+        ui.mermaid(content, config, on_node_click=lambda e: ui.notify(f'clicked [{e.node_id}]'))
+
+    screen.open('/')
+    for label, node_id in nodes.items():
+        screen.click(label)
+        screen.should_contain(f'clicked [{node_id}]')

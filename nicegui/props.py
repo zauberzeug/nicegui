@@ -59,7 +59,8 @@ class Props(ObservableDict, Generic[T]):
     __slots__ = ('_element', '_renames', '_suspend_count', '_warnings')
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, on_change=self._update, **kwargs)
+        super().__init__(*args, **kwargs)
+        self._change_handlers.append((self._update, False))  # _update takes no arguments, so skip the signature check
         self._element = weakref.ref(element)
         self._warnings: dict[str, str] = {}
         self._renames: dict[str, str] = {}
