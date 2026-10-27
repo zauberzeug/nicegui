@@ -151,7 +151,8 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     assert events == ['startup', 'startup_async']
 
     app.shutdown()
-    screen.wait(0.5)
+    # the first cpu_bound call spawns a worker process, which takes a while
+    screen.wait_for(lambda: 'shutdown' in events)
     assert events == ['startup', 'startup_async', 'shutdown_async', 'shutdown_cpu_bound', 'shutdown']
 
 
