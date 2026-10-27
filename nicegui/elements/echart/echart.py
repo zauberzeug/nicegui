@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from contextlib import suppress
 from typing import Literal
 
@@ -108,11 +107,11 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         return self
 
     @classmethod
-    def from_pyecharts(cls, chart: 'Chart', on_point_click: Callable | None = None) -> Self:
+    def from_pyecharts(cls, chart: 'Chart', on_point_click: Handler[EChartPointClickEventArguments] | None = None) -> Self:
         """Create an echart element from a pyecharts object.
 
         :param chart: pyecharts chart object
-        :param on_point_click: callback which is invoked when a point is clicked
+        :param on_point_click: callback that is invoked when a point is clicked
 
         :return: echart element
         """
