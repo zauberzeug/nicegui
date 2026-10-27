@@ -181,14 +181,18 @@ class Screen:
         raise AssertionError(f'"{expression}" is {value!r}, expected {expected!r}')
 
     def should_not_contain(self, text: str, wait: float = 0.5) -> None:
-        """Assert that the page does not contain the given text."""
+        """Assert that the page does not show the given text within the given time."""
         assert self.selenium.title != text
-        try:
-            self.selenium.implicitly_wait(wait)
-            with pytest.raises(AssertionError):
-                self.find(text)
-        finally:
-            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+        deadline = time.time() + wait
+        with self.implicitly_wait(0):
+            while True:
+                for element in self.find_all(text):
+                    with suppress(StaleElementReferenceException):
+                        if element.is_displayed():
+                            raise AssertionError(f'Found "{text}"')
+                if time.time() > deadline:
+                    return
+                self.wait(0.05)
 
     def should_contain_input(self, text: str) -> None:
         """Assert that the page contains an input with the given value."""
