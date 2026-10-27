@@ -9,7 +9,6 @@ from typing import Any, TypeVar, overload
 from uuid import uuid4
 
 import httpx
-import socketio
 
 from nicegui import Client, ElementFilter, ui
 from nicegui.nicegui import _on_handshake
@@ -32,7 +31,6 @@ class User:
 
     def __init__(self, client: httpx.AsyncClient) -> None:
         self.http_client = client
-        self.sio = socketio.AsyncClient()
         self.client: Client | None = None
         self.back_history: list[str] = []
         self.forward_history: list[str] = []
@@ -75,7 +73,6 @@ class User:
         if clear_forward_history:
             self.forward_history.clear()
         self._patch_outbox()
-        self.sio.on('connect')
         await _on_handshake(f'test-{uuid4()}', {
             'client_id': self.client.id,
             'tab_id': self.tab_id,
