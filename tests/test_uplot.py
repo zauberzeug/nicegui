@@ -43,22 +43,30 @@ def test_resize_to_element(screen: Screen):
     screen.wait_for_js(CANVAS_SIZE, [600, 300])
 
 
-def test_update_data_and_options(screen: Screen):
+@pytest.mark.parametrize('mode', [1, 2])
+def test_update_data_and_options(screen: Screen, mode: int):
+    """Mode 2 (facets, e.g. for scatter plots) has no shared x values, so data[0] is None."""
     @ui.page('/')
     def page():
-        options = {'series': [{}, {'label': 'C', 'stroke': 'red'}]}
-        data = [[0, 1], [2, 4]]
+        options = {'mode': mode, 'scales': {'x': {'time': False}}, 'series': [{}, {'label': 'C', 'stroke': 'red'}]}
+        data = [[0, 1], [2, 4]] if mode == 1 else [None, [[0, 1], [2, 4]]]
         plot = ui.uplot(options, data)
 
-        def update():
-            plot.data = [[0, 1, 2], [2, 4, 6]]
+        def update_data():
+            plot.data = [[0, 1, 2], [2, 4, 6]] if mode == 1 else [None, [[0, 1, 2], [2, 4, 6]]]
+        ui.button('Update data', on_click=update_data)
+
+        def update_options():
             plot.options['series'][1]['label'] = 'D'
-        ui.button('Update', on_click=update)
+        ui.button('Update options', on_click=update_options)
 
     screen.open('/')
     screen.wait_for_js("document.querySelector('.u-legend').innerText.includes('C')", True)
 
-    screen.click('Update')
+    screen.click('Update data')
+    screen.wait_for_js(f'{CHART}.data[{mode - 1}][0].length', 3)
+
+    screen.click('Update options')
     screen.wait_for_js("document.querySelector('.u-legend').innerText.includes('D')", True)
 
 

@@ -22,7 +22,11 @@ export default {
     this.resizeObserver = new ResizeObserver(() => (this.chart ? this._resize() : this._create()));
     this.resizeObserver.observe(this.$el);
     // follow the dark mode, which Quasar toggles via a class on the body
+    this.dark = document.body.classList.contains("body--dark");
     this.themeObserver = new MutationObserver(() => {
+      const dark = document.body.classList.contains("body--dark");
+      if (dark === this.dark) return; // ignore other body classes, e.g. Quasar's scroll lock for dialogs
+      this.dark = dark;
       this._updateColors();
       this.chart?.redraw(false);
     });
@@ -48,8 +52,10 @@ export default {
       data = toRaw(data);
       prevData = toRaw(prevData);
       // NiceGUI sends all props on every update, so unchanged data must not trigger setData
+      // series can be null, e.g. the x values in uPlot's facet mode (mode: 2)
       const same = (a, b) =>
-        a.length === b.length && a.every((s, i) => s.length === b[i].length && s.every((v, j) => v === b[i][j]));
+        a.length === b.length &&
+        a.every((s, i) => s === b[i] || (s?.length === b[i]?.length && s.every((v, j) => v === b[i][j])));
       if (same(prevData, data)) return;
       const keepScales = this.keepZoom && this._isZoomed(prevData[0]);
       this.chart.setData(data, !keepScales);
@@ -86,7 +92,7 @@ export default {
       this.chart.setSize({ width, height: plotHeight });
     },
     _updateColors() {
-      const [r, g, b] = getComputedStyle(this.$el).color.match(/[\d.]+/g);
+      const text = getComputedStyle(this.$el).color;
       let background = "#fff";
       for (let el = this.$el; el; el = el.parentElement) {
         const color = getComputedStyle(el).backgroundColor;
@@ -95,7 +101,8 @@ export default {
           break;
         }
       }
-      this.colors = { text: `rgb(${r}, ${g}, ${b})`, faint: `rgba(${r}, ${g}, ${b}, 0.1)`, background };
+      // the computed color can be any CSS color, e.g. oklch for Tailwind's palette
+      this.colors = { text, faint: `color-mix(in srgb, ${text} 10%, transparent)`, background };
     },
     _applyColorDefaults(options) {
       // uPlot hard-codes black and white for these, so derive them from the page unless the user sets them
