@@ -18,9 +18,7 @@ def test_uplot(screen: Screen):
     @ui.page('/')
     def page():
         ui.uplot({'series': [{}, {'stroke': 'red'}]}, [[1, 2], [3, 4]])
-        x = np.arange(3)
-        y = np.array([1, 4, 9])
-        ui.uplot({'series': [{}, {'stroke': 'blue'}]}, [x, y])
+        ui.uplot({'series': [{}, {'stroke': 'blue'}]}, [np.arange(3), np.array([1, 4, 9])])
         ui.uplot({}, [])
 
     screen.open('/')
@@ -28,19 +26,24 @@ def test_uplot(screen: Screen):
 
 
 def test_resize_to_element(screen: Screen):
+    """The chart follows its element's size, also when changed options recreate it."""
     @ui.page('/')
     def page():
         # legend disabled so the canvas fills the host exactly (see test_chart_fits_in_box otherwise)
         options = {'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
-        data = [[0, 1], [1, 2]]
-        plot = ui.uplot(options, data).style('width: 400px; height: 200px')
+        plot = ui.uplot(options, [[0, 1], [1, 2]]).style('width: 400px; height: 200px')
         ui.button('Resize', on_click=lambda: plot.style('width: 600px; height: 300px'))
+        ui.button('Restyle', on_click=lambda: plot.options['series'][1].update(stroke='blue'))
 
     screen.open('/')
     screen.wait_for_js(CANVAS_SIZE, [400, 200])
 
     screen.click('Resize')
     screen.wait_for_js(CANVAS_SIZE, [600, 300])
+
+    screen.click('Restyle')
+    screen.wait_for_js(f'{CHART}.series[1].stroke()', 'blue')
+    assert screen.selenium.execute_script(f'return {CANVAS_SIZE}') == [600, 300], 'recreated chart keeps its size'
 
 
 @pytest.mark.parametrize('mode', [1, 2])
@@ -64,30 +67,26 @@ def test_update_data_and_options(screen: Screen, mode: int):
     screen.wait_for_js("document.querySelector('.u-legend').innerText.includes('C')", True)
 
     screen.click('Update data')
-    screen.wait_for_js(f'{CHART}.data[{mode - 1}][0].length', 3)
+    screen.wait_for_js(f'{CHART}.data[0].length' if mode == 1 else f'{CHART}.data[1][0].length', 3)
 
     screen.click('Update options')
     screen.wait_for_js("document.querySelector('.u-legend').innerText.includes('D')", True)
 
 
-@pytest.mark.parametrize('case', ['title_and_padding', 'wrapping_legend', 'growing_legend'])
+@pytest.mark.parametrize('case', ['title_padding_and_wrapping_legend', 'growing_legend'])
 def test_chart_fits_in_box(screen: Screen, case: str):
     """The whole chart (title, plot and legend) must stay within its host box."""
     @ui.page('/')
     def page():
-        if case == 'title_and_padding':
-            with ui.element().style('width: 400px; height: 300px'):
-                options: dict = {'title': 'T', 'series': [{}, {'label': 'a', 'stroke': 'red'}]}
-                ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full p-4 border')
-        if case == 'wrapping_legend':
+        if case == 'title_padding_and_wrapping_legend':
             colors = ['red', 'blue', 'green', 'orange', 'purple', 'teal', 'brown', 'magenta']
             with ui.element().style('width: 260px; height: 320px'):
-                options = {
-                    'title': 'wrap',
+                options: dict = {
+                    'title': 'T',
                     'series': [{}] + [{'label': f'series-{i}', 'stroke': c} for i, c in enumerate(colors)],
                 }
                 data = [[0, 1, 2]] + [[i, i + 1, i + 2] for i in range(len(colors))]
-                ui.uplot(options, data).classes('w-full h-full')
+                ui.uplot(options, data).classes('w-full h-full p-4 border')
         if case == 'growing_legend':
             with ui.element().style('width: 220px; height: 300px'):
                 options = {'scales': {'x': {'time': False}},
@@ -183,29 +182,8 @@ def test_redraw_when_keeping_scales(screen: Screen):
     screen.wait_for(lambda: canvas_image() != image_before)  # the canvas shows the new data
 
 
-def test_recreate_preserves_container_size(screen: Screen):
-    """Changing a series stroke recreates the chart; it must stay sized to its container, not options."""
-    @ui.page('/')
-    def page():
-        with ui.card().style('height: 200px; width: 600px'):
-            options = {'series': [{}, {'stroke': 'red'}], 'legend': {'show': False}}
-            plot = ui.uplot(options, [[0, 1], [2, 4]]).classes('w-full h-full')
-
-        def restyle():
-            plot.options = {'series': [{}, {'stroke': 'blue'}], 'legend': {'show': False}}
-        ui.button('Restyle', on_click=restyle)
-
-    screen.open('/')
-    screen.wait_for_js(CANVAS_SIZE, [568, 168])
-
-    screen.click('Restyle')
-    screen.wait_for_js(f'{CHART}.series[1].stroke()', 'blue')
-    assert screen.selenium.execute_script(f'return {CANVAS_SIZE}') == [
-        568, 168], 'recreated chart keeps its container size'
-
-
 def test_delete_without_error(screen: Screen):
-    """Deleting the chart must disconnect the ResizeObserver and not raise on either side."""
+    """Deleting the chart removes its canvas without errors."""
     @ui.page('/')
     def page():
         options = {'series': [{}, {'stroke': 'red'}]}
@@ -231,18 +209,14 @@ def test_update_in_flex_container(screen: Screen):
         ui.button('Update', on_click=update)
 
     screen.open('/')
-    canvas = screen.find_by_tag('canvas')
-    width_before = canvas.get_attribute('width')
-    height_before = canvas.get_attribute('height')
-    assert width_before == '500'
-    assert int(height_before or '0') > 0
+    screen.wait_for_js(f'{CANVAS_SIZE}[0]', 500)
+    size_before = screen.selenium.execute_script(f'return {CANVAS_SIZE}')
+    assert size_before[1] > 0
 
     screen.click('Update')
     screen.wait_for_js(f'{CHART}.data[0].length', 3)
     screen.wait(0.2)  # give a size change the chance to happen
-    canvas = screen.find_by_tag('canvas')
-    assert canvas.get_attribute('width') == width_before
-    assert canvas.get_attribute('height') == height_before
+    assert screen.selenium.execute_script(f'return {CANVAS_SIZE}') == size_before
 
 
 def test_legend_mounted_externally(screen: Screen):
