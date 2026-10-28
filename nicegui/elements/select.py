@@ -69,20 +69,19 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         self.key_generator = key_generator
-        if new_value_mode is not None:
-            self._props['new-value-mode'] = new_value_mode
-            with_input = True
-        if with_input:
-            self._props['use-input'] = True
-            self._props.set_bool('hide-selected', not multiple)
-            self._props['fill-input'] = True
-            self._props['input-debounce'] = 0
-        self._props.set_bool('multiple', multiple)
-        self._props.set_bool('clearable', clearable)
-
         self._is_showing_popup = False
         with self._props.suspend_updates():
+            if new_value_mode is not None:
+                self._props['new-value-mode'] = new_value_mode
+                with_input = True
+            if with_input:
+                self._props['use-input'] = True
+                self._props.set_bool('hide-selected', not multiple)
+                self._props['fill-input'] = True
+                self._props['input-debounce'] = 0
             self._props['for'] = self.html_id  # keep html_id on the focus target for tooltips and ui.query (#6114)
+            self._props.set_bool('multiple', multiple)
+            self._props.set_bool('clearable', clearable)
             self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
             self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 
