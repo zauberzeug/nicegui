@@ -293,12 +293,12 @@ def test_remove_rebind_preserves_bindable_property_semantics(nicegui_reset_globa
     assert target.value == [1]
 
 
-def test_pickle_instance_with_bindable_property(nicegui_reset_globals) -> None:
+def test_pickle_instance_with_bindable_property() -> None:
     model = pickle.loads(pickle.dumps(PicklableModel(42)))
     assert model.value == 42
 
 
-def test_local_class_with_bindable_property_is_garbage_collected(nicegui_reset_globals) -> None:
+def test_local_class_with_bindable_property_is_garbage_collected() -> None:
     def create_class() -> weakref.ref:
         class Model:
             value = binding.BindableProperty()
