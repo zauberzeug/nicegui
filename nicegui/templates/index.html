@@ -27,6 +27,11 @@
         code, kbd, pre, samp {
           font-family: revert-layer; /* HACK: revert Quasar's monospace font so Tailwind's mono font stack applies */
         }
+        .q-textarea--autogrow .q-field__native {
+          /* HACK: Quasar sizes autogrow textareas with "field-sizing: content", which also makes them as wide as their content */
+          contain: inline-size;
+          contain-intrinsic-inline-size: 140px;
+        }
       }
       @layer overrides {
         {{ headwind_css | safe }}
