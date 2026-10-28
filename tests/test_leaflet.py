@@ -72,34 +72,23 @@ def test_leaflet_unhide(screen: Screen):
     @ui.page('/')
     def page():
         with ui.card().classes('w-full h-64') as card:
-            ui.leaflet().wms_layer(url_template='/mock_tile/{{z}}/{{x}}/{{y}}')
+            m = ui.leaflet()
+            m.wms_layer(url_template='/mock_tile/{{z}}/{{x}}/{{y}}')
             card.visible = False
         ui.button('Show map card', on_click=lambda: card.set_visibility(True))
+        ui.button('Hide map', on_click=lambda: m.set_visibility(False))
+        ui.button('Show map again', on_click=lambda: m.set_visibility(True))
 
     screen.open('/')
     screen.click('Show map card')
     screen.wait(0.5)
     assert len(requested_tiles) == 8
 
-
-def test_leaflet_rehide(screen: Screen):
-    @ui.page('/')
-    def page():
-        m = ui.leaflet().classes('h-64')
-        m.wms_layer(url_template='/mock_tile/{{z}}/{{x}}/{{y}}')
-        ui.button('Hide', on_click=lambda: m.set_visibility(False))
-        ui.button('Show', on_click=lambda: m.set_visibility(True))
-
-    @app.get('/mock_tile/{z}/{x}/{y}')
-    def mock_tile(z: str, x: str, y: str) -> Response:
-        return Response(base64.b64decode('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs='))
-
     tile_width = 'document.querySelector(".leaflet-tile")?.offsetWidth'
-    screen.open('/')
     screen.wait_for_js(tile_width, 256)
-    screen.click('Hide')
+    screen.click('Hide map')
     screen.wait_for_js(tile_width, 0)
-    screen.click('Show')
+    screen.click('Show map again')
     screen.wait_for_js(tile_width, 256)
 
 
