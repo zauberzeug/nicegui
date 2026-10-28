@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 import pytest
 from selenium import webdriver
 from selenium.common.exceptions import (
+    ElementClickInterceptedException,
     ElementNotInteractableException,
     JavascriptException,
     NoSuchElementException,
@@ -215,6 +216,12 @@ class Screen:
         """Click on the element containing the given text."""
         element = self.find(target_text)
         try:
+            # retry while another element intercepts the click, e.g. while an animated panel slides in
+            for _ in range(4):
+                with suppress(ElementClickInterceptedException):
+                    element.click()
+                    return element
+                self.wait(0.2)
             element.click()
         except ElementNotInteractableException as e:
             raise AssertionError(f'Could not click on "{target_text}" on:\n{element.get_attribute("outerHTML")}') from e
