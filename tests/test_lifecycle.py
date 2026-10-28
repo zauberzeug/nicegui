@@ -5,7 +5,7 @@ import httpx2
 import pytest
 import socketio
 
-from nicegui import Client, app, ui
+from nicegui import Client, app, run, ui
 from nicegui.testing import Screen, User
 
 
@@ -129,12 +129,13 @@ def test_startup_and_shutdown_handlers(screen: Screen):
         events.append('shutdown')
 
     async def shutdown_async():
-        events.append('shutdown_async')
+        events.append(await run.io_bound(str, 'shutdown_async'))
+        events.append(await run.cpu_bound(str, 'shutdown_cpu_bound'))
 
     app.on_startup(startup)
     app.on_startup(startup_async)
-    app.on_shutdown(shutdown)
     app.on_shutdown(shutdown_async)
+    app.on_shutdown(shutdown)
 
     coroutine = startup_async()
     with pytest.raises(TypeError, match='expects a synchronous or asynchronous function'):
@@ -149,9 +150,11 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     screen.wait(0.5)
     assert events == ['startup', 'startup_async']
 
+    screen.allowed_js_errors.append('ERR_CONNECTION_REFUSED')  # the browser tries to reconnect to the stopped server
     app.shutdown()
-    screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'shutdown', 'shutdown_async']
+    # the first cpu_bound call spawns a worker process, which takes a while
+    screen.wait_for(lambda: 'shutdown' in events)
+    assert events == ['startup', 'startup_async', 'shutdown_async', 'shutdown_cpu_bound', 'shutdown']
 
 
 def test_all_lifecycle_handlers_are_called(screen: Screen):

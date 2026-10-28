@@ -55,7 +55,7 @@ class FilePersistentDict(PersistentDict):
                 return
             # open, write and close in a single worker-thread call: any cancellation point between
             # opening and closing the file could strand an open handle, surfacing as a ResourceWarning
-            # (not run.io_bound, which would skip the write while the app is stopping)
+            # (not run.io_bound, so that saving does not depend on the state of the app)
             await asyncio.to_thread(tmp_filepath.write_text,
                                     dumps(self, str(self.filepath), indent=self.indent), encoding=self.encoding)
             with contextlib.suppress(FileNotFoundError):  # a concurrent Storage.clear() may have swept the temp file
