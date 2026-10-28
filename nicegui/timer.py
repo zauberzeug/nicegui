@@ -92,8 +92,15 @@ class Timer:
                     try:
                         start = time.time()
                         if self.active:
-                            self._current_invocation = asyncio.create_task(self._invoke_callback())
-                            await self._current_invocation
+                            invocation = self._current_invocation = asyncio.create_task(self._invoke_callback())
+                            try:
+                                await asyncio.shield(invocation)
+                            except asyncio.CancelledError:
+                                # the callback may swallow the cancellation (run.io_bound does), so re-raise it here
+                                invocation.cancel()
+                                with suppress(asyncio.CancelledError):
+                                    await invocation
+                                raise
                         dt = time.time() - start
                         await asyncio.sleep(self.interval - dt)
                     except asyncio.CancelledError:
