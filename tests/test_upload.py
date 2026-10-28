@@ -88,7 +88,7 @@ def test_uploading_from_two_tabs(screen: Screen):
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.should_contain(f'uploaded {test_path1.name}')
     screen.switch_to(0)
-    screen.should_not_contain(f'uploaded {test_path1.name}')
+    screen.should_not_contain(f'uploaded {test_path1.name}', duration=0.5)
 
 
 def test_upload_with_header_slot(screen: Screen):
@@ -130,7 +130,6 @@ def test_reset_upload(screen: Screen):
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.should_contain(test_path1.name)
     screen.click('Reset')
-    screen.wait(0.5)
     screen.should_not_contain(test_path1.name)
 
 

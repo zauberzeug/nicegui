@@ -118,10 +118,9 @@ def test_run_grid_method_with_argument(screen: Screen):
     screen.should_contain('Carol')
 
     screen.click('Filter')
-    screen.wait(0.5)
-    screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Carol')
+    screen.should_contain('Alice')
 
 
 def test_get_selected_rows(screen: Screen):

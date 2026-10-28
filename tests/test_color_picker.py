@@ -12,4 +12,4 @@ def test_set_color_does_not_execute_javascript(screen: Screen):
     screen.open('/')
     screen.click('colorize')
     screen.should_contain('HEX')
-    screen.should_not_contain('XSS')
+    screen.should_not_contain('XSS', duration=0.5)

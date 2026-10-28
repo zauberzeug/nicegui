@@ -123,7 +123,6 @@ def test_updating_stock_chart(screen: Screen):
     screen.should_contain('bob')
 
     screen.click('clear')
-    screen.wait(0.5)
     screen.should_not_contain('alice')
     screen.should_not_contain('bob')
 

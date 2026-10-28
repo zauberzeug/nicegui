@@ -18,7 +18,6 @@ def test_open_close_expansion(screen: Screen):
     screen.should_contain('Content')
 
     screen.click('Close')
-    screen.wait(0.5)
     screen.should_not_contain('Content')
 
 
@@ -64,13 +63,11 @@ def test_group(screen: Screen):
     screen.should_not_contain('Content C')
 
     screen.click('Expansion B')
-    screen.wait(0.5)
     screen.should_not_contain('Content A')
     screen.should_contain('Content B')
     screen.should_not_contain('Content C')
 
     screen.click('Expansion C')
-    screen.wait(0.5)
     screen.should_not_contain('Content A')
     screen.should_not_contain('Content B')
     screen.should_contain('Content C')

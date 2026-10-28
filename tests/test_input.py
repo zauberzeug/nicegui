@@ -102,7 +102,6 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
     assert_validation(False)
 
     element.send_keys(' Doe')
-    screen.wait(1.0)
     screen.should_not_contain('Short')
     screen.should_not_contain('Still short')
     assert input_.error is None
@@ -193,7 +192,6 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('oo')
 
     element.send_keys('l')
-    screen.wait(0.5)
     screen.should_not_contain('oo')
 
     element.send_keys(Keys.BACKSPACE)
@@ -218,7 +216,6 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('nce')
 
     input_.set_autocomplete(None)  # removing the list used to raise a TypeError in the shadowText computed (#6161)
-    screen.wait(0.2)
     screen.should_not_contain('nce')
 
 

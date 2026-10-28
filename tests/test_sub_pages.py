@@ -380,7 +380,7 @@ def test_parameterized_sub_pages(screen: Screen):
     assert calls == {'index': 1, 'main': 1}
 
     screen.click('Go to wrong match')
-    screen.should_not_contain('main_content')
+    screen.should_not_contain('main_content', duration=0.5)
     screen.should_not_contain('one-1-True')
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
@@ -759,7 +759,7 @@ def test_async_sub_pages(screen: Screen):
     screen.click('/0.1')
     screen.wait(1)
     screen.should_contain('after 0.1 sec')
-    screen.should_not_contain('after 1.0 sec')
+    screen.should_not_contain('after 1.0 sec', duration=0.5)
 
 
 @pytest.mark.parametrize('use_page_arguments', [True, False])
@@ -1096,7 +1096,7 @@ def test_exception_in_page_builder(screen: Screen):
 
     screen.click('Go to async exception')
     msg_async = 'sub page /async produced an error'
-    screen.should_not_contain(f'500: {msg_async}')
+    screen.should_not_contain(f'500: {msg_async}', duration=0.5)
     screen.assert_py_logger('ERROR', 'async test exception')
     # the content should show, when an error occurs after async task is started
     screen.should_contain('async content before exception')
@@ -1147,7 +1147,7 @@ def test_disabling_404(screen: Screen):
     screen.open('/main')
     screen.should_contain('main page')
     screen.click('Link to 404')  # open by link
-    screen.should_not_contain('404: sub page /404 not found')
+    screen.should_not_contain('404: sub page /404 not found', duration=0.5)
     screen.should_contain('main page')
 
     screen.open('/bad_path')
@@ -1158,7 +1158,7 @@ def test_disabling_404(screen: Screen):
     screen.should_contain('main page')
 
     screen.click('Button to 404')  # open via navigate.to
-    screen.should_not_contain('not found')
+    screen.should_not_contain('not found', duration=0.5)
     screen.should_contain('main page')
 
 
@@ -1301,13 +1301,11 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.open('/')
     screen.should_contain('main page')
     screen.click('Clear')
-    screen.wait(0.5)
     screen.should_not_contain('main page')
 
     screen.open('/')
     screen.should_contain('main page')
     screen.click('Delete')
-    screen.wait(0.5)
     screen.should_not_contain('main page')
 
 

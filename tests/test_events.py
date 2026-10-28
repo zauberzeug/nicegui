@@ -223,8 +223,8 @@ def test_server_side_validation(screen: Screen, attribute: Literal['disabled', '
 
     screen.open('/')
     screen.click('Forbidden')
-    screen.wait(0.5)
-    screen.should_not_contain('Button clicked')  # triggering the click event through JavaScript does not work
+    # triggering the click event through JavaScript does not work
+    screen.should_not_contain('Button clicked', duration=1.0)
 
     screen.click('Allowed')
     screen.should_contain('Number changed')  # triggering the change event through Python works

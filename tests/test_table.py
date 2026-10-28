@@ -130,7 +130,6 @@ def test_add_remove(screen: Screen):
     screen.should_contain('Carol')
 
     screen.click('Remove')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
 
 
@@ -185,8 +184,7 @@ def test_selection(screen: Screen):
     assert table.selection == 'multiple'
 
     screen.click('none')
-    screen.wait(0.5)
-    screen.should_not_contain('1 record selected.')
+    screen.should_not_contain('1 record selected.', duration=1.0)
     assert table.selection is None
 
 
@@ -211,7 +209,6 @@ def test_remove_selection(screen: Screen):
     screen.should_contain('1 record selected.')
 
     screen.click('Remove first row')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('1 record selected.')
 
@@ -236,14 +233,12 @@ def test_replace_rows(screen: Screen):
     screen.should_contain('Lionel')
 
     screen.click('Replace rows with C.')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Lionel')
     screen.should_contain('Carol')
 
     screen.click('Replace rows with D.')
-    screen.wait(0.5)
     screen.should_not_contain('Carol')
     screen.should_contain('Daniel')
 

@@ -67,7 +67,8 @@ def test_bell_and_data_events(screen: Screen) -> None:
     screen.click('Input 456')
     # The `input` method triggers a single data event
     screen.wait_for(lambda: counts == {'bell': 1, 'data': 4, 'resize': 0})
-    screen.should_not_contain('123456')  # Neither typing nor the `input` method write text on the terminal
+    # Neither typing nor the `input` method write text on the terminal
+    screen.should_not_contain('123456', duration=0.5)
 
 
 def test_fit_and_resize_event(screen: Screen) -> None:

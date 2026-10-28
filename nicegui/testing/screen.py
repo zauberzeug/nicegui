@@ -21,7 +21,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, core, ui
+from nicegui import app, core, helpers, ui
 from nicegui.server import Server
 
 from .general import prepare_simulation
@@ -180,19 +180,40 @@ class Screen:
             self.wait(0.1)
         raise AssertionError(f'"{expression}" is {value!r}, expected {expected!r}')
 
-    def should_not_contain(self, text: str, wait: float = 0.5) -> None:
-        """Assert that the page does not show the given text within the given time."""
-        assert self.selenium.title != text
-        deadline = time.time() + wait
+    def should_not_contain(self, text: str, duration: float = 0, *, wait: float | None = None) -> None:
+        """Assert that the page does not show the given text.
+
+        Like ``should_contain`` waits for the text to appear, this method waits up to ``IMPLICIT_WAIT`` seconds
+        for the text to disappear.
+
+        :param text: text that should not be shown
+        :param duration: time in seconds during which the text must not show up again after it is gone (default: 0)
+        :param wait: deprecated alias for ``duration``
+        """
+        if wait is not None:
+            helpers.warn_once('The parameter "wait" of `should_not_contain` is deprecated. Use "duration" instead.')
+            duration = wait
+        deadline = time.time() + self.IMPLICIT_WAIT
+        while self._shows(text):
+            if time.time() > deadline:
+                raise AssertionError(f'Found "{text}"')
+            self.wait(0.05)
+        deadline = time.time() + duration
+        while time.time() < deadline:
+            self.wait(0.05)
+            if self._shows(text):
+                raise AssertionError(f'Found "{text}"')
+
+    def _shows(self, text: str) -> bool:
+        """Check whether the title or a visible element contains the given text."""
+        if self.selenium.title == text:
+            return True
         with self.implicitly_wait(0):
-            while True:
-                for element in self.find_all(text):
-                    with suppress(StaleElementReferenceException):
-                        if element.is_displayed():
-                            raise AssertionError(f'Found "{text}"')
-                if time.time() > deadline:
-                    return
-                self.wait(0.05)
+            for element in self.find_all(text):
+                with suppress(StaleElementReferenceException):
+                    if element.is_displayed():
+                        return True
+        return False
 
     def should_contain_input(self, text: str) -> None:
         """Assert that the page contains an input with the given value."""

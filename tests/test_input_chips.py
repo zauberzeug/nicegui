@@ -40,9 +40,8 @@ def test_input_chips_validation(auto_validation: bool, screen: Screen):
 
     screen.open('/')
     screen.find_by_tag('input').send_keys('DEF' + Keys.ENTER)
-    screen.wait(0.5)
 
     if auto_validation:
         screen.should_contain('Too many')
     else:
-        screen.should_not_contain('Too many')
+        screen.should_not_contain('Too many', duration=1.0)

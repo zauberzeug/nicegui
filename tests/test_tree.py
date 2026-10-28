@@ -44,7 +44,6 @@ def test_expand_and_collapse_nodes(screen: Screen):
     screen.should_contain('B')
 
     screen.click('Collapse all')
-    screen.wait(0.5)
     screen.should_not_contain('1')
     screen.should_not_contain('2')
     screen.should_not_contain('A')
@@ -58,7 +57,6 @@ def test_expand_and_collapse_nodes(screen: Screen):
 
     screen.click('Expand all')
     screen.click('Collapse numbers')
-    screen.wait(0.5)
     screen.should_not_contain('1')
     screen.should_not_contain('2')
     screen.should_contain('A')
