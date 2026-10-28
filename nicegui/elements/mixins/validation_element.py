@@ -5,13 +5,13 @@ from ... import background_tasks, helpers
 from ...events import ValueT
 from .value_element import ValueElement
 
-ValidationFunction: TypeAlias = Callable[[Any], str | None | Awaitable[str | None]]
-ValidationDict = dict[str, Callable[[Any], bool]]
+ValidationFunction: TypeAlias = Callable[[ValueT], str | None | Awaitable[str | None]]
+ValidationDict: TypeAlias = dict[str, Callable[[ValueT], bool]]
 
 
 class ValidationElement(ValueElement[ValueT]):
 
-    def __init__(self, validation: ValidationFunction | ValidationDict | None, **kwargs: Any) -> None:
+    def __init__(self, validation: ValidationFunction[ValueT] | ValidationDict[ValueT] | None, **kwargs: Any) -> None:
         self._validation = validation
         self._auto_validation = True
         self._error: str | None = None
@@ -20,12 +20,12 @@ class ValidationElement(ValueElement[ValueT]):
             self._props['error'] = None if validation is None else False  # reserve bottom space for error message
 
     @property
-    def validation(self) -> ValidationFunction | ValidationDict | None:
+    def validation(self) -> ValidationFunction[ValueT] | ValidationDict[ValueT] | None:
         """The validation function or dictionary of validation functions."""
         return self._validation
 
     @validation.setter
-    def validation(self, validation: ValidationFunction | ValidationDict | None) -> None:
+    def validation(self, validation: ValidationFunction[ValueT] | ValidationDict[ValueT] | None) -> None:
         """Sets the validation function or dictionary of validation functions.
 
         :param validation: validation function or dictionary of validation functions (``None`` to disable validation)

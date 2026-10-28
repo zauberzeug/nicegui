@@ -124,6 +124,7 @@
       import * as Vue from "vue";
       globalThis.Vue = Vue;
       document.getElementById("esm-fallback")?.remove();
+      document.getElementById("esm-fallback-style")?.remove();
     </script>
     {% if prod_js %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
@@ -135,7 +136,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <style>
+    <style id="esm-fallback-style">
       #esm-fallback {
         display: flex;
         justify-content: center;

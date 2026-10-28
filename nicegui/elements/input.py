@@ -1,14 +1,14 @@
 from typing import Any, Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
-from ..events import Handler, ValueChangeEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Input(LabelElement, ValidationElement[str | None], DisableableElement, component='input.js'):
+class Input(LabelElement, ValidationElement[str], DisableableElement, component='input.js'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
@@ -16,14 +16,14 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str | None = DEFAULT_PROP | '',  # DEPRECATED: change to None in 4.0 (also derived classes)
+                 value: str = DEFAULT_PROP | '',
                  password: bool = DEFAULT_PROP | False,
                  password_toggle_button: bool = False,
                  prefix: str | None = None,
                  suffix: str | None = None,
-                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  autocomplete: list[str] | None = DEFAULT_PROPS['_autocomplete'] | None,
-                 validation: ValidationFunction | ValidationDict | None = None,
+                 validation: ValidationFunction[str] | ValidationDict[str] | None = None,
                  ) -> None:
         """Text Input
 
@@ -115,6 +115,9 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
         super()._handle_value_change(value)
         if self._send_update_on_value_change:
             self.run_method('updateValue')
+
+    def _event_args_to_value(self, e: GenericEventArguments) -> str:
+        return e.args or ''
 
     def _render_markdown(self) -> str:
         value = '' if self.value is None else str(self.value)

@@ -503,6 +503,34 @@ def test_context_loss_recovery_restores_objects(screen: Screen):
     screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
 
 
+def test_initialized_raises_without_webgl(screen: Screen):
+    @ui.page('/')
+    async def page():
+        scene = ui.scene()
+        view = ui.scene_view(scene)
+        for element in (scene, view):
+            try:
+                await element.initialized()
+            except RuntimeError as e:
+                ui.label(f'{type(element).__name__}: {e}')
+
+    script = screen.selenium.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': '''
+        const getContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+            return type.startsWith('webgl') ? null : getContext.call(this, type, ...args);
+        };
+    '''})
+    screen.allowed_js_errors.append('Error creating WebGL context.')
+    try:
+        screen.open('/')
+        screen.should_contain('Scene: Could not create WebGL renderer.')
+        screen.should_contain('SceneView: Could not create WebGL renderer.')
+        for name in ('nicegui-scene', 'nicegui-scene-view'):
+            assert screen.find_by_class(name).text == 'Could not create WebGL renderer.', 'the fallback is visible'
+    finally:
+        screen.selenium.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', script)
+
+
 def test_objects_created_before_the_scene_is_mounted(screen: Screen):
     scene = None
 

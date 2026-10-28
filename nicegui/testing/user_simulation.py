@@ -7,9 +7,6 @@ from pathlib import Path
 import httpx2
 
 from .. import core, ui
-from ..functions.download import download
-from ..functions.navigate import Navigate
-from ..functions.notify import notify
 from .general import nicegui_reset_globals, prepare_simulation
 from .user import User
 
@@ -44,6 +41,3 @@ async def user_simulation(
                     yield User(client)
         finally:
             os.environ.pop('NICEGUI_USER_SIMULATION', None)
-            ui.navigate = Navigate()
-            ui.notify = notify
-            ui.download = download

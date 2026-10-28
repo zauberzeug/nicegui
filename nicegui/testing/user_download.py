@@ -2,43 +2,32 @@ from __future__ import annotations
 
 import asyncio
 import time
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import httpx2
 
 from .. import background_tasks
-from ..functions.download import Download
 
 if TYPE_CHECKING:
     from .user import User
 
 
-class UserDownload(Download):
+class UserDownload:
 
     def __init__(self, user: User) -> None:
         self.http_responses: list[httpx2.Response] = []
         self.user = user
 
-    def __call__(self, src: str | Path | bytes, filename: str | None = None, media_type: str = '') -> Any:
+    def _start(self, src: str | bytes) -> None:
         background_tasks.create(self._get(src),
                                 name=f'download {str(src[:10]) + "..." if isinstance(src, bytes) else src}')
 
-    def file(self, path: str | Path, filename: str | None = None, media_type: str = '') -> None:
-        self(path)
-
-    def from_url(self, url: str, filename: str | None = None, media_type: str = '') -> None:
-        self(url)
-
-    def content(self, content: bytes | str, filename: str | None = None, media_type: str = '') -> None:
-        self(content)
-
-    async def _get(self,  src: str | Path | bytes) -> None:
+    async def _get(self, src: str | bytes) -> None:
         if isinstance(src, bytes):
             await asyncio.sleep(0)
             response = httpx2.Response(httpx2.codes.OK, content=src)
         else:
-            response = await self.user.http_client.get(str(src))
+            response = await self.user.http_client.get(src)
         self.http_responses.append(response)
 
     async def next(self, *, timeout: float = 1.0) -> httpx2.Response:

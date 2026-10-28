@@ -104,6 +104,8 @@ export default {
       this.$el.style.height = this.height + "px";
       this.$el.style.padding = "10px";
       this.$el.style.border = "1px solid silver";
+      this.$el.removeAttribute("data-initializing");
+      this.$emit("init-failed");
       return;
     }
     this.renderer.setClearColor(this.backgroundColor);
