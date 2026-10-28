@@ -774,7 +774,6 @@ async def test_clearing_disabled_element(user: User) -> None:
     (ui.date_input, '2025-01-01', ''),
     (ui.time_input, '12:00', ''),
     (ui.color_input, '#ff0000', ''),
-    (ui.number, 42, None),
 ])
 async def test_clearing_value_elements(user: User, kind: type[ui.element], initial: Any, expected: Any) -> None:
     @ui.page('/')

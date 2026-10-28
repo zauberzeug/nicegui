@@ -227,25 +227,14 @@ def test_autocompletion(screen: Screen):
     screen.should_not_contain('nce')
 
 
-def test_clearable_input(screen: Screen):
-    @ui.page('/')
-    def page():
-        input_ = ui.input(value='foo').props('clearable')
-        ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value!r}')
-
-    screen.open('/')
-    screen.should_contain("value: 'foo'")
-    screen.click('cancel')
-    screen.should_contain("value: ''")
-
-
 @pytest.mark.parametrize('kind, value', [
+    (ui.input, 'foo'),
     (ui.textarea, 'foo'),
     (ui.date_input, '2025-01-01'),
     (ui.time_input, '12:00'),
     (ui.color_input, '#ff0000'),
 ])
-def test_clearable_text_inputs(screen: Screen, kind: type[ui.element], value: str):
+def test_clearable_input(screen: Screen, kind: type[ui.element], value: str):
     @ui.page('/')
     def page():
         element = kind(value=value).props('clearable')
