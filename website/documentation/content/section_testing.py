@@ -34,7 +34,8 @@ doc.text('Set main file', '''
     3. Mark your test functions with the `@pytest.mark.nicegui_main_file` decorator (if you maintain multiple apps in the same codebase).
 
     The main file will automatically be used as an entry point for each integration test (`user` fixture or `screen` fixture).
-    To load no main file, set `main_file =` with no value in `pytest.ini`.
+    To load no main file, leave the option empty:
+    `main_file =` in `pytest.ini` or `main_file = ""` under `[tool.pytest.ini_options]` in `pyproject.toml`.
     Then each test registers the pages it needs, for example with `@ui.page` inside the test function.
 
     You also need to set the [`asyncio_mode = auto`](/documentation/user#async_execution) option
