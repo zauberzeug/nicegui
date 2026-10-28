@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 from collections.abc import Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager
@@ -11,7 +12,7 @@ import httpx
 
 from nicegui import Client, ElementFilter, ui
 from nicegui.nicegui import _on_handshake
-from nicegui.outbox import Message
+from nicegui.outbox import ClientId, Message, MessageType, Payload
 from nicegui.slot import get_task_id
 
 from .user_download import UserDownload
@@ -57,13 +58,6 @@ class User:
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         return self._client.__exit__(exc_type, exc_val, exc_tb)
 
-    def __getattribute__(self, name: str) -> Any:
-        if name not in {'notify', 'navigate', 'download'}:  # avoid infinite recursion
-            ui.navigate = self.navigate
-            ui.notify = self.notify
-            ui.download = self.download
-        return super().__getattribute__(name)
-
     async def open(self, path: str, *, clear_forward_history: bool = True) -> Client:
         """Open the given path."""
         response = await self.http_client.get(path, follow_redirects=True)
@@ -75,19 +69,26 @@ class User:
         assert match is not None
         client_id = match.group(1)
         self.client = Client.instances[client_id]
+        self.back_history.append(path)
+        if clear_forward_history:
+            self.forward_history.clear()
+        self._patch_outbox()
         await _on_handshake(f'test-{uuid4()}', {
             'client_id': self.client.id,
             'tab_id': self.tab_id,
             'document_id': str(uuid4()),
         })
-        self.back_history.append(path)
-        if clear_forward_history:
-            self.forward_history.clear()
-        self._patch_outbox_emit_function()
         return self.client
 
-    def _patch_outbox_emit_function(self) -> None:
-        original_emit = self._client.outbox._emit
+    def _patch_outbox(self) -> None:
+        outbox = self._client.outbox
+        original_enqueue_message = outbox.enqueue_message
+        original_emit = outbox._emit
+
+        def simulated_enqueue_message(message_type: MessageType, data: Payload, target_id: ClientId) -> None:
+            original_enqueue_message(message_type, data, target_id)
+            if outbox is self._client.outbox:  # the browser has left older pages
+                self._simulate_browser(message_type, data)
 
         async def simulated_emit(message: Message) -> None:
             await original_emit(message)
@@ -101,7 +102,35 @@ class User:
                             'result': result(match),
                         })
 
-        self._client.outbox._emit = simulated_emit  # type: ignore
+        outbox.enqueue_message = simulated_enqueue_message  # type: ignore
+        outbox._emit = simulated_emit  # type: ignore
+        for _, message_type, data in list(outbox.messages):  # enqueued while building the page
+            self._simulate_browser(message_type, data)
+
+    def _simulate_browser(self, message_type: MessageType, data: Payload) -> None:
+        """Simulate the browser's reaction to messages sent by `ui.navigate`, `ui.notify`, `ui.download` and `ui.sub_pages`."""
+        if message_type == 'open':
+            self.navigate.to(data['path'])
+        elif message_type == 'notify':
+            self.notify.messages.append(data['message'])
+        elif message_type == 'download':
+            self.download._start(data['src'])
+        elif message_type == 'run_javascript':
+            self._simulate_javascript(data['code'])
+
+    def _simulate_javascript(self, code: str) -> None:
+        if code == 'history.back()':
+            self.navigate.back()
+        elif code == 'history.forward()':
+            self.navigate.forward()
+        elif code == 'history.go(0)':
+            self.navigate.reload()
+        elif match := re.search(r'history\.pushState\(\{page: ("(?:[^"\\]|\\.)*")\}', code):
+            # NOTE: mirrors the JavaScript sent by `SubPagesRouter._handle_navigate`
+            path = json.loads(match.group(1))
+            if path != self.back_history[-1]:
+                self.back_history.append(path)
+                self.forward_history.clear()
 
     @overload
     async def should_see(self,
