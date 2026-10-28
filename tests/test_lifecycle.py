@@ -150,6 +150,7 @@ def test_startup_and_shutdown_handlers(screen: Screen):
     screen.wait(0.5)
     assert events == ['startup', 'startup_async']
 
+    screen.allowed_js_errors.append('ERR_CONNECTION_REFUSED')  # the browser tries to reconnect to the stopped server
     app.shutdown()
     # the first cpu_bound call spawns a worker process, which takes a while
     screen.wait_for(lambda: 'shutdown' in events)
