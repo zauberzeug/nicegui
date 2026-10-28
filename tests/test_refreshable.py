@@ -245,7 +245,6 @@ def test_refreshable_with_state(screen: Screen):
     screen.should_contain('B: 0')
 
     screen.click('Increment A')
-    screen.wait(0.5)
     screen.should_contain('A: 1')
     screen.should_contain('B: 0')
 

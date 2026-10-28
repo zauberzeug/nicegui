@@ -506,7 +506,6 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     assert screen.current_path == '/sub'
 
     screen.click('Add sub page')
-    screen.wait(0.2)
     screen.should_contain('sub-content')  # because browser points to /sub we see the sub page content
     assert screen.current_path == '/sub'
 
@@ -1003,8 +1002,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
     screen.should_contain('home')
     screen.should_contain('param=none')
     screen.click('pass parameter')
-    screen.wait(0.5)
-    assert screen.current_path == '/?test=value'
+    screen.wait_for(lambda: screen.current_path == '/?test=value')
     screen.should_contain('home')
     screen.should_contain('param=value')
     assert calls == {'index': 1, 'home': 1, 'sub': 2}, \

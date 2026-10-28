@@ -19,7 +19,6 @@ def test_tree(screen: Screen):
     screen.should_not_contain('B')
 
     screen.find_by_class('q-icon').click()
-    screen.wait(0.5)
     screen.should_contain('1')
     screen.should_contain('2')
 
@@ -39,7 +38,6 @@ def test_expand_and_collapse_nodes(screen: Screen):
 
     screen.open('/')
     screen.click('Expand all')
-    screen.wait(0.5)
     screen.should_contain('1')
     screen.should_contain('2')
     screen.should_contain('A')
@@ -53,7 +51,6 @@ def test_expand_and_collapse_nodes(screen: Screen):
     screen.should_not_contain('B')
 
     screen.click('Expand numbers')
-    screen.wait(0.5)
     screen.should_contain('1')
     screen.should_contain('2')
     screen.should_not_contain('A')

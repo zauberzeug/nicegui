@@ -35,8 +35,7 @@ def test_write(screen: Screen) -> None:
     screen.open('/')
     screen.click('Write Hello!')
     screen.click('Write 😎')
-    screen.wait(0.1)
-    assert screen.find_by_class('xterm').text == 'Hello!😎\n '
+    screen.wait_for(lambda: screen.find_by_class('xterm').text == 'Hello!😎\n ')
 
     # `Ctrl`+ click on a link opens the link in a new tab
     screen.click('Write link')
@@ -61,14 +60,13 @@ def test_bell_and_data_events(screen: Screen) -> None:
 
     screen.open('/')
     screen.click('Ring Bell')
-    screen.wait(0.1)
-    assert counts == {'bell': 1, 'data': 0, 'resize': 0}
+    screen.wait_for(lambda: counts == {'bell': 1, 'data': 0, 'resize': 0})
 
     screen.find_by_class('xterm').click()
     screen.type('123')
     screen.click('Input 456')
-    screen.wait(0.1)
-    assert counts == {'bell': 1, 'data': 4, 'resize': 0}  # The `input` method triggers a single data event
+    # The `input` method triggers a single data event
+    screen.wait_for(lambda: counts == {'bell': 1, 'data': 4, 'resize': 0})
     screen.should_not_contain('123456')  # Neither typing nor the `input` method write text on the terminal
 
 

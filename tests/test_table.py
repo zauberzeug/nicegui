@@ -171,7 +171,6 @@ def test_selection(screen: Screen):
 
     screen.open('/')
     screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
     screen.should_contain('1 record selected.')
 
     screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
@@ -182,7 +181,6 @@ def test_selection(screen: Screen):
     screen.wait(0.5)
 
     screen.find('Lionel').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
     screen.should_contain('2 records selected.')
     assert table.selection == 'multiple'
 

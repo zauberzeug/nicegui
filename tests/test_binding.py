@@ -91,8 +91,7 @@ def test_binding_to_input(screen: Screen):
     screen.type(Keys.TAB)
     screen.type('two')
     screen.should_contain_input('two')
-    screen.wait(0.1)
-    assert data.text == 'two'
+    screen.wait_for(lambda: data.text == 'two')
     data.text = 'three'
     screen.should_contain_input('three')
     element.set_value('four')

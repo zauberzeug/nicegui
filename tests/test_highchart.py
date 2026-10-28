@@ -42,8 +42,7 @@ def test_adding_chart_series(screen: Screen):
 
     screen.open('/')
     screen.click('Add')
-    screen.wait(0.5)
-    assert len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3
+    screen.wait_for(lambda: len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3)
 
 
 def test_removing_chart_series(screen: Screen):
@@ -61,8 +60,7 @@ def test_removing_chart_series(screen: Screen):
 
     screen.open('/')
     screen.click('Remove')
-    screen.wait(0.5)
-    assert len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3
+    screen.wait_for(lambda: len(screen.selenium.find_elements(By.CSS_SELECTOR, '.highcharts-point')) == 3)
 
 
 def test_missing_extra(screen: Screen):

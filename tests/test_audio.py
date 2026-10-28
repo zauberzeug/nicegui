@@ -26,8 +26,7 @@ def test_replace_audio(screen: Screen):
     assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG1)
 
     screen.click('Replace')
-    screen.wait(0.5)
-    assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG2)
+    screen.wait_for(lambda: screen.find_by_tag('audio').get_attribute('src').endswith(SONG2))
 
 
 def test_change_source(screen: Screen):
@@ -43,5 +42,4 @@ def test_change_source(screen: Screen):
     assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG1)
 
     screen.click('Change source')
-    screen.wait(0.5)
-    assert screen.find_by_tag('audio').get_attribute('src').endswith(SONG2)
+    screen.wait_for(lambda: screen.find_by_tag('audio').get_attribute('src').endswith(SONG2))

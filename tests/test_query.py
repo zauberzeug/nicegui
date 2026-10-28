@@ -22,28 +22,22 @@ def test_query_body(screen: Screen):
     assert get_bg_classes() == ['bg-orange-100']
 
     screen.click('Red background')
-    screen.wait(0.5)
-    assert get_bg_classes() == ['bg-red-100']
+    screen.wait_for(lambda: get_bg_classes() == ['bg-red-100'])
 
     screen.click('Blue background')
-    screen.wait(0.5)
-    assert get_bg_classes() == ['bg-blue-100']
+    screen.wait_for(lambda: get_bg_classes() == ['bg-blue-100'])
 
     screen.click('Small padding')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').value_of_css_property('padding') == '1px'
+    screen.wait_for(lambda: screen.find_by_tag('body').value_of_css_property('padding') == '1px')
 
     screen.click('Large padding')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').value_of_css_property('padding') == '10px'
+    screen.wait_for(lambda: screen.find_by_tag('body').value_of_css_property('padding') == '10px')
 
     screen.click('Data X = 1')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('data-x') == '1'
+    screen.wait_for(lambda: screen.find_by_tag('body').get_attribute('data-x') == '1')
 
     screen.click('Data X = 2')
-    screen.wait(0.5)
-    assert screen.find_by_tag('body').get_attribute('data-x') == '2'
+    screen.wait_for(lambda: screen.find_by_tag('body').get_attribute('data-x') == '2')
 
 
 def test_query_multiple_divs(screen: Screen):
@@ -55,8 +49,7 @@ def test_query_multiple_divs(screen: Screen):
 
     screen.open('/')
     screen.click('Add border')
-    screen.wait(0.5)
-    assert screen.find('A').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
+    screen.wait_for(lambda: screen.find('A').value_of_css_property('border') == '1px solid rgb(0, 0, 0)')
     assert screen.find('B').value_of_css_property('border') == '1px solid rgb(0, 0, 0)'
 
 

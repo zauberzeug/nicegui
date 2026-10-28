@@ -84,7 +84,6 @@ def test_replace_mermaid(screen: Screen):
     screen.should_contain('Node_A')
 
     screen.click('Replace')
-    screen.wait(0.5)
     screen.should_contain('Node_B')
     screen.should_not_contain('Node_A')
 

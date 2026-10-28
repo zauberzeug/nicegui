@@ -84,9 +84,7 @@ def test_set_value_preserves_cursor(screen: Screen):
     screen.wait(0.5)
 
     cm.send_keys(',')  # Insert comma after 'Hello'
-    screen.wait(0.5)
-
-    assert editor.value == 'Hello, Earth'
+    screen.wait_for(lambda: editor.value == 'Hello, Earth')
 
 
 def test_encode_codepoints():

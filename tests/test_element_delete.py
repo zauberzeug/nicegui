@@ -175,7 +175,8 @@ def test_on_delete(screen: Screen):
     screen.click('Delete C')
     screen.click('Delete B')
     screen.click('Clear row')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(deleted_labels) == 3)
+    screen.wait(0.1)
     assert deleted_labels == ['Label C', 'Label B', 'Label A']
 
 

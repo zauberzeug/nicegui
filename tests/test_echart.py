@@ -197,7 +197,8 @@ def test_click(screen: Screen):
     echart = screen.find_by_tag('canvas')
     for x, y in [(20, 20), (0, 70), (60, 30)]:
         screen.click_at_position(echart, x, y)
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 4)
+    screen.wait(0.1)
     assert [(source, event.component_type, event.name) for source, event in events] == [
         ('point', 'series', 'Test'),
         ('component', 'series', 'Test'),
@@ -219,9 +220,8 @@ def test_3d_chart(screen: Screen):
 
     screen.open('/')
     assert screen.find_by_tag('canvas')
-    screen.wait(1.0)
     # echarts-gl draws via WebGL, so a GL context proves the lazily imported bundle initialized
-    assert screen.selenium.execute_script(
+    screen.wait_for(lambda: screen.selenium.execute_script(
         'const c = document.querySelector("canvas");'
         'return !!(c && (c.getContext("webgl") || c.getContext("webgl2")));'
-    ), 'echarts-gl did not initialize'
+    ))

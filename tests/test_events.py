@@ -255,7 +255,8 @@ def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
     screen.click('Item A')
     screen.click('Item B')
     screen.click('Item C')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(ids) == 3)
+    screen.wait(0.1)
     assert ids == ['A', 'B', 'C']
 
 
@@ -268,11 +269,12 @@ def test_value_change_event_arguments(screen: Screen):
 
     screen.open('/')
     screen.click('Checkbox')
-    screen.wait(0.5)
-    assert events == [(True, False)]
+    screen.wait_for(lambda: events == [(True, False)])
+    screen.wait_for(lambda: screen.find_by_class('q-checkbox').get_attribute('aria-checked') == 'true')
 
     screen.click('Checkbox')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 2)
+    screen.wait(0.1)
     assert events == [(True, False), (False, True)]
 
 

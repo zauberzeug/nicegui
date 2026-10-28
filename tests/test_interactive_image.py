@@ -39,8 +39,7 @@ def test_set_source_in_tab(screen: Screen):
         img.set_source(URL_PATH1)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.find_by_tag('img').get_attribute('src').endswith(URL_PATH1)
+    screen.wait_for(lambda: (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH1))
     screen.click('B')
     screen.wait(0.5)
     screen.click('A')
@@ -74,8 +73,7 @@ def test_replace_interactive_image(screen: Screen):
     screen.open('/')
     assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH1)
     screen.click('Replace')
-    screen.wait(0.5)
-    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
+    screen.wait_for(lambda: (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2))
 
 
 @pytest.mark.parametrize('cross', [True, False])
