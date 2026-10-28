@@ -338,6 +338,16 @@ async def test_trigger_event(user: User) -> None:
     await user.should_see('Enter pressed')
 
 
+async def test_trigger_kebab_case_event(user: User) -> None:
+    @ui.page('/')
+    def page():
+        ui.button('Click').on('my-event', lambda: ui.notify('My event'))
+
+    await user.open('/')
+    user.find('Click').trigger('my-event')
+    await user.should_see('My event')
+
+
 @pytest.mark.parametrize('args_value,expected', [
     ({'clientX': 100, 'clientY': 200}, "{'clientX': 100, 'clientY': 200}"),
     (False, 'False'),
