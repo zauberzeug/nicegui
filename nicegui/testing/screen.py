@@ -346,8 +346,10 @@ class Screen:
     def implicitly_wait(self, t: float) -> Generator[None, None, None]:
         """Temporarily change the implicit wait time."""
         self.selenium.implicitly_wait(t)
-        yield
-        self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+        try:
+            yield
+        finally:
+            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
 
     @property
     def current_path(self) -> str:
