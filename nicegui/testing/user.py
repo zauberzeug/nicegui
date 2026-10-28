@@ -87,7 +87,8 @@ class User:
 
         def simulated_enqueue_message(message_type: MessageType, data: Payload, target_id: ClientId) -> None:
             original_enqueue_message(message_type, data, target_id)
-            self._simulate_browser(message_type, data)
+            if outbox is self._client.outbox:  # the browser has left older pages
+                self._simulate_browser(message_type, data)
 
         async def simulated_emit(message: Message) -> None:
             await original_emit(message)
