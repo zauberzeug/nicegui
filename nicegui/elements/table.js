@@ -20,12 +20,14 @@ export default {
   methods: {
     setFullscreenClass(isFullscreen) {
       // Prevent the page from smooth-scrolling when the table exits fullscreen;
-      // Quasar uses setTimeout(() => el.scrollIntoView()) in exitFullscreen,
-      // so we need a setTimeout to remove the class after that scroll completes.
+      // Quasar restores the scroll position in exitFullscreen via nextTick and requestAnimationFrame,
+      // so we remove the class in an animation frame requested after that one.
       if (isFullscreen) {
         document.documentElement.classList.add("nicegui-table-fullscreen");
       } else {
-        setTimeout(() => document.documentElement.classList.remove("nicegui-table-fullscreen"));
+        this.$nextTick(() =>
+          requestAnimationFrame(() => document.documentElement.classList.remove("nicegui-table-fullscreen"))
+        );
       }
     },
   },

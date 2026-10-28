@@ -77,12 +77,12 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
             self._props.set_bool('hide-selected', not multiple)
             self._props['fill-input'] = True
             self._props['input-debounce'] = 0
-            self._props['for'] = self.html_id  # keep html_id on the input so tooltips/ui.query can anchor (#6114)
         self._props.set_bool('multiple', multiple)
         self._props.set_bool('clearable', clearable)
 
         self._is_showing_popup = False
         with self._props.suspend_updates():
+            self._props['for'] = self.html_id  # keep html_id on the focus target for tooltips and ui.query (#6114)
             self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
             self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 

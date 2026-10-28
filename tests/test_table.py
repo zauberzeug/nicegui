@@ -48,7 +48,7 @@ def test_pagination_int(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    screen.should_contain('1–2 of 3')  # noqa: RUF001
 
 
 def test_pagination_dict(screen: Screen):
@@ -60,7 +60,7 @@ def test_pagination_dict(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    screen.should_contain('1–2 of 3')  # noqa: RUF001
 
 
 @pytest.mark.parametrize('pagination,pagination_controls,expected', [
@@ -93,7 +93,7 @@ def test_pagination_setter(screen: Screen, pagination_controls: bool | None):
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
     if pagination_controls is None:
-        screen.should_contain('1-2 of 3')
+        screen.should_contain('1–2 of 3')  # noqa: RUF001
     else:
         screen.should_not_contain('Records per page')
 
