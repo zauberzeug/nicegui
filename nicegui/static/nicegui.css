@@ -320,9 +320,6 @@ h6.q-timeline__title {
 .nicegui-interactive-image-layer img {
   display: none;
 }
-.nicegui-codemirror .cm-editor.cm-focused {
-  outline: none;
-}
 .js-plotly-plot {
   box-sizing: content-box; /* HACK: fix overflow when adding borders to the Plotly plot */
 }
