@@ -9,7 +9,7 @@
     "clean": "rimraf ./dist/*"
   },
   "dependencies": {
-    "plotly.js": "^3.1.1"
+    "plotly.js": "^4.1.2"
   },
   "overrides": {
     "protocol-buffers-schema": "^3.6.1"
