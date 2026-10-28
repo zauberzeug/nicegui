@@ -23,7 +23,7 @@ class Number(LabelElement, ValidationElement[float | None], DisableableElement):
                  suffix: str | None = DEFAULT_PROP | None,
                  format: str | None = None,  # pylint: disable=redefined-builtin
                  on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
-                 validation: ValidationFunction | ValidationDict | None = None,
+                 validation: ValidationFunction[float | None] | ValidationDict[float | None] | None = None,
                  ) -> None:
         """Number Input
 

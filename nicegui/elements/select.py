@@ -22,7 +22,7 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
                  multiple: bool = DEFAULT_PROP | False,
                  clearable: bool = DEFAULT_PROP | False,
-                 validation: ValidationFunction | ValidationDict | None = None,
+                 validation: ValidationFunction[Any] | ValidationDict[Any] | None = None,
                  key_generator: Callable[[Any], Any] | Iterator[Any] | None = None,
                  ) -> None:
         """Dropdown Selection

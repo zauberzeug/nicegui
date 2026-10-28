@@ -167,5 +167,6 @@ class UserInteraction(Generic[T]):
                 if isinstance(element, DisableableElement) and not element.enabled:
                     continue
                 assert isinstance(element, ValueElement)
-                element.value = None
+                element.value = '' if isinstance(
+                    element, (ui.input, ui.date_input, ui.time_input, ui.color_input)) else None
         return self

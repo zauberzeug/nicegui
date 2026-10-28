@@ -768,6 +768,23 @@ async def test_clearing_disabled_element(user: User) -> None:
     await user.should_see(initial_value)
 
 
+@pytest.mark.parametrize('kind, initial, expected', [
+    (ui.input, 'abc', ''),
+    (ui.textarea, 'abc', ''),
+    (ui.date_input, '2025-01-01', ''),
+    (ui.time_input, '12:00', ''),
+    (ui.color_input, '#ff0000', ''),
+])
+async def test_clearing_value_elements(user: User, kind: type[ui.element], initial: Any, expected: Any) -> None:
+    @ui.page('/')
+    def page():
+        kind(value=initial)
+
+    await user.open('/')
+    user.find(kind).clear()
+    assert next(iter(user.find(kind).elements)).value == expected
+
+
 async def test_drawer(user: User):
     @ui.page('/')
     def test_page():

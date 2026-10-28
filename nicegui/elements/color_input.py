@@ -3,7 +3,7 @@ from colorsys import rgb_to_yiq
 from typing import Any, Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
-from ..events import Handler, ValueChangeEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .button import Button as button
 from .color_picker import ColorPicker as color_picker
 from .mixins.disableable_element import DisableableElement
@@ -14,15 +14,15 @@ HEX_COLOR_PATTERN_6 = re.compile(r'^#([0-9a-fA-F]{6})$')
 HEX_COLOR_PATTERN_3 = re.compile(r'^#([0-9a-fA-F]{3})$')
 
 
-class ColorInput(LabelElement, ValueElement[str | None], DisableableElement):
+class ColorInput(LabelElement, ValueElement[str], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str | None = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
+                 value: str = DEFAULT_PROPS['model-value'] | '',
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  preview: bool = False,
                  ) -> None:
         """Color Input
@@ -76,6 +76,9 @@ class ColorInput(LabelElement, ValueElement[str | None], DisableableElement):
         luminance = rgb_to_yiq(r, g, b)[0]
         icon_color = 'grey-10' if luminance > 0.5 else 'grey-3'
         self.button.style(f'background-color: {color}').props(f'color="{icon_color}"')
+
+    def _event_args_to_value(self, e: GenericEventArguments) -> str:
+        return e.args or ''
 
     def _displayed_contents(self, *, only_visible: bool) -> list:
         return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

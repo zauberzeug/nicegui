@@ -25,7 +25,7 @@ def main_demo() -> None:
 def time_picker_demo():
     with ui.input('Time') as time:
         with ui.menu().props('no-parent-event') as menu:
-            with ui.time().bind_value(time):
+            with ui.time().bind_value(time, forward=lambda v: v or ''):
                 with ui.row().classes('justify-end'):
                     ui.button('Close', on_click=menu.close).props('flat')
         with time.add_slot('append'):

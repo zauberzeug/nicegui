@@ -227,16 +227,34 @@ def test_autocompletion(screen: Screen):
     screen.should_not_contain('nce')
 
 
-def test_clearable_input(screen: Screen):
+@pytest.mark.parametrize('kind, value', [
+    (ui.input, 'foo'),
+    (ui.textarea, 'foo'),
+    (ui.date_input, '2025-01-01'),
+    (ui.time_input, '12:00'),
+    (ui.color_input, '#ff0000'),
+])
+def test_clearable_input(screen: Screen, kind: type[ui.element], value: str):
     @ui.page('/')
     def page():
-        input_ = ui.input(value='foo').props('clearable')
-        ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value}')
+        element = kind(value=value).props('clearable')
+        ui.label().bind_text_from(element, 'value', lambda value: f'value: {value!r}')
 
     screen.open('/')
-    screen.should_contain('value: foo')
+    screen.should_contain(f'value: {value!r}')
     screen.click('cancel')
-    screen.should_contain('value: None')
+    screen.should_contain("value: ''")
+
+
+def test_validation_after_clearing_input(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.input(value='abc', validation={'Too short': lambda value: len(value) > 5}).props('clearable')
+
+    screen.open('/')
+    screen.should_not_contain('Too short')
+    screen.click('cancel')
+    screen.should_contain('Too short')
 
 
 def test_update_input(screen: Screen):
