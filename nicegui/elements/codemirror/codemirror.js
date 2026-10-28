@@ -663,6 +663,7 @@ export default {
         this.lineWrappingConfig.of([]),
         CM.EditorView.theme({
           "&": { height: "100%" },
+          "&.cm-focused": { outline: "none" },
           ".cm-scroller": { overflow: "auto" },
         }),
       ];

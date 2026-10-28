@@ -170,6 +170,7 @@ def point_clouds() -> None:
 @doc.demo('Wait for Initialization', '''
     You can wait for the scene to be initialized with the `initialized` method.
     This demo animates a camera movement after the scene has been fully loaded.
+    If the browser cannot create a WebGL renderer, `initialized` raises a `RuntimeError`.
 ''')
 async def wait_for_init() -> None:
     # @ui.page('/')

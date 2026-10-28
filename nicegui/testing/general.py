@@ -70,12 +70,12 @@ def nicegui_reset_globals():
     exception_handlers = dict(app.exception_handlers)
 
     dependencies.importmap_overrides.clear()
-    Client.instances.clear()
     Slot.stacks.clear()
     Client.page_routes.clear()
     Client.shared_head_html = ''
     Client.shared_body_html = ''
     app.reset()
+    _delete_all_clients()
     background_tasks.reset()
     binding.reset()
     warnings.reset()
@@ -104,6 +104,20 @@ def nicegui_reset_globals():
                 parts = func.__module__.split('.')
                 for i in range(len(parts)):
                     sys.modules.pop('.'.join(parts[:i+1]), None)  # remove the module and all its parents
+
+
+def _delete_all_clients() -> None:
+    """Delete all clients, so that their elements are marked as deleted and e.g. ``refreshable.prune()`` releases them.
+
+    Delete handlers are dropped beforehand, because the app has already shut down and they could not run properly.
+    This is a separate function, because in the suspended reset generator the loop variable would keep the last client alive.
+    """
+    try:
+        for client in list(Client.instances.values()):
+            client.delete_handlers.clear()
+            client.delete()
+    finally:
+        Client.instances.clear()  # so that one failing deletion does not break all following tests
 
 
 def _find_all_subclasses(cls: type) -> list[type]:
