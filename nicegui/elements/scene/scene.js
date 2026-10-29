@@ -52,7 +52,7 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", { mesh: this.scene });
 
-    this.clock = new THREE.Clock();
+    this.timer = new THREE.Timer();
     this.draggable_objects = [];
 
     if (this.showStats) {
@@ -190,7 +190,8 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
-      this.controls.update(this.clock.getDelta());
+      this.timer.update();
+      this.controls.update(this.timer.getDelta());
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
