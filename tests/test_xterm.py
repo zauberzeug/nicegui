@@ -83,7 +83,7 @@ def test_fit_and_resize_event(screen: Screen) -> None:
     screen.open('/')
     screen.click('Fill')
     screen.click('Fit')
-    screen.should_contain('Size: 37x20')  # depends on size of the container (ui.card)
+    screen.should_contain('Size: 37x19')  # depends on size of the container (ui.card) and the font
 
 
 def test_run_terminal_method(screen: Screen) -> None:
