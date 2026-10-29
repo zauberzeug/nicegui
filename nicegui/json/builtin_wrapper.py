@@ -3,8 +3,6 @@ import json
 from datetime import date, datetime
 from typing import Any
 
-from fastapi.responses import JSONResponse
-
 from .registry import find_converter
 
 try:
@@ -41,11 +39,12 @@ def loads(value: str) -> Any:
     return json.loads(value)
 
 
-class NiceGUIJSONResponse(JSONResponse):
-    """FastAPI response class to support our custom JSON serializer implementation."""
+def _dumps_bytes(obj: Any) -> bytes:
+    """Serialize a Python object directly to JSON-encoded bytes.
 
-    def render(self, content: Any) -> bytes:
-        return dumps(content).encode('utf-8')
+    Uses Python's default json module internally.
+    """
+    return dumps(obj).encode('utf-8')
 
 
 class NiceGUIJSONEncoder(json.JSONEncoder):
