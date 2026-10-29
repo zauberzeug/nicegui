@@ -14,13 +14,13 @@ class Joystick(Element, component='joystick.js', esm={'nicegui-joystick': 'dist'
                  **options: Any) -> None:
         """Joystick
 
-        Create a joystick based on `nipple.js <https://yoannmoi.net/nipplejs/>`_.
+        Create a joystick based on `nipple.js <https://yoannmoinet.github.io/nipplejs/>`_.
 
         :param on_start: callback for when the user touches the joystick
         :param on_move: callback for when the user moves the joystick
         :param on_end: callback for when the user releases the joystick
         :param throttle: throttle interval in seconds for the move event (default: 0.05)
-        :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://github.com/yoannmoinet/nipplejs#options>`_
+        :param options: arguments like `color` which should be passed to the `underlying nipple.js library <https://yoannmoinet.github.io/nipplejs/options/>`_
         """
         super().__init__()
         self._props['options'] = options
