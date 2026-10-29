@@ -88,9 +88,7 @@ def test_link_to_elements(screen: Screen):
     assert screen.selenium.execute_script('return window.scrollY') == 0
 
     screen.click('goto bottom')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script('return window.scrollY') > 100
+    screen.wait_for(lambda: screen.selenium.execute_script('return window.scrollY') > 100)
 
     screen.click('goto top')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script('return window.scrollY') < 100
+    screen.wait_for(lambda: screen.selenium.execute_script('return window.scrollY') < 100)

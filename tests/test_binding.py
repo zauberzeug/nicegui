@@ -36,9 +36,8 @@ def test_ui_select_with_tuple_as_key(screen: Screen):
     screen.should_not_contain('option B')
     element = screen.click('option A')
     screen.click_at_position(element, x=20, y=100)
-    screen.wait(0.3)
-    screen.should_contain('option B')
     screen.should_not_contain('option A')
+    screen.should_contain('option B')
     assert data.selection == (1, 2)
 
 
@@ -57,9 +56,8 @@ def test_ui_select_with_list_of_tuples(screen: Screen):
     screen.should_not_contain('2,2')
     element = screen.click('1,1')
     screen.click_at_position(element, x=20, y=100)
-    screen.wait(0.3)
-    screen.should_contain('2,2')
     screen.should_not_contain('1,1')
+    screen.should_contain('2,2')
     assert data.selection == (2, 2)
 
 
@@ -78,9 +76,8 @@ def test_ui_select_with_list_of_lists(screen: Screen):
     screen.should_not_contain('2,2')
     element = screen.click('1,1')
     screen.click_at_position(element, x=20, y=100)
-    screen.wait(0.3)
-    screen.should_contain('2,2')
     screen.should_not_contain('1,1')
+    screen.should_contain('2,2')
     assert data.selection == [2, 2]
 
 
@@ -100,8 +97,7 @@ def test_binding_to_input(screen: Screen):
     screen.type(Keys.TAB)
     screen.type('two')
     screen.should_contain_input('two')
-    screen.wait(0.1)
-    assert data.text == 'two'
+    screen.wait_for(lambda: data.text == 'two')
     data.text = 'three'
     screen.should_contain_input('three')
     element.set_value('four')

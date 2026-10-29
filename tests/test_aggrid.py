@@ -118,10 +118,9 @@ def test_run_grid_method_with_argument(screen: Screen):
     screen.should_contain('Carol')
 
     screen.click('Filter')
-    screen.wait(0.5)
-    screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Carol')
+    screen.should_contain('Alice')
 
 
 def test_get_selected_rows(screen: Screen):
@@ -360,12 +359,14 @@ def test_get_client_data(screen: Screen):
 
     screen.open('/')
     screen.click('Get Data')
-    screen.wait(0.5)
-    assert data == [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
+    screen.wait_for(lambda: data == [
+        {'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42},
+    ])
 
     screen.click('Get Sorted Data')
-    screen.wait(0.5)
-    assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
+    screen.wait_for(lambda: data == [
+        {'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18},
+    ])
 
 
 def test_version_matches_js(screen: Screen):

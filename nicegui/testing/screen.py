@@ -21,7 +21,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 
-from nicegui import app, core, ui
+from nicegui import app, core, helpers, ui
 from nicegui.server import Server
 
 from .general import prepare_simulation
@@ -33,6 +33,7 @@ class Screen:
     IMPLICIT_WAIT = 4
     SCREENSHOT_DIR = Path('screenshots')
     CATCH_JS_ERRORS = True
+    SCREENSHOT_PASSED_TESTS = True
 
     def __init__(self, selenium: webdriver.Chrome, caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest | None = None) -> None:
         self.selenium = selenium
@@ -179,15 +180,40 @@ class Screen:
             self.wait(0.1)
         raise AssertionError(f'"{expression}" is {value!r}, expected {expected!r}')
 
-    def should_not_contain(self, text: str, wait: float = 0.5) -> None:
-        """Assert that the page does not contain the given text."""
-        assert self.selenium.title != text
-        try:
-            self.selenium.implicitly_wait(wait)
-            with pytest.raises(AssertionError):
-                self.find(text)
-        finally:
-            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+    def should_not_contain(self, text: str, duration: float = 0, *, wait: float | None = None) -> None:
+        """Assert that the page does not show the given text.
+
+        Like ``should_contain`` waits for the text to appear, this method waits up to ``IMPLICIT_WAIT`` seconds
+        for the text to disappear.
+
+        :param text: text that should not be shown
+        :param duration: time in seconds during which the text must not show up again after it is gone (default: 0)
+        :param wait: deprecated alias for ``duration``
+        """
+        if wait is not None:
+            helpers.warn_once('The parameter "wait" of `should_not_contain` is deprecated. Use "duration" instead.')
+            duration = wait
+        deadline = time.time() + self.IMPLICIT_WAIT
+        while self._shows(text):
+            if time.time() > deadline:
+                raise AssertionError(f'Found "{text}"')
+            self.wait(0.05)
+        deadline = time.time() + duration
+        while time.time() < deadline:
+            self.wait(0.05)
+            if self._shows(text):
+                raise AssertionError(f'Found "{text}"')
+
+    def _shows(self, text: str) -> bool:
+        """Check whether the title or a visible element contains the given text."""
+        if self.selenium.title == text:
+            return True
+        with self.implicitly_wait(0):
+            for element in self.find_all(text):
+                with suppress(StaleElementReferenceException):
+                    if element.is_displayed():
+                        return True
+        return False
 
     def should_contain_input(self, text: str) -> None:
         """Assert that the page contains an input with the given value."""
@@ -341,8 +367,10 @@ class Screen:
     def implicitly_wait(self, t: float) -> Generator[None, None, None]:
         """Temporarily change the implicit wait time."""
         self.selenium.implicitly_wait(t)
-        yield
-        self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
+        try:
+            yield
+        finally:
+            self.selenium.implicitly_wait(self.IMPLICIT_WAIT)
 
     @property
     def current_path(self) -> str:

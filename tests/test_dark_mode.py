@@ -29,11 +29,11 @@ def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | N
     assert_dark(False)
 
     screen.click('Dark')
-    screen.wait(0.5)
+    screen.wait_for_js('document.body.classList.contains("body--dark")', True)
     assert_dark(True)
 
     screen.click('Auto')
-    screen.wait(0.5)
+    screen.wait_for_js('document.body.classList.contains("body--dark")', False)
     assert_dark(False)
 
     screen.click('Toggle')
@@ -45,5 +45,5 @@ def test_dark_mode(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4'] | N
     assert_dark(False)
 
     screen.click('Toggle')
-    screen.wait(0.5)
+    screen.wait_for_js('document.body.classList.contains("body--dark")', True)
     assert_dark(True)

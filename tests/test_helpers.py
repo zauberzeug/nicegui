@@ -23,7 +23,7 @@ def test_is_port_open():
 
 
 def test_is_port_open_on_bad_ip():
-    assert not helpers.is_port_open('1.2', 0), 'should not be able to connect to a bad IP'
+    assert not helpers.is_port_open('256.0.0.1', 0), 'should not be able to connect to a bad IP'
 
 
 def test_format_url():

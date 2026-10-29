@@ -104,7 +104,8 @@ def test_wait_for_disconnect(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 3)
+    screen.wait(0.1)
     assert events == ['connected', 'disconnected', 'connected']
 
 
@@ -119,7 +120,8 @@ def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 1)
+    screen.wait(0.1)
     assert events == ['disconnected']
 
 

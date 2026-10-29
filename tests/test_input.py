@@ -37,8 +37,7 @@ def test_password(screen: Screen):
     assert element.get_attribute('value') == '123456'
 
     element.send_keys('789')
-    screen.wait(0.5)
-    assert element.get_attribute('value') == '123456789'
+    screen.wait_for(lambda: element.get_attribute('value') == '123456789')
 
 
 def test_toggle_button(screen: Screen):
@@ -55,12 +54,10 @@ def test_toggle_button(screen: Screen):
     assert element.get_attribute('value') == '123456'
 
     screen.click('visibility_off')
-    screen.wait(0.5)
-    assert element.get_attribute('type') == 'text'
+    screen.wait_for(lambda: element.get_attribute('type') == 'text')
 
     screen.click('visibility')
-    screen.wait(0.5)
-    assert element.get_attribute('type') == 'password'
+    screen.wait_for(lambda: element.get_attribute('type') == 'password')
 
 
 @pytest.mark.parametrize('method', ['dict', 'sync', 'async'])
@@ -105,7 +102,6 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
     assert_validation(False)
 
     element.send_keys(' Doe')
-    screen.wait(1.0)
     screen.should_not_contain('Short')
     screen.should_not_contain('Still short')
     assert input_.error is None
@@ -196,24 +192,21 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('oo')
 
     element.send_keys('l')
-    screen.wait(0.5)
     screen.should_not_contain('oo')
 
     element.send_keys(Keys.BACKSPACE)
     screen.should_contain('oo')
 
     element.send_keys(Keys.TAB)
-    screen.wait(0.2)
-    assert element.get_attribute('value') == 'foo'
-    assert input_.value == 'foo'
+    screen.wait_for(lambda: element.get_attribute('value') == 'foo')
+    screen.wait_for(lambda: input_.value == 'foo')
 
     element.send_keys(Keys.BACKSPACE)
     element.send_keys(Keys.BACKSPACE)
     element.send_keys('x')
     element.send_keys(Keys.TAB)
-    screen.wait(0.5)
-    assert element.get_attribute('value') == 'fx'
-    assert input_.value == 'fx'
+    screen.wait_for(lambda: element.get_attribute('value') == 'fx')
+    screen.wait_for(lambda: input_.value == 'fx')
 
     input_.set_autocomplete(['once', 'twice'])
     screen.wait(0.2)
@@ -223,7 +216,6 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('nce')
 
     input_.set_autocomplete(None)  # removing the list used to raise a TypeError in the shadowText computed (#6161)
-    screen.wait(0.2)
     screen.should_not_contain('nce')
 
 
@@ -270,12 +262,11 @@ def test_update_input(screen: Screen):
     assert element.get_attribute('value') == 'Pete'
 
     element.send_keys('r')
-    screen.wait(0.5)
     assert element.get_attribute('value') == 'Peter'
+    screen.wait_for(lambda: input_.value == 'Peter')
 
     input_.value = 'Pete'
-    screen.wait(0.5)
-    assert element.get_attribute('value') == 'Pete'
+    screen.wait_for(lambda: element.get_attribute('value') == 'Pete')
 
 
 def test_setting_value_via_props_overrides_user_input(screen: Screen):
@@ -289,8 +280,7 @@ def test_setting_value_via_props_overrides_user_input(screen: Screen):
     element.send_keys('typed')
 
     screen.click('Force')
-    screen.wait(0.5)
-    assert element.get_attribute('value') == 'RAW'
+    screen.wait_for(lambda: element.get_attribute('value') == 'RAW')
 
 
 def test_switching_focus(screen: Screen):
@@ -305,11 +295,9 @@ def test_switching_focus(screen: Screen):
     elements = screen.selenium.find_elements(By.XPATH, '//input')
     assert len(elements) == 2
     screen.click('focus 1')
-    screen.wait(0.3)
-    assert elements[0] == screen.selenium.switch_to.active_element
+    screen.wait_for(lambda: elements[0] == screen.selenium.switch_to.active_element)
     screen.click('focus 2')
-    screen.wait(0.3)
-    assert elements[1] == screen.selenium.switch_to.active_element
+    screen.wait_for(lambda: elements[1] == screen.selenium.switch_to.active_element)
 
 
 def test_prefix_and_suffix(screen: Screen):

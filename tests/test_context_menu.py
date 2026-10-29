@@ -20,6 +20,5 @@ def test_context_menu(screen: Screen):
     screen.should_contain('Menu')
 
     screen.click('Item 2')
-    screen.wait(0.5)
     screen.should_not_contain('Menu')
     screen.should_contain('You clicked')

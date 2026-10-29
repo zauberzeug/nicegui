@@ -147,7 +147,8 @@ def test_async_handler(screen: Screen):
     assert count == 0
 
     screen.click('Append 42')
-    screen.wait(0.5)
+    screen.wait_for(lambda: count > 0)
+    screen.wait(0.1)
     assert count == 1
 
 

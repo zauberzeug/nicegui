@@ -44,7 +44,6 @@ def test_picking_color(screen: Screen):
     assert output.text in {'#f5baba', '#f5b8b8'}
 
     screen.type(Keys.ESCAPE)
-    screen.wait(0.5)
     screen.should_not_contain('HEX')
 
     screen.click('colorize')

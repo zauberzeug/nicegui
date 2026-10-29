@@ -84,7 +84,6 @@ def test_replace_mermaid(screen: Screen):
     screen.should_contain('Node_A')
 
     screen.click('Replace')
-    screen.wait(0.5)
     screen.should_contain('Node_B')
     screen.should_not_contain('Node_A')
 
@@ -151,8 +150,7 @@ def test_click_mermaid_node(security_level: str, screen: Screen):
 
     screen.open('/')
     screen.click('Y')
-    screen.wait(0.5)
-    screen.should_not_contain('Clicked X')
+    screen.should_not_contain('Clicked X', duration=1.0)
     screen.should_not_contain('Clicked Z')
     if security_level == 'loose':
         screen.should_contain('Clicked Y')

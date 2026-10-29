@@ -17,8 +17,7 @@ def test_add_head_html(screen: Screen) -> None:
     assert screen.find('Label').value_of_css_property('background-color') == 'rgba(0, 0, 255, 1)'
 
     screen.click('Green')
-    screen.wait(0.5)
-    assert screen.find('Label').value_of_css_property('background-color') == 'rgba(0, 255, 0, 1)'
+    screen.wait_for(lambda: screen.find('Label').value_of_css_property('background-color') == 'rgba(0, 255, 0, 1)')
 
 
 @pytest.mark.parametrize('shared', [False, True])
@@ -37,8 +36,7 @@ def test_css(screen: Screen, shared: bool, delayed: bool):
 
     screen.open('/')
     label = screen.find('This is red with CSS.')
-    screen.wait(0.5)
-    assert label.value_of_css_property('color') == 'rgba(255, 0, 0, 1)'
+    screen.wait_for(lambda: label.value_of_css_property('color') == 'rgba(255, 0, 0, 1)')
 
 
 def test_add_body_html_and_css_after_await_in_async_sub_page(screen: Screen):

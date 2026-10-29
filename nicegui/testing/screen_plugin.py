@@ -117,8 +117,9 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
 
         logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
         if screen_.is_open:
-            test_failed = hasattr(request.node, 'rep_call') and request.node.rep_call.failed
-            screen_.shot(request.node.name, failed=test_failed or bool(logs))
+            failed = (hasattr(request.node, 'rep_call') and request.node.rep_call.failed) or bool(logs)
+            if failed or Screen.SCREENSHOT_PASSED_TESTS:
+                screen_.shot(request.node.name, failed=failed)
         if logs:
             pytest.fail('There were unexpected ERROR logs.', pytrace=False)
         if screen_.is_open and Screen.CATCH_JS_ERRORS:

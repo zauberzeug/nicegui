@@ -98,11 +98,9 @@ def test_deleting_group(screen: Screen):
         ui.button('Delete group', on_click=group.delete)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert len(scene.objects) == 2
+    screen.wait_for(lambda: len(scene.objects) == 2)
     screen.click('Delete group')
-    screen.wait(0.5)
-    assert len(scene.objects) == 0
+    screen.wait_for(lambda: len(scene.objects) == 0)
 
 
 def test_deleting_object_right_after_creation(screen: Screen):
@@ -167,12 +165,10 @@ def test_replace_scene(screen: Screen):
         ui.button('Replace scene', on_click=replace)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'sphere'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'sphere')
 
     screen.click('Replace scene')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'box'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'box')
 
 
 def test_create_dynamically(screen: Screen):
@@ -204,8 +200,7 @@ def test_object_creation_via_context(screen: Screen):
             scene.box().with_name('box')
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'box'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'box')
 
 
 def test_object_creation_via_attribute(screen: Screen):
@@ -218,8 +213,7 @@ def test_object_creation_via_attribute(screen: Screen):
         scene.box().with_name('box')
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children[4].name') == 'box'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'box')
 
 
 def test_clearing_scene(screen: Screen):
@@ -235,11 +229,9 @@ def test_clearing_scene(screen: Screen):
         ui.button('Clear', on_click=scene.clear)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert len(scene.objects) == 3
+    screen.wait_for(lambda: len(scene.objects) == 3)
     screen.click('Clear')
-    screen.wait(0.5)
-    assert len(scene.objects) == 0
+    screen.wait_for(lambda: len(scene.objects) == 0)
 
 
 @pytest.mark.parametrize('set_material, color', [
@@ -259,11 +251,9 @@ def test_gltf(screen: Screen, set_material: bool, color: str):
                 gltf.material(f'#{color}')
 
     screen.open('/')
-    screen.wait(1.0)
-    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
-    assert screen.selenium.execute_script(
-        f'return scene_{scene.id}.children[4].getObjectByProperty("isMesh", true).material.color.getHexString()'
-    ) == color
+    screen.wait_for_js(f'scene_{scene.id}.children.length', 5)
+    screen.wait_for_js(
+        f'scene_{scene.id}.children[4].getObjectByProperty("isMesh", true).material.color.getHexString()', color)
 
 
 def test_stl_wireframe(screen: Screen):

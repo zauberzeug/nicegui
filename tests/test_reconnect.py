@@ -51,8 +51,8 @@ def test_reconnect_attempt_refreshes_query_next_message_id(screen: Screen):
     assert screen.selenium.execute_script('return Number(window.nextMessageId);') > 0
 
     screen.selenium.execute_script('window.socket.io.engine.transport.onClose("transport close");')
-    screen.wait(2.0)
-    assert screen.selenium.execute_script('return Number(window.socket.io.opts.query.next_message_id);') > 0
+    screen.wait_for(lambda: screen.selenium.execute_script(
+        'return Number(window.socket.io.opts.query.next_message_id);') > 0)
 
 
 def test_stale_socket_disconnect_does_not_wedge_a_reconnected_browser(screen: Screen):

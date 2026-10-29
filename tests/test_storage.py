@@ -119,8 +119,8 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('switch')
-    screen.wait(0.5)
-    assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"test_switch":true}'
+    screen.wait_for(lambda: [p.read_text(encoding='utf-8') for p in Storage.path.glob('storage-user-*.json')] ==
+                    ['{"test_switch":true}'])
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -131,9 +131,8 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('test')
-    screen.wait(1)
-    assert \
-        next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"inner_function":"works"}'
+    screen.wait_for(lambda: [p.read_text(encoding='utf-8') for p in Storage.path.glob('storage-user-*.json')] ==
+                    ['{"inner_function":"works"}'])
 
 
 def test_access_user_storage_from_background_task(screen: Screen):
@@ -185,8 +184,8 @@ def test_rapid_storage(screen: Screen):
 
     screen.open('/')
     screen.click('test')
-    screen.wait(0.5)
-    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}'
+    screen.wait_for(lambda: (Storage.path / 'storage-general.json').exists() and
+                    (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}')
 
 
 def test_tab_storage_is_local(screen: Screen):
@@ -243,8 +242,7 @@ def test_clear_tab_storage(screen: Screen):
     assert next(iter(tab_storages.values())) == {'test': '123'}
 
     screen.click('clear')
-    screen.wait(0.5)
-    assert not tab_storages
+    screen.wait_for(lambda: not tab_storages)
 
 
 async def test_tab_storage_in_sync_connect_handler(user: User):
@@ -373,8 +371,8 @@ def test_deepcopy(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Loaded')
-    screen.wait(0.5)
-    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}'
+    screen.wait_for(lambda: (Storage.path / 'storage-general.json').exists() and
+                    (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}')
 
 
 def test_missing_storage_secret(screen: Screen):

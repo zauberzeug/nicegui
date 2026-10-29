@@ -199,12 +199,11 @@ def test_auto_serving_file_from_image_source(screen: Screen):
     screen.open('/')
     img = screen.find_by_tag('img')
     assert '/_nicegui/auto/static/' in img.get_attribute('src')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script('''
+    screen.wait_for(lambda: screen.selenium.execute_script('''
     return arguments[0].complete &&
         typeof arguments[0].naturalWidth != "undefined" &&
         arguments[0].naturalWidth > 0
-    ''', img), 'image should load successfully'
+    ''', img))
 
 
 def test_auto_serving_file_from_video_source(screen: Screen):
