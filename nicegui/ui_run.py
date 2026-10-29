@@ -19,6 +19,7 @@ from .client import Client
 from .language import Language
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
+from .page import update_page_routes
 from .server import CustomServerConfig, Server
 from .storage import set_storage_secret
 
@@ -179,6 +180,7 @@ def run(root: Callable | None = None, *,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
+    update_page_routes()
     if not helpers.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)

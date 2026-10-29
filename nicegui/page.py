@@ -5,7 +5,7 @@ import inspect
 from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from fastapi import Request, Response
 
@@ -21,6 +21,9 @@ if TYPE_CHECKING:
 
 
 class page:
+
+    instances: ClassVar[dict[Callable[..., Any], page]] = {}
+    '''Maps page builders to their latest page, used to resolve the route after routers are included.'''
 
     def __init__(self,
                  path: str, *,
@@ -75,12 +78,21 @@ class page:
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
         self.markdown = markdown
+        self._resolved_path: str | None = None
+        self._func: Callable[..., Any] | None = None
+        self._endpoint: Callable[..., Any] | None = None
 
         create_favicon_route(self.path, favicon)
 
     @property
     def path(self) -> str:
-        """The path of the page including the APIRouter's prefix."""
+        """The path of the page including the APIRouter's prefix.
+
+        The path is resolved from the app's route table once the router is included,
+        so prefixes added by ``app.include_router(router, prefix=...)`` are included too.
+        """
+        if self._resolved_path is not None:
+            return self._resolved_path
         return self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
@@ -116,7 +128,9 @@ class page:
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
 
-        self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
+        self._func = func
+        self._endpoint = self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
+        page.instances[func] = self
         Client.page_routes[func] = self.path
         return func
 
@@ -240,3 +254,17 @@ class page:
         decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
 
         return decorated
+
+
+def update_page_routes() -> None:
+    """Resolve the paths of all pages, including prefixes added by ``app.include_router``."""
+    endpoint_paths = core.app.page_route_paths()
+    for func, page_ in page.instances.items():
+        if page_._endpoint is None:  # pylint: disable=protected-access
+            continue
+        route_path = endpoint_paths.get(page_._endpoint)  # pylint: disable=protected-access
+        if route_path is None or route_path == page_._resolved_path:  # pylint: disable=protected-access
+            continue
+        page_._resolved_path = route_path  # pylint: disable=protected-access
+        Client.page_routes[func] = route_path
+        create_favicon_route(route_path, page_.favicon)
