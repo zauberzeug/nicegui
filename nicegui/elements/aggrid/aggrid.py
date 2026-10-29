@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
-    VERSION = '34.2.0'  # AG Grid version used by NiceGUI
+    VERSION = '36.2.0'  # AG Grid version used by NiceGUI
 
     @resolve_defaults
     def __init__(self,
@@ -307,6 +307,6 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         This sets a global import map override, affecting all pages and clients.
         Use this to switch to AG Grid Enterprise or a self-hosted bundle.
 
-        :param url: the ESM module URL (e.g., "https://cdn.jsdelivr.net/npm/ag-grid-enterprise@34.2.0/+esm")
+        :param url: the ESM module URL (e.g., "https://cdn.jsdelivr.net/npm/ag-grid-enterprise@36.2.0/+esm")
         """
         register_importmap_override('nicegui-aggrid', url)

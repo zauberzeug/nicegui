@@ -2,7 +2,7 @@ import * as AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
 export default {
-  template: "<div></div>",
+  template: '<div class="ag-theme-mode"></div>',
   mounted() {
     AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();

@@ -413,6 +413,14 @@ doc.text('Debugging', '''
     - `Method "..." not found` if `run_grid_method` or `run_row_method` is called with an unknown method name
     - `Row "..." not found` if `run_row_method` is called with an unknown row ID
 
+    To let AG Grid validate the options, e.g. to spot misspelled properties or missing modules,
+    add its `ValidationModule`.
+    The findings are then shown in the browser console and in an overlay on the grid.
+    Note that AG Grid registers modules globally, so this applies to all grids on the page:
+    ```
+    ui.aggrid(options, modules=['AllCommunityModule', 'ValidationModule'])
+    ```
+
     To inspect the arguments of an event, register a JavaScript handler
     (see [Respond to an AG Grid event](#respond_to_an_ag_grid_event)):
     ```

@@ -369,6 +369,19 @@ def test_get_client_data(screen: Screen):
     ])
 
 
+def test_dark_mode(screen: Screen):
+    @ui.page('/')
+    def page():
+        dark = ui.dark_mode()
+        ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})
+        ui.button('Dark', on_click=dark.enable)
+
+    screen.open('/')
+    light_color = screen.find('Alice').value_of_css_property('color')
+    screen.click('Dark')
+    screen.wait_for(lambda: screen.find('Alice').value_of_css_property('color') != light_color)
+
+
 def test_version_matches_js(screen: Screen):
     @ui.page('/')
     async def page():
