@@ -19,7 +19,6 @@ from .client import Client
 from .language import Language
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
-from .page import update_page_routes
 from .server import CustomServerConfig, Server
 from .storage import set_storage_secret
 
@@ -180,18 +179,18 @@ def run(root: Callable | None = None, *,
     )
     core.root = root
     core.app.config.endpoint_documentation = endpoint_documentation
-    update_page_routes()
     if not helpers.is_pytest() and gzip_middleware_factory is not None:
         core.app.add_middleware(gzip_middleware_factory)
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
+    page_route_paths = set(Client.page_routes.values())  # resolved once, the lookup walks the route table
     for route in core.app.routes:
         if not isinstance(route, Route):
             continue
         if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
-        if route.path == '/' or route.path in Client.page_routes.values():
+        if route.path == '/' or route.path in page_route_paths:
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if fastapi_docs:

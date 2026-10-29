@@ -411,26 +411,17 @@ class App(FastAPI):
         else:
             yield from (route for route in iter_route_contexts(self.routes) if isinstance(route.original_route, Route))
 
-    def page_route_paths(self) -> dict[Callable, str]:
-        """Return the full path of every route, keyed by its endpoint.
+    def page_route_path(self, endpoint: Callable) -> str | None:
+        """Return the effective path of the page route for the given endpoint.
 
-        Included routers are resolved to their effective paths, so a page registered on
-        a router knows the prefix that ``app.include_router`` adds later.
+        Included routers are resolved to the prefixes added by ``app.include_router``,
+        so callers do not have to keep a snapshot of the paths in sync.
         """
-        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
-        if iter_route_contexts is None:
-            return {route.endpoint: route.path for route in self.routes if isinstance(route, Route)}
-        return {
-            route_context.endpoint: route_context.path
-            for route_context in iter_route_contexts(self.routes)
-            if isinstance(route_context.original_route, Route) and route_context.endpoint is not None
-        }
-
-    def include_router(self, router: Any, **kwargs: Any) -> None:
-        """Include a router and resolve the paths of pages registered on it."""
-        super().include_router(router, **kwargs)
-        from ..page import update_page_routes  # avoid a circular import at module load time
-        update_page_routes()
+        for route in self._iter_http_routes():
+            if getattr(route, 'endpoint', None) is endpoint:
+                route_path: str | None = getattr(route, 'path', None)
+                return route_path
+        return None
 
     def _single_use_guard(self, path: str) -> Callable[[], None]:
         """Return a callable that lets exactly one request pass and removes the route behind it."""

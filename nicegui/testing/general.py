@@ -10,7 +10,6 @@ from starlette.routing import Route
 from .. import app, background_tasks, binding, core, dependencies, event, run, ui
 from ..client import Client
 from ..helpers import warnings
-from ..page import page
 from ..slot import Slot
 
 
@@ -63,8 +62,6 @@ def nicegui_reset_globals():
 
     dependencies.importmap_overrides.clear()
     Slot.stacks.clear()
-    Client.page_routes.clear()
-    page.instances.clear()
     Client.shared_head_html = ''
     Client.shared_body_html = ''
     app.reset()
@@ -80,6 +77,8 @@ def nicegui_reset_globals():
     finally:
         gc.collect()
 
+        page_builders = list(Client.page_routes)  # needs to happen before the routes are reset
+
         app.reset()
         background_tasks.reset()
         event.reset()
@@ -92,7 +91,7 @@ def nicegui_reset_globals():
         ui.markdown.default_extras = default_markdown_extras
         app.exception_handlers = exception_handlers
 
-        for func in Client.page_routes:
+        for func in page_builders:
             if not func.__module__.startswith('tests.'):
                 parts = func.__module__.split('.')
                 for i in range(len(parts)):
