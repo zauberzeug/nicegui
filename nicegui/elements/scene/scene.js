@@ -182,15 +182,20 @@ export default {
       });
       if (event.type === "dragstart") this.controls.enabled = false;
       if (event.type === "dragend") this.controls.enabled = true;
+      this.request_render();
     };
     this.drag_controls.addEventListener("dragstart", handleDrag);
     this.drag_controls.addEventListener("drag", handleDrag);
     this.drag_controls.addEventListener("dragend", handleDrag);
 
+    this.render_version = 0;
+    let rendered_version = -1;
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.controls.update(this.clock.getDelta());
+      if (this.renderOnDemand && rendered_version === this.render_version) return;
+      rendered_version = this.render_version;
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -279,6 +284,7 @@ export default {
 
         // Update the references and notify about creation
         mesh.object_id = id;
+        mesh.addEventListener("change", this.request_render); // the component changed the mesh on its own
         object.mesh = mesh;
         object.component = component;
         if (typeof object.component.created == "function") {
@@ -297,6 +303,7 @@ export default {
       const parent = await get_object(this.objects, parent_id);
       if (!parent || this.objects.get(id) !== object || object.mesh.parent) return;
       parent.mesh.add(object.mesh);
+      this.request_render();
     },
     async name(object_id, name) {
       const object = await get_object(this.objects, object_id);
@@ -313,26 +320,31 @@ export default {
       } else {
         console.warn(`A material change was requested for object ${object_id} but the mesh doesn't support materials`);
       }
+      this.request_render();
     },
     async move(object_id, x, y, z) {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.position.set(x, y, z);
+      this.request_render();
     },
     async scale(object_id, sx, sy, sz) {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.scale.set(sx, sy, sz);
+      this.request_render();
     },
     async rotate(object_id, R) {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
       set_rotation(object.mesh, R);
+      this.request_render();
     },
     async visible(object_id, value) {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
       object.mesh.visible = value;
+      this.request_render();
     },
     async draggable(object_id, value) {
       const object = await get_object(this.objects, object_id);
@@ -350,11 +362,14 @@ export default {
       object.mesh.removeFromParent();
       const index = this.draggable_objects.indexOf(object.mesh);
       if (index != -1) this.draggable_objects.splice(index, 1);
+      this.request_render();
     },
     async run_method_on_component(object_id, method_name, ...args) {
       const object = await get_object(this.objects, object_id);
       if (!object) return;
-      return await object.component[method_name](...args);
+      const result = await object.component[method_name](...args);
+      this.request_render();
+      return result;
     },
     async attach(object_id, parent_id, x, y, z, R) {
       // Look up the parent first so that the object's ready_promise is the last await before mutating the mesh.
@@ -366,6 +381,7 @@ export default {
       parent.mesh.add(object.mesh); // add() also removes the mesh from its previous parent
       object.mesh.position.set(x, y, z);
       set_rotation(object.mesh, R);
+      this.request_render();
     },
     async detach(object_id, x, y, z, R) {
       await this.attach(object_id, "scene", x, y, z, R);
@@ -374,8 +390,13 @@ export default {
       // The calls are only started, not awaited, just like they would be if each of them arrived as its own message.
       for (const [name, ...args] of calls) this[name](...args);
     },
+    request_render() {
+      // With `renderOnDemand`, JavaScript that changes the scene directly calls this to get the change drawn.
+      this.render_version++;
+    },
     create_controls(up) {
       this.controls = new this.controlClass(this.camera, this.renderer.domElement);
+      this.controls.addEventListener("change", this.request_render);
       // remember the up vector the controls were built for: camera.up may differ from it after a user rotation
       // (TrackballControls) or an interrupted tween, so it cannot be used to decide whether a rebuild is needed
       this.controls_up = up.clone();
@@ -405,6 +426,7 @@ export default {
           this.look_at.set(p[6], p[7], p[8]);
           this.camera.lookAt(p[6], p[7], p[8]);
           this.controls.target.set(p[6], p[7], p[8]);
+          this.request_render();
         })
         .onComplete(() => {
           if (camera_up_changed) {
@@ -412,6 +434,7 @@ export default {
             this.create_controls(target_up);
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
+            this.request_render();
           }
         })
         .start();
@@ -446,6 +469,7 @@ export default {
       }
       this.camera.updateProjectionMatrix();
       this.controls.handleResize?.(); // TrackballControls caches the canvas rect
+      this.request_render();
     },
   },
 
@@ -461,5 +485,6 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    renderOnDemand: Boolean,
   },
 };
