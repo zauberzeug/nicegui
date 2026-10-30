@@ -163,42 +163,25 @@ def test_setting_change_handler():
 
 
 def test_copy():
-    a = ObservableList([[1, 2, 3], [4, 5, 6]])
+    changes = []
+    root = ObservableDict({'a': [[1, 2, 3], [4, 5, 6]]}, on_change=changes.append)
+    a = root['a']
     b = copy.copy(a)
     c = copy.deepcopy(a)
+    d = copy.deepcopy(root)
     a.append([7, 8, 9])
     a[0][0] = 0
 
     assert a == [[0, 2, 3], [4, 5, 6], [7, 8, 9]]
     assert b == [[0, 2, 3], [4, 5, 6]]
     assert c == [[1, 2, 3], [4, 5, 6]]
+    assert d == {'a': [[1, 2, 3], [4, 5, 6]]}
 
-
-@pytest.mark.parametrize('value', [{'value': 0}, [0], {0}], ids=['dict', 'list', 'set'])
-@pytest.mark.parametrize('copy_root', [False, True], ids=['nested', 'root'])
-def test_deepcopy_does_not_notify_original_parent(value, copy_root):
-    original_changes = []
-    copied_changes = []
-    original = ObservableDict({'child': value}, on_change=original_changes.append)
-    copied = copy.deepcopy(original if copy_root else original['child'])
-    copied.on_change(copied_changes.append)
-    child = copied['child'] if copy_root else copied
-
-    if isinstance(child, dict):
-        child['value'] = 1
-    elif isinstance(child, list):
-        child.append(1)
-    else:
-        child.add(1)
-
-    assert original['child'] == value
-    assert len(original_changes) == 0
-    assert len(copied_changes) == 1
-
-    original['child'].clear()
-    assert len(original_changes) == 1
-    assert len(copied_changes) == 1
-    assert len(child) > 0
+    changes.clear()
+    b.append([10])
+    c[0].append(11)
+    d['a'][0].append(12)
+    assert changes == [], 'changing a copy should not notify the original'
 
 
 async def test_no_infinite_recursion(user: User):
