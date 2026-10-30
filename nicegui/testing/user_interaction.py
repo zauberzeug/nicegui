@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
 
-from nicegui import events, ui
+from nicegui import events, helpers, ui
 from nicegui.elements.mixins.disableable_element import DisableableElement
 from nicegui.elements.mixins.value_element import ValueElement
 
@@ -34,6 +34,7 @@ class UserInteraction(Generic[T]):
         """
         if args is None:
             args = {}
+        event_type = helpers.event_type_to_camel_case(event)  # like `Element.on` stores it
         assert self.user.client
         with self.user.client:
             for element in self.elements:
@@ -45,7 +46,7 @@ class UserInteraction(Generic[T]):
                             break
 
                 for listener in element._event_listeners.values():  # pylint: disable=protected-access
-                    if listener.type != event:
+                    if listener.type != event_type:
                         continue
                     event_arguments = events.GenericEventArguments(sender=element, client=self.user.client, args=args)
                     events.handle_event(listener.handler, event_arguments)

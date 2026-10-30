@@ -4,8 +4,7 @@ import abc
 import time
 import weakref
 from collections.abc import Callable, Collection, Iterable
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Self, SupportsIndex, cast
+from typing import TYPE_CHECKING, Any, SupportsIndex, cast
 
 from . import events, helpers
 
@@ -102,27 +101,10 @@ class ObservableCollection(abc.ABC):  # noqa: B024
             if id(item) not in contained_ids:
                 item._unregister_observer(self)  # pylint: disable=protected-access
 
-    def __copy__(self) -> Self:
-        if isinstance(self, dict):
-            return ObservableDict(self, _parent=self._parent)
-        if isinstance(self, list):
-            return ObservableList(self, _parent=self._parent)
-        if isinstance(self, set):
-            return ObservableSet(self, _parent=self._parent)
-        raise NotImplementedError(f'ObservableCollection.__copy__ not implemented for {type(self)}')
-
-    def __deepcopy__(self, memo: dict) -> Self:
-        if isinstance(self, dict):
-            return ObservableDict({key: deepcopy(self[key]) for key in self}, _parent=self._parent)
-        if isinstance(self, list):
-            return ObservableList([deepcopy(item) for item in self], _parent=self._parent)
-        if isinstance(self, set):
-            return ObservableSet({deepcopy(item) for item in self}, _parent=self._parent)
-        raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
-
     def __reduce__(self) -> tuple[Any, tuple]:
         # reconstruct from plain contents so that the observer wiring (weak references, which are not picklable)
         # is rebuilt by __init__ instead of being pickled; a freshly loaded tree has no observers yet.
+        # copy.copy and copy.deepcopy use this as well, so copies are detached from the original's parent.
         if isinstance(self, dict):
             return ObservableDict, (dict(self),)
         if isinstance(self, list):

@@ -167,30 +167,66 @@ class Object3D:
         return self
 
     @staticmethod
-    def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> list[list[float]]:
+    def rotation_matrix_from_euler(
+        r_x: float,
+        r_y: float,
+        r_z: float,
+        order: Literal['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx', 'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'xyz',
+    ) -> list[list[float]]:
         """Create a rotation matrix from Euler angles.
+
+        A lowercase ``order`` rotates about the fixed world axes, starting with its first letter:
+        ``'xyz'`` rotates about x, then y, then z, i.e. ``R = Rz @ Ry @ Rx``.
+        An uppercase ``order`` rotates about the axes of the already rotated object like ``THREE.Euler``:
+        ``'XYZ'`` yields ``R = Rx @ Ry @ Rz``, which is the same as ``'zyx'``.
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
+        :param order: Euler rotation order: lowercase like ``'xyz'`` for rotations about the fixed world axes,
+            uppercase like ``'XYZ'`` for rotations about the rotating object axes as in Three.js
+            (default: ``'xyz'``, *added in version 3.19.0*)
         """
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
         sz, cz = math.sin(r_z), math.cos(r_z)
+        single_axis: dict[str, list[list[float]]] = {
+            'x': [[1, 0, 0], [0, cx, -sx], [0, sx, cx]],
+            'y': [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]],
+            'z': [[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]],
+        }
+        first, second, third = (single_axis[axis] for axis in (order if order.islower() else order[::-1].lower()))
+        return Object3D._matmul3(third, Object3D._matmul3(second, first))
+
+    @staticmethod
+    def _matmul3(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
+        (a00, a01, a02), (a10, a11, a12), (a20, a21, a22) = A
+        (b00, b01, b02), (b10, b11, b12), (b20, b21, b22) = B
         return [
-            [cz * cy, -sz * cx + cz * sy * sx, sz * sx + cz * sy * cx],
-            [sz * cy, cz * cx + sz * sy * sx, -cz * sx + sz * sy * cx],
-            [-sy, cy * sx, cy * cx],
+            [a00 * b00 + a01 * b10 + a02 * b20, a00 * b01 + a01 * b11 + a02 * b21, a00 * b02 + a01 * b12 + a02 * b22],
+            [a10 * b00 + a11 * b10 + a12 * b20, a10 * b01 + a11 * b11 + a12 * b21, a10 * b02 + a11 * b12 + a12 * b22],
+            [a20 * b00 + a21 * b10 + a22 * b20, a20 * b01 + a21 * b11 + a22 * b21, a20 * b02 + a21 * b12 + a22 * b22],
         ]
 
-    def rotate(self, r_x: float, r_y: float, r_z: float) -> Self:
+    def rotate(
+        self,
+        r_x: float,
+        r_y: float,
+        r_z: float,
+        order: Literal['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx', 'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'xyz',
+    ) -> Self:
         """Rotate the object.
+
+        See ``rotation_matrix_from_euler`` for how ``order`` is interpreted.
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
+        :param order: Euler rotation order: lowercase like ``'xyz'`` for rotations about the fixed world axes,
+            uppercase like ``'XYZ'`` for rotations about the rotating object axes as in Three.js
+            (default: ``'xyz'``, *added in version 3.19.0*)
         """
-        return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
+        return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z, order))
 
     def rotate_R(self, R: list[list[float]]) -> Self:
         """Rotate the object.

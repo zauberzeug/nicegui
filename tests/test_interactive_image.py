@@ -102,12 +102,12 @@ def test_loaded_event(screen: Screen):
     @ui.page('/')
     def page():
         ii = ui.interactive_image(URL_PATH1)
-        ii.on('loaded', lambda: ui.label('loaded'))
+        ii.on('loaded', lambda e: ui.label(f'loaded {e.args["source"]}'))
         ui.button('Change Source', on_click=lambda: ii.set_source(URL_PATH2))
 
     screen.open('/')
     screen.click('Change Source')
-    screen.should_contain('loaded')
+    screen.should_contain(URL_PATH2)
     assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
 
 

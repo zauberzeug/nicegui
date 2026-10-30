@@ -60,6 +60,9 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self.on('init-failed', self._settled_event.set)
         self.on('click3d', self._handle_click)
 
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:
+        return event_type == 'init'
+
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)

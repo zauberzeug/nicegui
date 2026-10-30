@@ -79,6 +79,9 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
 
         self._send_update_on_value_change = True
 
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:
+        return event_type == 'init'
+
     def __enter__(self) -> Self:
         Layer._current_leaflet.set(weakref.ref(self))  # pylint: disable=protected-access
         return super().__enter__()

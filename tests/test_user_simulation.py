@@ -328,14 +328,15 @@ async def test_should_not_see_notification(user: User) -> None:
     await user.should_not_see('Hello')
 
 
-async def test_trigger_event(user: User) -> None:
+@pytest.mark.parametrize('event', ['keydown.enter', 'my-event'])
+async def test_trigger_event(user: User, event: str) -> None:
     @ui.page('/')
     def page():
-        ui.input().on('keydown.enter', lambda: ui.notify('Enter pressed'))
+        ui.input().on(event, lambda: ui.notify(f'{event} triggered'))
 
     await user.open('/')
-    user.find(ui.input).trigger('keydown.enter')
-    await user.should_see('Enter pressed')
+    user.find(ui.input).trigger(event)
+    await user.should_see(f'{event} triggered')
 
 
 @pytest.mark.parametrize('args_value,expected', [

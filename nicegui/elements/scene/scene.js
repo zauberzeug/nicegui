@@ -142,19 +142,26 @@ export default {
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(this.$el);
 
-    const gridSize = this.grid[0] || 100;
-    const gridDivisions = this.grid[1] || 100;
-    if (this.grid) {
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(gridSize, gridSize),
-        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
-      );
+    let groundGeometry, grid;
+    if (this.polarGrid) {
+      const [radius, sectors, rings, divisions = 64] = this.polarGrid;
+      groundGeometry = new THREE.CircleGeometry(radius, divisions, -Math.PI / 2);
+      grid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+    } else if (this.grid) {
+      const gridSize = this.grid[0] || 100;
+      const gridDivisions = this.grid[1] || 100;
+      groundGeometry = new THREE.PlaneGeometry(gridSize, gridSize);
+      grid = new THREE.GridHelper(gridSize, gridDivisions);
+    }
+    if (grid) {
+      const ground = new THREE.Mesh(groundGeometry, new THREE.MeshPhongMaterial({ color: this.backgroundColor }));
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
 
-      const grid = new THREE.GridHelper(gridSize, gridDivisions);
       grid.material.transparent = true;
       grid.material.opacity = 0.2;
       grid.rotateX(Math.PI / 2);
@@ -237,6 +244,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
+    this.resizeObserver?.disconnect();
   },
 
   methods: {
@@ -436,6 +444,9 @@ export default {
       };
     },
     resize() {
+      // skip while the element has no layout box (e.g. hidden), otherwise the canvas would end up 0x0;
+      // the resize observer catches up once the element is shown
+      if (!this.$el.getClientRects().length) return;
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
       this.text_renderer.setSize(clientWidth, clientHeight);
@@ -454,6 +465,7 @@ export default {
     width: Number,
     height: Number,
     grid: Object,
+    polarGrid: Array,
     cameraType: String,
     cameraParams: Object,
     clickEvents: Array,
