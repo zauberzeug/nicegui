@@ -23,11 +23,6 @@ class DisableableElement(Element):
             return True
         return not self.enabled and self.ignores_events_when_disabled
 
-    def _is_ignoring_event(self, event_type: str) -> bool:
-        if super()._is_ignoring_event(event_type):
-            return True
-        return not self.enabled and self.ignores_events_when_disabled
-
     def enable(self) -> Self:
         """Enable the element."""
         self.enabled = True

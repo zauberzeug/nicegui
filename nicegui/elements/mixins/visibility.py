@@ -23,18 +23,6 @@ class Visibility:
         """Return whether the element is currently ignoring events."""
         return not self.visible and self.ignores_events_when_hidden
 
-    def _is_ignoring_event(self, event_type: str) -> bool:
-        """Return whether the element is currently ignoring events of the given type."""
-        return not self.visible and self.ignores_events_when_hidden and not self._handles_event_when_hidden(event_type)
-
-    def _handles_event_when_hidden(self, event_type: str) -> bool:  # pylint: disable=unused-argument
-        """Return whether the element handles the given event type while it is hidden.
-
-        Initialization events are sent once when the component mounts, so dropping them for a
-        hidden element leaves the component uninitialized for good.
-        """
-        return False
-
     def bind_visibility_to(self,
                            target_object: Any,
                            target_name: str | tuple[str, ...] = 'visible',
