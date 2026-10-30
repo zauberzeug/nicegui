@@ -197,7 +197,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             self._props['options'].pop('autoSizeStrategy')
 
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run an AG Grid API method.
+        r"""Run an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
 
@@ -205,7 +205,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
@@ -213,7 +213,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
     def run_row_method(self, row_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run an AG Grid API method on a specific row.
+        r"""Run an AG Grid API method on a specific row.
 
         See `AG Grid Row Reference <https://www.ag-grid.com/javascript-data-grid/row-object/>`_ for a list of methods.
 
@@ -227,7 +227,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         :param row_id: ID of the row (as defined by the ``getRowId`` option, or the row index as a string)
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

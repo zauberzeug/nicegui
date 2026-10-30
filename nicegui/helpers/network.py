@@ -50,6 +50,10 @@ def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[th
     If you need to stop this thread, you can do this by setting the Event, that gets returned.
     The thread will stop with the next loop without opening the browser.
 
+    :param protocol: URL scheme, e.g. ``http``
+    :param host: host to connect to
+    :param port: port to wait for
+    :param path: path to open in the browser
     :return: A tuple consisting of the actual thread object and an event for stopping the thread.
     """
     cancel = threading.Event()

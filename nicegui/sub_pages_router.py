@@ -148,6 +148,7 @@ class SubPagesRouter:
 def has_any_unresolved_path(client: Client, *, with_404_enabled_only: bool = False) -> bool:
     """Check if any sub_pages has an unresolved path.
 
+    :param client: client whose sub_pages are checked
     :param with_404_enabled_only: whether to only consider sub_pages with show_404 enabled
     """
     return any(

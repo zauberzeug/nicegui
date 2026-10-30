@@ -82,7 +82,7 @@ def run(root: Callable | None = None, *,
         markdown: bool = False,
         **kwargs: Any,
         ) -> None:
-    """ui.run
+    r"""ui.run
 
     You can call ``ui.run()`` with optional arguments.
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
@@ -123,7 +123,7 @@ def run(root: Callable | None = None, *,
     :param show_welcome_message: whether to show the welcome message (default: ``True``)
     :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
         (experimental, default: ``False``, can be overwritten per page, *added in version 3.11.0*)
-    :param kwargs: additional keyword arguments are passed to ``uvicorn.run``
+    :param \*\*kwargs: additional keyword arguments are passed to ``uvicorn.run``
     """
     if core.script_mode:
         if Client.page_routes:

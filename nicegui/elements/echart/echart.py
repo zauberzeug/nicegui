@@ -131,7 +131,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         return self._props['options']
 
     def run_chart_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the EChart instance.
+        r"""Run a method of the EChart instance.
 
         See the `ECharts documentation <https://echarts.apache.org/en/api.html#echartsInstance>`_ for a list of methods.
 
@@ -139,7 +139,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method (Python objects or JavaScript expressions)
+        :param \*args: arguments to pass to the method (Python objects or JavaScript expressions)
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

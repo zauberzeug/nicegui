@@ -41,7 +41,7 @@ class Notification(Element, component='notification.js'):
                  options: dict | None = None,
                  **kwargs: Any,
                  ) -> None:
-        """Notification element
+        r"""Notification element
 
         Displays a notification on the screen.
         In contrast to ``ui.notify``, this element allows to update the notification message and other properties once the notification is displayed.
@@ -58,8 +58,7 @@ class Notification(Element, component='notification.js'):
         :param timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
         :param on_dismiss: optional callback to be invoked when the notification is dismissed
         :param options: optional dictionary with all options (overrides all other arguments)
-
-        Note: You can pass additional keyword arguments according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_.
+        :param \*\*kwargs: additional options according to `Quasar's Notify API <https://quasar.dev/quasar-plugins/notify#notify-api>`_
         """
         with context.client.layout:
             super().__init__()

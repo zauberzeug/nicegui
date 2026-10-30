@@ -442,7 +442,7 @@ class Object3D:
         self._delete()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
-        """Run a method on the JS component on the client side.
+        r"""Run a method on the JS component on the client side.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
@@ -456,7 +456,7 @@ class Object3D:
         *Added in version 3.16.0*
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
         return self.scene.run_method('run_method_on_component', self.id, name, *args, timeout=timeout)

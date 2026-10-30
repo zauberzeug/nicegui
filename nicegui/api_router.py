@@ -17,7 +17,7 @@ class APIRouter(fastapi.APIRouter):
              response_timeout: float = 3.0,
              **kwargs,
              ) -> Callable:
-        """Page
+        r"""Page
 
         Creates a new page at the given route.
         Each user will see a new instance of the page.
@@ -29,7 +29,7 @@ class APIRouter(fastapi.APIRouter):
         :param favicon: optional path to a local image file, absolute ``http(s)://`` URL, data URL, inline SVG or emoji (default: ``None``, favicon of ``ui.run`` will be used)
         :param dark: whether to use Quasar's dark mode (defaults to ``dark`` argument of ``run`` command)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0)
-        :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
+        :param \*\*kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         return ui_page(
             path,

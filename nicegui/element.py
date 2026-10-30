@@ -363,13 +363,13 @@ class Element(Visibility):
         return cls
 
     def mark(self, *markers: str) -> Self:
-        """Replace markers of the element.
+        r"""Replace markers of the element.
 
         Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_
         which is heavily used in testing
         but can also be used to reduce the number of global variables or passing around dependencies.
 
-        :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
+        :param \*markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
         """
         self._markers = [word for marker in markers for word in marker.split()]
         return self
@@ -480,13 +480,13 @@ class Element(Visibility):
         self.client.outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
-        """Run a method on the client side.
+        r"""Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
         if not core.is_loop_running() or not self._is_safe_to_interact():

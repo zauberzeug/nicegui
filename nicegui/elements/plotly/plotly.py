@@ -41,7 +41,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         self.update()
 
     def run_plot_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a plotly.js library function against the chart's HTML element.
+        r"""Run a plotly.js library function against the chart's HTML element.
 
         See the `plotly.js function reference <https://plotly.com/javascript/plotlyjs-function-reference/>`_ for a list of methods.
         The chart's HTML element is passed as the first argument automatically.
@@ -53,7 +53,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         *Added in version 3.13.0*
 
         :param name: name of the plotly.js function (without the ``Plotly.`` prefix)
-        :param args: arguments to pass after the chart element
+        :param \*args: arguments to pass after the chart element
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

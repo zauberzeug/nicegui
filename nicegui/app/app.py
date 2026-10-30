@@ -362,7 +362,7 @@ class App(FastAPI):
                info: str = '#31ccec',
                warning: str = '#f2c037',
                **custom_colors: str) -> None:
-        """Color Theming
+        r"""Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
 
@@ -379,7 +379,7 @@ class App(FastAPI):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
-        :param custom_colors: Custom color definitions for branding
+        :param \*\*custom_colors: Custom color definitions for branding
         """
         brand: dict[str, str] = self.config.quasar_config['brand']
         brand['primary'] = primary

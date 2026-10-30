@@ -35,7 +35,7 @@ class page:
                  api_router: APIRouter | None = None,
                  **kwargs: Any,
                  ) -> None:
-        """Page
+        r"""Page
 
         This decorator marks a function to be a page builder.
         Each user accessing the given route will see a new instance of the page.
@@ -62,7 +62,7 @@ class page:
         :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
             (experimental, defaults to ``markdown`` argument of ``run`` command, *added in version 3.11.0*)
         :param api_router: APIRouter instance to use, can be left ``None`` to use the default
-        :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
+        :param \*\*kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         self._path = path
         self.title = title

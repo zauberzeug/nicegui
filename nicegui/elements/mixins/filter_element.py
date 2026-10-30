@@ -84,16 +84,16 @@ class FilterElement(Element):
         return self
 
     def set_filter(self, filter_: str) -> Self:
-        """Set the filter of this element.
+        r"""Set the filter of this element.
 
-        :param filter: The new filter.
+        :param filter\_: The new filter.
         """
         self.filter = filter_
         return self
 
     def _handle_filter_change(self, filter_: str) -> None:
-        """Called when the filter of this element changes.
+        r"""Called when the filter of this element changes.
 
-        :param filter: The new filter.
+        :param filter\_: The new filter.
         """
         self._props[self.FILTER_PROP] = filter_
