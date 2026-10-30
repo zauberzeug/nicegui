@@ -446,7 +446,9 @@ def attach_detach() -> None:
     ``lathe`` revolves a 2D profile to make a vase or bowl,
     and ``plane`` / ``cone`` / ``torus`` / ``capsule`` wrap the corresponding Three.js geometries.
     The ``polar_grid=(radius, sectors, rings)`` scene argument replaces the rectangular grid
-    with a circular one (and overrides ``grid``).
+    with a circular one.
+
+    *Added in version 3.19.0*
 ''')
 def more_primitives_and_polar_grid() -> None:
     import math
@@ -464,16 +466,18 @@ def more_primitives_and_polar_grid() -> None:
 
 
 @doc.demo('Rotate with a different Euler order', '''
-    ``rotate`` accepts an optional extrinsic Euler ``order``
-    (``'XYZ'``, ``'XZY'``, ``'YXZ'``, ``'YZX'``, ``'ZXY'``, or ``'ZYX'``);
-    the leftmost letter rotates first about the world frame.
-    The default ``'XYZ'`` keeps the same behavior as before.
+    ``rotate`` accepts an optional Euler ``order``.
+    Lowercase orders like the default ``'xyz'`` rotate about the fixed world axes, starting with the first letter.
+    Uppercase orders like ``'XYZ'`` rotate about the axes of the already rotated object,
+    exactly like ``THREE.Euler`` in Three.js.
+
+    *Added in version 3.19.0*
 ''')
 def rotate_with_order() -> None:
     import math
     with ui.scene().classes('w-full h-64') as scene:
-        scene.box().move(-1).rotate(math.pi / 4, math.pi / 4, 0, order='XYZ')
-        scene.box().move(1).rotate(math.pi / 4, math.pi / 4, 0, order='ZYX')
+        scene.box().move(-1).rotate(math.pi / 4, math.pi / 4, 0, order='xyz')
+        scene.box().move(1).rotate(math.pi / 4, math.pi / 4, 0, order='XYZ')
 
 
 doc.reference(ui.scene)

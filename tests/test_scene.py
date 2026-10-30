@@ -506,21 +506,14 @@ def test_rotation_matrix_from_euler_all_orders():
     Rx = np.array([[1, 0, 0], [0, np.cos(rx), -np.sin(rx)], [0, np.sin(rx), np.cos(rx)]])
     Ry = np.array([[np.cos(ry), 0, np.sin(ry)], [0, 1, 0], [-np.sin(ry), 0, np.cos(ry)]])
     Rz = np.array([[np.cos(rz), -np.sin(rz), 0], [np.sin(rz), np.cos(rz), 0], [0, 0, 1]])
-    axis = {'X': Rx, 'Y': Ry, 'Z': Rz}
-    # Leftmost letter rotates first about the world frame, so the leftmost axis sits as the
-    # rightmost matrix in the product (column-vector convention M @ v).
-    expected_per_order = {
-        'XYZ': Rz @ Ry @ Rx,
-        'XZY': Ry @ Rz @ Rx,
-        'YXZ': Rz @ Rx @ Ry,
-        'YZX': Rx @ Rz @ Ry,
-        'ZXY': Ry @ Rx @ Rz,
-        'ZYX': Rx @ Ry @ Rz,
-    }
-    for order, expected in expected_per_order.items():
-        actual = Object3D.rotation_matrix_from_euler(rx, ry, rz, order)
-        assert np.allclose(actual, expected), f'{order} mismatch:\n{actual}\nvs\n{expected}'
-        assert np.allclose(actual, axis[order[2]] @ axis[order[1]] @ axis[order[0]])
+    axis = {'x': Rx, 'y': Ry, 'z': Rz}
+    default = Object3D.rotation_matrix_from_euler(rx, ry, rz)
+    assert np.allclose(default, Rz @ Ry @ Rx), 'default order keeps the legacy behavior'
+    for a, b, c in ['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx']:
+        extrinsic = Object3D.rotation_matrix_from_euler(rx, ry, rz, a + b + c)  # type: ignore[arg-type]
+        intrinsic = Object3D.rotation_matrix_from_euler(rx, ry, rz, (a + b + c).upper())  # type: ignore[arg-type]
+        assert np.allclose(extrinsic, axis[c] @ axis[b] @ axis[a]), f'{a + b + c} rotates about world axes'
+        assert np.allclose(intrinsic, axis[a] @ axis[b] @ axis[c]), f'{(a + b + c).upper()} rotates about object axes'
 
 
 def test_polyline(screen: Screen):
@@ -616,7 +609,8 @@ def test_geometry_primitive(screen: Screen, factory_name: str, three_geometry: s
     screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', three_geometry)
 
 
-def test_rotate_with_order(screen: Screen):
+@pytest.mark.parametrize('order', ['XYZ', 'YXZ', 'ZYX'])
+def test_rotate_with_uppercase_order_matches_three_euler(screen: Screen, order: Literal['XYZ', 'YXZ', 'ZYX']):
     scene = None
     box = None
 
@@ -624,17 +618,17 @@ def test_rotate_with_order(screen: Screen):
     def page():
         nonlocal scene, box
         with ui.scene() as scene:
-            box = scene.box().rotate(0.4, -0.3, 0.5, order='ZYX')
+            box = scene.box().rotate(0.4, -0.3, 0.5, order=order)
 
-    expected = Object3D.rotation_matrix_from_euler(0.4, -0.3, 0.5, 'ZYX')
-
-    def client_R() -> list[list[float]] | None:
+    def matrices() -> tuple[list[float], list[float]] | None:
         return screen.selenium.execute_script(
-            f'const m = getElement({scene.id}).objects.get("{box.id}")?.mesh?.matrixWorld.elements;'
-            # Three.js stores column-major; pull out the upper-left 3x3.
-            'return m && [[m[0], m[4], m[8]], [m[1], m[5], m[9]], [m[2], m[6], m[10]]];'
+            f'const mesh = getElement({scene.id}).objects.get("{box.id}")?.mesh;'
+            'if (!mesh) return null;'
+            'const Euler = mesh.rotation.constructor, Matrix4 = mesh.matrix.constructor;'
+            'const actual = new Matrix4().makeRotationFromEuler(mesh.rotation);'
+            f'const expected = new Matrix4().makeRotationFromEuler(new Euler(0.4, -0.3, 0.5, "{order}"));'
+            'return [actual.elements, expected.elements];'
         )
 
     screen.open('/')
-    assert np.allclose(box.R, expected)
-    screen.wait_for(lambda: (R := client_R()) is not None and np.allclose(R, expected, atol=1e-6))
+    screen.wait_for(lambda: (m := matrices()) is not None and np.allclose(m[0], m[1], atol=1e-6))

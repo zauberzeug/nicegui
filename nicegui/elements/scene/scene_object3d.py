@@ -232,33 +232,33 @@ class Object3D:
         r_x: float,
         r_y: float,
         r_z: float,
-        order: Literal['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'XYZ',
+        order: Literal['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx', 'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'xyz',
     ) -> list[list[float]]:
         """Create a rotation matrix from Euler angles.
 
-        The leftmost letter of ``order`` is the axis that rotates first about the world frame,
-        the rightmost letter rotates last. For ``order='XYZ'`` the result is ``M = Rz @ Ry @ Rx``,
-        which preserves the original three-argument behavior of this function.
-
-        Note: this is the *reverse* of the ``THREE.Euler`` order convention. ``rotate(rx, ry, rz, 'ABC')``
-        is equivalent to ``new THREE.Euler(rx, ry, rz, 'CBA')`` (order string reversed).
+        A lowercase ``order`` rotates about the fixed world axes, starting with its first letter:
+        ``'xyz'`` rotates about x, then y, then z, i.e. ``R = Rz @ Ry @ Rx``.
+        An uppercase ``order`` rotates about the axes of the already rotated object like ``THREE.Euler``:
+        ``'XYZ'`` yields ``R = Rx @ Ry @ Rz``, which is the same as ``'zyx'``.
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
-        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``, *added in version 3.19.0*)
+        :param order: Euler rotation order: lowercase like ``'xyz'`` for rotations about the fixed world axes,
+            uppercase like ``'XYZ'`` for rotations about the rotating object axes as in Three.js
+            (default: ``'xyz'``, *added in version 3.19.0*)
         """
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
         sz, cz = math.sin(r_z), math.cos(r_z)
         single_axis: dict[str, list[list[float]]] = {
-            'X': [[1, 0, 0], [0, cx, -sx], [0, sx, cx]],
-            'Y': [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]],
-            'Z': [[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]],
+            'x': [[1, 0, 0], [0, cx, -sx], [0, sx, cx]],
+            'y': [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]],
+            'z': [[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]],
         }
-        # Each letter pre-multiplies on the left, so order='XYZ' yields Rz @ Ry @ Rx (Rx applied first).
-        result = single_axis[order[0]]
-        for letter in order[1:]:
+        world_axes_order = order if order.islower() else order[::-1].lower()
+        result = single_axis[world_axes_order[0]]
+        for letter in world_axes_order[1:]:
             result = Object3D._matmul3(single_axis[letter], result)
         return result
 
@@ -271,18 +271,18 @@ class Object3D:
         r_x: float,
         r_y: float,
         r_z: float,
-        order: Literal['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'XYZ',
+        order: Literal['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx', 'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'xyz',
     ) -> Self:
         """Rotate the object.
 
-        The leftmost letter of ``order`` rotates first about the world frame
-        (default ``'XYZ'`` preserves the original three-argument behavior, ``M = Rz @ Ry @ Rx``).
-        See :meth:`rotation_matrix_from_euler` for the relationship to ``THREE.Euler``.
+        See ``rotation_matrix_from_euler`` for how ``order`` is interpreted.
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
-        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``, *added in version 3.19.0*)
+        :param order: Euler rotation order: lowercase like ``'xyz'`` for rotations about the fixed world axes,
+            uppercase like ``'XYZ'`` for rotations about the rotating object axes as in Three.js
+            (default: ``'xyz'``, *added in version 3.19.0*)
         """
         return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z, order))
 
