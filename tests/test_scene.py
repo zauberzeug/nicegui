@@ -191,6 +191,14 @@ def test_rotation_matrix_from_euler():
     R = Rz @ Ry @ Rx
     assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)
 
+    axis = {'x': Rx, 'y': Ry, 'z': Rz}
+    for order in ['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx']:
+        a, b, c = order
+        extrinsic = Object3D.rotation_matrix_from_euler(omega, phi, kappa, order)  # type: ignore[arg-type]
+        intrinsic = Object3D.rotation_matrix_from_euler(omega, phi, kappa, order.upper())  # type: ignore[arg-type]
+        assert np.allclose(extrinsic, axis[c] @ axis[b] @ axis[a]), f'{order} rotates about world axes'
+        assert np.allclose(intrinsic, axis[a] @ axis[b] @ axis[c]), f'{order.upper()} rotates about object axes'
+
 
 def test_object_creation_via_context(screen: Screen):
     scene = None
@@ -548,6 +556,87 @@ def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
     screen.open('/')
     screen.find_by_tag('canvas').click()
     screen.wait_for(lambda: hits == ['ground'])
+
+
+def test_geometry_primitives(screen: Screen):
+    scene = None
+    objects = {}
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            objects['PlaneGeometry'] = scene.plane()
+            objects['ConeGeometry'] = scene.cone()
+            objects['TorusGeometry'] = scene.torus()
+            objects['CapsuleGeometry'] = scene.capsule()
+            objects['LatheGeometry'] = scene.lathe(points=[[0, 0], [0.5, 0.5], [0, 1]])
+            objects['polyline'] = scene.polyline(points=[[0, 0, 0], [1, 0, 0], [1, 1, 0]],
+                                                 colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                                                 dashed=True)
+
+    screen.open('/')
+    for geometry, obj in objects.items():
+        if geometry != 'polyline':
+            screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', geometry)
+    material = f'getElement({scene.id}).objects.get("{objects["polyline"].id}")?.mesh?.material'
+    screen.wait_for_js(f'[{material}?.type, {material}?.vertexColors]', ['LineDashedMaterial', True])
+
+
+@pytest.mark.parametrize('points,colors,message', [
+    ([[0, 0, 0]], None, 'at least 2'),
+    ([[0, 0, 0], [1, 0, 0]], [[1, 0, 0]], 'colors length'),
+])
+def test_polyline_rejects_invalid_input(points: list[list[float]], colors: list[list[float]] | None, message: str):
+    with pytest.raises(ValueError, match=message):
+        ui.scene.polyline(points=points, colors=colors)
+
+
+@pytest.mark.parametrize('polar_grid,expected_args', [
+    ((1.0, 0, 5), (1.0, 0, 5, 64)),
+    ((1.0, 8, 5, 128), (1.0, 8, 5, 128)),
+])
+def test_polar_grid(screen: Screen, polar_grid: tuple, expected_args: tuple):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(polar_grid=polar_grid)
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.html_id}.children.filter(c => c.type.endsWith("GridHelper")).map(c => c.type)',
+                       ['PolarGridHelper'])
+    screen.wait_for_js(f'(grid => grid.geometry.attributes.position.count == '
+                       f'new grid.constructor{expected_args}.geometry.attributes.position.count)'
+                       f'(scene_{scene.html_id}.getObjectsByProperty("type", "PolarGridHelper")[0])', True)
+
+
+def test_rotate_with_uppercase_order_matches_three_euler(screen: Screen):
+    orders: list[Literal['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX']] = ['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX']
+    scene = None
+    boxes = {}
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            for order in orders:
+                boxes[order] = scene.box().rotate(0.4, -0.3, 0.5, order=order)
+
+    def matrices(order: str) -> tuple[list[float], list[float]] | None:
+        return screen.selenium.execute_script(
+            f'const mesh = getElement({scene.id}).objects.get("{boxes[order].id}")?.mesh;'
+            'if (!mesh) return null;'
+            'const Euler = mesh.rotation.constructor, Matrix4 = mesh.matrix.constructor;'
+            'const actual = new Matrix4().makeRotationFromEuler(mesh.rotation);'
+            f'const expected = new Matrix4().makeRotationFromEuler(new Euler(0.4, -0.3, 0.5, "{order}"));'
+            'return [actual.elements, expected.elements];'
+        )
+
+    screen.open('/')
+    for order in orders:
+        screen.wait_for(lambda order=order: (m := matrices(order)) is not None and np.allclose(m[0], m[1], atol=1e-6))
 
 
 def test_scene_initializes_when_created_hidden(screen: Screen):

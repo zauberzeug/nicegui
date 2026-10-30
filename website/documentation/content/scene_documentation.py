@@ -38,6 +38,42 @@ def main_demo() -> None:
         scene.text3d('3D', 'background: rgba(0, 0, 0, 0.2); border-radius: 5px; padding: 5px').move(y=-2).scale(.05)
 
 
+@doc.demo('More primitives', '''
+    ``polyline`` connects a sequence of points with optional per-vertex colors and dashing,
+    ``lathe`` revolves a 2D profile to make a vase or bowl,
+    and ``plane`` / ``cone`` / ``torus`` / ``capsule`` wrap the corresponding Three.js geometries.
+
+    *Added in version 3.19.0*
+''')
+def more_primitives() -> None:
+    import math
+    with ui.scene().classes('w-full h-64') as scene:
+        scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]]) \
+            .material('chocolate').move(2.5, 0, 0).rotate(math.pi / 2, 0, 0)
+        scene.cone(radius=0.5, height=1.0).material('tomato').move(1.2, 2.2, 0.5).rotate(math.pi / 2, 0, 0)
+        scene.torus(radius=0.4, tube=0.15).material('gold').move(-1.2, 2.2, 0.15)
+        scene.plane(width=1.0, height=1.0).material('deepskyblue').move(-2.5, 0, 0.5).rotate(math.pi / 2, 0, 0)
+        scene.capsule(radius=0.3, height=0.8).material('mediumorchid').move(-1.2, -2.2, 0.7).rotate(math.pi / 2, 0, 0)
+        scene.polyline(
+            points=[[-2, 0, 2.5], [-1, 0, 3.0], [0, 0, 2.5], [1, 0, 3.0], [2, 0, 2.5]],
+            colors=[[1, 0, 0], [1, 0.5, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]],
+        )
+
+
+@doc.demo('Rotate with a different Euler order', '''
+    ``rotate`` accepts an optional Euler ``order``.
+    Lowercase orders like the default ``'xyz'`` rotate about the fixed world axes, starting with the first letter.
+    Uppercase orders like ``'XYZ'`` rotate about the axes of the already rotated object,
+    exactly like ``THREE.Euler`` in Three.js.
+
+    *Added in version 3.19.0*
+''')
+def rotate_with_order() -> None:
+    with ui.scene().classes('w-full h-64') as scene:
+        scene.box().material('steelblue').move(-1).rotate(0.8, 0.8, 0, order='xyz')
+        scene.box().material('darkorange').move(1).rotate(0.8, 0.8, 0, order='XYZ')
+
+
 @doc.demo('Handling Click Events', '''
     You can use the `on_click` argument to `ui.scene` to handle click events.
     The callback receives a `SceneClickEventArguments` object with the following attributes:
@@ -287,6 +323,17 @@ def custom_background() -> None:
 ''')
 def custom_grid() -> None:
     with ui.scene(grid=(3, 2)).classes('w-full h-64') as scene:
+        scene.sphere()
+
+
+@doc.demo('Polar Grid', '''
+    Instead of the rectangular grid, the ``polar_grid`` parameter of ``ui.scene`` draws a circular one.
+    It accepts a tuple of radius, number of sectors and number of rings.
+
+    *Added in version 3.19.0*
+''')
+def polar_grid() -> None:
+    with ui.scene(polar_grid=(4, 12, 6)).classes('w-full h-64') as scene:
         scene.sphere()
 
 

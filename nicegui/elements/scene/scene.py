@@ -46,13 +46,18 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     # pylint: disable=import-outside-toplevel
     from .objects.axes_helper import AxesHelper as axes_helper
     from .objects.box import Box as box
+    from .objects.capsule import Capsule as capsule
+    from .objects.cone import Cone as cone
     from .objects.curve import Curve as curve
     from .objects.cylinder import Cylinder as cylinder
     from .objects.extrusion import Extrusion as extrusion
     from .objects.gltf import Gltf as gltf
     from .objects.group import Group as group
+    from .objects.lathe import Lathe as lathe
     from .objects.line import Line as line
+    from .objects.plane import Plane as plane
     from .objects.point_cloud import PointCloud as point_cloud
+    from .objects.polyline import Polyline as polyline
     from .objects.quadratic_bezier_tube import QuadraticBezierTube as quadratic_bezier_tube
     from .objects.ring import Ring as ring
     from .objects.sphere import Sphere as sphere
@@ -61,13 +66,14 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     from .objects.text import Text as text
     from .objects.text3d import Text3d as text3d
     from .objects.texture import Texture as texture
+    from .objects.torus import Torus as torus
 
     @resolve_defaults
     def __init__(self,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
                  # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
-                 grid: bool | tuple[int, int] = DEFAULT_PROP | True,
+                 grid: bool | tuple[int, int] | None = DEFAULT_PROP | None,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
                  click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
@@ -78,17 +84,18 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
+                 polar_grid: tuple[float, int, int] | tuple[float, int, int, int] | None = DEFAULT_PROP | None,
                  ) -> None:
         """3D Scene
 
         Display a 3D scene using `three.js <https://threejs.org/>`_.
-        Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes.
+        It supports basic geometries like boxes, spheres and cylinders, lines and curves, point clouds, texts, textures as well as glTF and STL models.
         Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
         They can also be grouped to apply joint movements.
 
         :param width: width of the canvas
         :param height: height of the canvas
-        :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100)
+        :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100 unless ``polar_grid`` is given)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
@@ -99,13 +106,19 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
+        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` or ``(radius, sectors, rings, divisions)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; ``divisions`` controls the visual smoothness of each ring (default: ``64``); cannot be combined with ``grid`` (default: ``None``, *added in version 3.19.0*)
         """
         super().__init__()
+        if grid is None:
+            grid = polar_grid is None
+        elif grid and polar_grid is not None:
+            raise ValueError('`grid` and `polar_grid` cannot be combined')
         self._props['width'] = width
         self._props['height'] = height
         self._props['fps'] = fps
         self._props['show-stats'] = show_stats
         self._props['grid'] = grid
+        self._props['polar-grid'] = polar_grid
         self._props['background-color'] = background_color
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
