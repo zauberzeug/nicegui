@@ -12,6 +12,7 @@ from ..events import (
     ValueChangeEventArguments,
     handle_event,
 )
+from ..helpers import prepare_pandas_df
 from ..logging import log
 from .mixins.filter_element import FilterElement
 
@@ -295,28 +296,10 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
-        import pandas as pd  # pylint: disable=import-outside-toplevel
 
-        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
-            df = df.reset_index()
-
-        def is_special_dtype(dtype):
-            return (pd.api.types.is_datetime64_any_dtype(dtype) or
-                    pd.api.types.is_timedelta64_dtype(dtype) or
-                    pd.api.types.is_complex_dtype(dtype) or
-                    pd.api.types.is_object_dtype(dtype) or
-                    isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
-        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
-        if not special_cols.empty:
-            df = df.copy()
-            df[special_cols] = df[special_cols].astype(str)
-
-        if isinstance(df.columns, pd.MultiIndex):
-            raise ValueError('MultiIndex columns are not supported. '
-                             'You can convert them to strings using something like '
-                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
-
-        return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        df, col_labels = prepare_pandas_df(df)
+        return df.to_dict('records'), [{'name': name, 'label': label, 'field': name}
+                                       for name, label in zip(df.columns, col_labels, strict=True)]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
