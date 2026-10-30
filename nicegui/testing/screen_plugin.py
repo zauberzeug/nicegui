@@ -92,7 +92,7 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
     else:  # no break
         raise RuntimeError('Could not start Chrome WebDriver.')
     driver_.implicitly_wait(Screen.IMPLICIT_WAIT)
-    driver_.set_page_load_timeout(4)
+    driver_.set_page_load_timeout(Screen.PAGE_LOAD_TIMEOUT)
     yield driver_
     driver_.quit()
 
