@@ -1,5 +1,5 @@
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_tree(screen: Screen):
@@ -137,3 +137,27 @@ def test_filter(screen: Screen):
     screen.should_contain('Apple')
     screen.should_contain('Banana')
     screen.should_not_contain('Cherry')
+
+
+async def test_nodes_visibility(user: User):
+    trees: dict[str, ui.tree] = {}
+
+    @ui.page('/')
+    def page():
+        trees['expanded'] = ui.tree([{'id': 'a', 'children': [{'id': 'b'}]}], label_key='id').expand(['a'])
+        trees['collapsed'] = ui.tree([{'id': 'a', 'children': [{'id': 'b'}]}], label_key='id').collapse()
+        trees['deep'] = ui.tree([{'id': 'A', 'children': [{'id': 'B', 'children': [{'id': 'C'}]}]}],
+                                label_key='id').expand(['B'])
+
+    await user.open('/')
+
+    def ids(tree: ui.tree, *, visible: bool) -> list[str]:
+        return [node['id'] for node in tree.nodes(visible=visible)]
+
+    assert ids(trees['expanded'], visible=False) == []
+    assert ids(trees['collapsed'], visible=False) == ['b']
+    assert ids(trees['deep'], visible=False) == ['B', 'C']
+
+    assert ids(trees['expanded'], visible=True) == ['a', 'b']
+    assert ids(trees['collapsed'], visible=True) == ['a']
+    assert ids(trees['deep'], visible=True) == ['A']
