@@ -17,6 +17,8 @@ class Lathe(Object3D, component='lathe.js'):
         This element is based on Three.js' `LatheGeometry <https://threejs.org/docs/#api/en/geometries/LatheGeometry>`_ object.
         It creates a surface of revolution by rotating a 2D polyline around the y axis.
 
+        *Added in version 3.19.0*
+
         :param points: list of 2D ``[x, y]`` points making up the profile (x ≥ 0)
         :param segments: number of segments around the circumference (default: 12)
         :param phi_start: starting angle in radians (default: 0.0)

@@ -16,6 +16,8 @@ class Capsule(Object3D, component='capsule.js'):
         This element is based on Three.js' `CapsuleGeometry <https://threejs.org/docs/index.html#api/en/geometries/CapsuleGeometry>`_ object.
         It is used to create a capsule-shaped mesh (a cylinder with hemispherical caps).
 
+        *Added in version 3.19.0*
+
         :param radius: radius of the capsule (default: 1.0)
         :param height: height of the cylindrical middle section (default: 1.0)
         :param cap_segments: number of segments used to draw each cap (default: 4)

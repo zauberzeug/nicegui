@@ -16,6 +16,8 @@ class Polyline(Object3D, component='polyline.js'):
         It connects a sequence of 3D points with line segments and optionally dashes them via
         `LineDashedMaterial <https://threejs.org/docs/#api/en/materials/LineDashedMaterial>`_.
 
+        *Added in version 3.19.0*
+
         :param points: list of ``[x, y, z]`` points
         :param colors: optional list of per-vertex ``[r, g, b]`` colors (each component in ``[0, 1]``).
             When supplied, the line uses vertex colors instead of the material color.

@@ -18,6 +18,8 @@ class Torus(Object3D, component='torus.js'):
         This element is based on Three.js' `TorusGeometry <https://threejs.org/docs/index.html#api/en/geometries/TorusGeometry>`_ object.
         It is used to create a donut-shaped mesh.
 
+        *Added in version 3.19.0*
+
         :param radius: radius from the center of the torus to the center of the tube (default: 1.0)
         :param tube: radius of the tube (default: 0.4)
         :param radial_segments: number of segments along the tube cross-section (default: 12)

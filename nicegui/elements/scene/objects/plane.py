@@ -15,6 +15,8 @@ class Plane(Object3D, component='plane.js'):
         This element is based on Three.js' `PlaneGeometry <https://threejs.org/docs/index.html#api/en/geometries/PlaneGeometry>`_ object.
         It is used to create a flat rectangular mesh.
 
+        *Added in version 3.19.0*
+
         :param width: width of the plane (default: 1.0)
         :param height: height of the plane (default: 1.0)
         :param width_segments: number of segments along the width (default: 1)

@@ -20,6 +20,8 @@ class Cone(Object3D, component='cone.js'):
         This element is based on Three.js' `ConeGeometry <https://threejs.org/docs/index.html#api/en/geometries/ConeGeometry>`_ object.
         It is used to create a cone-shaped mesh.
 
+        *Added in version 3.19.0*
+
         :param radius: radius of the base (default: 1.0)
         :param height: height of the cone (default: 1.0)
         :param radial_segments: number of horizontal segments (default: 8)
