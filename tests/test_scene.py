@@ -191,6 +191,14 @@ def test_rotation_matrix_from_euler():
     R = Rz @ Ry @ Rx
     assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)
 
+    axis = {'x': Rx, 'y': Ry, 'z': Rz}
+    for order in ['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx']:
+        a, b, c = order
+        extrinsic = Object3D.rotation_matrix_from_euler(omega, phi, kappa, order)  # type: ignore[arg-type]
+        intrinsic = Object3D.rotation_matrix_from_euler(omega, phi, kappa, order.upper())  # type: ignore[arg-type]
+        assert np.allclose(extrinsic, axis[c] @ axis[b] @ axis[a]), f'{order} rotates about world axes'
+        assert np.allclose(intrinsic, axis[a] @ axis[b] @ axis[c]), f'{order.upper()} rotates about object axes'
+
 
 def test_object_creation_via_context(screen: Screen):
     scene = None
@@ -550,54 +558,29 @@ def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
     screen.wait_for(lambda: hits == ['ground'])
 
 
-def test_rotation_matrix_from_euler_all_orders():
-    rx, ry, rz = 0.4, -0.3, 0.5
-    Rx = np.array([[1, 0, 0], [0, np.cos(rx), -np.sin(rx)], [0, np.sin(rx), np.cos(rx)]])
-    Ry = np.array([[np.cos(ry), 0, np.sin(ry)], [0, 1, 0], [-np.sin(ry), 0, np.cos(ry)]])
-    Rz = np.array([[np.cos(rz), -np.sin(rz), 0], [np.sin(rz), np.cos(rz), 0], [0, 0, 1]])
-    axis = {'x': Rx, 'y': Ry, 'z': Rz}
-    default = Object3D.rotation_matrix_from_euler(rx, ry, rz)
-    assert np.allclose(default, Rz @ Ry @ Rx), 'default order keeps the legacy behavior'
-    for a, b, c in ['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx']:
-        extrinsic = Object3D.rotation_matrix_from_euler(rx, ry, rz, a + b + c)  # type: ignore[arg-type]
-        intrinsic = Object3D.rotation_matrix_from_euler(rx, ry, rz, (a + b + c).upper())  # type: ignore[arg-type]
-        assert np.allclose(extrinsic, axis[c] @ axis[b] @ axis[a]), f'{a + b + c} rotates about world axes'
-        assert np.allclose(intrinsic, axis[a] @ axis[b] @ axis[c]), f'{(a + b + c).upper()} rotates about object axes'
-
-
-def test_polyline(screen: Screen):
+def test_geometry_primitives(screen: Screen):
     scene = None
-    line_obj = None
+    objects = {}
 
     @ui.page('/')
     def page():
-        nonlocal scene, line_obj
+        nonlocal scene
         with ui.scene() as scene:
-            line_obj = scene.polyline(
-                points=[[0, 0, 0], [1, 0, 0], [1, 1, 0]],
-                colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-                dashed=True,
-            )
+            objects['PlaneGeometry'] = scene.plane()
+            objects['ConeGeometry'] = scene.cone()
+            objects['TorusGeometry'] = scene.torus()
+            objects['CapsuleGeometry'] = scene.capsule()
+            objects['LatheGeometry'] = scene.lathe(points=[[0, 0], [0.5, 0.5], [0, 1]])
+            objects['polyline'] = scene.polyline(points=[[0, 0, 0], [1, 0, 0], [1, 1, 0]],
+                                                 colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                                                 dashed=True)
 
     screen.open('/')
-    screen.wait_for_js(
-        f'getElement({scene.id}).objects.get("{line_obj.id}")?.mesh?.material.type', 'LineDashedMaterial')
-    assert screen.selenium.execute_script(
-        f'return getElement({scene.id}).objects.get("{line_obj.id}").mesh.material.vertexColors')
-
-
-def test_lathe(screen: Screen):
-    scene = None
-    obj = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, obj
-        with ui.scene() as scene:
-            obj = scene.lathe(points=[[0, 0], [0.5, 0.5], [0, 1]], segments=8)
-
-    screen.open('/')
-    screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', 'LatheGeometry')
+    for geometry, obj in objects.items():
+        if geometry != 'polyline':
+            screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', geometry)
+    material = f'getElement({scene.id}).objects.get("{objects["polyline"].id}")?.mesh?.material'
+    screen.wait_for_js(f'[{material}?.type, {material}?.vertexColors]', ['LineDashedMaterial', True])
 
 
 @pytest.mark.parametrize('points,colors,message', [
@@ -611,9 +594,8 @@ def test_polyline_rejects_invalid_input(points: list[list[float]], colors: list[
 
 
 @pytest.mark.parametrize('polar_grid,expected_args', [
-    ((1.0, 8, 5), (1.0, 8, 5, 64)),
-    ((1.0, 8, 5, 128), (1.0, 8, 5, 128)),
     ((1.0, 0, 5), (1.0, 0, 5, 64)),
+    ((1.0, 8, 5, 128), (1.0, 8, 5, 128)),
 ])
 def test_polar_grid(screen: Screen, polar_grid: tuple, expected_args: tuple):
     scene = None
@@ -631,44 +613,21 @@ def test_polar_grid(screen: Screen, polar_grid: tuple, expected_args: tuple):
                        f'(scene_{scene.html_id}.getObjectsByProperty("type", "PolarGridHelper")[0])', True)
 
 
-@pytest.mark.parametrize('factory_name,three_geometry', [
-    ('plane', 'PlaneGeometry'),
-    ('cone', 'ConeGeometry'),
-    ('torus', 'TorusGeometry'),
-    ('capsule', 'CapsuleGeometry'),
-])
-def test_geometry_primitive(screen: Screen, factory_name: str, three_geometry: str):
-    """Smoke test that each primitive dispatches to the expected Three.js geometry class.
-
-    Catches silent removals or renames in future Three.js upgrades.
-    """
+def test_rotate_with_uppercase_order_matches_three_euler(screen: Screen):
+    orders: list[Literal['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX']] = ['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX']
     scene = None
-    obj = None
+    boxes = {}
 
     @ui.page('/')
     def page():
-        nonlocal scene, obj
+        nonlocal scene
         with ui.scene() as scene:
-            obj = getattr(scene, factory_name)()
+            for order in orders:
+                boxes[order] = scene.box().rotate(0.4, -0.3, 0.5, order=order)
 
-    screen.open('/')
-    screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', three_geometry)
-
-
-@pytest.mark.parametrize('order', ['XYZ', 'YXZ', 'ZYX'])
-def test_rotate_with_uppercase_order_matches_three_euler(screen: Screen, order: Literal['XYZ', 'YXZ', 'ZYX']):
-    scene = None
-    box = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene, box
-        with ui.scene() as scene:
-            box = scene.box().rotate(0.4, -0.3, 0.5, order=order)
-
-    def matrices() -> tuple[list[float], list[float]] | None:
+    def matrices(order: str) -> tuple[list[float], list[float]] | None:
         return screen.selenium.execute_script(
-            f'const mesh = getElement({scene.id}).objects.get("{box.id}")?.mesh;'
+            f'const mesh = getElement({scene.id}).objects.get("{boxes[order].id}")?.mesh;'
             'if (!mesh) return null;'
             'const Euler = mesh.rotation.constructor, Matrix4 = mesh.matrix.constructor;'
             'const actual = new Matrix4().makeRotationFromEuler(mesh.rotation);'
@@ -677,7 +636,8 @@ def test_rotate_with_uppercase_order_matches_three_euler(screen: Screen, order: 
         )
 
     screen.open('/')
-    screen.wait_for(lambda: (m := matrices()) is not None and np.allclose(m[0], m[1], atol=1e-6))
+    for order in orders:
+        screen.wait_for(lambda order=order: (m := matrices(order)) is not None and np.allclose(m[0], m[1], atol=1e-6))
 
 
 def test_scene_initializes_when_created_hidden(screen: Screen):
