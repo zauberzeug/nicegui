@@ -588,9 +588,8 @@ def test_geometry_primitives(screen: Screen):
     ([[0, 0, 0], [1, 0, 0]], [[1, 0, 0]], 'colors length'),
 ])
 def test_polyline_rejects_invalid_input(points: list[list[float]], colors: list[list[float]] | None, message: str):
-    from nicegui.elements.scene.objects import Polyline
     with pytest.raises(ValueError, match=message):
-        Polyline(points=points, colors=colors)
+        ui.scene.polyline(points=points, colors=colors)
 
 
 @pytest.mark.parametrize('polar_grid,expected_args', [
