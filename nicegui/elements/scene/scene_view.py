@@ -66,6 +66,9 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._props.add_rename('scene_id', 'scene-id')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:
+        return event_type == 'init'
+
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
