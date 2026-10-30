@@ -25,5 +25,4 @@ class Capsule(Object3D, component='capsule.js'):
         :param height_segments: number of segments along the cylindrical section (default: 1)
         :param wireframe: whether to display the capsule as a wireframe (default: `False`)
         """
-        super().__init__(radius, height, cap_segments, radial_segments, height_segments,
-                         wireframe=wireframe)
+        super().__init__(radius, height, cap_segments, radial_segments, height_segments, wireframe=wireframe)
