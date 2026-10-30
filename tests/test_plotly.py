@@ -1,8 +1,14 @@
+import base64
+from datetime import datetime, timedelta
+
 import numpy as np
 import plotly.graph_objects as go
+import pytest
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_plotly(screen: Screen):
@@ -85,3 +91,226 @@ def test_run_plot_method_awaited(screen: Screen):
     screen.open('/')
     screen.click('Extend')
     screen.should_contain('result: None')
+
+
+def _transmitted(plot: ui.plotly, key: str) -> list:
+    """A value array of the first trace as the client receives it (NumPy arrays travel Plotly's binary ``bdata``)."""
+    values = plot.props['options']['data'][0][key]
+    if isinstance(values, dict) and 'bdata' in values:
+        return np.frombuffer(base64.b64decode(values['bdata']), dtype=values['dtype']).tolist()
+    return list(values)
+
+
+async def test_resampling_limits_transmitted_points(user: User):
+    plots: dict[str, ui.plotly] = {}
+
+    @ui.page('/')
+    def page():
+        x = np.arange(10_000)
+        y = np.sin(x / 100)
+        plots['figure'] = ui.plotly(go.Figure(go.Scattergl(x=x, y=y, mode='lines')), n_samples=100)
+        plots['dict'] = ui.plotly({'data': [{'type': 'scatter', 'x': x.tolist(), 'y': y.tolist()}]}, n_samples=100)
+
+    await user.open('/')
+    for plot in plots.values():
+        assert len(_transmitted(plot, 'x')) == 100, 'only n_samples points should be sent to the client'
+        assert len(_transmitted(plot, 'y')) == 100
+
+    user.find(ui.plotly).trigger('plotly_relayout', args={'xaxis.range[0]': 1000, 'xaxis.range[1]': 1050})
+    for plot in plots.values():
+        assert _transmitted(plot, 'x') == list(range(1000, 1051)), \
+            'the full dataset should be retained on the server, for both figure types'
+
+
+async def test_resampling_on_zoom_and_reset(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange(10_000)
+        y = np.sin(x / 100)
+        plots.append(ui.plotly({'data': [{'type': 'scatter', 'x': x.tolist(), 'y': y.tolist()}]}, n_samples=100))
+
+    await user.open('/')
+
+    def transmitted_x() -> list:
+        return _transmitted(plots[0], 'x')
+
+    user.find(ui.plotly).trigger('plotly_relayout', args={'xaxis.range[0]': 1000, 'xaxis.range[1]': 1050})
+    assert transmitted_x() == list(range(1000, 1051)), 'zooming below n_samples points should show full resolution'
+
+    user.find(ui.plotly).trigger('plotly_relayout', args={'xaxis.range[0]': 0, 'xaxis.range[1]': 5000})
+    xs = transmitted_x()
+    assert len(xs) == 100, 'zoomed range with more than n_samples points should be resampled'
+    assert xs[0] == 0 and xs[-1] == 5000, 'resampling should keep the first and last point of the visible range'
+
+    user.find(ui.plotly).trigger('plotly_relayout', args={'xaxis.autorange': True})
+    xs = transmitted_x()
+    assert len(xs) == 100
+
+
+async def test_resampling_preserves_datetime_x(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        start = datetime(2020, 1, 1)
+        x = [start + timedelta(hours=i) for i in range(10_000)]  # native datetimes, the common time-axis form
+        y = np.sin(np.arange(10_000) / 100).tolist()
+        plots.append(ui.plotly({'data': [{'type': 'scatter', 'x': x, 'y': y}]}, n_samples=100))
+
+    await user.open('/')  # must not raise: datetime x used to crash the float64 coercion
+    xs = _transmitted(plots[0], 'x')
+    assert len(xs) == 100
+    assert all(isinstance(value, datetime) for value in xs), 'datetime x must survive resampling, not become floats'
+    assert xs[0] == datetime(2020, 1, 1) and xs[-1] == datetime(2020, 1, 1) + timedelta(hours=9_999)
+
+
+async def test_resampling_does_not_mutate_caller_figure(user: User):
+    x = np.arange(10_000)
+    y = np.sin(x / 100)
+    dict_figure = {'data': [{'type': 'scatter', 'x': x.tolist(), 'y': y.tolist()}]}
+    go_figure = go.Figure(go.Scattergl(x=x, y=y, mode='lines'))
+
+    @ui.page('/')
+    def page():
+        ui.plotly(dict_figure, n_samples=100)
+        ui.plotly(go_figure, n_samples=100)
+
+    await user.open('/')
+    assert len(dict_figure['data'][0]['x']) == 10_000, 'the caller-provided dict figure must not be mutated'
+    assert len(go_figure.data[0].x) == 10_000, 'the caller-provided go.Figure must not be mutated'
+
+
+async def test_resampling_handles_tiny_n_samples(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange(10_000)
+        y = np.sin(x / 100)
+        plots.append(ui.plotly({'data': [{'type': 'scatter', 'x': x.tolist(), 'y': y.tolist()}]}, n_samples=2))
+
+    await user.open('/')  # must not raise: tsdownsample panics for n_out < 3, so it is guarded
+    xs = _transmitted(plots[0], 'x')
+    assert xs == [0, 9999], 'n_samples below 3 should keep the endpoints'
+
+
+async def test_resampling_on_combined_range_key(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange(10_000)
+        y = np.sin(x / 100)
+        plots.append(ui.plotly({'data': [{'type': 'scatter', 'x': x.tolist(), 'y': y.tolist()}]}, n_samples=100))
+
+    await user.open('/')
+    # some Plotly relayout payloads use the combined "xaxis.range" list instead of split range[0]/range[1] keys
+    user.find(ui.plotly).trigger('plotly_relayout', args={'xaxis.range': [1000, 1050]})
+    xs = _transmitted(plots[0], 'x')
+    assert xs == list(range(1000, 1051)), 'the combined range key should drive resampling'
+
+
+async def test_resampling_numeric_string_and_missing_x(user: User):
+    plots: dict[str, ui.plotly] = {}
+
+    @ui.page('/')
+    def page():
+        y = np.sin(np.arange(10_000) / 100).tolist()
+        # numeric strings must be treated as numbers, not parsed as calendar years
+        plots['strings'] = ui.plotly({'data': [{'type': 'scatter', 'x': [str(i) for i in range(10_000)], 'y': y}]},
+                                     n_samples=100)
+        # None entries in x must be dropped, not kept as a bogus timestamp
+        x_gap = [*range(5_000), None, *range(5_001, 10_000)]
+        plots['gap'] = ui.plotly({'data': [{'type': 'scatter', 'x': x_gap, 'y': y}]}, n_samples=100)
+
+    await user.open('/')
+    xs = _transmitted(plots['strings'], 'x')
+    assert len(xs) == 100 and xs[0] == '0' and xs[-1] == '9999', 'numeric strings should resample as numbers'
+    gap_xs = _transmitted(plots['gap'], 'x')
+    assert None not in gap_xs, 'missing (None) x values should be dropped, not kept as a sentinel'
+
+
+def test_resampling_keeps_zoomed_viewport(screen: Screen):
+    @ui.page('/')
+    def page():
+        x = np.arange(10_000)
+        figure = go.Figure(go.Scatter(x=x, y=np.sin(x / 100))).update_layout(xaxis_range=[0, 10_000])
+        ui.plotly(figure, n_samples=100)
+
+    screen.open('/')
+    screen.wait(1)
+    drag_area = screen.selenium.find_element(By.CSS_SELECTOR, '.js-plotly-plot .nsewdrag')
+    ActionChains(screen.selenium).move_to_element(drag_area).click_and_hold().move_by_offset(100, 0).release().perform()
+    screen.wait(1)
+    x_range = screen.selenium.execute_script("return document.querySelector('.js-plotly-plot').layout.xaxis.range")
+    assert x_range[1] - x_range[0] < 10_000, 'the resampled update should not reset the zoom to the initial layout range'
+
+
+async def test_resampling_keeps_nanosecond_datetimes_as_dates(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange('2020-01-01', '2020-04-10', dtype='datetime64[D]').astype('datetime64[ns]')
+        plots.append(ui.plotly({'data': [{'type': 'scatter', 'x': x, 'y': np.arange(len(x))}]}, n_samples=10))
+
+    await user.open('/')
+    assert str(plots[0].props['options']['data'][0]['x'][0]).startswith('2020-01-01')
+
+
+@pytest.mark.parametrize('attribute, values', [
+    ('customdata', list(range(1000))),
+    ('text', list(range(1000))),
+    ('text', ['zero', 'one', 'two']),
+    ('selectedpoints', [1]),
+    ('marker.color', list(range(1000))),
+    ('marker.size', list(range(1000))),
+    ('hoverlabel.font.size', list(range(1000))),
+    ('error_y.array', list(range(1000))),
+])
+async def test_resampling_skips_traces_with_per_point_arrays(user: User, attribute: str, values: list):
+    plots: dict[str, ui.plotly] = {}
+
+    @ui.page('/')
+    def page():
+        x = np.arange(1000)
+        trace: dict = {'type': 'scatter', 'x': x.tolist(), 'y': x.tolist()}
+        *groups, key = attribute.split('.')
+        target = trace
+        for group in groups:
+            target = target.setdefault(group, {})
+        target[key] = values
+        plots['dict'] = ui.plotly({'data': [trace]}, n_samples=100)
+        plots['plain'] = ui.plotly({'data': [{'type': 'scatter', 'x': x.tolist(), 'y': x.tolist()}]}, n_samples=100)
+
+    await user.open('/')
+    assert len(_transmitted(plots['plain'], 'x')) == 100
+    assert _transmitted(plots['dict'], 'x') == list(range(1000)), 'per-point arrays would desync from resampled points'
+
+
+async def test_resampling_ignores_scalars_and_colorscale(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange(1000).tolist()
+        trace = {'type': 'scatter', 'x': x, 'y': x, 'text': 'label', 'selectedpoints': [],
+                 'marker': {'color': 'red', 'size': 5, 'colorscale': [[0, 'blue'], [1, 'red']]}}
+        plots.append(ui.plotly({'data': [trace]}, n_samples=100))
+
+    await user.open('/')
+    assert len(_transmitted(plots[0], 'x')) == 100
+
+
+async def test_resampling_accepts_zero_dimensional_numpy_attributes(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange(1000)
+        plots.append(ui.plotly(go.Figure(go.Scatter(x=x, y=x, text=np.array('label'))), n_samples=100))
+
+    await user.open('/')
+    assert len(_transmitted(plots[0], 'x')) == 100
