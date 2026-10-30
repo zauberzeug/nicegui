@@ -27,8 +27,6 @@ class LineAnchorElement(Element):
         on_anchor_change: Handler[CodeMirrorAnchorChangeEventArguments] | None = None,
         **kwargs: Any,
     ) -> None:
-        # NOTE: validate before super().__init__ registers the element, so a rejected argument
-        # does not leave a half-built element behind in the element tree
         _validate(line_anchors or {})
         super().__init__(**kwargs)
         self._anchor_positions: dict[str, int] = {}

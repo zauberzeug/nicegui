@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_input(screen: Screen):
@@ -127,6 +127,26 @@ def test_validation_with_lagging_value_change_events(screen: Screen):
     element.send_keys('45678')  # keep typing after the error message arrived
     screen.should_contain('Still 2 characters missing')
     assert element.get_attribute('value') == '12345678'
+
+
+async def test_ui_on_exception_from_async_validation(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    async def check(_value):
+        raise RuntimeError('boom')
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+        field = ui.input('field', validation=check)
+        ui.button('validate', on_click=lambda: field.validate(return_result=False))
+
+    await user.open('/')
+    user.find('validate').click()
+    await asyncio.sleep(0.1)
+    assert len(seen) == 1 and 'boom' in str(seen[0])
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
 
 
 def test_input_with_multi_word_error_message(screen: Screen):

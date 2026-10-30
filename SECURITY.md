@@ -42,6 +42,12 @@ what the framework guarantees and what the application must do — while this li
   The margins do shrink as more IDs are issued, but realistic deployments stay far below either bound:
   at a billion IDs the collision probability is around 10^-19, and a blind guess against a million live sessions succeeds with probability around 10^-31.
   Assuming such an ID can simply be guessed is not a finding — a leak path, predictable generation, or a route that treats a public ID as authority **is**.
+- **Code in `examples/` and `website/`.**
+  Neither the examples nor the website with its documentation demos are part of the `nicegui` package.
+  They demonstrate one mechanism in the smallest runnable form and may intentionally omit hardening,
+  as the [security documentation](https://nicegui.io/documentation/section_security) explains under "Examples Are Starting Points".
+  A pattern that only becomes unsafe when an example or demo is copied and fed untrusted data is not a framework vulnerability;
+  feel free to suggest an improvement via a regular issue or pull request instead.
 
 If instead you have found a way **around** one of these protections —
 an escaping bypass, or a default `sanitize=True` path that still executes script —
@@ -56,6 +62,12 @@ so we can discuss and patch the issue in a secure workspace.
 If you cannot use GitHub, you can also send an email to: nicegui@zauberzeug.com.
 
 Please try to be as explicit as possible, describing all the steps and example code to reproduce the security issue.
+
+When filling out the advisory form:
+
+- Use the dedicated fields for severity (CVSS vector), weaknesses (CWEs) and affected versions instead of repeating them in the description.
+- Don't hard-wrap the description: GitHub renders every line break, so keep each paragraph on a single line.
+- If AI tools helped to find or write up the issue, please say so in the form. That's perfectly fine, we'd just like to know.
 
 We (the team at Zauberzeug) will review it thoroughly and get back to you.
 

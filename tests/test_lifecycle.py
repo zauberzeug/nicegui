@@ -6,7 +6,26 @@ import pytest
 import socketio
 
 from nicegui import Client, app, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
+
+
+async def test_ui_on_exception_from_async_connect_handler(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        async def on_connect():
+            raise RuntimeError('boom')
+
+        ui.context.client.on_connect(on_connect)
+
+    await user.open('/')
+    await asyncio.sleep(0.1)
+    assert len(seen) == 1 and 'boom' in str(seen[0])
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
 
 
 def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):

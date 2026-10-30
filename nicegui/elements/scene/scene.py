@@ -127,11 +127,13 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self.stack: list[Object3D | SceneObject] = [SceneObject()]
         self._batched_calls: list[list[Any]] | None = None
         self._initialized_event = asyncio.Event()
+        self._settled_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = click_events[:]
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)
+        self.on('init-failed', self._settled_event.set)
         self.on('click3d', self._handle_click)
         self.on('dragstart', self._handle_drag)
         self.on('dragend', self._handle_drag)
@@ -144,6 +146,9 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
+
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:
+        return event_type == 'init'
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -195,13 +200,14 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         return attribute
 
     def _handle_init(self) -> None:
-        if self._initialized_event.is_set():
-            # a second init event implies a JS remount (e.g. after WebGL context loss) with an empty scene graph;
-            # re-send parents before children (dict order can deviate after attach())
-            with self._batch_calls():
-                for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
-                    obj._resend()  # pylint: disable=protected-access
         self._initialized_event.set()
+        self._settled_event.set()
+        # the client starts with an empty scene graph, both on the first init (method calls issued before the component
+        # was mounted are dropped, see `run_method`) and after a JS remount (e.g. after WebGL context loss);
+        # re-send parents before children (dict order can deviate after attach())
+        with self._batch_calls():
+            for obj in sorted(self.objects.values(), key=lambda obj: len(obj.ancestors)):
+                obj._resend()  # pylint: disable=protected-access
         self.move_camera(duration=0)
 
     @contextmanager
@@ -221,6 +227,9 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
             self.run_method('run_methods', calls)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        # the client might not be mounted yet (e.g. in an inactive tab panel); `_handle_init` sends the full state
+        if not self._initialized_event.is_set():
+            return NullResponse()
         if self._batched_calls is not None:
             self._batched_calls.append([name, *args])
             return NullResponse()
@@ -231,8 +240,12 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
 
         *Updated in version 3.17.0: Awaiting scene initialization cancels the awaiting task
         when the scene is deleted, e.g. because the client disconnected.*
+
+        *Updated in version 3.19.0: Raises a ``RuntimeError`` if the browser could not create a WebGL renderer.*
         """
-        await self._wait_for(self._initialized_event)
+        await self._wait_for(self._settled_event)
+        if not self._initialized_event.is_set():
+            raise RuntimeError('Could not create WebGL renderer.')
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(

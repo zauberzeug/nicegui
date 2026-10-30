@@ -251,6 +251,64 @@ async def test_ui_on_exception(user: User, caplog: pytest.LogCaptureFixture):
     caplog.records.clear()
 
 
+@pytest.mark.parametrize('caught', [False, True])
+async def test_awaited_event_call_reports_once(user: User, caplog: pytest.LogCaptureFixture, caught: bool):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        event: Event[[]] = Event()
+
+        async def subscriber():
+            raise RuntimeError('boom')
+
+        event.subscribe(subscriber)
+        ui.on_exception(seen.append)
+
+        async def call():
+            try:
+                await event.call()
+            except RuntimeError:
+                if not caught:
+                    raise
+
+        ui.button('fire', on_click=call)
+
+    await user.open('/')
+    user.find('fire').click()
+    await asyncio.sleep(0.1)
+    expected = 0 if caught else 1
+    assert len(seen) == expected, 'the exception should be reported once, or not at all if the caller catches it'
+    assert len(caplog.records) == expected
+    caplog.records.clear()
+
+
+@pytest.mark.parametrize('is_async', [False, True], ids=['sync', 'async'])
+async def test_ui_on_exception_from_subscriber_when_emitted_outside_ui(user: User, caplog: pytest.LogCaptureFixture,
+                                                                       is_async: bool):
+    seen: list[Exception] = []
+    event: Event[[]] = Event()
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        def sync_subscriber():
+            raise RuntimeError('boom')
+
+        async def async_subscriber():
+            raise RuntimeError('boom')
+
+        event.subscribe(async_subscriber if is_async else sync_subscriber)
+
+    await user.open('/')
+    app.timer(0.01, event.emit, once=True)  # no UI context, like a data model would emit
+    await asyncio.sleep(0.1)
+    assert len(seen) == 1 and 'boom' in str(seen[0]), "the subscriber's page should see the exception"
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
+
+
 async def test_failing_exception_handler_does_not_skip_other_handlers(user: User, caplog: pytest.LogCaptureFixture):
     page_exceptions: list[Exception] = []
     app_exceptions: list[Exception] = []
@@ -281,10 +339,13 @@ async def test_failing_exception_handler_does_not_skip_other_handlers(user: User
 
 async def test_exception_after_deleting_the_handler_container(user: User, caplog: pytest.LogCaptureFixture):
     exceptions: list[Exception] = []
+    page_exceptions: list[Exception] = []
     app.on_exception(exceptions.append)
 
     @ui.page('/')
     def page():
+        ui.on_exception(page_exceptions.append)
+
         async def slow_handler():
             await asyncio.sleep(0.1)
             raise ValueError('real error')
@@ -300,6 +361,7 @@ async def test_exception_after_deleting_the_handler_container(user: User, caplog
     user.find('delete').click()
     await asyncio.sleep(0.3)
     assert [type(e) for e in exceptions] == [ValueError]
+    assert [type(e) for e in page_exceptions] == [ValueError], 'the page still exists and should see the exception'
     assert len(caplog.records) == 1 and 'real error' in caplog.records[0].message
     caplog.records.pop(0)
 

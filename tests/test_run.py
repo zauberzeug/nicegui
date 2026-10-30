@@ -2,10 +2,14 @@ import asyncio
 import multiprocessing
 import multiprocessing.forkserver
 import os
+import subprocess
+import sys
 import time
 from collections.abc import Callable, Generator
 from concurrent.futures.process import BrokenProcessPool
+from pathlib import Path
 from pickle import PicklingError
+from textwrap import dedent
 
 import pytest
 
@@ -196,3 +200,25 @@ async def test_warning_reflects_pool_not_later_setting_change(caplog):
     run.process_pool_start_method = 'spawn'  # too late, the pool is already built
     assert await run.cpu_bound(good_function)
     assert 'process_pool_start_method' in caplog.text
+
+
+@pytest.mark.parametrize('state', ['open', 'missing', 'closed'])
+def test_stop_and_exit_with_unusable_standard_streams(tmp_path: Path, state: str):
+    result = subprocess.run([sys.executable, '-c', dedent('''\
+        import sys
+        from nicegui import core
+
+        for name in ('stdout', 'stderr'):
+            stream = None if sys.argv[1] == 'missing' else open(name, 'w', encoding='utf-8')
+            if stream is not None:
+                stream.write('pending output')
+                if sys.argv[1] == 'closed':
+                    stream.close()
+            setattr(sys, name, stream)
+
+        core.stop_and_exit()
+    '''), state], cwd=tmp_path, capture_output=True, text=True, timeout=30, check=False)
+    assert result.returncode == 0
+    if state == 'open':
+        assert (tmp_path / 'stdout').read_text() == 'pending output'
+        assert (tmp_path / 'stderr').read_text() == 'pending output'

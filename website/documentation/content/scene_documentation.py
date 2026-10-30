@@ -170,6 +170,7 @@ def point_clouds() -> None:
 @doc.demo('Wait for Initialization', '''
     You can wait for the scene to be initialized with the `initialized` method.
     This demo animates a camera movement after the scene has been fully loaded.
+    If the browser cannot create a WebGL renderer, `initialized` raises a `RuntimeError`.
 ''')
 async def wait_for_init() -> None:
     # @ui.page('/')
@@ -411,10 +412,12 @@ def materials_for_composite_objects() -> None:
     ui.markdown('''
         There is also an optional `created()` hook which is called right after the mesh has been built.
 
-        Note that NiceGUI recovers from a lost WebGL context by re-creating every object
-        from its constructor arguments (`self.args`) and built-in state like position, rotation and material.
-        State changed only via `run_method` is lost in that case —
-        keep `self.args` up to date in mutating methods so re-created objects reflect the latest state.
+        Note that NiceGUI sends every object to the client when the scene is initialized
+        and re-creates it after a lost WebGL context,
+        both from its constructor arguments (`self.args`) and built-in state like position, rotation and material.
+        State changed only via `run_method` is not included,
+        and calls made before the scene is initialized are dropped —
+        keep `self.args` up to date in mutating methods so created objects reflect the latest state.
     ''')
 
 

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 from fastapi import Request
-from starlette.routing import Match, Route
+from starlette.routing import Match
 
 from . import core, json
 from .context import context
@@ -83,6 +83,7 @@ class SubPagesRouter:
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
             current_path_string = json.dumps(self.current_path)
+            # NOTE: the user simulation recognizes this JavaScript in `User._simulate_javascript`
             client.run_javascript(f'''
                 const fullPath = (window.path_prefix || '') + {current_path_string};
                 if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
@@ -98,10 +99,19 @@ class SubPagesRouter:
         client_func = \
             getattr(client_route.endpoint, '__func__', client_route.endpoint) if client_route is not None else None
 
-        other_routes = [route for route in core.app.routes if isinstance(route, Route)]
+        other_routes = list(core.app._iter_http_routes())  # pylint: disable=protected-access
         parsed = urlsplit(path)  # ignore query string and fragment which would prevent route matching
         if parsed.netloc:
             return False  # a protocol-relative link like "//host/path" points to another host, not to one of our routes
+        scope = {'type': 'http', 'method': 'GET', 'path': parsed.path, 'headers': client.request.scope['headers']}
+        # like Starlette's router, redirect a path that no route matches to its twin with toggled trailing slash;
+        # the root has no twin (and arrives as an empty path for a link to the bare path prefix)
+        if (
+            core.app.router.redirect_slashes and
+            parsed.path not in {'', '/'} and
+            all(route.matches(scope)[0] == Match.NONE for route in core.app.routes)
+        ):
+            scope['path'] = parsed.path.rstrip('/') if parsed.path.endswith('/') else parsed.path + '/'
         for other_route in other_routes:
             other_func = getattr(other_route.endpoint, '__func__', other_route.endpoint)
             if (
@@ -112,7 +122,7 @@ class SubPagesRouter:
             ):
                 continue  # client route and other route point to the same page builder, so they don't count
 
-            match, _ = other_route.matches({'type': 'http', 'path': parsed.path, 'method': 'GET'})
+            match, _ = other_route.matches(scope)
             if match == Match.FULL:
                 return True
 

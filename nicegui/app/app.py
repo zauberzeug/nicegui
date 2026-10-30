@@ -11,13 +11,15 @@ import urllib
 from collections.abc import Callable, Iterator
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import routing as fastapi_routing
 from fastapi.responses import FileResponse
+from starlette.routing import Route
 
 from .. import background_tasks, binding, core, helpers
 from ..client import Client
-from ..context import context
 from ..elements.mixins.color_elements import QUASAR_COLORS
 from ..logging import log
 from ..native import NativeConfig
@@ -178,9 +180,10 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
-        if Slot.get_stack():  # don't enter script mode by accessing `context.slot_stack`
+        for slot in reversed(Slot.get_stack()):  # don't enter script mode by accessing `context.slot_stack`
             with contextlib.suppress(RuntimeError):  # the slot's parent element or its client may have been deleted
-                context.client.handle_exception(exception)
+                slot.parent.client.handle_exception(exception)
+                break
 
         for handler in self._exception_handlers:
             name = getattr(handler, '__name__', handler)
@@ -395,6 +398,18 @@ class App(FastAPI):
     def remove_route(self, path: str) -> None:
         """Remove routes with the given path."""
         self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+
+    def _iter_http_routes(self) -> Iterator[Any]:
+        """Iterate over all HTTP routes, including those of included routers.
+
+        FastAPI 0.141+ keeps an included router as a single lazy entry in ``routes``.
+        This method looks inside and yields its routes with their full paths.
+        """
+        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
+        if iter_route_contexts is None:
+            yield from (route for route in self.routes if isinstance(route, Route))
+        else:
+            yield from (route for route in iter_route_contexts(self.routes) if isinstance(route.original_route, Route))
 
     def _single_use_guard(self, path: str) -> Callable[[], None]:
         """Return a callable that lets exactly one request pass and removes the route behind it."""

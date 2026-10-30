@@ -313,6 +313,31 @@ def test_async_nested_sub_pages(screen: Screen):
     assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
 
 
+def test_nested_sub_pages_rebuilt_after_navigation(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/users': users})
+
+    def users():
+        ui.link('Go to user 43', '/users/43')
+        ui.button('Rebuild', on_click=details.refresh)
+        details()
+
+    @ui.refreshable
+    def details():
+        ui.sub_pages({'/{id}': lambda id: ui.label(f'User {id}')})
+
+    screen.open('/users/42')
+    screen.should_contain('User 42')
+
+    screen.click('Go to user 43')
+    screen.should_contain('User 43')
+
+    screen.click('Rebuild')
+    screen.should_contain('User 43')
+
+
 def test_parameterized_sub_pages(screen: Screen):
     calls = {'index': 0, 'main': 0}
 
@@ -548,6 +573,50 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     screen.click('Go to sub')
     screen.should_contain('sub-content')
     assert screen.current_path.rstrip('/') == '/foo/sub'
+
+
+@pytest.mark.parametrize('root_path', ['/admin', '/admin/', '/admin;v1'])
+def test_navigating_to_path_outside_root_path(screen: Screen, root_path: str):
+    # regression test for https://github.com/zauberzeug/nicegui/issues/6385
+    @ui.page('/')
+    def index():
+        ui.label('Index page')
+
+    @ui.page('/other')
+    def other():
+        ui.label('Other page')
+
+    page_path = root_path.rstrip('/')
+
+    @ui.page(page_path)
+    @ui.page(page_path + '/{_:path}')
+    def admin():
+        ui.sub_pages({'/': overview, '/users': users}, root_path=root_path)
+        ui.link('Go to index', '/')
+        ui.link('Go to other', '/other')
+
+    def overview():
+        ui.label('Admin overview')
+
+    def users():
+        ui.sub_pages({'/{id}': lambda id: ui.label(f'User {id}')})
+
+    screen.open(page_path + '/users/42')
+    screen.should_contain('User 42')
+
+    screen.open(root_path)
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to index')
+    screen.should_contain('Index page')
+    screen.should_not_contain('Admin overview')
+
+    screen.open(root_path)
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to other')
+    screen.should_contain('Other page')
+    screen.should_not_contain('Admin overview')
 
 
 @pytest.mark.parametrize('show_404', [True, False])
@@ -1332,15 +1401,15 @@ def test_navigate_from_root_page_to_other_page(screen: Screen):
     assert screen.current_path == '/other'
 
 
-@pytest.mark.xfail(reason='#6281: a link without trailing slash to a page registered as "/" on a prefixed APIRouter stays in the SPA')
-def test_navigate_from_sub_pages_to_api_router_page(screen: Screen):
-    router = APIRouter(prefix='/other')
+@pytest.mark.parametrize('router_prefix, include_prefix', [('/other', ''), ('', '/other')])
+def test_navigate_from_sub_pages_to_api_router_page(screen: Screen, router_prefix: str, include_prefix: str):
+    router = APIRouter(prefix=router_prefix)
 
     @router.page('/')
     def other_page():
         ui.label('Other')
 
-    app.include_router(router)
+    app.include_router(router, prefix=include_prefix)
 
     @ui.page('/')
     def index():
@@ -1352,7 +1421,7 @@ def test_navigate_from_sub_pages_to_api_router_page(screen: Screen):
 
     screen.click('Go to other page')
     screen.should_contain('Other')
-    assert screen.current_path == '/other'
+    assert screen.current_path == '/other/'
 
 
 @pytest.mark.parametrize('suffix', ['?x=1', '#section'])

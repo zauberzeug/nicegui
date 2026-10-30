@@ -52,7 +52,7 @@ class PageArguments:
     Automatically injected into sub-page builder functions when the parameter is annotated with ``PageArguments``.
     """
     path: str
-    '''Path from the request.'''
+    '''Matched sub-path, relative to this ``ui.sub_pages`` element (e.g., "/user/123").'''
     frame: SubPages
     '''Reference to the ``ui.sub_pages`` element currently executing this page.'''
     path_parameters: dict[str, str]
@@ -62,7 +62,12 @@ class PageArguments:
     data: dict[str, Any]
     '''Arbitrary data passed to the ``ui.sub_pages`` element.'''
     remaining_path: str = ''
-    '''Remaining path after the matched route (useful for wildcard routing).'''
+    '''Remaining path after the matched route (useful for wildcard routing).
+
+    ``path`` and ``remaining_path`` always add up to the path handled by this ``ui.sub_pages`` element,
+    so the root route ``/`` leaves no leading slash while any other route keeps it
+    (e.g. ``'/' + 'x/2/a'`` and ``'/sub' + '/x/2/a'``).
+    '''
 
     @classmethod
     def build_kwargs(cls, match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:

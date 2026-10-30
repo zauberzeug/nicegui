@@ -1,8 +1,10 @@
 import builtins
-import importlib
+import importlib.util
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from .dependencies import register_esm
 
 _LAZY_IMPORTS = {
     'context': ('.context', 'context'),
@@ -124,6 +126,7 @@ _LAZY_IMPORTS = {
     'tooltip': ('.elements.tooltip', 'Tooltip'),
     'tree': ('.elements.tree', 'Tree'),
     'upload': ('.elements.upload', 'Upload'),
+    'uplot': ('.elements.uplot', 'UPlot'),
     'video': ('.elements.video', 'Video'),
     'xterm': ('.elements.xterm', 'Xterm'),
     'clipboard': ('.functions.clipboard', None),
@@ -290,6 +293,7 @@ __all__ = [
     'tree',
     'update',
     'upload',
+    'uplot',
     'video',
     'xterm',
 ]
@@ -414,6 +418,7 @@ if TYPE_CHECKING:
     from .elements.tooltip import Tooltip as tooltip
     from .elements.tree import Tree as tree
     from .elements.upload import Upload as upload
+    from .elements.uplot import UPlot as uplot
     from .elements.video import Video as video
     from .elements.xterm import Xterm as xterm
     from .functions import clipboard
@@ -452,3 +457,8 @@ def __getattr__(name: str) -> object:
 # We scan the file system rather than `_LAZY_IMPORTS`, because some packages (e.g. sortable) have no `ui` name.
 for _dist in sorted(Path(__file__).parent.glob('elements/*/dist')):
     importlib.import_module(f'.elements.{_dist.parent.name}', package='nicegui')
+# The external highcharts package has no 'dist' dir here, so register its ESM module without importing it.
+if (_spec := importlib.util.find_spec('nicegui_highcharts')) and _spec.origin:
+    _dist = Path(_spec.origin).parent / 'dist'
+    if _dist.is_dir():
+        register_esm('nicegui-highcharts', _dist, max_time=_dist.stat().st_mtime)

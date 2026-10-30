@@ -489,6 +489,55 @@ def test_context_loss_recovery_restores_objects(screen: Screen):
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
 
 
+def test_initialized_raises_without_webgl(screen: Screen):
+    @ui.page('/')
+    async def page():
+        scene = ui.scene()
+        view = ui.scene_view(scene)
+        for element in (scene, view):
+            try:
+                await element.initialized()
+            except RuntimeError as e:
+                ui.label(f'{type(element).__name__}: {e}')
+
+    script = screen.selenium.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': '''
+        const getContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+            return type.startsWith('webgl') ? null : getContext.call(this, type, ...args);
+        };
+    '''})
+    screen.allowed_js_errors.append('Error creating WebGL context.')
+    try:
+        screen.open('/')
+        screen.should_contain('Scene: Could not create WebGL renderer.')
+        screen.should_contain('SceneView: Could not create WebGL renderer.')
+        for name in ('nicegui-scene', 'nicegui-scene-view'):
+            assert screen.find_by_class(name).text == 'Could not create WebGL renderer.', 'the fallback is visible'
+    finally:
+        screen.selenium.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', script)
+
+
+def test_objects_created_before_the_scene_is_mounted(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.tabs() as tabs:
+            one = ui.tab('one')
+            two = ui.tab('two')
+        with ui.tab_panels(tabs, value=one):
+            with ui.tab_panel(one):
+                ui.label('first panel')
+            with ui.tab_panel(two):
+                with ui.scene() as scene:
+                    scene.box().move(1, 2, 3).with_name('box')
+
+    screen.open('/')
+    screen.click('two')
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+
+
 def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
     hits: list[str] = []
 
@@ -632,3 +681,26 @@ def test_rotate_with_uppercase_order_matches_three_euler(screen: Screen, order: 
 
     screen.open('/')
     screen.wait_for(lambda: (m := matrices()) is not None and np.allclose(m[0], m[1], atol=1e-6))
+
+
+def test_scene_initializes_when_created_hidden(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene().classes('w-[200px] h-[100px]').set_visibility(False) as scene:
+            scene.box().move(1, 2, 3).with_name('box')
+        ui.button('Show', on_click=lambda: scene.set_visibility(True))
+
+    screen.open('/')
+    screen.click('Show')
+
+    # the init event is emitted once when the component mounts, so it must not be dropped while the scene is hidden;
+    # otherwise the server never re-sends the objects and the box never shows up
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
+
+    # resizing while hidden would have shrunk the canvas to 0x0,
+    # and without resizing once shown it would keep the default 400x300 from the props;
+    # wait for the size because the box can arrive from the hidden init before the Show update reaches the browser
+    screen.wait_for(lambda: screen.find_by_tag('canvas').size == {'width': 200, 'height': 100})

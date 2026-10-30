@@ -1,7 +1,9 @@
 import contextlib
 import gc
 import sys
+import weakref
 from copy import copy
+from typing import cast
 
 from starlette.routing import Route
 
@@ -38,9 +40,10 @@ def nicegui_reset_globals():
         if isinstance(route, Route) and (
             not route.path.startswith('/_nicegui/')
             or route.path.startswith('/_nicegui/auto/')
-            or route.path.startswith('/_nicegui/client/')
         ):
             app.remove_route(route.path)
+        if hasattr(route, 'original_router'):  # a router that FastAPI 0.141+ keeps as a single lazy route
+            app.routes.remove(route)
 
     app.openapi_schema = None
     app.middleware_stack = None
@@ -48,19 +51,22 @@ def nicegui_reset_globals():
     app.urls.clear()
     core.reset()
 
-    element_types: list[type[ui.element]] = [ui.element, *_find_all_subclasses(ui.element)]
-    default_classes = {t: copy(t._default_classes) for t in element_types}  # pylint: disable=protected-access
-    default_styles = {t: copy(t._default_style) for t in element_types}  # pylint: disable=protected-access
-    default_props = {t: copy(t._default_props) for t in element_types}  # pylint: disable=protected-access
+    # weak keys, so that the snapshot does not keep element classes of earlier simulations alive
+    element_defaults = weakref.WeakKeyDictionary({
+        # pylint: disable-next=protected-access
+        t: (copy(t._default_classes), copy(t._default_style), copy(t._default_props))
+        for t in cast(list[type[ui.element]], [ui.element, *_find_all_subclasses(ui.element)])
+    })
     default_markdown_extras = ui.markdown.default_extras[:]
+    exception_handlers = dict(app.exception_handlers)
 
     dependencies.importmap_overrides.clear()
-    Client.instances.clear()
     Slot.stacks.clear()
     Client.page_routes.clear()
     Client.shared_head_html = ''
     Client.shared_body_html = ''
     app.reset()
+    _delete_all_clients()
     background_tasks.reset()
     binding.reset()
     warnings.reset()
@@ -77,17 +83,32 @@ def nicegui_reset_globals():
         event.reset()
         run.reset()
 
-        for t in element_types:
-            t._default_classes = default_classes[t]  # pylint: disable=protected-access
-            t._default_style = default_styles[t]  # pylint: disable=protected-access
-            t._default_props = default_props[t]  # pylint: disable=protected-access
+        for t, (classes, style, props) in element_defaults.items():
+            t._default_classes = classes  # pylint: disable=protected-access
+            t._default_style = style  # pylint: disable=protected-access
+            t._default_props = props  # pylint: disable=protected-access
         ui.markdown.default_extras = default_markdown_extras
+        app.exception_handlers = exception_handlers
 
         for func in Client.page_routes:
             if not func.__module__.startswith('tests.'):
                 parts = func.__module__.split('.')
                 for i in range(len(parts)):
                     sys.modules.pop('.'.join(parts[:i+1]), None)  # remove the module and all its parents
+
+
+def _delete_all_clients() -> None:
+    """Delete all clients, so that their elements are marked as deleted and e.g. ``refreshable.prune()`` releases them.
+
+    Delete handlers are dropped beforehand, because the app has already shut down and they could not run properly.
+    This is a separate function, because in the suspended reset generator the loop variable would keep the last client alive.
+    """
+    try:
+        for client in list(Client.instances.values()):
+            client.delete_handlers.clear()
+            client.delete()
+    finally:
+        Client.instances.clear()  # so that one failing deletion does not break all following tests
 
 
 def _find_all_subclasses(cls: type) -> list[type]:

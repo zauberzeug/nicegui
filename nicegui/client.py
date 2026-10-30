@@ -434,8 +434,10 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                await core.app.storage.close_tab(tab_id_to_close)
-                self.delete()
+                self.delete()  # before closing the tab storage, so a reconnect in between cannot create a new one
+                # pylint: disable-next=protected-access
+                if all(client._pinned_tab_id != tab_id_to_close for client in Client.instances.values()):
+                    await core.app.storage.close_tab(tab_id_to_close)  # unless still in use, e.g. after a reload
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
@@ -447,11 +449,18 @@ class Client:
         """Forward an event to the corresponding element. (For internal use only.)"""
         with self:
             sender = self.elements.get(msg['id'])
-            if sender is not None and not sender.is_ignoring_events:
-                msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
-                if len(msg['args']) == 1:
-                    msg['args'] = msg['args'][0]
-                sender._handle_event(msg)  # pylint: disable=protected-access
+            if sender is None:
+                return
+            if sender.is_ignoring_events:
+                # the browser does not send the event type, so take it from the registered listener;
+                # a message is dispatched by its listener id, so this is also the type that will run
+                listener = sender._event_listeners.get(msg['listener_id'])  # pylint: disable=protected-access
+                if listener is None or not sender._handles_event_while_ignoring(listener.type):  # pylint: disable=protected-access
+                    return
+            msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
+            if len(msg['args']) == 1:
+                msg['args'] = msg['args'][0]
+            sender._handle_event(msg)  # pylint: disable=protected-access
 
     def handle_log_message(self, msg: dict) -> None:
         """Log a message from the client. (For internal use only.)"""
@@ -473,12 +482,13 @@ class Client:
                 result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
                 if helpers.should_await(result):
                     name = f'func with client {self.id} {func.__name__ if hasattr(func, "__name__") else func}'
-                    background_tasks.create(helpers.await_with_context(result, self), name=name)
+                    background_tasks.create(result, name=name, context=self)
         except Exception as e:
             core.app.handle_exception(e)
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
+        # NOTE: the rollback of a failed constructor in `Element.__init_subclass__` mirrors these steps
         element_list = list(elements)  # we need to iterate over the elements multiple times
         binding.remove(element_list)
         for element in element_list:
