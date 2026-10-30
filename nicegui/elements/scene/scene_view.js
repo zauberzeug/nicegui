@@ -59,6 +59,8 @@ export default {
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(this.$el);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
@@ -104,6 +106,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
+    this.resizeObserver?.disconnect();
   },
 
   methods: {
@@ -135,7 +138,7 @@ export default {
     },
     resize() {
       // skip while the element has no layout box (e.g. hidden), otherwise the canvas would end up 0x0;
-      // the initial size from the props is kept until the element is rendered
+      // the resize observer catches up once the element is shown
       if (!this.$el.getClientRects().length) return;
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);

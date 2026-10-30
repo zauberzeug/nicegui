@@ -528,7 +528,7 @@ def test_scene_initializes_when_created_hidden(screen: Screen):
     @ui.page('/')
     def page():
         nonlocal scene
-        with ui.scene(width=200, height=100).set_visibility(False) as scene:
+        with ui.scene().classes('w-[200px] h-[100px]').set_visibility(False) as scene:
             scene.box().move(1, 2, 3).with_name('box')
         ui.button('Show', on_click=lambda: scene.set_visibility(True))
 
@@ -539,6 +539,7 @@ def test_scene_initializes_when_created_hidden(screen: Screen):
     # otherwise the server never re-sends the objects and the box never shows up
     screen.wait_for_js(f'scene_{scene.html_id}.getObjectByName("box")?.position.x ?? null', 1)
 
-    # resizing while hidden would have shrunk the canvas to 0x0;
+    # resizing while hidden would have shrunk the canvas to 0x0,
+    # and without resizing once shown it would keep the default 400x300 from the props;
     # wait for the size because the box can arrive from the hidden init before the Show update reaches the browser
     screen.wait_for(lambda: screen.find_by_tag('canvas').size == {'width': 200, 'height': 100})
