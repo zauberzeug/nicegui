@@ -26,14 +26,13 @@ def main() -> int:
     errors = 0
     for filename in sys.argv[1:]:
         for node in ast.walk(ast.parse(Path(filename).read_text(encoding='utf-8'))):
-            if not isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) or not node.body:
+            if not isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
-            docstring = node.body[0]
-            if not isinstance(docstring, ast.Expr) or not isinstance(docstring.value, ast.Constant) \
-                    or not isinstance(docstring.value.value, str):
+            docstring = ast.get_docstring(node, clean=False)
+            if docstring is None:
                 continue
-            for error in check_text(f'{filename}.rst', docstring.value.value, CHECKERS):
-                print(f'{filename}:{docstring.lineno + error.line_no - 1}: {error.msg} ({error.checker_name})')
+            for error in check_text(f'{filename}.rst', docstring, CHECKERS):
+                print(f'{filename}:{node.body[0].lineno + error.line_no - 1}: {error.msg} ({error.checker_name})')
                 errors += 1
     return 1 if errors else 0
 

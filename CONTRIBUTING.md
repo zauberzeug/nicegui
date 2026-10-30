@@ -158,7 +158,7 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 - **Docstrings** are reStructuredText, not Markdown — they are rendered on the website and checked by pre-commit
 
   - Mark code with double backticks (``` ``value`` ```); single backticks would be rendered in italics
-  - Document parameters as `:param name: description`, in the order of the signature
+  - Document parameters as `:param name: description`; once a docstring lists parameters, it must list all of them in the order of the signature
   - Escape star arguments and trailing underscores (`:param \*\*kwargs:`, `:param filter\_:`) and use a raw docstring (`r"""..."""`) for them
 
 - **Async and background tasks**
