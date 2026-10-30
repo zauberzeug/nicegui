@@ -120,7 +120,7 @@ def _delete_all_clients() -> None:
         Client.instances.clear()  # so that one failing deletion does not break all following tests
 
 
-def _find_all_subclasses(cls: type) -> list[type]:
+def _find_all_subclasses(cls: type[object]) -> list[type]:
     subclasses = []
     for subclass in cls.__subclasses__():
         subclasses.append(subclass)
