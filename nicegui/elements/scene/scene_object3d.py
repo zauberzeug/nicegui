@@ -256,11 +256,8 @@ class Object3D:
             'y': [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]],
             'z': [[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]],
         }
-        world_axes_order = order if order.islower() else order[::-1].lower()
-        result = single_axis[world_axes_order[0]]
-        for letter in world_axes_order[1:]:
-            result = Object3D._matmul3(single_axis[letter], result)
-        return result
+        first, second, third = (single_axis[axis] for axis in (order if order.islower() else order[::-1].lower()))
+        return Object3D._matmul3(third, Object3D._matmul3(second, first))
 
     @staticmethod
     def _matmul3(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
