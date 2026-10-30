@@ -337,7 +337,8 @@ async def test_invalid_new_value_mode_does_not_break_page(user: User):
     await user.should_not_see(kind=ui.select)
 
 
-async def test_construction_does_not_run_update_override(user: User):
+@pytest.mark.parametrize('kwargs', [{}, {'with_input': True, 'clearable': True}])
+async def test_construction_does_not_run_update_override(kwargs: dict, user: User):
     calls = 0
     calls_after_init = 0
     calls_after_props = 0
@@ -352,7 +353,7 @@ async def test_construction_does_not_run_update_override(user: User):
     @ui.page('/')
     def page():
         nonlocal calls_after_init, calls_after_props
-        select = Select(['A', 'B'], value='A')
+        select = Select(['A', 'B'], value='A', **kwargs)
         calls_after_init = calls
         select.props('dense')
         calls_after_props = calls

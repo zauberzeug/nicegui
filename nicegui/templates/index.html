@@ -27,32 +27,10 @@
         code, kbd, pre, samp {
           font-family: revert-layer; /* HACK: revert Quasar's monospace font so Tailwind's mono font stack applies */
         }
-        /* DEPRECATED: mirror of quasarframework/quasar#18413 + #18419, remove with the Quasar bump for NiceGUI 4.0 */
-        [dir="rtl"] .q-fab__actions--right {
-          transform-origin: 0 50%;
-          right: auto;
-          margin-right: 0;
-          left: 100%;
-          margin-left: 9px;
-          flex-direction: row-reverse;
-        }
-        [dir="rtl"] .q-fab__actions--right:not(.q-fab__actions--opened) {
-          transform: scale(0.4) translateX(-62px);
-        }
-        [dir="rtl"] .q-fab__actions--left {
-          transform-origin: 100% 50%;
-          left: auto;
-          margin-left: 0;
-          right: 100%;
-          margin-right: 9px;
-          flex-direction: row;
-        }
-        [dir="rtl"] .q-fab__actions--left:not(.q-fab__actions--opened) {
-          transform: scale(0.4) translateX(62px);
-        }
-        /* DEPRECATED: mirror of quasarframework/quasar#18468, remove with the Quasar bump for NiceGUI 4.0 */
-        .q-position-engine {
-          visibility: hidden;
+        .q-textarea--autogrow .q-field__native {
+          /* HACK: Quasar sizes autogrow textareas with "field-sizing: content", which also makes them as wide as their content */
+          contain: inline-size;
+          contain-intrinsic-inline-size: 10em;
         }
       }
       @layer overrides {

@@ -1,6 +1,6 @@
 from collections.abc import Callable, Generator, Iterable, Iterator
 from contextlib import suppress
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -8,6 +8,7 @@ from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
+from .tooltip import Tooltip
 
 
 class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableElement, component='select.js'):
@@ -69,20 +70,19 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         self.key_generator = key_generator
-        if new_value_mode is not None:
-            self._props['new-value-mode'] = new_value_mode
-            with_input = True
-        if with_input:
-            self._props['use-input'] = True
-            self._props.set_bool('hide-selected', not multiple)
-            self._props['fill-input'] = True
-            self._props['input-debounce'] = 0
-            self._props['for'] = self.html_id  # keep html_id on the input so tooltips/ui.query can anchor (#6114)
-        self._props.set_bool('multiple', multiple)
-        self._props.set_bool('clearable', clearable)
-
         self._is_showing_popup = False
         with self._props.suspend_updates():
+            if new_value_mode is not None:
+                self._props['new-value-mode'] = new_value_mode
+                with_input = True
+            if with_input:
+                self._props['use-input'] = True
+                self._props.set_bool('hide-selected', not multiple)
+                self._props['fill-input'] = True
+                self._props['input-debounce'] = 0
+            self._props['for'] = self.html_id  # keep html_id on the focus target for tooltips and ui.query (#6114)
+            self._props.set_bool('multiple', multiple)
+            self._props.set_bool('clearable', clearable)
             self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
             self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 
@@ -90,6 +90,11 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
     def is_showing_popup(self) -> bool:
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
+
+    def tooltip(self, text: str) -> Self:
+        # anchor to the whole field because the element with the html_id is the hidden focus target (#6440)
+        Tooltip(text).props['target'] = f'[for="{self.html_id}"]'
+        return self
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         # pylint: disable=too-many-nested-blocks
