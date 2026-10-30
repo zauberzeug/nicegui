@@ -21,8 +21,6 @@ if TYPE_CHECKING:
 
 class Object3D:
     current_scene: ClassVar[weakref.ref[Scene] | None] = None
-    EULER_ORDERS = ('XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX')
-
     _component_url: ClassVar[str | None] = None
     _file_stem: ClassVar[str | None] = None
 
@@ -248,10 +246,8 @@ class Object3D:
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
-        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``)
+        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``, *added in version 3.19.0*)
         """
-        if order not in Object3D.EULER_ORDERS:
-            raise ValueError(f'Unsupported Euler order {order!r}; expected one of {", ".join(Object3D.EULER_ORDERS)}')
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
         sz, cz = math.sin(r_z), math.cos(r_z)
@@ -286,7 +282,7 @@ class Object3D:
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
-        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``)
+        :param order: Euler rotation order (``'XYZ'`` | ``'XZY'`` | ``'YXZ'`` | ``'YZX'`` | ``'ZXY'`` | ``'ZYX'``, default ``'XYZ'``, *added in version 3.19.0*)
         """
         return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z, order))
 

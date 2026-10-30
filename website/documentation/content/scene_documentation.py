@@ -441,27 +441,22 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
-@doc.demo('New geometry primitives and polar grid', '''
+@doc.demo('More primitives and a polar grid', '''
     ``polyline`` connects a sequence of points with optional per-vertex colors and dashing,
     ``lathe`` revolves a 2D profile to make a vase or bowl,
     and ``plane`` / ``cone`` / ``torus`` / ``capsule`` wrap the corresponding Three.js geometries.
     The ``polar_grid=(radius, sectors, rings)`` scene argument replaces the rectangular grid
     with a circular one (and overrides ``grid``).
 ''')
-def new_primitives_and_polar_grid() -> None:
+def more_primitives_and_polar_grid() -> None:
     import math
-    with ui.scene(grid=False, polar_grid=(4, 12, 6)).classes('w-full h-64') as scene:
-        radius = 2.5
-        for angle, color, builder in [
-            (0, '#cc6633', lambda: scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]])),
-            (60, '#ff3333', lambda: scene.cone(radius=0.5, height=1.0)),
-            (120, '#ffcc33', lambda: scene.torus(radius=0.4, tube=0.15)),
-            (180, '#33ccff', lambda: scene.plane(width=1.0, height=1.0).rotate(math.pi / 2, 0, 0)),
-            (240, '#cc66ff', lambda: scene.capsule(radius=0.3, length=0.8)),
-        ]:
-            x = radius * math.cos(math.radians(angle))
-            y = radius * math.sin(math.radians(angle))
-            builder().material(color).move(x, y, 0.5)
+    with ui.scene(polar_grid=(4, 12, 6)).classes('w-full h-64') as scene:
+        scene.lathe(points=[[0, 0], [0.4, 0.2], [0.5, 0.6], [0.2, 1.0], [0, 1.1]]) \
+            .material('#cc6633').move(2.5, 0, 0).rotate(math.pi / 2, 0, 0)
+        scene.cone(radius=0.5, height=1.0).material('#ff3333').move(1.2, 2.2, 0.5).rotate(math.pi / 2, 0, 0)
+        scene.torus(radius=0.4, tube=0.15).material('#ffcc33').move(-1.2, 2.2, 0.15)
+        scene.plane(width=1.0, height=1.0).material('#33ccff').move(-2.5, 0, 0.5).rotate(math.pi / 2, 0, 0)
+        scene.capsule(radius=0.3, height=0.8).material('#cc66ff').move(-1.2, -2.2, 0.7).rotate(math.pi / 2, 0, 0)
         scene.polyline(
             points=[[-2, 0, 2.5], [-1, 0, 3.0], [0, 0, 2.5], [1, 0, 3.0], [2, 0, 2.5]],
             colors=[[1, 0, 0], [1, 0.5, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]],

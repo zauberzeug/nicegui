@@ -517,16 +517,10 @@ def test_rotation_matrix_from_euler_all_orders():
         'ZXY': Ry @ Rx @ Rz,
         'ZYX': Rx @ Ry @ Rz,
     }
-    assert set(expected_per_order) == set(Object3D.EULER_ORDERS)
     for order, expected in expected_per_order.items():
         actual = Object3D.rotation_matrix_from_euler(rx, ry, rz, order)
         assert np.allclose(actual, expected), f'{order} mismatch:\n{actual}\nvs\n{expected}'
         assert np.allclose(actual, axis[order[2]] @ axis[order[1]] @ axis[order[0]])
-
-
-def test_rotation_matrix_from_euler_rejects_bad_order():
-    with pytest.raises(ValueError, match='Unsupported Euler order'):
-        Object3D.rotation_matrix_from_euler(0, 0, 0, 'XYY')  # type: ignore[arg-type]
 
 
 def test_polyline(screen: Screen):
@@ -546,12 +540,10 @@ def test_polyline(screen: Screen):
             )
 
     screen.open('/')
-    screen.wait(0.5)
-    is_line = screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{line_obj.id}").mesh;'
-        'return o.isLine === true && o.material.type === "LineDashedMaterial" && o.material.vertexColors === true;'
-    )
-    assert is_line
+    screen.wait_for_js(
+        f'getElement({scene.id}).objects.get("{line_obj.id}")?.mesh?.material.type', 'LineDashedMaterial')
+    assert screen.selenium.execute_script(
+        f'return getElement({scene.id}).objects.get("{line_obj.id}").mesh.material.vertexColors')
 
 
 def test_lathe(screen: Screen):
@@ -565,12 +557,7 @@ def test_lathe(screen: Screen):
             obj = scene.lathe(points=[[0, 0], [0.5, 0.5], [0, 1]], segments=8)
 
     screen.open('/')
-    screen.wait(0.5)
-    is_lathe = screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{obj.id}").mesh;'
-        'return o.isMesh === true && o.geometry.type === "LatheGeometry";'
-    )
-    assert is_lathe
+    screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', 'LatheGeometry')
 
 
 def test_polyline_rejects_mismatched_colors():
@@ -596,17 +583,13 @@ def test_polar_grid_smoothness(screen: Screen, polar_grid: tuple, expected_verte
     @ui.page('/')
     def page():
         nonlocal scene
-        with ui.scene(grid=False, polar_grid=polar_grid) as scene:
-            scene.sphere(0.1).move(0.5, 0, 0)
+        scene = ui.scene(polar_grid=polar_grid)
 
     screen.open('/')
-    screen.wait(0.5)
-    # children: ambient light, directional light, circular ground, polar grid helper, sphere
-    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
-    helper_vertex_count = screen.selenium.execute_script(
-        f'return scene_{scene.html_id}.children[3].geometry.attributes.position.count'
-    )
-    assert helper_vertex_count == expected_vertex_count
+    screen.wait_for_js(f'scene_{scene.html_id}.children.filter(c => c.type.endsWith("GridHelper")).map(c => c.type)',
+                       ['PolarGridHelper'])
+    screen.wait_for_js(f'scene_{scene.html_id}.getObjectsByProperty("type", "PolarGridHelper")[0]'
+                       '.geometry.attributes.position.count', expected_vertex_count)
 
 
 @pytest.mark.parametrize('factory_name,three_geometry', [
@@ -630,12 +613,7 @@ def test_geometry_primitive(screen: Screen, factory_name: str, three_geometry: s
             obj = getattr(scene, factory_name)()
 
     screen.open('/')
-    screen.wait(0.5)
-    is_expected = screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{obj.id}").mesh;'
-        f'return o.isMesh === true && o.geometry.type === "{three_geometry}";'
-    )
-    assert is_expected
+    screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', three_geometry)
 
 
 def test_rotate_with_order(screen: Screen):
@@ -648,14 +626,15 @@ def test_rotate_with_order(screen: Screen):
         with ui.scene() as scene:
             box = scene.box().rotate(0.4, -0.3, 0.5, order='ZYX')
 
-    screen.open('/')
-    screen.wait(0.5)
     expected = Object3D.rotation_matrix_from_euler(0.4, -0.3, 0.5, 'ZYX')
+
+    def client_R() -> list[list[float]] | None:
+        return screen.selenium.execute_script(
+            f'const m = getElement({scene.id}).objects.get("{box.id}")?.mesh?.matrixWorld.elements;'
+            # Three.js stores column-major; pull out the upper-left 3x3.
+            'return m && [[m[0], m[4], m[8]], [m[1], m[5], m[9]], [m[2], m[6], m[10]]];'
+        )
+
+    screen.open('/')
     assert np.allclose(box.R, expected)
-    server_R = screen.selenium.execute_script(
-        f'const o = getElement({scene.id}).objects.get("{box.id}").mesh;'
-        'const m = o.matrixWorld.elements;'
-        # Three.js stores column-major; pull out the upper-left 3x3.
-        'return [[m[0], m[4], m[8]], [m[1], m[5], m[9]], [m[2], m[6], m[10]]];'
-    )
-    assert np.allclose(server_R, expected, atol=1e-6)
+    screen.wait_for(lambda: (R := client_R()) is not None and np.allclose(R, expected, atol=1e-6))

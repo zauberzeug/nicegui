@@ -84,12 +84,12 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
                  control_type: Literal['orbit', 'trackball', 'map'] = DEFAULT_PROP | 'orbit',
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
-                 polar_grid: tuple[float, int, int] | tuple[float, int, int, int] | None = None,
+                 polar_grid: tuple[float, int, int] | tuple[float, int, int, int] | None = DEFAULT_PROP | None,
                  ) -> None:
         """3D Scene
 
         Display a 3D scene using `three.js <https://threejs.org/>`_.
-        Currently NiceGUI supports boxes, spheres, cylinders/cones, extrusions, straight lines, curves and textured meshes.
+        It supports basic geometries like boxes, spheres and cylinders, lines and curves, point clouds, texts, textures as well as glTF and STL models.
         Objects can be translated, rotated and displayed with different color, opacity or as wireframes.
         They can also be grouped to apply joint movements.
 
@@ -106,7 +106,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
-        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` or ``(radius, sectors, rings, divisions)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; ``divisions`` controls the visual smoothness of each ring (default: ``64``); takes precedence over ``grid`` (default: ``None``)
+        :param polar_grid: optional tuple of ``(radius, sectors, rings)`` or ``(radius, sectors, rings, divisions)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; ``divisions`` controls the visual smoothness of each ring (default: ``64``); takes precedence over ``grid`` (default: ``None``, *added in version 3.19.0*)
         """
         super().__init__()
         self._props['width'] = width
