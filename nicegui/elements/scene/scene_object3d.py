@@ -264,7 +264,13 @@ class Object3D:
 
     @staticmethod
     def _matmul3(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
-        return [[sum(A[i][k] * B[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
+        (a00, a01, a02), (a10, a11, a12), (a20, a21, a22) = A
+        (b00, b01, b02), (b10, b11, b12), (b20, b21, b22) = B
+        return [
+            [a00 * b00 + a01 * b10 + a02 * b20, a00 * b01 + a01 * b11 + a02 * b21, a00 * b02 + a01 * b12 + a02 * b22],
+            [a10 * b00 + a11 * b10 + a12 * b20, a10 * b01 + a11 * b11 + a12 * b21, a10 * b02 + a11 * b12 + a12 * b22],
+            [a20 * b00 + a21 * b10 + a22 * b20, a20 * b01 + a21 * b11 + a22 * b21, a20 * b02 + a21 * b12 + a22 * b22],
+        ]
 
     def rotate(
         self,
