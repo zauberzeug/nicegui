@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import plotly.graph_objects as go
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 
 from nicegui import ui
 from nicegui.testing import Screen, User
@@ -227,3 +229,31 @@ async def test_resampling_numeric_string_and_missing_x(user: User):
     assert len(xs) == 100 and xs[0] == '0' and xs[-1] == '9999', 'numeric strings should resample as numbers'
     gap_xs = _transmitted(plots['gap'], 'x')
     assert None not in gap_xs, 'missing (None) x values should be dropped, not kept as a sentinel'
+
+
+def test_resampling_keeps_zoomed_viewport(screen: Screen):
+    @ui.page('/')
+    def page():
+        x = np.arange(10_000)
+        figure = go.Figure(go.Scatter(x=x, y=np.sin(x / 100))).update_layout(xaxis_range=[0, 10_000])
+        ui.plotly(figure, n_samples=100)
+
+    screen.open('/')
+    screen.wait(1)
+    drag_area = screen.selenium.find_element(By.CSS_SELECTOR, '.js-plotly-plot .nsewdrag')
+    ActionChains(screen.selenium).move_to_element(drag_area).click_and_hold().move_by_offset(100, 0).release().perform()
+    screen.wait(1)
+    x_range = screen.selenium.execute_script("return document.querySelector('.js-plotly-plot').layout.xaxis.range")
+    assert x_range[1] - x_range[0] < 10_000, 'the resampled update should not reset the zoom to the initial layout range'
+
+
+async def test_resampling_keeps_nanosecond_datetimes_as_dates(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange('2020-01-01', '2020-04-10', dtype='datetime64[D]').astype('datetime64[ns]')
+        plots.append(ui.plotly({'data': [{'type': 'scatter', 'x': x, 'y': np.arange(len(x))}]}, n_samples=10))
+
+    await user.open('/')
+    assert str(plots[0].props['options']['data'][0]['x'][0]).startswith('2020-01-01')

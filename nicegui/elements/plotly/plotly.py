@@ -50,6 +50,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
 
         if n_samples:
             self.figure = copy.deepcopy(figure)  # resampling rewrites trace data, so never mutate the caller's figure
+            self._keep_viewport()
             self._downsampler = create_downsampler()
             self._extract_hf_data()
             self._apply_resampling()
@@ -58,6 +59,13 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         self.update()
         self._classes.append('js-plotly-plot')
         self._update_method = 'update'
+
+    def _keep_viewport(self) -> None:
+        """Set a constant `uirevision` so resampled updates don't reset the user's zoom to the layout's initial range."""
+        if isinstance(self.figure, dict):
+            self.figure.setdefault('layout', {}).setdefault('uirevision', True)
+        elif self.figure.layout.uirevision is None:
+            self.figure.layout.uirevision = True
 
     def _get_figure_data(self) -> list[dict]:
         """Get the figure data as a list of trace dicts."""
@@ -141,6 +149,8 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
             self.figure.data[trace_idx].x = x
             self.figure.data[trace_idx].y = y
         elif isinstance(self.figure, dict):
+            if np.issubdtype(x.dtype, np.datetime64):
+                x = x.astype('datetime64[us]')  # `tolist()` turns nanosecond timestamps into ints instead of datetimes
             self.figure['data'][trace_idx]['x'] = x.tolist()
             self.figure['data'][trace_idx]['y'] = y.tolist()
 
@@ -185,6 +195,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
             figure = copy.deepcopy(figure)  # resampling rewrites trace data, so never mutate the caller's figure
         self.figure = figure
         if self._downsampler:
+            self._keep_viewport()
             self._hf_data.clear()
             self._extract_hf_data()
             self._apply_resampling()
