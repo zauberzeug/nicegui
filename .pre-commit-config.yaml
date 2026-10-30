@@ -47,3 +47,26 @@ repos:
           - mdformat-frontmatter
           - mdformat-gfm
           - mdformat-simple-breaks
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.5.0
+    hooks:
+      - id: flake8
+        name: docstrings (pydoclint, flake8-rst-docstrings)
+        files: ^nicegui/
+        # only docstring checks; Ruff and pylint cover everything else
+        args:
+          - --select=DOC1,RST
+          - --style=sphinx
+          - --arg-type-hints-in-docstring=False
+          - --allow-init-docstring=True
+        additional_dependencies:
+          - pydoclint==0.12.0
+          - flake8-rst-docstrings==0.4.0
+  - repo: local
+    hooks:
+      - id: docstrings-rst
+        name: docstrings (sphinx-lint)
+        entry: uv run python check_docstrings.py
+        language: system
+        types: [python]
+        files: ^nicegui/
