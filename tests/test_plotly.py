@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import plotly.graph_objects as go
+import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
@@ -257,3 +258,23 @@ async def test_resampling_keeps_nanosecond_datetimes_as_dates(user: User):
 
     await user.open('/')
     assert str(plots[0].props['options']['data'][0]['x'][0]).startswith('2020-01-01')
+
+
+@pytest.mark.parametrize('attribute', [
+    'customdata', 'text', 'marker.color', 'marker.size', 'hoverlabel.font.size', 'hoverlabel.namelength', 'error_y.array',
+])
+async def test_resampling_skips_traces_with_per_point_arrays(user: User, attribute: str):
+    plots: dict[str, ui.plotly] = {}
+
+    @ui.page('/')
+    def page():
+        x = np.arange(1000)
+        trace: dict = {'type': 'scatter', 'x': x.tolist(), 'y': x.tolist()}
+        group, _, key = attribute.rpartition('.')
+        (trace.setdefault(group, {}) if group else trace)[key] = x.tolist()
+        plots['dict'] = ui.plotly({'data': [trace]}, n_samples=100)
+        plots['plain'] = ui.plotly({'data': [{'type': 'scatter', 'x': x.tolist(), 'y': x.tolist()}]}, n_samples=100)
+
+    await user.open('/')
+    assert len(_transmitted(plots['plain'], 'x')) == 100
+    assert _transmitted(plots['dict'], 'x') == list(range(1000)), 'per-point arrays would desync from resampled points'

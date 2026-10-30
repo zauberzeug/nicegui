@@ -154,6 +154,17 @@ def to_numeric(values: np.ndarray) -> np.ndarray | None:
         return None
 
 
+def has_per_point_arrays(trace: dict, n_points: int) -> bool:
+    """Check whether a trace has arrays besides x and y with one entry per point, which resampling would desync."""
+    def is_per_point(value: Any) -> bool:
+        if isinstance(value, dict):
+            if 'bdata' in value:
+                return len(as_array(value)) == n_points
+            return any(is_per_point(v) for v in value.values())
+        return isinstance(value, (list, tuple, np.ndarray)) and len(value) == n_points
+    return any(is_per_point(value) for key, value in trace.items() if key not in ('x', 'y'))
+
+
 def create_downsampler() -> Downsampler:
     """Create a downsampler instance, preferring tsdownsample if available."""
     if _USE_TSDOWNSAMPLE:

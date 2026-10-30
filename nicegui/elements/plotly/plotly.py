@@ -9,7 +9,7 @@ from ... import optional_features
 from ...awaitable_response import AwaitableResponse
 from ...element import Element
 from ...events import GenericEventArguments
-from ._resampling import Downsampler, HFTraceData, as_array, create_downsampler, to_numeric
+from ._resampling import Downsampler, HFTraceData, as_array, create_downsampler, has_per_point_arrays, to_numeric
 
 with suppress(ImportError):
     import plotly.graph_objects as go
@@ -39,7 +39,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
                           and only the primary x-axis is tracked (subplots are not resampled yet).
                           Data with unsorted x is sorted by x before resampling, which reorders line traces.
                           For better performance, install ``pip install nicegui[tsdownsample]``.
-                          *Added in version 3.14.0*
+                          *Added in version 3.16.0*
         """
         super().__init__()
 
@@ -86,6 +86,9 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
             x = trace_dict.get('x')
             y = trace_dict.get('y')
             if x is None or y is None:
+                continue
+            if has_per_point_arrays(trace_dict, len(as_array(x))):
+                # per-point arrays (customdata, text, marker.color, ...) would no longer match the resampled points
                 continue
 
             # Keep the original values (to preserve datetime/integer dtypes) alongside float64 views for the algorithm.

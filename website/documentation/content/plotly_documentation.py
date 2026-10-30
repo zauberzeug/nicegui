@@ -161,7 +161,7 @@ def large_datasets():
     Only "scatter" and "scattergl" traces are resampled, including line plots using `mode='lines'`.
     Install `nicegui[tsdownsample]` for a much faster Rust-based implementation of the algorithm.
 
-    *Added in version 3.14.0*
+    *Added in version 3.16.0*
 ''')
 def dynamic_resampling():
     import numpy as np
