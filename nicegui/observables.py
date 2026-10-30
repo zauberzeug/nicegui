@@ -112,11 +112,11 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def __deepcopy__(self, memo: dict) -> Self:
         if isinstance(self, dict):
-            return ObservableDict({key: deepcopy(self[key]) for key in self}, _parent=self._parent)
+            return ObservableDict({key: deepcopy(self[key]) for key in self})
         if isinstance(self, list):
-            return ObservableList([deepcopy(item) for item in self], _parent=self._parent)
+            return ObservableList([deepcopy(item) for item in self])
         if isinstance(self, set):
-            return ObservableSet({deepcopy(item) for item in self}, _parent=self._parent)
+            return ObservableSet({deepcopy(item) for item in self})
         raise NotImplementedError(f'ObservableCollection.__deepcopy__ not implemented for {type(self)}')
 
     def __reduce__(self) -> tuple[Any, tuple]:

@@ -174,6 +174,33 @@ def test_copy():
     assert c == [[1, 2, 3], [4, 5, 6]]
 
 
+@pytest.mark.parametrize('value', [{'value': 0}, [0], {0}], ids=['dict', 'list', 'set'])
+@pytest.mark.parametrize('copy_root', [False, True], ids=['nested', 'root'])
+def test_deepcopy_does_not_notify_original_parent(value, copy_root):
+    original_changes = []
+    copied_changes = []
+    original = ObservableDict({'child': value}, on_change=original_changes.append)
+    copied = copy.deepcopy(original if copy_root else original['child'])
+    copied.on_change(copied_changes.append)
+    child = copied['child'] if copy_root else copied
+
+    if isinstance(child, dict):
+        child['value'] = 1
+    elif isinstance(child, list):
+        child.append(1)
+    else:
+        child.add(1)
+
+    assert original['child'] == value
+    assert len(original_changes) == 0
+    assert len(copied_changes) == 1
+
+    original['child'].clear()
+    assert len(original_changes) == 1
+    assert len(copied_changes) == 1
+    assert len(child) > 0
+
+
 async def test_no_infinite_recursion(user: User):
     @ui.page('/')
     def page():
