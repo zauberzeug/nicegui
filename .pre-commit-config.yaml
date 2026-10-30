@@ -5,7 +5,7 @@ default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.5
+    rev: v0.17.3
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -21,7 +21,7 @@ repos:
       - id: end-of-file-fixer
       - id: double-quote-string-fixer
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.3
     hooks:
       - id: codespell
         # most are excluded based on config in pyproject.toml

@@ -231,7 +231,9 @@ ignore = [
     "PLR0912", # too many branches
     "PLR0913", # too many arguments
     "PLR0915", # too many statements
+    "PLR0917", # too many positional arguments
     "PLR2004", # magic value comparison
+    "PLW0108", # unnecessary lambda (often intentional for late binding; pylint covers the library code)
 ]
 exclude = [
     "website/documentation/content/*",
