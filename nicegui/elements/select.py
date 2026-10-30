@@ -1,6 +1,6 @@
 from collections.abc import Callable, Generator, Iterable, Iterator
 from contextlib import suppress
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -8,6 +8,7 @@ from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
+from .tooltip import Tooltip
 
 
 class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableElement, component='select.js'):
@@ -89,6 +90,11 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
     def is_showing_popup(self) -> bool:
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
+
+    def tooltip(self, text: str) -> Self:
+        # anchor to the whole field because the element with the html_id is the hidden focus target (#6440)
+        Tooltip(text).props['target'] = f'[for="{self.html_id}"]'
+        return self
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         # pylint: disable=too-many-nested-blocks
