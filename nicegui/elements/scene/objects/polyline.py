@@ -7,8 +7,8 @@ class Polyline(Object3D, component='polyline.js'):
         points: list[list[float]],
         colors: list[list[float]] | None = None,
         dashed: bool = False,
-        dash_size: float = 3.0,
-        gap_size: float = 1.0,
+        dash_size: float = 0.1,
+        gap_size: float = 0.05,
     ) -> None:
         """Polyline
 
@@ -16,15 +16,12 @@ class Polyline(Object3D, component='polyline.js'):
         It connects a sequence of 3D points with line segments and optionally dashes them via
         `LineDashedMaterial <https://threejs.org/docs/#api/en/materials/LineDashedMaterial>`_.
 
-        ``dash_size`` and ``gap_size`` defaults match the Three.js ``LineDashedMaterial`` defaults
-        (``3.0`` and ``1.0``); the units are scene units, so adjust them for your scene scale.
-
         :param points: list of ``[x, y, z]`` points
         :param colors: optional list of per-vertex ``[r, g, b]`` colors (each component in ``[0, 1]``).
             When supplied, the line uses vertex colors instead of the material color.
         :param dashed: whether to use a dashed material (default: ``False``)
-        :param dash_size: dash length in scene units (default: ``3.0``)
-        :param gap_size: gap length in scene units (default: ``1.0``)
+        :param dash_size: dash length in scene units (default: ``0.1``)
+        :param gap_size: gap length in scene units (default: ``0.05``)
         """
         if len(points) < 2:
             raise ValueError(f'points must have at least 2 entries (got {len(points)})')

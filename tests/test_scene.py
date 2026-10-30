@@ -577,8 +577,6 @@ def test_polyline(screen: Screen):
                 points=[[0, 0, 0], [1, 0, 0], [1, 1, 0]],
                 colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
                 dashed=True,
-                dash_size=0.1,
-                gap_size=0.05,
             )
 
     screen.open('/')
@@ -602,24 +600,22 @@ def test_lathe(screen: Screen):
     screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', 'LatheGeometry')
 
 
-def test_polyline_rejects_mismatched_colors():
-    from nicegui.elements.scene.objects import Polyline
-    with pytest.raises(ValueError, match='colors length'):
-        Polyline(points=[[0, 0, 0], [1, 0, 0]], colors=[[1, 0, 0]])
-
-
-def test_polyline_rejects_too_few_points():
-    from nicegui.elements.scene.objects import Polyline
-    with pytest.raises(ValueError, match='at least 2'):
-        Polyline(points=[[0, 0, 0]])
-
-
-@pytest.mark.parametrize('polar_grid,expected_vertex_count', [
-    # PolarGridHelper(radius, sectors, rings, divisions) vertex count = sectors*2 + rings*divisions*2.
-    ((1.0, 8, 5), 8 * 2 + 5 * 64 * 2),       # default divisions=64
-    ((1.0, 8, 5, 128), 8 * 2 + 5 * 128 * 2),  # explicit divisions=128
+@pytest.mark.parametrize('points,colors,message', [
+    ([[0, 0, 0]], None, 'at least 2'),
+    ([[0, 0, 0], [1, 0, 0]], [[1, 0, 0]], 'colors length'),
 ])
-def test_polar_grid_smoothness(screen: Screen, polar_grid: tuple, expected_vertex_count: int):
+def test_polyline_rejects_invalid_input(points: list[list[float]], colors: list[list[float]] | None, message: str):
+    from nicegui.elements.scene.objects import Polyline
+    with pytest.raises(ValueError, match=message):
+        Polyline(points=points, colors=colors)
+
+
+@pytest.mark.parametrize('polar_grid,expected_args', [
+    ((1.0, 8, 5), (1.0, 8, 5, 64)),
+    ((1.0, 8, 5, 128), (1.0, 8, 5, 128)),
+    ((1.0, 0, 5), (1.0, 0, 5, 64)),
+])
+def test_polar_grid(screen: Screen, polar_grid: tuple, expected_args: tuple):
     scene = None
 
     @ui.page('/')
@@ -630,8 +626,9 @@ def test_polar_grid_smoothness(screen: Screen, polar_grid: tuple, expected_verte
     screen.open('/')
     screen.wait_for_js(f'scene_{scene.html_id}.children.filter(c => c.type.endsWith("GridHelper")).map(c => c.type)',
                        ['PolarGridHelper'])
-    screen.wait_for_js(f'scene_{scene.html_id}.getObjectsByProperty("type", "PolarGridHelper")[0]'
-                       '.geometry.attributes.position.count', expected_vertex_count)
+    screen.wait_for_js(f'(grid => grid.geometry.attributes.position.count == '
+                       f'new grid.constructor{expected_args}.geometry.attributes.position.count)'
+                       f'(scene_{scene.html_id}.getObjectsByProperty("type", "PolarGridHelper")[0])', True)
 
 
 @pytest.mark.parametrize('factory_name,three_geometry', [

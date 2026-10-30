@@ -145,35 +145,23 @@ export default {
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(this.$el);
 
+    let groundGeometry, grid;
     if (this.polarGrid) {
-      const radius = this.polarGrid[0] || 1.0;
-      const sectors = this.polarGrid[1] || 10;
-      const rings = this.polarGrid[2] || 10;
-      const divisions = this.polarGrid[3] || 64;
-      const ground = new THREE.Mesh(
-        new THREE.CircleGeometry(radius, divisions),
-        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
-      );
-      ground.translateZ(-0.01);
-      ground.object_id = "ground";
-      this.scene.add(ground);
-      const polarGrid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
-      polarGrid.material.transparent = true;
-      polarGrid.material.opacity = 0.3;
-      polarGrid.rotateX(Math.PI / 2);
-      this.scene.add(polarGrid);
+      const [radius, sectors, rings, divisions = 64] = this.polarGrid;
+      groundGeometry = new THREE.CircleGeometry(radius, divisions);
+      grid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
     } else if (this.grid) {
       const gridSize = this.grid[0] || 100;
       const gridDivisions = this.grid[1] || 100;
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(gridSize, gridSize),
-        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
-      );
+      groundGeometry = new THREE.PlaneGeometry(gridSize, gridSize);
+      grid = new THREE.GridHelper(gridSize, gridDivisions);
+    }
+    if (grid) {
+      const ground = new THREE.Mesh(groundGeometry, new THREE.MeshPhongMaterial({ color: this.backgroundColor }));
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
 
-      const grid = new THREE.GridHelper(gridSize, gridDivisions);
       grid.material.transparent = true;
       grid.material.opacity = 0.2;
       grid.rotateX(Math.PI / 2);
