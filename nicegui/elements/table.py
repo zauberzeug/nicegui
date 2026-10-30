@@ -178,7 +178,7 @@ class Table(FilterElement, component='table.js'):
 
         *Added in version 2.0.0*
 
-        *Since version 3.12.0:
+        *Since version 3.12.0:*
         Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
         Pass ``df.reset_index(drop=True)`` to drop the index instead.
 

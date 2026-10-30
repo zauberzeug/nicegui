@@ -366,7 +366,7 @@ def bindable_dataclass(cls: type[T] | None = None, /, *,
     :param cls: class to be transformed into a dataclass
     :param bindable_fields: optional list of field names to make bindable (defaults to all fields)
     :param kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``.
-    Usage of ``slots=True`` and ``frozen=True`` are not supported and will raise a ValueError.
+        Usage of ``slots=True`` and ``frozen=True`` are not supported and will raise a ValueError.
 
     :return: resulting dataclass type
     """
