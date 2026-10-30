@@ -87,7 +87,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
             y = trace_dict.get('y')
             if x is None or y is None:
                 continue
-            if has_per_point_arrays(trace_dict, len(as_array(x))):
+            if has_per_point_arrays(trace_dict):
                 # per-point arrays (customdata, text, marker.color, ...) would no longer match the resampled points
                 continue
 

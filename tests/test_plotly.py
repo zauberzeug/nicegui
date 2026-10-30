@@ -260,21 +260,57 @@ async def test_resampling_keeps_nanosecond_datetimes_as_dates(user: User):
     assert str(plots[0].props['options']['data'][0]['x'][0]).startswith('2020-01-01')
 
 
-@pytest.mark.parametrize('attribute', [
-    'customdata', 'text', 'marker.color', 'marker.size', 'hoverlabel.font.size', 'hoverlabel.namelength', 'error_y.array',
+@pytest.mark.parametrize('attribute, values', [
+    ('customdata', list(range(1000))),
+    ('text', list(range(1000))),
+    ('text', ['zero', 'one', 'two']),
+    ('selectedpoints', [1]),
+    ('marker.color', list(range(1000))),
+    ('marker.size', list(range(1000))),
+    ('hoverlabel.font.size', list(range(1000))),
+    ('error_y.array', list(range(1000))),
 ])
-async def test_resampling_skips_traces_with_per_point_arrays(user: User, attribute: str):
+async def test_resampling_skips_traces_with_per_point_arrays(user: User, attribute: str, values: list):
     plots: dict[str, ui.plotly] = {}
 
     @ui.page('/')
     def page():
         x = np.arange(1000)
         trace: dict = {'type': 'scatter', 'x': x.tolist(), 'y': x.tolist()}
-        group, _, key = attribute.rpartition('.')
-        (trace.setdefault(group, {}) if group else trace)[key] = x.tolist()
+        *groups, key = attribute.split('.')
+        target = trace
+        for group in groups:
+            target = target.setdefault(group, {})
+        target[key] = values
         plots['dict'] = ui.plotly({'data': [trace]}, n_samples=100)
         plots['plain'] = ui.plotly({'data': [{'type': 'scatter', 'x': x.tolist(), 'y': x.tolist()}]}, n_samples=100)
 
     await user.open('/')
     assert len(_transmitted(plots['plain'], 'x')) == 100
     assert _transmitted(plots['dict'], 'x') == list(range(1000)), 'per-point arrays would desync from resampled points'
+
+
+async def test_resampling_ignores_scalars_and_colorscale(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange(1000).tolist()
+        trace = {'type': 'scatter', 'x': x, 'y': x, 'text': 'label', 'selectedpoints': [],
+                 'marker': {'color': 'red', 'size': 5, 'colorscale': [[0, 'blue'], [1, 'red']]}}
+        plots.append(ui.plotly({'data': [trace]}, n_samples=100))
+
+    await user.open('/')
+    assert len(_transmitted(plots[0], 'x')) == 100
+
+
+async def test_resampling_accepts_zero_dimensional_numpy_attributes(user: User):
+    plots: list[ui.plotly] = []
+
+    @ui.page('/')
+    def page():
+        x = np.arange(1000)
+        plots.append(ui.plotly(go.Figure(go.Scatter(x=x, y=x, text=np.array('label'))), n_samples=100))
+
+    await user.open('/')
+    assert len(_transmitted(plots[0], 'x')) == 100

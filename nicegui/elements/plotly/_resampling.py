@@ -154,15 +154,16 @@ def to_numeric(values: np.ndarray) -> np.ndarray | None:
         return None
 
 
-def has_per_point_arrays(trace: dict, n_points: int) -> bool:
-    """Check whether a trace has arrays besides x and y with one entry per point, which resampling would desync."""
-    def is_per_point(value: Any) -> bool:
+_NON_POINT_KEYS = ('meta', 'colorscale', 'colorbar')
+
+
+def has_per_point_arrays(trace: dict) -> bool:
+    """Check whether a trace has non-empty arrays besides x and y, which resampling would shift against the points."""
+    def is_array(value: Any) -> bool:
         if isinstance(value, dict):
-            if 'bdata' in value:
-                return len(as_array(value)) == n_points
-            return any(is_per_point(v) for v in value.values())
-        return isinstance(value, (list, tuple, np.ndarray)) and len(value) == n_points
-    return any(is_per_point(value) for key, value in trace.items() if key not in ('x', 'y'))
+            return 'bdata' in value or any(is_array(v) for k, v in value.items() if k not in _NON_POINT_KEYS)
+        return isinstance(value, (list, tuple, np.ndarray)) and np.size(value) > 0 and np.ndim(value) > 0
+    return any(is_array(value) for key, value in trace.items() if key not in ('x', 'y', *_NON_POINT_KEYS))
 
 
 def create_downsampler() -> Downsampler:
