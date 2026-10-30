@@ -23,6 +23,6 @@ class Capsule(Object3D, component='capsule.js'):
         :param cap_segments: number of segments used to draw each cap (default: 4)
         :param radial_segments: number of segments around the circumference (default: 8)
         :param height_segments: number of segments along the cylindrical section (default: 1)
-        :param wireframe: whether to display the capsule as a wireframe (default: `False`)
+        :param wireframe: whether to display the capsule as a wireframe (default: ``False``)
         """
         super().__init__(radius, height, cap_segments, radial_segments, height_segments, wireframe=wireframe)

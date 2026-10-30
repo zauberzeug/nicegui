@@ -33,14 +33,14 @@ class Chip(IconElement, ValueElement[bool], TextElement, BackgroundColorElement,
         It can be clickable, selectable and removable.
 
         :param text: the initial value of the text field (default: "")
-        :param icon: the name of an icon to be displayed on the chip (default: `None`)
-        :param color: the color name for component (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
-        :param text_color: text color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
+        :param icon: the name of an icon to be displayed on the chip (default: ``None``)
+        :param color: the color name for component (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
+        :param text_color: text color (either a Quasar, Tailwind, or CSS color or ``None``, default: ``None``)
         :param on_click: callback which is invoked when chip is clicked. Makes the chip clickable if set
-        :param selectable: whether the chip is selectable (default: `False`)
-        :param selected: whether the chip is selected (default: `False`)
+        :param selectable: whether the chip is selectable (default: ``False``)
+        :param selected: whether the chip is selected (default: ``False``)
         :param on_selection_change: callback which is invoked when the chip's selection state is changed
-        :param removable: whether the chip is removable. Shows a small "x" button if True (default: `False`)
+        :param removable: whether the chip is removable. Shows a small "x" button if True (default: ``False``)
         :param on_value_change: callback which is invoked when the chip is removed or unremoved
         """
         super().__init__(tag='q-chip', value=True, on_value_change=on_value_change,

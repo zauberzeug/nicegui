@@ -8,7 +8,7 @@ class StepperNavigation(Element):
 
         This element represents `Quasar's QStepperNavigation https://quasar.dev/vue-components/stepper#qsteppernavigation-api>`_ component.
 
-        :param wrap: whether to wrap the content (default: `True`)
+        :param wrap: whether to wrap the content (default: ``True``)
         """
         super().__init__('q-stepper-navigation')
 

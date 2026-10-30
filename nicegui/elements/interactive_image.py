@@ -43,20 +43,20 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
         The mouse event handler is called with mouse event arguments containing
 
-        - `type` (the name of the JavaScript event),
-        - `image_x` and `image_y` (image coordinates in pixels),
-        - `button` and `buttons` (mouse button numbers from the JavaScript event), as well as
-        - `alt`, `ctrl`, `meta`, and `shift` (modifier keys from the JavaScript event).
+        - ``type`` (the name of the JavaScript event),
+        - ``image_x`` and ``image_y`` (image coordinates in pixels),
+        - ``button`` and ``buttons`` (mouse button numbers from the JavaScript event), as well as
+        - ``alt``, ``ctrl``, ``meta``, and ``shift`` (modifier keys from the JavaScript event).
 
         You can also pass a tuple of width and height instead of an image source.
         This will create an empty image with the given size.
 
         :param source: the source of the image; can be an URL, local file path, a base64 string or just an image size
         :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
-        :param size: size of the image (width, height) in pixels; only used if `source` is not set
-        :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
-        :param events: list of JavaScript events to subscribe to (default: `['click']`)
-        :param cross: whether to show crosshairs or a color string (default: `False`)
+        :param size: size of the image (width, height) in pixels; only used if ``source`` is not set
+        :param on_mouse: callback for mouse events (contains image coordinates ``image_x`` and ``image_y`` in pixels)
+        :param events: list of JavaScript events to subscribe to (default: ``['click']``)
+        :param cross: whether to show crosshairs or a color string (default: ``False``)
         :param sanitize: sanitization mode:
             ``True`` (default) uses client-side sanitization via DOMPurify,
             ``False`` disables sanitization (use only with trusted content),

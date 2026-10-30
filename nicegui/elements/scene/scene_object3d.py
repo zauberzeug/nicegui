@@ -242,8 +242,8 @@ class Object3D:
         """Scale the object.
 
         :param sx: scale factor for the x axis
-        :param sy: scale factor for the y axis (default: `sx`)
-        :param sz: scale factor for the z axis (default: `sx`)
+        :param sy: scale factor for the y axis (default: ``sx``)
+        :param sz: scale factor for the z axis (default: ``sx``)
         """
         if sy is None:
             sy = sx
@@ -259,7 +259,7 @@ class Object3D:
     def visible(self, value: bool = True) -> Self:
         """Set the visibility of the object.
 
-        :param value: whether the object should be visible (default: `True`)
+        :param value: whether the object should be visible (default: ``True``)
         """
         if self.visible_ != value:
             self.visible_ = value
@@ -269,7 +269,7 @@ class Object3D:
     def draggable(self, value: bool = True) -> Self:
         """Set whether the object should be draggable.
 
-        :param value: whether the object should be draggable (default: `True`)
+        :param value: whether the object should be draggable (default: ``True``)
         """
         if self.draggable_ != value:
             self.draggable_ = value

@@ -55,7 +55,7 @@ class ScrollArea(SortableElement, default_classes='nicegui-scroll-area'):
                   ) -> None:
         """Set the scroll area position in percentage (float) or pixel number (int).
 
-        You can add a delay to the actual scroll action with the `duration_ms` parameter.
+        You can add a delay to the actual scroll action with the ``duration_ms`` parameter.
 
         :param pixels: scroll position offset from top in pixels
         :param percent: scroll position offset from top in percentage of the total scrolling size

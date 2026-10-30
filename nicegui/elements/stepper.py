@@ -23,9 +23,9 @@ class Stepper(ValueElement[str | Step | None], default_classes='nicegui-stepper'
         this element uses Vue's `keep-alive <https://vuejs.org/guide/built-ins/keep-alive.html>`_ component.
         If client-side performance is an issue, you can disable this feature.
 
-        :param value: `ui.step` or name of the step to be initially selected (default: `None` meaning the first step)
+        :param value: ``ui.step`` or name of the step to be initially selected (default: ``None`` meaning the first step)
         :param on_value_change: callback to be executed when the selected step changes
-        :param keep_alive: whether to use Vue's keep-alive component on the content (default: `True`)
+        :param keep_alive: whether to use Vue's keep-alive component on the content (default: ``True``)
         """
         super().__init__(tag='q-stepper', value=value, on_value_change=on_value_change)
         self._props.set_bool('keep-alive', keep_alive)

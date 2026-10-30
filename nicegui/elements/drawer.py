@@ -26,18 +26,18 @@ class Drawer(ValueElement[bool | None], default_classes='nicegui-drawer'):
         Like other layout elements, a drawer can not be nested inside other elements.
 
         Note: Depending on the side, the drawer is automatically placed above or below the main page container in the DOM to improve accessibility.
-        To change the order, use the `move` method.
+        To change the order, use the ``move`` method.
 
         A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
         The value will be requested from the client when the websocket connection is established.
 
-        :param side: side of the page where the drawer should be placed (`left` or `right`)
-        :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
-        :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
-        :param bordered: whether the drawer should have a border (default: `False`)
-        :param elevated: whether the drawer should have a shadow (default: `False`)
-        :param top_corner: whether the drawer expands into the top corner (default: `False`)
-        :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
+        :param side: side of the page where the drawer should be placed (``left`` or ``right``)
+        :param value: whether the drawer is already opened (default: ``None``, i.e. if layout width is above threshold)
+        :param fixed: whether the drawer is fixed or scrolls with the content (default: ``True``)
+        :param bordered: whether the drawer should have a border (default: ``False``)
+        :param elevated: whether the drawer should have a shadow (default: ``False``)
+        :param top_corner: whether the drawer expands into the top corner (default: ``False``)
+        :param bottom_corner: whether the drawer expands into the bottom corner (default: ``False``)
         """
         require_top_level_layout(self)
         with context.client.layout:
@@ -102,17 +102,17 @@ class LeftDrawer(Drawer):
         Like other layout elements, the left drawer can not be nested inside other elements.
 
         Note: The left drawer is automatically placed above the main page container in the DOM to improve accessibility.
-        To change the order, use the `move` method.
+        To change the order, use the ``move`` method.
 
         A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
         The value will be requested from the client when the websocket connection is established.
 
-        :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
-        :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
-        :param bordered: whether the drawer should have a border (default: `False`)
-        :param elevated: whether the drawer should have a shadow (default: `False`)
-        :param top_corner: whether the drawer expands into the top corner (default: `False`)
-        :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
+        :param value: whether the drawer is already opened (default: ``None``, i.e. if layout width is above threshold)
+        :param fixed: whether the drawer is fixed or scrolls with the content (default: ``True``)
+        :param bordered: whether the drawer should have a border (default: ``False``)
+        :param elevated: whether the drawer should have a shadow (default: ``False``)
+        :param top_corner: whether the drawer expands into the top corner (default: ``False``)
+        :param bottom_corner: whether the drawer expands into the bottom corner (default: ``False``)
         """
         super().__init__('left',
                          value=value,
@@ -140,17 +140,17 @@ class RightDrawer(Drawer):
         Like other layout elements, the right drawer can not be nested inside other elements.
 
         Note: The right drawer is automatically placed below the main page container in the DOM to improve accessibility.
-        To change the order, use the `move` method.
+        To change the order, use the ``move`` method.
 
         A value of ``None`` will automatically open or close the drawer depending on the current layout width (breakpoint: >=1024 px).
         The value will be requested from the client when the websocket connection is established.
 
-        :param value: whether the drawer is already opened (default: `None`, i.e. if layout width is above threshold)
-        :param fixed: whether the drawer is fixed or scrolls with the content (default: `True`)
-        :param bordered: whether the drawer should have a border (default: `False`)
-        :param elevated: whether the drawer should have a shadow (default: `False`)
-        :param top_corner: whether the drawer expands into the top corner (default: `False`)
-        :param bottom_corner: whether the drawer expands into the bottom corner (default: `False`)
+        :param value: whether the drawer is already opened (default: ``None``, i.e. if layout width is above threshold)
+        :param fixed: whether the drawer is fixed or scrolls with the content (default: ``True``)
+        :param bordered: whether the drawer should have a border (default: ``False``)
+        :param elevated: whether the drawer should have a shadow (default: ``False``)
+        :param top_corner: whether the drawer expands into the top corner (default: ``False``)
+        :param bottom_corner: whether the drawer expands into the bottom corner (default: ``False``)
         """
         super().__init__('right',
                          value=value,

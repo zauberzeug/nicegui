@@ -23,9 +23,9 @@ class Query:
     def __init__(self, selector: str) -> None:
         """Query Selector
 
-        To manipulate elements like the document body, you can use the `ui.query` function.
+        To manipulate elements like the document body, you can use the ``ui.query`` function.
         With the query result you can add classes, styles, and attributes like with every other UI element.
-        This can be useful for example to change the background color of the page (e.g. `ui.query('body').classes('bg-green')`).
+        This can be useful for example to change the background color of the page (e.g. ``ui.query('body').classes('bg-green')``).
 
         :param selector: the CSS selector (e.g. "body", "#my-id", ".my-class", "div > p")
         """

@@ -20,13 +20,13 @@ class Audio(SourceElement, component='audio.js'):
         Displays an audio player.
 
         :param src: URL or local file path of the audio source
-        :param controls: whether to show the audio controls, like play, pause, and volume (default: `True`)
-        :param autoplay: whether to start playing the audio automatically (default: `False`)
-        :param muted: whether the audio should be initially muted (default: `False`)
-        :param loop: whether the audio should loop (default: `False`)
+        :param controls: whether to show the audio controls, like play, pause, and volume (default: ``True``)
+        :param autoplay: whether to start playing the audio automatically (default: ``False``)
+        :param muted: whether the audio should be initially muted (default: ``False``)
+        :param loop: whether the audio should loop (default: ``False``)
 
         See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio#events>`_
-        for a list of events you can subscribe to using the generic event subscription `on()`.
+        for a list of events you can subscribe to using the generic event subscription ``on()``.
         """
         super().__init__(source=src)
         self._props.set_bool('controls', controls)

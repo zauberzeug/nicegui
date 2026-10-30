@@ -84,46 +84,46 @@ def run(root: Callable | None = None, *,
         ) -> None:
     """ui.run
 
-    You can call `ui.run()` with optional arguments.
+    You can call ``ui.run()`` with optional arguments.
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
     :param root: root page function (*added in version 3.0.0*)
-    :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
+    :param host: start server with this host (defaults to ``'127.0.0.1'`` in native mode, otherwise ``'0.0.0.0'``)
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
-    :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
-    :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: path to a local image file, absolute `http(s)://` URL, data URL, inline SVG or emoji (e.g. `'🚀'`, works for most browsers; default: `None`, NiceGUI icon will be used).
-        In Windows native mode, a local `.ico` file path is also applied as the native window icon.
-    :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+    :param title: page title (default: ``'NiceGUI'``, can be overwritten per page)
+    :param viewport: page meta viewport content (default: ``'width=device-width, initial-scale=1'``, can be overwritten per page)
+    :param favicon: path to a local image file, absolute ``http(s)://`` URL, data URL, inline SVG or emoji (e.g. ``'🚀'``, works for most browsers; default: ``None``, NiceGUI icon will be used).
+        In Windows native mode, a local ``.ico`` file path is also applied as the native window icon.
+    :param dark: whether to use Quasar's dark mode (default: ``False``, use ``None`` for "auto" mode)
     :param language: language for Quasar elements and the ``lang`` attribute of the ``html`` tag
         (default: ``None``, in which case Quasar elements use ``'en-US'`` and the ``lang`` attribute is omitted, *updated in version 3.14.0*)
     :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
-    :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
+    :param cache_control_directives: cache control directives for internal static files (default: ``'public, max-age=31536000, immutable, stale-while-revalidate=31536000'``)
     :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
-    :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
-    :param show: automatically open the UI in a browser tab (default: `True`, opens "/", *since version 3.6.0*: you can pass a specific path like "/path/to/page")
-    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
-    :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
-    :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
-    :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
-    :param frameless: open the UI in a frameless window (default: `False`, also activates `native`)
-    :param reload: automatically reload the UI on file changes (default: `True`)
-    :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
+    :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: ``False``, *updated in version 2.9.0*)
+    :param show: automatically open the UI in a browser tab (default: ``True``, opens "/", *since version 3.6.0*: you can pass a specific path like "/path/to/page")
+    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to ``True`` (default: disabled)
+    :param native: open the UI in a native window of size 800x600 (default: ``False``, deactivates ``show``, automatically finds an open port)
+    :param window_size: open the UI in a native window with the provided size (e.g. ``(1024, 786)``, default: ``None``, also activates ``native``)
+    :param fullscreen: open the UI in a fullscreen window (default: ``False``, also activates ``native``)
+    :param frameless: open the UI in a frameless window (default: ``False``, also activates ``native``)
+    :param reload: automatically reload the UI on file changes (default: ``True``)
+    :param uvicorn_logging_level: logging level for uvicorn server (default: ``'warning'``)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
-    :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'*.py'`)
-    :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
-    :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
+    :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: ``'*.py'``)
+    :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: ``'.*, .py[cod], .sw.*, ~*'``)
+    :param tailwind: whether to use Tailwind CSS (experimental, default: ``True``)
     :param unocss: use UnoCSS with the specified preset instead of Tailwind CSS (default: ``None``, options: "mini", "wind3", "wind4", *added in version 3.7.0*)
-    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
+    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: ``True``)
     :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all')
-    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.user and ui.storage.browser)
+    :param storage_secret: secret key for browser-based storage (default: ``None``, a value is required to enable ui.storage.user and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
-    :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param show_welcome_message: whether to show the welcome message (default: ``True``)
     :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
-        (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
-    :param kwargs: additional keyword arguments are passed to `uvicorn.run`
+        (experimental, default: ``False``, can be overwritten per page, *added in version 3.11.0*)
+    :param kwargs: additional keyword arguments are passed to ``uvicorn.run``
     """
     if core.script_mode:
         if Client.page_routes:

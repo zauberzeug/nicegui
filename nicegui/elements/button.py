@@ -30,8 +30,8 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
-        :param icon: the name of an icon to be displayed on the button (default: `None`)
+        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or ``None``, default: 'primary')
+        :param icon: the name of an icon to be displayed on the button (default: ``None``)
         """
         self._clicked_waiters: set[asyncio.Event] = set()
         self._clicked_waiters_registered = False

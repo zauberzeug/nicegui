@@ -19,7 +19,7 @@ class Pagination(ValueElement[int | None], DisableableElement):
         :param min: minimum page number
         :param max: maximum page number
         :param direction_links: whether to show direction links (previous/next); use ``.props('boundary-links')`` for first/last links
-        :param value: initial page (defaults to `min` if no value is provided)
+        :param value: initial page (defaults to ``min`` if no value is provided)
         :param on_change: callback to be invoked when the value changes
         """
         if value is ...:

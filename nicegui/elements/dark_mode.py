@@ -16,9 +16,9 @@ class DarkMode(ValueElement[bool | None], component='dark_mode.js'):
         """Dark mode
 
         You can use this element to enable, disable or toggle dark mode on the page.
-        The value `None` represents auto mode, which uses the client's system preference.
+        The value ``None`` represents auto mode, which uses the client's system preference.
 
-        Note that this element overrides the `dark` parameter of the `ui.run` function and page decorators.
+        Note that this element overrides the ``dark`` parameter of the ``ui.run`` function and page decorators.
 
         :param value: Whether dark mode is enabled. If None, dark mode is set to auto.
         :param on_change: Callback that is invoked when the value changes.

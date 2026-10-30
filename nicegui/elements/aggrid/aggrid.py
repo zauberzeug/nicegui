@@ -251,7 +251,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         This method is especially useful when the grid is configured with ``rowSelection: 'single'``.
 
-        :return: row data of the first selection if any row is selected, otherwise `None`
+        :return: row data of the first selection if any row is selected, otherwise ``None``
         """
         rows = await self.get_selected_rows()
         return rows[0] if rows else None

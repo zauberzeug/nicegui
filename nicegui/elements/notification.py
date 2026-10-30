@@ -44,16 +44,16 @@ class Notification(Element, component='notification.js'):
         """Notification element
 
         Displays a notification on the screen.
-        In contrast to `ui.notify`, this element allows to update the notification message and other properties once the notification is displayed.
-        The notification can be removed with `dismiss()`.
+        In contrast to ``ui.notify``, this element allows to update the notification message and other properties once the notification is displayed.
+        The notification can be removed with ``dismiss()``.
 
         :param message: content of the notification
         :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")
-        :param close_button: optional label of a button to dismiss the notification (default: `False`)
+        :param close_button: optional label of a button to dismiss the notification (default: ``False``)
         :param type: optional type ("positive", "negative", "warning", "info" or "ongoing")
         :param color: optional color name
         :param multi_line: enable multi-line notifications
-        :param icon: optional name of an icon to be displayed in the notification (default: `None`)
+        :param icon: optional name of an icon to be displayed in the notification (default: ``None``)
         :param spinner: display a spinner in the notification (default: False)
         :param timeout: optional timeout in seconds after which the notification is dismissed (default: 5.0)
         :param on_dismiss: optional callback to be invoked when the notification is dismissed

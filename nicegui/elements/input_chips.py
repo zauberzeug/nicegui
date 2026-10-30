@@ -32,7 +32,7 @@ class InputChips(LabelElement, ValidationElement[list[str]], DisableableElement)
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
-        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
+        To disable the automatic validation on every value change, you can use the ``without_auto_validation`` method.
 
         *Added in version 2.22.0*
 

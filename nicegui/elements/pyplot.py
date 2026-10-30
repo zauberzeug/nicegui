@@ -43,8 +43,8 @@ class Pyplot(Element, default_classes='nicegui-pyplot'):
 
         Create a context to configure a `Matplotlib <https://matplotlib.org/>`_ plot.
 
-        :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`)
-        :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
+        :param close: whether the figure should be closed after exiting the context; set to ``False`` if you want to update it later (default: ``True``)
+        :param kwargs: arguments like ``figsize`` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
         if not optional_features.has('matplotlib'):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')
@@ -82,7 +82,7 @@ class Matplotlib(Element, default_classes='nicegui-matplotlib'):
         Create a `Matplotlib <https://matplotlib.org/>`_ element rendering a Matplotlib figure.
         The figure is automatically updated when leaving the figure context.
 
-        :param kwargs: arguments like `figsize` which should be passed to `matplotlib.figure.Figure <https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure>`_
+        :param kwargs: arguments like ``figsize`` which should be passed to `matplotlib.figure.Figure <https://matplotlib.org/stable/api/figure_api.html#matplotlib.figure.Figure>`_
         """
         if not optional_features.has('matplotlib'):
             raise ImportError('Matplotlib is not installed. Please run "pip install matplotlib".')

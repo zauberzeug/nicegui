@@ -18,8 +18,8 @@ class Badge(TextElement, BackgroundColorElement, TextColorElement):
         `QBadge <https://quasar.dev/vue-components/badge>`_ component.
 
         :param text: the initial value of the text field
-        :param color: the color name for component (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
-        :param text_color: text color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
+        :param color: the color name for component (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
+        :param text_color: text color (either a Quasar, Tailwind, or CSS color or ``None``, default: ``None``)
         :param outline: use 'outline' design (colored text and borders only) (default: False)
         """
         super().__init__(tag='q-badge', text=text, text_color=text_color, background_color=color)

@@ -31,7 +31,7 @@ class Knob(ValueElement[float], DisableableElement, TextColorElement):
         :param min: the minimum value (default: 0.0)
         :param max: the maximum value (default: 1.0)
         :param step: the step size (default: 0.01)
-        :param color: knob color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        :param color: knob color (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
         :param center_color: color name for the center part of the component, examples: primary, teal-10
         :param track_color: color name for the track of the component, examples: primary, teal-10
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem

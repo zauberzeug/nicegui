@@ -23,13 +23,13 @@ class Footer(ValueElement[bool], default_classes='nicegui-footer'):
         Like other layout elements, the footer can not be nested inside other elements.
 
         Note: The footer is automatically placed below other layout elements in the DOM to improve accessibility.
-        To change the order, use the `move` method.
+        To change the order, use the ``move`` method.
 
-        :param value: whether the footer is already opened (default: `True`)
-        :param fixed: whether the footer is fixed or scrolls with the content (default: `True`)
-        :param bordered: whether the footer should have a border (default: `False`)
-        :param elevated: whether the footer should have a shadow (default: `False`)
-        :param wrap: whether the footer should wrap its content (default: `True`)
+        :param value: whether the footer is already opened (default: ``True``)
+        :param fixed: whether the footer is fixed or scrolls with the content (default: ``True``)
+        :param bordered: whether the footer should have a border (default: ``False``)
+        :param elevated: whether the footer should have a shadow (default: ``False``)
+        :param wrap: whether the footer should wrap its content (default: ``True``)
         """
         require_top_level_layout(self)
         with context.client.layout:

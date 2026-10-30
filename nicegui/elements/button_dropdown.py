@@ -32,13 +32,13 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
         In such cases the Quasar color will be used.
 
         :param text: the label of the button
-        :param value: if the dropdown is open or not (default: `False`)
+        :param value: if the dropdown is open or not (default: ``False``)
         :param on_value_change: callback which is invoked when the dropdown is opened or closed
         :param on_click: callback which is invoked when button is pressed
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
-        :param icon: the name of an icon to be displayed on the button (default: `None`)
-        :param auto_close: whether the dropdown should close automatically when an item is clicked (default: `False`)
-        :param split: whether to split the dropdown icon into a separate button (default: `False`)
+        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or ``None``, default: 'primary')
+        :param icon: the name of an icon to be displayed on the button (default: ``None``)
+        :param auto_close: whether the dropdown should close automatically when an item is clicked (default: ``False``)
+        :param split: whether to split the dropdown icon into a separate button (default: ``False``)
         """
         super().__init__(tag='q-btn-dropdown',
                          icon=icon, text=text, background_color=color, value=value, on_value_change=on_value_change)

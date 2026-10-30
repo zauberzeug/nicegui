@@ -39,7 +39,7 @@ def notify(message: Any, *,
 
     :param message: content of the notification
     :param position: position on the screen ("top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right" or "center", default: "bottom")
-    :param close_button: optional label of a button to dismiss the notification (default: `False`)
+    :param close_button: optional label of a button to dismiss the notification (default: ``False``)
     :param type: optional type ("positive", "negative", "warning", "info" or "ongoing")
     :param color: optional color name
     :param multi_line: enable multi-line notifications

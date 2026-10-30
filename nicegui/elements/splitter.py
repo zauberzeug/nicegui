@@ -16,7 +16,7 @@ class Splitter(ValueElement[float | None], DisableableElement, default_classes='
                  ) -> None:
         """Splitter
 
-        The `ui.splitter` element divides the screen space into resizable sections,
+        The ``ui.splitter`` element divides the screen space into resizable sections,
         allowing for flexible and responsive layouts in your application.
 
         Based on Quasar's Splitter component:

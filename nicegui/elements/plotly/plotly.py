@@ -17,16 +17,16 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         """Plotly Element
 
         Renders a Plotly chart.
-        There are two ways to pass a Plotly figure for rendering, see parameter `figure`:
+        There are two ways to pass a Plotly figure for rendering, see parameter ``figure``:
 
-        * Pass a `go.Figure` object, see https://plotly.com/python/
+        * Pass a ``go.Figure`` object, see https://plotly.com/python/
 
-        * Pass a Python `dict` object with keys `data`, `layout`, `config` (optional), see https://plotly.com/javascript/
+        * Pass a Python ``dict`` object with keys ``data``, ``layout``, ``config`` (optional), see https://plotly.com/javascript/
 
-        For best performance, use the declarative `dict` approach for creating a Plotly chart.
+        For best performance, use the declarative ``dict`` approach for creating a Plotly chart.
 
-        :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
-                       a `dict` object with keys `data`, `layout`, `config` (optional).
+        :param figure: Plotly figure to be rendered. Can be either a ``go.Figure`` instance, or
+                       a ``dict`` object with keys ``data``, ``layout``, ``config`` (optional).
         """
         super().__init__()
 
