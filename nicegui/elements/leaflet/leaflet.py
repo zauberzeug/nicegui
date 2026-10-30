@@ -85,7 +85,7 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
 
         self._send_update_on_value_change = True
 
-    def handles_event_when_hidden(self, event_type: str) -> bool:
+    def _handles_event_when_hidden(self, event_type: str) -> bool:
         return event_type == 'init'
 
     def __enter__(self) -> Self:

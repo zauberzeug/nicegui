@@ -132,7 +132,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
         self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
-    def handles_event_when_hidden(self, event_type: str) -> bool:
+    def _handles_event_when_hidden(self, event_type: str) -> bool:
         return event_type == 'init'
 
     def on_click(self, callback: Handler[SceneClickEventArguments]) -> Self:
