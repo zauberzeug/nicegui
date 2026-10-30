@@ -148,7 +148,7 @@ export default {
     let groundGeometry, grid;
     if (this.polarGrid) {
       const [radius, sectors, rings, divisions = 64] = this.polarGrid;
-      groundGeometry = new THREE.CircleGeometry(radius, divisions);
+      groundGeometry = new THREE.CircleGeometry(radius, divisions, -Math.PI / 2);
       grid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
     } else if (this.grid) {
       const gridSize = this.grid[0] || 100;
