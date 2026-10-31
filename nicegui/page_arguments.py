@@ -145,7 +145,7 @@ def builder_annotations(builder: Callable) -> dict[str, Any]:
     func = builder
     while isinstance(func, functools.partial) or hasattr(func, '__wrapped__'):
         func = func.func if isinstance(func, functools.partial) else func.__wrapped__
-    namespace = getattr(func, '__globals__', None) or {}
+    namespace = getattr(func, '__globals__', None) or getattr(type(func).__call__, '__globals__', None) or {}
 
     annotations: dict[str, Any] = {}
     for name, param in inspect.signature(builder).parameters.items():

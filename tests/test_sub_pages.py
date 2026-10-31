@@ -924,6 +924,8 @@ async def test_string_annotations(user: User):
     # NOTE: string annotations as with `from __future__ import annotations`
     def page(args: 'PageArguments', count: 'int', ratio: 'float | None', price: 'Decimal'):
         ui.label(f'{args.path} {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(price).__name__}:{price}')
+        ui.label(f'tag:{args.query_parameters.get("tag")}')
+        ui.link('Add tag', '/5?ratio=2.5&tag=x')
 
     @ui.page('/')
     @ui.page('/{path:path}')
@@ -932,6 +934,8 @@ async def test_string_annotations(user: User):
 
     await user.open('/5?ratio=2.5')
     await user.should_see('/5 int:5 float:2.5 float:1.5')
+    user.find('Add tag').click()
+    await user.should_see('tag:x')
 
 
 def test_sub_pages_with_url_fragments(screen: Screen):
