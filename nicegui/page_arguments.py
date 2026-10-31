@@ -131,6 +131,6 @@ class PageArguments:
     @staticmethod
     def _unwrap_optional(param_type: type) -> type:
         """Extract the base type from T|None -> T, or return the type as-is."""
-        if get_origin(param_type) is Union and types.NoneType in get_args(param_type):
+        if get_origin(param_type) in (Union, types.UnionType) and types.NoneType in get_args(param_type):
             return next(arg for arg in get_args(param_type) if arg is not types.NoneType)
         return param_type
