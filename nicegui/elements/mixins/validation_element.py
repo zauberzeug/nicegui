@@ -65,10 +65,11 @@ class ValidationElement(ValueElement[ValueT]):
         :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
-        self._validation_counter += 1
-        validation_counter = self._validation_counter
         if return_result and helpers.is_coroutine_function(self._validation):
             raise NotImplementedError('The validate method cannot return results for async validation functions.')
+
+        self._validation_counter += 1
+        validation_counter = self._validation_counter
 
         if callable(self._validation):
             result = self._validation(self.value)
