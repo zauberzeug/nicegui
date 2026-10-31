@@ -21,8 +21,8 @@ class LinearProgress(ValueElement[float], TextColorElement):
 
         :param value: the initial value of the field (from 0.0 to 1.0)
         :param size: the height of the progress bar (default: "20px" with value label and "4px" without)
-        :param show_value: whether to show a value label in the center (default: `True`)
-        :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        :param show_value: whether to show a value label in the center (default: ``True``)
+        :param color: color (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
         """
         super().__init__(tag='q-linear-progress', value=value, on_value_change=None, text_color=color)
         self._props['size'] = size if size is not None else '20px' if show_value else '4px'
@@ -53,8 +53,8 @@ class CircularProgress(ValueElement[float], TextColorElement):
         :param min: the minimum value (default: 0.0)
         :param max: the maximum value (default: 1.0)
         :param size: the size of the progress circle (default: "xl")
-        :param show_value: whether to show a value label in the center (default: `True`)
-        :param color: color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        :param show_value: whether to show a value label in the center (default: ``True``)
+        :param color: color (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
         """
         super().__init__(tag='q-circular-progress', value=value, on_value_change=None, text_color=color)
         self._props['min'] = min

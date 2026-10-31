@@ -46,27 +46,27 @@ def run_with(
 
     :param app: FastAPI app
     :param root: root page function (*added in version 3.0.0*)
-    :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
-    :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: path to a local image file, absolute `http(s)://` URL, data URL, inline SVG or emoji (e.g. `'🚀'`, works for most browsers; default: `None`, NiceGUI icon will be used)
-    :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+    :param title: page title (default: ``'NiceGUI'``, can be overwritten per page)
+    :param viewport: page meta viewport content (default: ``'width=device-width, initial-scale=1'``, can be overwritten per page)
+    :param favicon: path to a local image file, absolute ``http(s)://`` URL, data URL, inline SVG or emoji (e.g. ``'🚀'``, works for most browsers; default: ``None``, NiceGUI icon will be used)
+    :param dark: whether to use Quasar's dark mode (default: ``False``, use ``None`` for "auto" mode)
     :param language: language for Quasar elements and the ``lang`` attribute of the ``html`` tag
         (default: ``None``, in which case Quasar elements use ``'en-US'`` and the ``lang`` attribute is omitted, *updated in version 3.14.0*)
     :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
-    :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
+    :param cache_control_directives: cache control directives for internal static files (default: ``'public, max-age=31536000, immutable, stale-while-revalidate=31536000'``)
     :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
-    :param mount_path: mount NiceGUI at this path (default: `'/'`)
-    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
-    :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
+    :param mount_path: mount NiceGUI at this path (default: ``'/'``)
+    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to ``True`` (default: disabled)
+    :param tailwind: whether to use Tailwind CSS (experimental, default: ``True``)
     :param unocss: use UnoCSS with the specified preset instead of Tailwind CSS (default: ``None``, options: "mini", "wind3", "wind4", *added in version 3.7.0*)
-    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
-    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.user and ui.storage.browser)
+    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: ``True``)
+    :param storage_secret: secret key for browser-based storage (default: ``None``, a value is required to enable ui.storage.user and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
-    :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param show_welcome_message: whether to show the welcome message (default: ``True``)
     :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
-        (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
+        (experimental, default: ``False``, can be overwritten per page, *added in version 3.11.0*)
     """
     if app is core.app:
         raise ValueError(

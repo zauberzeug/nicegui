@@ -132,7 +132,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         return self.run_method('writeln', list(data) if isinstance(data, bytes) else data)
 
     def run_terminal_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the Xterm.js terminal instance.
+        r"""Run a method of the Xterm.js terminal instance.
 
         Refer to the `Xterm.js documentation <https://xtermjs.org/docs/api/terminal/classes/terminal/#methods>`_
         for a list of methods.
@@ -141,7 +141,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

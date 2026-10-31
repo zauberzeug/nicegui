@@ -301,7 +301,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param up_x: x component of the camera up vector
         :param up_y: y component of the camera up vector
         :param up_z: z component of the camera up vector
-        :param duration: duration of the movement in seconds (default: `0.5`)
+        :param duration: duration of the movement in seconds (default: ``0.5``)
         """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y
@@ -320,7 +320,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     async def get_camera(self) -> dict[str, Any]:
         """Get the current camera parameters.
 
-        In contrast to the `camera` property,
+        In contrast to the ``camera`` property,
         the result of this method includes the current camera pose caused by the user navigating the scene in the browser.
         """
         return await self.run_method('get_camera')
@@ -332,7 +332,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
         """Remove objects from the scene.
 
-        :param predicate: function which returns `True` for objects which should be deleted
+        :param predicate: function which returns ``True`` for objects which should be deleted
         """
         for obj in list(self.objects.values()):
             if predicate(obj) and obj.id in self.objects:  # object might have been deleted already by its parent

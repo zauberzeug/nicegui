@@ -17,16 +17,16 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
 
         Creates a dialog based on Quasar's `QDialog <https://quasar.dev/vue-components/dialog>`_ component.
         By default it is dismissible by clicking or pressing ESC.
-        To make it persistent, set `.props('persistent')` on the dialog element.
+        To make it persistent, set ``.props('persistent')`` on the dialog element.
 
         Note: The dialog is an element.
         That means it is not removed when closed, but only hidden.
-        You should either create it only once and then reuse it, or remove it with `.clear()` after dismissal.
+        You should either create it only once and then reuse it, or remove it with ``.clear()`` after dismissal.
 
         *Updated in version 3.16.0: Awaiting a dialog resolves with ``None`` when the dialog is deleted,
         e.g. because the client disconnected.*
 
-        :param value: whether the dialog should be opened on creation (default: `False`)
+        :param value: whether the dialog should be opened on creation (default: ``False``)
         """
         with context.client.layout:
             super().__init__(value=value, on_value_change=None)

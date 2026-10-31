@@ -31,21 +31,21 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
         This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
-        After manipulating the options, call `update()` to update the options in the UI.
+        After manipulating the options, call ``update()`` to update the options in the UI.
 
-        If `with_input` is True, an input field is shown to filter the options.
+        If ``with_input`` is True, an input field is shown to filter the options.
 
-        If `new_value_mode` is not None, it implies `with_input=True` and the user can enter new values in the input field.
+        If ``new_value_mode`` is not None, it implies ``with_input=True`` and the user can enter new values in the input field.
         See `Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>`_ for details.
-        Note that this mode is ineffective when setting the `value` property programmatically.
+        Note that this mode is ineffective when setting the ``value`` property programmatically.
 
-        You can use the `validation` parameter to define a dictionary of validation rules,
+        You can use the ``validation`` parameter to define a dictionary of validation rules,
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
-        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
+        To disable the automatic validation on every value change, you can use the ``without_auto_validation`` method.
 
-        :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
+        :param options: a list ['value1', ...] or dictionary ``{'value1':'label1', ...}`` specifying the options
         :param label: the label to display above the selection
         :param value: the initial value
         :param on_change: callback to execute when selection changes

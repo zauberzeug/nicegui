@@ -24,7 +24,7 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
         """JSONEditor
 
         An element to create a JSON editor using `JSONEditor <https://github.com/josdejong/svelte-jsoneditor>`_.
-        Updates can be pushed to the editor by changing the `properties` property.
+        Updates can be pushed to the editor by changing the ``properties`` property.
 
         :param properties: dictionary of JSONEditor properties
         :param on_select: callback which is invoked when some of the content has been selected
@@ -62,7 +62,7 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
         return self._props['properties']
 
     def run_editor_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the JSONEditor instance.
+        r"""Run a method of the JSONEditor instance.
 
         See the `JSONEditor README <https://github.com/josdejong/svelte-jsoneditor/>`_ for a list of methods.
 
@@ -70,7 +70,7 @@ class JsonEditor(Element, component='json_editor.js', esm={'nicegui-json-editor'
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method (Python objects or JavaScript expressions)
+        :param \*args: arguments to pass to the method (Python objects or JavaScript expressions)
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

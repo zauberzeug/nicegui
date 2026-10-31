@@ -355,7 +355,7 @@ def bindable_dataclass(cls: None = ..., /, *,
 def bindable_dataclass(cls: type[T] | None = None, /, *,
                        bindable_fields: Iterable[str] | None = None,
                        **kwargs: Any) -> type[T] | Callable[[type[T]], type[T]]:
-    """A decorator that transforms a class into a dataclass with bindable fields.
+    r"""A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
     If ``bindable_fields`` is provided, only the listed fields are made bindable.
@@ -365,8 +365,8 @@ def bindable_dataclass(cls: type[T] | None = None, /, *,
 
     :param cls: class to be transformed into a dataclass
     :param bindable_fields: optional list of field names to make bindable (defaults to all fields)
-    :param kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``.
-    Usage of ``slots=True`` and ``frozen=True`` are not supported and will raise a ValueError.
+    :param \*\*kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``.
+        Usage of ``slots=True`` and ``frozen=True`` are not supported and will raise a ValueError.
 
     :return: resulting dataclass type
     """

@@ -12,16 +12,16 @@ class LinePlot(Pyplot):
                  close: bool = True,
                  **kwargs: Any,
                  ) -> None:
-        """Line Plot
+        r"""Line Plot
 
         Create a line plot using pyplot.
-        The `push` method provides live updating when utilized in combination with `ui.timer`.
+        The ``push`` method provides live updating when utilized in combination with ``ui.timer``.
 
         :param n: number of lines
         :param limit: maximum number of datapoints per line (new points will displace the oldest)
         :param update_every: update plot only after pushing new data multiple times to save CPU and bandwidth
-        :param close: whether the figure should be closed after exiting the context; set to `False` if you want to update it later (default: `True`)
-        :param kwargs: arguments like `figsize` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
+        :param close: whether the figure should be closed after exiting the context; set to ``False`` if you want to update it later (default: ``True``)
+        :param \*\*kwargs: arguments like ``figsize`` which should be passed to `pyplot.figure <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html>`_
         """
         super().__init__(close=close, **kwargs)
 
@@ -33,10 +33,10 @@ class LinePlot(Pyplot):
         self.push_counter = 0
 
     def with_legend(self, titles: list[str], **kwargs: Any):
-        """Add a legend to the plot.
+        r"""Add a legend to the plot.
 
         :param titles: list of titles for the lines
-        :param kwargs: additional arguments which should be passed to `pyplot.legend <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html>`_
+        :param \*\*kwargs: additional arguments which should be passed to `pyplot.legend <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html>`_
         """
         self.fig.gca().legend(titles, **kwargs)
         self._convert_to_html()

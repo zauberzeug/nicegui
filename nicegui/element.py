@@ -199,14 +199,14 @@ class Element(Visibility):
 
         NiceGUI is using the slot concept from Vue:
         Elements can have multiple slots, each possibly with a number of children.
-        Most elements only have one slot, e.g. a `ui.card` (QCard) only has a default slot.
-        But more complex elements like `ui.table` (QTable) can have more slots like "header", "body" and so on.
-        If you nest NiceGUI elements via with `ui.row(): ...` you place new elements inside of the row's default slot.
-        But if you use with `table.add_slot(...): ...`, you enter a different slot.
+        Most elements only have one slot, e.g. a ``ui.card`` (QCard) only has a default slot.
+        But more complex elements like ``ui.table`` (QTable) can have more slots like "header", "body" and so on.
+        If you nest NiceGUI elements via with ``ui.row(): ...`` you place new elements inside of the row's default slot.
+        But if you use with ``table.add_slot(...): ...``, you enter a different slot.
 
         The slot stack helps NiceGUI to keep track of which slot is currently used for new elements.
-        The `parent` field holds a reference to its element.
-        Whenever an element is entered via a `with` expression, its default slot is automatically entered as well.
+        The ``parent`` field holds a reference to its element.
+        Whenever an element is entered via a ``with`` expression, its default slot is automatically entered as well.
 
         :param name: name of the slot
         :param template: Vue template of the slot
@@ -363,13 +363,13 @@ class Element(Visibility):
         return cls
 
     def mark(self, *markers: str) -> Self:
-        """Replace markers of the element.
+        r"""Replace markers of the element.
 
         Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_
         which is heavily used in testing
         but can also be used to reduce the number of global variables or passing around dependencies.
 
-        :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
+        :param \*markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
         """
         self._markers = [word for marker in markers for word in marker.split()]
         return self
@@ -480,13 +480,13 @@ class Element(Visibility):
         self.client.outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
-        """Run a method on the client side.
+        r"""Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
         if not core.is_loop_running() or not self._is_safe_to_interact():

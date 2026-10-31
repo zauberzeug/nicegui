@@ -73,7 +73,7 @@ class PageArguments:
     def build_kwargs(cls, match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
         """Build keyword arguments for the route builder function.
 
-        :param route_match: matched route containing path info and parameters
+        :param match: matched route containing path info and parameters
         :param frame: ``ui.sub_pages`` instance executing this page
         :param data: arbitrary data passed to the ``ui.sub_pages`` element
         :return: keyword arguments for the builder function

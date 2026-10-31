@@ -54,7 +54,7 @@ class Table(FilterElement, component='table.js'):
         :param column_defaults: optional default column properties, *added in version 2.0.0*
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
         :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
@@ -171,14 +171,14 @@ class Table(FilterElement, component='table.js'):
         """Create a table from a Pandas DataFrame.
 
         Note:
-        If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
+        If the DataFrame contains non-serializable columns of type ``datetime64[ns]``, ``timedelta64[ns]``, ``complex128`` or ``period[M]``,
         they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         *Added in version 2.0.0*
 
-        *Since version 3.12.0:
+        *Since version 3.12.0:*
         Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
         Pass ``df.reset_index(drop=True)`` to drop the index instead.
 
@@ -187,7 +187,7 @@ class Table(FilterElement, component='table.js'):
         :param column_defaults: optional default column properties
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
         :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
@@ -236,7 +236,7 @@ class Table(FilterElement, component='table.js'):
         :param column_defaults: optional default column properties
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
         :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
         :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
@@ -266,9 +266,9 @@ class Table(FilterElement, component='table.js'):
                            column_defaults: dict | None = None) -> None:
         """Update the table from a Pandas DataFrame.
 
-        See `from_pandas()` for more information about the conversion of non-serializable columns.
+        See ``from_pandas()`` for more information about the conversion of non-serializable columns.
 
-        If `columns` is not provided and the columns had been inferred from a DataFrame,
+        If ``columns`` is not provided and the columns had been inferred from a DataFrame,
         the columns will be updated to match the new DataFrame.
 
         :param df: Pandas DataFrame

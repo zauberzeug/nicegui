@@ -19,9 +19,9 @@ class Date(ValueElement[Any], DisableableElement):
         """Date Picker
 
         This element is based on Quasar's `QDate <https://quasar.dev/vue-components/date>`_ component.
-        The date is a string in the format defined by the `mask` parameter.
+        The date is a string in the format defined by the ``mask`` parameter.
 
-        You can also use the `range` or `multiple` props to select a range of dates or multiple dates::
+        You can also use the ``range`` or ``multiple`` props to select a range of dates or multiple dates::
 
             ui.date({'from': '2023-01-01', 'to': '2023-01-05'}).props('range')
             ui.date(['2023-01-01', '2023-01-02', '2023-01-03']).props('multiple')

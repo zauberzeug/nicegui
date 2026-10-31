@@ -20,13 +20,13 @@ class Video(SourceElement, component='video.js'):
         Displays a video.
 
         :param src: URL or local file path of the video source
-        :param controls: whether to show the video controls, like play, pause, and volume (default: `True`)
-        :param autoplay: whether to start playing the video automatically (default: `False`)
-        :param muted: whether the video should be initially muted (default: `False`)
-        :param loop: whether the video should loop (default: `False`)
+        :param controls: whether to show the video controls, like play, pause, and volume (default: ``True``)
+        :param autoplay: whether to start playing the video automatically (default: ``False``)
+        :param muted: whether the video should be initially muted (default: ``False``)
+        :param loop: whether the video should loop (default: ``False``)
 
         See `here <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events>`_
-        for a list of events you can subscribe to using the generic event subscription `on()`.
+        for a list of events you can subscribe to using the generic event subscription ``on()``.
         """
         super().__init__(source=src)
         self._props.set_bool('controls', controls)

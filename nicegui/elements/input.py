@@ -29,20 +29,20 @@ class Input(LabelElement, ValidationElement[str], DisableableElement, component=
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
 
-        The `on_change` event is called on every keystroke and the value updates accordingly.
+        The ``on_change`` event is called on every keystroke and the value updates accordingly.
         If you want to wait until the user confirms the input, you can register a custom event callback, e.g.
-        `ui.input(...).on('keydown.enter', ...)` or `ui.input(...).on('blur', ...)`.
+        ``ui.input(...).on('keydown.enter', ...)`` or ``ui.input(...).on('blur', ...)``.
 
-        You can use the `validation` parameter to define a dictionary of validation rules,
+        You can use the ``validation`` parameter to define a dictionary of validation rules,
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
-        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
+        To disable the automatic validation on every value change, you can use the ``without_auto_validation`` method.
 
         Note about styling the input:
-        Quasar's `QInput` component is a wrapper around a native `input` element.
+        Quasar's ``QInput`` component is a wrapper around a native ``input`` element.
         This means that you cannot style the input directly,
-        but you can use the `input-class` and `input-style` props to style the native input element.
+        but you can use the ``input-class`` and ``input-style`` props to style the native input element.
         See the "Style" props section on the `QInput <https://quasar.dev/vue-components/input>`_ documentation for more details.
 
         :param label: displayed label for the text input

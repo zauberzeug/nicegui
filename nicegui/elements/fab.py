@@ -70,6 +70,7 @@ class FabAction(LabelElement, IconElement, BackgroundColorElement, DisableableEl
 
         :param icon: icon to be displayed on the action button
         :param label: optional label for the action button
+        :param on_click: callback which is invoked when the action button is clicked
         :param color: background color of the action button (default: "primary")
         :param auto_close: whether the FAB should be closed after a click event (default: ``True``)
         """

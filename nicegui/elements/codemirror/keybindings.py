@@ -48,7 +48,7 @@ class KeyBindingElement(Element):
         *Added in version 3.14.0*
 
         :param callback: the handler callable
-        :param prevent_default: whether to mark the binding as handled (default: `True`).
+        :param prevent_default: whether to mark the binding as handled (default: ``True``).
             When ``True``, the browser default action is suppressed and CodeMirror stops
             keymap traversal at this binding. When ``False``, the event continues to
             lower-precedence CodeMirror bindings (e.g. ``basicSetup``'s ``Mod-z`` undo)

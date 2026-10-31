@@ -11,9 +11,9 @@ class CarouselSlide(DisableableElement, default_classes='nicegui-carousel-slide'
         """Carousel Slide
 
         This element represents `Quasar's QCarouselSlide <https://quasar.dev/vue-components/carousel#qcarouselslide-api>`_ component.
-        It is a child of a `ui.carousel` element.
+        It is a child of a ``ui.carousel`` element.
 
-        :param name: name of the slide (will be the value of the `ui.carousel` element, auto-generated if `None`)
+        :param name: name of the slide (will be the value of the ``ui.carousel`` element, auto-generated if ``None``)
         """
         super().__init__(tag='q-carousel-slide')
         self.carousel = cast(ValueElement, context.slot.parent)

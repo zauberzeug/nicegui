@@ -136,7 +136,7 @@ class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
     def __init__(self, func: Callable[Concatenate[_S, _P], _T]) -> None:
         """Refreshable UI methods
 
-        The `@ui.refreshable_method` decorator allows you to create methods that have a `refresh` method.
+        The ``@ui.refreshable_method`` decorator allows you to create methods that have a ``refresh`` method.
         This method will automatically delete all elements created by the function and recreate them.
         """
         super().__init__(func)  # type: ignore

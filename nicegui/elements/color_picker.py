@@ -19,7 +19,7 @@ class ColorPicker(Menu):
         `QColor <https://quasar.dev/vue-components/color-picker>`_ components.
 
         :param on_pick: callback to execute when a color is picked
-        :param value: whether the menu is already opened (default: `False`)
+        :param value: whether the menu is already opened (default: ``False``)
         """
         super().__init__(value=value)
         self._pick_handlers = [on_pick] if on_pick else []

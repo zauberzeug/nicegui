@@ -36,7 +36,7 @@ R = TypeVar('R')
 
 
 def _resolve_cpu_bound_context() -> BaseContext:
-    """Resolve the multiprocessing context for the cpu_bound pool from `process_pool_start_method`."""
+    """Resolve the multiprocessing context for the cpu_bound pool from ``process_pool_start_method``."""
     if process_pool_start_method is None:
         return multiprocessing.get_context()
     if process_pool_start_method == 'spawn':
@@ -105,7 +105,7 @@ async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs:
 async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run a CPU-bound function in a separate process.
 
-    `run.cpu_bound` needs to execute the function in a separate process.
+    ``run.cpu_bound`` needs to execute the function in a separate process.
     For this it needs to transfer the whole state of the passed function to the process (which is done with pickle).
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).

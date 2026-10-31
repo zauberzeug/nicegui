@@ -37,13 +37,13 @@ class Layer:
         """Return a dictionary representation of the layer."""
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the Leaflet layer.
+        r"""Run a method of the Leaflet layer.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

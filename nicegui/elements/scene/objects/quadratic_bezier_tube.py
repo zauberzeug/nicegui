@@ -24,7 +24,7 @@ class QuadraticBezierTube(Object3D, component='quadratic_bezier_tube.js'):
         :param tubular_segments: number of tubular segments (default: 64)
         :param radius: radius of the tube (default: 1.0)
         :param radial_segments: number of radial segments (default: 8)
-        :param closed: whether the tube should be closed (default: `False`)
-        :param wireframe: whether to display the tube as a wireframe (default: `False`)
+        :param closed: whether the tube should be closed (default: ``False``)
+        :param wireframe: whether to display the tube as a wireframe (default: ``False``)
         """
         super().__init__(start, mid, end, tubular_segments, radius, radial_segments, closed, wireframe=wireframe)

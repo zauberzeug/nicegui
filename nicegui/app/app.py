@@ -117,7 +117,7 @@ class App(FastAPI):
     def on_connect(self, handler: Callable) -> None:
         """Called every time a new client connects to NiceGUI.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -126,7 +126,7 @@ class App(FastAPI):
     def on_disconnect(self, handler: Callable) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
@@ -137,7 +137,7 @@ class App(FastAPI):
     def on_delete(self, handler: Callable) -> None:
         """Called when a client is deleted.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Added in version 3.0.0*
         """
@@ -150,7 +150,7 @@ class App(FastAPI):
 
         The callback can be synchronous or asynchronous.
 
-        Needs to be called before `ui.run()`.
+        Needs to be called before ``ui.run()``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -171,7 +171,7 @@ class App(FastAPI):
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
 
-        The callback has an optional parameter of `Exception`.
+        The callback has an optional parameter of ``Exception``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -225,13 +225,13 @@ class App(FastAPI):
                          max_cache_age: int = 3600) -> None:
         """Add a directory of static files.
 
-        `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
+        ``add_static_files()`` makes a local directory available at the specified endpoint, e.g. ``'/static'``.
         This is useful for providing local data like images to the frontend.
         Otherwise the browser would not be able to access the files.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
-        To make a single file accessible, you can use `add_static_file()`.
-        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
+        To make a single file accessible, you can use ``add_static_file()``.
+        For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
 
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
@@ -259,10 +259,10 @@ class App(FastAPI):
         """Add a single static file.
 
         Allows a local file to be accessed online with enabled caching.
-        If `url_path` is not specified, a path will be generated.
+        If ``url_path`` is not specified, a path will be generated.
 
-        To make a whole folder of files accessible, use `add_static_files()` instead.
-        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
+        To make a whole folder of files accessible, use ``add_static_files()`` instead.
+        For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
 
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
@@ -294,13 +294,13 @@ class App(FastAPI):
     def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
         """Add directory of media files.
 
-        `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
+        ``add_media_files()`` allows a local files to be streamed from a specified endpoint, e.g. ``'/media'``.
         This should be used for media files to support proper streaming.
         Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
-        To make a single file accessible via streaming, you can use `add_media_file()`.
-        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
+        To make a single file accessible via streaming, you can use ``add_media_file()``.
+        For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
 
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
@@ -321,10 +321,10 @@ class App(FastAPI):
         """Add a single media file.
 
         Allows a local file to be streamed.
-        If `url_path` is not specified, a path will be generated.
+        If ``url_path`` is not specified, a path will be generated.
 
-        To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
-        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
+        To make a whole folder of media files accessible via streaming, use ``add_media_files()`` instead.
+        For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
 
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
@@ -362,7 +362,7 @@ class App(FastAPI):
                info: str = '#31ccec',
                warning: str = '#f2c037',
                **custom_colors: str) -> None:
-        """Color Theming
+        r"""Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
 
@@ -379,7 +379,7 @@ class App(FastAPI):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
-        :param custom_colors: Custom color definitions for branding
+        :param \*\*custom_colors: Custom color definitions for branding
         """
         brand: dict[str, str] = self.config.quasar_config['brand']
         brand['primary'] = primary

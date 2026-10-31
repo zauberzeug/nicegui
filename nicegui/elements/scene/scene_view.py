@@ -129,7 +129,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         :param up_x: x component of the camera up vector
         :param up_y: y component of the camera up vector
         :param up_z: z component of the camera up vector
-        :param duration: duration of the movement in seconds (default: `0.5`)
+        :param duration: duration of the movement in seconds (default: ``0.5``)
         """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y

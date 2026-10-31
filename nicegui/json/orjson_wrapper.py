@@ -24,7 +24,7 @@ def dumps(obj: Any,
 
     By default, this function supports serializing NumPy arrays, which Python's json module does not.
 
-    Uses package `orjson` internally.
+    Uses package ``orjson`` internally.
     """
     # note that parameters `sort_keys` and `separators` are required by AsyncServer's
     # internal calls, which match Python's default `json.dumps` API.
@@ -48,7 +48,7 @@ def dumps(obj: Any,
 def loads(value: str) -> Any:
     """Deserialize a JSON-encoded string to a corresponding Python object/value.
 
-    Uses package `orjson` internally.
+    Uses package ``orjson`` internally.
     """
     return orjson.loads(value)
 
@@ -69,7 +69,7 @@ def _orjson_converter(obj):
 class NiceGUIJSONResponse(JSONResponse):
     """FastAPI response class to support our custom json serializer implementation.
 
-    Uses package `orjson` internally.
+    Uses package ``orjson`` internally.
     """
 
     def render(self, content: Any) -> bytes:
