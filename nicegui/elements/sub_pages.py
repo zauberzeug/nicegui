@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import re
 from collections.abc import Callable
 from typing import Any
@@ -13,7 +12,7 @@ from ..context import context
 from ..element import Element
 from ..elements.label import Label
 from ..logging import log
-from ..page_arguments import PageArguments, RouteMatch
+from ..page_arguments import PageArguments, RouteMatch, builder_annotations
 
 
 class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-pages'):
@@ -231,8 +230,8 @@ class SubPages(Element, component='sub_pages.js', default_classes='nicegui-sub-p
             return True
         current_params = route_match.query_params
         previous_params = self._match.query_params
-        for name, param in inspect.signature(route_match.builder).parameters.items():
-            if param.annotation is PageArguments:
+        for name, annotation in builder_annotations(route_match.builder).items():
+            if annotation is PageArguments:
                 return current_params != previous_params
             if current_params.get(name) != previous_params.get(name):
                 return True

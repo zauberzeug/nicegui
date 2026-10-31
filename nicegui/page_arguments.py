@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import inspect
 import types
 from collections.abc import Callable
@@ -78,18 +79,16 @@ class PageArguments:
         :param data: arbitrary data passed to the ``ui.sub_pages`` element
         :return: keyword arguments for the builder function
         """
-        parameters = inspect.signature(match.builder).parameters
         kwargs = {}
-
-        for name, param in parameters.items():
-            if param.annotation is cls:
+        for name, annotation in builder_annotations(match.builder).items():
+            if annotation is cls:
                 kwargs[name] = cls._from_route_match(match, frame, data)
             elif name in data:
                 kwargs[name] = data[name]
             elif match.parameters and name in match.parameters:
-                kwargs[name] = cls._convert_parameter(match.parameters[name], param.annotation)
+                kwargs[name] = cls._convert_parameter(match.parameters[name], annotation)
             elif name in match.query_params:
-                kwargs[name] = cls._convert_parameter(match.query_params[name], param.annotation)
+                kwargs[name] = cls._convert_parameter(match.query_params[name], annotation)
 
         return kwargs
 
@@ -134,3 +133,26 @@ class PageArguments:
         if get_origin(param_type) in (Union, types.UnionType) and types.NoneType in get_args(param_type):
             return next(arg for arg in get_args(param_type) if arg is not types.NoneType)
         return param_type
+
+
+def builder_annotations(builder: Callable) -> dict[str, Any]:
+    """Map the parameter names of a page builder to their annotations.
+
+    String annotations (e.g. due to ``from __future__ import annotations``) are evaluated individually
+    in the builder's global namespace.
+    Annotations that cannot be resolved (e.g. types imported only under ``TYPE_CHECKING``) are kept as strings.
+    """
+    func = builder
+    while isinstance(func, functools.partial) or hasattr(func, '__wrapped__'):
+        func = func.func if isinstance(func, functools.partial) else func.__wrapped__
+    namespace = getattr(func, '__globals__', None) or getattr(type(func).__call__, '__globals__', None) or {}
+
+    annotations: dict[str, Any] = {}
+    for name, param in inspect.signature(builder).parameters.items():
+        annotations[name] = param.annotation
+        if isinstance(param.annotation, str):
+            try:
+                annotations[name] = eval(param.annotation, namespace)  # pylint: disable=eval-used
+            except Exception:
+                pass
+    return annotations
