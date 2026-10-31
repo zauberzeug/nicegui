@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from typing import TYPE_CHECKING
 
 import httpx
 import pytest
@@ -8,6 +9,9 @@ from selenium.webdriver.common.keys import Keys
 
 from nicegui import APIRouter, PageArguments, app, background_tasks, ui
 from nicegui.testing import Screen, User
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 # pylint: disable=missing-function-docstring
 
@@ -914,6 +918,20 @@ async def test_pep604_optional_parameters_are_converted(user: User):
 
     await user.open('/query?count=5&ratio=2.5&name=abc')
     await user.should_see('query int:5 float:2.5 str:abc')
+
+
+async def test_string_annotations(user: User):
+    # NOTE: string annotations as with `from __future__ import annotations`
+    def page(args: 'PageArguments', count: 'int', ratio: 'float | None', price: 'Decimal'):
+        ui.label(f'{args.path} {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(price).__name__}:{price}')
+
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.sub_pages({'/{count}': page}, data={'price': 1.5})
+
+    await user.open('/5?ratio=2.5')
+    await user.should_see('/5 int:5 float:2.5 float:1.5')
 
 
 def test_sub_pages_with_url_fragments(screen: Screen):
