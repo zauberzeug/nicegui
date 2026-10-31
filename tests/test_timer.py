@@ -1,11 +1,10 @@
 import asyncio
 import gc
-import time
 
 import httpx
 import pytest
 
-from nicegui import Client, app, background_tasks, run, ui
+from nicegui import Client, app, background_tasks, ui
 from nicegui.testing import Screen, User
 
 
