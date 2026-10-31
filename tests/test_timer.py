@@ -306,7 +306,10 @@ async def test_teardown_does_not_wait_for_the_next_interval(user: User):
     def page():
         async def tick():
             ui.label('tick')
-            await run.io_bound(time.sleep, 0.5)  # returns None instead of raising when cancelled
+            try:
+                await asyncio.sleep(0.5)
+            except asyncio.CancelledError:
+                pass  # swallowed, like run.io_bound does in 3.x
         ui.timer(10, tick)
 
     await user.open('/')
