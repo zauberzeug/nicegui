@@ -5,7 +5,7 @@ from ... import background_tasks, helpers
 from ...events import ValueT
 from .value_element import ValueElement
 
-ValidationFunction: TypeAlias = Callable[[ValueT], str | None | Awaitable[str | None]]
+ValidationFunction: TypeAlias = Callable[[ValueT], str | Awaitable[str | None] | None]
 ValidationDict: TypeAlias = dict[str, Callable[[ValueT], bool]]
 
 
