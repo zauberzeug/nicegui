@@ -5,7 +5,7 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 from urllib.parse import parse_qs, quote
@@ -75,8 +75,32 @@ class ClientConnectionTimeout(TimeoutError):
         self.client = client
 
 
+class _PageRoutes(Mapping[Callable, str]):
+    """Maps page builders to their routes, resolved from the app's route table on access.
+
+    Resolving lazily keeps the routes correct no matter whether a router is included
+    before or after its pages are decorated.
+    """
+
+    def __getitem__(self, target: Callable) -> str:
+        page_ = getattr(target, '__nicegui_page__', None)
+        if page_ is None:
+            raise KeyError(target)
+        return cast(str, page_.path)
+
+    def __iter__(self) -> Iterator[Callable]:
+        for route in core.app._iter_http_routes():  # pylint: disable=protected-access
+            # the route endpoint is the wrapped builder; its ``__wrapped__`` is the decorated function
+            func = getattr(getattr(route, 'endpoint', None), '__wrapped__', None)
+            if func is not None and getattr(func, '__nicegui_page__', None) is not None:
+                yield cast(Callable, func)
+
+    def __len__(self) -> int:
+        return sum(1 for _ in self)
+
+
 class Client:
-    page_routes: ClassVar[dict[Callable, str]] = {}
+    page_routes: ClassVar[Mapping[Callable, str]] = _PageRoutes()
     '''Maps page builders to their routes.'''
 
     instances: ClassVar[dict[str, Client]] = {}

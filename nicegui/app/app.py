@@ -411,6 +411,18 @@ class App(FastAPI):
         else:
             yield from (route for route in iter_route_contexts(self.routes) if isinstance(route.original_route, Route))
 
+    def page_route_path(self, endpoint: Callable) -> str | None:
+        """Return the effective path of the page route for the given endpoint.
+
+        Included routers are resolved to the prefixes added by ``app.include_router``,
+        so callers do not have to keep a snapshot of the paths in sync.
+        """
+        for route in self._iter_http_routes():
+            if getattr(route, 'endpoint', None) is endpoint:
+                route_path: str | None = getattr(route, 'path', None)
+                return route_path
+        return None
+
     def _single_use_guard(self, path: str) -> Callable[[], None]:
         """Return a callable that lets exactly one request pass and removes the route behind it."""
         ticket = threading.Lock()

@@ -184,12 +184,13 @@ def run(root: Callable | None = None, *,
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
+    page_route_paths = set(Client.page_routes.values())  # resolved once, the lookup walks the route table
     for route in core.app.routes:
         if not isinstance(route, Route):
             continue
         if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
-        if route.path == '/' or route.path in Client.page_routes.values():
+        if route.path == '/' or route.path in page_route_paths:
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
 
     if fastapi_docs:
