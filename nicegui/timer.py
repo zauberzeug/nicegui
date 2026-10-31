@@ -92,11 +92,13 @@ class Timer:
                     try:
                         start = time.time()
                         if self.active:
+                            # DEPRECATED: await the invocation directly in NiceGUI 4.0,
+                            # where run.io_bound and run.cpu_bound no longer swallow the cancellation
                             invocation = self._current_invocation = asyncio.create_task(self._invoke_callback())
                             try:
                                 await asyncio.shield(invocation)
                             except asyncio.CancelledError:
-                                # the callback may swallow the cancellation (run.io_bound does), so re-raise it here
+                                # the callback may swallow the cancellation, so re-raise it here
                                 invocation.cancel()
                                 with suppress(asyncio.CancelledError):
                                     await invocation

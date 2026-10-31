@@ -300,6 +300,7 @@ async def test_no_error_when_timer_is_deleted_while_waiting_for_connection(user:
     # no assertion needed: the user fixture fails the test if the woken timer raises and logs an ERROR
 
 
+# DEPRECATED: remove in NiceGUI 4.0 together with the shielded await in `Timer._run_in_loop`
 async def test_teardown_does_not_wait_for_the_next_interval(user: User):
     @ui.page('/')
     def page():
