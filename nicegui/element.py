@@ -386,7 +386,7 @@ class Element(Visibility):
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: events.Handler[events.GenericEventArguments] | None = None,
-           args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
+           args: Sequence[str] | Sequence[Sequence[str] | None] | None = None,
            *,
            throttle: float = 0.0,
            leading_events: bool = True,

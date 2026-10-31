@@ -46,8 +46,8 @@ class LinePlot(Pyplot):
              x: list[float],
              Y: list[list[float]],
              *,
-             x_limits: None | Literal['auto'] | tuple[float, float] = 'auto',
-             y_limits: None | Literal['auto'] | tuple[float, float] = 'auto',
+             x_limits: Literal['auto'] | tuple[float, float] | None = 'auto',
+             y_limits: Literal['auto'] | tuple[float, float] | None = 'auto',
              ) -> None:
         """Push new data to the plot.
 
