@@ -298,3 +298,21 @@ async def test_no_error_when_timer_is_deleted_while_waiting_for_connection(user:
     gc.collect()
     await asyncio.sleep(0.3)
     # no assertion needed: the user fixture fails the test if the woken timer raises and logs an ERROR
+
+
+# DEPRECATED: remove in NiceGUI 4.0 together with the shielded await in `Timer._run_in_loop`
+async def test_teardown_does_not_wait_for_the_next_interval(user: User):
+    @ui.page('/')
+    def page():
+        async def tick():
+            ui.label('tick')
+            try:
+                await asyncio.sleep(0.5)
+            except asyncio.CancelledError:
+                pass  # swallowed, like run.io_bound does in 3.x
+        ui.timer(10, tick)
+
+    await user.open('/')
+    await user.should_see('tick')  # the invocation is in flight now
+    await background_tasks.teardown()
+    # no assertion needed: the user fixture fails the test if teardown times out and logs an ERROR
