@@ -257,19 +257,7 @@ async def test_find_exclude_marker(user: User):
         ui.label('label B').mark('normal')
 
         assert texts(ElementFilter(kind=TextElement).exclude(marker='normal')) == ['label A', 'button B']
-
-    await user.open('/')
-
-
-async def test_find_exclude_multiple_markers(user: User):
-    @ui.page('/')
-    def page():
-        ui.label('label A').mark('important')
-        ui.label('label B').mark('draft')
-        ui.label('label C').mark('important draft')
-        ui.label('label D')
-
-        assert texts(ElementFilter(kind=ui.label).exclude(marker='important draft')) == ['label D']
+        assert texts(ElementFilter(kind=TextElement).exclude(marker='normal important')) == ['button B']
 
     await user.open('/')
 
