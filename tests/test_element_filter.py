@@ -261,6 +261,19 @@ async def test_find_exclude_marker(user: User):
     await user.open('/')
 
 
+async def test_find_exclude_multiple_markers(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('label A').mark('important')
+        ui.label('label B').mark('draft')
+        ui.label('label C').mark('important draft')
+        ui.label('label D')
+
+        assert texts(ElementFilter(kind=ui.label).exclude(marker='important draft')) == ['label D']
+
+    await user.open('/')
+
+
 async def test_find_exclude_content(user: User):
     @ui.page('/')
     def page():
