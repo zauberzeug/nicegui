@@ -257,6 +257,7 @@ async def test_find_exclude_marker(user: User):
         ui.label('label B').mark('normal')
 
         assert texts(ElementFilter(kind=TextElement).exclude(marker='normal')) == ['label A', 'button B']
+        assert texts(ElementFilter(kind=TextElement).exclude(marker='normal important')) == ['button B']
 
     await user.open('/')
 
