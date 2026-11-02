@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+
 export default {
   template: `
     <q-editor ref="qRef" v-model="inputValue">
@@ -8,10 +10,11 @@ export default {
   `,
   props: {
     value: String,
+    sanitize: Boolean,
   },
   data() {
     return {
-      inputValue: this.value,
+      inputValue: this.sanitizedValue(),
       emitting: true,
     };
   },
@@ -20,9 +23,9 @@ export default {
     if (element) element.props.value = this.inputValue;
   },
   watch: {
-    value(newValue) {
+    value() {
       this.emitting = false;
-      this.inputValue = newValue;
+      this.inputValue = this.sanitizedValue();
       this.$nextTick(() => (this.emitting = true));
     },
     inputValue(newValue) {
@@ -32,7 +35,10 @@ export default {
   },
   methods: {
     updateValue() {
-      this.inputValue = this.value;
+      this.inputValue = this.sanitizedValue();
+    },
+    sanitizedValue() {
+      return this.sanitize ? DOMPurify.sanitize(this.value ?? "") : this.value;
     },
   },
 };
