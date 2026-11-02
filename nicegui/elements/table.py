@@ -320,7 +320,27 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
-        return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        import polars as pl  # pylint: disable=import-outside-toplevel
+
+        def is_special_dtype(dtype) -> bool:
+            # these dtypes produce bytes, timedelta or arbitrary Python objects, which cannot be serialized to JSON
+            return dtype in (pl.Binary, pl.Duration, pl.Object)
+
+        special_cols = [name for name, dtype in df.schema.items() if is_special_dtype(dtype)]
+        if not special_cols:
+            return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+
+        def to_string(value) -> str | None:
+            if value is None:  # null values stay empty instead of becoming "None"
+                return None
+            # decode binary data like Pandas does, but replace undecodable bytes instead of raising
+            return value.decode('utf-8', errors='backslashreplace') if isinstance(value, bytes) else str(value)
+
+        rows = df.to_dicts()
+        for row in rows:
+            for column in special_cols:
+                row[column] = to_string(row[column])
+        return rows, [{'name': col, 'label': col, 'field': col} for col in df.columns]
 
     @property
     def rows(self) -> list[dict]:

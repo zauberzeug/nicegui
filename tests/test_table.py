@@ -7,7 +7,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def columns() -> list:
@@ -240,6 +240,22 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
     screen.click('Update')
     screen.should_contain('Lionel')
     screen.should_contain('19')
+
+
+async def test_from_polars_converts_non_json_datatypes(user: User):
+    rows = []
+
+    @ui.page('/')
+    def page():
+        table = ui.table.from_polars(pl.DataFrame({
+            'Timedelta_col': [timedelta(days=5)],
+            'Binary_col': [b'hello'],
+            'Empty_col': [None],
+        }))
+        rows.extend(table.rows)
+
+    await user.open('/')
+    assert rows == [{'Timedelta_col': '5 days, 0:00:00', 'Binary_col': 'hello', 'Empty_col': None}]
 
 
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
