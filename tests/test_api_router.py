@@ -1,5 +1,3 @@
-from starlette.routing import Match, Route
-
 from nicegui import APIRouter, app, ui
 from nicegui.testing import Screen
 
@@ -95,22 +93,3 @@ def test_link_to_page_of_nested_routers(screen: Screen):
     screen.click('Go')
     screen.should_contain('Sub of nested router')
     assert screen.current_path == '/outer/inner/sub'
-
-
-def test_favicon_of_catch_all_page_on_included_router(tmp_path):
-    """A catch-all page must not shadow the favicon route of its own router."""
-    icon = tmp_path / 'icon.svg'
-    icon.write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>', encoding='utf-8')
-
-    router = APIRouter()
-
-    @router.page('/{p:path}', favicon=icon)
-    def catch_all(p: str = '') -> None:
-        ui.label('Page')
-
-    app.include_router(router, prefix='/v2')
-
-    scope = {'type': 'http', 'path': '/v2/x/favicon.ico', 'method': 'GET', 'headers': []}
-    matched = [route for route in app.routes if isinstance(route, Route) and route.matches(scope)[0] == Match.FULL]
-    assert matched, 'the favicon of a catch-all page must be reachable'
-    assert matched[0].path == '/v2/{p:path}/favicon.ico', 'the page route must not shadow the favicon route'

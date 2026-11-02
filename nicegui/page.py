@@ -75,7 +75,6 @@ class page:
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
         self.markdown = markdown
-        self._func: Callable[..., Any] | None = None
         self._endpoint: Callable[..., Any] | None = None
 
         create_favicon_route(self.path, favicon, self.api_router)
@@ -126,9 +125,8 @@ class page:
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
 
-        self._func = func
         self._endpoint = self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
-        func.__nicegui_page__ = self  # type: ignore[attr-defined]
+        self._endpoint.__nicegui_page__ = self  # type: ignore[attr-defined]
         return func
 
     def _wrap(self, func: Callable[..., Any]) -> Callable[..., Any]:
