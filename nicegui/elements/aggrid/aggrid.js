@@ -1,6 +1,22 @@
 import * as AgGrid from "nicegui-aggrid";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
+const ROW_DATA_KEYS = new Set(["rowData", "pinnedTopRowData", "pinnedBottomRowData"]);
+const ROW_DATA_METHODS = new Set([
+  "applyTransaction",
+  "applyTransactionAsync",
+  "applyServerSideTransaction",
+  "applyServerSideTransactionAsync",
+  "setData",
+  "updateData",
+  "setDataValue",
+]);
+
+function convertMethodArgs(name, args) {
+  if (ROW_DATA_METHODS.has(name) || (name === "setGridOption" && ROW_DATA_KEYS.has(args[0]))) return;
+  convertDynamicProperties(args, true, ROW_DATA_KEYS);
+}
+
 export default {
   template: "<div></div>",
   mounted() {
@@ -35,7 +51,7 @@ export default {
           this.gridOptions.columnDefs[column].cellRenderer = (params) => (params.value ? params.value : "");
         }
       }
-      convertDynamicProperties(this.gridOptions, true);
+      convertDynamicProperties(this.gridOptions, true, ROW_DATA_KEYS);
 
       const originalOnGridReady = this.gridOptions.onGridReady;
       this.gridOptions.onGridReady = (params) => {
@@ -50,11 +66,11 @@ export default {
       this.api.addGlobalListener(this.handle_event);
     },
     run_grid_method(name, ...args) {
-      convertDynamicProperties(args, true);
+      convertMethodArgs(name, args);
       return runMethod(this.api, name, args);
     },
     run_row_method(row_id, name, ...args) {
-      convertDynamicProperties(args, true);
+      convertMethodArgs(name, args);
       const node = this.api.getRowNode(row_id);
       if (node === undefined) {
         logAndEmit("error", `Row "${row_id}" not found.`);

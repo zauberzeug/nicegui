@@ -49,6 +49,21 @@ def test_update(screen: Screen):
     assert screen.find_by_tag('canvas')
 
 
+def test_colon_key_in_dataset_is_not_evaluated(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.echart({
+            'dataset': {'source': [{':x': 'document.title = 6 * 7'}]},
+            'xAxis': {'type': 'category'},
+            'yAxis': {},
+            'series': [{'type': 'bar'}],
+        })
+
+    screen.open('/')
+    assert screen.find_by_tag('canvas')
+    assert screen.selenium.title != '42'
+
+
 def test_nested_card(screen: Screen):
     @ui.page('/')
     def page():
