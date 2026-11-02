@@ -172,6 +172,19 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
         """
+        import polars as pl  # pylint: disable=import-outside-toplevel
+
+        # `to_dicts()` returns objects the JSON layer cannot encode for some dtypes
+        # (bytes for Binary, timedelta for Duration), so they are converted to
+        # strings like from_pandas() does for its non-serializable dtypes.
+        conversions = [
+            pl.col(name).cast(pl.String) if isinstance(dtype, pl.Binary) else pl.col(name).dt.to_string()
+            for name, dtype in df.schema.items()
+            if isinstance(dtype, (pl.Binary, pl.Duration))
+        ]
+        if conversions:
+            df = df.with_columns(conversions)
+
         return cls({
             'columnDefs': [{'field': str(col)} for col in df.columns],
             'rowData': df.to_dicts(),

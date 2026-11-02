@@ -415,3 +415,21 @@ async def test_auto_size_columns_vs_flex(user: User, args: dict[str, Any], auto_
         assert ('autoSizeStrategy' in grid.options) == auto_size_strategy_expected
 
     await user.open('/')
+
+
+@pytest.mark.parametrize(
+    ('values', 'expected'),
+    [
+        pytest.param([b'abc', b'def'], ['abc', 'def'], id='binary'),
+        pytest.param([timedelta(seconds=3), timedelta(days=1)], ['PT3S', 'P1D'], id='duration'),
+    ],
+)
+async def test_from_polars_converts_non_serializable_dtypes(user: User, values: list[Any], expected: list[str]) -> None:
+    column = 'value'
+
+    @ui.page('/')
+    def page():
+        grid = ui.aggrid.from_polars(pl.DataFrame({column: values}))
+        assert [row[column] for row in grid.options['rowData']] == expected
+
+    await user.open('/')
