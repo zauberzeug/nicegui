@@ -46,3 +46,31 @@ def test_relative_navigation_from_router_root_page(screen: Screen):
     screen.click('Go')
     screen.should_contain('Detail 4711')
     assert screen.current_path == '/some-prefix/4711'
+
+
+def test_link_to_page_of_included_routers(screen: Screen):
+    inner = APIRouter(prefix='/inner')
+
+    @inner.page('/sub')
+    def sub():
+        ui.label('the subpage')
+
+    outer = APIRouter(prefix='/outer')
+    outer.include_router(inner, prefix='/middle')
+
+    @ui.page('/')
+    def index():
+        ui.link('Link', sub)
+        ui.button('Go', on_click=lambda: ui.navigate.to(sub))
+
+    app.include_router(outer, prefix='/v2')
+
+    screen.open('/')
+    screen.click('Link')
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'
+
+    screen.open('/')
+    screen.click('Go')
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'
