@@ -122,7 +122,8 @@ class page:
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
 
-        self._endpoint = self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
+        self._endpoint = self._wrap(func)
+        self.api_router.get(self._path, **self.kwargs)(self._endpoint)
         Client.page_routes.pages[func] = self
         return func
 
