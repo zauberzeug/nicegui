@@ -5,7 +5,7 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Callable, ItemsView, Iterable, Iterator, Mapping, ValuesView
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 from urllib.parse import parse_qs, quote
@@ -76,37 +76,27 @@ class ClientConnectionTimeout(TimeoutError):
 
 
 class _PageRoutes(Mapping[Callable, str]):
-    """Maps page builders to their routes, resolved from the app's route table on access.
+    """Maps page builders to their routes, which their pages resolve on access."""
 
-    Resolving lazily keeps the routes correct no matter whether a router is included
-    before or after its pages are decorated.
-    """
+    def __init__(self) -> None:
+        self.pages: dict[Callable, page] = {}
 
-    @staticmethod
-    def _resolve() -> dict[Callable, str]:
-        # the route endpoint is the wrapper created by ``ui.page``; its ``__wrapped__`` is the decorated function
-        return {route.endpoint.__wrapped__: route.path
-                for route in core.app._iter_http_routes()  # pylint: disable=protected-access
-                if hasattr(getattr(route, 'endpoint', None), '__nicegui_page__')}
-
-    def __getitem__(self, target: Callable) -> str:
-        return self._resolve()[target]
+    def __getitem__(self, builder: Callable) -> str:
+        return self.pages[builder].path
 
     def __iter__(self) -> Iterator[Callable]:
-        return iter(self._resolve())
+        return iter(self.pages)
 
     def __len__(self) -> int:
-        return len(self._resolve())
+        return len(self.pages)
 
-    def values(self) -> ValuesView[str]:
-        return self._resolve().values()
-
-    def items(self) -> ItemsView[Callable, str]:
-        return self._resolve().items()
+    def clear(self) -> None:
+        """Forget all pages."""
+        self.pages.clear()
 
 
 class Client:
-    page_routes: ClassVar[Mapping[Callable, str]] = _PageRoutes()
+    page_routes: ClassVar[_PageRoutes] = _PageRoutes()
     '''Maps page builders to their routes.'''
 
     instances: ClassVar[dict[str, Client]] = {}

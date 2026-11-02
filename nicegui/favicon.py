@@ -47,7 +47,7 @@ def get_favicon_url(page: page, prefix: str) -> str:
     if page.path == '/' or page.favicon is None:
         return f'{prefix}/favicon.ico'
 
-    return f'{prefix}{page.path}/favicon.ico'
+    return f'{prefix}{page.path.rstrip("/")}/favicon.ico'
 
 
 def get_favicon_response() -> Response:
