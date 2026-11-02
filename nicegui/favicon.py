@@ -7,26 +7,25 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.routing import APIRouter
 
 from . import core
 from .helpers import is_file
 from .version import __version__
 
 if TYPE_CHECKING:
-    from fastapi.routing import APIRouter
-
     from .page import page
 
 
-def create_favicon_route(path: str, favicon: str | Path | None, router: APIRouter | None = None) -> None:
+def create_favicon_route(path: str, favicon: str | Path | None, router: APIRouter) -> None:
     """Create a favicon route for the given path.
 
     Registering it on the page's own router keeps it ahead of a catch-all page route and
     lets ``app.include_router`` add the prefix to the favicon path as well.
     """
     if is_file(favicon):
-        (router or core.app).add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
-                                       lambda _: FileResponse(favicon))  # type: ignore
+        router.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
+                         lambda _: FileResponse(favicon))  # type: ignore
 
 
 def get_favicon_url(page: page, prefix: str) -> str:
