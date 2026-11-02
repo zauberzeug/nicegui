@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
@@ -295,52 +295,13 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
-        import pandas as pd  # pylint: disable=import-outside-toplevel
-
-        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
-            df = df.reset_index()
-
-        def is_special_dtype(dtype):
-            return (pd.api.types.is_datetime64_any_dtype(dtype) or
-                    pd.api.types.is_timedelta64_dtype(dtype) or
-                    pd.api.types.is_complex_dtype(dtype) or
-                    pd.api.types.is_object_dtype(dtype) or
-                    isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
-        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
-        if not special_cols.empty:
-            df = df.copy()
-            df[special_cols] = df[special_cols].astype(str)
-
-        if isinstance(df.columns, pd.MultiIndex):
-            raise ValueError('MultiIndex columns are not supported. '
-                             'You can convert them to strings using something like '
-                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
-
-        return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        rows, columns = helpers.pandas_to_records(df)
+        return rows, [{'name': col, 'label': col, 'field': col} for col in columns]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
-        import polars as pl  # pylint: disable=import-outside-toplevel
-
-        def is_special_dtype(dtype) -> bool:
-            # these dtypes produce bytes, timedelta or arbitrary Python objects, which cannot be serialized to JSON
-            return dtype in (pl.Binary, pl.Duration, pl.Object)
-
-        special_cols = [name for name, dtype in df.schema.items() if is_special_dtype(dtype)]
-        if not special_cols:
-            return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
-
-        def to_string(value) -> str | None:
-            if value is None:  # null values stay empty instead of becoming "None"
-                return None
-            # decode binary data like Pandas does, but replace undecodable bytes instead of raising
-            return value.decode('utf-8', errors='backslashreplace') if isinstance(value, bytes) else str(value)
-
-        rows = df.to_dicts()
-        for row in rows:
-            for column in special_cols:
-                row[column] = to_string(row[column])
-        return rows, [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        rows, columns = helpers.polars_to_records(df)
+        return rows, [{'name': col, 'label': col, 'field': col} for col in columns]
 
     @property
     def rows(self) -> list[dict]:

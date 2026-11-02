@@ -7,7 +7,7 @@ import pytest
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen, User
+from nicegui.testing import Screen
 
 
 def columns() -> list:
@@ -242,22 +242,6 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
     screen.should_contain('19')
 
 
-async def test_from_polars_converts_non_json_datatypes(user: User):
-    rows = []
-
-    @ui.page('/')
-    def page():
-        table = ui.table.from_polars(pl.DataFrame({
-            'Timedelta_col': [timedelta(days=5)],
-            'Binary_col': [b'hello'],
-            'Empty_col': [None],
-        }))
-        rows.extend(table.rows)
-
-    await user.open('/')
-    assert rows == [{'Timedelta_col': '5 days, 0:00:00', 'Binary_col': 'hello', 'Empty_col': None}]
-
-
 @pytest.mark.parametrize('df_type', ['pandas', 'polars'])
 def test_problematic_datatypes(screen: Screen, df_type: str):
     @ui.page('/')
@@ -275,6 +259,8 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
             df = pl.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
                 'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'Timedelta_col': [timedelta(days=5)],
+                'Binary_col': [b'hello'],
             })
             ui.table.from_polars(df)
 
@@ -290,6 +276,11 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         screen.should_contain('(1+2j)')
         screen.should_contain('Period_col')
         screen.should_contain('2021-01')
+    else:
+        screen.should_contain('Timedelta_col')
+        screen.should_contain('5 days, 0:00:00')
+        screen.should_contain('Binary_col')
+        screen.should_contain('hello')
 
 
 def test_table_computed_props(screen: Screen):
