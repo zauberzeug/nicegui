@@ -17,6 +17,7 @@ class ValidationElement(ValueElement[ValueT]):
         self._validation = validation
         self._auto_validation = True
         self._error: str | None = None
+        self._validation_counter = 0
         super().__init__(**kwargs)
         with self._props.suspend_updates():
             self._props['error'] = None if validation is None else False  # reserve bottom space for error message
@@ -67,11 +68,16 @@ class ValidationElement(ValueElement[ValueT]):
         if return_result and helpers.is_coroutine_function(self._validation):
             raise NotImplementedError('The validate method cannot return results for async validation functions.')
 
+        self._validation_counter += 1
+        validation_counter = self._validation_counter
+
         if callable(self._validation):
             result = self._validation(self.value)
             if helpers.should_await(result):
                 async def await_error():
-                    self.error = await result
+                    error = await result
+                    if validation_counter == self._validation_counter:
+                        self.error = error
                 background_tasks.create(await_error(), name=f'validate {self.id}', context=self)
                 return True
             self.error = cast(str | None, result)

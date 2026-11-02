@@ -442,6 +442,14 @@ class Element(Visibility):
                 self.update()
         return self
 
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:  # pylint: disable=unused-argument
+        """Return whether the element handles the given event type even while it is ignoring events.
+
+        Initialization events are sent once when the component mounts, so dropping them for a
+        hidden or disabled element leaves the component uninitialized for good.
+        """
+        return False
+
     def _handle_event(self, msg: dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)

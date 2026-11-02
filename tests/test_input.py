@@ -129,6 +129,44 @@ def test_validation_with_lagging_value_change_events(screen: Screen):
     assert element.get_attribute('value') == '12345678'
 
 
+@pytest.mark.parametrize('method', ['async', 'sync', 'dict', 'none'])
+async def test_outdated_async_validation(method: Literal['async', 'sync', 'dict', 'none'], user: User):
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    async def validate(value: str) -> str | None:
+        if value == 'a':
+            started.set()
+            await release.wait()
+            ui.notify('Old validation finished')
+            return 'Old value is invalid'
+        return None
+
+    @ui.page('/')
+    def page():
+        field = ui.input('Name', validation=validate)
+
+        def supersede():
+            if method == 'async':
+                field.set_value('ab')
+            elif method == 'sync':
+                field.validation = lambda _: None
+            elif method == 'dict':
+                field.validation = {'Required': bool}
+            else:
+                field.validation = None
+
+        ui.button('Supersede', on_click=supersede)
+
+    await user.open('/')
+    user.find('Name').type('a')
+    await asyncio.wait_for(started.wait(), 2)
+    user.find('Supersede').click()
+    release.set()
+    await user.should_see('Old validation finished')
+    await user.should_not_see('Old value is invalid')
+
+
 async def test_ui_on_exception_from_async_validation(user: User, caplog: pytest.LogCaptureFixture):
     seen: list[Exception] = []
 

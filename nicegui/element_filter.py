@@ -158,7 +158,7 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._exclude_kinds.append(kind)
         if marker is not None:
-            self._exclude_markers.append(marker)
+            self._exclude_markers.extend(marker.split())
         if content is not None:
             self._exclude_content.append(content)
         return self
