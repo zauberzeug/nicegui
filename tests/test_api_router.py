@@ -48,48 +48,29 @@ def test_relative_navigation_from_router_root_page(screen: Screen):
     assert screen.current_path == '/some-prefix/4711'
 
 
-def test_link_to_page_of_included_router(screen: Screen):
-    router = APIRouter()
-
-    @router.page('/sub')
-    def sub():
-        ui.label('Sub')
-
-    app.include_router(router, prefix='/v2')
-
-    @ui.page('/')
-    def index():
-        ui.link('Sub', sub)
-
-    screen.open('/')
-    screen.click('Sub')
-    screen.should_contain('Sub')
-    assert screen.current_path == '/v2/sub'
-
-
-def test_link_to_page_of_nested_routers(screen: Screen):
+def test_link_to_page_of_included_routers(screen: Screen):
     inner = APIRouter(prefix='/inner')
-    outer = APIRouter(prefix='/outer')
 
     @inner.page('/sub')
     def sub():
-        ui.label('Sub of nested router')
+        ui.label('the subpage')
 
-    outer.include_router(inner)
+    outer = APIRouter(prefix='/outer')
+    outer.include_router(inner, prefix='/middle')
 
     @ui.page('/')
     def index():
-        ui.link('Sub', sub)
+        ui.link('Link', sub)
         ui.button('Go', on_click=lambda: ui.navigate.to(sub))
 
-    app.include_router(outer)
+    app.include_router(outer, prefix='/v2')
 
     screen.open('/')
-    screen.click('Sub')
-    screen.should_contain('Sub of nested router')
-    assert screen.current_path == '/outer/inner/sub'
+    screen.click('Link')
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'
 
     screen.open('/')
     screen.click('Go')
-    screen.should_contain('Sub of nested router')
-    assert screen.current_path == '/outer/inner/sub'
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'

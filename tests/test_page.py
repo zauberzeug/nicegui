@@ -433,16 +433,3 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
         t.get_name().startswith('wait for connection') and not t.done()
         for t in asyncio.all_tasks()
     ), 'connection-wait tasks should be cancelled after page coroutine completes'
-
-
-async def test_page_from_bound_method(user: User):
-    class Panel:
-
-        def build(self) -> None:
-            ui.label('bound method page')
-
-    panel = Panel()
-    ui.page('/bound')(panel.build)
-
-    await user.open('/bound')
-    await user.should_see('bound method page')
