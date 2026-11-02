@@ -24,8 +24,7 @@ def create_favicon_route(path: str, favicon: str | Path | None, router: APIRoute
     lets ``app.include_router`` add the prefix to the favicon path as well.
     """
     if is_file(favicon):
-        router.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
-                         lambda _: FileResponse(favicon))  # type: ignore
+        router.add_route(f'{path.rstrip("/")}/favicon.ico', lambda _: FileResponse(favicon))  # type: ignore
 
 
 def get_favicon_url(page: page, prefix: str) -> str:

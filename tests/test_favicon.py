@@ -90,8 +90,9 @@ def test_custom_file(screen: Screen):
     assert_favicon(screen.ui_run_kwargs['favicon'])
 
 
-def test_page_specific_icon(screen: Screen):
-    @ui.page('/subpage', favicon=LOGO_FAVICON_PATH)
+@pytest.mark.parametrize('path', ['/subpage', '/subpage/'])
+def test_page_specific_icon(path: str, screen: Screen):
+    @ui.page(path, favicon=LOGO_FAVICON_PATH)
     def sub():
         ui.label('Subpage')
 
@@ -99,7 +100,8 @@ def test_page_specific_icon(screen: Screen):
     def page():
         ui.label('Main')
 
-    screen.open('/subpage')
+    screen.open(path)
+    assert urllib.parse.urlparse(get_favicon_url(screen)).path == '/subpage/favicon.ico'
     assert_favicon(LOGO_FAVICON_PATH, url_path='/subpage/favicon.ico')
     screen.open('/')
 
