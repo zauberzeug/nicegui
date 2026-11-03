@@ -10,7 +10,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
 from starlette.types import ASGIApp
 from uvicorn.main import STARTUP_FAILURE
-from uvicorn.supervisors import ChangeReload, Multiprocess
+from uvicorn.supervisors import ChangeReload
 
 from . import core, helpers
 from . import native as native_module
@@ -317,9 +317,6 @@ def run(root: Callable | None = None, *,
         if config.should_reload:
             sock = config.bind_socket()
             ChangeReload(config, target=Server.instance.run, sockets=[sock]).run()
-        elif config.workers > 1:
-            sock = config.bind_socket()
-            Multiprocess(config, target=Server.instance.run, sockets=[sock]).run()
         else:
             Server.instance.run()
     finally:
