@@ -85,7 +85,7 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
     for executable_path in (None, shutil.which('chromedriver'), 'chromedriver'):  # Required for ARM devcontainers
         try:
             s = Service(executable_path=executable_path)
-            driver_ = webdriver.Chrome(service=s, options=nicegui_chrome_options)
+            driver_ = webdriver.Chrome(service=s, options=nicegui_chrome_options)  # pylint: disable=not-callable
             break
         except Exception:
             continue

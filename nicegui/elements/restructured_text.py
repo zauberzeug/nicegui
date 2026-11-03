@@ -29,7 +29,7 @@ def prepare_content(content: str) -> str:
     """Render ReStructuredText content to HTML."""
     html = publish_parts(
         remove_indentation(content),
-        writer_name='html4',
+        writer='html4',
         settings_overrides={
             'syntax_highlight': 'short',
             'file_insertion_enabled': False,

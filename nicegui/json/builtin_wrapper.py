@@ -33,7 +33,7 @@ def dumps(obj: Any,
         cls=NiceGUIJSONEncoder)
 
 
-def loads(value: str) -> Any:
+def loads(value: str | bytes) -> Any:
     """Deserialize a JSON-encoded string to a corresponding Python object/value.
 
     Uses Python's default json module internally.
