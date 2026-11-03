@@ -211,6 +211,7 @@ def map_of_nicegui():
             - [`ui.altair`](/documentation/altair)
             - [`ui.anywidget`](/documentation/anywidget)
             - [`ui.audio`](/documentation/audio)
+            - [`ui.audio_recorder`](/documentation/audio_recorder)
             - [`ui.avatar`](/documentation/avatar)
             - [`ui.badge`](/documentation/badge)
             - [`ui.button`](/documentation/button)
