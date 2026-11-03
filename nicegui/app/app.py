@@ -455,7 +455,15 @@ class App(FastAPI):
 async def prune_tab_storage(*, force: bool = False) -> None:
     """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
     tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
+    tab_ids_in_use = {
+        tab_id
+        for client in Client.instances.values()
+        for tab_id in (client.tab_id, client._pinned_tab_id)  # pylint: disable=protected-access
+        if tab_id is not None
+    }
     for tab_id, tab in list(tab_storages.items()):
+        if tab_id in tab_ids_in_use and not force:
+            continue  # a connected client still uses this tab storage
         if force or time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
             tab.clear()
             if isinstance(tab, PersistentDict):
