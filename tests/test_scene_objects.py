@@ -57,6 +57,7 @@ def test_create_all_object_types(screen: Screen, tmp_path):
             scene.sphere().with_name('sphere')
             scene.cylinder().with_name('cylinder')
             scene.ring().with_name('ring')
+            scene.torus().with_name('torus')
             scene.quadratic_bezier_tube([0, 0, 0], [0, 1, 0], [1, 1, 0]).with_name('tube')
             scene.extrusion([[0, 0], [0, 1], [1, 0.5]], 0.1).with_name('extrusion')
             scene.line([0, 0, 0], [1, 0, 0]).with_name('line')
@@ -78,6 +79,7 @@ def test_create_all_object_types(screen: Screen, tmp_path):
         ('sphere', 'Mesh', 'SphereGeometry'),
         ('cylinder', 'Mesh', 'CylinderGeometry'),
         ('ring', 'Mesh', 'RingGeometry'),
+        ('torus', 'Mesh', 'TorusGeometry'),
         ('tube', 'Mesh', 'TubeGeometry'),
         ('extrusion', 'Mesh', 'ExtrudeGeometry'),
         ('line', 'Line', 'BufferGeometry'),
