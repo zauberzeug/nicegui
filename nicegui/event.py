@@ -6,15 +6,17 @@ import weakref
 from collections.abc import Awaitable, Callable
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, ClassVar, Generic
+from typing import TYPE_CHECKING, Any, ClassVar, Generic
 from weakref import WeakSet
 
 from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
-from .client import Client
 from .context import context
 from .slot import Slot
+
+if TYPE_CHECKING:
+    from .client import Client
 
 P = ParamSpec('P')
 
