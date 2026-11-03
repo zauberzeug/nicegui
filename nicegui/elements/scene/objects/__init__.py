@@ -47,5 +47,5 @@ __all__ = [
     'Text',
     'Text3d',
     'Texture',
-    'Torus'
+    'Torus',
 ]
