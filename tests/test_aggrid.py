@@ -414,6 +414,35 @@ def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unex
         screen.should_not_contain(item)
 
 
+@pytest.mark.parametrize('source', ['pandas', 'polars', 'setGridOption', 'updateGridOptions', 'applyTransaction', 'setData'])
+def test_colon_column_is_not_evaluated(screen: Screen, source: str):
+    row = {':x': 'document.title = 6 * 7'}
+
+    @ui.page('/')
+    def page():
+        if source == 'pandas':
+            ui.aggrid.from_pandas(pd.DataFrame([row]))
+        elif source == 'polars':
+            ui.aggrid.from_polars(pl.DataFrame([row]))
+        else:
+            grid = ui.aggrid({'columnDefs': [{'field': ':x'}], 'rowData': [{':x': 'initial'}]})
+            if source == 'setGridOption':
+                ui.button('Load', on_click=lambda: grid.run_grid_method('setGridOption', 'rowData', [row]))
+            elif source == 'updateGridOptions':
+                ui.button('Load', on_click=lambda: grid.run_grid_method('updateGridOptions', {'rowData': [row]}))
+            elif source == 'applyTransaction':
+                ui.button('Load', on_click=lambda: grid.run_grid_method('applyTransaction', {'add': [row]}))
+            else:
+                ui.button('Load', on_click=lambda: grid.run_row_method('0', 'setData', row))
+
+    screen.open('/')
+    if source not in {'pandas', 'polars'}:
+        screen.should_contain('initial')
+        screen.click('Load')
+    screen.should_contain('document.title = 6 * 7')
+    assert screen.selenium.title != '42'
+
+
 @pytest.mark.parametrize('args,auto_size_strategy_expected', [
     ({'options': {'columnDefs': [{'field': 'a'}]}}, True),
     ({'options': {'columnDefs': [{'field': 'a'}], 'defaultColDef': {'flex': 1}}}, False),

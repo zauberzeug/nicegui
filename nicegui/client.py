@@ -5,7 +5,7 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 from urllib.parse import parse_qs, quote
@@ -74,8 +74,28 @@ class ClientConnectionTimeout(TimeoutError):
         self.client = client
 
 
+class _PageRoutes(Mapping[Callable, str]):
+    """Maps page builders to their routes, which their pages resolve on access."""
+
+    def __init__(self) -> None:
+        self.pages: dict[Callable, page] = {}
+
+    def __getitem__(self, builder: Callable) -> str:
+        return self.pages[builder].path
+
+    def __iter__(self) -> Iterator[Callable]:
+        return iter(self.pages)
+
+    def __len__(self) -> int:
+        return len(self.pages)
+
+    def clear(self) -> None:
+        """Forget all pages."""
+        self.pages.clear()
+
+
 class Client:
-    page_routes: ClassVar[dict[Callable, str]] = {}
+    page_routes: ClassVar[_PageRoutes] = _PageRoutes()
     '''Maps page builders to their routes.'''
 
     instances: ClassVar[dict[str, Client]] = {}

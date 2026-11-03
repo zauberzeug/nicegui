@@ -474,9 +474,14 @@ plot = ui.uplot({'series': [{}, {'label': 'y', 'stroke': 'red'}]},
 plot.data = [[0, 1, 2, 3], [3, 1, 2, 4]]
 
 # 3D Scene (Three.js)
-with ui.scene() as scene:
+with ui.scene() as scene:  # polar_grid=(radius, sectors, rings) for a circular floor (since 3.19)
     scene.sphere().move(x=1)
     scene.box().material('#ff0000')
+    scene.cone().rotate(1.57, 0, 0, order='XYZ')  # order (since 3.19): lowercase (default 'xyz') = fixed world axes,
+                                                  # uppercase = the object's own rotated axes, like THREE.Euler
+# Objects: box, sphere, cylinder, ring, plane, cone, torus, capsule, lathe, extrusion, line, polyline, curve,
+# quadratic_bezier_tube, point_cloud, text, text3d, texture, gltf, stl, group, spot_light, axes_helper
+# (plane, cone, torus, capsule, lathe and polyline since 3.19; polyline supports per-vertex colors and dashed=True)
 ```
 
 ### Custom Three.js objects (since 3.16)
@@ -838,6 +843,25 @@ ui.add_css('body { font-family: monospace; }')
 ui.add_head_html('<link rel="preconnect" href="...">')
 ui.add_body_html('<script src="..."></script>')
 ```
+
+### Custom JSON serialization (since 3.19)
+
+Everything sent to the browser (element props, event arguments, `ui.run_javascript` arguments) and `app.storage` is serialized as JSON.
+Basic types, dataclasses, enums, dates and NumPy arrays work out of the box.
+For other types, register a converter instead of converting by hand at every call site:
+
+```python
+from pydantic import BaseModel
+from nicegui import json
+
+class Person(BaseModel):
+    name: str
+
+json.register_type(BaseModel, BaseModel.model_dump)  # also covers subclasses; first matching registration wins
+ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [Person(name='Alice')]})
+```
+
+Natively supported types (dataclasses, datetimes, …) cannot be overridden, and the conversion is one-way: `app.storage` returns the converted JSON structure, not the original object.
 
 ---
 
@@ -1342,6 +1366,9 @@ with user.scope(marker='left-card'):  # same filter args as user.find(), must ma
     await user.should_see('Apple')
     user.find('Buy').click()
 ```
+
+The fixtures load the app's main file (`main_file` option, default `main.py`) before each test.
+To load none, leave it empty (`main_file = ""` under `[tool.pytest.ini_options]`) and register the pages each test needs, e.g. with `@ui.page` inside the test function.
 
 Use `Screen` fixture only when JavaScript or real browser rendering is required:
 

@@ -75,13 +75,19 @@ class page:
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
         self.markdown = markdown
+        self._endpoint: Callable[..., Any] | None = None
+        self._resolved_path: str | None = None
 
-        create_favicon_route(self.path, favicon)
+        create_favicon_route(self.path, favicon, self.api_router)
 
     @property
     def path(self) -> str:
-        """The path of the page including the APIRouter's prefix."""
-        return self.api_router.prefix + self._path
+        """The path of the page including the prefixes of its routers and of ``app.include_router``."""
+        if self._resolved_path is None and self._endpoint is not None:
+            # the prefix of an included route never changes, so the path is looked up only until it is found
+            self._resolved_path = next((route.path for route in core.app._iter_http_routes()  # pylint: disable=protected-access
+                                        if getattr(route, 'endpoint', None) is self._endpoint), None)
+        return self._resolved_path or self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
         """Return the title of the page."""
@@ -116,8 +122,9 @@ class page:
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
 
-        self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
-        Client.page_routes[func] = self.path
+        self._endpoint = self._wrap(func)
+        self.api_router.get(self._path, **self.kwargs)(self._endpoint)
+        Client.page_routes.pages[func] = self
         return func
 
     def _wrap(self, func: Callable[..., Any]) -> Callable[..., Any]:

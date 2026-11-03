@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from typing import TYPE_CHECKING
 
 import httpx2
 import pytest
@@ -7,7 +8,10 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from nicegui import APIRouter, PageArguments, app, background_tasks, ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 # pylint: disable=missing-function-docstring
 
@@ -891,6 +895,46 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
     screen.open('/')
     screen.click('Test PageArguments')
     screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
+
+
+async def test_pep604_optional_parameters_are_converted(user: User):
+    def from_path(count: int | None = None):
+        ui.label(f'path {type(count).__name__}:{count}')
+
+    def from_query(count: int | None = None, ratio: float | None = None, name: str | None = None):
+        ui.label(f'query {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(name).__name__}:{name}')
+
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.sub_pages({
+            '/path/{count}': from_path,
+            '/query': from_query,
+        })
+
+    await user.open('/path/5')
+    await user.should_see('path int:5')
+
+    await user.open('/query?count=5&ratio=2.5&name=abc')
+    await user.should_see('query int:5 float:2.5 str:abc')
+
+
+async def test_string_annotations(user: User):
+    # NOTE: string annotations as with `from __future__ import annotations`
+    def page(args: 'PageArguments', count: 'int', ratio: 'float | None', price: 'Decimal'):
+        ui.label(f'{args.path} {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(price).__name__}:{price}')
+        ui.label(f'tag:{args.query_parameters.get("tag")}')
+        ui.link('Add tag', '/5?ratio=2.5&tag=x')
+
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.sub_pages({'/{count}': page}, data={'price': 1.5})
+
+    await user.open('/5?ratio=2.5')
+    await user.should_see('/5 int:5 float:2.5 float:1.5')
+    user.find('Add tag').click()
+    await user.should_see('tag:x')
 
 
 def test_sub_pages_with_url_fragments(screen: Screen):

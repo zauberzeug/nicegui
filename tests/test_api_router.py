@@ -64,3 +64,31 @@ def test_remove_route(screen: Screen):
 
     app.remove_route('/some-prefix/')
     assert httpx2.get(f'http://localhost:{Screen.PORT}/some-prefix/', timeout=5).status_code == 404
+
+
+def test_link_to_page_of_included_routers(screen: Screen):
+    inner = APIRouter(prefix='/inner')
+
+    @inner.page('/sub')
+    def sub():
+        ui.label('the subpage')
+
+    outer = APIRouter(prefix='/outer')
+    outer.include_router(inner, prefix='/middle')
+
+    @ui.page('/')
+    def index():
+        ui.link('Link', sub)
+        ui.button('Go', on_click=lambda: ui.navigate.to(sub))
+
+    app.include_router(outer, prefix='/v2')
+
+    screen.open('/')
+    screen.click('Link')
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'
+
+    screen.open('/')
+    screen.click('Go')
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'

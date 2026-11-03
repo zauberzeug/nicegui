@@ -193,6 +193,12 @@ async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
     ('../../etc/passwd', 'passwd'),
     ('..\\..\\windows\\evil.exe', 'evil.exe'),
     ('../..\\..\\mixed/traversal\\payload.txt', 'payload.txt'),
+    ('C:evil.py', 'evil.py'),
+    ('C:\\windows\\evil.exe', 'evil.exe'),
+    ('C:C:evil.py', 'evil.py'),
+    ('folder/C:evil.py', 'evil.py'),
+    ('..', ''),
+    ('C:..', ''),
     ('', ''),
     (None, ''),
 ])

@@ -1,6 +1,8 @@
 import { echarts, loadEchartsGL } from "nicegui-echart";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
+const DATASET_KEYS = new Set(["source"]);
+
 export default {
   template: "<div></div>",
   async mounted() {
@@ -94,7 +96,7 @@ export default {
         setTimeout(this.update_chart, 10);
         return;
       }
-      convertDynamicProperties(this.options, true);
+      convertDynamicProperties(this.options, true, DATASET_KEYS);
       this.chart.setOption(this.options, {
         notMerge: this.chart.getOption()?.series?.length != this.options.series?.length,
       });
