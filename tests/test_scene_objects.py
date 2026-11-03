@@ -68,6 +68,7 @@ def test_create_all_object_types(screen: Screen, tmp_path):
             scene.axes_helper().with_name('axes_helper')
             scene.text('2D').with_name('text')
             scene.text3d('3D').with_name('text3d')
+            scene.torus().with_name('torus')
             scene.stl('/triangle.stl').with_name('stl')
 
     screen.open('/')
@@ -83,6 +84,7 @@ def test_create_all_object_types(screen: Screen, tmp_path):
         ('line', 'Line', 'BufferGeometry'),
         ('curve', 'Line', 'BufferGeometry'),
         ('texture', 'Mesh', 'BufferGeometry'),
+        ('torus', 'Mesh', 'TorusGeometry'),
         ('point_cloud', 'Points', 'BufferGeometry'),
         ('group', 'Group', None),
         ('axes_helper', 'AxesHelper', 'BufferGeometry'),
@@ -216,3 +218,20 @@ def test_point_cloud_set_points(screen: Screen):
     point_cloud.set_points([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]], [[1, 0, 0]] * 4)
     wait_until(screen, scene, 'point_cloud', 'o.geometry.attributes.position.count', 4)
     wait_until(screen, scene, 'point_cloud', 'o.geometry.attributes.color.count', 4)
+
+
+def test_objects_package_exports_every_object_class():
+    """Every module in the objects package defines one Object3D subclass that must be exported (#6460)."""
+    import importlib
+    import pkgutil
+
+    from nicegui.elements.scene import objects
+
+    package = importlib.import_module('nicegui.elements.scene.objects')
+    for module_info in pkgutil.iter_modules(package.__path__):
+        module = importlib.import_module(f'nicegui.elements.scene.objects.{module_info.name}')
+        classes = [attr for attr in vars(module).values()
+                   if isinstance(attr, type) and issubclass(attr, Object3D) and attr.__module__ == module.__name__]
+        assert len(classes) == 1, f'{module_info.name} should define exactly one Object3D subclass'
+        assert classes[0].__name__ in objects.__all__, \
+            f'{classes[0].__name__} is not exported from nicegui.elements.scene.objects'
