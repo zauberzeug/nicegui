@@ -47,6 +47,7 @@ export default {
 
     // Dynamically load esm_content as an ECMAScript module
     const mod = await load_widget(this.esm_content, this.traits._anywidget_id);
+    if (signal.aborted) return;  // the element was deleted while the module was loading
     // AFM: initialize and render may return a cleanup function, which has to run when the element goes away
     const cleanup_widget = await mod.initialize?.({ model: this.model, signal });
     this.cleanup_widget = typeof cleanup_widget === 'function' ? cleanup_widget : null;

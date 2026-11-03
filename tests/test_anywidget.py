@@ -1,8 +1,32 @@
 import anywidget
+import pytest
 import traitlets
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
+
+
+async def test_delete_stops_observing_the_widget(user: User, caplog: pytest.LogCaptureFixture):
+    """A widget can outlive its element (e.g. in a refreshable), so deleting the element has to unobserve it."""
+    class SharedWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
+        _esm = 'export default {};'
+        value = traitlets.Int(0).tag(sync=True)
+
+    widget = SharedWidget()
+    element = None
+
+    @ui.page('/')
+    def page():
+        nonlocal element
+        element = ui.anywidget(widget)
+
+    await user.open('/')
+    assert not [record for record in caplog.records if 'still being used' in record.message]
+
+    element.delete()
+    widget.value = 1
+    assert not [record for record in caplog.records if 'still being used' in record.message], \
+        'changing a trait of a deleted element must not warn anymore'
 
 
 def test_anywidget(screen: Screen):
