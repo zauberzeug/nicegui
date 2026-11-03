@@ -21,6 +21,7 @@ from .stl import Stl
 from .text import Text
 from .text3d import Text3d
 from .texture import Texture
+from .torus import Torus
 
 __all__ = [
     'AxesHelper',
@@ -46,4 +47,5 @@ __all__ = [
     'Text',
     'Text3d',
     'Texture',
+    'Torus'
 ]
