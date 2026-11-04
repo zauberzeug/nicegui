@@ -2582,7 +2582,7 @@ requires-dist = [
     { name = "anyio", specifier = ">=4.14.2" },
     { name = "anywidget", marker = "extra == 'anywidget'", specifier = ">=0.9.21" },
     { name = "certifi", specifier = ">=2026.10.19" },
-    { name = "docutils", specifier = ">=0.22" },
+    { name = "docutils", specifier = ">=0.19.0" },
     { name = "fastapi", specifier = ">=0.143.1" },
     { name = "fonttools", marker = "extra == 'matplotlib'", specifier = ">=4.60.2" },
     { name = "h11", specifier = ">=0.16.0" },
