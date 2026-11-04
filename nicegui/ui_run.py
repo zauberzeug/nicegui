@@ -285,9 +285,6 @@ def run(root: Callable | None = None, *,
     def split_args(args: str) -> list[str]:
         return [a.strip() for a in args.split(',')]
 
-    if kwargs.get('workers', 1) > 1:
-        raise ValueError('NiceGUI does not support multiple workers yet.')
-
     # The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
     config = CustomServerConfig(
@@ -302,16 +299,14 @@ def run(root: Callable | None = None, *,
         ws='wsproto',
         **kwargs,
     )
+    if config.workers > 1:
+        raise ValueError('NiceGUI does not support multiple workers yet.')
     config.storage_secret = storage_secret
     config.method_queue = native_module.native.method_queue if native else None
     config.response_queue = native_module.native.response_queue if native else None
     config.shutdown_event = shutdown_event
     config.session_middleware_kwargs = session_middleware_kwargs
     Server.create_singleton(config)
-
-    if (reload or config.workers > 1) and not isinstance(config.app, str):
-        log.warning('You must pass the application as an import string to enable "reload" or "workers".')
-        sys.exit(1)
 
     try:
         if config.should_reload:
@@ -325,5 +320,5 @@ def run(root: Callable | None = None, *,
     if config.uds:
         os.remove(config.uds)  # pragma: py-win32
 
-    if not Server.instance.started and not config.should_reload and config.workers == 1:
+    if not Server.instance.started and not config.should_reload:
         sys.exit(STARTUP_FAILURE)
