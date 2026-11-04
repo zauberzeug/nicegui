@@ -46,7 +46,7 @@ def dumps(obj: Any,
 
 
 def loads(value: str | bytes) -> Any:
-    """Deserialize a JSON-encoded string to a corresponding Python object/value.
+    """Deserialize a JSON-encoded string or bytes to a corresponding Python object/value.
 
     Uses package ``orjson`` internally.
     """
