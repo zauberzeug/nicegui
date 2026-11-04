@@ -1,8 +1,7 @@
-from collections.abc import Callable
-
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
 from .input import Input
+from .mixins.validation_element import ValidationDict, ValidationFunction
 
 
 class Textarea(Input, component='input.js'):
@@ -13,7 +12,7 @@ class Textarea(Input, component='input.js'):
                  placeholder: str | None = DEFAULT_PROP | None,
                  value: str | None = DEFAULT_PROPS['model-value'] | '',
                  on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
-                 validation: Callable[..., str | None] | dict[str, Callable[..., bool]] | None = None,
+                 validation: ValidationFunction | ValidationDict | None = None,
                  ) -> None:
         """Textarea
 

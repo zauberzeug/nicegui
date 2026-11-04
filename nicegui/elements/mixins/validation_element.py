@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any, TypeAlias, cast
 
@@ -8,7 +9,22 @@ from ...events import ValueT
 from .value_element import ValueElement
 
 ValidationFunction: TypeAlias = Callable[[Any], str | None | Awaitable[str | None]]
-ValidationDict = dict[str, Callable[[Any], bool]]
+ValidationDict = dict[str, Callable[[Any], bool | Awaitable[bool]]]
+
+_ASYNC_RESULT_ERROR = 'The validate method cannot return results for async validation functions.'
+
+
+def _is_async_validation(validation: ValidationFunction | ValidationDict | None) -> bool:
+    """Return whether the validation contains an async function."""
+    if isinstance(validation, dict):
+        return any(helpers.is_coroutine_function(check) for check in validation.values())
+    return helpers.is_coroutine_function(validation)
+
+
+def _discard_awaitable(result: Any) -> None:
+    """Close a coroutine that will not be awaited to avoid a "never awaited" warning."""
+    if asyncio.iscoroutine(result):
+        result.close()
 
 
 class ValidationElement(ValueElement[ValueT]):
@@ -65,8 +81,8 @@ class ValidationElement(ValueElement[ValueT]):
         :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
-        if return_result and helpers.is_coroutine_function(self._validation):
-            raise NotImplementedError('The validate method cannot return results for async validation functions.')
+        if return_result and _is_async_validation(self._validation):
+            raise NotImplementedError(_ASYNC_RESULT_ERROR)
 
         self._validation_counter += 1
         validation_counter = self._validation_counter
@@ -74,6 +90,10 @@ class ValidationElement(ValueElement[ValueT]):
         if callable(self._validation):
             result = self._validation(self.value)
             if helpers.should_await(result):
+                if return_result:
+                    _discard_awaitable(result)
+                    raise NotImplementedError(_ASYNC_RESULT_ERROR)
+
                 async def await_error():
                     error = await result
                     if validation_counter == self._validation_counter:
@@ -84,8 +104,31 @@ class ValidationElement(ValueElement[ValueT]):
             return self.error is None
 
         if isinstance(self._validation, dict):
-            for message, check in self._validation.items():
-                if not check(self.value):
+            value = self.value
+            checks = list(self._validation.items())
+            for index, (message, check) in enumerate(checks):
+                check_result = check(value)
+                if helpers.should_await(check_result):
+                    if return_result:
+                        _discard_awaitable(check_result)
+                        raise NotImplementedError(_ASYNC_RESULT_ERROR)
+
+                    async def await_remaining_checks(start: int = index,
+                                                     first_check_result: Any = check_result) -> None:
+                        error = None
+                        for offset, (message, check) in enumerate(checks[start:]):
+                            passed = first_check_result if offset == 0 else check(value)
+                            if helpers.should_await(passed):
+                                passed = await passed
+                            if not passed:
+                                error = message
+                                break
+                        if validation_counter == self._validation_counter:
+                            self.error = error
+
+                    background_tasks.create(await_remaining_checks(), name=f'validate {self.id}', context=self)
+                    return True
+                if not check_result:
                     self.error = message
                     return False
 
