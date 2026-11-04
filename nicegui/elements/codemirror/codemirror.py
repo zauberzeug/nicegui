@@ -3,6 +3,7 @@ from __future__ import annotations
 from itertools import accumulate, chain, repeat
 from typing import Self, get_args
 
+from ... import helpers
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
@@ -116,7 +117,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         if on_change is not None:
             super().on_value_change(on_change)
 
-        self._props['language'] = language
+        self._props['language'] = _resolve_language(language)
         self._props['theme'] = theme
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
@@ -164,11 +165,11 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
 
     @language.setter
     def language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
-        self._props['language'] = language
+        self._props['language'] = _resolve_language(language)
 
     def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> Self:
         """Sets the language of the editor (case-insensitive)."""
-        self._props['language'] = language
+        self._props['language'] = _resolve_language(language)
         return self
 
     @property
@@ -251,3 +252,10 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
 
     def _displayed_contents(self, *, only_visible: bool) -> list:
         return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]
+
+
+def _resolve_language(language: SUPPORTED_LANGUAGES | None) -> SUPPORTED_LANGUAGES | None:
+    if language is not None and language.lower() == 'jinja2':  # DEPRECATED: renamed in @codemirror/language-data 6.5.2
+        helpers.warn_once('The CodeMirror language "Jinja2" is deprecated. Use "Jinja" instead.')
+        return 'Jinja'
+    return language

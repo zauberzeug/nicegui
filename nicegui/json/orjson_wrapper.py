@@ -45,8 +45,8 @@ def dumps(obj: Any,
     return orjson.dumps(obj, option=opts, default=_orjson_converter).decode('utf-8')
 
 
-def loads(value: str) -> Any:
-    """Deserialize a JSON-encoded string to a corresponding Python object/value.
+def loads(value: str | bytes) -> Any:
+    """Deserialize a JSON-encoded string or bytes to a corresponding Python object/value.
 
     Uses package ``orjson`` internally.
     """
