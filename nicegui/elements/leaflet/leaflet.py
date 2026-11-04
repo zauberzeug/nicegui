@@ -94,9 +94,9 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
 
     def _handle_init(self) -> None:
         self.is_initialized = True
-        self._initialized_event.set()
         for layer in self.layers:
             self.run_method('add_layer', layer.to_dict(), layer.id)
+        self._initialized_event.set()  # after adding the layers so that awaiting code can address them
 
     async def initialized(self) -> None:
         """Wait until the map is initialized.
