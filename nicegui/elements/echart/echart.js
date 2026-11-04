@@ -22,6 +22,7 @@ export default {
     } catch (error) {
       console.error("Could not register theme:", error);
     }
+    if (!this.$el.isConnected) return; // unmounted while awaiting, so beforeUnmount has already run
 
     this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("componentClick", e));
