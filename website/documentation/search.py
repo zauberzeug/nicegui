@@ -54,7 +54,7 @@ def _collect_documentation_parts(*, include_code: bool = False) -> list[dict[str
         }
         for documentation in registry.values()
         for part in documentation.parts
-        if part.title or part.description or part.search_text
+        if part.description or part.search_text  # the search dialog skips entries without content anyway
     ]
 
 
