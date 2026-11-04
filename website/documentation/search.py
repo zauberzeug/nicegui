@@ -46,14 +46,15 @@ def build_search_index() -> None:
 def _collect_documentation_parts(*, include_code: bool = False) -> list[dict[str, str]]:
     return [
         {
-            'title': f'{documentation.heading.replace("*", "")}: {part.title}',
+            'title': documentation.heading.replace('*', '') + (f': {part.title}' if part.title else ''),
             'content': part.description or part.search_text or '',
             'format': part.description_format,
             **({'demo': get_full_code(part.demo.function) if part.demo is not None else ''} if include_code else {}),
-            'url': f'/documentation/{documentation.name}#{part.link_target}',
+            'url': f'/documentation/{documentation.name}' + (f'#{part.link_target}' if part.link_target else ''),
         }
         for documentation in registry.values()
         for part in documentation.parts
+        if part.title or part.description or part.search_text
     ]
 
 
