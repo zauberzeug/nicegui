@@ -300,7 +300,7 @@ def run(root: Callable | None = None, *,
         **kwargs,
     )
     if config.workers > 1:
-        raise ValueError('NiceGUI does not support multiple workers yet.')
+        raise ValueError('NiceGUI does not support multiple workers yet. Remove `workers=...` or unset `WEB_CONCURRENCY`.')
     config.storage_secret = storage_secret
     config.method_queue = native_module.native.method_queue if native else None
     config.response_queue = native_module.native.response_queue if native else None
