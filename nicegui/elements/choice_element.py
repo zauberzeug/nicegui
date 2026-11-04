@@ -1,6 +1,4 @@
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement

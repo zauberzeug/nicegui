@@ -3,7 +3,7 @@ import hashlib
 import mimetypes
 import weakref
 from collections.abc import AsyncGenerator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import BinaryIO
 
@@ -20,7 +20,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
     """Get a Response for the given file, supporting range-requests, E-Tag and Last-Modified."""
     chunk_size = max(MIN_CHUNK_SIZE, min(chunk_size, MAX_CHUNK_SIZE))
     file_size = file.stat().st_size
-    last_modified_time = datetime.fromtimestamp(file.stat().st_mtime, timezone.utc)
+    last_modified_time = datetime.fromtimestamp(file.stat().st_mtime, UTC)
     start = 0
     end = file_size - 1
     status_code = 200

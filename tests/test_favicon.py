@@ -1,7 +1,7 @@
 import urllib.parse
 from pathlib import Path
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import favicon, ui
@@ -16,7 +16,7 @@ def get_favicon_url(screen: Screen) -> str:
 
 
 def assert_favicon(content: Path | str | bytes, url_path: str = '/favicon.ico'):
-    response = httpx.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
+    response = httpx2.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
     assert response.status_code == 200
     if isinstance(content, Path):
         assert content.read_bytes() == response.content

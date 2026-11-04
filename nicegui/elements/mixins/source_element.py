@@ -1,8 +1,6 @@
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ... import core
 from ...binding import BindableProperty, bind, bind_from, bind_to

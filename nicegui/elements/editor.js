@@ -19,7 +19,7 @@ export default {
     };
   },
   beforeUnmount() {
-    const element = mounted_app.elements[this.$el.id.slice(1)];
+    const element = mounted_app.elements[parseHtmlId(this.$attrs.id)];
     if (element) element.props.value = this.inputValue;
   },
   watch: {

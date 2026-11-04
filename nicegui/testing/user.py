@@ -8,7 +8,7 @@ from contextlib import AbstractContextManager, contextmanager
 from typing import Any, TypeVar, overload
 from uuid import uuid4
 
-import httpx
+import httpx2
 
 from nicegui import Client, ElementFilter, ui
 from nicegui.nicegui import _on_handshake
@@ -29,7 +29,7 @@ T = TypeVar('T', bound=ui.element)
 class User:
     current_user: User | None = None
 
-    def __init__(self, client: httpx.AsyncClient) -> None:
+    def __init__(self, client: httpx2.AsyncClient) -> None:
         self.http_client = client
         self.client: Client | None = None
         self.back_history: list[str] = []
@@ -108,7 +108,7 @@ class User:
             self._simulate_browser(message_type, data)
 
     def _simulate_browser(self, message_type: MessageType, data: Payload) -> None:
-        """Simulate the browser's reaction to messages sent by `ui.navigate`, `ui.notify`, `ui.download` and `ui.sub_pages`."""
+        """Simulate the browser's reaction to messages sent by ``ui.navigate``, ``ui.notify``, ``ui.download`` and ``ui.sub_pages``."""
         if message_type == 'open':
             self.navigate.to(data['path'])
         elif message_type == 'notify':
@@ -163,8 +163,8 @@ class User:
         Note that there is no scrolling in the user simulation -- the entire page is always *visible*.
         Due to asynchronous execution, sometimes the expected elements only appear after a short delay.
 
-        By default `should_see` makes three attempts to find the element before failing.
-        This can be adjusted with the `retries` parameter.
+        By default ``should_see`` makes three attempts to find the element before failing.
+        This can be adjusted with the ``retries`` parameter.
         """
         for _ in range(retries):
             if self._sees(target, kind, marker, content):

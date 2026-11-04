@@ -25,6 +25,6 @@ class Torus(Object3D, component='torus.js'):
         :param radial_segments: number of segments along the tube cross-section (default: 12)
         :param tubular_segments: number of segments along the tube length (default: 48)
         :param arc: central angle of the torus in radians (default: 2π)
-        :param wireframe: whether to display the torus as a wireframe (default: `False`)
+        :param wireframe: whether to display the torus as a wireframe (default: ``False``)
         """
         super().__init__(radius, tube, radial_segments, tubular_segments, arc, wireframe=wireframe)

@@ -20,5 +20,5 @@ The `OnOff` component is a simple toggle that switches between on and off.
 On change, it emits an event with the new value.
 A reset method is also provided to reset the toggle to off.
 
-The Single-File Component in `on_off.vue` defines the front-end logic of the component using Vue 2.
+The Single-File Component in `on_off.vue` defines the front-end logic of the component using Vue 3.
 In contrast to the JavaScript code in `counter.js`, it splits the template, script, and style into separate sections.

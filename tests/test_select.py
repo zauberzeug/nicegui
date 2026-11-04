@@ -17,7 +17,6 @@ def test_select(screen: Screen):
 
     screen.click('A')  # open the dropdown
     screen.click('B')  # close the dropdown
-    screen.wait(0.5)
     screen.should_not_contain('A')
     screen.should_contain('B')
     screen.should_not_contain('C')
@@ -33,14 +32,13 @@ def test_select_with_input(screen: Screen):
     screen.should_contain('XYZ')
 
     screen.find_by_tag('input').send_keys('A')
-    screen.wait(0.5)
+    screen.should_not_contain('XYZ')
     screen.should_contain('A')
     screen.should_contain('AB')
-    screen.should_not_contain('XYZ')
 
     screen.find_by_tag('input').send_keys('ABC' + Keys.ENTER)
     screen.find_by_tag('input').click()
-    screen.should_not_contain('ABC')
+    screen.should_not_contain('ABC', duration=0.5)
 
 
 def test_replace_select(screen: Screen):
@@ -181,11 +179,10 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
     screen.should_contain('B2')
 
     screen.find_by_tag('input').send_keys('A')
-    screen.wait(0.5)
-    screen.should_contain('A1')
-    screen.should_contain('A2')
     screen.should_not_contain('B1')
     screen.should_not_contain('B2')
+    screen.should_contain('A1')
+    screen.should_contain('A2')
 
     screen.click('A1')
     screen.wait(0.5)
@@ -193,7 +190,7 @@ def test_keep_filtered_options(multiple: bool, screen: Screen):
     screen.should_contain('A1')
     screen.should_contain('A2')
     if multiple:
-        screen.should_not_contain('B1')
+        screen.should_not_contain('B1', duration=0.5)
         screen.should_not_contain('B2')
     else:
         screen.should_contain('B1')
@@ -228,11 +225,10 @@ def test_select_validation(auto_validation: bool, screen: Screen):
     screen.open('/')
     screen.click('A')
     screen.click('DEF')
-    screen.wait(0.5)
     if auto_validation:
         screen.should_contain('Too long')
     else:
-        screen.should_not_contain('Too long')
+        screen.should_not_contain('Too long', duration=1.0)
 
 
 def test_invalid_value(screen: Screen):
@@ -341,7 +337,8 @@ async def test_invalid_new_value_mode_does_not_break_page(user: User):
     await user.should_not_see(kind=ui.select)
 
 
-async def test_construction_does_not_run_update_override(user: User):
+@pytest.mark.parametrize('kwargs', [{}, {'with_input': True, 'clearable': True}])
+async def test_construction_does_not_run_update_override(kwargs: dict, user: User):
     calls = 0
     calls_after_init = 0
     calls_after_props = 0
@@ -356,7 +353,7 @@ async def test_construction_does_not_run_update_override(user: User):
     @ui.page('/')
     def page():
         nonlocal calls_after_init, calls_after_props
-        select = Select(['A', 'B'], value='A')
+        select = Select(['A', 'B'], value='A', **kwargs)
         calls_after_init = calls
         select.props('dense')
         calls_after_props = calls

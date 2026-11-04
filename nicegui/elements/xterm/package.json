@@ -9,16 +9,16 @@
     "clean": "rimraf ./dist/*"
   },
   "dependencies": {
-    "@xterm/xterm": "^5.5.0",
-    "@xterm/addon-fit": "^0.10.0",
-    "@xterm/addon-web-links": "^0.11.0"
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/xterm": "^6.0.0"
   },
   "devDependencies": {
-    "rollup": "^4.59.0",
+    "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-terser": "^1.0.0",
     "rimraf": "^6.1.3",
+    "rollup": "^4.59.0",
     "rollup-plugin-copy": "^3.5.0"
   }
 }

@@ -12,8 +12,7 @@ def test_run_javascript_on_button_press(screen: Screen):
     screen.open('/')
     assert screen.selenium.title == 'NiceGUI'
     screen.click('change title')
-    screen.wait(0.5)
-    screen.should_contain('A New Title')
+    screen.wait_for_js('document.title', 'A New Title')
 
 
 def test_run_javascript_on_value_change(screen: Screen):
@@ -24,14 +23,11 @@ def test_run_javascript_on_value_change(screen: Screen):
         ui.run_javascript('document.title = "Initial Title"')
 
     screen.open('/')
-    screen.wait(0.5)
-    screen.should_contain('Initial Title')
+    screen.wait_for_js('document.title', 'Initial Title')
     screen.click('A')
-    screen.wait(0.5)
-    screen.should_contain('Page A')
+    screen.wait_for_js('document.title', 'Page A')
     screen.click('B')
-    screen.wait(0.5)
-    screen.should_contain('Page B')
+    screen.wait_for_js('document.title', 'Page B')
 
 
 def test_run_javascript_before_client_connected(screen: Screen):
@@ -44,8 +40,7 @@ def test_run_javascript_before_client_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('before js')
     screen.should_contain('after js')
-    screen.wait(0.5)
-    screen.should_contain('New Title')
+    screen.wait_for_js('document.title', 'New Title')
 
 
 def test_response_from_javascript(screen: Screen):

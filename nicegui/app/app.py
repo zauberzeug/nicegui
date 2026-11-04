@@ -8,14 +8,13 @@ import signal
 import threading
 import time
 import urllib
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi import routing as fastapi_routing
+from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
+from fastapi.routing import RouteContext, iter_route_contexts
 from starlette.routing import Route
 
 from .. import background_tasks, binding, core, helpers
@@ -118,7 +117,7 @@ class App(FastAPI):
     def on_connect(self, handler: Callable) -> None:
         """Called every time a new client connects to NiceGUI.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -127,7 +126,7 @@ class App(FastAPI):
     def on_disconnect(self, handler: Callable) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
@@ -138,7 +137,7 @@ class App(FastAPI):
     def on_delete(self, handler: Callable) -> None:
         """Called when a client is deleted.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Added in version 3.0.0*
         """
@@ -151,7 +150,7 @@ class App(FastAPI):
 
         The callback can be synchronous or asynchronous.
 
-        Needs to be called before `ui.run()`.
+        Needs to be called before ``ui.run()``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -172,7 +171,7 @@ class App(FastAPI):
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
 
-        The callback has an optional parameter of `Exception`.
+        The callback has an optional parameter of ``Exception``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -226,13 +225,13 @@ class App(FastAPI):
                          max_cache_age: int = 3600) -> None:
         """Add a directory of static files.
 
-        `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
+        ``add_static_files()`` makes a local directory available at the specified endpoint, e.g. ``'/static'``.
         This is useful for providing local data like images to the frontend.
         Otherwise the browser would not be able to access the files.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
-        To make a single file accessible, you can use `add_static_file()`.
-        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
+        To make a single file accessible, you can use ``add_static_file()``.
+        For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
 
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
@@ -260,10 +259,10 @@ class App(FastAPI):
         """Add a single static file.
 
         Allows a local file to be accessed online with enabled caching.
-        If `url_path` is not specified, a path will be generated.
+        If ``url_path`` is not specified, a path will be generated.
 
-        To make a whole folder of files accessible, use `add_static_files()` instead.
-        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
+        To make a whole folder of files accessible, use ``add_static_files()`` instead.
+        For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
 
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
@@ -295,13 +294,13 @@ class App(FastAPI):
     def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
         """Add directory of media files.
 
-        `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
+        ``add_media_files()`` allows a local files to be streamed from a specified endpoint, e.g. ``'/media'``.
         This should be used for media files to support proper streaming.
         Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
-        To make a single file accessible via streaming, you can use `add_media_file()`.
-        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
+        To make a single file accessible via streaming, you can use ``add_media_file()``.
+        For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
 
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
@@ -322,10 +321,10 @@ class App(FastAPI):
         """Add a single media file.
 
         Allows a local file to be streamed.
-        If `url_path` is not specified, a path will be generated.
+        If ``url_path`` is not specified, a path will be generated.
 
-        To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
-        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
+        To make a whole folder of media files accessible via streaming, use ``add_media_files()`` instead.
+        For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
 
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
@@ -363,7 +362,7 @@ class App(FastAPI):
                info: str = '#31ccec',
                warning: str = '#f2c037',
                **custom_colors: str) -> None:
-        """Color Theming
+        r"""Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
 
@@ -380,7 +379,7 @@ class App(FastAPI):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
-        :param custom_colors: Custom color definitions for branding
+        :param \*\*custom_colors: Custom color definitions for branding
         """
         brand: dict[str, str] = self.config.quasar_config['brand']
         brand['primary'] = primary
@@ -396,20 +395,56 @@ class App(FastAPI):
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
 
     def remove_route(self, path: str) -> None:
-        """Remove routes with the given path."""
-        self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+        """Remove routes with the given path, including those of included routers."""
+        routers = list(self._iter_routers())
+        # check the raw routes first: building the effective routes of included routers is expensive
+        if not any(path.endswith(route_path) for router in routers for route in router.routes
+                   if isinstance(route_path := getattr(route, 'path', None), str)):
+            return
+        removed = {id(route.original_route) for route in self._iter_routes() if route.path == path}
+        for router in routers:
+            if any(id(route) in removed for route in router.routes):
+                if sum(candidate is router for candidate in routers) > 1:
+                    helpers.warn_once(f'Removed {path} from a router that is included more than once, '
+                                      'so it is removed from all of its includes.')
+                router.routes[:] = [route for route in router.routes if id(route) not in removed]
+                self._mark_routes_changed([router])
 
-    def _iter_http_routes(self) -> Iterator[Any]:
-        """Iterate over all HTTP routes, including those of included routers.
+    def _iter_routes(self) -> Iterator[RouteContext]:
+        """Iterate over all routes, including those of included routers.
 
-        FastAPI 0.141+ keeps an included router as a single lazy entry in ``routes``.
+        FastAPI keeps an included router as a single lazy entry in ``routes``.
         This method looks inside and yields its routes with their full paths.
+        Use ``original_route`` to modify a route and call ``_mark_routes_changed`` afterwards.
         """
-        iter_route_contexts = getattr(fastapi_routing, 'iter_route_contexts', None)  # available since FastAPI 0.141
-        if iter_route_contexts is None:
-            yield from (route for route in self.routes if isinstance(route, Route))
-        else:
-            yield from (route for route in iter_route_contexts(self.routes) if isinstance(route.original_route, Route))
+        yield from iter_route_contexts(self.routes)
+
+    def _iter_http_routes(self) -> Iterator[RouteContext]:
+        """Iterate over all HTTP routes, including those of included routers."""
+        yield from (route for route in self._iter_routes() if isinstance(route.original_route, Route))
+
+    def _iter_routers(self, router: APIRouter | None = None) -> Iterator[APIRouter]:
+        """Iterate over the app's router and all routers included into it, including nested ones."""
+        router = router or self.router
+        yield router
+        for route in router.routes:
+            included_router = getattr(route, 'original_router', None)
+            if included_router is not None:
+                yield from self._iter_routers(included_router)
+
+    def _mark_routes_changed(self, routers: Iterable[APIRouter] | None = None) -> None:
+        """Make FastAPI notice that routes of the given routers (default: all) have been removed or modified.
+
+        FastAPI caches the effective routes of each included router and only rebuilds them when a private counter changes.
+        There is no public API for this (https://github.com/fastapi/fastapi/issues/16301).
+        """
+        for router in routers if routers is not None else self._iter_routers():
+            mark_routes_changed = getattr(router, '_mark_routes_changed', None)
+            if mark_routes_changed is None:
+                helpers.warn_once('FastAPI has no APIRouter._mark_routes_changed(), '
+                                  'so routes of included routers cannot be removed or modified.')
+                return
+            mark_routes_changed()
 
     def _single_use_guard(self, path: str) -> Callable[[], None]:
         """Return a callable that lets exactly one request pass and removes the route behind it."""

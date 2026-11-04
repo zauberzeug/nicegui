@@ -8,9 +8,7 @@ import weakref
 from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
 from . import binding, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
@@ -87,9 +85,6 @@ class Element(Visibility):
         client.outbox.enqueue_update(self)
         if self._parent_slot:
             client.outbox.enqueue_update(parent_slot.parent)
-
-        self._props.add_rename('resource_path', 'resource-path')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('dynamic_resource_path', 'dynamic-resource-path')  # DEPRECATED: remove in NiceGUI 4.0
 
     def __init_subclass__(cls, *,
                           component: str | Path | None = None,
@@ -204,14 +199,14 @@ class Element(Visibility):
 
         NiceGUI is using the slot concept from Vue:
         Elements can have multiple slots, each possibly with a number of children.
-        Most elements only have one slot, e.g. a `ui.card` (QCard) only has a default slot.
-        But more complex elements like `ui.table` (QTable) can have more slots like "header", "body" and so on.
-        If you nest NiceGUI elements via with `ui.row(): ...` you place new elements inside of the row's default slot.
-        But if you use with `table.add_slot(...): ...`, you enter a different slot.
+        Most elements only have one slot, e.g. a ``ui.card`` (QCard) only has a default slot.
+        But more complex elements like ``ui.table`` (QTable) can have more slots like "header", "body" and so on.
+        If you nest NiceGUI elements via with ``ui.row(): ...`` you place new elements inside of the row's default slot.
+        But if you use with ``table.add_slot(...): ...``, you enter a different slot.
 
         The slot stack helps NiceGUI to keep track of which slot is currently used for new elements.
-        The `parent` field holds a reference to its element.
-        Whenever an element is entered via a `with` expression, its default slot is automatically entered as well.
+        The ``parent`` field holds a reference to its element.
+        Whenever an element is entered via a ``with`` expression, its default slot is automatically entered as well.
 
         :param name: name of the slot
         :param template: Vue template of the slot
@@ -368,13 +363,13 @@ class Element(Visibility):
         return cls
 
     def mark(self, *markers: str) -> Self:
-        """Replace markers of the element.
+        r"""Replace markers of the element.
 
         Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_
         which is heavily used in testing
         but can also be used to reduce the number of global variables or passing around dependencies.
 
-        :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
+        :param \*markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
         """
         self._markers = [word for marker in markers for word in marker.split()]
         return self
@@ -391,7 +386,7 @@ class Element(Visibility):
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: events.Handler[events.GenericEventArguments] | None = None,
-           args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
+           args: Sequence[str] | Sequence[Sequence[str] | None] | None = None,
            *,
            throttle: float = 0.0,
            leading_events: bool = True,
@@ -485,13 +480,13 @@ class Element(Visibility):
         self.client.outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
-        """Run a method on the client side.
+        r"""Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
         if not core.is_loop_running() or not self._is_safe_to_interact():
@@ -646,6 +641,6 @@ class Element(Visibility):
     def html_id(self) -> str:
         """The ID of the element in the HTML DOM.
 
-        *Added in version 2.16.0*
+        *Added in version 2.16.0*, *updated in version 4.0.0*: ``ng-<id>`` instead of ``c<id>``
         """
-        return f'c{self.id}'
+        return f'ng-{self.id}'
