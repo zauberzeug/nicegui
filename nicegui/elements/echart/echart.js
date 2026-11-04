@@ -85,7 +85,7 @@ export default {
     this.update_chart();
   },
   beforeUnmount() {
-    this.chart.dispose();
+    this.chart?.dispose();
   },
   unmounted() {
     this.resizeObserver?.disconnect();
