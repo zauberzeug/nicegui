@@ -22,7 +22,14 @@ def _ancient_tab() -> ObservableDict:
 
 
 def _prune(**kwargs) -> None:
-    asyncio.run(prune_tab_storage(**kwargs))
+    # Do not use asyncio.run: it resets the policy's current event loop to ``None``,
+    # which orphans a loop installed by an earlier test and turns it into an
+    # "unclosed event loop" ResourceWarning once the next test collects garbage.
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(prune_tab_storage(**kwargs))
+    finally:
+        loop.close()
 
 
 def test_prune_tab_storage_removes_stale_orphan_tab():
