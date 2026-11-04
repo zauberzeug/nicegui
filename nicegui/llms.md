@@ -13,7 +13,7 @@ The single most important rule: **everything is Python**. Reach for `ui.*` befor
 
 - **Backend-first**: All UI logic lives in Python. The framework handles web details automatically.
 - **Stack**: Python/FastAPI backend → WebSocket (socket.io) → Vue 3 / Quasar frontend
-- **Single worker**: One uvicorn worker with full async support; no multiprocessing needed.
+- **Single worker**: One uvicorn worker with full async support; no multiprocessing needed. `workers > 1` and `WEB_CONCURRENCY > 1` raise a `ValueError`.
 - **Outbox**: UI updates are accumulated and sent in batches to the client over the persistent WebSocket.
 - **Element lifecycle**: Python `Element` objects mirror Vue components on the client. Creating an element registers it immediately; calling `.update()` pushes changes.
 
@@ -317,7 +317,7 @@ ui.skip_link('Skip to main content', target=main)    # keyboard-only link (WCAG 
 ## Input Elements
 
 ```python
-ui.input('Name', value='Alice', on_change=handler)
+ui.input('Name', value='Alice', on_change=handler)  # a cleared input holds '' (since 4.0), so test `not value`; ui.number and ui.select keep None
 ui.input('Password', password=True, password_toggle_button=True)
 ui.textarea('Notes', rows=5)
 ui.number('Age', min=0, max=120, step=1)
@@ -404,7 +404,7 @@ columns = [
     {'name': 'age', 'label': 'Age', 'field': 'age'},
 ]
 rows = [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
-ui.table(columns=columns, rows=rows, row_key='name')
+ui.table(columns=columns, rows=rows, row_key='name')  # pagination=10 for 10 rows per page; pagination_controls=False hides the bar (since 4.0)
 
 # AG Grid (advanced grid)
 grid = ui.aggrid({
@@ -522,6 +522,9 @@ export default class PulsingSphere {
 
 Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
 Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
+
+In event handlers and timers, create custom objects inside `with scene:`, otherwise they raise a `RuntimeError` (since 4.0); the same goes for custom `Layer` subclasses and `with leaflet:`.
+For the same reason, write `on_click=lambda: scene.box()` instead of `on_click=scene.box`.
 
 Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
 
@@ -829,6 +832,9 @@ ui.run_javascript('document.title = "New Title"')
 
 # Run JS and await result
 result = await ui.run_javascript('return window.innerWidth')
+
+# Address a specific element; its DOM ID is element.html_id (`ng-12` since 4.0, formerly `c12`)
+ui.run_javascript(f'getHtmlElement({label.id}).innerText += " Hello!"')
 
 # Call a method on a specific element's Vue component
 await element.run_method('methodName', arg1, arg2)
@@ -1376,6 +1382,7 @@ Use `Screen` fixture only when JavaScript or real browser rendering is required:
 def test_chart(screen: Screen) -> None:
     screen.open('/')
     screen.should_contain('canvas')  # chart rendered
+    screen.should_not_contain('Loading')  # waits for the text to disappear (since 4.0); duration=0.5 also checks that it stays away
 ```
 
 ---
