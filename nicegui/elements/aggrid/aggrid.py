@@ -237,7 +237,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     async def get_selected_rows(self) -> list[dict]:
         """Get the currently selected rows.
 
-        This method is especially useful when the grid is configured with ``rowSelection: 'multiple'``.
+        This method is especially useful when the grid is configured with ``rowSelection: {'mode': 'multiRow'}``.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for more information.
 
@@ -249,7 +249,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     async def get_selected_row(self) -> dict | None:
         """Get the single currently selected row.
 
-        This method is especially useful when the grid is configured with ``rowSelection: 'single'``.
+        This method is especially useful when the grid is configured with ``rowSelection: {'mode': 'singleRow'}``.
 
         :return: row data of the first selection if any row is selected, otherwise ``None``
         """

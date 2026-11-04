@@ -173,7 +173,7 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 
   - Use `with contextlib.suppress(...)` instead of try/except/pass for cleaner exception handling
   - Catch `ImportError` for optional dependencies, not `ModuleNotFoundError` — covers both missing and broken installations
-  - Use assertions for internal invariants (e.g., `assert self.current_scene is not None`)
+  - Use assertions for internal invariants (e.g., `assert self.callback is not None`)
   - Raise descriptive exceptions (`ValueError`, `RuntimeError`) with helpful messages
 
 - **Elements** (core library)
