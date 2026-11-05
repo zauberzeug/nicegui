@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Callable
 from inspect import isawaitable
 
@@ -26,7 +27,7 @@ class AwaitableResponse:
         self._is_fired = False
         self._is_awaited = False
         stack = Slot.get_stack()  # don't enter script mode by accessing `context.slot_stack`
-        background_tasks.create(self._fire(), name=name, context=stack[-1] if stack else None)
+        self._task = background_tasks.create(self._fire(), name=name, context=stack[-1] if stack else None)
 
     async def _fire(self) -> None:
         if self._is_awaited:
@@ -40,7 +41,21 @@ class AwaitableResponse:
         if self._is_fired:
             raise RuntimeError('AwaitableResponse must be awaited immediately after creation or not at all')
         self._is_awaited = True
-        return self.wait_for_result().__await__()
+        return self._wait_with_ordered_fire().__await__()
+
+    async def _wait_with_ordered_fire(self):
+        """Await the result while preserving the order of calls made in Python.
+
+        The fire-and-forget task is scheduled at creation time but has not run
+        yet when ``__await__`` starts. Yielding control to the event loop once
+        lets previously created responses send their fire-and-forget messages
+        first, so the browser executes the calls in the order they were made
+        (e.g. `run_method('a'); await run_method('b')`), instead of the awaited
+        message overtaking them (#6472).
+        """
+        if self._task is not None and not self._task.done():
+            await asyncio.sleep(0)
+        return await self.wait_for_result()
 
 
 class NullResponse(AwaitableResponse):
