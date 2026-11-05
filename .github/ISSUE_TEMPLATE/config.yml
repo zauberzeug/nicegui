@@ -9,6 +9,3 @@ contact_links:
   - name: Ask on Discord
     url: https://discord.gg/TEpFeAaF4f
     about: Get in touch with the NiceGUI community, get support and have a chat about your project.
-  - name: Ask on StackOverflow
-    url: https://stackoverflow.com/questions/tagged/nicegui
-    about: Get help from a larger community by asking on StackOverflow.
