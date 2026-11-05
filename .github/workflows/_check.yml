@@ -16,6 +16,7 @@ jobs:
             command: pylint ./nicegui
       fail-fast: false
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.3.3

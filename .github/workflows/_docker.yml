@@ -11,6 +11,7 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - name: Prepare Docker image
@@ -21,8 +22,13 @@ jobs:
           SHORTREF=${GITHUB_SHA::8}
           TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:${SHORTREF}"
 
-          # If the VERSION looks like a version number, also tag it 'latest'
-          if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+          # Only the highest stable version gets the 'latest' tag, so that a backport to an older branch doesn't overwrite it
+          HIGHEST_VERSION=$(git ls-remote --tags --refs origin 'v*' \
+            | sed 's|.*refs/tags/v||' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n 1)
+          if [[ "$VERSION" == "$HIGHEST_VERSION" ]]; then
             TAGS="$TAGS,${DOCKER_IMAGE}:latest"
           fi
 
@@ -31,7 +37,6 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
       - uses: docker/setup-qemu-action@v4
       - uses: docker/login-action@v4
-        if: github.event_name != 'pull_request'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}

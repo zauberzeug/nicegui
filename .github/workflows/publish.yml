@@ -8,6 +8,7 @@ on:
 jobs:
   extract-version:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -34,6 +35,8 @@ jobs:
     secrets: inherit
 
   verify:
-    needs: docker
+    needs: [extract-version, docker]
     uses: ./.github/workflows/_verify.yml
+    with:
+      version: ${{ needs.extract-version.outputs.version }}
     secrets: inherit

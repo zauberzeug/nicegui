@@ -46,6 +46,7 @@ jobs:
 
   quick-test-gate:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     needs: [check, quick-test, windows-test]
     if: always() && github.event_name == 'pull_request'
     steps:
@@ -57,6 +58,7 @@ jobs:
 
   full-test-gate:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     needs: [check, full-test, windows-test]
     if: always() && github.event_name != 'pull_request'
     steps:
