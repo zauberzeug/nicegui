@@ -60,7 +60,7 @@ class Element(Visibility):
         self._client = weakref.ref(client)
         self.id = client.next_element_id
         client.next_element_id += 1
-        self.tag = tag if tag else self.component.tag if self.component else 'div'
+        self.tag = tag or (self.component.tag if self.component else 'div')
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
         self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
@@ -76,14 +76,12 @@ class Element(Visibility):
 
         client.elements[self.id] = self
         self._parent_slot: weakref.ref[Slot] | None = None
+        client.outbox.enqueue_update(self)
         slot_stack = context.slot_stack
         if slot_stack:
             parent_slot = slot_stack[-1]
             parent_slot.children.append(self)
             self._parent_slot = weakref.ref(parent_slot)
-
-        client.outbox.enqueue_update(self)
-        if self._parent_slot:
             client.outbox.enqueue_update(parent_slot.parent)
 
     def __init_subclass__(cls, *,
@@ -424,7 +422,7 @@ class Element(Visibility):
             listener = EventListener(
                 element_id=self.id,
                 type=helpers.event_type_to_camel_case(type),
-                args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
+                args=[args] if args and isinstance(args[0], str) else args,  # type: ignore[arg-type,list-item]
                 handler=handler,
                 js_handler=None if js_handler == '(...args) => emit(...args)' else js_handler,
                 throttle=throttle,

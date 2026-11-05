@@ -13,7 +13,7 @@ class APIRouter(fastapi.APIRouter):
              title: str | None = None,
              viewport: str | None = None,
              favicon: str | Path | None = None,
-             dark: bool | None = ...,  # type: ignore
+             dark: bool | None = ...,  # type: ignore[assignment]
              response_timeout: float = 3.0,
              **kwargs,
              ) -> Callable:

@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import multiprocessing
 import multiprocessing.forkserver
 import signal
@@ -14,6 +13,7 @@ from pickle import PicklingError
 from typing import Any, Literal, ParamSpec, TypeVar
 
 from . import core, helpers
+from .logging import log
 
 process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
@@ -61,7 +61,7 @@ def setup() -> None:
     try:
         process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)
     except NotImplementedError:
-        logging.warning('Failed to initialize ProcessPoolExecutor')
+        log.warning('Failed to initialize ProcessPoolExecutor')
 
 
 class SubprocessException(Exception):

@@ -10,7 +10,7 @@ class Pagination(ValueElement[int | None], DisableableElement):
     def __init__(self,
                  min: int, max: int, *,  # pylint: disable=redefined-builtin
                  direction_links: bool = DEFAULT_PROP | False,
-                 value: int | None = DEFAULT_PROPS['model-value'] | ...,  # type: ignore
+                 value: int | None = DEFAULT_PROPS['model-value'] | ...,  # type: ignore[assignment]
                  on_change: Handler[ValueChangeEventArguments[int | None]] | None = None) -> None:
         """Pagination
 

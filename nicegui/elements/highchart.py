@@ -7,7 +7,7 @@ try:
     optional_features.register('highcharts')
     __all__ = ['highchart']
 except ImportError:
-    class highchart(Element):  # type: ignore
+    class highchart(Element):  # type: ignore[no-redef]
         def __init__(self, *args, **kwargs) -> None:  # pylint: disable=unused-argument
             """Highcharts chart
 

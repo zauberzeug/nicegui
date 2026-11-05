@@ -129,7 +129,7 @@ class ElementFilter(Generic[T]):
             if self._not_within_markers and not ancestor_markers.isdisjoint(self._not_within_markers):
                 continue
 
-            yield element  # type: ignore
+            yield element  # type: ignore[misc]
 
     def within(self, *,
                kind: type[Element] | None = None,
