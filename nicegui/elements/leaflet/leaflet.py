@@ -28,7 +28,7 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
                  center: tuple[float, float] = DEFAULT_PROP | (0.0, 0.0),
                  zoom: int = DEFAULT_PROP | 13,
                  *,
-                 options: dict = DEFAULT_PROP | {},
+                 options: dict | None = DEFAULT_PROP | None,
                  draw_control: bool | dict = DEFAULT_PROP | False,
                  hide_drawn_items: bool = DEFAULT_PROP | False,
                  additional_resources: list[str] | None = DEFAULT_PROP | None,
@@ -39,7 +39,7 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
 
         :param center: initial center location of the map (latitude/longitude, default: (0.0, 0.0))
         :param zoom: initial zoom level of the map (default: 13)
-        :param options: additional options passed to the Leaflet map (default: {})
+        :param options: additional options passed to the Leaflet map (default: ``None``)
         :param draw_control: whether to show the draw toolbar (default: False)
         :param hide_drawn_items: whether to hide drawn items on the map (default: False, *added in version 2.0.0*)
         :param additional_resources: additional resources like CSS or JS files to load (default: None, *added in version 2.11.0*)
@@ -63,7 +63,7 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         self._client_center = center
         self._client_zoom = zoom
 
-        self._props['options'] = {**options}
+        self._props['options'] = {**(options or {})}
         self._props['draw-control'] = draw_control
         self._props['hide-drawn-items'] = hide_drawn_items
         self._props['additional-resources'] = additional_resources or []

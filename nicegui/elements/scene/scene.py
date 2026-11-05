@@ -1,6 +1,6 @@
 import asyncio
 import weakref
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Literal, Self
@@ -74,7 +74,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
                  grid: bool | tuple[int, int] | None = DEFAULT_PROP | None,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
-                 click_events: list[str] = DEFAULT_PROP | ['click', 'dblclick'],
+                 click_events: Sequence[str] = DEFAULT_PROP | ('click', 'dblclick'),
                  on_drag_start: Handler[SceneDragEventArguments] | None = None,
                  on_drag_end: Handler[SceneDragEventArguments] | None = None,
                  drag_constraints: str = DEFAULT_PROP | '',
@@ -96,7 +96,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100 unless ``polar_grid`` is given)
         :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
-        :param click_events: list of JavaScript click events to subscribe to (default: ``['click', 'dblclick']``)
+        :param click_events: list of JavaScript click events to subscribe to (default: ``('click', 'dblclick')``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
         :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
@@ -127,7 +127,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._initialized_event = asyncio.Event()
         self._settled_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
-        self._props['click-events'] = click_events[:]
+        self._props['click-events'] = list(click_events)
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
         self._drag_end_handlers = [on_drag_end] if on_drag_end else []
         self.on('init', self._handle_init)

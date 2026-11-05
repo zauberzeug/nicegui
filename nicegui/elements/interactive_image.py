@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import suppress
 from pathlib import Path
 from typing import Self, cast
@@ -29,7 +29,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  content: str = '',
                  size: tuple[float, float] | None = DEFAULT_PROP | None,
                  on_mouse: Handler[MouseEventArguments] | None = None,
-                 events: list[str] = DEFAULT_PROP | ['click'],
+                 events: Sequence[str] = DEFAULT_PROP | ('click',),
                  cross: bool | str = DEFAULT_PROP | False,
                  sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
@@ -55,7 +55,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
         :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
         :param size: size of the image (width, height) in pixels; only used if ``source`` is not set
         :param on_mouse: callback for mouse events (contains image coordinates ``image_x`` and ``image_y`` in pixels)
-        :param events: list of JavaScript events to subscribe to (default: ``['click']``)
+        :param events: list of JavaScript events to subscribe to (default: ``('click',)``)
         :param cross: whether to show crosshairs or a color string (default: ``False``)
         :param sanitize: sanitization mode:
             ``True`` (default) uses client-side sanitization via DOMPurify,
@@ -66,7 +66,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
             raise TypeError('`sanitize` must be `True`, `False` or a callable; `None` is no longer supported')
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
-        self._props['events'] = events[:]
+        self._props['events'] = list(events)
         self._props['cross'] = cross
         self._props['size'] = size
         self._props['sanitize'] = sanitize is True
