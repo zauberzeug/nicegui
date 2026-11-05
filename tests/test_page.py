@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import re
 from typing import Literal
 
@@ -435,3 +436,26 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
         t.get_name().startswith('wait for connection') and not t.done()
         for t in asyncio.all_tasks()
     ), 'connection-wait tasks should be cancelled after page coroutine completes'
+
+
+async def test_page_exception_with_nameless_async_handler(user: User, caplog: pytest.LogCaptureFixture):
+    handled: list[str] = []
+
+    async def handler(_request, exception: Exception, *, prefix: str) -> None:
+        handled.append(f'{prefix}: {exception}')
+
+    app.add_exception_handler(ValueError, functools.partial(handler, prefix='handled'))
+    app.on_page_exception(lambda: ui.label('custom error page'))
+
+    @ui.page('/')
+    def page():
+        raise ValueError('boom')
+
+    response = await user.http_client.get('/')
+    await asyncio.sleep(0)
+
+    assert response.status_code == 500
+    assert 'custom error page' in response.text, 'the page exception handler should render the error page'
+    assert handled == ['handled: boom'], 'the async exception handler should run'
+    assert all('boom' in record.message for record in caplog.records)
+    caplog.clear()

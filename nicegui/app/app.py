@@ -7,7 +7,7 @@ import secrets
 import signal
 import threading
 import time
-import urllib
+import urllib.parse
 from collections.abc import Callable, Iterable, Iterator
 from enum import Enum
 from pathlib import Path
