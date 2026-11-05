@@ -17,6 +17,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: docker
     permissions:
       contents: read
     steps:
