@@ -12,6 +12,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions: {}
     steps:
       - name: Verify Docker image
         env:

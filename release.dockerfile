@@ -3,7 +3,7 @@ FROM python:3.14-slim
 LABEL maintainer="Zauberzeug GmbH <info@zauberzeug.com>"
 
 # Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /usr/local/bin/uv
 
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"

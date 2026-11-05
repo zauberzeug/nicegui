@@ -5,7 +5,7 @@ LABEL maintainer="Zauberzeug GmbH <nicegui@zauberzeug.com>"
 RUN apt update && apt install -y curl procps
 
 # Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.7 /uv /usr/local/bin/uv
 
 WORKDIR /app
 
