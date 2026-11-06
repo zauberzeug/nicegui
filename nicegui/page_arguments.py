@@ -116,7 +116,7 @@ class PageArguments:
 
         Unions containing ``str`` keep the raw value.
         Otherwise ``int`` and ``float`` are tried in annotation order.
-        If all members are numeric and none fits, the error is raised.
+        If all members are numeric and none fits, a ``ValueError`` is raised.
         Values for other annotations are kept as raw strings.
 
         :param value: string value to convert
@@ -128,12 +128,13 @@ class PageArguments:
         if str in members:
             return value
         numeric = [member for member in members if member in (int, float)]
-        for i, member in enumerate(numeric):
+        for member in numeric:
             try:
                 return member(value)
             except ValueError:
-                if i == len(numeric) - 1 and len(numeric) == len(members):
-                    raise
+                pass
+        if numeric and len(numeric) == len(members):
+            raise ValueError(f'could not convert {value!r} to {getattr(param_type, "__name__", param_type)}')
         return value
 
 
