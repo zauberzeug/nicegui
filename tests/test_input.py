@@ -61,8 +61,8 @@ def test_toggle_button(screen: Screen):
     screen.wait_for(lambda: element.get_attribute('type') == 'password')
 
 
-@pytest.mark.parametrize('method', ['dict', 'sync', 'async'])
-def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Screen):
+@pytest.mark.parametrize('method', ['dict', 'sync', 'async', 'mixed_dict'])
+def test_input_validation(method: Literal['dict', 'sync', 'async', 'mixed_dict'], screen: Screen):
     input_ = None
 
     @ui.page('/')
@@ -74,14 +74,19 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
         elif method == 'dict':
             input_ = ui.input('Name',
                               validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
-        else:
+        elif method == 'async':
             async def validate(x: str) -> str | None:
                 await asyncio.sleep(0.1)
                 return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
             input_ = ui.input('Name', validation=validate)
+        else:
+            async def is_long_enough(x: str) -> bool:
+                await asyncio.sleep(0.1)
+                return len(x) >= 3
+            input_ = ui.input('Name', validation={'Short': is_long_enough, 'Still short': lambda x: len(x) >= 5})
 
     def assert_validation(expected: bool):
-        if method == 'async':
+        if method in {'async', 'mixed_dict'}:
             with pytest.raises(NotImplementedError):
                 input_.validate()
             assert input_.validate(return_result=False)
@@ -126,8 +131,11 @@ def test_validation_with_lagging_value_change_events(screen: Screen):
     assert element.get_attribute('value') == '12345678'
 
 
+@pytest.mark.parametrize('form', ['function', 'dict'])
 @pytest.mark.parametrize('method', ['async', 'sync', 'dict', 'none'])
-async def test_outdated_async_validation(method: Literal['async', 'sync', 'dict', 'none'], user: User):
+async def test_outdated_async_validation(method: Literal['async', 'sync', 'dict', 'none'],
+                                         form: Literal['function', 'dict'],
+                                         user: User):
     started = asyncio.Event()
     release = asyncio.Event()
 
@@ -139,9 +147,12 @@ async def test_outdated_async_validation(method: Literal['async', 'sync', 'dict'
             return 'Old value is invalid'
         return None
 
+    async def check(value: str) -> bool:
+        return await validate(value) is None
+
     @ui.page('/')
     def page():
-        field = ui.input('Name', validation=validate)
+        field = ui.input('Name', validation=validate if form == 'function' else {'Old value is invalid': check})
 
         def supersede():
             if method == 'async':
@@ -184,92 +195,27 @@ async def test_ui_on_exception_from_async_validation(user: User, caplog: pytest.
     caplog.records.pop(0)
 
 
-async def test_async_validation_function_in_dict(user: User):
-    async def is_long_enough(value: str) -> bool:
-        await asyncio.sleep(0.01)
-        return len(value) >= 3
-
-    @ui.page('/')
-    def page():
-        ui.input('Name', validation={'Too short': is_long_enough})
-
-    await user.open('/')
-    user.find('Name').type('ab')
-    await user.should_see('Too short')
-    user.find('Name').type('c')
-    await user.should_not_see('Too short')
-
-
-async def test_sync_check_before_async_check_in_dict_fails_immediately(user: User):
-    called: list[str] = []
-
-    async def async_check(value: str) -> bool:
-        called.append(value)
-        return True
-
-    field = None
-
-    @ui.page('/')
-    def page():
-        nonlocal field
-        field = ui.input('Name', validation={'Required': bool, 'Async': async_check})
-
-    await user.open('/')
-    assert field.validate(return_result=False) is False
-    assert field.error == 'Required'
-    assert called == [], 'the async check must not run after a failing sync check'
-
-
-async def test_outdated_async_check_in_dict_is_discarded(user: User):
-    started = asyncio.Event()
-    release = asyncio.Event()
-
-    async def slow_check(value: str) -> bool:
-        if value == 'a':
-            started.set()
-            await release.wait()
-            return False
-        return True
-
-    field = None
-
-    @ui.page('/')
-    def page():
-        nonlocal field
-        field = ui.input('Name', validation={'Old value is invalid': slow_check})
-
-    await user.open('/')
-    user.find('Name').type('a')
-    await asyncio.wait_for(started.wait(), 2)
-    field.validation = {'Still invalid': lambda value: value == 'ab'}
-    release.set()
-    await asyncio.sleep(0.1)
-    assert field.error == 'Still invalid'
-
-
 async def test_validate_with_return_result_rejects_async_checks(user: User):
     async def is_valid(value: str) -> bool:
         return True
 
+    def wrapped(value: str) -> Awaitable[bool]:  # a wrapper the static check cannot see through
+        return is_valid(value)
+
     field = None
 
     @ui.page('/')
     def page():
         nonlocal field
-        field = ui.input('Name', validation={'Invalid': is_valid})
+        field = ui.input('Name', validation=wrapped)
 
     await user.open('/')
     with pytest.raises(NotImplementedError):
         field.validate()
 
-    def wrapped(value: str) -> Awaitable[bool]:  # a wrapper the static check cannot see through
-        return is_valid(value)
-
-    field.validation = wrapped
-    with pytest.raises(NotImplementedError):
-        field.validate()
-
-    field.validation = {'Invalid': wrapped}
+    field.validation = {'Required': bool, 'Invalid': wrapped}
+    assert field.validate() is False, 'a failing sync check should win before the async check is reached'
+    field.value = 'x'
     with pytest.raises(NotImplementedError):
         field.validate()
 
