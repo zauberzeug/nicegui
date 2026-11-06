@@ -69,7 +69,7 @@ class ExceptionWithSuperParameter(Exception):
 
 
 def raise_exception_with_super_parameter():
-    raise ExceptionWithSuperParameter()
+    raise ExceptionWithSuperParameter
 
 
 async def test_run_cpu_bound_function_which_raises_problematic_exception(user: User):

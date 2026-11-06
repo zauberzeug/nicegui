@@ -29,7 +29,7 @@ async def user_simulation(
         os.environ['NICEGUI_USER_SIMULATION'] = 'true'
         try:
             if main_file is not None:
-                if not Path(main_file).exists():
+                if not Path(main_file).exists():  # noqa: ASYNC240 (a single check during test setup)
                     raise FileNotFoundError(f'Main file not found at {main_file}')
                 runpy.run_path(str(main_file), run_name='__main__')
             else:

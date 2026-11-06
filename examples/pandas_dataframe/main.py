@@ -7,7 +7,7 @@ from pandas.api.types import is_bool_dtype, is_integer_dtype, is_numeric_dtype
 from nicegui import ui
 
 df = pd.DataFrame(data={
-    'col1': [x for x in range(4)],
+    'col1': list(range(4)),
     'col2': ['This', 'column', 'contains', 'strings.'],
     'col3': [x / 4 for x in range(4)],
     'col4': [True, False, True, False],

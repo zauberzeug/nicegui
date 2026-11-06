@@ -13,7 +13,7 @@ from .registry import register_type
 try:
     from .orjson_wrapper import NiceGUIJSONResponse, dumps, loads
 except ImportError:
-    from .builtin_wrapper import NiceGUIJSONResponse, dumps, loads  # type: ignore
+    from .builtin_wrapper import NiceGUIJSONResponse, dumps, loads  # type: ignore[assignment]
 
 
 __all__ = [

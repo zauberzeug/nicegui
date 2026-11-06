@@ -2503,28 +2503,22 @@ redis = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "altair" },
-    { name = "anywidget" },
     { name = "autopep8" },
     { name = "cssbeautifier" },
     { name = "debugpy" },
     { name = "dnspython" },
     { name = "filelock" },
-    { name = "fonttools" },
     { name = "html-sanitizer" },
     { name = "isort" },
     { name = "latex2mathml" },
     { name = "lxml" },
     { name = "lxml-html-clean" },
-    { name = "matplotlib" },
     { name = "mypy" },
-    { name = "nicegui-highcharts" },
+    { name = "nicegui", extra = ["altair", "anywidget", "highcharts", "matplotlib", "native", "plotly", "redis"] },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pandas" },
     { name = "pandas-stubs" },
-    { name = "pillow" },
-    { name = "plotly" },
     { name = "poetry-dynamic-versioning" },
     { name = "polars" },
     { name = "pre-commit" },
@@ -2535,12 +2529,9 @@ dev = [
     { name = "pytest-order" },
     { name = "pytest-selenium" },
     { name = "pytest-watcher" },
-    { name = "pywebview" },
     { name = "rcssmin" },
-    { name = "redis" },
     { name = "requests" },
     { name = "ruff" },
-    { name = "secure" },
     { name = "selenium" },
     { name = "slowapi" },
     { name = "sphinx-lint" },
@@ -2551,7 +2542,6 @@ dev = [
     { name = "urllib3" },
     { name = "vega-datasets" },
     { name = "virtualenv" },
-    { name = "webdriver-manager" },
 ]
 types = [
     { name = "pandas-stubs" },
@@ -2613,27 +2603,21 @@ provides-extras = ["altair", "anywidget", "highcharts", "matplotlib", "native", 
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "altair", specifier = ">=6.0.0" },
-    { name = "anywidget", specifier = ">=0.9.21" },
     { name = "autopep8", specifier = ">=1.5.7,<3.0.0" },
     { name = "cssbeautifier", specifier = ">=2.0.3,<3" },
     { name = "debugpy", specifier = ">=1.3.0,<2" },
     { name = "dnspython", specifier = ">=2.9.0,<3" },
     { name = "filelock", specifier = ">=4.2.1" },
-    { name = "fonttools", specifier = ">=4.60.2" },
     { name = "html-sanitizer", specifier = ">=2.6.0,<3" },
     { name = "isort", specifier = ">=9.0.2,<10.0.0" },
     { name = "latex2mathml", specifier = ">=3.78.1,<4.0.0" },
     { name = "lxml", specifier = ">=6.1.0" },
     { name = "lxml-html-clean", specifier = ">=0.4.4" },
-    { name = "matplotlib", specifier = ">=3.5.0,<4" },
     { name = "mypy", specifier = ">=2.4.1,<3" },
-    { name = "nicegui-highcharts", specifier = ">=3.5.0,<4" },
+    { name = "nicegui", extras = ["altair", "anywidget", "native", "plotly", "matplotlib", "highcharts", "redis"] },
     { name = "numpy", specifier = ">=1.26.0" },
     { name = "pandas", specifier = ">=3.0.6,<4" },
     { name = "pandas-stubs", specifier = ">=3.0.0,<4" },
-    { name = "pillow", specifier = ">=13.0.0" },
-    { name = "plotly", specifier = ">=5.13,<8.0" },
     { name = "poetry-dynamic-versioning", specifier = ">=1.8.0,<2" },
     { name = "polars", specifier = ">=2.0.0,<3" },
     { name = "pre-commit", specifier = ">=4.0.0" },
@@ -2644,12 +2628,9 @@ dev = [
     { name = "pytest-order", specifier = ">=1.3.0,<2" },
     { name = "pytest-selenium", specifier = ">=4.1.0,<5" },
     { name = "pytest-watcher", specifier = ">=0.6.3,<0.7" },
-    { name = "pywebview", specifier = ">=5.0.1,<7" },
     { name = "rcssmin", specifier = ">=1.2.1,<2" },
-    { name = "redis", specifier = ">=4.0.0" },
     { name = "requests", specifier = ">=2.33.0" },
     { name = "ruff", specifier = ">=0.8.1" },
-    { name = "secure", specifier = ">=0.3.0" },
     { name = "selenium", specifier = ">=4.11.2,<5" },
     { name = "slowapi", specifier = ">=0.1.9,<0.2.0" },
     { name = "sphinx-lint", specifier = ">=1.0.2,<2" },
@@ -2660,7 +2641,6 @@ dev = [
     { name = "urllib3", specifier = ">=2.8.0" },
     { name = "vega-datasets", specifier = ">=0.9.0,<0.10.0" },
     { name = "virtualenv", specifier = ">=21.14.9" },
-    { name = "webdriver-manager", specifier = ">=3.8.6,<5.0.0" },
 ]
 types = [
     { name = "pandas-stubs", specifier = ">=3.0.0,<4" },
@@ -4510,15 +4490,6 @@ wheels = [
 ]
 
 [[package]]
-name = "secure"
-version = "2.0.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ca/88/84b861346a6a23d75900b493de7458cf89605262e6e19876dc0b576b11ff/secure-2.0.1.tar.gz", hash = "sha256:bb492b9ca2ae66d04f4718675a18de1d1a29217aaded3d6cb5bd8b4ba2e2a645", size = 39787, upload-time = "2026-04-22T09:49:07.225Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/50/16/b5040aa7644a99f9bd0b08d393b49edaa8d48062ae4757ee107737b60030/secure-2.0.1-py3-none-any.whl", hash = "sha256:12794037e2c4d0b54697045b50285a37faf26ba026cb34a68cd55e96d472898b", size = 53983, upload-time = "2026-04-22T09:49:05.8Z" },
-]
-
-[[package]]
 name = "selenium"
 version = "4.52.0"
 source = { registry = "https://pypi.org/simple" }
@@ -5141,20 +5112,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/63/6f/b321f10c2298e7d16cffc1a5f05f3d7e5231b45f9e68af5ee378e23bb2e5/wcwidth-0.9.4-cp315-cp315t-win_amd64.whl", hash = "sha256:12786620375dc83fabf4b2b2aa52416fef2bc6094522ea29c8a53c75b0dfe9b6", size = 603485, upload-time = "2026-10-24T18:11:43.052Z" },
     { url = "https://files.pythonhosted.org/packages/4e/cc/7eeb28059186cae72a770df79e744f232ef068192a5a588b718473e35bb4/wcwidth-0.9.4-cp315-cp315t-win_arm64.whl", hash = "sha256:2cca7b5d0b9d0ae49068d3ce806e965326a987f555b62eaa322223396e10d01b", size = 605198, upload-time = "2026-10-24T18:11:33.75Z" },
     { url = "https://files.pythonhosted.org/packages/6f/0c/309b1813b230d1dbbd6f2c2ab2bb21ef68992358977605d9ef289bbfedcc/wcwidth-0.9.4-py3-none-any.whl", hash = "sha256:901eace6d2dd25ebb917d0ce5db18e5c537e1504c905cf32f0d006c12098b05d", size = 301806, upload-time = "2026-10-24T18:10:52.651Z" },
-]
-
-[[package]]
-name = "webdriver-manager"
-version = "4.1.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-    { name = "python-dotenv" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/65/e5/78d362c3507473d27708068fa66c2439b55127571351a096c7ec8eb85e9c/webdriver_manager-4.1.2.tar.gz", hash = "sha256:230515ff4dc4c2feff1add25306ca262421b31016d77ded305e8dd921266445f", size = 38948, upload-time = "2026-06-04T06:00:00.895Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/2c/7414ab135e99df7d9cc4a4afbd21b46906a9397aa2519beac50f6517138e/webdriver_manager-4.1.2-py3-none-any.whl", hash = "sha256:552bbb4e6f95e6e8b772565d2023e7c0ec5ff1736db0b186922d0466fc78c3de", size = 32512, upload-time = "2026-06-04T05:59:59.565Z" },
 ]
 
 [[package]]

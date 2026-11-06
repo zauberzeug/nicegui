@@ -257,6 +257,8 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
             df = pl.DataFrame({
                 'datetime_col': [datetime(2020, 1, 1)],
                 'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
+                'timedelta_col': [timedelta(days=5)],
+                'binary_col': ['hällo'.encode()],
             })
             ui.aggrid.from_polars(df)
 
@@ -272,6 +274,11 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         screen.should_contain('(1+2j)')
         screen.should_contain('Period_col')
         screen.should_contain('2021-01')
+    else:
+        screen.should_contain('Timedelta_col')
+        screen.should_contain('5 days, 0:00:00')
+        screen.should_contain('Binary_col')
+        screen.should_contain('hällo')
 
 
 def test_run_row_method(screen: Screen):

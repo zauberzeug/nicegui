@@ -27,8 +27,8 @@ class page:
                  title: str | None = None,
                  viewport: str | None = None,
                  favicon: str | Path | None = None,
-                 dark: bool | None = ...,  # type: ignore
-                 language: Language | None = ...,  # type: ignore
+                 dark: bool | None = ...,  # type: ignore[assignment]
+                 language: Language | None = ...,  # type: ignore[assignment]
                  response_timeout: float = 3.0,
                  reconnect_timeout: float | None = None,
                  markdown: bool | None = None,
@@ -159,7 +159,8 @@ class page:
                     if key == 500 or (isinstance(key, type) and isinstance(e, key)):
                         result = handler(request, e)
                         if helpers.should_await(result):
-                            background_tasks.create(result, name=f'exception handler {handler.__name__}')
+                            name = getattr(handler, '__name__', handler)
+                            background_tasks.create(result, name=f'exception handler {name}')
 
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)
@@ -244,6 +245,6 @@ class page:
         if 'request' not in {p.name for p in parameters}:
             request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
             parameters.insert(0, request)
-        decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
+        decorated.__signature__ = inspect.Signature(parameters)  # type: ignore[attr-defined]
 
         return decorated

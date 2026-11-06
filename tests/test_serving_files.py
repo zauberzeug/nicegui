@@ -191,6 +191,29 @@ def test_single_use_media_file_partial_content_is_not_cacheable(screen: Screen, 
         assert ranged.headers['Cache-Control'] == 'no-store', 'partial content must not be cacheable either'
 
 
+def test_media_file_revalidation(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    url = f'http://localhost:{Screen.PORT}{app.add_media_file(local_file=VIDEO_FILE)}'
+
+    with httpx2.Client() as http_client:
+        first = http_client.get(url)
+        assert first.status_code == 200
+        etag = first.headers['ETag']
+        assert etag.startswith('"') and etag.endswith('"'), 'an entity tag must be a quoted string'
+
+        for header in [etag, f'W/{etag}', f'"other", {etag}']:
+            revalidated = http_client.get(url, headers={'If-None-Match': header})
+            assert revalidated.status_code == 304, f'{header} should match the current file'
+            assert revalidated.headers['ETag'] == etag
+            assert not revalidated.content
+
+        assert http_client.get(url, headers={'If-None-Match': '"other"'}).status_code == 200
+
+
 def test_auto_serving_file_from_image_source(screen: Screen):
     @ui.page('/')
     def page():

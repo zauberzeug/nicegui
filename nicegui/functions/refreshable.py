@@ -98,7 +98,8 @@ class refreshable(Generic[_P, _T]):
             if awaitables := self._execute_refresh(args, kwargs, instance=instance):
                 await asyncio.gather(*awaitables)
 
-        return AwaitableResponse(execute, execute, name=f'refresh {self.func.__name__}')
+        name = getattr(self.func, '__name__', self.func)
+        return AwaitableResponse(execute, execute, name=f'refresh {name}')
 
     def _execute_refresh(self, args: tuple[Any, ...], kwargs: dict[str, Any], *, instance: Any) -> list[Awaitable[Any]]:
         """Execute the refresh and return a list of awaitables for async functions."""
@@ -139,7 +140,7 @@ class refreshable_method(Generic[_S, _P, _T], refreshable[_P, _T]):
         The ``@ui.refreshable_method`` decorator allows you to create methods that have a ``refresh`` method.
         This method will automatically delete all elements created by the function and recreate them.
         """
-        super().__init__(func)  # type: ignore
+        super().__init__(func)  # type: ignore[arg-type]
 
 
 def state(value: Any) -> tuple[Any, Callable[[Any], None]]:

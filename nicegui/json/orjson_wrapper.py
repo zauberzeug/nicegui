@@ -29,8 +29,7 @@ def dumps(obj: Any,
     # note that parameters `sort_keys` and `separators` are required by AsyncServer's
     # internal calls, which match Python's default `json.dumps` API.
     assert separators is None or separators == (',', ':'), \
-        'NiceGUI JSON serializer only supports Python''s default ' +\
-        f'JSON separators "," and ":", but got {separators} instead.'
+        f'NiceGUI JSON serializer only supports Python\'s default JSON separators "," and ":", but got {separators} instead.'
 
     opts = ORJSON_OPTS
 

@@ -139,7 +139,7 @@ async def _startup() -> None:
     sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:
         if helpers.is_file(core.app.config.favicon):
-            app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore
+            app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore[arg-type]
         else:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:

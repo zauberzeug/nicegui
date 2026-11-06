@@ -22,7 +22,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
                  on_change: Callable | None,
                  _parent: ObservableCollection | None,
                  ) -> None:
-        super().__init__(factory() if data is None else data)  # type: ignore
+        super().__init__(factory() if data is None else data)  # type: ignore[call-arg]
         self._parent = _parent
         self.last_modified = time.time()
         self._change_handlers: list[tuple[Callable, bool]] = \

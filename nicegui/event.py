@@ -127,7 +127,7 @@ class Event(Generic[P]):
 
         def callback(*args: P.args, **kwargs: P.kwargs) -> None:  # pylint: disable=unused-argument
             if not future.done():
-                future.set_result(args[0] if len(args) == 1 else args if args else None)
+                future.set_result(args[0] if len(args) == 1 else args or None)
 
         def cancel() -> None:
             future.cancel()  # no-op for a done future, so an event that fired right before the deletion still wins
