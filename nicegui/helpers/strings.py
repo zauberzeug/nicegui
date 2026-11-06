@@ -1,6 +1,15 @@
+import re
+
+
 def kebab_to_camel_case(string: str) -> str:
     """Convert a kebab-case string to camelCase."""
     return ''.join(word.capitalize() if i else word for i, word in enumerate(string.split('-')))
+
+
+def camel_to_title_case(string: str) -> str:
+    """Convert a camelCase string to Title Case."""
+    return ' '.join(word[:1].upper() + word[1:]
+                    for word in re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', string)).split())
 
 
 def event_type_to_camel_case(string: str) -> str:

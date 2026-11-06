@@ -1,5 +1,6 @@
 import os
 
+from .dataframes import prepare_pandas_df
 from .elements import require_top_level_layout
 from .files import hash_file_path, is_file, unlink_with_retry, unlink_with_retry_async
 from .functions import (
@@ -11,12 +12,13 @@ from .functions import (
     should_await,
 )
 from .network import find_free_port, format_url, is_port_open, schedule_browser
-from .strings import event_type_to_camel_case, kebab_to_camel_case, remove_indentation
+from .strings import camel_to_title_case, event_type_to_camel_case, kebab_to_camel_case, remove_indentation
 from .warnings import warn_once
 
 __all__ = [
     'NoImplicitAwait',
     'await_with_context',
+    'camel_to_title_case',
     'event_type_to_camel_case',
     'expects_arguments',
     'find_free_port',
@@ -29,6 +31,7 @@ __all__ = [
     'is_user_simulation',
     'kebab_to_camel_case',
     'normalize_lifecycle_handler',
+    'prepare_pandas_df',
     'remove_indentation',
     'require_top_level_layout',
     'schedule_browser',
