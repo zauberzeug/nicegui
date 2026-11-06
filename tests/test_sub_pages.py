@@ -897,12 +897,15 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
     screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
 
 
-async def test_pep604_optional_parameters_are_converted(user: User):
+async def test_pep604_optional_parameters_are_converted(user: User, caplog: pytest.LogCaptureFixture):
     def from_path(count: int | None = None):
         ui.label(f'path {type(count).__name__}:{count}')
 
     def from_query(count: int | None = None, ratio: float | None = None, name: str | None = None):
         ui.label(f'query {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(name).__name__}:{name}')
+
+    def from_union(a: int | float | None = None, b: int | str | None = None, c: int | float = 0, d: float | int | None = None):
+        ui.label(f'union {type(a).__name__}:{a} {type(b).__name__}:{b} {type(c).__name__}:{c} {type(d).__name__}:{d}')
 
     @ui.page('/')
     @ui.page('/{path:path}')
@@ -910,6 +913,7 @@ async def test_pep604_optional_parameters_are_converted(user: User):
         ui.sub_pages({
             '/path/{count}': from_path,
             '/query': from_query,
+            '/union': from_union,
         })
 
     await user.open('/path/5')
@@ -917,6 +921,17 @@ async def test_pep604_optional_parameters_are_converted(user: User):
 
     await user.open('/query?count=5&ratio=2.5&name=abc')
     await user.should_see('query int:5 float:2.5 str:abc')
+
+    await user.open('/union?a=1.5&b=7&c=2&d=2')
+    await user.should_see('union float:1.5 str:7 int:2 float:2.0')
+
+    await user.open('/union?a=2&b=abc&c=1e3')
+    await user.should_see('union int:2 str:abc float:1000.0 NoneType:None')
+
+    await user.open('/union?a=abc')
+    await user.should_see('500: sub page /union?a=abc produced an error')
+    assert "could not convert 'abc' to int | float | None" in caplog.text
+    caplog.clear()
 
 
 async def test_string_annotations(user: User):
