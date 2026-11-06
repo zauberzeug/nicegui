@@ -139,7 +139,7 @@ async def _startup() -> None:
     sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:
         if helpers.is_file(core.app.config.favicon):
-            app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore
+            app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore[arg-type]
         else:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
@@ -155,8 +155,10 @@ async def _shutdown() -> None:
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
     air.disconnect()
-    await app.stop()
-    run.tear_down()
+    try:
+        await app.stop()
+    finally:
+        run.tear_down()
 
 
 @app.exception_handler(404)

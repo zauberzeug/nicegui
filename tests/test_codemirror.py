@@ -84,9 +84,7 @@ def test_set_value_preserves_cursor(screen: Screen):
     screen.wait(0.5)
 
     cm.send_keys(',')  # Insert comma after 'Hello'
-    screen.wait(0.5)
-
-    assert editor.value == 'Hello, Earth'
+    screen.wait_for(lambda: editor.value == 'Hello, Earth')
 
 
 def test_encode_codepoints():
@@ -119,8 +117,7 @@ def test_line_tooltip_api(screen: Screen):
 
     screen.click('Delete tooltip on line 3')
     ActionChains(screen.selenium).move_to_element(screen.find('gamma')).perform()
-    screen.wait(0.5)
-    screen.should_not_contain('info')
+    screen.should_not_contain('info', duration=1.0)
 
     screen.click('Update tooltips')
     ActionChains(screen.selenium).move_to_element(screen.find('beta')).perform()
@@ -130,13 +127,11 @@ def test_line_tooltip_api(screen: Screen):
     ActionChains(screen.selenium).move_to_element(screen.find('alpha')).perform()
     screen.should_contain('error')
     ActionChains(screen.selenium).move_to_element(screen.find('beta')).perform()
-    screen.wait(0.5)
-    screen.should_not_contain('warning')
+    screen.should_not_contain('warning', duration=1.0)
 
     screen.click('Clear tooltips')
     ActionChains(screen.selenium).move_to_element(screen.find('alpha')).perform()
-    screen.wait(0.5)
-    screen.should_not_contain('error')
+    screen.should_not_contain('error', duration=1.0)
 
 
 def test_line_tooltip_stick_to_text(screen: Screen):

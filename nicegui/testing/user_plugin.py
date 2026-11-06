@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator, Callable
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import core
@@ -32,4 +32,4 @@ async def create_user(user: User) -> AsyncGenerator[Callable[[], User], None]:  
     """Create a fixture for building new users."""
     prepare_simulation()
     async with core.app.router.lifespan_context(core.app):
-        yield lambda: User(httpx.AsyncClient(transport=httpx.ASGITransport(core.app), base_url='http://test'))
+        yield lambda: User(httpx2.AsyncClient(transport=httpx2.ASGITransport(core.app), base_url='http://test'))

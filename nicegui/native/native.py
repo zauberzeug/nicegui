@@ -58,7 +58,7 @@ try:
         def load_url(self, url: str) -> None:
             self._send(url)
 
-        def load_html(self, html: str, base_uri: str = ...) -> None:  # type: ignore
+        def load_html(self, html: str, base_uri: str = ...) -> None:  # type: ignore[assignment]
             self._send(html, base_uri)
 
         def load_css(self, stylesheet: str) -> None:
@@ -70,7 +70,7 @@ try:
         async def get_cookies(self) -> Any:  # pylint: disable=invalid-overridden-method
             return await self._request()
 
-        async def get_current_url(self) -> str:  # type: ignore # pylint: disable=invalid-overridden-method
+        async def get_current_url(self) -> str:  # type: ignore[override] # pylint: disable=invalid-overridden-method
             return await self._request()
 
         def destroy(self) -> None:
@@ -103,20 +103,20 @@ try:
         def move(self, x: int, y: int) -> None:
             self._send(x, y)
 
-        async def evaluate_js(  # type: ignore # pylint: disable=arguments-differ,invalid-overridden-method
+        async def evaluate_js(  # type: ignore[override] # pylint: disable=arguments-differ,invalid-overridden-method
             self,
             script: str,
         ) -> str:
             return await self._request(script)
 
-        async def create_confirmation_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
+        async def create_confirmation_dialog(  # type: ignore[override] # pylint: disable=invalid-overridden-method
             self,
             title: str,
             message: str,
         ) -> bool:
             return await self._request(title, message)
 
-        async def create_file_dialog(  # type: ignore # pylint: disable=invalid-overridden-method
+        async def create_file_dialog(  # type: ignore[override] # pylint: disable=invalid-overridden-method
             self,
             dialog_type: int = webview.FileDialog.OPEN if hasattr(webview, 'FileDialog') else webview.OPEN_DIALOG,
             directory: str = '',
@@ -132,12 +132,12 @@ try:
                 file_types=file_types,
             )
 
-        def expose(self, function: Callable) -> None:  # type: ignore # pylint: disable=arguments-differ
+        def expose(self, function: Callable) -> None:  # type: ignore[override] # pylint: disable=arguments-differ
             raise NotImplementedError(f'exposing "{function}" is not supported')
 
         def _send(self, *args: Any, **kwargs: Any) -> None:
             assert method_queue is not None
-            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
+            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore[union-attr]
             method_queue.put((name, args, kwargs))
 
         async def _request(self, *args: Any, **kwargs: Any) -> Any:
@@ -150,7 +150,7 @@ try:
                 except Exception:
                     log.exception(f'error in {name}')
                     return None
-            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore
+            name = inspect.currentframe().f_back.f_code.co_name  # type: ignore[union-attr]
             return await run.io_bound(wrapper, *args, **kwargs)
 
         def signal_server_shutdown(self) -> None:
@@ -158,5 +158,5 @@ try:
             self._send()
 
 except ModuleNotFoundError:
-    class WindowProxy:  # type: ignore
+    class WindowProxy:  # type: ignore[no-redef]
         pass  # just a dummy if webview is not installed

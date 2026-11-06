@@ -39,7 +39,7 @@ doc.intro(run_documentation)
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
 
-    Native mode requires a browser engine with ES module and import map support (Chrome 89+).
+    Native mode requires a recent browser engine (Chromium 121+ or WebKit/Safari 17.2+).
     On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.
 
     On Windows, native mode requires the .NET Framework to be installed,

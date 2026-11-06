@@ -1,6 +1,5 @@
 import asyncio
-
-from typing_extensions import Self
+from typing import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...events import (
@@ -21,7 +20,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
     @resolve_defaults
     def __init__(self,
                  scene: Scene,
-                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 *,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
                  camera: SceneCamera | None = None,
@@ -60,11 +59,6 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self.on('init', self._handle_init)
         self.on('init-failed', self._settled_event.set)
         self.on('click3d', self._handle_click)
-
-        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('scene_id', 'scene-id')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
 
     def _handles_event_while_ignoring(self, event_type: str) -> bool:
         return event_type == 'init'
@@ -135,7 +129,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         :param up_x: x component of the camera up vector
         :param up_y: y component of the camera up vector
         :param up_z: z component of the camera up vector
-        :param duration: duration of the movement in seconds (default: `0.5`)
+        :param duration: duration of the movement in seconds (default: ``0.5``)
         """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y

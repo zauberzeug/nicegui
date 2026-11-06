@@ -1,7 +1,5 @@
 from collections.abc import Callable
-from typing import Any, Literal, cast
-
-from typing_extensions import Self
+from typing import Any, Literal, Self, cast
 
 from nicegui.binding import BindableProperty, bind, bind_from, bind_to
 

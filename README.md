@@ -29,29 +29,31 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 
 - browser-based graphical user interface
 - implicit reload on code change
-- acts as webserver (accessed by the browser) or in native mode (eg. desktop window)
+- acts as webserver (accessed by the browser) or in native mode (e.g. desktop window)
 - standard GUI elements like label, button, checkbox, switch, slider, input, file upload, ...
 - simple grouping with rows, columns, cards and dialogs
 - general-purpose HTML and Markdown elements
 - powerful high-level elements to
-  - plot graphs and charts,
-  - render 3D scenes,
+  - plot graphs and charts
+  - render 3D scenes
+  - show interactive maps
+  - edit code, JSON and rich text
   - get steering events via virtual joysticks
   - annotate and overlay images
   - interact with tables
   - navigate foldable tree structures
   - embed video and audio files
 - built-in timer to refresh data in intervals (even every 10 ms)
-- straight-forward data binding and refreshable functions to write even less code
-- notifications, dialogs and menus to provide state of the art user interaction
-- shared and individual web pages
+- straightforward data binding and refreshable functions to write even less code
+- notifications, dialogs and menus to provide state-of-the-art user interaction
+- multi-page and single-page applications
 - easy-to-use per-user and general persistence
 - ability to add custom routes and data responses
 - capture keyboard input for global shortcuts etc.
-- customize look by defining primary, secondary and accent colors
-- live-cycle events and session data
-- runs in Jupyter Notebooks and allows Python's interactive mode
-- auto-complete support for Tailwind CSS
+- customize look by defining primary, secondary and accent colors, including dark mode
+- lifecycle events and session data
+- runs in Python's interactive mode
+- styling with Tailwind CSS and Quasar
 - SVG, Base64 and emoji favicon support
 - testing framework based on pytest
 
@@ -59,6 +61,12 @@ NiceGUI is available as [PyPI package](https://pypi.org/project/nicegui/), [Dock
 
 ```bash
 python3 -m pip install nicegui
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add nicegui
 ```
 
 ## Usage
@@ -91,7 +99,7 @@ and can be started locally with `docker run -p 8080:8080 zauberzeug/nicegui` or 
 
 You may also have a look at our [in-depth examples](https://github.com/zauberzeug/nicegui/tree/main/examples) of what you can do with NiceGUI.
 In our wiki we have a list of great [NiceGUI projects from the community](https://github.com/zauberzeug/nicegui/wiki#community-projects), a section with [Tutorials](https://github.com/zauberzeug/nicegui/wiki#tutorials) and a growing list of [FAQs](https://github.com/zauberzeug/nicegui/wiki/FAQs).
-When building NiceGUI projects with AI assistants, point them at [`nicegui/llms.md`](nicegui/llms.md) — a concise reference that ships with the package (also served at <https://nicegui.io/llms.txt>).
+When building NiceGUI projects with AI assistants, point them at [`nicegui/llms.md`](https://github.com/zauberzeug/nicegui/blob/main/nicegui/llms.md) — a concise reference that ships with the package (also served at <https://nicegui.io/llms.txt>).
 
 ## Why?
 
@@ -129,13 +137,8 @@ Your [support](https://github.com/sponsors/zauberzeug) is much appreciated.
 
 ## Contributing
 
-Thank you for your interest in contributing to NiceGUI! We are thrilled to have you on board and appreciate your efforts to make this project even better.
-
-As a growing open-source project, we understand that it takes a community effort to achieve our goals. That's why we welcome all kinds of contributions, no matter how small or big they are. Whether it's adding new features, fixing bugs, improving documentation, or suggesting new ideas, we believe that every contribution counts and adds value to our project.
-
-We have provided a detailed guide on how to contribute to NiceGUI in our [CONTRIBUTING.md](https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md) file. We encourage you to read it carefully before making any contributions to ensure that your work aligns with the project's goals and standards.
-
-If you have any questions or need help with anything, please don't hesitate to reach out to us. We are always here to support and guide you through the contribution process.
+We welcome contributions of all kinds and sizes.
+Please read [CONTRIBUTING.md](https://github.com/zauberzeug/nicegui/blob/main/CONTRIBUTING.md) to get started.
 
 ## Included Web Dependencies
 

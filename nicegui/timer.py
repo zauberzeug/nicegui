@@ -28,8 +28,8 @@ class Timer:
         :param interval: the interval in which the timer is called (can be changed during runtime)
         :param callback: synchronous or asynchronous function to execute when interval elapses
         :param active: whether the callback should be executed or not (can be changed during runtime)
-        :param once: whether the callback is only executed once after a delay specified by `interval` (default: `False`)
-        :param immediate: whether the callback should be executed immediately (default: `True`, ignored if `once` is `True`, *added in version 2.9.0*)
+        :param once: whether the callback is only executed once after a delay specified by ``interval`` (default: ``False``)
+        :param immediate: whether the callback should be executed immediately (default: ``True``, ignored if ``once`` is ``True``, *added in version 2.9.0*)
         """
         super().__init__()
         self.interval = interval
@@ -92,17 +92,8 @@ class Timer:
                     try:
                         start = time.time()
                         if self.active:
-                            # DEPRECATED: await the invocation directly in NiceGUI 4.0,
-                            # where run.io_bound and run.cpu_bound no longer swallow the cancellation
-                            invocation = self._current_invocation = asyncio.create_task(self._invoke_callback())
-                            try:
-                                await asyncio.shield(invocation)
-                            except asyncio.CancelledError:
-                                # the callback may swallow the cancellation, so re-raise it here
-                                invocation.cancel()
-                                with suppress(asyncio.CancelledError):
-                                    await invocation
-                                raise
+                            self._current_invocation = asyncio.create_task(self._invoke_callback())
+                            await self._current_invocation
                         dt = time.time() - start
                         await asyncio.sleep(self.interval - dt)
                     except asyncio.CancelledError:

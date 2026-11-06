@@ -18,7 +18,7 @@ function convertMethodArgs(name, args) {
 }
 
 export default {
-  template: "<div></div>",
+  template: '<div class="ag-theme-mode"></div>',
   mounted() {
     AgGrid.ModuleRegistry.registerModules(this.modules.map((moduleName) => AgGrid[moduleName]));
     this.update_grid();
