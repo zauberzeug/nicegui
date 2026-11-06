@@ -40,6 +40,8 @@ class AwaitableResponse:
         if self._is_fired:
             raise RuntimeError('AwaitableResponse must be awaited immediately after creation or not at all')
         self._is_awaited = True
+        # NOTE: `Client.run_javascript` relies on `wait_for_result()` starting without a loop step in between,
+        # because it adds the request ID to a message that is already in the outbox
         return self.wait_for_result().__await__()
 
 

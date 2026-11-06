@@ -325,9 +325,9 @@ class Client:
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code,
             or ``None`` if the client has been deleted
         """
-        # The message is enqueued right away, so it keeps its place among other outbox messages (#6472).
-        # An awaited response adds the request ID before the outbox gets a chance to send the message,
-        # because it is awaited immediately after creation.
+        # NOTE: the message is enqueued right away, so it keeps its place among other outbox messages (#6472);
+        # an awaited response adds the request ID to this very dict before the outbox gets a chance to send it,
+        # which relies on `AwaitableResponse.__await__` starting `wait_for_result()` without a loop step in between
         data: dict[str, Any] = {'code': code}
         if not self.is_deleted:
             self.outbox.enqueue_message('run_javascript', data, self.id)
