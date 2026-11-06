@@ -76,7 +76,7 @@ jobs:
   release:
     needs: [extract-version, pypi]
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
