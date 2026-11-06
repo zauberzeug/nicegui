@@ -134,7 +134,7 @@ class PageArguments:
             except ValueError:
                 pass
         if numeric and len(numeric) == len(members):
-            raise ValueError(f'could not convert {value!r} to {getattr(param_type, "__name__", param_type)}')
+            raise ValueError(f'could not convert {value!r} to {inspect.formatannotation(param_type)}')
         return value
 
 
