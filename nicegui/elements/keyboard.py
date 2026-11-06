@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Literal, Self
 
 from ..binding import BindableProperty
@@ -22,9 +23,9 @@ class Keyboard(Element, component='keyboard.js'):
                  on_key: Handler[KeyEventArguments] | None = None, *,
                  active: bool = True,
                  repeating: bool = DEFAULT_PROP | True,
-                 ignore: list[Literal['input', 'select', 'button', 'textarea']] = DEFAULT_PROP | [
+                 ignore: Sequence[Literal['input', 'select', 'button', 'textarea']] = DEFAULT_PROP | (
                      'input', 'select', 'button', 'textarea',
-                 ],
+                 ),
                  ) -> None:
         """Keyboard
 
@@ -59,14 +60,14 @@ class Keyboard(Element, component='keyboard.js'):
         :param on_key: callback to be executed when keyboard events occur.
         :param active: boolean flag indicating whether the callback should be executed or not (default: ``True``)
         :param repeating: boolean flag indicating whether held keys should be sent repeatedly (default: ``True``)
-        :param ignore: ignore keys when one of these element types is focussed (default: ``['input', 'select', 'button', 'textarea']``)
+        :param ignore: ignore keys when one of these element types is focussed (default: ``('input', 'select', 'button', 'textarea')``)
         """
         super().__init__()
         self._key_handlers = [on_key] if on_key else []
         self.active = active
         self._props['events'] = ['keydown', 'keyup']
         self._props['repeating'] = repeating
-        self._props['ignore'] = ignore[:]
+        self._props['ignore'] = list(ignore)
         self.on('key', self._handle_key)
 
     def _handle_key(self, e: GenericEventArguments) -> None:
