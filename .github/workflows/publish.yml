@@ -69,9 +69,9 @@ jobs:
           for i in {1..100}
           do
             sleep 2
-            python -m pip install "nicegui==$VERSION" && break
+            python -m pip install "nicegui==$VERSION" && sleep 5 && exit 0
           done
-          sleep 5
+          exit 1
 
   release:
     needs: [extract-version, pypi]
