@@ -185,3 +185,27 @@ async def test_main_file_with_submodule_pages(tmp_path: Path, _first_run: bool):
     async with user_simulation(main_file=main_file) as user:
         await user.open('/dashboard')
         await user.should_see('Dashboard Content')
+
+
+async def test_exception_does_not_break_the_next_simulation(tmp_path: Path):
+    """https://github.com/zauberzeug/nicegui/issues/6469"""
+    main_file = tmp_path / 'main.py'
+    main_file.write_text(textwrap.dedent('''
+        from nicegui import app, ui
+
+        app.on_startup(lambda: None)
+
+        @ui.page('/')
+        def index():
+            ui.label('simulated page')
+
+        ui.run()
+    '''))
+
+    with pytest.raises(RuntimeError, match='boom'):
+        async with user_simulation(main_file=main_file):
+            raise RuntimeError('boom')
+
+    async with user_simulation(main_file=main_file) as user:
+        await user.open('/')
+        await user.should_see('simulated page')

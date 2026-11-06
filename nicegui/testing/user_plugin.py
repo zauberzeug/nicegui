@@ -22,9 +22,10 @@ async def user(caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest)
     async with user_simulation(main_file=get_path_to_main_file(request)) as user:
         yield user
 
-        logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
-        if logs:
-            pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+    # check after the simulation is torn down, so that the fixture fails only after a clean teardown
+    logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
+    if logs:
+        pytest.fail('There were unexpected ERROR logs.', pytrace=False)
 
 
 @pytest.fixture
