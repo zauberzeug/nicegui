@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 from nicegui import helpers
+from nicegui.logging import log
 
 from .filelock import FileLock
 from .general_fixtures import nicegui_reset_globals, pytest_addoption  # noqa: F401  # pylint: disable=unused-import
@@ -83,7 +84,15 @@ def nicegui_remove_all_screenshots() -> None:
 @pytest.fixture(scope='session')
 def nicegui_driver(nicegui_chrome_options: Options) -> Generator[WebDriver, None, None]:
     """Create a new Chrome driver instance (reused across tests in the session)."""
-    for executable_path in (None, shutil.which('chromedriver'), 'chromedriver'):  # Required for ARM devcontainers
+    for executable_path in (
+        # Required for Ubuntu Snaps:
+        '/snap/bin/chromium.chromedriver',
+        None,
+        # Required for ARM devcontainers:
+        shutil.which('chromedriver'),
+        'chromedriver',
+    ):
+        log.info('Trying to start Chrome WebDriver with executable_path=%s', executable_path)
         try:
             s = Service(executable_path=executable_path)
             driver_ = WebDriver(service=s, options=nicegui_chrome_options)
