@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nicegui import app, ui
+from nicegui import ui
 from nicegui.testing.user_simulation import user_simulation
 
 
@@ -187,33 +187,23 @@ async def test_main_file_with_submodule_pages(tmp_path: Path, _first_run: bool):
         await user.should_see('Dashboard Content')
 
 
-async def test_exception_leaving_a_simulation_does_not_break_the_next_one(tmp_path: Path):
-    """Regression test for https://github.com/zauberzeug/nicegui/issues/6469
-
-    An exception leaving a user_simulation block must not leave NiceGUI in
-    the started state, or a following simulation whose main file registers a
-    startup handler fails during setup with 'Unable to register another
-    startup handler'.
-    """
+async def test_exception_does_not_break_the_next_simulation(tmp_path: Path):
+    """https://github.com/zauberzeug/nicegui/issues/6469"""
     main_file = tmp_path / 'main.py'
     main_file.write_text(textwrap.dedent('''
         from nicegui import app, ui
 
         app.on_startup(lambda: None)
 
-
         @ui.page('/')
         def index():
             ui.label('simulated page')
-
 
         ui.run()
     '''))
 
     with pytest.raises(RuntimeError, match='boom'):
-        async with user_simulation(main_file=main_file) as user:
-            await user.open('/')
-            await user.should_see('simulated page')
+        async with user_simulation(main_file=main_file):
             raise RuntimeError('boom')
 
     async with user_simulation(main_file=main_file) as user:

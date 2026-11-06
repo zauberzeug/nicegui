@@ -15,7 +15,7 @@ from .air import Air
 from .language import Language
 from .logging import log
 from .middlewares import RedirectWithPrefixMiddleware, SetCacheControlMiddleware
-from .nicegui import _shutdown, _startup
+from .nicegui import _lifespan
 from .server import Server
 
 
@@ -131,9 +131,7 @@ def run_with(
             return None
         if (instance := _get_server_instance()) is not None:
             Server.instance = instance
-        await _startup()
-        async with main_app_lifespan(app) as state:
+        async with _lifespan(app), main_app_lifespan(app) as state:
             yield state
-        await _shutdown()
 
     app.router.lifespan_context = lifespan_wrapper
