@@ -1,6 +1,6 @@
 import asyncio
 import weakref
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Literal, Self
@@ -74,7 +74,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
                  grid: bool | tuple[int, int] | None = DEFAULT_PROP | None,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
-                 click_events: Sequence[str] = DEFAULT_PROP | ('click', 'dblclick'),
+                 click_events: list[str] | tuple[str, ...] = DEFAULT_PROP | ('click', 'dblclick'),
                  on_drag_start: Handler[SceneDragEventArguments] | None = None,
                  on_drag_end: Handler[SceneDragEventArguments] | None = None,
                  drag_constraints: str = DEFAULT_PROP | '',

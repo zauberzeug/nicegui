@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
 from typing import Self, cast
@@ -29,7 +29,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  content: str = '',
                  size: tuple[float, float] | None = DEFAULT_PROP | None,
                  on_mouse: Handler[MouseEventArguments] | None = None,
-                 events: Sequence[str] = DEFAULT_PROP | ('click',),
+                 events: list[str] | tuple[str, ...] = DEFAULT_PROP | ('click',),
                  cross: bool | str = DEFAULT_PROP | False,
                  sanitize: Callable[[str], str] | bool = True,
                  ) -> None:

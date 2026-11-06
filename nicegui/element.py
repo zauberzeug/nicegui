@@ -88,7 +88,7 @@ class Element(Visibility):
 
     def __init_subclass__(cls, *,
                           component: str | Path | None = None,
-                          dependencies: Sequence[str | Path] = (),
+                          dependencies: list[str | Path] | tuple[str | Path, ...] = (),
                           esm: dict[str, str] | None = None,
                           default_classes: str | None = None,
                           default_style: str | None = None,
