@@ -153,8 +153,6 @@ class Client:
         self.disconnect_handlers: list[Callable] = []
         self.delete_handlers: list[Callable] = []
 
-        self._temporary_socket_id: str | None = None
-
         with self:
             self.sub_pages_router = SubPagesRouter(request)
 
@@ -332,7 +330,7 @@ class Client:
         # because it is awaited immediately after creation.
         data: dict[str, Any] = {'code': code}
         if not self.is_deleted:
-            self.outbox.enqueue_message('run_javascript', data, self._temporary_socket_id or self.id)
+            self.outbox.enqueue_message('run_javascript', data, self.id)
 
         async def send_and_wait() -> Any:
             if self.is_deleted:
