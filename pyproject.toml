@@ -176,6 +176,9 @@ filterwarnings = [
 
 [tool.mypy]
 check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+enable_error_code = ["ignore-without-code", "possibly-undefined", "truthy-bool"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -216,6 +219,14 @@ select = [
     "RUF", # ruff
     "PL", # pylint
     "Q", # flake8-quotes
+    "ASYNC", # flake8-async
+    "C4", # flake8-comprehensions
+    "FURB", # refurb
+    "ISC", # flake8-implicit-str-concat
+    "LOG", # flake8-logging
+    "PERF", # perflint
+    "PIE", # flake8-pie
+    "RSE", # flake8-raise
 ]
 fixable = [
     "I",  # isort
@@ -228,6 +239,7 @@ fixable = [
     "Q004",  # unnecessary escaped quote
 ]
 ignore = [
+    "ASYNC109", # async function with timeout parameter (part of our public API)
     "E501", # line too long
     "PLC0415", # import outside top level
     "PLR0911", # too many return statements
@@ -240,6 +252,16 @@ ignore = [
 ]
 exclude = [
     "website/documentation/content/*",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = [
+    "ASYNC240", # blocking path operations (examples favor brevity)
+    "LOG015", # root logger call (examples favor brevity)
+]
+"tests/*" = [
+    "ASYNC110", # polling loop (tests wait for external conditions)
+    "ASYNC240", # blocking path operations (tests use small temporary files)
 ]
 
 [tool.pylint]

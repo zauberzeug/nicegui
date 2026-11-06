@@ -230,8 +230,8 @@ def test_error_page_when_client_is_deleted_during_page_build(screen: Screen):
 
     screen.start_server()
     response = httpx2.get(f'http://localhost:{Screen.PORT}/')
-    assert response.status_code == 500, 'a deleted client must be served an error page, not a normal page ' \
-                                        'whose handshake would fail and reload-loop'
+    assert response.status_code == 500, ('a deleted client must be served an error page, not a normal page '
+                                         'whose handshake would fail and reload-loop')
     screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled because the client was deleted'))
 
 

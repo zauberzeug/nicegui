@@ -1,7 +1,7 @@
 import ast
 import re
 import weakref
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
@@ -80,7 +80,7 @@ class Props(ObservableDict, Generic[T]):
             self.pop(key, None)
 
     @contextmanager
-    def suspend_updates(self) -> Iterator[None]:
+    def suspend_updates(self) -> Generator[None]:
         """Suspend updates."""
         self._suspend_count += 1
         try:

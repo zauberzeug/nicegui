@@ -1,6 +1,6 @@
 import asyncio
 import weakref
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Literal, Self
@@ -202,7 +202,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self.move_camera(duration=0)
 
     @contextmanager
-    def _batch_calls(self) -> Iterator[None]:
+    def _batch_calls(self) -> Generator[None]:
         """Collect the method calls issued within this context and send them as a single message.
 
         Sending them individually would emit thousands of frames for a large scene

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from contextlib import AbstractContextManager, contextmanager
 from typing import Any, TypeVar, overload
 from uuid import uuid4
@@ -102,8 +102,8 @@ class User:
                             'result': result(match),
                         })
 
-        outbox.enqueue_message = simulated_enqueue_message  # type: ignore
-        outbox._emit = simulated_emit  # type: ignore
+        outbox.enqueue_message = simulated_enqueue_message  # type: ignore[method-assign]
+        outbox._emit = simulated_emit  # type: ignore[method-assign]
         for _, message_type, data in list(outbox.messages):  # enqueued while building the page
             self._simulate_browser(message_type, data)
 
@@ -284,7 +284,7 @@ class User:
               kind: type[T] | None = None,
               marker: str | list[str] | None = None,
               content: str | list[str] | None = None,
-              ) -> Iterator[T]:
+              ) -> Generator[T]:
         """Enter the single element matching the given filter, scoping all lookups inside the block to it.
 
         This is the recommended way to write assertions against pages that intentionally reuse
@@ -376,7 +376,7 @@ class User:
                 elements = set(make_filter(marker=target)).union(make_filter(content=target))
             else:
                 elements = set(make_filter(kind=target))
-        return elements  # type: ignore
+        return elements
 
     def _build_error_message(self,
                              target: str | type[T] | None = None,
