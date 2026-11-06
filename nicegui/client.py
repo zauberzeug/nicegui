@@ -327,24 +327,24 @@ class Client:
         :return: AwaitableResponse that can be awaited to get the result of the JavaScript code,
             or ``None`` if the client has been deleted
         """
-        request_id = str(uuid.uuid4())
-        target_id = self._temporary_socket_id or self.id
-
-        def send_and_forget() -> None:
-            if self.is_deleted:
-                return
-            self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
+        # The message is enqueued right away, so it keeps its place among other outbox messages (#6472).
+        # An awaited response adds the request ID before the outbox gets a chance to send the message,
+        # because it is awaited immediately after creation.
+        data: dict[str, Any] = {'code': code}
+        if not self.is_deleted:
+            self.outbox.enqueue_message('run_javascript', data, self._temporary_socket_id or self.id)
 
         async def send_and_wait() -> Any:
             if self.is_deleted:
                 return None
-            self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+            request_id = str(uuid.uuid4())
+            data['request_id'] = request_id
             await self.connected()
             if self.is_deleted:
                 return None
             return await JavaScriptRequest(request_id, timeout=timeout)
 
-        return AwaitableResponse(send_and_forget, send_and_wait)
+        return AwaitableResponse(lambda: None, send_and_wait)
 
     def open(self, target: Callable | str, new_tab: bool = False) -> None:
         """Open a new page in the client."""

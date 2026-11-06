@@ -47,7 +47,8 @@ def test_response_from_javascript(screen: Screen):
     @ui.page('/')
     def page():
         async def compute() -> None:
-            response = await ui.run_javascript('1 + 41')
+            ui.run_javascript('window.answer = 41')  # must not be overtaken by the awaited call (#6472)
+            response = await ui.run_javascript('window.answer + 1')
             ui.label(response)
 
         ui.button('compute', on_click=compute)
