@@ -199,7 +199,7 @@ async def test_validate_with_return_result_rejects_async_checks(user: User):
     async def is_valid(value: str) -> bool:
         return True
 
-    def wrapped(value: str) -> Awaitable[bool]:  # a wrapper the static check cannot see through
+    def wrapped(value: str) -> Awaitable[bool]:  # a plain function that only reveals the awaitable at runtime
         return is_valid(value)
 
     field = None

@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import Awaitable, Callable, Iterator
+from collections.abc import Awaitable, Callable, Iterator, Mapping
 from typing import Any, Self, TypeAlias, cast
 
 from ... import background_tasks, helpers
@@ -7,7 +7,7 @@ from ...events import ValueT
 from .value_element import ValueElement
 
 ValidationFunction: TypeAlias = Callable[[ValueT], str | Awaitable[str | None] | None]
-ValidationDict: TypeAlias = dict[str, Callable[[ValueT], bool | Awaitable[bool]]]
+ValidationDict: TypeAlias = Mapping[str, Callable[[ValueT], bool | Awaitable[bool]]]
 
 
 class ValidationElement(ValueElement[ValueT]):
@@ -56,7 +56,8 @@ class ValidationElement(ValueElement[ValueT]):
     def validate(self, *, return_result: bool = True) -> bool:
         """Validate the current value and set the error message if necessary.
 
-        For async validation functions, ``return_result`` must be set to ``False`` and the return value will be ``True``,
+        For async validation functions, also inside a validation dictionary,
+        ``return_result`` must be set to ``False`` and the return value will be ``True``,
         independently of the validation result which is evaluated in the background.
 
         *Updated in version 2.7.0: Added support for async validation functions.*
@@ -87,7 +88,7 @@ class ValidationElement(ValueElement[ValueT]):
             if return_result:
                 _reject_awaitable(result)
             return result
-        if isinstance(self._validation, dict):
+        if isinstance(self._validation, Mapping):
             checks = iter(self._validation.items())
             for message, check in checks:
                 passed = check(value)

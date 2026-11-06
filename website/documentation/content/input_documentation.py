@@ -64,7 +64,8 @@ def styling():
 
     You can use the `validate` method of the input element to trigger the validation manually.
     It returns `True` if the input is valid, and `False` otherwise.
-    For async validation functions, the return value must be explicitly disabled by setting `return_result=False`.
+    For async validation functions, also inside a dictionary,
+    the return value must be explicitly disabled by setting `return_result=False`.
 ''')
 def validation():
     ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)
