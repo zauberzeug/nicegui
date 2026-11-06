@@ -29,8 +29,10 @@ from .version import __version__
 @asynccontextmanager
 async def _lifespan(_: App):
     await _startup()
-    yield
-    await _shutdown()
+    try:
+        yield
+    finally:
+        await _shutdown()
 
 
 class SocketIoApp(socketio.ASGIApp):
