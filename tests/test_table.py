@@ -289,7 +289,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
                 'Datetime_col': [datetime(2020, 1, 1)],
                 'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
                 'Timedelta_col': [timedelta(days=5)],
-                'Binary_col': [b'hello'],
+                'Binary_col': ['hällo'.encode()],
             })
             ui.table.from_polars(df)
 
@@ -309,7 +309,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         screen.should_contain('Timedelta_col')
         screen.should_contain('5 days, 0:00:00')
         screen.should_contain('Binary_col')
-        screen.should_contain('hello')
+        screen.should_contain('hällo')
 
 
 def test_table_computed_props(screen: Screen):

@@ -1,8 +1,12 @@
 """Conversion of Pandas and Polars DataFrames into records for table-like elements."""
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import pandas as pd
+    import polars as pl
 
 
-def pandas_to_records(df: Any) -> tuple[list[dict], list[Any]]:
+def pandas_to_records(df: 'pd.DataFrame') -> tuple[list[dict], list[Any]]:
     """Convert a Pandas DataFrame into records and the corresponding column labels.
 
     Columns which cannot be serialized to JSON (datetimes, timedeltas, complex numbers,
@@ -33,7 +37,7 @@ def pandas_to_records(df: Any) -> tuple[list[dict], list[Any]]:
     return df.to_dict('records'), list(df.columns)
 
 
-def polars_to_records(df: Any) -> tuple[list[dict], list[Any]]:
+def polars_to_records(df: 'pl.DataFrame') -> tuple[list[dict], list[str]]:
     """Convert a Polars DataFrame into records and the corresponding column labels.
 
     Columns which cannot be serialized to JSON (binary, duration and object types)
@@ -53,7 +57,7 @@ def polars_to_records(df: Any) -> tuple[list[dict], list[Any]]:
 
     special_cols = [name for name, dtype in df.schema.items() if is_special_dtype(dtype)]
     rows = df.to_dicts()
-    for row in rows:
-        for column in special_cols:
+    for column in special_cols:
+        for row in rows:
             row[column] = to_string(row[column])
     return rows, list(df.columns)

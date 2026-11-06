@@ -226,7 +226,8 @@ class Table(FilterElement, component='table.js'):
         """Create a table from a Polars DataFrame.
 
         Note:
-        If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
+        If the DataFrame contains non-serializable columns of type ``Binary``, ``Duration`` or ``Object``,
+        they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
 
         *Added in version 2.7.0*
@@ -285,6 +286,8 @@ class Table(FilterElement, component='table.js'):
                            columns: list[dict] | None = None,
                            column_defaults: dict | None = None) -> None:
         """Update the table from a Polars DataFrame.
+
+        See ``from_polars()`` for more information about the conversion of non-serializable columns.
 
         :param df: Polars DataFrame
         :param clear_selection: whether to clear the selection (default: True)

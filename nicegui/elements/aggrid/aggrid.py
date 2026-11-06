@@ -112,7 +112,8 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
                     ) -> Self:
         """Create an AG Grid from a Polars DataFrame.
 
-        If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
+        If the DataFrame contains non-serializable columns of type ``Binary``, ``Duration`` or ``Object``,
+        they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
 
         *Added in version 2.7.0*
