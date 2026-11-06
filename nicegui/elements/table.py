@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Literal, Self
 
-from .. import optional_features
+from .. import helpers, optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
@@ -226,7 +226,8 @@ class Table(FilterElement, component='table.js'):
         """Create a table from a Polars DataFrame.
 
         Note:
-        If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
+        If the DataFrame contains non-serializable columns of type ``Binary``, ``Duration`` or ``Object``,
+        they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
 
         *Added in version 2.7.0*
@@ -286,6 +287,8 @@ class Table(FilterElement, component='table.js'):
                            column_defaults: dict | None = None) -> None:
         """Update the table from a Polars DataFrame.
 
+        See ``from_polars()`` for more information about the conversion of non-serializable columns.
+
         :param df: Polars DataFrame
         :param clear_selection: whether to clear the selection (default: True)
         :param columns: list of column objects (defaults to the columns of the dataframe)
@@ -311,32 +314,13 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
-        import pandas as pd  # pylint: disable=import-outside-toplevel
-
-        if not isinstance(df.index, pd.RangeIndex) or df.index.name is not None:
-            df = df.reset_index()
-
-        def is_special_dtype(dtype):
-            return (pd.api.types.is_datetime64_any_dtype(dtype) or
-                    pd.api.types.is_timedelta64_dtype(dtype) or
-                    pd.api.types.is_complex_dtype(dtype) or
-                    pd.api.types.is_object_dtype(dtype) or
-                    isinstance(dtype, (pd.PeriodDtype, pd.IntervalDtype)))
-        special_cols = df.columns[df.dtypes.apply(is_special_dtype)]
-        if not special_cols.empty:
-            df = df.copy()
-            df[special_cols] = df[special_cols].astype(str)
-
-        if isinstance(df.columns, pd.MultiIndex):
-            raise ValueError('MultiIndex columns are not supported. '
-                             'You can convert them to strings using something like '
-                             '`df.columns = ["_".join(col) for col in df.columns.values]`.')
-
-        return df.to_dict('records'), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        rows, columns = helpers.pandas_to_records(df)
+        return rows, [{'name': col, 'label': col, 'field': col} for col in columns]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
-        return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        rows, columns = helpers.polars_to_records(df)
+        return rows, [{'name': col, 'label': col, 'field': col} for col in columns]
 
     @property
     def rows(self) -> list[dict]:
