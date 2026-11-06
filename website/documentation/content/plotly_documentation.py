@@ -187,7 +187,6 @@ def dynamic_resampling():
 
     def handle_relayout(e: events.GenericEventArguments) -> None:
         if 'xaxis.range[0]' in e.args:
-            # Python ints, because adding np.int64 to the uint64 indices would yield floats
             start, end = np.searchsorted(x, [e.args['xaxis.range[0]'], e.args['xaxis.range[1]']]).tolist()
             show(max(start - 1, 0), min(end + 1, len(x)))
         elif 'xaxis.autorange' in e.args:
