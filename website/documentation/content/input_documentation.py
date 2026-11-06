@@ -57,9 +57,15 @@ def styling():
     The callable validation function can also be an async function.
     In this case, the validation is performed asynchronously in the background.
 
+    *Since version 4.1.0:*
+    The callables in a validation dictionary can be async functions as well.
+    Checks are evaluated in order, so synchronous checks before the first async one still fail immediately,
+    while the remaining checks run in the background.
+
     You can use the `validate` method of the input element to trigger the validation manually.
-    It returns `True` if the input is valid, and an error message otherwise.
-    For async validation functions, the return value must be explicitly disabled by setting `return_result=False`.
+    It returns `True` if the input is valid, and `False` otherwise.
+    For async validation functions, also inside a dictionary,
+    the return value must be explicitly disabled by setting `return_result=False`.
 ''')
 def validation():
     ui.input('Name', validation=lambda value: 'Too short' if len(value) < 5 else None)
