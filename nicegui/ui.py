@@ -144,8 +144,6 @@ _LAZY_IMPORTS = {
     'state': ('.functions.refreshable', 'state'),
     'status_code': ('.functions.status_code', 'status_code'),
     'add_css': ('.functions.style', 'add_css'),
-    'add_sass': ('.functions.style', 'add_sass'),
-    'add_scss': ('.functions.style', 'add_scss'),
     'update': ('.functions.update', 'update'),
     'page': ('.page', 'page'),
     'run': ('.ui_run', 'run'),
@@ -156,8 +154,6 @@ __all__ = [
     'add_body_html',
     'add_css',
     'add_head_html',
-    'add_sass',
-    'add_scss',
     'aggrid',
     'altair',
     'anywidget',
@@ -432,7 +428,7 @@ if TYPE_CHECKING:
     from .functions.page_title import page_title
     from .functions.refreshable import refreshable, refreshable_method, state
     from .functions.status_code import status_code
-    from .functions.style import add_css, add_sass, add_scss
+    from .functions.style import add_css
     from .functions.update import update
     from .page import page
     from .ui_run import run

@@ -18,7 +18,7 @@ from .logging import log
 from .timer import Timer as timer
 
 if TYPE_CHECKING:
-    import httpx
+    import httpx2
 
 RELAY_HOST = 'https://on-air.nicegui.io/'
 
@@ -26,17 +26,17 @@ RELAY_HOST = 'https://on-air.nicegui.io/'
 @dataclass(kw_only=True, slots=True)
 class Stream:
     data: AsyncIterator[bytes]
-    response: httpx.Response
+    response: httpx2.Response
 
 
 class Air:
 
     def __init__(self, token: str) -> None:
-        import httpx  # pylint: disable=import-outside-toplevel
+        import httpx2  # pylint: disable=import-outside-toplevel
 
         self.log = logging.getLogger('nicegui.air')
         self.token = token
-        self.streaming_client = httpx.AsyncClient()
+        self.streaming_client = httpx2.AsyncClient()
         self.connecting = False
         self.streams: dict[str, Stream] = {}
         self.remote_url: str | None = None
@@ -46,7 +46,7 @@ class Air:
         timer(5, self.connect)  # ensure we stay connected
 
     def _create_relay(self) -> socketio.AsyncClient:
-        import httpx  # pylint: disable=import-outside-toplevel
+        import httpx2  # pylint: disable=import-outside-toplevel
 
         relay = socketio.AsyncClient(reconnection=False)  # we reconnect via our own timer
 
@@ -55,9 +55,9 @@ class Air:
             headers: dict[str, Any] = data['headers']
             headers.update({'Accept-Encoding': 'identity', 'X-Forwarded-Prefix': data['prefix']})
             url = 'http://test' + data['path']
-            request = httpx.Request(data['method'], url, params=data['params'], headers=headers, content=data['body'])
+            request = httpx2.Request(data['method'], url, params=data['params'], headers=headers, content=data['body'])
             forwarded_for = headers.get('x-forwarded-for', '127.0.0.1').split(',')[0].strip()
-            transport = httpx.ASGITransport(core.app, client=(forwarded_for, 0))
+            transport = httpx2.ASGITransport(core.app, client=(forwarded_for, 0))
             response = await transport.handle_async_request(request)
             await response.aread()
             instance_id = data['instance-id']
@@ -97,7 +97,7 @@ class Air:
             headers: dict[str, Any] = data['headers']
             url = next(iter(u for u in core.app.urls if self.remote_url != u)) + data['path']
             data['params']['nicegui_chunk_size'] = 1024
-            request = httpx.Request(data['method'], url, params=data['params'], headers=headers)
+            request = httpx2.Request(data['method'], url, params=data['params'], headers=headers)
             self.streaming_client.cookies.clear()  # avoid unbounded memory growth from accumulated Set-Cookie entries
             response = await self.streaming_client.send(request, stream=True)
             stream_id = str(uuid4())

@@ -9,22 +9,25 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   check:
-    uses: ./.github/workflows/_check.yml
+    uses: $/.github/workflows/_check.yml
 
   quick-test:
-    if: github.event_name != 'merge_group'
-    uses: ./.github/workflows/_test.yml
+    if: github.event_name == 'pull_request'
+    uses: $/.github/workflows/_test.yml
     with:
-      python-versions: '["3.10"]'
+      python-versions: '["3.11"]'
       scope: '["pytest"]'
 
   full-test:
-    if: github.event_name == 'merge_group'
-    uses: ./.github/workflows/_test.yml
+    if: github.event_name != 'pull_request'
+    uses: $/.github/workflows/_test.yml
     with:
-      python-versions: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
+      python-versions: '["3.11", "3.12", "3.13", "3.14", "3.15"]'
       scope: '["pytest", "startup"]'
 
   windows-test:
@@ -32,13 +35,15 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
       - name: Install Python
-        run: uv python install 3.10
+        run: uv python install 3.11
       - name: Install dependencies
         run: uv sync --locked
       - name: pytest tests/test_storage.py -m "not screen"
@@ -46,8 +51,9 @@ jobs:
 
   quick-test-gate:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     needs: [check, quick-test, windows-test]
-    if: always() && github.event_name != 'merge_group'
+    if: always() && github.event_name == 'pull_request'
     steps:
       - name: Verify all dependencies passed
         if: needs.check.result != 'success' || needs.quick-test.result != 'success' || needs.windows-test.result != 'success'
@@ -57,8 +63,9 @@ jobs:
 
   full-test-gate:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     needs: [check, full-test, windows-test]
-    if: always() && github.event_name == 'merge_group'
+    if: always() && github.event_name != 'pull_request'
     steps:
       - name: Verify all dependencies passed
         if: needs.check.result != 'success' || needs.full-test.result != 'success' || needs.windows-test.result != 'success'

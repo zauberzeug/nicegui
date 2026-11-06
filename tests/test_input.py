@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Awaitable
 from typing import Literal
 
 import pytest
@@ -37,8 +38,7 @@ def test_password(screen: Screen):
     assert element.get_attribute('value') == '123456'
 
     element.send_keys('789')
-    screen.wait(0.5)
-    assert element.get_attribute('value') == '123456789'
+    screen.wait_for(lambda: element.get_attribute('value') == '123456789')
 
 
 def test_toggle_button(screen: Screen):
@@ -55,16 +55,14 @@ def test_toggle_button(screen: Screen):
     assert element.get_attribute('value') == '123456'
 
     screen.click('visibility_off')
-    screen.wait(0.5)
-    assert element.get_attribute('type') == 'text'
+    screen.wait_for(lambda: element.get_attribute('type') == 'text')
 
     screen.click('visibility')
-    screen.wait(0.5)
-    assert element.get_attribute('type') == 'password'
+    screen.wait_for(lambda: element.get_attribute('type') == 'password')
 
 
-@pytest.mark.parametrize('method', ['dict', 'sync', 'async'])
-def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Screen):
+@pytest.mark.parametrize('method', ['dict', 'sync', 'async', 'mixed_dict'])
+def test_input_validation(method: Literal['dict', 'sync', 'async', 'mixed_dict'], screen: Screen):
     input_ = None
 
     @ui.page('/')
@@ -76,14 +74,19 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
         elif method == 'dict':
             input_ = ui.input('Name',
                               validation={'Short': lambda x: len(x) >= 3, 'Still short': lambda x: len(x) >= 5})
-        else:
+        elif method == 'async':
             async def validate(x: str) -> str | None:
                 await asyncio.sleep(0.1)
                 return 'Short' if len(x) < 3 else 'Still short' if len(x) < 5 else None
             input_ = ui.input('Name', validation=validate)
+        else:
+            async def is_long_enough(x: str) -> bool:
+                await asyncio.sleep(0.1)
+                return len(x) >= 3
+            input_ = ui.input('Name', validation={'Short': is_long_enough, 'Still short': lambda x: len(x) >= 5})
 
     def assert_validation(expected: bool):
-        if method == 'async':
+        if method in {'async', 'mixed_dict'}:
             with pytest.raises(NotImplementedError):
                 input_.validate()
             assert input_.validate(return_result=False)
@@ -105,7 +108,6 @@ def test_input_validation(method: Literal['dict', 'sync', 'async'], screen: Scre
     assert_validation(False)
 
     element.send_keys(' Doe')
-    screen.wait(1.0)
     screen.should_not_contain('Short')
     screen.should_not_contain('Still short')
     assert input_.error is None
@@ -129,8 +131,11 @@ def test_validation_with_lagging_value_change_events(screen: Screen):
     assert element.get_attribute('value') == '12345678'
 
 
+@pytest.mark.parametrize('form', ['function', 'dict'])
 @pytest.mark.parametrize('method', ['async', 'sync', 'dict', 'none'])
-async def test_outdated_async_validation(method: Literal['async', 'sync', 'dict', 'none'], user: User):
+async def test_outdated_async_validation(method: Literal['async', 'sync', 'dict', 'none'],
+                                         form: Literal['function', 'dict'],
+                                         user: User):
     started = asyncio.Event()
     release = asyncio.Event()
 
@@ -142,9 +147,12 @@ async def test_outdated_async_validation(method: Literal['async', 'sync', 'dict'
             return 'Old value is invalid'
         return None
 
+    async def check(value: str) -> bool:
+        return await validate(value) is None
+
     @ui.page('/')
     def page():
-        field = ui.input('Name', validation=validate)
+        field = ui.input('Name', validation=validate if form == 'function' else {'Old value is invalid': check})
 
         def supersede():
             if method == 'async':
@@ -185,6 +193,31 @@ async def test_ui_on_exception_from_async_validation(user: User, caplog: pytest.
     assert len(seen) == 1 and 'boom' in str(seen[0])
     assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
     caplog.records.pop(0)
+
+
+async def test_validate_with_return_result_rejects_async_checks(user: User):
+    async def is_valid(value: str) -> bool:
+        return True
+
+    def wrapped(value: str) -> Awaitable[bool]:  # a plain function that only reveals the awaitable at runtime
+        return is_valid(value)
+
+    field = None
+
+    @ui.page('/')
+    def page():
+        nonlocal field
+        field = ui.input('Name', validation=wrapped)
+
+    await user.open('/')
+    with pytest.raises(NotImplementedError):
+        field.validate()
+
+    field.validation = {'Required': bool, 'Invalid': wrapped}
+    assert field.validate() is False, 'a failing sync check should win before the async check is reached'
+    field.value = 'x'
+    with pytest.raises(NotImplementedError):
+        field.validate()
 
 
 def test_input_with_multi_word_error_message(screen: Screen):
@@ -234,24 +267,21 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('oo')
 
     element.send_keys('l')
-    screen.wait(0.5)
     screen.should_not_contain('oo')
 
     element.send_keys(Keys.BACKSPACE)
     screen.should_contain('oo')
 
     element.send_keys(Keys.TAB)
-    screen.wait(0.2)
-    assert element.get_attribute('value') == 'foo'
-    assert input_.value == 'foo'
+    screen.wait_for(lambda: element.get_attribute('value') == 'foo')
+    screen.wait_for(lambda: input_.value == 'foo')
 
     element.send_keys(Keys.BACKSPACE)
     element.send_keys(Keys.BACKSPACE)
     element.send_keys('x')
     element.send_keys(Keys.TAB)
-    screen.wait(0.5)
-    assert element.get_attribute('value') == 'fx'
-    assert input_.value == 'fx'
+    screen.wait_for(lambda: element.get_attribute('value') == 'fx')
+    screen.wait_for(lambda: input_.value == 'fx')
 
     input_.set_autocomplete(['once', 'twice'])
     screen.wait(0.2)
@@ -261,20 +291,37 @@ def test_autocompletion(screen: Screen):
     screen.should_contain('nce')
 
     input_.set_autocomplete(None)  # removing the list used to raise a TypeError in the shadowText computed (#6161)
-    screen.wait(0.2)
     screen.should_not_contain('nce')
 
 
-def test_clearable_input(screen: Screen):
+@pytest.mark.parametrize('kind, value', [
+    (ui.input, 'foo'),
+    (ui.textarea, 'foo'),
+    (ui.date_input, '2025-01-01'),
+    (ui.time_input, '12:00'),
+    (ui.color_input, '#ff0000'),
+])
+def test_clearable_input(screen: Screen, kind: type[ui.element], value: str):
     @ui.page('/')
     def page():
-        input_ = ui.input(value='foo').props('clearable')
-        ui.label().bind_text_from(input_, 'value', lambda value: f'value: {value}')
+        element = kind(value=value).props('clearable')
+        ui.label().bind_text_from(element, 'value', lambda value: f'value: {value!r}')
 
     screen.open('/')
-    screen.should_contain('value: foo')
+    screen.should_contain(f'value: {value!r}')
     screen.click('cancel')
-    screen.should_contain('value: None')
+    screen.should_contain("value: ''")
+
+
+def test_validation_after_clearing_input(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.input(value='abc', validation={'Too short': lambda value: len(value) > 5}).props('clearable')
+
+    screen.open('/')
+    screen.should_not_contain('Too short')
+    screen.click('cancel')
+    screen.should_contain('Too short')
 
 
 def test_update_input(screen: Screen):
@@ -290,12 +337,11 @@ def test_update_input(screen: Screen):
     assert element.get_attribute('value') == 'Pete'
 
     element.send_keys('r')
-    screen.wait(0.5)
     assert element.get_attribute('value') == 'Peter'
+    screen.wait_for(lambda: input_.value == 'Peter')
 
     input_.value = 'Pete'
-    screen.wait(0.5)
-    assert element.get_attribute('value') == 'Pete'
+    screen.wait_for(lambda: element.get_attribute('value') == 'Pete')
 
 
 def test_setting_value_via_props_overrides_user_input(screen: Screen):
@@ -309,8 +355,7 @@ def test_setting_value_via_props_overrides_user_input(screen: Screen):
     element.send_keys('typed')
 
     screen.click('Force')
-    screen.wait(0.5)
-    assert element.get_attribute('value') == 'RAW'
+    screen.wait_for(lambda: element.get_attribute('value') == 'RAW')
 
 
 def test_switching_focus(screen: Screen):
@@ -325,11 +370,9 @@ def test_switching_focus(screen: Screen):
     elements = screen.selenium.find_elements(By.XPATH, '//input')
     assert len(elements) == 2
     screen.click('focus 1')
-    screen.wait(0.3)
-    assert elements[0] == screen.selenium.switch_to.active_element
+    screen.wait_for(lambda: elements[0] == screen.selenium.switch_to.active_element)
     screen.click('focus 2')
-    screen.wait(0.3)
-    assert elements[1] == screen.selenium.switch_to.active_element
+    screen.wait_for(lambda: elements[1] == screen.selenium.switch_to.active_element)
 
 
 def test_prefix_and_suffix(screen: Screen):

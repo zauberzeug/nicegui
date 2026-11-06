@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import mimetypes
 import multiprocessing
 import sys
@@ -22,7 +21,7 @@ from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
 from .page import page
-from .page_arguments import PageArguments
+from .page_arguments import PageArguments, builder_annotations
 from .staticfiles import CacheControlledStaticFiles
 from .version import __version__
 
@@ -139,7 +138,7 @@ async def _startup() -> None:
     sio.eio.ping_timeout = max(app.config.reconnect_timeout * 0.4, 2)
     if core.app.config.favicon:
         if helpers.is_file(core.app.config.favicon):
-            app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore
+            app.add_route('/favicon.ico', lambda _: FileResponse(core.app.config.favicon))  # type: ignore[arg-type]
         else:
             app.add_route('/favicon.ico', lambda _: favicon.get_favicon_response())
     else:
@@ -155,8 +154,10 @@ async def _shutdown() -> None:
     if app.native.main_window:
         app.native.main_window.signal_server_shutdown()
     air.disconnect()
-    await app.stop()
-    run.tear_down()
+    try:
+        await app.stop()
+    finally:
+        run.tear_down()
 
 
 @app.exception_handler(404)
@@ -171,9 +172,9 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
         kwargs = {
             name: PageArguments._convert_parameter(  # pylint: disable=protected-access
                 request.query_params[name],
-                param.annotation,
+                annotation,
             )
-            for name, param in inspect.signature(root).parameters.items()
+            for name, annotation in builder_annotations(root).items()
             if name in request.query_params and name != 'request'
         }
         return await page('')._wrap(root)(request=request, **kwargs)  # pylint: disable=protected-access

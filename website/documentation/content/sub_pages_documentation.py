@@ -214,6 +214,8 @@ def adding_sub_pages_demo() -> None:
     A path parameter specified in the route is injected into the functions matching parameter.
     For query parameters, the name is used for injection.
     Values are automatically converted if a type hint is provided (int, float, str).
+    Unions like `int | None` or `int | float` are supported as well:
+    `str` wins if present, otherwise `int` and `float` are tried in order.
     If no default value is provided in the builder function, the parameter will be required to match the route.
 ''')
 def url_parameters_demo():

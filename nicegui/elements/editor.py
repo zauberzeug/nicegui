@@ -23,6 +23,7 @@ class Editor(ValueElement[str], DisableableElement, component='editor.js', defau
         A WYSIWYG editor based on `Quasar's QEditor <https://quasar.dev/vue-components/editor>`_.
         The value is a string containing the formatted text as HTML code.
 
+        :param placeholder: text to show if no value is entered
         :param value: initial value
         :param on_change: callback to be invoked when the value changes
         :param sanitize: whether to sanitize the HTML code via DOMPurify before displaying it in the browser;

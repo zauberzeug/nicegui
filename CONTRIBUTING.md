@@ -23,7 +23,7 @@ It's designed to be simple, powerful, and fun to use.
 
 ### Tech Stack
 
-- **Python 3.10+** - Core language
+- **Python 3.11+** - Core language
 - **FastAPI/Starlette** - Web framework
 - **Vue 3** - Frontend framework
 - **Quasar** - UI component framework
@@ -94,7 +94,7 @@ Then pick a development setup that fits your workflow:
 4. Wait until the image has been built. (On first launch, watch the terminal for a GitHub authentication prompt.)
 5. Happy coding.
 
-**Option 2: Locally** — you need Python 3.10+ and [uv](https://docs.astral.sh/uv/) installed.
+**Option 2: Locally** — you need Python 3.11+ and [uv](https://docs.astral.sh/uv/) installed.
 
 Install uv:
 
@@ -122,7 +122,7 @@ By default, the development server listens to http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
-We use Python 3.10 as a base to ensure compatibility (see `development.dockerfile`).
+We use Python 3.11 as a base to ensure compatibility (see `development.dockerfile`).
 
 To view the log output, use the command:
 
@@ -155,6 +155,12 @@ The conventions below cover both general Python style and NiceGUI-specific patte
   - Put high-level/interesting code at the top of files; helper functions go below their usage
   - Each sentence in documentation goes on a new line ([why](https://nick.groenen.me/notes/one-sentence-per-line/))
 
+- **Docstrings** are reStructuredText, not Markdown — they are rendered on the website and checked by pre-commit
+
+  - Mark code with double backticks (``` ``value`` ```); single backticks would be rendered in italics
+  - Document parameters as `:param name: description`; once a docstring lists parameters, it must list all of them in the order of the signature
+  - Escape star arguments and trailing underscores (`:param \*\*kwargs:`, `:param filter\_:`) and use a raw docstring (`r"""..."""`) for them
+
 - **Async and background tasks**
 
   - No blocking I/O in async code — sync I/O blocks the event loop and freezes every connected client
@@ -167,7 +173,7 @@ The conventions below cover both general Python style and NiceGUI-specific patte
 
   - Use `with contextlib.suppress(...)` instead of try/except/pass for cleaner exception handling
   - Catch `ImportError` for optional dependencies, not `ModuleNotFoundError` — covers both missing and broken installations
-  - Use assertions for internal invariants (e.g., `assert self.current_scene is not None`)
+  - Use assertions for internal invariants (e.g., `assert self.callback is not None`)
   - Raise descriptive exceptions (`ValueError`, `RuntimeError`) with helpful messages
 
 - **Elements** (core library)
@@ -189,7 +195,7 @@ The conventions below cover both general Python style and NiceGUI-specific patte
   - **Triple underscore storage**: BindableProperty stores values in `___property_name` attributes
   - **Batch updates**: Use `suspend_updates()` context manager when changing properties in `update()` to avoid infinite cycles
 
-- **Method chaining**: Methods that support chaining (fluent interface) return `Self` from `typing_extensions`, enabling the builder pattern.
+- **Method chaining**: Methods that support chaining (fluent interface) return `Self` from `typing`, enabling the builder pattern.
   When chaining, use backslash line continuation:
 
   ```python
@@ -231,7 +237,11 @@ Run these from the project root:
    They run autopep8 (120 char line length), `ruff check . --fix`, trailing-whitespace removal, end-of-file fixing, and single-quote enforcement.
 
    > [!TIP]
-   > If pre-commit fails with `RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.10'`, install Python 3.10 and make sure it's available in your `PATH`.
+   > If pre-commit fails with `RuntimeError: failed to find interpreter for Builtin discover of python_spec='python3.11'`, install Python 3.11 and make sure it's available in your `PATH`.
+
+   CI additionally runs `uv run mypy ./nicegui` and `uv run pylint ./nicegui` on Python 3.11.
+   mypy checks against the Python version it runs on,
+   so run `uv run --isolated --python 3.11 mypy ./nicegui` to reproduce the CI result locally without touching your `.venv`.
 
 2. **Run tests** with pytest:
 
@@ -282,7 +292,7 @@ Run these from the project root:
 >
 > ```
 > Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
-> Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+> Co-authored-by: Claude <noreply@anthropic.com>
 > Co-authored-by: opencode <noreply@opencode.ai>
 > ```
 

@@ -50,9 +50,9 @@ class Navigate:
 
         Can be used to programmatically open a different page or URL.
 
-        When using the `new_tab` parameter, the browser might block the new tab.
+        When using the ``new_tab`` parameter, the browser might block the new tab.
         This is a browser setting and cannot be changed by the application.
-        You might want to use `ui.link` and its `new_tab` parameter instead.
+        You might want to use ``ui.link`` and its ``new_tab`` parameter instead.
 
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: whether to open the target in a new tab (might be blocked by the browser)

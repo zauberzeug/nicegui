@@ -30,4 +30,4 @@ class Altair(AnyWidget):
         if isinstance(chart, altair.TopLevelSpec):
             chart = altair.JupyterChart(chart)
 
-        super().__init__(chart, throttle=throttle)  # type: ignore[arg-type]
+        super().__init__(chart, throttle=throttle)

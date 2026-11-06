@@ -2,7 +2,7 @@ import asyncio
 import sys
 from typing import TYPE_CHECKING
 
-import httpx
+import httpx2
 import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
@@ -384,7 +384,7 @@ def test_parameterized_sub_pages(screen: Screen):
     assert calls == {'index': 1, 'main': 1}
 
     screen.click('Go to wrong match')
-    screen.should_not_contain('main_content')
+    screen.should_not_contain('main_content', duration=0.5)
     screen.should_not_contain('one-1-True')
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
@@ -510,7 +510,6 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     assert screen.current_path == '/sub'
 
     screen.click('Add sub page')
-    screen.wait(0.2)
     screen.should_contain('sub-content')  # because browser points to /sub we see the sub page content
     assert screen.current_path == '/sub'
 
@@ -764,7 +763,7 @@ def test_async_sub_pages(screen: Screen):
     screen.click('/0.1')
     screen.wait(1)
     screen.should_contain('after 0.1 sec')
-    screen.should_not_contain('after 1.0 sec')
+    screen.should_not_contain('after 1.0 sec', duration=0.5)
 
 
 @pytest.mark.parametrize('use_page_arguments', [True, False])
@@ -898,12 +897,15 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
     screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
 
 
-async def test_pep604_optional_parameters_are_converted(user: User):
+async def test_pep604_optional_parameters_are_converted(user: User, caplog: pytest.LogCaptureFixture):
     def from_path(count: int | None = None):
         ui.label(f'path {type(count).__name__}:{count}')
 
     def from_query(count: int | None = None, ratio: float | None = None, name: str | None = None):
         ui.label(f'query {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(name).__name__}:{name}')
+
+    def from_union(a: int | float | None = None, b: int | str | None = None, c: int | float = 0, d: float | int | None = None):
+        ui.label(f'union {type(a).__name__}:{a} {type(b).__name__}:{b} {type(c).__name__}:{c} {type(d).__name__}:{d}')
 
     @ui.page('/')
     @ui.page('/{path:path}')
@@ -911,6 +913,7 @@ async def test_pep604_optional_parameters_are_converted(user: User):
         ui.sub_pages({
             '/path/{count}': from_path,
             '/query': from_query,
+            '/union': from_union,
         })
 
     await user.open('/path/5')
@@ -918,6 +921,17 @@ async def test_pep604_optional_parameters_are_converted(user: User):
 
     await user.open('/query?count=5&ratio=2.5&name=abc')
     await user.should_see('query int:5 float:2.5 str:abc')
+
+    await user.open('/union?a=1.5&b=7&c=2&d=2')
+    await user.should_see('union float:1.5 str:7 int:2 float:2.0')
+
+    await user.open('/union?a=2&b=abc&c=1e3')
+    await user.should_see('union int:2 str:abc float:1000.0 NoneType:None')
+
+    await user.open('/union?a=abc')
+    await user.should_see('500: sub page /union?a=abc produced an error')
+    assert "could not convert 'abc' to int | float | None" in caplog.text
+    caplog.clear()
 
 
 async def test_string_annotations(user: User):
@@ -1047,8 +1061,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
     screen.should_contain('home')
     screen.should_contain('param=none')
     screen.click('pass parameter')
-    screen.wait(0.5)
-    assert screen.current_path == '/?test=value'
+    screen.wait_for(lambda: screen.current_path == '/?test=value')
     screen.should_contain('home')
     screen.should_contain('param=value')
     assert calls == {'index': 1, 'home': 1, 'sub': 2}, \
@@ -1142,7 +1155,7 @@ def test_exception_in_page_builder(screen: Screen):
 
     screen.click('Go to async exception')
     msg_async = 'sub page /async produced an error'
-    screen.should_not_contain(f'500: {msg_async}')
+    screen.should_not_contain(f'500: {msg_async}', duration=0.5)
     screen.assert_py_logger('ERROR', 'async test exception')
     # the content should show, when an error occurs after async task is started
     screen.should_contain('async content before exception')
@@ -1193,7 +1206,7 @@ def test_disabling_404(screen: Screen):
     screen.open('/main')
     screen.should_contain('main page')
     screen.click('Link to 404')  # open by link
-    screen.should_not_contain('404: sub page /404 not found')
+    screen.should_not_contain('404: sub page /404 not found', duration=0.5)
     screen.should_contain('main page')
 
     screen.open('/bad_path')
@@ -1204,7 +1217,7 @@ def test_disabling_404(screen: Screen):
     screen.should_contain('main page')
 
     screen.click('Button to 404')  # open via navigate.to
-    screen.should_not_contain('not found')
+    screen.should_not_contain('not found', duration=0.5)
     screen.should_contain('main page')
 
 
@@ -1259,8 +1272,8 @@ def test_http_404_on_initial_request(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
@@ -1280,8 +1293,8 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
@@ -1309,11 +1322,11 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
         ui.label('async sub page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/sub')
@@ -1331,7 +1344,7 @@ def test_http_404_with_root_function_and_sub_pages(screen: Screen):
     screen.open('/')
     screen.should_contain('Home')
 
-    httpx.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
+    httpx2.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
 
 
 def test_clearing_sub_pages_element(screen: Screen):
@@ -1347,13 +1360,11 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.open('/')
     screen.should_contain('main page')
     screen.click('Clear')
-    screen.wait(0.5)
     screen.should_not_contain('main page')
 
     screen.open('/')
     screen.should_contain('main page')
     screen.click('Delete')
-    screen.wait(0.5)
     screen.should_not_contain('main page')
 
 

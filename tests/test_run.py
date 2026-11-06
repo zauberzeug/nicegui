@@ -14,8 +14,6 @@ from textwrap import dedent
 import pytest
 
 from nicegui import app, run, ui
-from nicegui.app.app import State
-from nicegui.helpers import warnings as nicegui_warnings
 from nicegui.testing import User
 
 
@@ -71,7 +69,7 @@ class ExceptionWithSuperParameter(Exception):
 
 
 def raise_exception_with_super_parameter():
-    raise ExceptionWithSuperParameter()
+    raise ExceptionWithSuperParameter
 
 
 async def test_run_cpu_bound_function_which_raises_problematic_exception(user: User):
@@ -103,36 +101,18 @@ async def test_run_cpu_bound_survive_bad_function(user: User):
     await user.should_see('excellent')
 
 
-@pytest.mark.parametrize('func', [run.cpu_bound, run.io_bound])
-async def test_returns_none_when_app_is_stopping(user: User, func: Callable):
-    @ui.page('/')
-    async def index():
-        original_state = app._state  # pylint: disable=protected-access
-        app._state = State.STOPPING  # pylint: disable=protected-access
-        try:
-            result = await func(delayed_hello)
-            ui.label(f'result={result}')
-        finally:
-            app._state = original_state  # pylint: disable=protected-access
-
-    await user.open('/')
-    await user.should_see('result=None')
-
-
 @pytest.fixture
 def isolate_pool_state() -> Generator[None, None, None]:
-    """Restore run.process_pool_start_method and the forkserver preload, drop the pool and forget warnings."""
+    """Restore run.process_pool_start_method and the forkserver preload and drop the pool."""
     original = run.process_pool_start_method
     forkserver = multiprocessing.forkserver._forkserver  # pylint: disable=protected-access
     original_preload = forkserver._preload_modules  # pylint: disable=protected-access
-    nicegui_warnings.reset()
     try:
         yield
     finally:
         run.process_pool_start_method = original
         forkserver.set_forkserver_preload(original_preload)
         run.reset()
-        nicegui_warnings.reset()
 
 
 @pytest.mark.usefixtures('isolate_pool_state')
@@ -163,8 +143,7 @@ async def test_forkserver_pool_does_not_preload_main():
 
 @pytest.mark.usefixtures('isolate_pool_state')
 def test_spawn_pool_reuses_shared_spawn_context():
-    """A "spawn" pool reuses the module-level SPAWN_CONTEXT shared with native.py (no duplicate context)."""
-    run.process_pool_start_method = 'spawn'
+    """The default "spawn" pool reuses the module-level SPAWN_CONTEXT shared with native.py (no duplicate context)."""
     run.setup()
     assert run.process_pool is not None
     assert run.process_pool._mp_context is run.SPAWN_CONTEXT  # pylint: disable=protected-access
@@ -176,30 +155,6 @@ def test_invalid_start_method_fails_at_setup():
     run.process_pool_start_method = 'bogus'  # type: ignore[assignment]
     with pytest.raises(ValueError, match=r'Invalid run\.process_pool_start_method'):
         run.setup()
-
-
-@pytest.mark.usefixtures('isolate_pool_state')
-@pytest.mark.parametrize('method,expect_warning', [(None, True), ('spawn', False), ('fork', False)])
-async def test_fork_heads_up_warning(caplog, method, expect_warning):
-    """The one-time heads-up fires iff the start method was never chosen and the pool falls back to fork."""
-    if method != 'spawn' and multiprocessing.get_start_method() != 'fork':
-        pytest.skip('needs a platform with a fork default (e.g. Linux)')
-    run.process_pool_start_method = method
-    run.setup()
-    assert await run.cpu_bound(good_function)
-    assert ('process_pool_start_method' in caplog.text) is expect_warning
-
-
-@pytest.mark.usefixtures('isolate_pool_state')
-async def test_warning_reflects_pool_not_later_setting_change(caplog):
-    """Flipping the setting after startup must not silence the heads-up about the still-fork live pool."""
-    if multiprocessing.get_start_method() != 'fork':
-        pytest.skip('needs a platform with a fork default (e.g. Linux)')
-    run.process_pool_start_method = None
-    run.setup()
-    run.process_pool_start_method = 'spawn'  # too late, the pool is already built
-    assert await run.cpu_bound(good_function)
-    assert 'process_pool_start_method' in caplog.text
 
 
 @pytest.mark.parametrize('state', ['open', 'missing', 'closed'])

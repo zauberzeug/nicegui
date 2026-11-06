@@ -43,7 +43,8 @@ class RouteMatch:
         return url
 
     def __repr__(self) -> str:
-        return f'{self.path=}, {self.pattern=}, builder={self.builder.__name__}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
+        builder = getattr(self.builder, '__name__', self.builder)
+        return f'{self.path=}, {self.pattern=}, builder={builder}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
 
 
 @dataclass(kw_only=True, slots=True)
@@ -74,7 +75,7 @@ class PageArguments:
     def build_kwargs(cls, match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
         """Build keyword arguments for the route builder function.
 
-        :param route_match: matched route containing path info and parameters
+        :param match: matched route containing path info and parameters
         :param frame: ``ui.sub_pages`` instance executing this page
         :param data: arbitrary data passed to the ``ui.sub_pages`` element
         :return: keyword arguments for the builder function
@@ -112,27 +113,30 @@ class PageArguments:
 
     @staticmethod
     def _convert_parameter(value: str, param_type: type) -> Any:
-        """Convert a string parameter to the specified type (``str``, ``int``, or ``float``).
+        """Convert a string parameter to the specified type (``str``, ``int``, ``float`` or a union of them).
+
+        Unions containing ``str`` keep the raw value.
+        Otherwise ``int`` and ``float`` are tried in annotation order.
+        If all members are numeric and none fits, a ``ValueError`` is raised.
+        Values for other annotations are kept as raw strings.
 
         :param value: string value to convert
         :param param_type: target type for conversion
         :return: converted value
         """
-        param_type = PageArguments._unwrap_optional(param_type)
-        if param_type is str or param_type is inspect.Parameter.empty:
+        args = get_args(param_type) if get_origin(param_type) in (Union, types.UnionType) else (param_type,)
+        members = [arg for arg in args if arg is not types.NoneType]
+        if str in members:
             return value
-        elif param_type is int:
-            return int(value)
-        elif param_type is float:
-            return float(value)
+        numeric = [member for member in members if member in (int, float)]
+        for member in numeric:
+            try:
+                return member(value)
+            except ValueError:
+                pass
+        if numeric and len(numeric) == len(members):
+            raise ValueError(f'could not convert {value!r} to {inspect.formatannotation(param_type)}')
         return value
-
-    @staticmethod
-    def _unwrap_optional(param_type: type) -> type:
-        """Extract the base type from T|None -> T, or return the type as-is."""
-        if get_origin(param_type) in (Union, types.UnionType) and types.NoneType in get_args(param_type):
-            return next(arg for arg in get_args(param_type) if arg is not types.NoneType)
-        return param_type
 
 
 def builder_annotations(builder: Callable) -> dict[str, Any]:

@@ -1,4 +1,5 @@
 import asyncio
+import functools
 
 import pytest
 
@@ -245,7 +246,6 @@ def test_refreshable_with_state(screen: Screen):
     screen.should_contain('B: 0')
 
     screen.click('Increment A')
-    screen.wait(0.5)
     screen.should_contain('A: 1')
     screen.should_contain('B: 0')
 
@@ -352,3 +352,23 @@ async def test_report_exception(user: User, caplog: pytest.LogCaptureFixture, is
     assert len(seen) == 1, f'ui.on_exception should see exactly one exception, saw {len(seen)}'
     assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
     caplog.records.pop(0)
+
+
+async def test_refresh_partial(user: User) -> None:
+    numbers = [1]
+
+    def number_ui(prefix: str) -> None:
+        ui.label(f'{prefix} {numbers}')
+
+    part = ui.refreshable(functools.partial(number_ui, 'numbers:'))
+
+    @ui.page('/')
+    def page():
+        part()
+
+    await user.open('/')
+    await user.should_see('numbers: [1]')
+
+    numbers.append(2)
+    part.refresh()
+    await user.should_see('numbers: [1, 2]')

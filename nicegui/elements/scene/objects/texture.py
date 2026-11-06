@@ -1,4 +1,4 @@
-from typing_extensions import Self
+from typing import Self
 
 from ..scene_object3d import Object3D
 

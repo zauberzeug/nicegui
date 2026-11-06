@@ -28,7 +28,16 @@ Work as a pair programmer, not a silent code generator:
 
 ## Before Claiming a Task Complete
 
-Run the project's tests and linters (see [CONTRIBUTING.md](CONTRIBUTING.md)) and review your own diff for unintended scope creep.
+Run the project's tests and linters and review your own diff for unintended scope creep:
+
+```bash
+uv run pre-commit run --all-files
+uv run --isolated --python 3.11 mypy ./nicegui
+uv run --isolated --python 3.11 pylint ./nicegui
+uv run pytest
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md#before-submitting-a-pull-request) for details.
 
 ## Creating Pull Requests
 

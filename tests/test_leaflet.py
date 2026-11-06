@@ -1,7 +1,9 @@
+import asyncio
 import base64
 import gc
 import time
 import weakref
+from collections.abc import Callable
 
 from fastapi import Response
 
@@ -48,16 +50,18 @@ def test_leaflet(screen: Screen):
     screen.should_contain('Center: 51.505, -0.090')
 
 
-def test_await_initialized_twice(screen: Screen):
+def test_await_initialized(screen: Screen):
     @ui.page('/')
     async def page():
         m = ui.leaflet()
+        marker = m.marker(latlng=(51.5, -0.1))
         await m.initialized()
         await m.initialized()  # should not cause re-rendering warning
-        ui.label('Leaflet initialized')
+        latlng = await marker.run_method('getLatLng')  # the layer has to exist already
+        ui.label(f'Marker at {latlng["lat"]}, {latlng["lng"]}')
 
     screen.open('/')
-    screen.should_contain('Leaflet initialized')
+    screen.should_contain('Marker at 51.5, -0.1')
     assert not screen.caplog.records
 
 
@@ -123,3 +127,25 @@ async def test_leaflet_is_collected_after_client_deletion(user: User):
     held.clear()  # the timer finishes and drops its reference
     gc.collect()
     assert len(objects) == 0
+
+
+async def test_layer_constructed_after_await_lands_in_own_map(create_user: Callable[[], User]):
+    first_waiting = asyncio.Event()
+    other_map_entered = asyncio.Event()
+    results: list[bool] = []
+
+    @ui.page('/first')
+    async def first():
+        with ui.leaflet() as m:
+            first_waiting.set()
+            await other_map_entered.wait()
+            results.append(ui.leaflet.marker(latlng=(51.5, -0.09)).leaflet is m)
+
+    @ui.page('/second')
+    async def second():
+        await first_waiting.wait()
+        with ui.leaflet():
+            other_map_entered.set()
+
+    await asyncio.gather(create_user().open('/first'), create_user().open('/second'))
+    assert results == [True]
