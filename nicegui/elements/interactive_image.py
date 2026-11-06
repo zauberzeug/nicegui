@@ -4,11 +4,9 @@ import time
 from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
-from typing import cast
+from typing import Self, cast
 
-from typing_extensions import Self
-
-from .. import helpers, optional_features
+from .. import optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, MouseEventArguments, handle_event
 from ..logging import log
@@ -33,7 +31,7 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
                  on_mouse: Handler[MouseEventArguments] | None = None,
                  events: list[str] = DEFAULT_PROP | ['click'],
                  cross: bool | str = DEFAULT_PROP | False,
-                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
+                 sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
         """Interactive Image
 
@@ -45,29 +43,27 @@ class InteractiveImage(SourceElement, ContentElement, component='interactive_ima
 
         The mouse event handler is called with mouse event arguments containing
 
-        - `type` (the name of the JavaScript event),
-        - `image_x` and `image_y` (image coordinates in pixels),
-        - `button` and `buttons` (mouse button numbers from the JavaScript event), as well as
-        - `alt`, `ctrl`, `meta`, and `shift` (modifier keys from the JavaScript event).
+        - ``type`` (the name of the JavaScript event),
+        - ``image_x`` and ``image_y`` (image coordinates in pixels),
+        - ``button`` and ``buttons`` (mouse button numbers from the JavaScript event), as well as
+        - ``alt``, ``ctrl``, ``meta``, and ``shift`` (modifier keys from the JavaScript event).
 
         You can also pass a tuple of width and height instead of an image source.
         This will create an empty image with the given size.
 
         :param source: the source of the image; can be an URL, local file path, a base64 string or just an image size
         :param content: SVG content which should be overlaid; viewport has the same dimensions as the image
-        :param size: size of the image (width, height) in pixels; only used if `source` is not set
-        :param on_mouse: callback for mouse events (contains image coordinates `image_x` and `image_y` in pixels)
-        :param events: list of JavaScript events to subscribe to (default: `['click']`)
-        :param cross: whether to show crosshairs or a color string (default: `False`)
+        :param size: size of the image (width, height) in pixels; only used if ``source`` is not set
+        :param on_mouse: callback for mouse events (contains image coordinates ``image_x`` and ``image_y`` in pixels)
+        :param events: list of JavaScript events to subscribe to (default: ``['click']``)
+        :param cross: whether to show crosshairs or a color string (default: ``False``)
         :param sanitize: sanitization mode:
             ``True`` (default) uses client-side sanitization via DOMPurify,
             ``False`` disables sanitization (use only with trusted content),
             or pass a callable to apply server-side sanitization
         """
         if sanitize is None:
-            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
-            sanitize = True
-
+            raise TypeError('`sanitize` must be `True`, `False` or a callable; `None` is no longer supported')
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['events'] = events[:]
@@ -143,7 +139,7 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
                  source: str,
                  content: str,
                  size: tuple[float, float] | None,
-                 sanitize: Callable[[str], str] | bool | None = True,  # DEPRECATED: remove `None` in version 4.0.0
+                 sanitize: Callable[[str], str] | bool = True,
                  ) -> None:
         """Interactive Image Layer
 
@@ -151,9 +147,6 @@ class InteractiveImageLayer(SourceElement, ContentElement, component='interactiv
 
         *Added in version 2.17.0*
         """
-        if sanitize is None:
-            helpers.warn_once('`sanitize=None` is deprecated, defaults to `True` and will be removed in version 4.0.0.')
-            sanitize = True
         self._sanitize = sanitize
         super().__init__(source=source, content=content)
         self._props['size'] = size

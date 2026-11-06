@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Generic, TypeVar, overload
-
-from typing_extensions import Self
+from typing import Generic, Self, TypeVar, overload
 
 from .context import context
 from .element import Element

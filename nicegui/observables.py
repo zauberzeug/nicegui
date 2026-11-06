@@ -4,7 +4,7 @@ import abc
 import time
 import weakref
 from collections.abc import Callable, Collection, Iterable
-from typing import Any, SupportsIndex, cast
+from typing import TYPE_CHECKING, Any, SupportsIndex, cast
 
 from . import events, helpers
 
@@ -12,6 +12,9 @@ _MISSING = object()
 
 
 class ObservableCollection(abc.ABC):  # noqa: B024
+    # pylint: disable=assigning-non-slot
+    if not TYPE_CHECKING:  # hidden from mypy, which would otherwise reject the attribute assignments in __init__
+        __slots__ = ()  # non-empty slots would conflict with dict/list/set; the concrete subclasses declare them
 
     def __init__(self, *,
                  factory: Callable,
@@ -112,6 +115,7 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
 
 class ObservableDict(ObservableCollection, dict):
+    __slots__ = ('__weakref__', '_change_handlers', '_observer_refs', '_parent_ref', 'last_modified')
 
     def __init__(self,
                  data: dict | None = None,
@@ -183,6 +187,7 @@ class ObservableDict(ObservableCollection, dict):
 
 
 class ObservableList(ObservableCollection, list):
+    __slots__ = ('__weakref__', '_change_handlers', '_observer_refs', '_parent_ref', 'last_modified')
 
     def __init__(self,
                  data: list | None = None,
@@ -270,6 +275,7 @@ class ObservableList(ObservableCollection, list):
 
 
 class ObservableSet(ObservableCollection, set):
+    __slots__ = ('_change_handlers', '_observer_refs', '_parent_ref', 'last_modified')
 
     def __init__(self,
                  data: set | None = None,

@@ -16,7 +16,6 @@ def test_editor(screen: Screen):
     screen.open('/')
     screen.find_element(editor).click()
     screen.type('Hello\nworld!')
-    screen.wait(0.5)
     screen.should_contain('Hello<div>world!</div>')
 
 
@@ -39,3 +38,29 @@ def test_setting_value_twice(screen: Screen):
 
     screen.click('Reset')
     screen.should_contain('X')
+
+
+def test_sanitize(screen: Screen):
+    def payload(message: str) -> str:
+        return f'<img src=x onerror=Quasar.Notify.create({{message:"{message}",timeout:0}})>'
+
+    @ui.page('/')
+    def page():
+        ui.editor(value=payload('Alpha'), sanitize=False)
+        ui.editor(value=payload('Bravo'))
+        unsafe_editor = ui.editor(sanitize=False)
+        safe_editor = ui.editor()
+
+        def update() -> None:
+            unsafe_editor.set_value(payload('Charlie'))
+            safe_editor.set_value(payload('Delta'))
+        ui.button('Update', on_click=update)
+
+    screen.allowed_js_errors.append('/x - Failed to load resource')
+    screen.open('/')
+    screen.should_contain('Alpha')
+    screen.click('Update')
+    screen.should_contain('Charlie')
+    screen.should_not_contain('Bravo')
+    screen.should_not_contain('Delta')
+    assert sum(img.get_attribute('onerror') is not None for img in screen.find_all_by_tag('img')) == 2

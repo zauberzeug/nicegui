@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pandas as pd
@@ -36,6 +36,7 @@ def test_table(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
+    screen.should_not_contain('Records per page')
 
 
 def test_pagination_int(screen: Screen):
@@ -47,7 +48,7 @@ def test_pagination_int(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    screen.should_contain('1–2 of 3')  # noqa: RUF001
 
 
 def test_pagination_dict(screen: Screen):
@@ -59,7 +60,42 @@ def test_pagination_dict(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    screen.should_contain('1–2 of 3')  # noqa: RUF001
+
+
+@pytest.mark.parametrize('pagination,pagination_controls,expected', [
+    (None, None, False),
+    (5, None, True),
+    (5, False, False),
+    (None, True, True),
+])
+def test_pagination(screen: Screen, pagination: int | None, pagination_controls: bool | None, expected: bool):
+    @ui.page('/')
+    def page():
+        ui.table(columns=columns(), rows=rows(), pagination=pagination, pagination_controls=pagination_controls)
+
+    screen.open('/')
+    if expected:
+        screen.should_contain('Records per page')
+    else:
+        screen.should_not_contain('Records per page')
+
+
+@pytest.mark.parametrize('pagination_controls', [None, False])
+def test_pagination_setter(screen: Screen, pagination_controls: bool | None):
+    @ui.page('/')
+    def page():
+        table = ui.table(columns=columns(), rows=rows(), pagination_controls=pagination_controls)
+        table.pagination = {'rowsPerPage': 2}
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_not_contain('Lionel')
+    if pagination_controls is None:
+        screen.should_contain('1–2 of 3')  # noqa: RUF001
+    else:
+        screen.should_not_contain('Records per page')
 
 
 def test_filter(screen: Screen):
@@ -94,7 +130,6 @@ def test_add_remove(screen: Screen):
     screen.should_contain('Carol')
 
     screen.click('Remove')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
 
 
@@ -135,7 +170,6 @@ def test_selection(screen: Screen):
 
     screen.open('/')
     screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
     screen.should_contain('1 record selected.')
 
     screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
@@ -146,13 +180,11 @@ def test_selection(screen: Screen):
     screen.wait(0.5)
 
     screen.find('Lionel').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
     screen.should_contain('2 records selected.')
     assert table.selection == 'multiple'
 
     screen.click('none')
-    screen.wait(0.5)
-    screen.should_not_contain('1 record selected.')
+    screen.should_not_contain('1 record selected.', duration=1.0)
     assert table.selection is None
 
 
@@ -177,7 +209,6 @@ def test_remove_selection(screen: Screen):
     screen.should_contain('1 record selected.')
 
     screen.click('Remove first row')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('1 record selected.')
 
@@ -202,14 +233,12 @@ def test_replace_rows(screen: Screen):
     screen.should_contain('Lionel')
 
     screen.click('Replace rows with C.')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Lionel')
     screen.should_contain('Carol')
 
     screen.click('Replace rows with D.')
-    screen.wait(0.5)
     screen.should_not_contain('Carol')
     screen.should_contain('Daniel')
 
@@ -249,7 +278,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         if df_type == 'pandas':
             df = pd.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
-                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
                 'Timedelta_col': [timedelta(days=5)],
                 'Complex_col': [1 + 2j],
                 'Period_col': pd.Series([pd.Period('2021-01')]),
@@ -258,7 +287,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         else:
             df = pl.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
-                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
                 'Timedelta_col': [timedelta(days=5)],
                 'Binary_col': [b'hello'],
             })

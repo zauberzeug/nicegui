@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Generic, Self, TypeVar
 
 from nicegui import events, helpers, ui
 from nicegui.elements.mixins.disableable_element import DisableableElement
@@ -120,8 +118,7 @@ class UserInteraction(Generic[T]):
                 element.value = target_value
 
             elif isinstance(element, ui.tab):
-                if element.tabs is not None:  # DEPRECATED: check not needed once ui.tab requires a ui.tabs ancestor
-                    element.tabs.value = element.props['name']
+                element.tabs.value = element.props['name']
                 self._dispatch_click(element)
 
             elif isinstance(element, (ui.checkbox, ui.switch)):
@@ -171,5 +168,6 @@ class UserInteraction(Generic[T]):
                 if isinstance(element, DisableableElement) and not element.enabled:
                     continue
                 assert isinstance(element, ValueElement)
-                element.value = None
+                element.value = '' if isinstance(
+                    element, (ui.input, ui.date_input, ui.time_input, ui.color_input)) else None
         return self

@@ -6,10 +6,8 @@ import weakref
 from collections.abc import Awaitable, Callable
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Generic, ParamSpec
 from weakref import WeakSet
-
-from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .client import Client
@@ -145,7 +143,7 @@ class Event(Generic[P]):
         self.subscribe(callback, expect_args=True, unsubscribe_on_delete=False)  # cleaned up in the finally block below
         try:
             return await asyncio.wait_for(future, timeout)
-        except asyncio.TimeoutError as error:
+        except TimeoutError as error:
             raise TimeoutError(f'Timed out waiting for event after {timeout} seconds') from error
         finally:
             self.unsubscribe(callback)

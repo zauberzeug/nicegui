@@ -1,9 +1,7 @@
 import asyncio
 import weakref
 from pathlib import Path
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
@@ -41,8 +39,8 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
 
         :param center: initial center location of the map (latitude/longitude, default: (0.0, 0.0))
         :param zoom: initial zoom level of the map (default: 13)
-        :param draw_control: whether to show the draw toolbar (default: False)
         :param options: additional options passed to the Leaflet map (default: {})
+        :param draw_control: whether to show the draw toolbar (default: False)
         :param hide_drawn_items: whether to hide drawn items on the map (default: False, *added in version 2.0.0*)
         :param additional_resources: additional resources like CSS or JS files to load (default: None, *added in version 2.11.0*)
         """
@@ -70,10 +68,6 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         self._props['hide-drawn-items'] = hide_drawn_items
         self._props['additional-resources'] = additional_resources or []
 
-        self._props.add_rename('draw_control', 'draw-control')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('hide_drawn_items', 'hide-drawn-items')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('additional_resources', 'additional-resources')  # DEPRECATED: remove in NiceGUI 4.0
-
         self.on('init', self._handle_init)
         self.on('map-moveend', self._handle_move_or_zoom_end)
         self.on('map-zoomend', self._handle_move_or_zoom_end)
@@ -89,20 +83,20 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         return event_type == 'init'
 
     def __enter__(self) -> Self:
-        Layer.current_leaflet = weakref.ref(self)
+        Layer._current_leaflet.set(weakref.ref(self))  # pylint: disable=protected-access
         return super().__enter__()
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
         if isinstance(attribute, type) and issubclass(attribute, Layer):
-            Layer.current_leaflet = weakref.ref(self)
+            Layer._current_leaflet.set(weakref.ref(self))  # pylint: disable=protected-access
         return attribute
 
     def _handle_init(self) -> None:
         self.is_initialized = True
-        self._initialized_event.set()
         for layer in self.layers:
             self.run_method('add_layer', layer.to_dict(), layer.id)
+        self._initialized_event.set()  # after adding the layers so that awaiting code can address them
 
     async def initialized(self) -> None:
         """Wait until the map is initialized.
@@ -146,7 +140,7 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         self.run_method('clear_layers')
 
     def run_map_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the Leaflet map instance.
+        r"""Run a method of the Leaflet map instance.
 
         Refer to the `Leaflet documentation <https://leafletjs.com/reference.html#map-methods-for-modifying-map-state>`_ for a list of methods.
 
@@ -154,7 +148,7 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
@@ -162,14 +156,14 @@ class Leaflet(CancelableWaitElement, component='leaflet.js', esm={'nicegui-leafl
         return self.run_method('run_map_method', name, *args, timeout=timeout)
 
     def run_layer_method(self, layer_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of a Leaflet layer.
+        r"""Run a method of a Leaflet layer.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
         :param layer_id: ID of the layer
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

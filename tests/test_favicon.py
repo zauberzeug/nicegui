@@ -1,7 +1,7 @@
 import urllib.parse
 from pathlib import Path
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import favicon, ui
@@ -16,7 +16,7 @@ def get_favicon_url(screen: Screen) -> str:
 
 
 def assert_favicon(content: Path | str | bytes, url_path: str = '/favicon.ico'):
-    response = httpx.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
+    response = httpx2.get(f'http://localhost:{Screen.PORT}{url_path}', timeout=5)
     assert response.status_code == 200
     if isinstance(content, Path):
         assert content.read_bytes() == response.content
@@ -90,8 +90,9 @@ def test_custom_file(screen: Screen):
     assert_favicon(screen.ui_run_kwargs['favicon'])
 
 
-def test_page_specific_icon(screen: Screen):
-    @ui.page('/subpage', favicon=LOGO_FAVICON_PATH)
+@pytest.mark.parametrize('path', ['/subpage', '/subpage/'])
+def test_page_specific_icon(path: str, screen: Screen):
+    @ui.page(path, favicon=LOGO_FAVICON_PATH)
     def sub():
         ui.label('Subpage')
 
@@ -99,7 +100,8 @@ def test_page_specific_icon(screen: Screen):
     def page():
         ui.label('Main')
 
-    screen.open('/subpage')
+    screen.open(path)
+    assert urllib.parse.urlparse(get_favicon_url(screen)).path == '/subpage/favicon.ico'
     assert_favicon(LOGO_FAVICON_PATH, url_path='/subpage/favicon.ico')
     screen.open('/')
 

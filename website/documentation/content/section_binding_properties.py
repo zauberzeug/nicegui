@@ -89,7 +89,7 @@ def bind_variable():
 
     with ui.input('Date').bind_value(globals(), 'date') as date_input:
         with ui.menu() as menu:
-            ui.date(on_change=lambda: ui.notify(f'Date: {date}')).bind_value(date_input)
+            ui.date(on_change=lambda: ui.notify(f'Date: {date}')).bind_value(date_input, forward=lambda v: v or '')
         with date_input.add_slot('append'):
             ui.icon('edit_calendar').on('click', menu.open).classes('cursor-pointer')
 

@@ -52,7 +52,7 @@ def create() -> None:
                 t('Generic [Vue](https://vuejs.org/) to Python bridge'),
                 t('Dynamic GUI through [Quasar](https://quasar.dev/)'),
                 t('Content served with [FastAPI](https://fastapi.tiangolo.com/)'),
-                'Python 3.10+',
+                'Python 3.11+',
             ])
 
 

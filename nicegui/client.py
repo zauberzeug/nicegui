@@ -5,16 +5,15 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 from urllib.parse import parse_qs, quote
 
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
-from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
@@ -75,8 +74,28 @@ class ClientConnectionTimeout(TimeoutError):
         self.client = client
 
 
+class _PageRoutes(Mapping[Callable, str]):
+    """Maps page builders to their routes, which their pages resolve on access."""
+
+    def __init__(self) -> None:
+        self.pages: dict[Callable, page] = {}
+
+    def __getitem__(self, builder: Callable) -> str:
+        return self.pages[builder].path
+
+    def __iter__(self) -> Iterator[Callable]:
+        return iter(self.pages)
+
+    def __len__(self) -> int:
+        return len(self.pages)
+
+    def clear(self) -> None:
+        """Forget all pages."""
+        self.pages.clear()
+
+
 class Client:
-    page_routes: ClassVar[dict[Callable, str]] = {}
+    page_routes: ClassVar[_PageRoutes] = _PageRoutes()
     '''Maps page builders to their routes.'''
 
     instances: ClassVar[dict[str, Client]] = {}
@@ -277,7 +296,7 @@ class Client:
         self._connected.clear()
         try:
             await asyncio.wait_for(self._connected.wait(), timeout=None if _is_prefetch(self.request) else timeout)
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
     async def disconnected(self) -> None:
@@ -339,7 +358,7 @@ class Client:
     def on_connect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client connects.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
         """
 
         self.connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_connect()'))
@@ -347,7 +366,7 @@ class Client:
     def on_disconnect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client disconnects.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
@@ -356,7 +375,7 @@ class Client:
     def on_delete(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client is deleted.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Added in version 3.0.0*
         """
@@ -365,7 +384,7 @@ class Client:
     def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
         """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).
 
-        The callback has an optional parameter of `Exception`.
+        The callback has an optional parameter of ``Exception``.
         """
         self._exception_handlers.append(handler)
 
@@ -502,7 +521,7 @@ class Client:
         self.remove_elements(self.elements.values())
 
     def handle_exception(self, exception: Exception) -> None:
-        """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
+        """Handle an in-page exception by invoking handlers registered via ``ui.on_exception(...)``."""
         if self.is_deleted:
             return  # the page is gone, so there is no point in running its handlers
         for handler in self._exception_handlers:

@@ -41,7 +41,7 @@ def unlink_with_retry(filepath: Path, *, missing_ok: bool = False, timeout: floa
 
 
 async def unlink_with_retry_async(filepath: Path, *, missing_ok: bool = False, timeout: float = 1.0) -> None:
-    """Async variant of :func:`unlink_with_retry` which does not block the event loop while waiting."""
+    """Async variant of ``unlink_with_retry()`` which does not block the event loop while waiting."""
     deadline = time.monotonic() + timeout
     while not _try_unlink(filepath, missing_ok=missing_ok, deadline=deadline):
         await asyncio.sleep(0.02)

@@ -43,7 +43,8 @@ class RouteMatch:
         return url
 
     def __repr__(self) -> str:
-        return f'{self.path=}, {self.pattern=}, builder={self.builder.__name__}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
+        builder = getattr(self.builder, '__name__', self.builder)
+        return f'{self.path=}, {self.pattern=}, builder={builder}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
 
 
 @dataclass(kw_only=True, slots=True)
@@ -74,7 +75,7 @@ class PageArguments:
     def build_kwargs(cls, match: RouteMatch, frame: SubPages, data: dict[str, Any]) -> dict[str, Any]:
         """Build keyword arguments for the route builder function.
 
-        :param route_match: matched route containing path info and parameters
+        :param match: matched route containing path info and parameters
         :param frame: ``ui.sub_pages`` instance executing this page
         :param data: arbitrary data passed to the ``ui.sub_pages`` element
         :return: keyword arguments for the builder function

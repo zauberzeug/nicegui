@@ -1,6 +1,4 @@
-from typing import Literal
-
-from typing_extensions import Self
+from typing import Literal, Self
 
 from ..binding import BindableProperty
 from ..defaults import DEFAULT_PROP, resolve_defaults
