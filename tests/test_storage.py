@@ -210,7 +210,9 @@ def test_tab_storage_is_local(screen: Screen):
     screen.should_contain('3')
 
 
-def test_tab_storage_is_auto_removed(screen: Screen):
+def test_tab_storage_is_auto_removed(screen: Screen, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(Storage, 'max_tab_storage_age', 0.5)
+
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -221,6 +223,12 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.should_contain('1')
     screen.open('/')
     screen.should_contain('2')
+
+    screen.wait(1.0)  # the tab storage outlives max_tab_storage_age while its client stays connected
+    background_tasks.create(prune_tab_storage())
+    screen.wait(0.1)
+    screen.open('/')
+    screen.should_contain('3')  # the storage of a connected tab is kept
 
     background_tasks.create(prune_tab_storage(force=True))
     screen.wait(0.1)
