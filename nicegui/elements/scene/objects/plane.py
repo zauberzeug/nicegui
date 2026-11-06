@@ -21,6 +21,6 @@ class Plane(Object3D, component='plane.js'):
         :param height: height of the plane (default: 1.0)
         :param width_segments: number of segments along the width (default: 1)
         :param height_segments: number of segments along the height (default: 1)
-        :param wireframe: whether to display the plane as a wireframe (default: `False`)
+        :param wireframe: whether to display the plane as a wireframe (default: ``False``)
         """
         super().__init__(width, height, width_segments, height_segments, wireframe=wireframe)

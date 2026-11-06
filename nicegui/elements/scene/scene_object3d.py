@@ -4,15 +4,13 @@ import inspect
 import math
 import uuid
 import weakref
+from contextvars import ContextVar
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse
 from ...dependencies import register_library
-from ...helpers import warn_once
 from ...version import __version__
 
 if TYPE_CHECKING:
@@ -20,11 +18,10 @@ if TYPE_CHECKING:
 
 
 class Object3D:
-    current_scene: ClassVar[weakref.ref[Scene] | None] = None
+    _current_scene: ClassVar[ContextVar[weakref.ref[Scene] | None]] = ContextVar('_current_scene', default=None)
     _component_url: ClassVar[str | None] = None
-    _file_stem: ClassVar[str | None] = None
 
-    def __init_subclass__(cls, *, component: str | Path | None = None) -> None:  # DEPRECATED: require `component` in NiceGUI 4.0
+    def __init_subclass__(cls, *, component: str | Path | None = None) -> None:
         super().__init_subclass__()
 
         if component:
@@ -38,25 +35,29 @@ class Object3D:
             library = register_library(path, import_name=import_name, max_time=path.stat().st_mtime)
             # Importing by URL rather than by importmap entry keeps classes registered after page render working.
             cls._component_url = f'/_nicegui/{__version__}/libraries/{library.key}'
-            cls._file_stem = path.stem
         else:
             # Fallback to parent's component to ease inheriting from Object3D classes
             for base_cls in cls.__mro__[1:]:
                 if getattr(base_cls, '_component_url', False):
                     break
             else:
-                warn_once('Subclassing Object3D without a `component` parameter is deprecated '
-                          'and will raise a TypeError in NiceGUI 4.0. '
-                          'Pass `component=` or inherit from a built-in scene object instead.')
+                raise TypeError(f'Cannot subclass Object3D as {cls.__name__} without a `component` parameter. '
+                                'Pass `component=` or inherit from a built-in scene object instead.')
 
     def __init__(self, *args: Any, wireframe: bool = False) -> None:
         if self._component_url is None:
-            args, wireframe = self._consume_legacy_type_string(args, wireframe)
+            raise TypeError('Object3D cannot be instantiated directly. '
+                            'Subclass it with `component=` or use a built-in scene object instead.')
         self.id = str(uuid.uuid4())
         self.wireframe = wireframe
         self.name: str | None = None
-        scene = Object3D.current_scene() if Object3D.current_scene is not None else None
-        assert scene is not None
+        scene_ref = Object3D._current_scene.get()
+        scene = scene_ref() if scene_ref is not None else None
+        if scene is None:
+            raise RuntimeError('The current scene cannot be determined because no scene has been entered in this task '
+                               'or the scene has been deleted.\n'
+                               'This may happen if you create a 3D object from an event handler or a timer.\n'
+                               'To fix this, enter the target scene explicitly using `with scene:`.')
         self.scene: Scene = scene
         self.scene.objects[self.id] = self
         self.parent: Object3D | SceneObject = self.scene.stack[-1]
@@ -76,73 +77,11 @@ class Object3D:
         self.sz: float = 1
         self._create()
 
-    # DEPRECATED: remove this method in NiceGUI 4.0
-    def _consume_legacy_type_string(self, args: tuple, wireframe: bool) -> tuple[tuple, bool]:
-        """Support the legacy protocol of instantiating an `Object3D` with a leading type string (until NiceGUI 4.0).
-
-        The legacy protocol also passed the wireframe flag as the last positional argument of geometry-based types.
-        """
-        # pylint: disable=protected-access
-        if not args or not isinstance(args[0], str):
-            raise TypeError(f'Cannot create a {type(self).__name__} without a JS component. '
-                            'Pass `component=` when subclassing Object3D.')
-        subclasses = list(Object3D.__subclasses__())
-        for subclass in subclasses:
-            subclasses.extend(subclass.__subclasses__())
-            if subclass._file_stem == args[0] and subclass._component_url:
-                break
-        else:
-            raise TypeError(f'Unknown object type "{args[0]}".')
-        warn_once(f'Creating 3D objects by passing a type string like "{args[0]}" to Object3D is deprecated '
-                  'and will raise a TypeError in NiceGUI 4.0. '
-                  'Subclass a built-in scene object or pass `component=` instead.')
-        self._component_url = subclass._component_url  # type: ignore[misc]
-        self._file_stem = subclass._file_stem  # type: ignore[misc]
-        args = args[1:]
-        geometry_types = ('box', 'sphere', 'cylinder', 'ring', 'quadratic_bezier_tube', 'extrusion')
-        if self._file_stem in geometry_types and args and isinstance(args[-1], bool):
-            wireframe = args[-1]
-            args = args[:-1]
-        return args, wireframe
-
     def with_name(self, name: str) -> Self:
         """Set the name of the object."""
         self.name = name
         self._name()
         return self
-
-    @property
-    def type(self) -> str | None:
-        """Type of the object.
-
-        **Note: This property is deprecated and will be removed in NiceGUI 4.0.
-        Use `isinstance` checks instead.**
-        """
-        # DEPRECATED: remove this property in NiceGUI 4.0
-        warn_once('The `type` property of `Object3D` is deprecated and will be removed in NiceGUI 4.0. '
-                  'Use `isinstance` checks instead.')
-        return self._file_stem
-
-    @property
-    def data(self) -> list[Any]:
-        """Data to be sent to the frontend.
-
-        **Note: This property is deprecated and will be removed in NiceGUI 4.0.
-        It is a public method meant for internal use and is no longer needed.**
-        """
-        # DEPRECATED: remove this property in NiceGUI 4.0
-        warn_once('The `data` property of `Object3D` is deprecated and will be removed in NiceGUI 4.0. '
-                  'It is a public method meant for internal use and is no longer needed.')
-        return [
-            self._file_stem, self.id, self.parent.id, self.args,
-            self.name,
-            self.color, self.opacity, self.side_, self.material_is_set,
-            self.x, self.y, self.z,
-            self.R,
-            self.sx, self.sy, self.sz,
-            self.visible_,
-            self.draggable_,
-        ]
 
     def __enter__(self) -> Self:
         self.scene.stack.append(self)
@@ -303,8 +242,8 @@ class Object3D:
         """Scale the object.
 
         :param sx: scale factor for the x axis
-        :param sy: scale factor for the y axis (default: `sx`)
-        :param sz: scale factor for the z axis (default: `sx`)
+        :param sy: scale factor for the y axis (default: ``sx``)
+        :param sz: scale factor for the z axis (default: ``sx``)
         """
         if sy is None:
             sy = sx
@@ -320,7 +259,7 @@ class Object3D:
     def visible(self, value: bool = True) -> Self:
         """Set the visibility of the object.
 
-        :param value: whether the object should be visible (default: `True`)
+        :param value: whether the object should be visible (default: ``True``)
         """
         if self.visible_ != value:
             self.visible_ = value
@@ -330,7 +269,7 @@ class Object3D:
     def draggable(self, value: bool = True) -> Self:
         """Set whether the object should be draggable.
 
-        :param value: whether the object should be draggable (default: `True`)
+        :param value: whether the object should be draggable (default: ``True``)
         """
         if self.draggable_ != value:
             self.draggable_ = value
@@ -503,7 +442,7 @@ class Object3D:
         self._delete()
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
-        """Run a method on the JS component on the client side.
+        r"""Run a method on the JS component on the client side.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
@@ -517,7 +456,7 @@ class Object3D:
         *Added in version 3.16.0*
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
         return self.scene.run_method('run_method_on_component', self.id, name, *args, timeout=timeout)

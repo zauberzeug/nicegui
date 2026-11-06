@@ -1,11 +1,9 @@
 import asyncio
 import weakref
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Literal
-
-from typing_extensions import Self
+from typing import Any, Literal, Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
@@ -72,7 +70,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     def __init__(self,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
-                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 *,
                  grid: bool | tuple[int, int] | None = DEFAULT_PROP | None,
                  camera: SceneCamera | None = None,
                  on_click: Handler[SceneClickEventArguments] | None = None,
@@ -140,13 +138,6 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._props['drag-constraints'] = drag_constraints
         self._props['control-type'] = control_type
 
-        self._props.add_rename('background_color', 'background-color')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('click_events', 'click-events')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('drag_constraints', 'drag-constraints')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
-
     def _handles_event_while_ignoring(self, event_type: str) -> bool:
         return event_type == 'init'
 
@@ -189,14 +180,14 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         return SceneCamera(type='orthographic', params={'size': size, 'near': near, 'far': far})
 
     def __enter__(self) -> Self:
-        Object3D.current_scene = weakref.ref(self)
+        Object3D._current_scene.set(weakref.ref(self))  # pylint: disable=protected-access
         super().__enter__()
         return self
 
     def __getattribute__(self, name: str) -> Any:
         attribute = super().__getattribute__(name)
         if isinstance(attribute, type) and issubclass(attribute, Object3D):
-            Object3D.current_scene = weakref.ref(self)
+            Object3D._current_scene.set(weakref.ref(self))  # pylint: disable=protected-access
         return attribute
 
     def _handle_init(self) -> None:
@@ -211,7 +202,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self.move_camera(duration=0)
 
     @contextmanager
-    def _batch_calls(self) -> Iterator[None]:
+    def _batch_calls(self) -> Generator[None]:
         """Collect the method calls issued within this context and send them as a single message.
 
         Sending them individually would emit thousands of frames for a large scene
@@ -310,7 +301,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param up_x: x component of the camera up vector
         :param up_y: y component of the camera up vector
         :param up_z: z component of the camera up vector
-        :param duration: duration of the movement in seconds (default: `0.5`)
+        :param duration: duration of the movement in seconds (default: ``0.5``)
         """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y
@@ -329,7 +320,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     async def get_camera(self) -> dict[str, Any]:
         """Get the current camera parameters.
 
-        In contrast to the `camera` property,
+        In contrast to the ``camera`` property,
         the result of this method includes the current camera pose caused by the user navigating the scene in the browser.
         """
         return await self.run_method('get_camera')
@@ -341,7 +332,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
         """Remove objects from the scene.
 
-        :param predicate: function which returns `True` for objects which should be deleted
+        :param predicate: function which returns ``True`` for objects which should be deleted
         """
         for obj in list(self.objects.values()):
             if predicate(obj) and obj.id in self.objects:  # object might have been deleted already by its parent

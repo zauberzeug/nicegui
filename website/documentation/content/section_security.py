@@ -61,7 +61,8 @@ doc.text('', '''
     - `ui.html()`,
     - `ui.markdown()`,
     - `ui.chat_message()`,
-    - `ui.interactive_image()`
+    - `ui.interactive_image()`,
+    - `ui.editor()`
     - Other elements with a well-defined purpose that the framework can protect automatically.
 
     **Require developer validation** (the framework cannot distinguish safe from unsafe values):
@@ -158,6 +159,21 @@ doc.text('', '''
     ```python
     label.style['color'] = user_color.value  # Allows CSS injection and data exfiltration
     ```
+''')
+
+
+doc.text('Values From the Browser', '''
+    Every value that arrives from the browser is untrusted input.
+    Client-side constraints like an input's `maxlength`, a number's `min` and `max` or a select's options
+    are a convenience for the user, not validation:
+    an attacker can send arbitrary values to the server, bypassing the browser entirely.
+
+    This matters most when one user's input is shown to other users,
+    e.g. when binding an element's value to `app.storage.general`.
+    `ui.editor()` sanitizes the HTML it displays by default,
+    but its value on the server is still whatever the browser sent.
+    Sanitize or validate such values on the server, e.g. in an `on_change` handler,
+    before they are stored or passed on.
 ''')
 
 

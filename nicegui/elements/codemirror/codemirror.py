@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from itertools import accumulate, chain, repeat
-from typing import get_args
+from typing import Self, get_args
 
-from typing_extensions import Self
-
+from ... import helpers
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...elements.mixins.disableable_element import DisableableElement
 from ...elements.mixins.value_element import ValueElement
@@ -65,7 +64,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
             - Languages: A list of supported languages can be found in the `@codemirror/language-data <https://github.com/codemirror/language-data/blob/main/src/language-data.ts>`_ package.
             - Themes: A list can be found in the `@uiw/codemirror-themes-all <https://github.com/uiwjs/react-codemirror/tree/master/themes/all>`_ package.
 
-        At runtime, the methods `supported_languages` and `supported_themes` can be used to get supported languages and themes.
+        At runtime, the methods ``supported_languages`` and ``supported_themes`` can be used to get supported languages and themes.
 
         *Since version 3.13.0:*
         Per-line tooltips can be attached via the ``line_tooltips`` dict.
@@ -90,16 +89,16 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         and ``reveal_line`` scrolls a given line into view.
 
         :param value: initial value of the editor (default: "")
-        :param on_change: callback to be executed when the value changes (default: `None`)
+        :param on_change: callback to be executed when the value changes (default: ``None``)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
         :param on_focus_change: callback when the editor gains or loses focus (*added in version 3.18.0*)
         :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms) (*added in version 3.18.0*)
         :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms) (*added in version 3.18.0*)
-        :param language: initial language of the editor (case-insensitive, default: `None`)
+        :param language: initial language of the editor (case-insensitive, default: ``None``)
         :param theme: initial theme of the editor (default: "basicLight")
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
-        :param line_wrapping: whether to wrap lines (default: `False`)
-        :param highlight_whitespace: whether to highlight whitespace (default: `False`)
+        :param line_wrapping: whether to wrap lines (default: ``False``)
+        :param highlight_whitespace: whether to highlight whitespace (default: ``False``)
         :param decorations: initial list of decoration specs applied to the editor;
             spec offsets (``from``/``to``/``position``) are Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
         :param decoration_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
@@ -118,7 +117,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         if on_change is not None:
             super().on_value_change(on_change)
 
-        self._props['language'] = language
+        self._props['language'] = _resolve_language(language)
         self._props['theme'] = theme
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
@@ -126,9 +125,6 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
-
-        self._props.add_rename('highlightWhitespace', 'highlight-whitespace')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('lineWrapping', 'line-wrapping')  # DEPRECATED: remove in NiceGUI 4.0
 
     def reveal_line(self, line_number: int) -> None:
         """Scroll the editor so the given 1-indexed line is visible.
@@ -169,11 +165,11 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
 
     @language.setter
     def language(self, language: SUPPORTED_LANGUAGES | None = None) -> None:
-        self._props['language'] = language
+        self._props['language'] = _resolve_language(language)
 
     def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> Self:
         """Sets the language of the editor (case-insensitive)."""
-        self._props['language'] = language
+        self._props['language'] = _resolve_language(language)
         return self
 
     @property
@@ -222,10 +218,10 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         return b''.join(b'\0\1' if ord(c) > 0xFFFF else b'\1' for c in doc)
 
     def _update_codepoints(self) -> None:
-        """Update `self._codepoints` as a concatenation of "1" for code points <=0xFFFF and "01" for code points >0xFFFF.
+        """Update ``self._codepoints`` as a concatenation of "1" for code points <=0xFFFF and "01" for code points >0xFFFF.
 
         This captures how many Unicode code points are encoded by each UTF-16 code unit.
-        This is used to convert JavaScript string indices to Python by summing `self._codepoints` up to the JavaScript index.
+        This is used to convert JavaScript string indices to Python by summing ``self._codepoints`` up to the JavaScript index.
         """
         if not self._send_update_on_value_change:
             return  # the update is triggered by the user and codepoints are updated incrementally
@@ -256,3 +252,10 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
 
     def _displayed_contents(self, *, only_visible: bool) -> list:
         return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]
+
+
+def _resolve_language(language: SUPPORTED_LANGUAGES | None) -> SUPPORTED_LANGUAGES | None:
+    if language is not None and language.lower() == 'jinja2':  # DEPRECATED: renamed in @codemirror/language-data 6.5.2
+        helpers.warn_once('The CodeMirror language "Jinja2" is deprecated. Use "Jinja" instead.')
+        return 'Jinja'
+    return language

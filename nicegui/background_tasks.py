@@ -3,10 +3,9 @@ import asyncio
 import functools
 from collections.abc import Awaitable, Callable, Coroutine, Generator
 from contextlib import AbstractContextManager, nullcontext, suppress
-from typing import Any, TypeVar, cast, overload
+from typing import Any, TypeVar, cast
 
 from . import core
-from .helpers.warnings import warn_once
 from .logging import log
 from .slot import Slot
 
@@ -17,18 +16,7 @@ _await_tasks_on_shutdown: set[asyncio.Task] = set()
 _deferred_awaitables: list[Awaitable[Any]] = []
 
 
-@overload
-def create(awaitable: Awaitable[Any], *, name: str = 'unnamed task',
-           handle_exceptions: bool = True, context: AbstractContextManager | None = None) -> asyncio.Task: ...
-
-
-@overload
-def create(*, coroutine: Awaitable[Any], name: str = 'unnamed task',
-           handle_exceptions: bool = True, context: AbstractContextManager | None = None) -> asyncio.Task: ...
-
-
-def create(awaitable: Awaitable[Any] | None = None, *,
-           coroutine: Awaitable[Any] | None = None,
+def create(awaitable: Awaitable[Any], *,
            name: str = 'unnamed task',
            handle_exceptions: bool = True,
            context: AbstractContextManager | None = None) -> asyncio.Task:
@@ -38,14 +26,12 @@ def create(awaitable: Awaitable[Any] | None = None, *,
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
 
     :param awaitable: the awaitable to wrap
-    :param coroutine: deprecated alias for ``awaitable``; will be removed in NiceGUI 4.0
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
     :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the exception handlers
         (within the ``context`` if given, so that the client's handlers are reached as well; otherwise only the global ones)
     :param context: a context manager to await the awaitable in, e.g. a container element or ``ui.context.client``
         (default: ``None``, *added in version 3.18.0*)
     """
-    awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create')
     assert core.loop is not None
     if context is None:
         task = core.loop.create_task(_ensure_coroutine(awaitable), name=name)
@@ -87,22 +73,11 @@ def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task',
         _defer(awaitable, lambda: create(awaitable, name=name, context=context))
 
 
-@overload
-def create_lazy(awaitable: Awaitable[Any], *, name: str) -> None: ...
-
-
-@overload
-def create_lazy(*, coroutine: Awaitable[Any], name: str) -> None: ...
-
-
-def create_lazy(awaitable: Awaitable[Any] | None = None, *,
-                coroutine: Awaitable[Any] | None = None,
-                name: str) -> None:
+def create_lazy(awaitable: Awaitable[Any], *, name: str) -> None:
     """Wraps a create call and ensures a second task with the same name is delayed until the first one is done.
 
     If a third task with the same name is created while the first one is still running, the second one is discarded.
     """
-    awaitable = _resolve_awaitable(awaitable, coroutine, function_name='create_lazy')
     if name in lazy_tasks_running:
         waiting = lazy_coroutines_waiting.get(name)
         if asyncio.iscoroutine(waiting):
@@ -182,21 +157,6 @@ def _ensure_coroutine(awaitable: Awaitable[Any]) -> Coroutine[Any, Any, Any]:
     return wrapper()
 
 
-# DEPRECATED: remove `coroutine` keyword aliases in NiceGUI 4.0
-def _resolve_awaitable(awaitable: Awaitable[Any] | None,
-                       coroutine: Awaitable[Any] | None, *,
-                       function_name: str) -> Awaitable[Any]:
-    if awaitable is None:
-        if coroutine is None:
-            raise TypeError(f'{function_name}() missing 1 required argument: "awaitable"')
-        warn_once(f'Using `{function_name}(coroutine=...)` is deprecated and will be removed in NiceGUI 4.0. '
-                  f'Use `{function_name}(awaitable=...)` instead.')
-        return coroutine
-    if coroutine is not None:
-        raise TypeError(f'{function_name}() received both awaitable and deprecated coroutine arguments')
-    return awaitable
-
-
 async def _await_in_context(awaitable: Awaitable[Any], context: AbstractContextManager,
                             client: AbstractContextManager, *, handle_exceptions: bool) -> Any:
     """Await an awaitable within a context, handling exceptions in-context so that the client's handlers are reached."""
@@ -236,7 +196,7 @@ async def teardown() -> None:
             await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it shuts down
             try:
                 await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 log.error('Could not cancel %s tasks within timeout: %s',
                           len(tasks),
                           ', '.join(t.get_name() for t in tasks if not t.done()))

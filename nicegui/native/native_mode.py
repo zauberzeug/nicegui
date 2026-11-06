@@ -137,6 +137,7 @@ def _start_window_method_executor(window: webview.Window,
     def window_method_executor() -> None:
         pending_executions: list[Thread] = []
         while not closed.is_set():
+            method_name = '<unknown>'
             try:
                 method_name, args, kwargs = method_queue.get(block=False)
                 if method_name == 'signal_server_shutdown':

@@ -1,5 +1,5 @@
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
-from ..events import Handler, ValueChangeEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .button import Button as button
 from .date import Date as date
 from .menu import Menu as menu
@@ -8,7 +8,7 @@ from .mixins.label_element import LabelElement
 from .mixins.value_element import ValueElement
 
 
-class DateInput(LabelElement, ValueElement[str | None], DisableableElement):
+class DateInput(LabelElement, ValueElement[str], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
@@ -16,8 +16,8 @@ class DateInput(LabelElement, ValueElement[str | None], DisableableElement):
                  label: str | None = DEFAULT_PROP | None, *,
                  range_input: bool = False,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str | None = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
+                 value: str = DEFAULT_PROPS['model-value'] | '',
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  ) -> None:
         """Date Input
 
@@ -42,21 +42,24 @@ class DateInput(LabelElement, ValueElement[str | None], DisableableElement):
                     self.picker = date().props('range' if range_input else '')
 
         self.picker.bind_value(self,
-                               forward=lambda v: self._picker_to_input_value(v) if self._range_input else v,
+                               forward=self._picker_to_input_value,
                                backward=lambda v: self._input_to_picker_value(v) if self._range_input else v)
 
-    def _picker_to_input_value(self, value: dict | str) -> str | None:
+    def _picker_to_input_value(self, value: dict | str | None) -> str:
         if isinstance(value, dict):
-            return f'{value["from"]} - {value["to"]}' if 'from' in value and 'to' in value else None
+            return f'{value["from"]} - {value["to"]}' if 'from' in value and 'to' in value else ''
         else:
-            return value
+            return value or ''
 
-    def _input_to_picker_value(self, value: str | None) -> dict | str | None:
+    def _input_to_picker_value(self, value: str) -> dict | str | None:
         if value and ' - ' in value:
             from_date, to_date = value.split(' - ', 1)
             return {'from': from_date, 'to': to_date}
         else:
             return value
+
+    def _event_args_to_value(self, e: GenericEventArguments) -> str:
+        return e.args or ''
 
     def _displayed_contents(self, *, only_visible: bool) -> list:
         return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]
