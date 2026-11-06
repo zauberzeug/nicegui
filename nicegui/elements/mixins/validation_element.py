@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterator
 from typing import Any, Self, TypeAlias, cast
 
 from ... import background_tasks, helpers
@@ -8,21 +8,6 @@ from .value_element import ValueElement
 
 ValidationFunction: TypeAlias = Callable[[ValueT], str | Awaitable[str | None] | None]
 ValidationDict: TypeAlias = dict[str, Callable[[ValueT], bool | Awaitable[bool]]]
-
-_ASYNC_RESULT_ERROR = 'The validate method cannot return results for async validation functions.'
-
-
-def _is_async_validation(validation: ValidationFunction[Any] | ValidationDict[Any] | None) -> bool:
-    """Return whether the validation contains an async function."""
-    if isinstance(validation, dict):
-        return any(helpers.is_coroutine_function(check) for check in validation.values())
-    return helpers.is_coroutine_function(validation)
-
-
-def _discard_awaitable(result: Any) -> None:
-    """Close a coroutine that will not be awaited to avoid a "never awaited" warning."""
-    if asyncio.iscoroutine(result):
-        result.close()
 
 
 class ValidationElement(ValueElement[ValueT]):
@@ -76,62 +61,43 @@ class ValidationElement(ValueElement[ValueT]):
 
         *Updated in version 2.7.0: Added support for async validation functions.*
 
+        *Updated in version 4.1.0: Added support for async functions in validation dictionaries.*
+
         :param return_result: whether to return the result of the validation (default: ``True``)
         :return: whether the validation was successful (always ``True`` for async validation functions)
         """
-        if return_result and _is_async_validation(self._validation):
-            raise NotImplementedError(_ASYNC_RESULT_ERROR)
-
+        result = self._run_validation(return_result)
         self._validation_counter += 1
         validation_counter = self._validation_counter
+        if helpers.should_await(result):
+            async def await_error():
+                error = await result
+                if validation_counter == self._validation_counter:
+                    self.error = error
+            background_tasks.create(await_error(), name=f'validate {self.id}', context=self)
+            return True
+        self.error = cast(str | None, result)
+        return self.error is None
 
+    def _run_validation(self, return_result: bool) -> str | Awaitable[str | None] | None:
+        """Run the validation function or the checks of the validation dictionary and return the (awaitable) error."""
+        value = self.value
         if callable(self._validation):
-            result = self._validation(self.value)
-            if helpers.should_await(result):
-                if return_result:
-                    _discard_awaitable(result)
-                    raise NotImplementedError(_ASYNC_RESULT_ERROR)
-
-                async def await_error():
-                    error = await result
-                    if validation_counter == self._validation_counter:
-                        self.error = error
-                background_tasks.create(await_error(), name=f'validate {self.id}', context=self)
-                return True
-            self.error = cast(str | None, result)
-            return self.error is None
-
+            result = self._validation(value)
+            if return_result:
+                _reject_awaitable(result)
+            return result
         if isinstance(self._validation, dict):
-            value = self.value
-            checks = list(self._validation.items())
-            for index, (message, check) in enumerate(checks):
-                check_result = check(value)
-                if helpers.should_await(check_result):
+            checks = iter(self._validation.items())
+            for message, check in checks:
+                passed = check(value)
+                if helpers.should_await(passed):
                     if return_result:
-                        _discard_awaitable(check_result)
-                        raise NotImplementedError(_ASYNC_RESULT_ERROR)
-
-                    async def await_remaining_checks(start: int = index,
-                                                     first_check_result: Any = check_result) -> None:
-                        error = None
-                        for offset, (message, check) in enumerate(checks[start:]):
-                            passed = first_check_result if offset == 0 else check(value)
-                            if helpers.should_await(passed):
-                                passed = await passed
-                            if not passed:
-                                error = message
-                                break
-                        if validation_counter == self._validation_counter:
-                            self.error = error
-
-                    background_tasks.create(await_remaining_checks(), name=f'validate {self.id}', context=self)
-                    return True
-                if not check_result:
-                    self.error = message
-                    return False
-
-        self.error = None
-        return True
+                        _reject_awaitable(passed)
+                    return _await_remaining_checks(passed, message, checks, value)
+                if not passed:
+                    return message
+        return None
 
     def without_auto_validation(self) -> Self:
         """Disable automatic validation on value change."""
@@ -142,3 +108,27 @@ class ValidationElement(ValueElement[ValueT]):
         super()._handle_value_change(value)
         if self._auto_validation:
             self.validate(return_result=False)
+
+
+def _reject_awaitable(result: Any) -> None:
+    """Raise if the result is an awaitable, closing a coroutine first to avoid a "never awaited" warning."""
+    if helpers.should_await(result):
+        if asyncio.iscoroutine(result):
+            result.close()
+        raise NotImplementedError('The validate method cannot return results for async validation functions.')
+
+
+async def _await_remaining_checks(pending: Awaitable[bool],
+                                  pending_message: str,
+                                  checks: Iterator[tuple[str, Callable[[Any], bool | Awaitable[bool]]]],
+                                  value: Any) -> str | None:
+    """Await the pending check and run the remaining checks one by one, returning the first failing message."""
+    if not await pending:
+        return pending_message
+    for message, check in checks:
+        result = check(value)
+        if helpers.should_await(result):
+            result = await result
+        if not result:
+            return message
+    return None
