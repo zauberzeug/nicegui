@@ -43,7 +43,8 @@ class RouteMatch:
         return url
 
     def __repr__(self) -> str:
-        return f'{self.path=}, {self.pattern=}, builder={self.builder.__name__}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
+        builder = getattr(self.builder, '__name__', self.builder)
+        return f'{self.path=}, {self.pattern=}, builder={builder}, {self.parameters=}, {self.query_params=}, {self.fragment=}, {self.remaining_path=}'
 
 
 @dataclass(kw_only=True, slots=True)
