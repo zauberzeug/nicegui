@@ -342,7 +342,7 @@ class Client:
                 return None
             return await JavaScriptRequest(request_id, timeout=timeout)
 
-        return AwaitableResponse(lambda: None, send_and_wait)
+        return AwaitableResponse(None, send_and_wait)  # nothing to fire, the message is already enqueued
 
     def open(self, target: Callable | str, new_tab: bool = False) -> None:
         """Open a new page in the client."""
