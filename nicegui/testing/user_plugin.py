@@ -22,9 +22,14 @@ async def user(caplog: pytest.LogCaptureFixture, request: pytest.FixtureRequest)
     async with user_simulation(main_file=get_path_to_main_file(request)) as user:
         yield user
 
-        logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
-        if logs:
-            pytest.fail('There were unexpected ERROR logs.', pytrace=False)
+    # Check for unexpected ERROR logs only after the simulation has been torn
+    # down cleanly: raising inside the ``async with`` block interrupts the
+    # lifespan shutdown, leaving NiceGUI in the "started" state so that every
+    # following test errors during setup with "Unable to register another
+    # startup handler".
+    logs = [record for record in caplog.get_records('call') if record.levelname == 'ERROR']
+    if logs:
+        pytest.fail('There were unexpected ERROR logs.', pytrace=False)
 
 
 @pytest.fixture
