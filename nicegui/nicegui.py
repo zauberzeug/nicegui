@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import mimetypes
 import multiprocessing
 import sys
@@ -22,7 +21,7 @@ from .error import error_content
 from .json import NiceGUIJSONResponse
 from .logging import log
 from .page import page
-from .page_arguments import PageArguments
+from .page_arguments import PageArguments, builder_annotations
 from .staticfiles import CacheControlledStaticFiles
 from .version import __version__
 
@@ -171,9 +170,9 @@ async def _exception_handler_404(request: Request, exception: Exception) -> Resp
         kwargs = {
             name: PageArguments._convert_parameter(  # pylint: disable=protected-access
                 request.query_params[name],
-                param.annotation,
+                annotation,
             )
-            for name, param in inspect.signature(root).parameters.items()
+            for name, annotation in builder_annotations(root).items()
             if name in request.query_params and name != 'request'
         }
         return await page('')._wrap(root)(request=request, **kwargs)  # pylint: disable=protected-access

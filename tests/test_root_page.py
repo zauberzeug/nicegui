@@ -24,15 +24,15 @@ def test_async_root_page(screen: Screen):
 
 
 def test_root_page_with_query_parameters(screen: Screen):
-    def root(x: int = 0):
-        ui.label(f'{x = }')
+    def root(x: int = 0, y: 'int | float' = 0):  # NOTE: string annotation as with `from __future__ import annotations`
+        ui.label(f'{x = }, {y = }')
 
     screen.ui_run_kwargs['root'] = root
     screen.open('/')
-    screen.should_contain('x = 0')
+    screen.should_contain('x = 0, y = 0')
 
-    screen.open('/?x=42')
-    screen.should_contain('x = 42')
+    screen.open('/?x=42&y=1.5')
+    screen.should_contain('x = 42, y = 1.5')
 
 
 def test_root_page_with_request_injection(screen: Screen):
