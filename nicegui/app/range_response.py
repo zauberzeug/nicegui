@@ -30,7 +30,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
         'Last-Modified': last_modified_time.strftime(r'%a, %d %b %Y %H:%M:%S GMT'),
     }
     if_none_match = request.headers.get('If-None-Match', '')
-    if e_tag in [tag.strip().removeprefix('W/') for tag in if_none_match.split(',')]:
+    if if_none_match.strip() == '*' or e_tag in [tag.strip().removeprefix('W/') for tag in if_none_match.split(',')]:
         return Response(status_code=304, headers=headers)  # Not Modified
     range_header = request.headers.get('range')
     media_type = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
