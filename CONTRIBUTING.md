@@ -292,7 +292,7 @@ Run these from the project root:
 >
 > ```
 > Co-authored-by: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
-> Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>
+> Co-authored-by: Claude <noreply@anthropic.com>
 > Co-authored-by: opencode <noreply@opencode.ai>
 > ```
 

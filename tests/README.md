@@ -18,12 +18,15 @@ If the browser isn't picked up automatically, point the tests at it with the `CH
 
 ### Mac
 
-```bash
-brew install --cask chromedriver
-```
+Selenium Manager works on all Macs, so you don't need to install anything.
 
-Note: The above instructions assume that you have already installed Homebrew (a package manager for macOS) on your system.
-If you haven't, you can follow the instructions on https://brew.sh/ to install it.
+Do not use the Homebrew cask `chromedriver`: it is disabled and no longer updated.
+A driver in your `PATH` takes precedence over Selenium Manager, so an outdated one makes the tests fail with "Could not start Chrome WebDriver".
+If you have it installed, remove it:
+
+```bash
+brew uninstall --cask chromedriver
+```
 
 ### Windows
 
