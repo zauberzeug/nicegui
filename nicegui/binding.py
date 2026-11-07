@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import dataclasses
 import time
+import weakref
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping
 from contextlib import contextmanager
