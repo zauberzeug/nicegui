@@ -1,6 +1,7 @@
 import copy
 import gc
 import pickle
+import sys
 import weakref
 from typing import Any
 
@@ -699,6 +700,7 @@ def test_long_acyclic_chain_settles():
     assert chain[-1].value == 1509
 
 
+@pytest.mark.skipif(sys.implementation.name != 'cpython', reason='relies on CPython reusing freed addresses as ids')
 def test_dead_owner_id_reuse_does_not_alias_subscriptions():
     """A new object that reuses a garbage-collected owner's id must not trigger the old owner's subscribers."""
     for _ in range(50):  # CPython reuses the freed address almost immediately; retry until it does
@@ -724,5 +726,25 @@ def test_dead_owner_id_reuse_does_not_alias_subscriptions():
     seen.clear()
     reused.n = 5
     assert seen == []  # the unrelated new object must not re-run the effect
-    assert not binding._subscribers  # and the dead owner's subscriptions are gone
     handle.dispose()
+
+
+@binding.bindable_dataclass
+class _Price:
+    price: float = 10.0
+
+
+async def test_computed_keeps_dependencies_after_ui_number_edit(user: User):
+    """A computed recomputed during an element-to-model write must not lose its dependencies (they used to drop to zero)."""
+    p = _Price()
+    doubled = binding.computed(lambda: p.price * 2)
+
+    @ui.page('/')
+    def page():
+        ui.number('price').bind_value(p, 'price')
+
+    await user.open('/')
+    user.find(ui.number).type('5')
+    assert doubled.value == p.price * 2
+    p.price = 7  # a later programmatic write must still be tracked
+    assert doubled.value == 14

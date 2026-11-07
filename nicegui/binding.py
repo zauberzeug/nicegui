@@ -319,7 +319,7 @@ def _is_bindable_property(obj: Any, name: tuple[str, ...]) -> bool:
 
 Dependency = tuple[int, tuple[str, ...]]
 
-_MAX_FLUSH_ITERATIONS = 1000
+_MAX_FLUSH_ITERATIONS = 1000  # per computation and flush: more re-runs than this means a cycle
 
 _active_computation: ContextVar[_Computation | None] = ContextVar('active_computation', default=None)
 _subscribers: defaultdict[Dependency, weakref.WeakSet[_Computation]] = defaultdict(weakref.WeakSet)
