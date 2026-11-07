@@ -218,3 +218,37 @@ def test_access_check_denies_unauthorized_editor(screen: Screen):
     screen.wait(0.5)
     open_editor = screen.selenium.find_element(By.CSS_SELECTOR, '.open .cm-content')
     assert 'should-not-sync' not in open_editor.text
+
+
+def test_stale_tail_chunks_do_not_corrupt_next_transfer(screen: Screen):
+    from pycrdt import Doc, Text  # pylint: disable=import-outside-toplevel
+
+    def update_for(content: str) -> bytes:
+        doc = Doc()
+        doc['codemirror'] = text = Text()
+        text += content
+        return doc.get_update()
+
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('stale-tail')
+
+    screen.open('/')
+    screen.wait(0.5)
+    # A client joining mid-relay only receives the tail of a chunked update; the next transfer must not reuse it.
+    stale, fresh = update_for('stale ' * 20), update_for('fresh content')
+
+    def thirds(update: bytes) -> list[list[int]]:
+        return [list(update[i * len(update) // 3:(i + 1) * len(update) // 3]) for i in range(3)]
+
+    screen.selenium.execute_script('''
+        const [stale, fresh] = arguments;
+        const deliver = (update, part) => window.socket.onevent({
+            data: ['yjs_update', { doc_id: 'stale-tail', update, part, parts: 3 }],
+        });
+        deliver(stale[1], 1);
+        deliver(stale[2], 2);
+        fresh.forEach((update, part) => deliver(update, part));
+    ''', thirds(stale), thirds(fresh))
+    screen.wait(0.5)
+    assert screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content').text == 'fresh content'

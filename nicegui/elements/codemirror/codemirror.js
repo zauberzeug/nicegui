@@ -37,7 +37,7 @@ function emitChunked(event, docId, update) {
 function reassemble(buffers, event, data, apply) {
   const update = new Uint8Array(data.update);
   if (data.parts === undefined) return apply(update);
-  if (!buffers[event] || buffers[event].parts !== data.parts) {
+  if (!buffers[event] || buffers[event].parts !== data.parts || data.part === 0) {
     buffers[event] = { parts: data.parts, chunks: new Map() }; // new transfer supersedes any stale one
   }
   const { chunks } = buffers[event];
