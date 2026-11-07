@@ -108,6 +108,19 @@ class RedisPersistentDict(PersistentDict):
             await pipeline.execute()
         background_tasks.create_lazy_or_defer(backup(), name=f'redis-{self.key}')
 
+    async def refresh_ttl(self) -> None:
+        """Renew the key's TTL so a long-lived tab without writes is not dropped from Redis.
+
+        Tab storages carry a TTL so keys of crashed instances eventually expire.
+        The TTL is refreshed on writes, but a connected tab can go a long time
+        without writing -- while its in-memory copy stays alive. Refreshing keeps
+        the stored data consistent with the instance the tab is connected to
+        (#6487). No-op for storages without a TTL (e.g. user storage).
+        """
+        if self.ttl is None:
+            return
+        await self.redis_client.expire(self.key, self.ttl)
+
     async def close(self) -> None:
         """Close Redis connection and subscription."""
         if self._listener_task and not self._listener_task.done():

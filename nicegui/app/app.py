@@ -26,7 +26,7 @@ from ..observables import ObservableSet
 from ..server import Server
 from ..slot import Slot
 from ..staticfiles import CacheControlledStaticFiles
-from ..storage import PersistentDict, Storage
+from ..storage import PersistentDict, RedisPersistentDict, Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
@@ -498,6 +498,18 @@ async def prune_tab_storage(*, force: bool = False) -> None:
             if isinstance(tab, PersistentDict):
                 await tab.close()
             del tab_storages[tab_id]
+    # With a Redis backend each tab storage carries a TTL so abandoned keys eventually
+    # expire even if an instance crashes. But a connected tab can go a long time
+    # without writing, and the TTL is only refreshed on writes -- the key then
+    # vanishes while the in-memory copy stays alive, and an instance switch or a
+    # duplicated tab finds an empty storage (#6487). Refresh the TTL for every tab
+    # storage that is still pinned to a connected client.
+    refreshes = [
+        tab.refresh_ttl()
+        for tab_id, tab in tab_storages.items()
+        if tab_id in tab_ids_in_use and isinstance(tab, RedisPersistentDict)
+    ]
+    await asyncio.gather(*refreshes, return_exceptions=True)
 
 
 async def prune_user_storage(*, force: bool = False) -> None:
