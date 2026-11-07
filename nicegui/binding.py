@@ -463,14 +463,15 @@ def _flush() -> None:
         return
     _flushing = True
     try:
-        iterations = 0
+        runs: dict[_Computation, int] = {}
         while _pending:
-            iterations += 1
-            if iterations > _MAX_FLUSH_ITERATIONS:
+            computation = next(iter(_pending))
+            runs[computation] = runs.get(computation, 0) + 1
+            if runs[computation] > _MAX_FLUSH_ITERATIONS:
                 _pending.clear()  # drop the poisoned graph state so a later unrelated write isn't re-poisoned
                 raise RuntimeError('Reactive cycle detected: the computed()/effect() graph did not '
                                    'settle. A computation likely depends (transitively) on its own output.')
-            _ensure_current(next(iter(_pending)))
+            _ensure_current(computation)
     finally:
         _flushing = False
 

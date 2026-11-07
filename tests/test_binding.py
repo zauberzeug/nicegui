@@ -687,6 +687,18 @@ def test_cycle_error_does_not_poison_later_writes():
     handle.dispose()
 
 
+def test_long_acyclic_chain_settles():
+    """An acyclic graph needing more recomputes than any cycle guard allows in one flush is not a cycle."""
+    binding.reset()
+    src = _Num(n=0)
+    chain = [binding.computed(lambda: src.n)]
+    for _ in range(1499):
+        chain.append(binding.computed(lambda prev=chain[-1]: prev.value + 1))
+    assert chain[-1].value == 1499
+    src.n = 10
+    assert chain[-1].value == 1509
+
+
 def test_dead_owner_id_reuse_does_not_alias_subscriptions():
     """A new object that reuses a garbage-collected owner's id must not trigger the old owner's subscribers."""
     for _ in range(50):  # CPython reuses the freed address almost immediately; retry until it does
