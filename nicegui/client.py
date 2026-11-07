@@ -124,6 +124,7 @@ class Client:
         self._num_connections: defaultdict[str, int] = defaultdict(int)
         self._delete_tasks: dict[str, asyncio.Task] = {}
         self._deleted = False
+        self._javascript_request_ids: set[str] = set()
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
         self._pinned_tab_id: str | None = None
@@ -340,7 +341,11 @@ class Client:
             await self.connected()
             if self.is_deleted:
                 return None
-            return await JavaScriptRequest(request_id, timeout=timeout)
+            self._javascript_request_ids.add(request_id)
+            try:
+                return await JavaScriptRequest(request_id, timeout=timeout)
+            finally:
+                self._javascript_request_ids.discard(request_id)
 
         return AwaitableResponse(None, send_and_wait)  # nothing to fire, the message is already enqueued
 
@@ -556,6 +561,8 @@ class Client:
         self._deleted = True
         self._connected.set()  # for terminating connected() waits
         self._connected.clear()
+        for request_id in list(self._javascript_request_ids):
+            JavaScriptRequest.resolve(request_id, None)  # for terminating pending run_javascript() awaits
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""
