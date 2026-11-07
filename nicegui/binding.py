@@ -400,9 +400,11 @@ class _Computation:
         self._dirty = False
         self._running = True
         token = _active_computation.set(self)
+        visited_token = propagation_visited.set(None)  # reads here are user dependencies, even if triggered mid-propagation
         try:
             result = self._fn()
         finally:
+            propagation_visited.reset(visited_token)
             _active_computation.reset(token)
             self._running = False
             # Reconcile deps even if fn() raised, so dispose() can unsubscribe what was read before the error
