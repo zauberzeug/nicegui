@@ -685,3 +685,32 @@ def test_cycle_error_does_not_poison_later_writes():
     other.n = 5  # unrelated write must work normally, not re-raise the old cycle
     assert seen == [0, 5]
     handle.dispose()
+
+
+def test_dead_owner_id_reuse_does_not_alias_subscriptions():
+    """A new object that reuses a garbage-collected owner's id must not trigger the old owner's subscribers."""
+    for _ in range(50):  # CPython reuses the freed address almost immediately; retry until it does
+        binding.reset()
+        registry = {'a': _Num(n=1)}  # looked up at run time, so the effect does not keep the owner alive
+        seen: list[Any] = []
+        handle = binding.effect(lambda: seen.append(registry['a'].n if 'a' in registry else None))  # noqa: B023
+        dead_id = id(registry['a'])
+        del registry['a']
+        gc.collect()
+        reused = None
+        junk = []
+        for _ in range(10000):
+            candidate = _Num.__new__(_Num)
+            if id(candidate) == dead_id:
+                reused = candidate
+                break
+            junk.append(candidate)
+        del junk
+        if reused is not None:
+            break
+    assert reused is not None, 'could not provoke id reuse'
+    seen.clear()
+    reused.n = 5
+    assert seen == []  # the unrelated new object must not re-run the effect
+    assert not binding._subscribers  # and the dead owner's subscriptions are gone
+    handle.dispose()

@@ -324,6 +324,7 @@ _MAX_FLUSH_ITERATIONS = 1000
 _active_computation: ContextVar[_Computation | None] = ContextVar('active_computation', default=None)
 _subscribers: defaultdict[Dependency, weakref.WeakSet[_Computation]] = defaultdict(weakref.WeakSet)
 _producers: weakref.WeakValueDictionary[Dependency, _Computation] = weakref.WeakValueDictionary()
+_deps_by_owner: dict[int, set[Dependency]] = {}  # live owners only; reaped by a weakref finalizer
 _pending: set[_Computation] = set()
 # (computation, dep) pairs currently pulling that exact producer up-to-date as a fresh read:
 _pull_readers: list[tuple[_Computation, Dependency]] = []
@@ -342,6 +343,21 @@ def _track_read(owner: Any, name: tuple[str, ...]) -> None:
         dep = (id(owner), name)
         computation._collecting.add(dep)  # pylint: disable=protected-access
         _subscribers[dep].add(computation)
+        if id(owner) not in _deps_by_owner:
+            try:
+                weakref.finalize(owner, _drop_owner, id(owner))
+            except TypeError:
+                return  # not weak-referenceable: cannot be reaped
+            _deps_by_owner[id(owner)] = set()
+        _deps_by_owner[id(owner)].add(dep)
+
+
+def _drop_owner(owner_id: int) -> None:
+    """Forget every subscription on a garbage-collected owner, so a new object reusing its ``id`` is not aliased."""
+    for dep in _deps_by_owner.pop(owner_id, ()):
+        for computation in _subscribers.pop(dep, ()):
+            computation._deps.discard(dep)  # pylint: disable=protected-access
+            computation._collecting.discard(dep)  # pylint: disable=protected-access
 
 
 def _notify_subscribers(owner: Any, name: tuple[str, ...]) -> None:
@@ -576,6 +592,7 @@ def reset() -> None:
     bindings.clear()
     active_links.clear()
     _binding_keys_by_object.clear()
+    _deps_by_owner.clear()
     _subscribers.clear()  # PROTOTYPE: also drop reactive computed()/effect() state
     _producers.clear()
     _pending.clear()
