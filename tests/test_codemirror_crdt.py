@@ -360,3 +360,105 @@ def test_edit_dropped_on_a_connected_socket_survives_page_reload(screen: Screen)
     assert content() == 'start'
     screen.selenium.switch_to.window(window_b)
     assert content() == 'start'
+
+
+def _seed(doc_id: str, text: str) -> None:
+    from pycrdt import Text  # pylint: disable=import-outside-toplevel
+    doc = yjs_room.get_doc(doc_id)
+    if 'codemirror' not in doc.keys():
+        doc['codemirror'] = Text()
+        doc['codemirror'] += text
+
+
+def _outage_until_room_is_dropped(screen: Screen, doc_id: str) -> None:
+    """Take the tab offline for longer than reconnect_timeout and prove the server dropped the room."""
+    screen.selenium.execute_cdp_cmd('Network.enable', {})
+    screen.selenium.execute_cdp_cmd('Network.emulateNetworkConditions', {
+        'offline': True, 'latency': 0, 'downloadThroughput': -1, 'uploadThroughput': -1})
+    screen.selenium.execute_script('window.socket.io.engine.close();')
+    deadline = time.time() + 15
+    while doc_id in yjs_room._rooms and time.time() < deadline:  # pylint: disable=protected-access
+        screen.wait(0.5)
+    assert doc_id not in yjs_room._rooms, 'room should have been dropped'  # pylint: disable=protected-access
+
+
+def _come_back_online_and_wait_for_reload(screen: Screen) -> None:
+    screen.selenium.execute_cdp_cmd('Network.emulateNetworkConditions', {
+        'offline': False, 'latency': 0, 'downloadThroughput': -1, 'uploadThroughput': -1})
+    deadline = time.time() + 15
+    while time.time() < deadline and screen.selenium.execute_script('return window.marker') is not None:
+        screen.wait(0.5)
+    screen.wait(2)
+    assert screen.selenium.execute_script('return window.marker') is None, 'page should have reloaded'
+
+
+def test_seeded_room_dropped_during_outage_is_not_duplicated_by_reload(screen: Screen):
+    screen.allowed_js_errors.append('ERR_INTERNET_DISCONNECTED')
+
+    @ui.page('/')
+    def page():
+        _seed('seeded-gap', 'seed')
+        ui.codemirror().with_crdt('seeded-gap')
+
+    def content() -> str:
+        return screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content').text
+
+    screen.open('/')
+    screen.wait(1)
+    assert content() == 'seed'
+    editor = screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content')
+    editor.click()
+    editor.send_keys(' typed')
+    screen.wait(0.5)
+    assert content() == 'seed typed'
+    screen.selenium.execute_script('window.marker = 1')
+    _outage_until_room_is_dropped(screen, 'seeded-gap')
+    _come_back_online_and_wait_for_reload(screen)
+    assert content() == 'seed'  # the server rebuilt the room from the seed; replaying the old copy would double it
+
+
+def test_room_reseeded_by_the_server_during_outage_is_not_duplicated_by_reload(screen: Screen):
+    screen.allowed_js_errors.append('ERR_INTERNET_DISCONNECTED')
+
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('server-changed')
+
+    def content() -> str:
+        return screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content').text
+
+    screen.open('/')
+    editor = screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content')
+    editor.click()
+    editor.send_keys('start dropped-edit')
+    screen.wait(0.5)
+    screen.selenium.execute_script('window.marker = 1')
+    _outage_until_room_is_dropped(screen, 'server-changed')
+    _seed('server-changed', 'server-new')  # the application re-creates the room with different content
+    _come_back_online_and_wait_for_reload(screen)
+    assert content() == 'server-new'
+
+
+def test_stored_copy_is_not_applied_again_by_later_reloads(screen: Screen):
+    screen.allowed_js_errors.append('ERR_INTERNET_DISCONNECTED')
+
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('two-reloads')
+
+    def content() -> str:
+        return screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content').text
+
+    screen.open('/')
+    editor = screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content')
+    editor.click()
+    editor.send_keys('start dropped-edit')
+    screen.wait(0.5)
+    screen.selenium.execute_script('window.marker = 1')
+    _outage_until_room_is_dropped(screen, 'two-reloads')
+    _come_back_online_and_wait_for_reload(screen)
+    assert content() == 'start dropped-edit'
+    for _ in range(2):
+        screen.selenium.execute_script('location.reload()')
+        screen.wait(3)
+        assert content() == 'start dropped-edit'

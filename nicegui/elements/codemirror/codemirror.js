@@ -455,7 +455,12 @@ export default {
                   // edits made offline before NiceGUI reloaded the page: merge them back as a CRDT
                   const saved = sessionStorage.getItem(pendingKey);
                   sessionStorage.removeItem(pendingKey);
-                  if (saved) Y.applyUpdate(ydoc, Uint8Array.from(atob(saved), (c) => c.charCodeAt(0)), YJS_REMOTE);
+                  const [epoch, state] = saved ? saved.split(":") : [];
+                  room.epoch = data.epoch;
+                  // a rebuilt, non-empty room (new epoch) has its own history: merging the old copy would duplicate it
+                  if (saved && (epoch === String(data.epoch) || update.length <= 2)) {
+                    Y.applyUpdate(ydoc, Uint8Array.from(atob(state), (c) => c.charCodeAt(0)), YJS_REMOTE);
+                  }
                 } catch (e) {} // storage unavailable or corrupt: nothing to restore
                 // Send back whatever the server is missing (edits made while disconnected);
                 // an empty diff encodes as 2 bytes.
@@ -491,13 +496,14 @@ export default {
           },
           onPageHide: () => {
             // without delivery acks we cannot know what the server has: store everything, restoring is idempotent
+            if (room.epoch === undefined) return; // before the first yjs_init the doc is empty and would overwrite the stored copy
             try {
               const state = Y.encodeStateAsUpdate(ydoc);
               let binary = "";
               for (let i = 0; i < state.length; i += 0x8000) {
                 binary += String.fromCharCode.apply(null, state.subarray(i, i + 0x8000));
               }
-              sessionStorage.setItem(pendingKey, btoa(binary));
+              sessionStorage.setItem(pendingKey, `${room.epoch}:${btoa(binary)}`);
             } catch (e) {} // quota exceeded: the edits are lost as before
           },
           onAwarenessUpdate: ({ added, updated, removed }, origin) => {

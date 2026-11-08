@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import urllib.parse
+import uuid
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any
@@ -58,6 +59,7 @@ class _Room:
         assert _PycrdtDoc is not None
         self.doc_id = doc_id
         self.doc: Any = _PycrdtDoc()
+        self.epoch = uuid.uuid4().hex  # identifies this incarnation of the room; a rebuilt room gets a new one
         self.sids: set[str] = set()  # live sockets to relay to (ephemeral across reconnects)
         self.clients: set[str] = set()  # client ids keeping the room alive
         # pycrdt.Doc isn't thread-safe; serialize all apply_update / get_update calls.
@@ -191,7 +193,7 @@ def _install_handlers_once() -> None:
             await sio.enter_room(sid, _sio_room(doc_id))
             async with room.lock:
                 state: bytes = room.doc.get_update()
-                await _emit_chunked('yjs_init', doc_id, state, to=sid)
+                await _emit_chunked('yjs_init', doc_id, state, {'epoch': room.epoch}, to=sid)
         except Exception as e:  # every join gets exactly one answer, or the client waits forever
             core.app.handle_exception(e)
             await sio.emit('yjs_join_failed', {'doc_id': doc_id}, to=sid)
@@ -254,13 +256,14 @@ def _install_handlers_once() -> None:
     _handlers_installed = True
 
 
-async def _emit_chunked(event: str, doc_id: str, update: bytes, **emit_kwargs: Any) -> None:
+async def _emit_chunked(event: str, doc_id: str, update: bytes, extra: dict[str, Any] | None = None,
+                        **emit_kwargs: Any) -> None:
     if len(update) <= _CHUNK_BYTES:
-        await core.sio.emit(event, {'doc_id': doc_id, 'update': update}, **emit_kwargs)
+        await core.sio.emit(event, {'doc_id': doc_id, 'update': update, **(extra or {})}, **emit_kwargs)
         return
     parts = [update[i:i + _CHUNK_BYTES] for i in range(0, len(update), _CHUNK_BYTES)]
     for i, part in enumerate(parts):
-        await core.sio.emit(event, {'doc_id': doc_id, 'update': part, 'part': i, 'parts': len(parts)},
+        await core.sio.emit(event, {'doc_id': doc_id, 'update': part, 'part': i, 'parts': len(parts), **(extra or {})},
                             **emit_kwargs)
 
 
