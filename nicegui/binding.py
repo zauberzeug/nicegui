@@ -363,7 +363,7 @@ def _drop_owner(owner_id: int) -> None:
 def _notify_subscribers(owner: Any, name: tuple[str, ...]) -> None:
     """Mark every computation that read this property dirty, then flush.
 
-    Marking is cheap and synchronous; actual recomputation is deferred to :func:`_flush` so a single
+    Marking is cheap and synchronous; actual recomputation is deferred to ``_flush`` so a single
     logical change settles the whole graph once, in dependency order -- rather than re-running
     dependents eagerly and depth-first, which double-runs diamonds and lets effects observe
     half-updated state.
@@ -416,7 +416,8 @@ class _Computation:
         self._dirty = False
         self._running = True
         token = _active_computation.set(self)
-        visited_token = propagation_visited.set(None)  # reads here are user dependencies, even if triggered mid-propagation
+        # reads here are user dependencies, even if triggered mid-propagation
+        visited_token = propagation_visited.set(None)
         try:
             result = self._fn()
         finally:
@@ -453,9 +454,9 @@ def _flush() -> None:
     """Recompute all pending computations, once each, in dependency order.
 
     Ordering falls out of two mechanisms rather than an explicit topological sort: recomputing a
-    producer re-enters :func:`_notify_subscribers`, enqueueing its dependents; and a dependent that
+    producer re-enters ``_notify_subscribers``, enqueueing its dependents; and a dependent that
     happens to run first pulls any still-dirty producer it reads up-to-date via
-    :meth:`BindableProperty.__get__` before using it. So a diamond's sink recomputes exactly once,
+    ``BindableProperty.__get__`` before using it. So a diamond's sink recomputes exactly once,
     after both sources have settled -- never on a half-updated intermediate.
     """
     global _flushing  # pylint: disable=global-statement # noqa: PLW0603
@@ -536,12 +537,12 @@ class Effect:
 
 
 def computed(fn: Callable[[], T]) -> Computed:
-    """Create a `Computed` derived value from a function of other bindable properties (*PROTOTYPE*)."""
+    """Create a ``Computed`` derived value from a function of other bindable properties (*PROTOTYPE*)."""
     return Computed(fn)
 
 
 def effect(fn: Callable[[], Any]) -> Effect:
-    """Create an `Effect` that re-runs whenever the bindable properties it reads change (*PROTOTYPE*)."""
+    """Create an ``Effect`` that re-runs whenever the bindable properties it reads change (*PROTOTYPE*)."""
     return Effect(fn)
 
 
