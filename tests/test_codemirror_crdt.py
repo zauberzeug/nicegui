@@ -252,3 +252,111 @@ def test_stale_tail_chunks_do_not_corrupt_next_transfer(screen: Screen):
     ''', thirds(stale), thirds(fresh))
     screen.wait(0.5)
     assert screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content').text == 'fresh content'
+
+
+def test_offline_edits_survive_page_reload(screen: Screen):
+    screen.allowed_js_errors.append('ERR_INTERNET_DISCONNECTED')
+
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('offline-reload')
+
+    def set_offline(offline: bool) -> None:
+        screen.selenium.execute_cdp_cmd('Network.enable', {})
+        screen.selenium.execute_cdp_cmd('Network.emulateNetworkConditions', {
+            'offline': offline, 'latency': 0, 'downloadThroughput': -1, 'uploadThroughput': -1})
+
+    def content() -> str:
+        return screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content').text
+
+    screen.open('/')
+    window_a = screen.selenium.current_window_handle
+    editor = screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content')
+    editor.click()
+    editor.send_keys('keep-me DELETE-ME')
+    screen.wait(0.5)
+
+    screen.selenium.switch_to.new_window('window')  # a second, online client
+    window_b = screen.selenium.current_window_handle
+    screen.open('/')
+    screen.wait(1)
+    assert content() == 'keep-me DELETE-ME'
+
+    screen.selenium.switch_to.window(window_a)
+    set_offline(True)
+    screen.selenium.execute_script('window.socket.io.engine.close();')
+    screen.selenium.execute_script('window.marker = 1')
+    editor.send_keys(' offline-edit')
+
+    screen.selenium.switch_to.window(window_b)
+    screen.selenium.execute_script('''
+        const view = document.querySelector('.cm-content').cmView.view;
+        view.dispatch({changes: {from: 8, to: 17}});
+        view.dispatch({changes: {from: view.state.doc.length, insert: ' b-edit'}});''')
+    assert content() == 'keep-me  b-edit'
+
+    screen.wait(5)  # longer than reconnect_timeout=3: the server forgets client A and its page reloads
+    screen.selenium.switch_to.window(window_a)
+    set_offline(False)
+    deadline = time.time() + 15
+    while time.time() < deadline and screen.selenium.execute_script('return window.marker') is not None:
+        screen.wait(0.5)
+    screen.wait(2)
+    assert screen.selenium.execute_script('return window.marker') is None, 'page should have reloaded'
+    expected = content()
+    assert expected.count('offline-edit') == 1 and expected.count('b-edit') == 1
+    assert 'DELETE-ME' not in expected and expected.startswith('keep-me')
+    screen.selenium.switch_to.window(window_b)
+    assert content() == expected
+
+
+def test_edit_dropped_on_a_connected_socket_survives_page_reload(screen: Screen):
+    screen.allowed_js_errors.append('ERR_INTERNET_DISCONNECTED')
+
+    @ui.page('/')
+    def page():
+        ui.codemirror().with_crdt('dropped-edit')
+
+    def content() -> str:
+        return screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content').text
+
+    screen.open('/')
+    window_a = screen.selenium.current_window_handle
+    editor = screen.selenium.find_element(By.CSS_SELECTOR, '.cm-content')
+    editor.click()
+    editor.send_keys('start')
+    screen.wait(0.5)
+
+    # half-open connection: the socket still reports connected, but the update never reaches the server
+    screen.selenium.execute_script('window.socket.io.engine.write = () => {}; window.marker = 1')
+    editor.send_keys(' dropped-edit')
+    assert screen.selenium.execute_script('return window.socket.connected') is True
+    screen.selenium.execute_cdp_cmd('Network.enable', {})
+    screen.selenium.execute_cdp_cmd('Network.emulateNetworkConditions', {
+        'offline': True, 'latency': 0, 'downloadThroughput': -1, 'uploadThroughput': -1})
+    screen.selenium.execute_script('window.socket.io.engine.close();')
+    screen.wait(5)  # longer than reconnect_timeout=3: the server forgets the client and its page reloads
+    screen.selenium.execute_cdp_cmd('Network.emulateNetworkConditions', {
+        'offline': False, 'latency': 0, 'downloadThroughput': -1, 'uploadThroughput': -1})
+    deadline = time.time() + 15
+    while time.time() < deadline and screen.selenium.execute_script('return window.marker') is not None:
+        screen.wait(0.5)
+    screen.wait(2)
+    assert screen.selenium.execute_script('return window.marker') is None, 'page should have reloaded'
+    assert content() == 'start dropped-edit'
+
+    screen.selenium.switch_to.new_window('window')  # a second client deletes the restored text
+    window_b = screen.selenium.current_window_handle
+    screen.open('/')
+    screen.wait(1)
+    assert content() == 'start dropped-edit'
+    screen.selenium.execute_script(
+        "document.querySelector('.cm-content').cmView.view.dispatch({changes: {from: 5, to: 18}});")
+    screen.wait(1)
+
+    screen.selenium.switch_to.window(window_a)
+    screen.selenium.execute_script('location.reload()')  # a clean tab stores its state on unload again
+    screen.wait(3)
+    assert content() == 'start'
+    screen.selenium.switch_to.window(window_b)
+    assert content() == 'start'

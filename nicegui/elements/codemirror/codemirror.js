@@ -434,6 +434,7 @@ export default {
     },
     _setupCrdt() {
       const docId = this.crdtDocId;
+      const pendingKey = `yjs-pending:${docId}`;
       let room = yjsRooms.get(docId);
       if (!room) {
         const ydoc = new Y.Doc();
@@ -450,6 +451,12 @@ export default {
             reassemble(room.rx, "yjs_init", data, (update) => {
               try {
                 if (update.length > 0) Y.applyUpdate(ydoc, update, YJS_REMOTE);
+                try {
+                  // edits made offline before NiceGUI reloaded the page: merge them back as a CRDT
+                  const saved = sessionStorage.getItem(pendingKey);
+                  sessionStorage.removeItem(pendingKey);
+                  if (saved) Y.applyUpdate(ydoc, Uint8Array.from(atob(saved), (c) => c.charCodeAt(0)), YJS_REMOTE);
+                } catch (e) {} // storage unavailable or corrupt: nothing to restore
                 // Send back whatever the server is missing (edits made while disconnected);
                 // an empty diff encodes as 2 bytes.
                 const serverStateVector = update.length > 0 ? Y.encodeStateVectorFromUpdate(update) : undefined;
@@ -482,6 +489,17 @@ export default {
             if (origin === YJS_REMOTE) return;
             emitChunked("yjs_update", docId, update);
           },
+          onPageHide: () => {
+            // without delivery acks we cannot know what the server has: store everything, restoring is idempotent
+            try {
+              const state = Y.encodeStateAsUpdate(ydoc);
+              let binary = "";
+              for (let i = 0; i < state.length; i += 0x8000) {
+                binary += String.fromCharCode.apply(null, state.subarray(i, i + 0x8000));
+              }
+              sessionStorage.setItem(pendingKey, btoa(binary));
+            } catch (e) {} // quota exceeded: the edits are lost as before
+          },
           onAwarenessUpdate: ({ added, updated, removed }, origin) => {
             if (origin === YJS_REMOTE) return;
             const update = encodeAwarenessUpdate(awareness, added.concat(updated, removed));
@@ -499,6 +517,7 @@ export default {
           window.socket.on("connect", room.handlers.onSocketConnect);
           ydoc.on("update", room.handlers.onDocUpdate);
           awareness.on("update", room.handlers.onAwarenessUpdate);
+          window.addEventListener("pagehide", room.handlers.onPageHide);
           window.socket.emit("yjs_join", { doc_id: docId });
         };
         const tryWire = () => {
@@ -530,6 +549,7 @@ export default {
         window.socket.off("yjs_awareness", room.handlers.onAwareness);
         window.socket.off("connect", room.handlers.onSocketConnect);
       }
+      window.removeEventListener("pagehide", room.handlers.onPageHide);
       room.ydoc.off("update", room.handlers.onDocUpdate);
       room.awareness.off("update", room.handlers.onAwarenessUpdate);
       room.awareness.destroy();
