@@ -4,11 +4,10 @@ import os
 from pathlib import Path
 
 from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import FileResponse, PlainTextResponse, RedirectResponse, Response
+from starlette.responses import FileResponse, PlainTextResponse, Response
 
-from nicegui import app, core, ui
+from nicegui import app, ui
 from nicegui.page_arguments import RouteMatch
 from website import design as d
 from website import (
@@ -19,6 +18,7 @@ from website import (
     i18n,
     imprint_privacy,
     main_page,
+    middlewares,
     rate_limits,
     sitemap,
     svg,
@@ -26,41 +26,7 @@ from website import (
 from website.components import footer_section
 from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
-
-@app.add_middleware
-class DocsSetCacheControlMiddleware(BaseHTTPMiddleware):
-
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        response = await call_next(request)
-        if request.url.path.startswith('/fonts/') or request.url.path.startswith('/static/'):
-            response.headers['Cache-Control'] = core.app.config.cache_control_directives
-        elif request.url.path.startswith('/examples/images/'):
-            response.headers['Cache-Control'] = 'public, max-age=86400'  # 1 day
-        return response
-
-
-@app.add_middleware
-class PermanentRedirectMiddleware(BaseHTTPMiddleware):
-    """Redirect www.nicegui.io and renamed documentation pages so that search engines see a single URL per page."""
-
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        path = request.url.path
-        prefix = next((f'/{slug}' for slug in i18n.LANGUAGES if slug != 'en' and path.startswith(f'/{slug}/')), '')
-        name = path.removeprefix(f'{prefix}/documentation/')
-        if name != path and name in documentation.redirects:
-            path, _, fragment = f'{prefix}/documentation/{documentation.redirects[name]}'.partition('#')
-        else:
-            fragment = ''
-        is_www = request.url.hostname == 'www.nicegui.io'
-        if path == request.url.path and not is_www:
-            return await call_next(request)
-        location = (sitemap.SITE_URL if is_www else '') + path
-        if request.url.query:
-            location += f'?{request.url.query}'
-        if fragment:
-            location += f'#{fragment}'
-        return RedirectResponse(location, status_code=301)
-
+middlewares.setup()
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
