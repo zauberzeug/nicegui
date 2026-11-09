@@ -91,6 +91,8 @@ def test_style_parsing(value: str | None, expected: dict[str, str]):
     ('href=http://example.com/a!b', {'href': 'http://example.com/a!b'}),
     ('href=https://en.wikipedia.org/wiki/Nice_(GUI)', {'href': 'https://en.wikipedia.org/wiki/Nice_(GUI)'}),
     ('href=http://example.com/a*b flat', {'href': 'http://example.com/a*b', 'flat': True}),
+    ('href=http://x/?q=a|b', {'href': 'http://x/?q=a|b'}),
+    ('href=http://x/a^b', {'href': 'http://x/a^b'}),
     ('href=http://[::1]/foo', {'href': 'http://[::1]/foo'}),
     ('href=http://[::1]:8080/img.png?x=1&y=2', {'href': 'http://[::1]:8080/img.png?x=1&y=2'}),
     ('mask=(###)###-####', {'mask': '(###)###-####'}),
