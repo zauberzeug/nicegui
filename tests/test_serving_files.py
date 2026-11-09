@@ -78,6 +78,33 @@ def test_adding_single_media_file(screen: Screen):
     assert_video_file_streaming(url_path)
 
 
+def test_media_file_ranges(tmp_path: Path, screen: Screen):
+    media = tmp_path / 'clip.bin'
+    media.write_bytes(b'abcdefghij')
+    url_path = app.add_media_file(local_file=media)
+
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    cases = [
+        ('bytes=-4', 206, 'bytes 6-9/10', b'ghij'),
+        ('bytes=-10', 206, 'bytes 0-9/10', b'abcdefghij'),
+        ('bytes=-100', 206, 'bytes 0-9/10', b'abcdefghij'),
+        ('bytes=-0', 416, 'bytes */10', b''),
+        ('bytes=6-', 206, 'bytes 6-9/10', b'ghij'),
+        ('bytes=2-5', 206, 'bytes 2-5/10', b'cdef'),
+    ]
+    with httpx2.Client() as http_client:
+        for range_header, status_code, content_range, content in cases:
+            response = http_client.get(f'http://localhost:{Screen.PORT}{url_path}', headers={'Range': range_header})
+            assert response.status_code == status_code
+            assert response.headers['Content-Range'] == content_range
+            assert response.headers['Content-Length'] == str(len(content))
+            assert response.content == content
+
+
 def test_invalid_range_header_returns_416(screen: Screen):
     app.add_media_files('/media', Path(TEST_DIR) / 'media')
 

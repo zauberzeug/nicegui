@@ -36,10 +36,18 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
     media_type = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
     if range_header is not None:
         try:
-            byte1, byte2 = range_header.split('=')[1].split('-')
-            start = int(byte1)
-            if byte2:
-                end = int(byte2)
+            unit, _, range_spec = range_header.partition('=')
+            if unit.strip().lower() != 'bytes':
+                raise ValueError('unsupported range unit')
+            byte1, byte2 = range_spec.split('-', 1)
+            if byte1 == '':
+                # suffix range, e.g. "bytes=-4" is the last 4 bytes (RFC 9110)
+                suffix_length = int(byte2)
+                start = max(file_size - suffix_length, 0)
+                end = file_size - 1
+            else:
+                start = int(byte1)
+                end = int(byte2) if byte2 else file_size - 1
         except (IndexError, ValueError):
             return Response(status_code=416, headers={'Content-Range': f'bytes */{file_size}'})
         if start > end or start >= file_size:
