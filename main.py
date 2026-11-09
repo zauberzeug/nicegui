@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import FileResponse, PlainTextResponse, Response
+from starlette.responses import FileResponse, PlainTextResponse, RedirectResponse, Response
 
 from nicegui import app, core, ui
 from nicegui.page_arguments import RouteMatch
@@ -37,6 +37,29 @@ class DocsSetCacheControlMiddleware(BaseHTTPMiddleware):
         elif request.url.path.startswith('/examples/images/'):
             response.headers['Cache-Control'] = 'public, max-age=86400'  # 1 day
         return response
+
+
+@app.add_middleware
+class PermanentRedirectMiddleware(BaseHTTPMiddleware):
+    """Redirect www.nicegui.io and renamed documentation pages so that search engines see a single URL per page."""
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        path = request.url.path
+        prefix = next((f'/{slug}' for slug in i18n.LANGUAGES if slug != 'en' and path.startswith(f'/{slug}/')), '')
+        name = path.removeprefix(f'{prefix}/documentation/')
+        if name != path and name in documentation.redirects:
+            path, _, fragment = f'{prefix}/documentation/{documentation.redirects[name]}'.partition('#')
+        else:
+            fragment = ''
+        is_www = request.url.hostname == 'www.nicegui.io'
+        if path == request.url.path and not is_www:
+            return await call_next(request)
+        location = (sitemap.SITE_URL if is_www else '') + path
+        if request.url.query:
+            location += f'?{request.url.query}'
+        if fragment:
+            location += f'#{fragment}'
+        return RedirectResponse(location, status_code=301)
 
 
 # session middleware is required for demo in documentation
@@ -113,7 +136,7 @@ def _build_page(language: str) -> None:
     ui.context.client.content.classes('p-0 gap-0')
 
     header.add_head_html()
-    _add_hreflang_links(language)
+    _add_search_engine_links(language)
 
     with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} {d.BORDER_R} p-8') as menu:
         tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'{prefix}/documentation/{e.value}')) \
@@ -163,11 +186,18 @@ def _build_page(language: str) -> None:
     _update_menu(ui.context.client.sub_pages_router.current_path)
 
 
-def _add_hreflang_links(language: str) -> None:
-    """Declare the language alternates of the current page for search engines."""
-    base_path = ui.context.client.request.url.path.removeprefix(f'/{language}') or '/'
-    ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="{sitemap.SITE_URL}{html.escape(path)}">'
-                               for iso, path in i18n.alternates(base_path)))
+def _add_search_engine_links(language: str) -> None:
+    """Declare the canonical URL and the language alternates of the current page for search engines.
+
+    The canonical URL drops the query string and a trailing slash, so that variants like ``?ref=...`` count as one page.
+    """
+    path = ui.context.client.request.url.path.rstrip('/') or '/'
+    base_path = path.removeprefix(f'/{language}') or '/'
+    ui.add_head_html('\n'.join([
+        f'<link rel="canonical" href="{sitemap.SITE_URL}{html.escape(path)}">',
+        *(f'<link rel="alternate" hreflang="{iso}" href="{sitemap.SITE_URL}{html.escape(alternate)}">'
+          for iso, alternate in i18n.alternates(base_path)),
+    ]))
 
 
 def _documentation_detail_page(name: str, tree: ui.tree) -> None:
