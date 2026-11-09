@@ -46,7 +46,9 @@ PROPS_PATTERN = re.compile(r'''
             \}                  # Match the closing }
         )
         |                   # or, as a final alternative ....
-        (?P<unquoted>[\w\-.,%:\/=?&;+#@~$]+)  # a value without quotes
+        # `!*()` cover filenames like `a(1).png` and URL sub-delims; `[...]` covers `[::1]`.
+        # Brackets with whitespace stay on the square-bracket alternative so lists still parse.
+        (?P<unquoted>(?:[\w\-.,%:\/=?&;+#@~$!*()]+|\[[^\]\s]*\])+)
     )
 )?                          # End of optional non-capturing group for value
 ($|\s)                      # Match end of string or whitespace
