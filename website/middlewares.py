@@ -28,19 +28,24 @@ class PermanentRedirectMiddleware(BaseHTTPMiddleware):
     """Redirect www.nicegui.io and renamed documentation pages so that search engines see a single URL per page."""
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        path = request.url.path
-        prefix = next((f'/{slug}' for slug in i18n.LANGUAGES if slug != 'en' and path.startswith(f'/{slug}/')), '')
-        name = path.removeprefix(f'{prefix}/documentation/')
-        if name != path and name in documentation.redirects:
-            path, _, fragment = f'{prefix}/documentation/{documentation.redirects[name]}'.partition('#')
-        else:
-            fragment = ''
+        target = _documentation_redirect(request.url.path)
         is_www = request.url.hostname == 'www.nicegui.io'
-        if path == request.url.path and not is_www:
+        if target is None and not is_www:
             return await call_next(request)
+        path, _, fragment = (target or request.url.path).partition('#')
         location = (sitemap.SITE_URL if is_www else '') + path
         if request.url.query:
             location += f'?{request.url.query}'
         if fragment:
             location += f'#{fragment}'
         return RedirectResponse(location, status_code=301)
+
+
+def _documentation_redirect(path: str) -> str | None:
+    """Return the new path of a renamed documentation page (with an optional anchor), or ``None``."""
+    slug = next((slug for slug in i18n.LANGUAGES if slug != 'en' and path.startswith(f'/{slug}/')), 'en')
+    prefix = i18n.url('/documentation/', language=slug)
+    if not path.startswith(prefix):
+        return None
+    target = documentation.redirects.get(path.removeprefix(prefix).rstrip('/'))
+    return i18n.url(f'/documentation/{target}', language=slug) if target else None
