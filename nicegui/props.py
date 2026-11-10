@@ -46,7 +46,7 @@ PROPS_PATTERN = re.compile(r'''
             \}                  # Match the closing }
         )
         |                   # or, as a final alternative ....
-        (?P<unquoted>\S+)  # a value without quotes
+        (?P<unquoted>\S+)   # any other whitespace-free token (also the fallback for unbalanced quotes or brackets)
     )
 )?                          # End of optional non-capturing group for value
 ($|\s)                      # Match end of string or whitespace
