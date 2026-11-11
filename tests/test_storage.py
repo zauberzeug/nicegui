@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import copy
 import gc
+import json
 import re
 import threading
 import time
@@ -16,7 +17,7 @@ from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.nicegui import _on_handshake
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
-from nicegui.storage import Storage
+from nicegui.storage import USER_PREFIX, Storage
 from nicegui.testing import Screen, User
 
 
@@ -488,6 +489,33 @@ def test_user_storage_survives_prune_during_request(screen: Screen, monkeypatch:
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/data')
     screen.should_contain('default')
+
+
+async def test_concurrent_requests_wait_for_user_storage_to_load(user: User):
+    seen: list[bool] = []
+
+    @app.get('/')
+    def index():
+        seen.append('old' in app.storage.user)
+        app.storage.user.setdefault('new', 1)
+        return 'ok'
+
+    @app.get('/seed')
+    def seed():
+        app.storage.user['old'] = 'x' * 8_000_000  # reading it back takes longer than dispatching another request
+        return 'ok'
+
+    await user.http_client.get('/seed')  # creates the session and its storage...
+    while background_tasks.lazy_tasks_running:
+        await asyncio.sleep(0.01)  # ...and backs it up
+    await prune_user_storage(force=True)  # so that the next request has to load it from the file again
+
+    await asyncio.gather(user.http_client.get('/'), user.http_client.get('/'))
+    assert seen == [True, True], 'every request must see the stored data, also while another request loads it'
+    while background_tasks.lazy_tasks_running:
+        await asyncio.sleep(0.01)
+    path = next(Storage.path.glob(f'storage-{USER_PREFIX}*.json'))
+    assert set(json.loads(path.read_text(encoding='utf-8'))) == {'old', 'new'}
 
 
 def test_storage_serialization_error_points_at_offending_key(screen: Screen):

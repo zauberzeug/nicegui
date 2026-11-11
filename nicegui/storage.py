@@ -97,6 +97,7 @@ class Storage:
         self._general = Storage._create_persistent_dict(GENERAL_ID)
         self._users: dict[str, PersistentDict] = {}
         self._tabs: dict[str, ObservableDict] = {}
+        self._user_creations: dict[str, asyncio.Event] = {}
         self._tab_creations: dict[str, asyncio.Event] = {}
         self._active_request_sessions: Counter[str] = Counter()
         '''Number of in-flight HTTP requests per session id, so prune_user_storage does not remove
@@ -151,8 +152,20 @@ class Storage:
         return self._users[session_id]
 
     async def _create_user_storage(self, session_id: str) -> None:
-        self._users[session_id] = Storage._create_persistent_dict(f'{USER_PREFIX}{session_id}')
-        await self._users[session_id].initialize()
+        """Create user storage for the given session ID unless it exists already.
+
+        A concurrent request of the same session waits for the storage to load instead of using it half-loaded.
+        """
+        if creation := self._user_creations.get(session_id):
+            await creation.wait()
+            return
+        self._user_creations[session_id] = asyncio.Event()
+        try:
+            storage = Storage._create_persistent_dict(f'{USER_PREFIX}{session_id}')
+            await storage.initialize()
+            self._users[session_id] = storage
+        finally:
+            self._user_creations.pop(session_id).set()
 
     @property
     def general(self) -> PersistentDict:
