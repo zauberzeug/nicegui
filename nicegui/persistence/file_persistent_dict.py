@@ -24,7 +24,7 @@ class FilePersistentDict(PersistentDict):
                 data = json.loads(await asyncio.to_thread(self.filepath.read_text, encoding=self.encoding))
             else:
                 data = {}
-            self.update(data)
+            self._load(data)
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
 
@@ -34,9 +34,13 @@ class FilePersistentDict(PersistentDict):
                 data = json.loads(self.filepath.read_text(encoding=self.encoding))
             else:
                 data = {}
-            self.update(data)
+            self._load(data)
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
+
+    def _load(self, data: dict) -> None:
+        """Take over the data read from the file without a backup, which would only write the same data back."""
+        dict.update(self, {key: self._observe(value) for key, value in data.items()})
 
     def backup(self) -> None:
         """Back up the data to the given file path."""
