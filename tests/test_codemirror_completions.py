@@ -6,19 +6,6 @@ from nicegui import ui
 from nicegui.testing import Screen
 
 
-def _rendered_labels(screen: Screen) -> list[str]:
-    return screen.selenium.execute_script(
-        'return Array.from(document.querySelectorAll(".cm-tooltip-autocomplete .cm-completionLabel"))'
-        '.map(e => e.textContent);'
-    )
-
-
-def _open_count(screen: Screen) -> int:
-    return screen.selenium.execute_script(
-        'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
-    )
-
-
 def test_completions_basic(screen: Screen):
     @ui.page('/')
     def page():
@@ -207,3 +194,16 @@ def test_completion_info_html_opt_in_renders_sanitized(screen: Screen):
     hijacked = screen.selenium.execute_script('return window.__info_hijack === 1')
     assert not has_script, 'DOMPurify should have stripped <script>'
     assert not hijacked, 'inline script must not have executed'
+
+
+def _rendered_labels(screen: Screen) -> list[str]:
+    return screen.selenium.execute_script(
+        'return Array.from(document.querySelectorAll(".cm-tooltip-autocomplete .cm-completionLabel"))'
+        '.map(e => e.textContent);'
+    )
+
+
+def _open_count(screen: Screen) -> int:
+    return screen.selenium.execute_script(
+        'return document.querySelectorAll(".cm-tooltip-autocomplete li").length'
+    )
