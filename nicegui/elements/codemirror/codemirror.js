@@ -171,8 +171,8 @@ export default {
     lineAnchors() {
       this._anchorsPending = true; // applied from setEditorValueFromProps
     },
-    diagnostics(newDiagnostics) {
-      this.applyDiagnostics(newDiagnostics);
+    diagnostics() {
+      this._diagnosticsPending = true; // applied from setEditorValueFromProps
     },
     keymap() {
       this.setKeymap();
@@ -261,8 +261,8 @@ export default {
     },
     setEditorValueFromProps() {
       this.setEditorValue(this.value);
-      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors, tooltips
-      // and decorations sent together with a new value would otherwise be applied to the old document.
+      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors, tooltips,
+      // decorations and diagnostics sent together with a new value would otherwise be applied to the old document.
       if (this._anchorsPending) {
         this._anchorsPending = false;
         this.applyLineAnchors(this.lineAnchors);
@@ -274,6 +274,10 @@ export default {
       if (this._decorationsPending) {
         this._decorationsPending = false;
         this.setDecorations(this.decorations);
+      }
+      if (this._diagnosticsPending) {
+        this._diagnosticsPending = false;
+        this.applyDiagnostics(this.diagnostics);
       }
     },
     setEditorValue(value) {

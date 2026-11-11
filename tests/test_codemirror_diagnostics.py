@@ -126,3 +126,17 @@ def test_diagnostic_message_html_opt_in_renders_sanitized(screen: Screen):
     hijacked = screen.selenium.execute_script('return window.__diag_hijack === 1')
     assert not has_script, 'DOMPurify should have stripped <script>'
     assert not hijacked, 'inline script must not have executed'
+
+
+def test_diagnostics_declared_for_a_value_sent_in_the_same_update(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('abc')
+
+    screen.open('/')
+    editor.value = 'abc\ndef'
+    editor.diagnostics = [{'line': 2, 'message': 'oops'}]
+    screen.wait_for(lambda: _diagnostic_count(screen) == 1)
