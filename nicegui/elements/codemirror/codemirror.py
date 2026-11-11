@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import accumulate, chain, repeat
-from typing import Self, get_args
+from typing import Literal, NotRequired, Self, TypedDict, get_args
 
 from ... import helpers
 from ...defaults import DEFAULT_PROP, resolve_defaults
@@ -22,6 +22,54 @@ from .decorations import DecorationElement
 from .keybindings import KeyBindingElement
 from .line_anchors import LineAnchorElement
 from .signals import SignalElement
+
+COMPLETION_ICON_TYPES = Literal[
+    'class',
+    'constant',
+    'enum',
+    'function',
+    'interface',
+    'keyword',
+    'method',
+    'namespace',
+    'property',
+    'text',
+    'type',
+    'variable',
+]
+
+
+class CompletionItem(TypedDict):
+    """Single autocomplete entry for the ``completions`` parameter and property.
+
+    Only ``label`` is required.
+    All keys use snake_case; the JS layer maps them to CodeMirror 6's camelCase.
+
+    - ``label``: matched against the user's input and shown in the dropdown.
+    - ``apply``: text inserted on accept (defaults to ``label``). When ``snippet`` is ``True``, may contain
+      ``${1:foo}`` tab-stop markers.
+    - ``snippet``: treat ``apply`` as a snippet template; Tab/Shift-Tab cycles between fields.
+    - ``display_label``: shown in the dropdown instead of ``label``; ``label`` is still used for matching.
+    - ``detail``: short text shown next to the label (e.g. a type signature).
+    - ``info``: longer description shown when the entry is highlighted. Rendered as plain text by default;
+      pass ``completion_info_html=True`` to the editor constructor to render as sanitized HTML.
+    - ``type``: icon shown next to the entry; one of the 12 built-in CM6 types.
+    - ``boost``: sort weight from -99 to 99 (higher floats to the top).
+    - ``commit_characters``: extra characters that, when typed, accept this completion (e.g. ``['.', '(']``).
+    - ``section``: group heading; entries with the same section are visually grouped.
+    - ``class_name``: CSS class added to this entry's ``<li>`` element in the dropdown.
+    """
+    label: str
+    apply: NotRequired[str]
+    snippet: NotRequired[bool]
+    display_label: NotRequired[str]
+    detail: NotRequired[str]
+    info: NotRequired[str]
+    type: NotRequired[COMPLETION_ICON_TYPES]
+    boost: NotRequired[float]
+    commit_characters: NotRequired[list[str]]
+    section: NotRequired[str]
+    class_name: NotRequired[str]
 
 
 class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, SignalElement,
@@ -47,6 +95,11 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         indent: str = DEFAULT_PROP | ' ' * 4,
         line_wrapping: bool = DEFAULT_PROP | False,
         highlight_whitespace: bool = DEFAULT_PROP | False,
+        completions: list[CompletionItem] | None = DEFAULT_PROP | None,
+        replace_language_completions: bool = DEFAULT_PROP | False,
+        complete_words_in_document: bool = DEFAULT_PROP | False,
+        completion_info_html: bool = DEFAULT_PROP | False,
+        tooltip_class: str | None = DEFAULT_PROP | None,
         decorations: list[dict] | None = None,
         decoration_html: bool = False,
         line_anchors: dict[str, int] | None = None,
@@ -58,7 +111,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
 
         An element to create a code editor using `CodeMirror <https://codemirror.net/>`_.
 
-        It supports syntax highlighting for over 140 languages, more than 30 themes, line numbers, code folding, (limited) auto-completion, and more.
+        It supports syntax highlighting for over 140 languages, more than 30 themes, line numbers, code folding, autocompletion, and more.
 
         Supported languages and themes:
             - Languages: A list of supported languages can be found in the `@codemirror/language-data <https://github.com/codemirror/language-data/blob/main/src/language-data.ts>`_ package.
@@ -88,6 +141,9 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         Editor signals report the focus, visible line range and geometry,
         and ``reveal_line`` scrolls a given line into view.
 
+        *Since version 4.1.0:*
+        Custom autocomplete entries, optionally with snippet fields, can be supplied via ``completions``.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: ``None``)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
@@ -99,6 +155,23 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: ``False``)
         :param highlight_whitespace: whether to highlight whitespace (default: ``False``)
+        :param completions: list of autocomplete entries shown in the dropdown.
+            Each item is a ``CompletionItem`` dict; only ``label`` is required.
+            By default these merge with whatever the active language pack provides.
+            *Added in version 4.1.0*
+        :param replace_language_completions: if ``True``, suppress the active language pack's
+            built-in completions and show only ``completions`` (and word-from-document, if enabled).
+            Default: ``False`` (merge).
+            *Added in version 4.1.0*
+        :param complete_words_in_document: if ``True``, also suggest identifiers already present
+            elsewhere in the document (CodeMirror's ``completeAnyWord`` source). Default: ``False``.
+            *Added in version 4.1.0*
+        :param completion_info_html: render the side-panel ``info`` text as sanitized HTML rather than
+            plain text. Default: ``False``.
+            *Added in version 4.1.0*
+        :param tooltip_class: CSS class added to the autocomplete popup container.
+            Combine with ``ui.add_css`` to style the popup.
+            *Added in version 4.1.0*
         :param decorations: initial list of decoration specs applied to the editor;
             spec offsets (``from``/``to``/``position``) are Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
         :param decoration_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
@@ -122,6 +195,11 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['indent'] = indent
         self._props['line-wrapping'] = line_wrapping
         self._props['highlight-whitespace'] = highlight_whitespace
+        self._props['completions'] = completions or []
+        self._props['replace-language-completions'] = replace_language_completions
+        self._props['complete-words-in-document'] = complete_words_in_document
+        self._props['completion-info-html'] = completion_info_html
+        self._props['tooltip-class'] = tooltip_class
         self._props['line-tooltips'] = line_tooltips or {}
         self._props['line-tooltip-html'] = line_tooltip_html
         self._update_method = 'setEditorValueFromProps'
@@ -196,6 +274,30 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         """
         self._props['line-wrapping'] = value
         return self
+
+    @property
+    def completions(self) -> list[CompletionItem]:
+        """The current autocomplete entries shown in the dropdown.
+
+        Each item is a ``CompletionItem`` dict; only ``label`` is required.
+        Returns a copy.
+        Reassign the property to update the editor (pass ``None`` or an empty list to remove all entries).
+
+        *Added in version 4.1.0*
+        """
+        return list(self._props['completions'])
+
+    @completions.setter
+    def completions(self, completions: list[CompletionItem] | None) -> None:
+        self._props['completions'] = completions or []
+        self.update()
+
+    def trigger_completion(self) -> None:
+        """Open the autocomplete popup programmatically (equivalent to Ctrl-Space).
+
+        *Added in version 4.1.0*
+        """
+        self.run_method('triggerCompletion')
 
     @property
     def line_tooltips(self) -> dict[int, str]:
