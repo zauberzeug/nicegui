@@ -1,16 +1,16 @@
 from __future__ import annotations
 
+import contextlib
+import functools
 import inspect
 import re
 import weakref
 from collections.abc import Callable, Iterator, Sequence
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
-from typing_extensions import Self
-
-from . import core, events, helpers, json, storage
+from . import binding, core, events, helpers, json, storage
 from .awaitable_response import AwaitableResponse, NullResponse
 from .classes import Classes
 from .context import context
@@ -60,7 +60,7 @@ class Element(Visibility):
         self._client = weakref.ref(client)
         self.id = client.next_element_id
         client.next_element_id += 1
-        self.tag = tag if tag else self.component.tag if self.component else 'div'
+        self.tag = tag or (self.component.tag if self.component else 'div')
         if not TAG_PATTERN.match(self.tag):
             raise ValueError(f'Invalid HTML tag: {self.tag}')
         self._classes: Classes[Self] = Classes(self._default_classes, element=cast(Self, self))
@@ -76,22 +76,17 @@ class Element(Visibility):
 
         client.elements[self.id] = self
         self._parent_slot: weakref.ref[Slot] | None = None
+        client.outbox.enqueue_update(self)
         slot_stack = context.slot_stack
         if slot_stack:
             parent_slot = slot_stack[-1]
             parent_slot.children.append(self)
             self._parent_slot = weakref.ref(parent_slot)
-
-        client.outbox.enqueue_update(self)
-        if self._parent_slot:
             client.outbox.enqueue_update(parent_slot.parent)
-
-        self._props.add_rename('resource_path', 'resource-path')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('dynamic_resource_path', 'dynamic-resource-path')  # DEPRECATED: remove in NiceGUI 4.0
 
     def __init_subclass__(cls, *,
                           component: str | Path | None = None,
-                          dependencies: list[str | Path] = [],  # noqa: B006
+                          dependencies: list[str | Path] | tuple[str | Path, ...] = (),
                           esm: dict[str, str] | None = None,
                           default_classes: str | None = None,
                           default_style: str | None = None,
@@ -129,6 +124,31 @@ class Element(Visibility):
         cls.default_classes(default_classes)
         cls.default_style(default_style)
         cls.default_props(default_props)
+
+        own_init = cls.__init__ if '__init__' in cls.__dict__ else None
+
+        @functools.wraps(cls.__init__)
+        def init(self: Element, *args: Any, **kwargs: Any) -> None:
+            # pylint: disable=protected-access,unidiomatic-typecheck
+            try:
+                # an inherited constructor is resolved when called, so replacing it later still takes effect
+                (own_init or super(cls, type(self)).__init__)(self, *args, **kwargs)
+            except Exception:
+                # roll back a registered element (#6343); base classes pass so a subclass can still catch the exception
+                client = self._client() if hasattr(self, '_client') else None
+                if type(self) is cls and client is not None and client.elements.get(self.id) is self:
+                    # NOTE: the steps for the element itself mirror `Client.remove_elements`
+                    client.remove_elements(self.descendants())
+                    with contextlib.suppress(Exception):
+                        self._handle_delete()  # overrides may rely on attributes which have not been set yet
+                    binding.remove([self])
+                    self._deleted = True
+                    del client.elements[self.id]
+                    client.outbox.enqueue_delete(self)
+                    if self.parent_slot:
+                        self.parent_slot.children.remove(self)
+                raise
+        cls.__init__ = init  # type: ignore[method-assign]
 
     @property
     def client(self) -> Client:
@@ -177,14 +197,14 @@ class Element(Visibility):
 
         NiceGUI is using the slot concept from Vue:
         Elements can have multiple slots, each possibly with a number of children.
-        Most elements only have one slot, e.g. a `ui.card` (QCard) only has a default slot.
-        But more complex elements like `ui.table` (QTable) can have more slots like "header", "body" and so on.
-        If you nest NiceGUI elements via with `ui.row(): ...` you place new elements inside of the row's default slot.
-        But if you use with `table.add_slot(...): ...`, you enter a different slot.
+        Most elements only have one slot, e.g. a ``ui.card`` (QCard) only has a default slot.
+        But more complex elements like ``ui.table`` (QTable) can have more slots like "header", "body" and so on.
+        If you nest NiceGUI elements via with ``ui.row(): ...`` you place new elements inside of the row's default slot.
+        But if you use with ``table.add_slot(...): ...``, you enter a different slot.
 
         The slot stack helps NiceGUI to keep track of which slot is currently used for new elements.
-        The `parent` field holds a reference to its element.
-        Whenever an element is entered via a `with` expression, its default slot is automatically entered as well.
+        The ``parent`` field holds a reference to its element.
+        Whenever an element is entered via a ``with`` expression, its default slot is automatically entered as well.
 
         :param name: name of the slot
         :param template: Vue template of the slot
@@ -219,6 +239,19 @@ class Element(Visibility):
             for child in self
             if child.visible and (markdown := child._render_markdown())  # pylint: disable=protected-access
         )
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:  # pylint: disable=unused-argument
+        """Collect the contents this element displays as text.
+
+        ``ElementFilter`` (and with it ``user.should_see`` and friends) matches its ``content`` against these.
+        The default implementation returns the props that are rendered as text.
+        Override to add contents that are stored elsewhere (e.g. values, option labels, tree nodes).
+        Entries can be of any type and may be ``None``: the filter compares against ``str()`` of each entry
+        and skips ``None`` and empty strings.
+
+        :param only_visible: whether to skip contents that are currently hidden (e.g. nodes of collapsed tree branches)
+        """
+        return [self._props.get(key) for key in ('text', 'label', 'icon', 'placeholder', 'error-message')]
 
     def _collect_slot_dict(self) -> dict[str, Any]:
         return {
@@ -328,13 +361,13 @@ class Element(Visibility):
         return cls
 
     def mark(self, *markers: str) -> Self:
-        """Replace markers of the element.
+        r"""Replace markers of the element.
 
         Markers are used to identify elements for querying with `ElementFilter </documentation/element_filter>`_
         which is heavily used in testing
         but can also be used to reduce the number of global variables or passing around dependencies.
 
-        :param markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
+        :param \*markers: list of strings or single string with whitespace-delimited markers; replaces existing markers
         """
         self._markers = [word for marker in markers for word in marker.split()]
         return self
@@ -351,7 +384,7 @@ class Element(Visibility):
     def on(self,
            type: str,  # pylint: disable=redefined-builtin
            handler: events.Handler[events.GenericEventArguments] | None = None,
-           args: None | Sequence[str] | Sequence[Sequence[str] | None] = None,
+           args: Sequence[str] | Sequence[Sequence[str] | None] | None = None,
            *,
            throttle: float = 0.0,
            leading_events: bool = True,
@@ -389,7 +422,7 @@ class Element(Visibility):
             listener = EventListener(
                 element_id=self.id,
                 type=helpers.event_type_to_camel_case(type),
-                args=[args] if args and isinstance(args[0], str) else args,  # type: ignore
+                args=[args] if args and isinstance(args[0], str) else args,  # type: ignore[arg-type,list-item]
                 handler=handler,
                 js_handler=None if js_handler == '(...args) => emit(...args)' else js_handler,
                 throttle=throttle,
@@ -401,6 +434,14 @@ class Element(Visibility):
             if not self._props._suspend_count:  # pylint: disable=protected-access
                 self.update()
         return self
+
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:  # pylint: disable=unused-argument
+        """Return whether the element handles the given event type even while it is ignoring events.
+
+        Initialization events are sent once when the component mounts, so dropping them for a
+        hidden or disabled element leaves the component uninitialized for good.
+        """
+        return False
 
     def _handle_event(self, msg: dict) -> None:
         listener = self._event_listeners[msg['listener_id']]
@@ -437,13 +478,13 @@ class Element(Visibility):
         self.client.outbox.enqueue_update(self)
 
     def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
-        """Run a method on the client side.
+        r"""Run a method on the client side.
 
         If the function is awaited, the result of the method call is returned.
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: maximum time to wait for a response (default: 1 second)
         """
         if not core.is_loop_running() or not self._is_safe_to_interact():
@@ -598,6 +639,6 @@ class Element(Visibility):
     def html_id(self) -> str:
         """The ID of the element in the HTML DOM.
 
-        *Added in version 2.16.0*
+        *Added in version 2.16.0*, *updated in version 4.0.0*: ``ng-<id>`` instead of ``c<id>``
         """
-        return f'c{self.id}'
+        return f'ng-{self.id}'

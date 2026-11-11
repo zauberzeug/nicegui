@@ -2,6 +2,7 @@ import os
 from functools import lru_cache
 
 from docutils.core import publish_parts
+from docutils.writers.html4css1 import Writer
 
 from ..helpers import remove_indentation
 from .markdown import Markdown
@@ -29,7 +30,7 @@ def prepare_content(content: str) -> str:
     """Render ReStructuredText content to HTML."""
     html = publish_parts(
         remove_indentation(content),
-        writer_name='html4',
+        writer=Writer(),
         settings_overrides={
             'syntax_highlight': 'short',
             'file_insertion_enabled': False,

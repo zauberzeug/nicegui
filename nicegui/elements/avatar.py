@@ -22,7 +22,7 @@ class Avatar(IconElement, BackgroundColorElement, TextColorElement):
         `QAvatar <https://quasar.dev/vue-components/avatar>`_ component.
 
         :param icon: name of the icon or image path with "img:" prefix (e.g. "map", "img:path/to/image.png")
-        :param color: background color (either a Quasar, Tailwind, or CSS color or `None`, default: "primary")
+        :param color: background color (either a Quasar, Tailwind, or CSS color or ``None``, default: "primary")
         :param text_color: color name from the Quasar Color Palette (e.g. "primary", "teal-10")
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl) (e.g. "16px", "2rem")
         :param font_size: size in CSS units, including unit name, of the content (icon, text) (e.g. "18px", "2rem")

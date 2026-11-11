@@ -13,7 +13,7 @@ The single most important rule: **everything is Python**. Reach for `ui.*` befor
 
 - **Backend-first**: All UI logic lives in Python. The framework handles web details automatically.
 - **Stack**: Python/FastAPI backend → WebSocket (socket.io) → Vue 3 / Quasar frontend
-- **Single worker**: One uvicorn worker with full async support; no multiprocessing needed.
+- **Single worker**: One uvicorn worker with full async support; no multiprocessing needed. `workers > 1` and `WEB_CONCURRENCY > 1` raise a `ValueError`.
 - **Outbox**: UI updates are accumulated and sent in batches to the client over the persistent WebSocket.
 - **Element lifecycle**: Python `Element` objects mirror Vue components on the client. Creating an element registers it immediately; calling `.update()` pushes changes.
 
@@ -119,10 +119,11 @@ Use `ui.run_javascript()` only for things that are truly impossible via the Pyth
 
 NiceGUI runs in a single asyncio event loop. Every page, every user, every timer shares it. Blocking the loop (with `time.sleep()`, `requests.get()`, heavy CPU work) freezes the **entire application** for all users. Rules:
 
-- All I/O must be async (`httpx`, `aiofiles`, `asyncio.sleep()`) — or wrap a blocking call with `await run.io_bound(fn, *args)`, which runs it in a thread
+- All I/O must be async (`httpx2`, `aiofiles`, `asyncio.sleep()`) — or wrap a blocking call with `await run.io_bound(fn, *args)`, which runs it in a thread
 - CPU-heavy work must leave the event loop: `await run.cpu_bound(fn, *args)` runs it in a separate process (arguments and return value must be picklable)
 - `run.io_bound` / `run.cpu_bound` come from `from nicegui import run` — prefer them over `asyncio.to_thread()` or a hand-rolled `run_in_executor`, because NiceGUI manages the pools and their shutdown
 - `background_tasks.create()` for fire-and-forget coroutines — wraps `create_task` but keeps a reference (so the GC won't cancel it) and routes exceptions through NiceGUI's exception handler. Avoid bare `asyncio.create_task()` or `asyncio.ensure_future()` for this reason.
+- Pass `context=` (a container element or `ui.context.client`, since 3.18) to run the task inside that context: elements it creates land in the container, and exceptions also reach the page's `ui.on_exception` handlers instead of only the global `app.on_exception` ones.
 - Timers (`ui.timer()`) are safe: they schedule callbacks without blocking
 
 ### 8. Why `ui.storage.user` and not a global dict
@@ -316,7 +317,7 @@ ui.skip_link('Skip to main content', target=main)    # keyboard-only link (WCAG 
 ## Input Elements
 
 ```python
-ui.input('Name', value='Alice', on_change=handler)
+ui.input('Name', value='Alice', on_change=handler)  # a cleared input holds '' (since 4.0), so test `not value`; ui.number and ui.select keep None
 ui.input('Password', password=True, password_toggle_button=True)
 ui.textarea('Notes', rows=5)
 ui.number('Age', min=0, max=120, step=1)
@@ -364,6 +365,11 @@ editor.decorations = [                  # decorations (since 3.17): style, hide 
                                         # or your own CSS; in-place list edits sync too; reading back returns the specs as
                                         # declared (positions are not tracked like line anchors); decoration_html=True
                                         # renders `text` as sanitized HTML; `attributes` is applied raw — never pass untrusted input
+editor.reveal_line(42)                  # scroll a 1-indexed line into view (since 3.18)
+editor.on_focus_change(lambda e: ...)   # editor signals (since 3.18): e.focused
+editor.on_viewport_change(lambda e: ...)  # e.from_line / e.to_line, first and last visible line (throttled to 100 ms)
+editor.on_geometry_change(lambda e: ...)  # e.width / e.height / e.content_height (throttled to 100 ms)
+                                        # all three also as constructor kwargs; a signal is only computed while a listener exists
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -398,20 +404,28 @@ columns = [
     {'name': 'age', 'label': 'Age', 'field': 'age'},
 ]
 rows = [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
-ui.table(columns=columns, rows=rows, row_key='name')
+ui.table(columns=columns, rows=rows, row_key='name')  # pagination=10 for 10 rows per page; pagination_controls=False hides the bar (since 4.0)
 
 # AG Grid (advanced grid)
 grid = ui.aggrid({
-    'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+    'columnDefs': [
+        {'field': 'name'},
+        {'field': 'age', ':valueFormatter': 'params => `${params.value} years`'},
+    ],
     'rowData': rows,
+    ':getRowId': 'params => params.data.name',  # stable row IDs; needed for run_row_method and row updates
 })
+# Options are sent as JSON, so a string stays a string. Prefix a key with ':' to have its value
+# evaluated as a JavaScript expression (functions, regexes, objects) — without the colon, AG Grid
+# gets a plain string where it expects a function, shows no rows and only logs a TypeError in the browser.
+# AG Grid's own expression strings (e.g. 'x < 21' in cellClassRules) need no colon.
 # Build from a pandas DataFrame (auto column defs):
 # grid = ui.aggrid.from_pandas(df)
 
 # Drive the client-side AG Grid API from Python (from inside an async handler):
 async def select_all():
     await grid.run_grid_method('selectAll')
-    await grid.run_row_method('row-id', 'setSelected', True)
+    await grid.run_row_method('Alice', 'setSelected', True)  # row ID from getRowId (or the row index as a string)
 
 # Tree
 ui.tree([
@@ -454,10 +468,20 @@ with ui.pyplot(figsize=(6, 4)) as plot:
 with ui.line_plot(n=50, update_every=5) as plot:
     plot.push(x_value, [y1, y2])
 
+# uPlot (fast canvas charts for large or streaming time series; data = [x, y1, y2, ...])
+plot = ui.uplot({'series': [{}, {'label': 'y', 'stroke': 'red'}]},
+                [[0, 1, 2], [3, 1, 2]])  # keeps the user's x zoom on updates (keep_zoom=True)
+plot.data = [[0, 1, 2, 3], [3, 1, 2, 4]]
+
 # 3D Scene (Three.js)
-with ui.scene() as scene:
+with ui.scene() as scene:  # polar_grid=(radius, sectors, rings) for a circular floor (since 3.19)
     scene.sphere().move(x=1)
     scene.box().material('#ff0000')
+    scene.cone().rotate(1.57, 0, 0, order='XYZ')  # order (since 3.19): lowercase (default 'xyz') = fixed world axes,
+                                                  # uppercase = the object's own rotated axes, like THREE.Euler
+# Objects: box, sphere, cylinder, ring, plane, cone, torus, capsule, lathe, extrusion, line, polyline, curve,
+# quadratic_bezier_tube, point_cloud, text, text3d, texture, gltf, stl, group, spot_light, axes_helper
+# (plane, cone, torus, capsule, lathe and polyline since 3.19; polyline supports per-vertex colors and dashed=True)
 ```
 
 ### Custom Three.js objects (since 3.16)
@@ -498,6 +522,9 @@ export default class PulsingSphere {
 
 Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
 Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
+
+In event handlers and timers, create custom objects inside `with scene:`, otherwise they raise a `RuntimeError` (since 4.0); the same goes for custom `Layer` subclasses and `with leaflet:`.
+For the same reason, write `on_click=lambda: scene.box()` instead of `on_click=scene.box`.
 
 Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
 
@@ -806,6 +833,9 @@ ui.run_javascript('document.title = "New Title"')
 # Run JS and await result
 result = await ui.run_javascript('return window.innerWidth')
 
+# Address a specific element; its DOM ID is element.html_id (`ng-12` since 4.0, formerly `c12`)
+ui.run_javascript(f'getHtmlElement({label.id}).innerText += " Hello!"')
+
 # Call a method on a specific element's Vue component
 await element.run_method('methodName', arg1, arg2)
 
@@ -814,12 +844,30 @@ value = await element.get_computed_prop('propName')
 
 # Add global CSS
 ui.add_css('body { font-family: monospace; }')
-ui.add_scss('$primary: blue; body { color: $primary; }')
 
 # Add raw HTML to <head> or <body> (last resort)
 ui.add_head_html('<link rel="preconnect" href="...">')
 ui.add_body_html('<script src="..."></script>')
 ```
+
+### Custom JSON serialization (since 3.19)
+
+Everything sent to the browser (element props, event arguments, `ui.run_javascript` arguments) and `app.storage` is serialized as JSON.
+Basic types, dataclasses, enums, dates and NumPy arrays work out of the box.
+For other types, register a converter instead of converting by hand at every call site:
+
+```python
+from pydantic import BaseModel
+from nicegui import json
+
+class Person(BaseModel):
+    name: str
+
+json.register_type(BaseModel, BaseModel.model_dump)  # also covers subclasses; first matching registration wins
+ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [Person(name='Alice')]})
+```
+
+Natively supported types (dataclasses, datetimes, …) cannot be overridden, and the conversion is one-way: `app.storage` returns the converted JSON structure, not the original object.
 
 ---
 
@@ -833,7 +881,7 @@ app.on_startup(async_function)
 app.on_shutdown(async_function)
 app.on_connect(handler)         # new client connects
 app.on_disconnect(handler)      # client disconnects
-app.on_exception(handler)       # unhandled exceptions (any context)
+app.on_exception(handler)       # unhandled exceptions (any context); per-page counterpart: ui.on_exception
 app.on_page_exception(handler)  # unhandled exceptions raised inside a @ui.page builder
 app.on_delete(handler)          # @ui.page client instance is being deleted (per-page teardown)
 
@@ -859,7 +907,7 @@ ui.run(
     port=8080,                       # default: 8080, or an open port in native mode; set it here —
                                      # NICEGUI_HOST/NICEGUI_PORT env vars are internal, ignored and warned about (since 3.17)
     title='My App',                  # default: 'NiceGUI'; can be overwritten per page
-    favicon='🚀',                    # default: None (NiceGUI icon); emoji, file path or URL
+    favicon='🚀',                    # default: None (NiceGUI icon); emoji, local image path, http(s) URL, data URL or inline SVG
     dark=None,                       # default: False; None = follow system
     language='en-US',                # default: None (Quasar element language)
     storage_secret='my-secret',      # default: None; required for app.storage.user and app.storage.browser
@@ -909,6 +957,10 @@ from nicegui import background_tasks
 # ALWAYS use background_tasks.create()
 background_tasks.create(my_coroutine(), name='my-task')
 
+# Run the task inside a page context (since 3.18): elements it creates go into `container`,
+# and exceptions reach the page's ui.on_exception handlers (not only the global app.on_exception)
+background_tasks.create(my_coroutine(), context=container)   # or context=ui.context.client
+
 # Inside a @ui.page handler, run something after the page is built
 async def long_work():
     await asyncio.sleep(5)
@@ -937,11 +989,11 @@ response = await run.io_bound(requests.get, url, timeout=3)
 result = await run.cpu_bound(compute, data)
 
 # Optional: choose the multiprocessing start method for the cpu_bound pool (since 3.15).
-# Set it before ui.run(); None keeps the platform default, which will become 'spawn' in 4.0.
-run.process_pool_start_method = 'spawn'
+# Set it before ui.run(); the default is 'spawn' (since 4.0), None keeps the platform default.
+run.process_pool_start_method = 'fork'
 ```
 
-Both must be awaited from an async context and currently return `None` instead of the result when the call is cancelled or the app shuts down (NiceGUI 4.0 will raise `CancelledError` there instead).
+Both must be awaited from an async context and raise `asyncio.CancelledError` when the call is cancelled or the app has shut down (since 4.0; before they returned `None`). They still work in `app.on_shutdown` handlers.
 
 ---
 
@@ -1070,6 +1122,7 @@ Both must be awaited from an async context and currently return `None` instead o
 | `ui.altair(chart)`                | Vega-Altair chart              |
 | `ui.highchart(options)`           | Highcharts (requires license)  |
 | `ui.line_plot(n)`                 | Efficient streaming line chart |
+| `ui.uplot(options, data)`         | uPlot (fast canvas charts)     |
 
 ### Advanced / Specialized
 
@@ -1092,28 +1145,28 @@ Both must be awaited from an async context and currently return `None` instead o
 
 ### Global Functions
 
-| Function                                | Description                                    |
-| --------------------------------------- | ---------------------------------------------- |
-| `ui.notify(msg)`                        | Toast notification                             |
-| `ui.navigate.to(url)`                   | Navigate to URL                                |
-| `ui.navigate.back/forward/reload()`     | Browser history navigation                     |
-| `ui.run_javascript(code)`               | Execute JS (await for result)                  |
-| `ui.download(src)`                      | Trigger file download                          |
-| `ui.clipboard.write(text)`              | Write to clipboard                             |
-| `ui.clipboard.read()`                   | Read from clipboard (await)                    |
-| `ui.update(element)`                    | Force push element update                      |
-| `ui.refreshable`                        | Decorator for rebuilding UI sections           |
-| `ui.refreshable_method`                 | Same, for class methods                        |
-| `ui.state(value)`                       | Local state inside `@ui.refreshable`           |
-| `ui.page_title(title)`                  | Set browser tab title                          |
-| `ui.add_css/add_scss/add_sass(code)`    | Global styles                                  |
-| `ui.add_head_html(html)`                | Inject into `<head>`                           |
-| `ui.add_body_html(html)`                | Inject into `<body>`                           |
-| `ui.on(event, handler)`                 | Global app event listener                      |
-| `ui.on_exception(handler)`              | Global exception handler                       |
-| `ui.status_code(code)`                  | Set HTTP response status                       |
-| `ui.context.client` / `ui.context.slot` | Access current client / slot from utility code |
-| `ui.run_with(fastapi_app, ...)`         | Mount NiceGUI inside an existing FastAPI app   |
+| Function                                | Description                                               |
+| --------------------------------------- | --------------------------------------------------------- |
+| `ui.notify(msg)`                        | Toast notification                                        |
+| `ui.navigate.to(url)`                   | Navigate to URL                                           |
+| `ui.navigate.back/forward/reload()`     | Browser history navigation                                |
+| `ui.run_javascript(code)`               | Execute JS (await for result)                             |
+| `ui.download(src)`                      | Trigger file download                                     |
+| `ui.clipboard.write(text)`              | Write to clipboard                                        |
+| `ui.clipboard.read()`                   | Read from clipboard (await)                               |
+| `ui.update(element)`                    | Force push element update                                 |
+| `ui.refreshable`                        | Decorator for rebuilding UI sections                      |
+| `ui.refreshable_method`                 | Same, for class methods                                   |
+| `ui.state(value)`                       | Local state inside `@ui.refreshable`                      |
+| `ui.page_title(title)`                  | Set browser tab title                                     |
+| `ui.add_css(code)`                      | Global styles                                             |
+| `ui.add_head_html(html)`                | Inject into `<head>`                                      |
+| `ui.add_body_html(html)`                | Inject into `<body>`                                      |
+| `ui.on(event, handler)`                 | Global app event listener                                 |
+| `ui.on_exception(handler)`              | Per-page exception handler (`app.on_exception` is global) |
+| `ui.status_code(code)`                  | Set HTTP response status                                  |
+| `ui.context.client` / `ui.context.slot` | Access current client / slot from utility code            |
+| `ui.run_with(fastapi_app, ...)`         | Mount NiceGUI inside an existing FastAPI app              |
 
 ---
 
@@ -1262,7 +1315,7 @@ async def on_click():
     data = requests.get(url).json()  # blocks the event loop!
 # GOOD: an async client, …
 async def on_click():
-    async with httpx.AsyncClient() as client:
+    async with httpx2.AsyncClient() as client:
         data = (await client.get(url)).json()
 # … or the blocking call wrapped in a thread
 async def on_click():
@@ -1310,6 +1363,8 @@ async def test_counter(user: User) -> None:
 ```
 
 `user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` always search the whole page (including header, drawers and footer).
+They match what the user would read: text, labels, placeholders, option labels, and (since 3.18) the values that input fields display — `ui.number(value=42)` is found by `'42'`, `ui.input`, `ui.textarea`, `ui.date_input` etc. by their value, `ui.input_chips` by each chip.
+Values that are not shown as text (sliders, checkboxes, hidden progress values) are deliberately not matched.
 When markers or content repeat across the page, limit them to one subtree with `user.scope(...)` (since 3.16):
 
 ```python
@@ -1318,12 +1373,16 @@ with user.scope(marker='left-card'):  # same filter args as user.find(), must ma
     user.find('Buy').click()
 ```
 
+The fixtures load the app's main file (`main_file` option, default `main.py`) before each test.
+To load none, leave it empty (`main_file = ""` under `[tool.pytest.ini_options]`) and register the pages each test needs, e.g. with `@ui.page` inside the test function.
+
 Use `Screen` fixture only when JavaScript or real browser rendering is required:
 
 ```python
 def test_chart(screen: Screen) -> None:
     screen.open('/')
     screen.should_contain('canvas')  # chart rendered
+    screen.should_not_contain('Loading')  # waits for the text to disappear (since 4.0); duration=0.5 also checks that it stays away
 ```
 
 ---
@@ -1399,19 +1458,15 @@ These follow NiceGUI project conventions and work well for NiceGUI-based apps:
 # NEVER block the event loop
 import time
 time.sleep(5)             # blocks everything — never do this in async context
-requests.get(url)         # synchronous HTTP — use httpx, or await run.io_bound(requests.get, url)
+requests.get(url)         # synchronous HTTP — use httpx2, or await run.io_bound(requests.get, url)
 
 # ALWAYS use background_tasks for fire-and-forget coroutines
 from nicegui import background_tasks
 background_tasks.create(my_coroutine(), name='descriptive-name')
 
-# Handle exceptions in background tasks
-from nicegui import core
-async def safe_task():
-    try:
-        await do_work()
-    except Exception as e:
-        core.app.handle_exception(e)
+# Exceptions in background tasks reach app.on_exception automatically;
+# pass context= so the page's ui.on_exception handlers see them too (since 3.18)
+background_tasks.create(do_work(), context=ui.context.client)
 ```
 
 ### Fluent Interface Formatting

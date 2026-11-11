@@ -15,9 +15,9 @@ class Menu(OpenableElement):
         The menu should be placed inside the element where it should be shown.
 
         Advanced tip:
-        Use the `auto-close` prop to automatically close the menu on any click event directly without a server round-trip.
+        Use the ``auto-close`` prop to automatically close the menu on any click event directly without a server round-trip.
 
-        :param value: whether the menu is already opened (default: `False`)
+        :param value: whether the menu is already opened (default: ``False``)
         """
         super().__init__(tag='q-menu', value=value)
 
@@ -41,7 +41,7 @@ class MenuItem(Item):
 
         :param text: label of the menu item
         :param on_click: callback to be executed when selecting the menu item
-        :param auto_close: whether the menu should be closed after a click event (default: `True`)
+        :param auto_close: whether the menu should be closed after a click event (default: ``True``)
         """
         super().__init__(text=text, on_click=on_click)
 

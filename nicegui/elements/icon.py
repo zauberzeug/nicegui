@@ -18,10 +18,13 @@ class Icon(NameElement, TextColorElement):
 
         `Here <https://fonts.google.com/icons?icon.set=Material+Icons>`_ is a reference of possible names.
 
-        :param name: name of the icon (snake case, e.g. `add_circle`)
+        :param name: name of the icon (snake case, e.g. ``add_circle``)
         :param size: size in CSS units, including unit name or standard size name (xs|sm|md|lg|xl), examples: 16px, 2rem
-        :param color: icon color (either a Quasar, Tailwind, or CSS color or `None`, default: `None`)
+        :param color: icon color (either a Quasar, Tailwind, or CSS color or ``None``, default: ``None``)
         """
         super().__init__(tag='q-icon', name=name, text_color=color)
 
         self._props.set_optional('size', size)
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get('name')]

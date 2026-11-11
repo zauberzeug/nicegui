@@ -1,21 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Generic, TypeVar, overload
-
-from typing_extensions import Self
+from typing import Generic, Self, TypeVar, overload
 
 from .context import context
 from .element import Element
-from .elements.chat_message import ChatMessage
-from .elements.choice_element import ChoiceElement
-from .elements.icon import Icon
-from .elements.mixins.content_element import ContentElement
-from .elements.mixins.source_element import SourceElement
-from .elements.mixins.text_element import TextElement
-from .elements.notification import Notification
-from .elements.select import Select
-from .elements.tree import Tree
 
 T = TypeVar('T', bound=Element)
 
@@ -116,33 +105,8 @@ class ElementFilter(Generic[T]):
                 continue
 
             if self._contents or self._exclude_content:
-                element_contents = [content for content in (
-                    element.props.get('text'),
-                    element.props.get('label'),
-                    element.props.get('icon'),
-                    element.props.get('placeholder'),
-                    element.props.get('value'),
-                    element.props.get('error-message'),
-                    element.text if isinstance(element, TextElement) else None,
-                    element.content if isinstance(element, ContentElement) else None,
-                    element.source if isinstance(element, SourceElement) else None,
-                ) if content]
-                if isinstance(element, Notification):
-                    element_contents.append(element.message)
-                if isinstance(element, ChoiceElement):
-                    if isinstance(element, Select):
-                        values = element.value if element.multiple else [element.value]
-                        labels = [value if isinstance(element.options, list) else element.options.get(value, '')
-                                  for value in values]
-                        element_contents.extend(labels)
-                    if not isinstance(element, Select) or element.is_showing_popup:
-                        element_contents.extend(element._labels)  # pylint: disable=protected-access
-                if isinstance(element, Tree):
-                    LABEL_KEY = element.props.get('label-key')
-                    nodes = element.nodes(visible=True if self._only_visible else None)
-                    element_contents.extend(node[LABEL_KEY] for node in nodes)
-                if isinstance(element, (Icon, ChatMessage)):
-                    element_contents.append(element.props.get('name'))
+                element_contents = [content for content in element._displayed_contents(only_visible=self._only_visible)  # pylint: disable=protected-access
+                                    if content is not None and content != '']
                 if any(all(needle not in str(haystack) for haystack in element_contents) for needle in self._contents):
                     continue
                 if any(needle in str(haystack) for haystack in element_contents for needle in self._exclude_content):
@@ -165,7 +129,7 @@ class ElementFilter(Generic[T]):
             if self._not_within_markers and not ancestor_markers.isdisjoint(self._not_within_markers):
                 continue
 
-            yield element  # type: ignore
+            yield element  # type: ignore[misc]
 
     def within(self, *,
                kind: type[Element] | None = None,
@@ -192,7 +156,7 @@ class ElementFilter(Generic[T]):
             assert issubclass(kind, Element)
             self._exclude_kinds.append(kind)
         if marker is not None:
-            self._exclude_markers.append(marker)
+            self._exclude_markers.extend(marker.split())
         if content is not None:
             self._exclude_content.append(content)
         return self

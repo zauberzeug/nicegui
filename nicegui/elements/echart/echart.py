@@ -1,8 +1,5 @@
-from collections.abc import Callable
 from contextlib import suppress
-from typing import Literal
-
-from typing_extensions import Self
+from typing import Literal, Self
 
 from ... import optional_features
 from ...awaitable_response import AwaitableResponse
@@ -38,7 +35,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         """Apache EChart
 
         An element to create a chart using `ECharts <https://echarts.apache.org/>`_.
-        Updates can be pushed to the chart by changing the `options` property.
+        Updates can be pushed to the chart by changing the ``options`` property.
 
         :param options: dictionary of EChart options
         :param on_point_click: callback that is invoked when a point is clicked
@@ -58,8 +55,6 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
             self.on_point_click(on_point_click)
         if on_click:
             self.on_click(on_click)
-
-        self._props.add_rename('enable_3d', 'enable-3d')  # DEPRECATED: remove in NiceGUI 4.0
 
     def on_point_click(self, callback: Handler[EChartPointClickEventArguments]) -> Self:
         """Add a callback to be invoked when a point is clicked."""
@@ -108,11 +103,11 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         return self
 
     @classmethod
-    def from_pyecharts(cls, chart: 'Chart', on_point_click: Callable | None = None) -> Self:
+    def from_pyecharts(cls, chart: 'Chart', on_point_click: Handler[EChartPointClickEventArguments] | None = None) -> Self:
         """Create an echart element from a pyecharts object.
 
         :param chart: pyecharts chart object
-        :param on_click_point: callback which is invoked when a point is clicked
+        :param on_point_click: callback that is invoked when a point is clicked
 
         :return: echart element
         """
@@ -136,7 +131,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         return self._props['options']
 
     def run_chart_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the EChart instance.
+        r"""Run a method of the EChart instance.
 
         See the `ECharts documentation <https://echarts.apache.org/en/api.html#echartsInstance>`_ for a list of methods.
 
@@ -144,7 +139,7 @@ class EChart(Element, component='echart.js', esm={'nicegui-echart': 'dist'}, def
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method (Python objects or JavaScript expressions)
+        :param \*args: arguments to pass to the method (Python objects or JavaScript expressions)
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

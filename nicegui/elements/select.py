@@ -1,6 +1,6 @@
 from collections.abc import Callable, Generator, Iterable, Iterator
 from contextlib import suppress
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
@@ -8,6 +8,7 @@ from .choice_element import ChoiceElement
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
+from .tooltip import Tooltip
 
 
 class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableElement, component='select.js'):
@@ -22,7 +23,7 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] | None = DEFAULT_PROP | None,
                  multiple: bool = DEFAULT_PROP | False,
                  clearable: bool = DEFAULT_PROP | False,
-                 validation: ValidationFunction | ValidationDict | None = None,
+                 validation: ValidationFunction[Any] | ValidationDict[Any] | None = None,
                  key_generator: Callable[[Any], Any] | Iterator[Any] | None = None,
                  ) -> None:
         """Dropdown Selection
@@ -30,21 +31,21 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
         This element is based on Quasar's `QSelect <https://quasar.dev/vue-components/select>`_ component.
 
         The options can be specified as a list of values, or as a dictionary mapping values to labels.
-        After manipulating the options, call `update()` to update the options in the UI.
+        After manipulating the options, call ``update()`` to update the options in the UI.
 
-        If `with_input` is True, an input field is shown to filter the options.
+        If ``with_input`` is True, an input field is shown to filter the options.
 
-        If `new_value_mode` is not None, it implies `with_input=True` and the user can enter new values in the input field.
+        If ``new_value_mode`` is not None, it implies ``with_input=True`` and the user can enter new values in the input field.
         See `Quasar's documentation <https://quasar.dev/vue-components/select#the-new-value-mode-prop>`_ for details.
-        Note that this mode is ineffective when setting the `value` property programmatically.
+        Note that this mode is ineffective when setting the ``value`` property programmatically.
 
-        You can use the `validation` parameter to define a dictionary of validation rules,
+        You can use the ``validation`` parameter to define a dictionary of validation rules,
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
-        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
+        To disable the automatic validation on every value change, you can use the ``without_auto_validation`` method.
 
-        :param options: a list ['value1', ...] or dictionary `{'value1':'label1', ...}` specifying the options
+        :param options: a list ['value1', ...] or dictionary ``{'value1':'label1', ...}`` specifying the options
         :param label: the label to display above the selection
         :param value: the initial value
         :param on_change: callback to execute when selection changes
@@ -63,28 +64,25 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                 value = [value]
             else:
                 value = value[:]  # avoid modifying the original list which could be the list of options (#3014)
-        # NOTE: validate arguments before super().__init__() registers the element,
-        # otherwise a half-built element stays in client.elements
         if isinstance(options, dict) and new_value_mode == 'add' and key_generator is None:
             raise ValueError('new_value_mode "add" is not supported for dict options without key_generator')
         if isinstance(key_generator, Generator):
             next(key_generator)  # prime the key generator, prepare it to receive the first value
         super().__init__(label=label, options=options, value=value, on_change=on_change, validation=validation)
         self.key_generator = key_generator
-        if new_value_mode is not None:
-            self._props['new-value-mode'] = new_value_mode
-            with_input = True
-        if with_input:
-            self._props['use-input'] = True
-            self._props.set_bool('hide-selected', not multiple)
-            self._props['fill-input'] = True
-            self._props['input-debounce'] = 0
-            self._props['for'] = self.html_id  # keep html_id on the input so tooltips/ui.query can anchor (#6114)
-        self._props.set_bool('multiple', multiple)
-        self._props.set_bool('clearable', clearable)
-
         self._is_showing_popup = False
         with self._props.suspend_updates():
+            if new_value_mode is not None:
+                self._props['new-value-mode'] = new_value_mode
+                with_input = True
+            if with_input:
+                self._props['use-input'] = True
+                self._props.set_bool('hide-selected', not multiple)
+                self._props['fill-input'] = True
+                self._props['input-debounce'] = 0
+            self._props['for'] = self.html_id  # keep html_id on the focus target for tooltips and ui.query (#6114)
+            self._props.set_bool('multiple', multiple)
+            self._props.set_bool('clearable', clearable)
             self.on('popup-show', lambda e: setattr(e.sender, '_is_showing_popup', True))
             self.on('popup-hide', lambda e: setattr(e.sender, '_is_showing_popup', False))
 
@@ -92,6 +90,11 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
     def is_showing_popup(self) -> bool:
         """Whether the options popup is currently shown."""
         return self._is_showing_popup
+
+    def tooltip(self, text: str) -> Self:
+        # anchor to the whole field because the element with the html_id is the hidden focus target (#6440)
+        Tooltip(text).props['target'] = f'[for="{self.html_id}"]'
+        return self
 
     def _event_args_to_value(self, e: GenericEventArguments) -> Any:
         # pylint: disable=too-many-nested-blocks
@@ -178,3 +181,9 @@ class Select(LabelElement, ValidationElement[Any], ChoiceElement, DisableableEle
                     self.options.update({key: value})
             self._update_values_and_labels()
             return key
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        values = self.value if self.multiple else [self.value]
+        selected_labels = [value if isinstance(self.options, list) else self.options.get(value, '') for value in values]
+        option_labels = self._labels if self.is_showing_popup else []
+        return [*super()._displayed_contents(only_visible=only_visible), *selected_labels, *option_labels]

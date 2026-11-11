@@ -1,7 +1,5 @@
 from collections.abc import Callable
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -101,3 +99,6 @@ class ContentElement(Element):
         if self.CONTENT_PROP == 'innerHTML' and '</script>' in content:
             raise ValueError('HTML elements must not contain <script> tags. Use ui.add_body_html() instead.')
         self._props[self.CONTENT_PROP] = content
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self.content]

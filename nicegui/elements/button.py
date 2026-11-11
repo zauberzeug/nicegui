@@ -1,6 +1,5 @@
 import asyncio
-
-from typing_extensions import Self
+from typing import Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import ClickEventArguments, Handler, handle_event
@@ -31,9 +30,11 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
 
         :param text: the label of the button
         :param on_click: callback which is invoked when button is pressed
-        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or `None`, default: 'primary')
-        :param icon: the name of an icon to be displayed on the button (default: `None`)
+        :param color: the color of the button (either a Quasar, Tailwind, or CSS color or ``None``, default: 'primary')
+        :param icon: the name of an icon to be displayed on the button (default: ``None``)
         """
+        self._clicked_waiters: set[asyncio.Event] = set()
+        self._clicked_waiters_registered = False
         super().__init__(tag='q-btn', text=text, background_color=color, icon=icon)
 
         if on_click:
@@ -66,6 +67,15 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         *Updated in version 3.17.0: Awaiting the button click cancels the awaiting task
         when the button is deleted, e.g. because the client disconnected.*
         """
+        if not self._clicked_waiters_registered:
+            def wake_clicked_waiters() -> None:
+                for event in self._clicked_waiters:
+                    event.set()
+            self.on('click', wake_clicked_waiters, [])
+            self._clicked_waiters_registered = True
         event = asyncio.Event()
-        self.on('click', event.set, [])
-        await self._wait_for(event)
+        self._clicked_waiters.add(event)
+        try:
+            await self._wait_for(event)
+        finally:
+            self._clicked_waiters.discard(event)

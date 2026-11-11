@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import asyncio
 
-import httpx
+import httpx2
 
 from nicegui import events, ui
 
-api = httpx.AsyncClient()
+api = httpx2.AsyncClient()
 running_query: asyncio.Task | None = None
 
 
