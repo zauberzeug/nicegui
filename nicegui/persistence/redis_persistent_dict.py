@@ -40,8 +40,12 @@ class RedisPersistentDict(PersistentDict):
     async def initialize(self) -> None:
         """Load initial data from Redis and start listening for changes."""
         try:
-            data = await self.redis_client.get(self.key)
-            self.update(json.loads(data) if data else {})
+            pipeline = self.redis_client.pipeline()
+            pipeline.get(self.key)
+            if self.ttl is not None:
+                pipeline.expire(self.key, self.ttl)  # loading a tab storage counts as using it
+            data, *_ = await pipeline.execute()
+            self._load(json.loads(data) if data else {})
             self._start_listening()
         except Exception:
             log.warning(f'Could not load data from Redis with key {self.key}')
@@ -59,8 +63,12 @@ class RedisPersistentDict(PersistentDict):
         """Load initial data from Redis and start listening for changes in a synchronous context."""
         with redis_sync.from_url(self.url, **self._redis_client_params) as redis_client_sync:
             try:
-                data = redis_client_sync.get(self.key)
-                self.update(json.loads(data) if data else {})
+                pipeline = redis_client_sync.pipeline()
+                pipeline.get(self.key)
+                if self.ttl is not None:
+                    pipeline.expire(self.key, self.ttl)  # loading a tab storage counts as using it
+                data, *_ = pipeline.execute()
+                self._load(json.loads(data) if data else {})
                 self._start_listening()
             except Exception:
                 log.warning(f'Could not load data from Redis with key {self.key}')
