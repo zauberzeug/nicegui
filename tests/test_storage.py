@@ -585,6 +585,30 @@ async def test_clearing_storage_removes_leftover_temp_files(user: User):
     assert not Storage.path.exists(), 'temp files should be swept so the storage directory can be removed'
 
 
+def test_loading_storage_does_not_write_the_file_back(tmp_path):
+    path = tmp_path / 'storage.json'
+    path.write_text('{"key": "value"}', encoding='utf-8')  # spaced, unlike what a backup writes
+    d = FilePersistentDict(path, encoding='utf-8')
+    d.initialize_sync()  # as for app.storage.general when NiceGUI is imported
+    assert d == {'key': 'value'}
+    assert path.read_text(encoding='utf-8') == '{"key": "value"}'
+
+
+async def test_loading_storage_asynchronously_does_not_write_the_file_back(user: User, tmp_path):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    path = tmp_path / 'storage.json'
+    path.write_text('{"key": "value"}', encoding='utf-8')  # spaced, unlike what a backup writes
+    d = FilePersistentDict(path, encoding='utf-8')
+    await d.initialize()  # as for app.storage.user on a request
+    await background_tasks.teardown()  # awaits the backup, had loading scheduled one
+    assert d == {'key': 'value'}
+    assert path.read_text(encoding='utf-8') == '{"key": "value"}'
+
+
 @pytest.mark.parametrize('custom_cookie_headers', [False, True])
 def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
     @ui.page('/')
