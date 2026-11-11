@@ -44,14 +44,17 @@ def signals_and_reveal_demo() -> None:
 
 
 @doc.demo('Linting Diagnostics', '''
-    The `diagnostics` property is a mutable list of `Diagnostic` dicts rendered as inline error/warning marks with hover tooltips.
-    Each entry targets a 1-indexed line and carries a message;
-    `severity`, `source`, and the column range (`column` and `end_column`, 1-indexed; `end_column` is exclusive) are optional.
-    `open_lint_panel`, `close_lint_panel`, and `toggle_lint_panel` show or hide CodeMirror's built-in panel listing the diagnostics,
-    and `get_diagnostic_count` returns the count by severity.
+    The `diagnostics` property is a mutable list of `Diagnostic` dicts
+    rendered as inline error/warning marks with hover tooltips.
+    Each entry targets a 1-indexed line and carries a message.
+    `severity`, `source`, and the column range are optional
+    (`column` and `end_column` are 1-indexed, and `end_column` is exclusive).
+    `open_lint_panel`, `close_lint_panel`, and `toggle_lint_panel` show or hide CodeMirror's built-in panel
+    listing the diagnostics, and `get_diagnostic_count` returns the count by severity.
 
-    Messages render as plain text by default;
-    pass `diagnostic_message_html=True` to the constructor to render messages as sanitized HTML via NiceGUI's `setHTML` polyfill.
+    Messages render as plain text by default.
+    Pass `diagnostic_message_html=True` to the constructor to render them as sanitized HTML
+    via NiceGUI's `setHTML` polyfill.
 
     *Added in version 4.1.0*
 ''')
