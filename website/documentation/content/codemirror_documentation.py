@@ -44,22 +44,24 @@ def signals_and_reveal_demo() -> None:
 
 
 @doc.demo('Autocomplete', '''
-    Pass ``completions`` to surface your own entries in the autocomplete dropdown.
-    Each item is a dict; only ``label`` is required.
-    ``apply`` controls the inserted text, ``detail``/``info`` add helper text,
-    ``type`` picks an icon, ``boost`` biases sort order (-99..99),
-    ``display_label`` overrides the visible text, ``section`` groups entries under a heading,
-    ``commit_characters`` are extra accept-keys, and ``class_name`` adds a CSS class to that entry.
+    Pass `completions` to surface your own entries in the autocomplete dropdown.
+    Each item is a dict; only `label` is required.
+    `apply` controls the inserted text, `detail`/`info` add helper text,
+    `type` picks an icon, `boost` biases sort order (-99..99),
+    `display_label` overrides the visible text, `section` groups entries under a heading,
+    `commit_characters` are extra accept-keys, and `class_name` adds a CSS class to that entry.
 
-    Set ``snippet=True`` and use ``${1:foo}`` markers in ``apply`` for templated insertions —
+    Set `snippet=True` and use `${1:foo}` markers in `apply` for templated insertions —
     Tab cycles between fields. By default your entries merge with the active language pack's
-    completions; pass ``replace_language_completions=True`` to suppress them. Set
-    ``complete_words_in_document=True`` to also surface identifiers already typed elsewhere.
-    Call ``editor.trigger_completion()`` to open the popup programmatically.
+    completions; pass `replace_language_completions=True` to suppress them. Set
+    `complete_words_in_document=True` to also surface identifiers already typed elsewhere.
+    Call `editor.trigger_completion()` to open the popup programmatically.
 
-    Side-panel ``info`` content renders as plain text by default; pass
-    ``completion_info_html=True`` to the constructor to render ``info`` as sanitized HTML
-    via NiceGUI's ``setHTML`` polyfill — useful for code samples, links, or formatted notes.
+    Side-panel `info` content renders as plain text by default; pass
+    `completion_info_html=True` to the constructor to render `info` as sanitized HTML
+    via NiceGUI's `setHTML` polyfill — useful for code samples, links, or formatted notes.
+
+    *Added in version 4.1.0*
 ''')
 def custom_completions_demo() -> None:
     editor = ui.codemirror('', language='Python', completion_info_html=True, completions=[
