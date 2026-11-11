@@ -115,6 +115,10 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         Editor signals report the focus, visible line range and geometry,
         and ``reveal_line`` scrolls a given line into view.
 
+        *Since version 4.1.0:*
+        Lint diagnostics mark a line or a range of it with a severity and a message shown on hover.
+        Assign a list of ``Diagnostic`` dicts to ``diagnostics``.
+
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: ``None``)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
@@ -131,8 +135,8 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         :param decoration_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
         :param line_anchors: initial ``{anchor_id: 1-indexed line}`` mapping of anchors tracking document positions through edits (default: ``None``, *added in version 3.16.0*)
         :param on_anchor_change: callback to be executed when tracked anchor positions change (default: ``None``, *added in version 3.16.0*)
-        :param diagnostics: initial list of ``Diagnostic`` dicts rendered as inline marks with hover tooltips (default: ``None``)
-        :param diagnostic_message_html: render diagnostic ``message`` content as sanitized HTML rather than plain text (default: ``False``)
+        :param diagnostics: initial list of ``Diagnostic`` dicts rendered as inline marks with hover tooltips (default: ``None``, *added in version 4.1.0*)
+        :param diagnostic_message_html: render diagnostic ``message`` content as sanitized HTML rather than plain text (default: ``False``, *added in version 4.1.0*)
         :param line_tooltips: initial mapping of 1-indexed line numbers to tooltip content (default: ``None``, *added in version 3.13.0*)
         :param line_tooltip_html: render tooltip content as sanitized HTML rather than plain text (default: ``False``, *added in version 3.13.0*)
         """
@@ -235,7 +239,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         Each entry is a ``Diagnostic`` dict.
         Mutations sync to the client.
 
-        *Added in version X.Y.0*
+        *Added in version 4.1.0*
         """
         return self._props['diagnostics']
 
@@ -246,21 +250,21 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
     def open_lint_panel(self) -> None:
         """Show CodeMirror's lint panel listing all current diagnostics.
 
-        *Added in version X.Y.0*
+        *Added in version 4.1.0*
         """
         self.run_method('openLintPanel')
 
     def close_lint_panel(self) -> None:
         """Hide CodeMirror's lint panel.
 
-        *Added in version X.Y.0*
+        *Added in version 4.1.0*
         """
         self.run_method('closeLintPanel')
 
     def toggle_lint_panel(self) -> None:
         """Toggle CodeMirror's lint panel.
 
-        *Added in version X.Y.0*
+        *Added in version 4.1.0*
         """
         self.run_method('toggleLintPanel')
 
@@ -270,7 +274,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         The returned dict has keys ``'error'``, ``'warning'``, ``'info'``, ``'hint'``,
         plus ``'total'`` for the sum.
 
-        *Added in version X.Y.0*
+        *Added in version 4.1.0*
         """
         return await self.run_method('getDiagnosticCount')
 
