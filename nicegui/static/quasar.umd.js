@@ -1,10 +1,10 @@
 /*!
-* Quasar Framework v2.35.2
+* Quasar Framework v2.35.3
 * (c) 2015-present Razvan Stoenescu
 * Released under the MIT License.
 */
 (function(vue) {
-	//#region \0rolldown/runtime.js
+	// \0rolldown/runtime.js
 	var __defProp = Object.defineProperty;
 	var __exportAll = (all, no_symbols) => {
 		let target = {};
@@ -15,8 +15,7 @@
 		if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
 		return target;
 	};
-	//#endregion
-	//#region src/umd-vue-guard.js
+	// src/umd-vue-guard.js
 	/**
 	* Must stay the FIRST import of the UMD entry (and listed in
 	* package.json > sideEffects): it has to evaluate before any module
@@ -24,8 +23,7 @@
 	* surfaces as a cryptic TypeError instead of this message.
 	*/
 	if (window.Vue === void 0) console.error("[ Quasar ] Vue is required to run. Please add a script tag for it before loading Quasar.");
-	//#endregion
-	//#region src/utils/private.inject-obj-prop/inject-obj-prop.js
+	// src/utils/private.inject-obj-prop/inject-obj-prop.js
 	function injectProp(target, propName, get, set) {
 		Object.defineProperty(target, propName, {
 			get,
@@ -38,8 +36,7 @@
 		for (const key in props) injectProp(target, key, props[key]);
 		return target;
 	}
-	//#endregion
-	//#region src/plugins/platform/Platform.js
+	// src/plugins/platform/Platform.js
 	/**
 	* __ QUASAR_SSR __            -> runs on SSR/SSG on client or server
 	* __ QUASAR_SSR_SERVER __     -> runs on SSR/SSG on server
@@ -97,6 +94,10 @@
 		return ipadRE.exec(userAgent) || ipodRE.exec(userAgent) || iphoneRE.exec(userAgent) || androidRE.exec(userAgent) || winRE.exec(userAgent) || macRE.exec(userAgent) || linuxRE.exec(userAgent) || crosRE.exec(userAgent) || [];
 	}
 	const hasTouch = "ontouchstart" in window || window.navigator.maxTouchPoints > 0;
+	function getNativeBridge(name) {
+		const bridge = window[name];
+		if (bridge !== void 0 && bridge !== null && !(bridge instanceof Node) && !(bridge instanceof HTMLCollection) && bridge.window !== bridge) return bridge;
+	}
 	function getPlatform(UA) {
 		const userAgent = normalizeUserAgent(UA);
 		const matched = getMatch(userAgent, getPlatformMatch(userAgent));
@@ -159,11 +160,11 @@
 		if (userAgent.includes("electron")) browser.electron = true;
 		else if (document.location.href.includes("-extension://")) browser.bex = true;
 		else {
-			if (window.Capacitor !== void 0) {
+			if (getNativeBridge("Capacitor") !== void 0) {
 				browser.capacitor = true;
 				browser.nativeMobile = true;
 				browser.nativeMobileWrapper = "capacitor";
-			} else if (window._cordovaNative !== void 0 || window.cordova !== void 0) {
+			} else if (getNativeBridge("_cordovaNative") !== void 0 || getNativeBridge("cordova") !== void 0) {
 				browser.cordova = true;
 				browser.nativeMobile = true;
 				browser.nativeMobileWrapper = "cordova";
@@ -230,8 +231,7 @@
 			preHydrationBrowser = null;
 		}
 	}
-	//#endregion
-	//#region src/utils/private.create/create.js
+	// src/utils/private.create/create.js
 	function createComponent(raw) {
 		return (0, vue.markRaw)((0, vue.defineComponent)(raw));
 	}
@@ -245,8 +245,7 @@
 		});
 		return plugin;
 	};
-	//#endregion
-	//#region src/utils/event/event.js
+	// src/utils/event/event.js
 	const listenOpts = {
 		hasPassive: true,
 		passive: { passive: true },
@@ -349,8 +348,7 @@
 		stopAndPrevent,
 		preventDraggable
 	};
-	//#endregion
-	//#region src/utils/debounce/debounce.js
+	// src/utils/debounce/debounce.js
 	function parseOptions(options) {
 		if (Object(options) === options) {
 			const trailing = options.trailing ?? true;
@@ -435,8 +433,7 @@
 		};
 		return debounced;
 	}
-	//#endregion
-	//#region src/plugins/screen/Screen.js
+	// src/plugins/screen/Screen.js
 	const SIZE_LIST = [
 		"sm",
 		"md",
@@ -576,8 +573,7 @@
 			else start();
 		}
 	});
-	//#endregion
-	//#region src/plugins/dark/Dark.js
+	// src/plugins/dark/Dark.js
 	const ssrAutoAttr = "data-dark-auto";
 	const Plugin$11 = /*#__PURE__*/ createReactivePlugin({
 		isActive: false,
@@ -624,16 +620,14 @@
 			this.set($q.config.dark ?? false);
 		}
 	});
-	//#endregion
-	//#region src/utils/css-var/set-css-var.js
+	// src/utils/css-var/set-css-var.js
 	function setCssVar(propName, value, element = document.body) {
 		if (typeof propName !== "string") throw new TypeError("Expected a string as propName");
 		if (typeof value !== "string") throw new TypeError("Expected a string as value");
 		if (!(element instanceof Element)) throw new TypeError("Expected a DOM element");
 		element.style.setProperty(`--q-${propName}`, value);
 	}
-	//#endregion
-	//#region src/utils/private.keyboard/key-composition.js
+	// src/utils/private.keyboard/key-composition.js
 	let lastKeyCompositionStatus = false;
 	function onKeyDownComposition(evt) {
 		lastKeyCompositionStatus = evt.isComposing === true;
@@ -644,8 +638,7 @@
 	function isKeyCode(evt, keyCodes) {
 		return !shouldIgnoreKey(evt) && (Array.isArray(keyCodes) ? keyCodes.includes(evt.keyCode) : keyCodes === evt.keyCode);
 	}
-	//#endregion
-	//#region src/plugins/private.body/Body.js
+	// src/plugins/private.body/Body.js
 	function getMobilePlatform(is) {
 		if (is.ios) return "ios";
 		if (is.android) return "android";
@@ -708,8 +701,7 @@
 		if (client.is.ios) document.body.addEventListener("touchstart", noop$1);
 		window.addEventListener("keydown", onKeyDownComposition, true);
 	} };
-	//#endregion
-	//#region src/plugins/private.history/History.js
+	// src/plugins/private.history/History.js
 	const getTrue = () => true;
 	function filterInvalidPath(path) {
 		return typeof path === "string" && path !== "" && path !== "/" && path !== "#/";
@@ -737,7 +729,7 @@
 			if (!cordova && !capacitor) return;
 			const qConf = $q.config[cordova ? "cordova" : "capacitor"];
 			if (qConf?.backButton === false) return;
-			if (capacitor && (window.Capacitor === void 0 || window.Capacitor.Plugins.App === void 0)) return;
+			if (capacitor && typeof getNativeBridge("Capacitor")?.Plugins?.App?.addListener !== "function") return;
 			this.add = (entry) => {
 				if (entry.condition === void 0) entry.condition = getTrue;
 				this.__history.push(entry);
@@ -766,8 +758,7 @@
 			else window.Capacitor.Plugins.App.addListener("backButton", backHandler);
 		}
 	};
-	//#endregion
-	//#region lang/en-US.js
+	// lang/en-US.js
 	var en_US_default = {
 		isoName: "en-US",
 		nativeName: "English (US)",
@@ -905,8 +896,7 @@
 			noResults: "No matching nodes found"
 		}
 	};
-	//#endregion
-	//#region src/plugins/lang/Lang.js
+	// src/plugins/lang/Lang.js
 	function splitTag(tag) {
 		return tag.split(/[-_]/).map((v, i) => i === 0 ? v.toLowerCase() : i > 1 || v.length < 4 ? v.toUpperCase() : v[0].toUpperCase() + v.slice(1).toLowerCase());
 	}
@@ -997,8 +987,7 @@
 			}
 		}
 	});
-	//#endregion
-	//#region icon-set/material-icons.js
+	// icon-set/material-icons.js
 	var material_icons_default = {
 		name: "material-icons",
 		type: {
@@ -1121,8 +1110,7 @@
 			removeUploaded: "done_all"
 		}
 	};
-	//#endregion
-	//#region src/plugins/icon-set/IconSet.js
+	// src/plugins/icon-set/IconSet.js
 	const Plugin$9 = /*#__PURE__*/ createReactivePlugin({
 		iconMapFn: null,
 		__qIconSet: {}
@@ -1151,8 +1139,7 @@
 			}
 		}
 	});
-	//#endregion
-	//#region src/utils/private.symbols/symbols.js
+	// src/utils/private.symbols/symbols.js
 	const timelineKey = "_q_t_";
 	const stepperKey = "_q_s_";
 	const layoutKey = "_q_l_";
@@ -1163,8 +1150,7 @@
 	const tabsKey = "_q_tabs_";
 	const uploaderKey = "_q_u_";
 	function emptyRenderFn() {}
-	//#endregion
-	//#region src/utils/is/is.js
+	// src/utils/is/is.js
 	function toByteView(v) {
 		return v.constructor === ArrayBuffer ? new Uint8Array(v) : new Uint8Array(v.buffer, v.byteOffset, v.byteLength);
 	}
@@ -1252,15 +1238,13 @@
 		regexp: isRegexp,
 		number: isNumber
 	};
-	//#endregion
-	//#region src/utils/private.config/instance-config.js
+	// src/utils/private.config/instance-config.js
 	const globalConfig = {};
 	let globalConfigIsFrozen = false;
 	function freezeGlobalConfig() {
 		globalConfigIsFrozen = true;
 	}
-	//#endregion
-	//#region src/install-quasar.js
+	// src/install-quasar.js
 	/**
 	* If the list below changes, make sure
 	* to also edit /ui/test/specs/generators/generator.plugin.js
@@ -1307,7 +1291,7 @@
 		};
 	}
 	var install_quasar_default = function installQuasar(parentApp, opts = {}) {
-		const $q = { version: "2.35.2" };
+		const $q = { version: "2.35.3" };
 		if (!globalConfigIsFrozen) {
 			if (opts.config !== void 0) Object.assign(globalConfig, opts.config);
 			$q.config = { ...globalConfig };
@@ -1321,8 +1305,7 @@
 			onSSRHydrated: []
 		});
 	};
-	//#endregion
-	//#region src/composables/use-quasar/use-quasar.js
+	// src/composables/use-quasar/use-quasar.js
 	/**
 	* Returns the $q instance.
 	* Equivalent to `this.$q` inside templates.
@@ -1330,8 +1313,7 @@
 	function useQuasar() {
 		return (0, vue.getCurrentInstance)()?.appContext.config.globalProperties.$q ?? (0, vue.inject)("_q_");
 	}
-	//#endregion
-	//#region src/utils/format/format.js
+	// src/utils/format/format.js
 	const units = [
 		"B",
 		"KB",
@@ -1365,15 +1347,26 @@
 		if (v === void 0 || v === null) return v;
 		return String(v).padStart(length, char);
 	}
+	/**
+	* How many decimals a number (or its string form) needs when written
+	* in fixed notation. Exponent notation counts too: String(1e-7) is
+	* "1e-7", not "0.0000001". Capped at 100, the most that toFixed()
+	* accepts.
+	*/
+	function getDecimalsCount(value) {
+		const [mantissa, exponent] = String(value).trim().toLowerCase().split("e");
+		const count = (mantissa.split(".")[1] || "").length - (Number(exponent) || 0);
+		return count > 0 ? Math.min(count, 100) : 0;
+	}
 	var format_default = {
 		humanStorageSize,
 		capitalize,
 		between,
 		normalizeToInterval,
-		pad
+		pad,
+		getDecimalsCount
 	};
-	//#endregion
-	//#region src/components/ajax-bar/QAjaxBar.js
+	// src/components/ajax-bar/QAjaxBar.js
 	const xhr = XMLHttpRequest;
 	const open = xhr.prototype.open;
 	const positionValues = [
@@ -1573,8 +1566,7 @@
 			});
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-size/use-size.js
+	// src/composables/private.use-size/use-size.js
 	const useSizeDefaults = {
 		xs: 18,
 		sm: 24,
@@ -1602,8 +1594,7 @@
 		};
 	}
 	const getSizeStyle$3 = /*#__PURE__*/ createSizeStyle(useSizeDefaults);
-	//#endregion
-	//#region src/utils/private.render/render.js
+	// src/utils/private.render/render.js
 	function hSlot(slot, otherwise) {
 		return slot !== void 0 ? slot() || otherwise : otherwise;
 	}
@@ -1629,8 +1620,7 @@
 		if (slot === void 0) return source;
 		return source !== void 0 ? source.concat(slot()) : slot();
 	}
-	//#endregion
-	//#region src/components/icon/QIcon.js
+	// src/components/icon/QIcon.js
 	const defaultViewBox = "0 0 24 24";
 	const libMap = {
 		"mdi-": "mdi ",
@@ -1807,8 +1797,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/avatar/QAvatar.js
+	// src/components/avatar/QAvatar.js
 	var QAvatar_default = /*#__PURE__*/ createComponent({
 		name: "QAvatar",
 		props: {
@@ -1834,8 +1823,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/badge/QBadge.js
+	// src/components/badge/QBadge.js
 	const alignValues$3 = [
 		"top",
 		"middle",
@@ -1871,8 +1859,7 @@
 			}, hMergeSlot(slots.default, props.label !== void 0 ? [props.label] : []));
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-dark/use-dark.js
+	// src/composables/private.use-dark/use-dark.js
 	const useDarkProps = { dark: {
 		type: Boolean,
 		default: null
@@ -1880,8 +1867,7 @@
 	function useDark(props, $q) {
 		return () => props.dark === null ? $q.dark.isActive : props.dark;
 	}
-	//#endregion
-	//#region src/components/banner/QBanner.js
+	// src/components/banner/QBanner.js
 	var QBanner_default = /*#__PURE__*/ createComponent({
 		name: "QBanner",
 		props: {
@@ -1905,8 +1891,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/bar/QBar.js
+	// src/components/bar/QBar.js
 	var QBar_default = /*#__PURE__*/ createComponent({
 		name: "QBar",
 		props: {
@@ -1922,8 +1907,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-align/use-align.js
+	// src/composables/private.use-align/use-align.js
 	const alignMap = {
 		left: "start",
 		center: "center",
@@ -1944,8 +1928,7 @@
 			return `${props.vertical ? "items" : "justify"}-${alignMap[align]}`;
 		};
 	}
-	//#endregion
-	//#region src/utils/private.vm/vm.js
+	// src/utils/private.vm/vm.js
 	function getParentProxy(proxy) {
 		if (Object(proxy.$parent) === proxy.$parent) return proxy.$parent;
 		let { parent } = proxy.$;
@@ -1988,8 +1971,7 @@
 		const el = value.$el ?? value;
 		return el.nodeType === 1 ? el : null;
 	}
-	//#endregion
-	//#region src/components/breadcrumbs/QBreadcrumbs.js
+	// src/components/breadcrumbs/QBreadcrumbs.js
 	const disabledValues = ["", true];
 	var QBreadcrumbs_default = /*#__PURE__*/ createComponent({
 		name: "QBreadcrumbs",
@@ -2042,8 +2024,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-router-link/use-router-link.js
+	// src/composables/private.use-router-link/use-router-link.js
 	function getOriginalPath(record) {
 		return record ? record.aliasOf ? record.aliasOf.path : record.path : "";
 	}
@@ -2190,8 +2171,7 @@
 			navigateOnClick
 		};
 	}
-	//#endregion
-	//#region src/components/breadcrumbs/QBreadcrumbsEl.js
+	// src/components/breadcrumbs/QBreadcrumbsEl.js
 	var QBreadcrumbsEl_default = /*#__PURE__*/ createComponent({
 		name: "QBreadcrumbsEl",
 		props: {
@@ -2223,8 +2203,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/spinner-utils.js
+	// src/components/spinner/spinner-utils.js
 	const useSpinnerProps = {
 		size: {
 			type: [String, Number],
@@ -2238,8 +2217,7 @@
 	function getSpinnerClass(color, name) {
 		return "q-spinner" + (name ? ` q-spinner-${name}` : "") + (color ? ` text-${color}` : "");
 	}
-	//#endregion
-	//#region src/components/spinner/QSpinner.js
+	// src/components/spinner/QSpinner.js
 	var QSpinner_default = /*#__PURE__*/ createComponent({
 		name: "QSpinner",
 		props: {
@@ -2270,8 +2248,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/utils/dom/dom.js
+	// src/utils/dom/dom.js
 	function offset(el) {
 		if (el === window) return {
 			top: 0,
@@ -2328,17 +2305,16 @@
 		cssBatch,
 		ready
 	};
-	//#endregion
-	//#region src/directives/ripple/Ripple.js
+	// src/directives/ripple/Ripple.js
 	const enterDelay = 50;
 	const touchEnterDelay = 100;
 	const keyThrottle = 300;
 	const { passive: passive$6 } = listenOpts;
 	const listeners$1 = [
 		[],
-		[["click", onStart], ["keyup", onKey]],
+		[["click", onStart$1], ["keyup", onKey]],
 		[
-			["pointerdown", onStart],
+			["pointerdown", onStart$1],
 			["pointercancel", onCancel],
 			["pointerleave", onCancel],
 			["keydown", onKey]
@@ -2396,7 +2372,7 @@
 		ctx.ripples.push(ripple);
 		timer = setTimeout(enter, evt.type === "pointerdown" && evt.pointerType === "touch" ? touchEnterDelay : enterDelay);
 	}
-	function onStart(evt) {
+	function onStart$1(evt) {
 		if (!evt.qSkipRipple) {
 			const el = evt.currentTarget;
 			showRipple(evt, el, el.__qripple, evt.qKeyEvent === true);
@@ -2488,8 +2464,7 @@
 			el.__qripple = void 0;
 		}
 	});
-	//#endregion
-	//#region src/components/btn/use-btn.js
+	// src/components/btn/use-btn.js
 	const btnPadding = {
 		none: 0,
 		xs: 4,
@@ -2625,8 +2600,7 @@
 			isActionable
 		};
 	}
-	//#endregion
-	//#region src/components/btn/QBtn.js
+	// src/components/btn/QBtn.js
 	const { passiveCapture: passiveCapture$5 } = listenOpts;
 	let touchTarget = null;
 	let keyboardTarget = null;
@@ -2846,8 +2820,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/btn-group/QBtnGroup.js
+	// src/components/btn-group/QBtnGroup.js
 	var QBtnGroup_default = /*#__PURE__*/ createComponent({
 		name: "QBtnGroup",
 		props: {
@@ -2879,8 +2852,7 @@
 			return () => (0, vue.h)("div", { class: classes.value }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/utils/private.selection/selection.js
+	// src/utils/private.selection/selection.js
 	function clearSelection() {
 		if (window.getSelection !== void 0) {
 			const selection = window.getSelection();
@@ -2891,8 +2863,7 @@
 			}
 		} else if (document.selection !== void 0) document.selection.empty();
 	}
-	//#endregion
-	//#region src/composables/private.use-anchor/use-anchor.js
+	// src/composables/private.use-anchor/use-anchor.js
 	const useAnchorStaticProps = {
 		target: {
 			type: [
@@ -3220,8 +3191,7 @@
 			anchorEvents
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-model-toggle/use-model-toggle.js
+	// src/composables/private.use-model-toggle/use-model-toggle.js
 	const useModelToggleProps = {
 		modelValue: {
 			type: Boolean,
@@ -3304,8 +3274,7 @@
 		Object.assign(proxy, publicMethods);
 		return publicMethods;
 	}
-	//#endregion
-	//#region src/utils/private.portal/portal.js
+	// src/utils/private.portal/portal.js
 	const portalProxyList = [];
 	function getPortalProxy(el) {
 		return portalProxyList.find((proxy) => proxy.contentEl !== null && proxy.contentEl.contains(el));
@@ -3339,8 +3308,7 @@
 			proxy = getParentProxy(proxy);
 		}
 	}
-	//#endregion
-	//#region src/utils/private.focus/focus-manager.js
+	// src/utils/private.focus/focus-manager.js
 	let queue = [];
 	let waitFlags = [];
 	let refocusing = false;
@@ -3373,8 +3341,7 @@
 	function removeFocusFn(fn) {
 		queue = queue.filter((entry) => entry !== fn);
 	}
-	//#endregion
-	//#region src/utils/private.config/nodes.js
+	// src/utils/private.config/nodes.js
 	const nodesList = [];
 	const portalTypeList = [];
 	let portalIndex = 1;
@@ -3428,8 +3395,7 @@
 			if ((i === lastDialogIndex || portalTypeList[i] !== "dialog") && !el.contains(target)) target.append(el);
 		}
 	}
-	//#endregion
-	//#region src/composables/private.use-portal/use-portal.js
+	// src/composables/private.use-portal/use-portal.js
 	/**
 	* Noop internal component to ease testing
 	* of the teleported content.
@@ -3469,7 +3435,7 @@
 		let portalEl = null;
 		const focusObj = {};
 		const onGlobalDialog = type === "dialog" && isOnGlobalDialog(vm);
-		const notifiesField = type !== "tooltip";
+		const takesFocus = type !== "tooltip";
 		let fieldNotified = false;
 		function notifyField(name) {
 			vm.vnode.el?.dispatchEvent(new CustomEvent(name, { bubbles: true }));
@@ -3495,10 +3461,12 @@
 				}
 				portalIsActive.value = true;
 				portalProxyList.push(vm.proxy);
-				addFocusWaitFlag(focusObj);
-				if (notifiesField && !silent) {
-					fieldNotified = true;
-					notifyField("popup-show");
+				if (takesFocus) {
+					addFocusWaitFlag(focusObj);
+					if (!silent) {
+						fieldNotified = true;
+						notifyField("popup-show");
+					}
 				}
 			}
 		}
@@ -3529,8 +3497,7 @@
 			renderPortal: () => onGlobalDialog ? renderPortalContent() : portalIsActive.value ? [(0, vue.h)(vue.Teleport, { to: portalEl }, (0, vue.h)(QPortal, renderPortalContent))] : void 0
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-portal-refocus/use-portal-refocus.js
+	// src/composables/private.use-portal-refocus/use-portal-refocus.js
 	function usePortalRefocus(props, isTakingFocus) {
 		const { proxy } = (0, vue.getCurrentInstance)();
 		let refocusTarget = null;
@@ -3577,8 +3544,7 @@
 			adoptRefocusTarget
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-transition/use-transition.js
+	// src/composables/private.use-transition/use-transition.js
 	const useTransitionProps = {
 		transitionShow: {
 			type: String,
@@ -3621,8 +3587,7 @@
 			transitionStyle: () => `--q-transition-duration: ${props.transitionDuration}ms`
 		};
 	}
-	//#endregion
-	//#region src/composables/use-tick/use-tick.js
+	// src/composables/use-tick/use-tick.js
 	function useTick() {
 		let tickFn;
 		const vm = (0, vue.getCurrentInstance)();
@@ -3646,8 +3611,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/use-timeout/use-timeout.js
+	// src/composables/use-timeout/use-timeout.js
 	function useTimeout() {
 		const isTimeoutPending = (0, vue.ref)(false);
 		let timer = null;
@@ -3678,8 +3642,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-transition-end/use-transition-end.js
+	// src/composables/private.use-transition-end/use-transition-end.js
 	function useTransitionEnd(props) {
 		const { registerTimeout, removeTimeout } = useTimeout();
 		let finishTransition = null;
@@ -3698,8 +3661,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-hover/use-hover.js
+	// src/composables/private.use-hover/use-hover.js
 	const useHoverProps = {
 		hover: Boolean,
 		hoverDelay: {
@@ -3744,8 +3706,7 @@
 			onHoverContentEnter
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-position-engine/engine/core.js
+	// src/composables/private.use-position-engine/engine/core.js
 	const partsFirst = [
 		"top",
 		"center",
@@ -4019,8 +3980,7 @@
 		if (el.scrollTop !== scrollTop) el.scrollTop = scrollTop;
 		if (el.scrollLeft !== scrollLeft) el.scrollLeft = scrollLeft;
 	}
-	//#endregion
-	//#region src/composables/private.use-position-engine/engine/anchor-engine.js
+	// src/composables/private.use-position-engine/engine/anchor-engine.js
 	/**
 	* The native positioning engine: expresses a popup's placement through
 	* CSS anchor positioning (position-anchor + anchor()/anchor-size()
@@ -4259,8 +4219,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/utils/private.focus/detached-fullscreen.js
+	// src/utils/private.focus/detached-fullscreen.js
 	/**
 	* Registry of elements that have been detached from their original DOM
 	* position. Currently only useSoftFullscreen() does this: it moves the element
@@ -4343,8 +4302,7 @@
 	function clickIsInDetachedFullscreen(rootEl, targetEl) {
 		return isInDetachedFullscreen(rootEl, targetEl, strictlyContains);
 	}
-	//#endregion
-	//#region src/utils/private.scroll-tracking/scroll-tracking.js
+	// src/utils/private.scroll-tracking/scroll-tracking.js
 	/**
 	* One capture-phase document listener tracks every scrolling container
 	* at once — nested ones included, which per-container listeners could
@@ -4373,8 +4331,7 @@
 	function removeScrollTracking(fn) {
 		if (scrollSubscribers.delete(fn) && scrollSubscribers.size === 0) changeGlobalListeners("removeEventListener");
 	}
-	//#endregion
-	//#region src/composables/private.use-position-engine/engine/fallback-engine.js
+	// src/composables/private.use-position-engine/engine/fallback-engine.js
 	/**
 	* The JS positioning engine: expresses a placement decided by the
 	* shared boundary pass (core.js) through pixel insets, written from
@@ -4661,8 +4618,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-position-engine/use-position-engine.js
+	// src/composables/private.use-position-engine/use-position-engine.js
 	const emptyStyle = { value: "" };
 	function usePositionEngine({ props, $q, anchorEl, innerRef, showing, anchorOrigin, selfOrigin, trackContent = false, viaCssAnchor = cssAnchorSupport }) {
 		let stopPositionWatcher, engine = null, decidedAnchorRef = null, anchorEngine = null, fallbackEngine = null;
@@ -4726,8 +4682,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/utils/private.keyboard/escape-key.js
+	// src/utils/private.keyboard/escape-key.js
 	const handlers$1 = [];
 	let escDown;
 	function onKeydown$3(evt) {
@@ -4759,8 +4714,7 @@
 			if (handlers$1.length === 0) update$6("removeEventListener");
 		}
 	}
-	//#endregion
-	//#region src/utils/private.focus/focusout.js
+	// src/utils/private.focus/focusout.js
 	const handlers = [];
 	function trigger$2(e) {
 		handlers.at(-1)(e);
@@ -4776,8 +4730,7 @@
 			if (handlers.length === 0) document.body.removeEventListener("focusin", trigger$2);
 		}
 	}
-	//#endregion
-	//#region src/utils/private.click-outside/click-outside.js
+	// src/utils/private.click-outside/click-outside.js
 	let timer = null;
 	const { notPassiveCapture: notPassiveCapture$4, passiveCapture: passiveCapture$4 } = listenOpts, registeredList = [];
 	function globalHandler(evt) {
@@ -4841,8 +4794,7 @@
 		document.removeEventListener("mousedown", globalHandler, notPassiveCapture$4);
 		document.removeEventListener("touchstart", globalHandler, notPassiveCapture$4);
 	}
-	//#endregion
-	//#region src/components/menu/QMenu.js
+	// src/components/menu/QMenu.js
 	const tabbableSelector = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex^=\"-\"])";
 	var QMenu_default = /*#__PURE__*/ createComponent({
 		name: "QMenu",
@@ -5096,8 +5048,7 @@
 			return renderPortal;
 		}
 	});
-	//#endregion
-	//#region src/utils/uid/uid.js
+	// src/utils/uid/uid.js
 	function createUidFn() {
 		if (typeof crypto === "undefined") return () => {
 			throw new Error("[Quasar uid()] Secure RNG not available. Cannot generate collision-resistant UUID.");
@@ -5119,8 +5070,7 @@
 		};
 	}
 	var uid_default = /*#__PURE__*/ createUidFn();
-	//#endregion
-	//#region src/composables/use-id/use-id.js
+	// src/composables/use-id/use-id.js
 	function parseValue(val) {
 		return val === void 0 || val === null ? null : val;
 	}
@@ -5147,8 +5097,7 @@
 		}
 		return getValue !== void 0 ? (0, vue.computed)(() => getId(getValue(), required)) : (0, vue.ref)(`f_${uid_default()}`);
 	}
-	//#endregion
-	//#region src/components/btn-dropdown/QBtnDropdown.js
+	// src/components/btn-dropdown/QBtnDropdown.js
 	const btnPropsList = Object.keys(nonRoundBtnProps);
 	function passBtnProps(props) {
 		return btnPropsList.reduce((acc, key) => {
@@ -5358,8 +5307,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/use-form/private.use-form.js
+	// src/composables/use-form/private.use-form.js
 	const useFormProps = { name: String };
 	function useFormAttrs(props) {
 		return () => ({
@@ -5379,8 +5327,7 @@
 	function useFormInputNameAttr(props) {
 		return () => props.name || props.for;
 	}
-	//#endregion
-	//#region src/components/btn-toggle/QBtnToggle.js
+	// src/components/btn-toggle/QBtnToggle.js
 	var QBtnToggle_default = /*#__PURE__*/ createComponent({
 		name: "QBtnToggle",
 		props: {
@@ -5498,8 +5445,7 @@
 			}, getContent);
 		}
 	});
-	//#endregion
-	//#region src/components/card/QCard.js
+	// src/components/card/QCard.js
 	var QCard_default = /*#__PURE__*/ createComponent({
 		name: "QCard",
 		props: {
@@ -5518,8 +5464,7 @@
 			return () => (0, vue.h)(props.tag, { class: classes.value }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/card/QCardSection.js
+	// src/components/card/QCardSection.js
 	var QCardSection_default = /*#__PURE__*/ createComponent({
 		name: "QCardSection",
 		props: {
@@ -5534,8 +5479,7 @@
 			return () => (0, vue.h)(props.tag, { class: classes.value }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/card/QCardActions.js
+	// src/components/card/QCardActions.js
 	var QCardActions_default = /*#__PURE__*/ createComponent({
 		name: "QCardActions",
 		props: {
@@ -5548,8 +5492,7 @@
 			return () => (0, vue.h)("div", { class: classes.value }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/utils/private.touch/touch.js
+	// src/utils/private.touch/touch.js
 	const modifiersAll = {
 		left: true,
 		right: true,
@@ -5575,8 +5518,7 @@
 	function shouldStart(evt, ctx) {
 		return ctx.event === void 0 && evt.target !== void 0 && !evt.target.draggable && typeof ctx.handler === "function" && !avoidNodeNamesList.includes(evt.target.nodeName.toUpperCase()) && (evt.qClonedBy === void 0 || !evt.qClonedBy.includes(ctx.uid));
 	}
-	//#endregion
-	//#region src/directives/touch-swipe/TouchSwipe.js
+	// src/directives/touch-swipe/TouchSwipe.js
 	const { passive: passive$5, passiveCapture: passiveCapture$3, notPassive: notPassive$1, notPassiveCapture: notPassiveCapture$3 } = listenOpts;
 	const defaultSensitivity = [
 		.06,
@@ -5765,8 +5707,7 @@
 			el.__qtouchswipe = void 0;
 		}
 	});
-	//#endregion
-	//#region src/composables/use-render-cache/use-render-cache.js
+	// src/composables/use-render-cache/use-render-cache.js
 	function useRenderCache() {
 		let cache = Object.create(null);
 		return {
@@ -5783,8 +5724,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-panel/use-panel.js
+	// src/composables/private.use-panel/use-panel.js
 	const usePanelChildProps = {
 		name: { required: true },
 		disable: Boolean
@@ -5968,8 +5908,7 @@
 			previousPanel
 		};
 	}
-	//#endregion
-	//#region src/utils/scroll/scroll.js
+	// src/utils/scroll/scroll.js
 	const scrollTargetProp = [
 		Element,
 		String,
@@ -6107,8 +6046,7 @@
 		getScrollbarWidth,
 		hasScrollbar
 	};
-	//#endregion
-	//#region src/composables/use-soft-fullscreen/use-soft-fullscreen.js
+	// src/composables/use-soft-fullscreen/use-soft-fullscreen.js
 	let counter = 0;
 	let restoreState = null;
 	/**
@@ -6273,8 +6211,7 @@
 			toggleFullscreen
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-internal-fullscreen/use-internal-fullscreen.js
+	// src/composables/private.use-internal-fullscreen/use-internal-fullscreen.js
 	const useFullscreenProps = {
 		fullscreen: Boolean,
 		noRouteFullscreenExit: Boolean
@@ -6300,8 +6237,7 @@
 			toggleFullscreen
 		};
 	}
-	//#endregion
-	//#region src/components/carousel/QCarousel.js
+	// src/components/carousel/QCarousel.js
 	const navigationPositionOptions = [
 		"top",
 		"right",
@@ -6515,8 +6451,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/carousel/QCarouselSlide.js
+	// src/components/carousel/QCarouselSlide.js
 	var QCarouselSlide_default = /*#__PURE__*/ createComponent({
 		name: "QCarouselSlide",
 		props: {
@@ -6532,8 +6467,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/carousel/QCarouselControl.js
+	// src/components/carousel/QCarouselControl.js
 	var QCarouselControl_default = /*#__PURE__*/ createComponent({
 		name: "QCarouselControl",
 		props: {
@@ -6566,8 +6500,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/chat/QChatMessage.js
+	// src/components/chat/QChatMessage.js
 	var QChatMessage_default = /*#__PURE__*/ createComponent({
 		name: "QChatMessage",
 		props: {
@@ -6632,8 +6565,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-refocus-target/use-refocus-target.js
+	// src/composables/private.use-refocus-target/use-refocus-target.js
 	function useRefocusTarget(props, rootRef) {
 		const refocusRef = (0, vue.shallowRef)(null);
 		const refocusTargetEl = (0, vue.computed)(() => {
@@ -6657,8 +6589,7 @@
 			refocusTarget
 		};
 	}
-	//#endregion
-	//#region src/utils/private.option-sizes/option-sizes.js
+	// src/utils/private.option-sizes/option-sizes.js
 	const getOptionSizeStyle = /*#__PURE__*/ createSizeStyle({
 		xs: 30,
 		sm: 35,
@@ -6666,8 +6597,7 @@
 		lg: 50,
 		xl: 60
 	});
-	//#endregion
-	//#region src/components/checkbox/use-checkbox.js
+	// src/components/checkbox/use-checkbox.js
 	const useCheckboxProps = {
 		...useDarkProps,
 		...useSizeProps,
@@ -6788,8 +6718,7 @@
 			}, child);
 		};
 	}
-	//#endregion
-	//#region src/components/checkbox/QCheckbox.js
+	// src/components/checkbox/QCheckbox.js
 	const createBgNode = () => (0, vue.h)("div", {
 		key: "svg",
 		class: "q-checkbox__bg absolute"
@@ -6823,8 +6752,7 @@
 			return useCheckbox("checkbox", getInner);
 		}
 	});
-	//#endregion
-	//#region src/components/chip/QChip.js
+	// src/components/chip/QChip.js
 	function preventSpace$4(e) {
 		if (e.keyCode === 32) stopAndPrevent(e);
 	}
@@ -6969,8 +6897,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/circular-progress/circular-progress.js
+	// src/components/circular-progress/circular-progress.js
 	const useCircularCommonProps = {
 		...useSizeProps,
 		min: {
@@ -6999,8 +6926,7 @@
 		reverse: Boolean,
 		instantFeedback: Boolean
 	};
-	//#endregion
-	//#region src/components/circular-progress/QCircularProgress.js
+	// src/components/circular-progress/QCircularProgress.js
 	const radius = 50;
 	const diameter = 100;
 	const circumference = diameter * Math.PI;
@@ -7095,8 +7021,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/directives/touch-pan/TouchPan.js
+	// src/directives/touch-pan/TouchPan.js
 	const { passive: passive$4, passiveCapture: passiveCapture$2, notPassiveCapture: notPassiveCapture$2 } = listenOpts;
 	let uid$2 = 0;
 	function getChanges(evt, ctx, isFinal) {
@@ -7394,8 +7319,7 @@
 			el.__qtouchpan = void 0;
 		}
 	});
-	//#endregion
-	//#region src/composables/use-split-attrs/use-split-attrs.js
+	// src/composables/use-split-attrs/use-split-attrs.js
 	function isListener(key) {
 		if (key.codePointAt(0) !== 111 || key.codePointAt(1) !== 110) return false;
 		const c = key.codePointAt(2);
@@ -7426,8 +7350,7 @@
 		update();
 		return acc;
 	}
-	//#endregion
-	//#region src/components/slider/use-slider.js
+	// src/components/slider/use-slider.js
 	const markerPrefixClass = "q-slider__marker-labels";
 	const defaultMarkerConvertFn = (v) => ({ value: v });
 	const defaultMarkerLabelRenderFn = ({ marker }) => (0, vue.h)("div", {
@@ -7527,7 +7450,7 @@
 		const editable = (0, vue.computed)(() => !props.disable && !props.readonly && innerMin.value < innerMax.value);
 		const roundValueFn = (0, vue.computed)(() => {
 			if (props.step === 0) return (v) => v;
-			const decimals = (String(props.step).trim().split(".")[1] || "").length;
+			const decimals = Math.max(getDecimalsCount(props.step), getDecimalsCount(innerMin.value));
 			return (v) => Number.parseFloat(v.toFixed(decimals));
 		});
 		const keyStep = (0, vue.computed)(() => props.step === 0 ? 1 : props.step);
@@ -7597,7 +7520,7 @@
 			const acc = [];
 			const step = markerStep.value;
 			const max = props.max;
-			const decimals = Math.max((String(step).trim().split(".")[1] || "").length, (String(props.min).trim().split(".")[1] || "").length);
+			const decimals = Math.max(getDecimalsCount(step), getDecimalsCount(props.min));
 			let index = 0;
 			let value = props.min;
 			do {
@@ -7639,6 +7562,9 @@
 				backgroundSize: props.vertical ? `2px ${size}%` : `${size}% 2px`
 			};
 		});
+		function markerValueInRange({ value }) {
+			return value >= props.min && value <= props.max;
+		}
 		function getMarkerList(def) {
 			if (def === false) return null;
 			if (def === true) return markerTicks.value.map(defaultMarkerConvertFn);
@@ -7652,8 +7578,7 @@
 					label: item
 				};
 			});
-			const filterFn = ({ value }) => value >= props.min && value <= props.max;
-			if (Array.isArray(def)) return def.map((item) => isObject(item) ? item : { value: item }).filter(filterFn);
+			if (Array.isArray(def)) return def.map((item) => isObject(item) ? item : { value: item }).filter(markerValueInRange);
 			return Object.keys(def).map((key) => {
 				const item = def[key];
 				const value = Number(key);
@@ -7664,7 +7589,7 @@
 					value,
 					label: item
 				};
-			}).filter(filterFn);
+			}).filter(markerValueInRange);
 		}
 		function getMarkerLabelStyle(val) {
 			return { [positionProp.value]: `${100 * (val - props.min) / trackLen.value}%` };
@@ -7851,8 +7776,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/components/slider/QSlider.js
+	// src/components/slider/QSlider.js
 	const getNodeData = () => ({});
 	var QSlider_default = /*#__PURE__*/ createComponent({
 		name: "QSlider",
@@ -7988,8 +7912,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/use-element-size/use-element-size.js
+	// src/composables/use-element-size/use-element-size.js
 	function useElementSize(options) {
 		const elementSize = (0, vue.shallowRef)({
 			width: 0,
@@ -8073,8 +7996,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/components/tabs/QTabs.js
+	// src/components/tabs/QTabs.js
 	function getIndicatorClass(color, top, vertical) {
 		const pos = vertical ? ["left", "right"] : ["top", "bottom"];
 		return `absolute-${top ? pos[0] : pos[1]}${color ? ` text-${color}` : ""}`;
@@ -8500,8 +8422,7 @@
 			]);
 		}
 	});
-	//#endregion
-	//#region src/components/tabs/use-tab.js
+	// src/components/tabs/use-tab.js
 	let id$1 = 0;
 	const useTabEmits = ["click", "keydown"];
 	const useTabProps = {
@@ -8649,8 +8570,7 @@
 			$tabs
 		};
 	}
-	//#endregion
-	//#region src/components/tabs/QTab.js
+	// src/components/tabs/QTab.js
 	var QTab_default = /*#__PURE__*/ createComponent({
 		name: "QTab",
 		props: useTabProps,
@@ -8660,8 +8580,7 @@
 			return () => renderTab("div");
 		}
 	});
-	//#endregion
-	//#region src/components/tab-panels/QTabPanels.js
+	// src/components/tab-panels/QTabPanels.js
 	var QTabPanels_default = /*#__PURE__*/ createComponent({
 		name: "QTabPanels",
 		props: {
@@ -8679,8 +8598,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/tab-panels/QTabPanel.js
+	// src/components/tab-panels/QTabPanel.js
 	var QTabPanel_default = /*#__PURE__*/ createComponent({
 		name: "QTabPanel",
 		props: usePanelChildProps,
@@ -8692,8 +8610,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/utils/patterns/patterns.js
+	// src/utils/patterns/patterns.js
 	const hexRE$1 = /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/;
 	const hexaRE = /^#[0-9a-fA-F]{4}([0-9a-fA-F]{4})?$/;
 	const hexOrHexaRE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
@@ -8721,8 +8638,7 @@
 		anyColor: (v) => hexOrHexaRE.test(v) || rgbRE$1.test(v) || rgbaRE$1.test(v)
 	};
 	var patterns_default = { testPattern };
-	//#endregion
-	//#region src/utils/throttle/throttle.js
+	// src/utils/throttle/throttle.js
 	function throttle(fn, limit = 250, trailing) {
 		let timer = null, lastThis, lastArgs = null, result;
 		function run() {
@@ -8769,8 +8685,7 @@
 		};
 		return throttled;
 	}
-	//#endregion
-	//#region src/utils/colors/colors.js
+	// src/utils/colors/colors.js
 	const reRGBA = /^rgb(a)?\((\d{1,3}),(\d{1,3}),(\d{1,3}),?([01]?\.?\d*?)?\)$/;
 	function rgbToHex({ r, g, b, a }) {
 		const alpha = a !== void 0;
@@ -8950,8 +8865,7 @@
 		changeAlpha,
 		getPaletteColor
 	};
-	//#endregion
-	//#region src/components/color/QColor.js
+	// src/components/color/QColor.js
 	const palette = [
 		"rgb(255,204,204)",
 		"rgb(255,230,204)",
@@ -9706,8 +9620,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/use-hydration/use-hydration.js
+	// src/composables/use-hydration/use-hydration.js
 	function useHydration() {
 		const isHydrated = (0, vue.ref)(!isRuntimeSsrPreHydration.value);
 		if (!isHydrated.value) (0, vue.onMounted)(() => {
@@ -9715,8 +9628,7 @@
 		});
 		return { isHydrated };
 	}
-	//#endregion
-	//#region src/utils/date/private.persian.js
+	// src/utils/date/private.persian.js
 	const breaks = [
 		-61,
 		9,
@@ -9856,8 +9768,7 @@
 	function mod(a, b) {
 		return a - Math.trunc(a / b) * b;
 	}
-	//#endregion
-	//#region src/components/date/use-datetime.js
+	// src/components/date/use-datetime.js
 	const calendars = ["gregorian", "persian"];
 	const useDatetimeProps = {
 		mask: { type: String },
@@ -9925,8 +9836,7 @@
 			getCurrentDate
 		};
 	}
-	//#endregion
-	//#region src/utils/date/date.js
+	// src/utils/date/date.js
 	const MILLISECONDS_IN_DAY = 864e5;
 	const MILLISECONDS_IN_HOUR = 36e5;
 	const MILLISECONDS_IN_MINUTE = 6e4;
@@ -9972,7 +9882,7 @@
 		if (regexStore.has(key)) return regexStore.get(key);
 		const map = {};
 		let index = 0;
-		const regexText = mask.replace(reverseToken, (match) => {
+		const regexText = mask.replaceAll(reverseToken, (match) => {
 			index++;
 			switch (match) {
 				case "YY":
@@ -10656,7 +10566,7 @@
 	function compileMask(mask) {
 		const parts = [];
 		let index = 0;
-		mask.replace(token, (match, text, offset) => {
+		mask.replaceAll(token, (match, text, offset) => {
 			if (offset > index) parts.push(mask.slice(index, offset));
 			index = offset + match.length;
 			parts.push(match in formatter ? formatter[match] : text === void 0 ? match : text.split(String.raw`\]`).join("]"));
@@ -10707,8 +10617,7 @@
 		formatDate,
 		clone
 	};
-	//#endregion
-	//#region src/components/date/QDate.js
+	// src/components/date/QDate.js
 	const yearsInterval = 20;
 	const views = [
 		"Calendar",
@@ -10730,6 +10639,19 @@
 			year: date.year,
 			month: date.month,
 			day: date.day
+		};
+	}
+	function getEmitParams(action, date) {
+		return date.from !== void 0 ? {
+			reason: `${action}-range`,
+			details: {
+				...getShortDate(date.target),
+				from: getShortDate(date.from),
+				to: getShortDate(date.to)
+			}
+		} : {
+			reason: `${action}-day`,
+			details: getShortDate(date)
 		};
 	}
 	var QDate_default = /*#__PURE__*/ createComponent({
@@ -10823,13 +10745,11 @@
 			const isImmediate = (0, vue.computed)(() => props.emitImmediately && !props.multiple && !props.range);
 			const normalizedModel = (0, vue.computed)(() => Array.isArray(props.modelValue) ? props.modelValue : props.modelValue !== null && props.modelValue !== void 0 ? [props.modelValue] : []);
 			const daysModel = (0, vue.computed)(() => normalizedModel.value.filter((date) => typeof date === "string").map((date) => decodeString(date, innerMask.value, innerLocale.value)).filter((date) => date.dateHash !== null && date.day !== null && date.month !== null && date.year !== null));
-			const rangeModel = (0, vue.computed)(() => {
-				const fn = (date) => decodeString(date, innerMask.value, innerLocale.value);
-				return normalizedModel.value.filter((date) => isObject(date) && date.from !== void 0 && date.to !== void 0).map((range) => ({
-					from: fn(range.from),
-					to: fn(range.to)
-				})).filter((range) => range.from.dateHash !== null && range.to.dateHash !== null && range.from.dateHash < range.to.dateHash);
-			});
+			const decodeRangeModel = (date) => decodeString(date, innerMask.value, innerLocale.value);
+			const rangeModel = (0, vue.computed)(() => normalizedModel.value.filter((date) => isObject(date) && date.from !== void 0 && date.to !== void 0).map((range) => ({
+				from: decodeRangeModel(range.from),
+				to: decodeRangeModel(range.to)
+			})).filter((range) => range.from.dateHash !== null && range.to.dateHash !== null && range.from.dateHash < range.to.dateHash));
 			const getNativeDateFn = (0, vue.computed)(() => props.calendar !== "persian" ? (model) => new Date(model.year, model.month - 1, model.day) : (model) => {
 				const gDate = toGregorian(model.year, model.month, model.day);
 				return new Date(gDate.gy, gDate.gm - 1, gDate.gd);
@@ -11351,19 +11271,6 @@
 					emit("update:modelValue", value, reason, details);
 				});
 			}
-			function getEmitParams(action, date) {
-				return date.from !== void 0 ? {
-					reason: `${action}-range`,
-					details: {
-						...getShortDate(date.target),
-						from: getShortDate(date.from),
-						to: getShortDate(date.to)
-					}
-				} : {
-					reason: `${action}-day`,
-					details: getShortDate(date)
-				};
-			}
 			function encodeEntry(date, dateMask, dateLocale) {
 				return date.from !== void 0 ? {
 					from: encodeObjectFn.value(date.from, dateMask, dateLocale),
@@ -11492,6 +11399,8 @@
 					})])
 				];
 			}
+			const yearIsDisabled = (year) => minNav.value !== null && minNav.value.year > year || maxNav.value !== null && maxNav.value.year < year;
+			const monthIsDisabled = (month) => minNav.value !== null && viewModel.value.year === minNav.value.year && minNav.value.month > month || maxNav.value !== null && viewModel.value.year === maxNav.value.year && maxNav.value.month < month;
 			const renderViews = {
 				Calendar: () => [(0, vue.h)("div", {
 					key: "calendar-view",
@@ -11549,7 +11458,6 @@
 				])],
 				Months() {
 					const currentYear = isHydrated.value && viewModel.value.year === today.value.year;
-					const isDisabled = (month) => minNav.value !== null && viewModel.value.year === minNav.value.year && minNav.value.month > month || maxNav.value !== null && viewModel.value.year === maxNav.value.year && maxNav.value.month < month;
 					const content = innerLocale.value.monthsShort.map((month, i) => {
 						const active = viewModel.value.month === i + 1;
 						return (0, vue.h)("div", { class: "q-date__months-item flex flex-center" }, [(0, vue.h)(QBtn_default, {
@@ -11561,7 +11469,7 @@
 							color: active ? computedColor.value : null,
 							textColor: active ? computedTextColor.value : null,
 							tabindex: tabindex.value,
-							disable: isDisabled(i + 1),
+							disable: monthIsDisabled(i + 1),
 							...getCache("month#" + i, { onClick: () => {
 								setMonth(i + 1);
 							} })
@@ -11583,7 +11491,6 @@
 				},
 				Years() {
 					const start = startYear.value, stop = start + yearsInterval, years = [];
-					const isDisabled = (year) => minNav.value !== null && minNav.value.year > year || maxNav.value !== null && maxNav.value.year < year;
 					for (let i = start; i <= stop; i++) {
 						const active = viewModel.value.year === i;
 						years.push((0, vue.h)("div", { class: "q-date__years-item flex flex-center" }, [(0, vue.h)(QBtn_default, {
@@ -11596,7 +11503,7 @@
 							color: active ? computedColor.value : null,
 							textColor: active ? computedTextColor.value : null,
 							tabindex: tabindex.value,
-							disable: isDisabled(i),
+							disable: yearIsDisabled(i),
 							...getCache("yr#" + i, { onClick: () => {
 								setYear(i);
 							} })
@@ -11610,7 +11517,7 @@
 							icon: dateArrow.value[0],
 							"aria-label": $q.lang.date.prevRangeYears(yearsInterval),
 							tabindex: tabindex.value,
-							disable: isDisabled(start),
+							disable: yearIsDisabled(start),
 							...getCache("y-", { onClick: () => {
 								startYear.value -= yearsInterval;
 							} })
@@ -11623,7 +11530,7 @@
 							icon: dateArrow.value[1],
 							"aria-label": $q.lang.date.nextRangeYears(yearsInterval),
 							tabindex: tabindex.value,
-							disable: isDisabled(stop),
+							disable: yearIsDisabled(stop),
 							...getCache("y+", { onClick: () => {
 								startYear.value += yearsInterval;
 							} })
@@ -11787,8 +11694,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-history/use-history.js
+	// src/composables/private.use-history/use-history.js
 	function useHistory(showing, hide, hideOnRouteChange) {
 		let historyEntry;
 		function removeFromHistory() {
@@ -11811,8 +11717,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/utils/scroll/prevent-scroll.js
+	// src/utils/scroll/prevent-scroll.js
 	let registered = 0;
 	let scrollPositionX;
 	let scrollPositionY;
@@ -11919,8 +11824,7 @@
 		}
 		apply$1(action);
 	}
-	//#endregion
-	//#region src/composables/private.use-prevent-scroll/use-prevent-scroll.js
+	// src/composables/private.use-prevent-scroll/use-prevent-scroll.js
 	function usePreventScroll() {
 		let currentState;
 		return { preventBodyScroll(state) {
@@ -11930,8 +11834,7 @@
 			}
 		} };
 	}
-	//#endregion
-	//#region src/components/dialog/QDialog.js
+	// src/components/dialog/QDialog.js
 	let maximizedModals = 0;
 	const positionClass$1 = {
 		standard: "fixed-full flex-center",
@@ -12226,8 +12129,7 @@
 			return renderPortal;
 		}
 	});
-	//#endregion
-	//#region src/components/drawer/QDrawer.js
+	// src/components/drawer/QDrawer.js
 	const duration = 150;
 	function updateLocal$2(prop, val) {
 		if (prop.value !== val) prop.value = val;
@@ -12665,8 +12567,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/editor/editor-caret.js
+	// src/components/editor/editor-caret.js
 	const tagList = [
 		"div",
 		"li",
@@ -12889,8 +12790,7 @@
 			return sel;
 		}
 	};
-	//#endregion
-	//#region src/components/tooltip/QTooltip.js
+	// src/components/tooltip/QTooltip.js
 	let nonSelectableCount = 0;
 	const cursorSettleDelay = 100;
 	const cursorSettleTolerance = 4;
@@ -12960,7 +12860,8 @@
 			const anchorOrigin = (0, vue.computed)(() => parsePosition(props.anchor, $q.lang.rtl));
 			const selfOrigin = (0, vue.computed)(() => parsePosition(props.self, $q.lang.rtl));
 			const hideOnRouteChange = (0, vue.computed)(() => !props.persistent);
-			const { registerTimeout, registerTransitionEnd } = useTransitionEnd(props);
+			const { registerTimeout, removeTimeout } = useTimeout();
+			const { registerTransitionEnd } = useTransitionEnd(props);
 			const { transitionProps, transitionStyle } = useTransition(props);
 			const { anchorEl, canShow, anchorEvents } = useAnchor({
 				showing,
@@ -12997,6 +12898,7 @@
 				(val === true ? addEscapeKey : removeEscapeKey)(onEscapeKey);
 			});
 			function handleShow(evt) {
+				removeTimeout();
 				cleanEvt(anchorEvents, "cursorTemp");
 				showPortal();
 				addAriaDescription();
@@ -13008,6 +12910,7 @@
 				});
 			}
 			function handleHide(evt) {
+				removeTimeout();
 				removeTick();
 				hidePortal();
 				anchorCleanup(true);
@@ -13204,8 +13107,7 @@
 			return renderPortal;
 		}
 	});
-	//#endregion
-	//#region src/components/item/QItem.js
+	// src/components/item/QItem.js
 	var QItem_default = /*#__PURE__*/ createComponent({
 		name: "QItem",
 		props: {
@@ -13303,8 +13205,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/item/QItemSection.js
+	// src/components/item/QItemSection.js
 	var QItemSection_default = /*#__PURE__*/ createComponent({
 		name: "QItemSection",
 		props: {
@@ -13319,8 +13220,7 @@
 			return () => (0, vue.h)("div", { class: classes.value }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/editor/editor-utils.js
+	// src/components/editor/editor-utils.js
 	const dropdownContentClass = "q-editor__dropdown";
 	function run(e, btn, eVm) {
 		if (btn.handler) btn.handler(e, eVm, eVm.caret);
@@ -13553,8 +13453,7 @@
 			];
 		}
 	}
-	//#endregion
-	//#region src/utils/extend/extend.js
+	// src/utils/extend/extend.js
 	const toString = Object.prototype.toString;
 	const hasOwn = Object.prototype.hasOwnProperty;
 	const notPlainObject = new Set([
@@ -13599,8 +13498,7 @@
 		}
 		return target;
 	}
-	//#endregion
-	//#region src/components/editor/QEditor.js
+	// src/components/editor/QEditor.js
 	var QEditor_default = /*#__PURE__*/ createComponent({
 		name: "QEditor",
 		inheritAttrs: false,
@@ -14248,8 +14146,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/item/QItemLabel.js
+	// src/components/item/QItemLabel.js
 	var QItemLabel_default = /*#__PURE__*/ createComponent({
 		name: "QItemLabel",
 		props: {
@@ -14273,8 +14170,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/separator/QSeparator.js
+	// src/components/separator/QSeparator.js
 	const insetMap = {
 		true: "inset",
 		item: "item-inset",
@@ -14320,8 +14216,7 @@
 			});
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-slide-transition/use-slide-transition.js
+	// src/composables/private.use-slide-transition/use-slide-transition.js
 	const noop = () => {};
 	const easing = "cubic-bezier(.25, .8, .50, 1)";
 	const contentHeight = "calc-size(auto, size)";
@@ -14497,8 +14392,7 @@
 			onLeave
 		};
 	}
-	//#endregion
-	//#region src/components/expansion-item/QExpansionItem.js
+	// src/components/expansion-item/QExpansionItem.js
 	const itemGroups = /*#__PURE__*/ (0, vue.shallowReactive)({});
 	function preventSpace$2(e) {
 		if (e.keyCode === 32) stopAndPrevent(e);
@@ -14737,8 +14631,7 @@
 			return () => (0, vue.h)("div", { class: classes.value }, [(0, vue.h)("div", { class: "q-expansion-item__container relative-position" }, getContent())]);
 		}
 	});
-	//#endregion
-	//#region src/components/fab/use-fab.js
+	// src/components/fab/use-fab.js
 	const labelPositions = [
 		"top",
 		"right",
@@ -14815,8 +14708,7 @@
 			})
 		};
 	}
-	//#endregion
-	//#region src/components/fab/QFab.js
+	// src/components/fab/QFab.js
 	const directions = [
 		"up",
 		"right",
@@ -14942,8 +14834,7 @@
 			}, hSlot(slots.default))]);
 		}
 	});
-	//#endregion
-	//#region src/components/fab/QFabAction.js
+	// src/components/fab/QFabAction.js
 	const anchorMap = {
 		start: "self-end",
 		center: "self-center",
@@ -15004,8 +14895,7 @@
 			}, getContent);
 		}
 	});
-	//#endregion
-	//#region src/composables/use-form/use-form-child.js
+	// src/composables/use-form/use-form-child.js
 	function useFormChild({ validate, resetValidation, requiresQForm }) {
 		const $form = (0, vue.inject)(formKey, false);
 		if ($form !== false) {
@@ -15028,8 +14918,7 @@
 			});
 		} else if (requiresQForm) console.error("Parent QForm not found on useFormChild()!");
 	}
-	//#endregion
-	//#region src/composables/private.use-validate/use-validate.js
+	// src/composables/private.use-validate/use-validate.js
 	const lazyRulesValues = [
 		true,
 		false,
@@ -15183,8 +15072,7 @@
 			resetValidation
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-field/use-field.js
+	// src/composables/private.use-field/use-field.js
 	function fieldValueIsFilled(val) {
 		return val !== void 0 && val !== null && String(val).length !== 0;
 	}
@@ -15550,8 +15438,7 @@
 			]);
 		};
 	}
-	//#endregion
-	//#region src/components/field/QField.js
+	// src/components/field/QField.js
 	var QField_default = /*#__PURE__*/ createComponent({
 		name: "QField",
 		inheritAttrs: false,
@@ -15567,8 +15454,7 @@
 			return useField(useFieldState({ tagProp: true }));
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-file/validate-files.js
+	// src/composables/private.use-file/validate-files.js
 	function filterFiles(files, rejectedFiles, failedPropValidation, filterFn) {
 		const acceptedFiles = [];
 		files.forEach((file) => {
@@ -15650,8 +15536,7 @@
 		}
 		return done();
 	}
-	//#endregion
-	//#region src/composables/use-drop-zone/use-drop-zone.js
+	// src/composables/use-drop-zone/use-drop-zone.js
 	const events = [
 		"dragenter",
 		"dragover",
@@ -15752,8 +15637,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-file/use-file.js
+	// src/composables/private.use-file/use-file.js
 	const useFileProps = {
 		multiple: Boolean,
 		accept: String,
@@ -15808,8 +15692,7 @@
 			getDndNode
 		};
 	}
-	//#endregion
-	//#region src/composables/private.use-file/use-file-dom-props.js
+	// src/composables/private.use-file/use-file-dom-props.js
 	function useFileDomProps(props, typeGuard) {
 		function getFormDomProps() {
 			const model = props.modelValue;
@@ -15828,8 +15711,7 @@
 			return getFormDomProps();
 		}) : (0, vue.computed)(getFormDomProps);
 	}
-	//#endregion
-	//#region src/components/file/QFile.js
+	// src/components/file/QFile.js
 	function onKeydown$1(e) {
 		if (e.keyCode === 13) prevent(e);
 	}
@@ -16012,8 +15894,7 @@
 			return useField(state);
 		}
 	});
-	//#endregion
-	//#region src/components/footer/QFooter.js
+	// src/components/footer/QFooter.js
 	function updateLocal$1(prop, val) {
 		if (prop.value !== val) prop.value = val;
 	}
@@ -16126,8 +16007,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/form/QForm.js
+	// src/components/form/QForm.js
 	function validateComponent(comp) {
 		let valid;
 		try {
@@ -16151,6 +16031,9 @@
 			comp
 		});
 	}
+	function emitOutcomeEvent(emit, res, compRef) {
+		emit(`validation${res ? "Success" : "Error"}`, compRef);
+	}
 	var QForm_default = /*#__PURE__*/ createComponent({
 		name: "QForm",
 		props: {
@@ -16173,20 +16056,17 @@
 			function validate(shouldFocus) {
 				const localFocus = typeof shouldFocus === "boolean" ? shouldFocus : !props.noErrorFocus;
 				const index = ++validateIndex;
-				const emitEvent = (res, compRef) => {
-					emit(`validation${res ? "Success" : "Error"}`, compRef);
-				};
 				return (props.greedy ? Promise.all(registeredComponents.map(validateComponent)).then((res) => res.filter((r) => !r.valid)) : registeredComponents.reduce((acc, comp) => acc.then(() => validateComponent(comp)).then((r) => {
 					if (!r.valid) throw r;
 				}), Promise.resolve()).catch((err) => [err])).then((errors) => {
 					if (errors === void 0 || errors.length === 0) {
-						if (index === validateIndex) emitEvent(true);
+						if (index === validateIndex) emitOutcomeEvent(emit, true);
 						return true;
 					}
 					if (index === validateIndex) {
 						const { comp, err } = errors[0];
 						if (err !== void 0) console.error(err);
-						emitEvent(false, comp);
+						emitOutcomeEvent(emit, false, comp);
 						if (localFocus) {
 							const activeError = errors.find(({ comp: compRef }) => typeof compRef.focus === "function" && !vmIsDestroyed(compRef.$));
 							if (activeError !== void 0) activeError.comp.focus();
@@ -16260,8 +16140,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/form/QFormChildMixin.js
+	// src/components/form/QFormChildMixin.js
 	var QFormChildMixin_default = {
 		inject: { [formKey]: { default: noop$1 } },
 		watch: { disable(val) {
@@ -16284,8 +16163,7 @@
 			if (!this.disable) this.$.provides[formKey]?.unbindComponent(this);
 		}
 	};
-	//#endregion
-	//#region src/components/header/QHeader.js
+	// src/components/header/QHeader.js
 	function updateLocal(prop, val) {
 		if (prop.value !== val) prop.value = val;
 	}
@@ -16390,8 +16268,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/private.use-ratio/use-ratio.js
+	// src/composables/private.use-ratio/use-ratio.js
 	const useRatioProps = { ratio: [String, Number] };
 	function useRatio(props, naturalRatio) {
 		return (0, vue.computed)(() => {
@@ -16401,8 +16278,7 @@
 			return Number.isFinite(aspectRatio) && aspectRatio > 0 ? { aspectRatio } : null;
 		});
 	}
-	//#endregion
-	//#region src/components/img/QImg.js
+	// src/components/img/QImg.js
 	const defaultRatio = 1.7778;
 	const defaultIsSsrImage = { value: false };
 	function getNaturalRatio(target) {
@@ -16642,8 +16518,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/infinite-scroll/InfiniteScrollLoading.js
+	// src/components/infinite-scroll/InfiniteScrollLoading.js
 	/**
 	* We are using a sub-component so that the fetching state flips of a
 	* load re-render the loading indicator alone and not the QInfiniteScroll
@@ -16665,8 +16540,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/utils/private.intersection/intersection.js
+	// src/utils/private.intersection/intersection.js
 	const pools = /* @__PURE__ */ new Map();
 	function sameThreshold(a, b) {
 		if (a === b) return true;
@@ -16745,8 +16619,7 @@
 			if (byKey.size === 0) pools.delete(pool.root);
 		} else pool.observer.unobserve(el);
 	}
-	//#endregion
-	//#region src/composables/use-intersection/use-intersection.js
+	// src/composables/use-intersection/use-intersection.js
 	function useIntersection(options) {
 		const isIntersecting = (0, vue.ref)(false);
 		const vm = (0, vue.getCurrentInstance)();
@@ -16808,8 +16681,7 @@
 			stopIntersection
 		};
 	}
-	//#endregion
-	//#region src/components/infinite-scroll/QInfiniteScroll.js
+	// src/components/infinite-scroll/QInfiniteScroll.js
 	function isInFixedSubtree(el) {
 		while (el !== null && el !== document.body) {
 			if (window.getComputedStyle(el).position === "fixed") return true;
@@ -17036,8 +16908,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/inner-loading/QInnerLoading.js
+	// src/components/inner-loading/QInnerLoading.js
 	var QInnerLoading_default = /*#__PURE__*/ createComponent({
 		name: "QInnerLoading",
 		props: {
@@ -17082,8 +16953,7 @@
 			return () => (0, vue.h)(vue.Transition, transitionProps(), getContent);
 		}
 	});
-	//#endregion
-	//#region src/components/input/use-mask.js
+	// src/components/input/use-mask.js
 	const NAMED_MASKS = {
 		date: "####/##/##",
 		datetime: "####/##/## ##:##",
@@ -17108,8 +16978,8 @@
 	};
 	const { tokenMap: DEFAULT_TOKEN_MAP, tokenKeys: DEFAULT_TOKEN_MAP_KEYS } = /*#__PURE__*/ getTokenMap({
 		"#": {
-			pattern: "[\\d]",
-			negate: "[^\\d]"
+			pattern: String.raw`[\d]`,
+			negate: String.raw`[^\d]`
 		},
 		S: {
 			pattern: "[a-zA-Z]",
@@ -17257,7 +17127,7 @@
 				maskReplaced = "";
 				return;
 			}
-			const localComputedMask = NAMED_MASKS[props.mask] === void 0 ? props.mask : NAMED_MASKS[props.mask], fillChar = typeof props.fillMask === "string" && props.fillMask.length !== 0 ? props.fillMask.slice(0, 1) : "_", fillCharEscaped = fillChar.replace(escRegex, String.raw`\$&`), unmask = [], extract = [], mask = [];
+			const localComputedMask = NAMED_MASKS[props.mask] === void 0 ? props.mask : NAMED_MASKS[props.mask], fillChar = typeof props.fillMask === "string" && props.fillMask.length !== 0 ? props.fillMask.slice(0, 1) : "_", fillCharEscaped = fillChar.replaceAll(escRegex, String.raw`\$&`), unmask = [], extract = [], mask = [];
 			let firstMatch = props.reverseFillMask, unmaskChar = "", negateChar = "";
 			localComputedMask.replace(tokens.value.tokenRegexMask, (_, char1, esc, token, char2) => {
 				if (token !== void 0) {
@@ -17279,7 +17149,7 @@
 					mask.push(esc);
 				} else {
 					const c = char1 !== void 0 ? char1 : char2;
-					unmaskChar = c === "\\" ? String.raw`\\\\` : c.replace(escRegex, String.raw`\\$&`);
+					unmaskChar = c === "\\" ? String.raw`\\\\` : c.replaceAll(escRegex, String.raw`\\$&`);
 					mask.push(c);
 				}
 				unmask.push("([^" + unmaskChar + "]+)?" + unmaskChar + "?");
@@ -17552,8 +17422,7 @@
 			onMaskedClick
 		};
 	}
-	//#endregion
-	//#region src/components/input/use-autogrow.js
+	// src/components/input/use-autogrow.js
 	/**
 	* Returns adjustHeight on the JS path only (undefined on the CSS path,
 	* which is also where a DOM-less import lands: jsdom and friends have
@@ -17616,8 +17485,7 @@
 		(0, vue.onBeforeUnmount)(cancelPendingFrame);
 		return adjustHeight;
 	}
-	//#endregion
-	//#region src/composables/private.use-key-composition/use-key-composition.js
+	// src/composables/private.use-key-composition/use-key-composition.js
 	const isJapanese = /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFF9F\u4E00-\u9FAF\u3400-\u4DBF]/;
 	const isChinese = /[\u4E00-\u9FFF\u3400-\u4DBF\u{20000}-\u{2A6DF}\u{2A700}-\u{2B73F}\u{2B740}-\u{2B81F}\u{2B820}-\u{2CEAF}\uF900-\uFAFF\u3300-\u33FF\uFE30-\uFE4F\uF900-\uFAFF\u{2F800}-\u{2FA1F}]/u;
 	const isKorean = /[\u3131-\u314E\u314F-\u3163\uAC00-\uD7A3]/;
@@ -17633,8 +17501,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/components/input/QInput.js
+	// src/components/input/QInput.js
 	var QInput_default = /*#__PURE__*/ createComponent({
 		name: "QInput",
 		inheritAttrs: false,
@@ -17920,8 +17787,7 @@
 			return renderFn;
 		}
 	});
-	//#endregion
-	//#region src/components/intersection/QIntersection.js
+	// src/components/intersection/QIntersection.js
 	var QIntersection_default = /*#__PURE__*/ createComponent({
 		name: "QIntersection",
 		props: {
@@ -17971,8 +17837,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/item/QList.js
+	// src/components/item/QList.js
 	const roleAttrExceptions = ["ul", "ol"];
 	var QList_default = /*#__PURE__*/ createComponent({
 		name: "QList",
@@ -17999,8 +17864,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/knob/QKnob.js
+	// src/components/knob/QKnob.js
 	const keyCodes$1 = [
 		34,
 		37,
@@ -18060,7 +17924,7 @@
 			normalizeModel();
 			const editable = (0, vue.computed)(() => !props.disable && !props.readonly);
 			const classes = (0, vue.computed)(() => "q-knob non-selectable" + (editable.value ? " q-knob--editable" : props.disable ? " disabled" : ""));
-			const decimals = (0, vue.computed)(() => (String(props.step).trim().split(".")[1] || "").length);
+			const decimals = (0, vue.computed)(() => Math.max(getDecimalsCount(props.step), getDecimalsCount(innerMin.value)));
 			const step = (0, vue.computed)(() => props.step === 0 ? 1 : props.step);
 			const instantFeedback = (0, vue.computed)(() => props.instantFeedback || dragging.value);
 			const onEvents = (0, vue.computed)(() => editable.value ? {
@@ -18139,7 +18003,7 @@
 				if (props.reverse) angle = 360 - angle;
 				let newModel = props.min + angle / 360 * (props.max - props.min);
 				if (step.value !== 0) {
-					const modulo = newModel % step.value;
+					const modulo = (newModel - innerMin.value) % step.value;
 					newModel = newModel - modulo + (Math.abs(modulo) >= step.value / 2 ? (modulo < 0 ? -1 : 1) * step.value : 0);
 					newModel = Number.parseFloat(newModel.toFixed(decimals.value));
 				}
@@ -18184,8 +18048,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/composables/use-scroll/use-scroll.js
+	// src/composables/use-scroll/use-scroll.js
 	const { passive: passive$3 } = listenOpts;
 	function useScroll(options) {
 		const scrollPosition = (0, vue.shallowRef)({
@@ -18348,8 +18211,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/components/layout/QLayout.js
+	// src/components/layout/QLayout.js
 	const viewRE = /^(h|l)h(h|r) lpr (f|l)f(f|r)$/;
 	var QLayout_default = /*#__PURE__*/ createComponent({
 		name: "QLayout",
@@ -18559,8 +18421,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/linear-progress/QLinearProgress.js
+	// src/components/linear-progress/QLinearProgress.js
 	const getSizeStyle = /*#__PURE__*/ createSizeStyle({
 		xs: 2,
 		sm: 4,
@@ -18632,8 +18493,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/markup-table/QMarkupTable.js
+	// src/components/markup-table/QMarkupTable.js
 	const separatorValues = [
 		"horizontal",
 		"vertical",
@@ -18664,8 +18524,7 @@
 			}, [(0, vue.h)("table", { class: "q-table" }, hSlot(slots.default))]);
 		}
 	});
-	//#endregion
-	//#region src/components/no-ssr/QNoSsr.js
+	// src/components/no-ssr/QNoSsr.js
 	var QNoSsr_default = /*#__PURE__*/ createComponent({
 		name: "QNoSsr",
 		props: {
@@ -18689,8 +18548,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/radio/QRadio.js
+	// src/components/radio/QRadio.js
 	const createSvg = () => (0, vue.h)("svg", {
 		key: "svg",
 		class: "q-radio__bg absolute non-selectable",
@@ -18789,8 +18647,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/toggle/QToggle.js
+	// src/components/toggle/QToggle.js
 	var QToggle_default = /*#__PURE__*/ createComponent({
 		name: "QToggle",
 		props: {
@@ -18811,8 +18668,7 @@
 			return useCheckbox("toggle", getInner);
 		}
 	});
-	//#endregion
-	//#region src/components/option-group/QOptionGroup.js
+	// src/components/option-group/QOptionGroup.js
 	const components = {
 		radio: QRadio_default,
 		checkbox: QCheckbox_default,
@@ -18928,8 +18784,7 @@
 			}));
 		}
 	});
-	//#endregion
-	//#region src/components/page/QPage.js
+	// src/components/page/QPage.js
 	var QPage_default = /*#__PURE__*/ createComponent({
 		name: "QPage",
 		props: {
@@ -18962,8 +18817,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/page/QPageContainer.js
+	// src/components/page/QPageContainer.js
 	var QPageContainer_default = /*#__PURE__*/ createComponent({
 		name: "QPageContainer",
 		setup(_, { slots }) {
@@ -18988,8 +18842,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/page-sticky/use-page-sticky.js
+	// src/components/page-sticky/use-page-sticky.js
 	const usePageStickyProps = {
 		position: {
 			type: String,
@@ -19066,8 +18919,7 @@
 			getStickyContent
 		};
 	}
-	//#endregion
-	//#region src/components/page-scroller/QPageScroller.js
+	// src/components/page-scroller/QPageScroller.js
 	var QPageScroller_default = /*#__PURE__*/ createComponent({
 		name: "QPageScroller",
 		props: {
@@ -19130,8 +18982,7 @@
 			return () => (0, vue.h)(vue.Transition, { name: "q-transition--fade" }, getContent);
 		}
 	});
-	//#endregion
-	//#region src/components/page-sticky/QPageSticky.js
+	// src/components/page-sticky/QPageSticky.js
 	var QPageSticky_default = /*#__PURE__*/ createComponent({
 		name: "QPageSticky",
 		props: usePageStickyProps,
@@ -19140,8 +18991,7 @@
 			return () => getStickyContent(slots);
 		}
 	});
-	//#endregion
-	//#region src/components/pagination/QPagination.js
+	// src/components/pagination/QPagination.js
 	function getBool(val, otherwise) {
 		return val === true || val === false ? val : otherwise;
 	}
@@ -19485,8 +19335,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/utils/frame-debounce/frame-debounce.js
+	// src/utils/frame-debounce/frame-debounce.js
 	function frameDebounce(fn) {
 		let frame = null;
 		let callArgs = null;
@@ -19512,8 +19361,7 @@
 		};
 		return debounced;
 	}
-	//#endregion
-	//#region src/components/parallax/QParallax.js
+	// src/components/parallax/QParallax.js
 	const { passive: passive$2 } = listenOpts;
 	const mediaEvents = [
 		"load",
@@ -19697,8 +19545,7 @@
 			})]), (0, vue.h)("div", { class: "q-parallax__content absolute-full column flex-center" }, slots.content !== void 0 ? slots.content(contentSlotScope) : hSlot(slots.default))]);
 		}
 	});
-	//#endregion
-	//#region src/utils/clone/clone.js
+	// src/utils/clone/clone.js
 	function cloneDeep(data, hash = /* @__PURE__ */ new WeakMap()) {
 		if (Object(data) !== data) return data;
 		if (hash.has(data)) return hash.get(data);
@@ -19720,8 +19567,7 @@
 		});
 		return Object.assign(result, ...Object.keys(data).map((key) => ({ [key]: cloneDeep(data[key], hash) })));
 	}
-	//#endregion
-	//#region src/components/popup-edit/QPopupEdit.js
+	// src/components/popup-edit/QPopupEdit.js
 	var QPopupEdit_default = /*#__PURE__*/ createComponent({
 		name: "QPopupEdit",
 		props: {
@@ -19857,8 +19703,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/popup-proxy/QPopupProxy.js
+	// src/components/popup-proxy/QPopupProxy.js
 	var QPopupProxy_default = /*#__PURE__*/ createComponent({
 		name: "QPopupProxy",
 		props: {
@@ -19934,8 +19779,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/pull-to-refresh/PullToRefreshPuller.js
+	// src/components/pull-to-refresh/PullToRefreshPuller.js
 	/**
 	* We are using a sub-component so that the per-move updates of a pull
 	* (position, ratio, state) re-render the puller alone and not the
@@ -19974,8 +19818,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/pull-to-refresh/QPullToRefresh.js
+	// src/components/pull-to-refresh/QPullToRefresh.js
 	const PULLER_HEIGHT = 40;
 	const OFFSET_TOP = 20;
 	const sides = {
@@ -20172,8 +20015,7 @@
 			]), directives.value);
 		}
 	});
-	//#endregion
-	//#region src/components/range/QRange.js
+	// src/components/range/QRange.js
 	const dragType = {
 		MIN: 0,
 		RANGE: 1,
@@ -20567,8 +20409,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/rating/QRating.js
+	// src/components/rating/QRating.js
 	var QRating_default = /*#__PURE__*/ createComponent({
 		name: "QRating",
 		props: {
@@ -20733,8 +20574,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/resize-observer/QResizeObserver.js
+	// src/components/resize-observer/QResizeObserver.js
 	var QResizeObserver_default = /*#__PURE__*/ createComponent({
 		name: "QResizeObserver",
 		props: { debounce: {
@@ -20769,8 +20609,7 @@
 			return noop$1;
 		}
 	});
-	//#endregion
-	//#region src/components/responsive/QResponsive.js
+	// src/components/responsive/QResponsive.js
 	var QResponsive_default = /*#__PURE__*/ createComponent({
 		name: "QResponsive",
 		props: useRatioProps,
@@ -20782,8 +20621,7 @@
 			}, [(0, vue.h)("div", { class: "q-responsive__content absolute-full fit" }, hSlot(slots.default))]);
 		}
 	});
-	//#endregion
-	//#region src/components/scroll-area/ScrollAreaControls.js
+	// src/components/scroll-area/ScrollAreaControls.js
 	/**
 	* We are using a sub-component to avoid unnecessary re-renders
 	* of the QScrollArea content when the scrollbars are interacted with.
@@ -20824,8 +20662,7 @@
 			];
 		}
 	});
-	//#endregion
-	//#region src/components/scroll-area/QScrollArea.js
+	// src/components/scroll-area/QScrollArea.js
 	const axisList = ["vertical", "horizontal"];
 	const dirProps = {
 		vertical: {
@@ -21188,8 +21025,7 @@
 			})]);
 		}
 	});
-	//#endregion
-	//#region src/composables/use-animation-frame/use-animation-frame.js
+	// src/composables/use-animation-frame/use-animation-frame.js
 	function useAnimationFrame() {
 		let frameId = null;
 		const vm = (0, vue.getCurrentInstance)();
@@ -21214,8 +21050,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/components/scroll-observer/QScrollObserver.js
+	// src/components/scroll-observer/QScrollObserver.js
 	const axisValues = [
 		"both",
 		"horizontal",
@@ -21267,8 +21102,7 @@
 			return noop$1;
 		}
 	});
-	//#endregion
-	//#region src/components/virtual-scroll/use-virtual-scroll.js
+	// src/components/virtual-scroll/use-virtual-scroll.js
 	const aggBucketSize = 1e3;
 	const scrollToEdges = [
 		"start",
@@ -21724,8 +21558,7 @@
 			refresh
 		};
 	}
-	//#endregion
-	//#region src/components/select/QSelect.js
+	// src/components/select/QSelect.js
 	const validateNewValueMode = (v) => [
 		"add",
 		"add-unique",
@@ -22784,8 +22617,7 @@
 			return useField(state);
 		}
 	});
-	//#endregion
-	//#region src/components/skeleton/QSkeleton.js
+	// src/components/skeleton/QSkeleton.js
 	const skeletonTypes = [
 		"text",
 		"rect",
@@ -22856,8 +22688,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/slide-item/QSlideItem.js
+	// src/components/slide-item/QSlideItem.js
 	const slotsDef = [
 		[
 			"left",
@@ -23053,8 +22884,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/slide-transition/QSlideTransition.js
+	// src/components/slide-transition/QSlideTransition.js
 	var QSlideTransition_default = /*#__PURE__*/ createComponent({
 		name: "QSlideTransition",
 		props: {
@@ -23075,8 +22905,7 @@
 			}, slots.default);
 		}
 	});
-	//#endregion
-	//#region src/components/space/QSpace.js
+	// src/components/space/QSpace.js
 	var QSpace_default = /*#__PURE__*/ createComponent({
 		name: "QSpace",
 		setup() {
@@ -23084,8 +22913,7 @@
 			return () => space;
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerAudio.js
+	// src/components/spinner/QSpinnerAudio.js
 	const innerHTML$21 = "<g transform=\"matrix(1 0 0 -1 0 80)\"><rect width=\"10\" height=\"20\" rx=\"3\"><animate attributeName=\"height\" begin=\"0s\" dur=\"4.3s\" values=\"20;45;57;80;64;32;66;45;64;23;66;13;64;56;34;34;2;23;76;79;20\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect><rect x=\"15\" width=\"10\" height=\"80\" rx=\"3\"><animate attributeName=\"height\" begin=\"0s\" dur=\"2s\" values=\"80;55;33;5;75;23;73;33;12;14;60;80\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect><rect x=\"30\" width=\"10\" height=\"50\" rx=\"3\"><animate attributeName=\"height\" begin=\"0s\" dur=\"1.4s\" values=\"50;34;78;23;56;23;34;76;80;54;21;50\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect><rect x=\"45\" width=\"10\" height=\"30\" rx=\"3\"><animate attributeName=\"height\" begin=\"0s\" dur=\"2s\" values=\"30;45;13;80;56;72;45;76;34;23;67;30\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect></g>";
 	var QSpinnerAudio_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerAudio",
@@ -23105,8 +22933,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerBall.js
+	// src/components/spinner/QSpinnerBall.js
 	const innerHTML$20 = "<g transform=\"translate(1 1)\" stroke-width=\"2\" fill=\"none\" fill-rule=\"evenodd\"><circle cx=\"5\" cy=\"50\" r=\"5\"><animate attributeName=\"cy\" begin=\"0s\" dur=\"2.2s\" values=\"50;5;50;50\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"cx\" begin=\"0s\" dur=\"2.2s\" values=\"5;27;49;5\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></circle><circle cx=\"27\" cy=\"5\" r=\"5\"><animate attributeName=\"cy\" begin=\"0s\" dur=\"2.2s\" from=\"5\" to=\"5\" values=\"5;50;50;5\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"cx\" begin=\"0s\" dur=\"2.2s\" from=\"27\" to=\"27\" values=\"27;49;5;27\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></circle><circle cx=\"49\" cy=\"50\" r=\"5\"><animate attributeName=\"cy\" begin=\"0s\" dur=\"2.2s\" values=\"50;50;5;50\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"cx\" from=\"49\" to=\"49\" begin=\"0s\" dur=\"2.2s\" values=\"49;5;27;49\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></circle></g>";
 	var QSpinnerBall_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerBall",
@@ -23126,8 +22953,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerBars.js
+	// src/components/spinner/QSpinnerBars.js
 	const innerHTML$19 = "<rect y=\"10\" width=\"15\" height=\"120\" rx=\"6\"><animate attributeName=\"height\" begin=\"0.5s\" dur=\"1s\" values=\"120;110;100;90;80;70;60;50;40;140;120\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"y\" begin=\"0.5s\" dur=\"1s\" values=\"10;15;20;25;30;35;40;45;50;0;10\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect><rect x=\"30\" y=\"10\" width=\"15\" height=\"120\" rx=\"6\"><animate attributeName=\"height\" begin=\"0.25s\" dur=\"1s\" values=\"120;110;100;90;80;70;60;50;40;140;120\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"y\" begin=\"0.25s\" dur=\"1s\" values=\"10;15;20;25;30;35;40;45;50;0;10\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect><rect x=\"60\" width=\"15\" height=\"140\" rx=\"6\"><animate attributeName=\"height\" begin=\"0s\" dur=\"1s\" values=\"120;110;100;90;80;70;60;50;40;140;120\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"y\" begin=\"0s\" dur=\"1s\" values=\"10;15;20;25;30;35;40;45;50;0;10\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect><rect x=\"90\" y=\"10\" width=\"15\" height=\"120\" rx=\"6\"><animate attributeName=\"height\" begin=\"0.25s\" dur=\"1s\" values=\"120;110;100;90;80;70;60;50;40;140;120\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"y\" begin=\"0.25s\" dur=\"1s\" values=\"10;15;20;25;30;35;40;45;50;0;10\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect><rect x=\"120\" y=\"10\" width=\"15\" height=\"120\" rx=\"6\"><animate attributeName=\"height\" begin=\"0.5s\" dur=\"1s\" values=\"120;110;100;90;80;70;60;50;40;140;120\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate><animate attributeName=\"y\" begin=\"0.5s\" dur=\"1s\" values=\"10;15;20;25;30;35;40;45;50;0;10\" calcMode=\"linear\" repeatCount=\"indefinite\"></animate></rect>";
 	var QSpinnerBars_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerBars",
@@ -23147,8 +22973,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerBox.js
+	// src/components/spinner/QSpinnerBox.js
 	const innerHTML$18 = "<rect x=\"25\" y=\"25\" width=\"50\" height=\"50\" fill=\"none\" stroke-width=\"4\" stroke=\"currentColor\"><animateTransform id=\"spinnerBox\" attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"180 50 50\" dur=\"0.5s\" begin=\"rectBox.end\"></animateTransform></rect><rect x=\"27\" y=\"27\" width=\"46\" height=\"50\" fill=\"currentColor\"><animate id=\"rectBox\" attributeName=\"height\" begin=\"0s;spinnerBox.end\" dur=\"1.3s\" from=\"50\" to=\"0\" fill=\"freeze\"></animate></rect>";
 	var QSpinnerBox_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerBox",
@@ -23168,8 +22993,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerClock.js
+	// src/components/spinner/QSpinnerClock.js
 	const innerHTML$17 = "<circle cx=\"50\" cy=\"50\" r=\"48\" fill=\"none\" stroke-width=\"4\" stroke-miterlimit=\"10\" stroke=\"currentColor\"></circle><line stroke-linecap=\"round\" stroke-width=\"4\" stroke-miterlimit=\"10\" stroke=\"currentColor\" x1=\"50\" y1=\"50\" x2=\"85\" y2=\"50.5\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"360 50 50\" dur=\"2s\" repeatCount=\"indefinite\"></animateTransform></line><line stroke-linecap=\"round\" stroke-width=\"4\" stroke-miterlimit=\"10\" stroke=\"currentColor\" x1=\"50\" y1=\"50\" x2=\"49.5\" y2=\"74\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"360 50 50\" dur=\"15s\" repeatCount=\"indefinite\"></animateTransform></line>";
 	var QSpinnerClock_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerClock",
@@ -23189,8 +23013,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerComment.js
+	// src/components/spinner/QSpinnerComment.js
 	const innerHTML$16 = "<rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"none\"></rect><path d=\"M78,19H22c-6.6,0-12,5.4-12,12v31c0,6.6,5.4,12,12,12h37.2c0.4,3,1.8,5.6,3.7,7.6c2.4,2.5,5.1,4.1,9.1,4 c-1.4-2.1-2-7.2-2-10.3c0-0.4,0-0.8,0-1.3h8c6.6,0,12-5.4,12-12V31C90,24.4,84.6,19,78,19z\" fill=\"currentColor\"></path><circle cx=\"30\" cy=\"47\" r=\"5\" fill=\"#fff\"></circle><circle cx=\"50\" cy=\"47\" r=\"5\" fill=\"#fff\"></circle><circle cx=\"70\" cy=\"47\" r=\"5\" fill=\"#fff\"></circle>";
 	var QSpinnerComment_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerComment",
@@ -23210,8 +23033,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerCube.js
+	// src/components/spinner/QSpinnerCube.js
 	const innerHTML$15 = "<rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"none\"></rect><g transform=\"translate(25 25)\"><rect x=\"-20\" y=\"-20\" width=\"40\" height=\"40\" fill=\"currentColor\" opacity=\"0.9\"><animateTransform attributeName=\"transform\" type=\"scale\" from=\"1.5\" to=\"1\" repeatCount=\"indefinite\" begin=\"0s\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.2 0.8 0.2 0.8\" keyTimes=\"0;1\"></animateTransform></rect></g><g transform=\"translate(75 25)\"><rect x=\"-20\" y=\"-20\" width=\"40\" height=\"40\" fill=\"currentColor\" opacity=\"0.8\"><animateTransform attributeName=\"transform\" type=\"scale\" from=\"1.5\" to=\"1\" repeatCount=\"indefinite\" begin=\"0.1s\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.2 0.8 0.2 0.8\" keyTimes=\"0;1\"></animateTransform></rect></g><g transform=\"translate(25 75)\"><rect x=\"-20\" y=\"-20\" width=\"40\" height=\"40\" fill=\"currentColor\" opacity=\"0.7\"><animateTransform attributeName=\"transform\" type=\"scale\" from=\"1.5\" to=\"1\" repeatCount=\"indefinite\" begin=\"0.3s\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.2 0.8 0.2 0.8\" keyTimes=\"0;1\"></animateTransform></rect></g><g transform=\"translate(75 75)\"><rect x=\"-20\" y=\"-20\" width=\"40\" height=\"40\" fill=\"currentColor\" opacity=\"0.6\"><animateTransform attributeName=\"transform\" type=\"scale\" from=\"1.5\" to=\"1\" repeatCount=\"indefinite\" begin=\"0.2s\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.2 0.8 0.2 0.8\" keyTimes=\"0;1\"></animateTransform></rect></g>";
 	var QSpinnerCube_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerCube",
@@ -23231,8 +23053,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerDots.js
+	// src/components/spinner/QSpinnerDots.js
 	const innerHTML$14 = "<circle cx=\"15\" cy=\"15\" r=\"15\"></circle><circle cx=\"60\" cy=\"15\" r=\"9\" fill-opacity=\".3\" style=\"animation-delay:-.4s\"></circle><circle cx=\"105\" cy=\"15\" r=\"15\"></circle>";
 	var QSpinnerDots_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerDots",
@@ -23252,8 +23073,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerFacebook.js
+	// src/components/spinner/QSpinnerFacebook.js
 	const innerHTML$13 = "<g transform=\"translate(20 50)\"><rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"currentColor\" opacity=\"0.6\"><animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"></animateTransform></rect></g><g transform=\"translate(50 50)\"><rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"currentColor\" opacity=\"0.8\"><animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.1s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"></animateTransform></rect></g><g transform=\"translate(80 50)\"><rect x=\"-10\" y=\"-30\" width=\"20\" height=\"60\" fill=\"currentColor\" opacity=\"0.9\"><animateTransform attributeName=\"transform\" type=\"scale\" from=\"2\" to=\"1\" begin=\"0.2s\" repeatCount=\"indefinite\" dur=\"1s\" calcMode=\"spline\" keySplines=\"0.1 0.9 0.4 1\" keyTimes=\"0;1\" values=\"2;1\"></animateTransform></rect></g>";
 	var QSpinnerFacebook_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerFacebook",
@@ -23273,8 +23093,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerGears.js
+	// src/components/spinner/QSpinnerGears.js
 	const innerHTML$12 = "<g transform=\"translate(-20,-20)\"><path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"currentColor\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"90 50 50\" to=\"0 50 50\" dur=\"1s\" repeatCount=\"indefinite\"></animateTransform></path></g><g transform=\"translate(20,20) rotate(15 50 50)\"><path d=\"M79.9,52.6C80,51.8,80,50.9,80,50s0-1.8-0.1-2.6l-5.1-0.4c-0.3-2.4-0.9-4.6-1.8-6.7l4.2-2.9c-0.7-1.6-1.6-3.1-2.6-4.5 L70,35c-1.4-1.9-3.1-3.5-4.9-4.9l2.2-4.6c-1.4-1-2.9-1.9-4.5-2.6L59.8,27c-2.1-0.9-4.4-1.5-6.7-1.8l-0.4-5.1C51.8,20,50.9,20,50,20 s-1.8,0-2.6,0.1l-0.4,5.1c-2.4,0.3-4.6,0.9-6.7,1.8l-2.9-4.1c-1.6,0.7-3.1,1.6-4.5,2.6l2.1,4.6c-1.9,1.4-3.5,3.1-5,4.9l-4.5-2.1 c-1,1.4-1.9,2.9-2.6,4.5l4.1,2.9c-0.9,2.1-1.5,4.4-1.8,6.8l-5,0.4C20,48.2,20,49.1,20,50s0,1.8,0.1,2.6l5,0.4 c0.3,2.4,0.9,4.7,1.8,6.8l-4.1,2.9c0.7,1.6,1.6,3.1,2.6,4.5l4.5-2.1c1.4,1.9,3.1,3.5,5,4.9l-2.1,4.6c1.4,1,2.9,1.9,4.5,2.6l2.9-4.1 c2.1,0.9,4.4,1.5,6.7,1.8l0.4,5.1C48.2,80,49.1,80,50,80s1.8,0,2.6-0.1l0.4-5.1c2.3-0.3,4.6-0.9,6.7-1.8l2.9,4.2 c1.6-0.7,3.1-1.6,4.5-2.6L65,69.9c1.9-1.4,3.5-3,4.9-4.9l4.6,2.2c1-1.4,1.9-2.9,2.6-4.5L73,59.8c0.9-2.1,1.5-4.4,1.8-6.7L79.9,52.6 z M50,65c-8.3,0-15-6.7-15-15c0-8.3,6.7-15,15-15s15,6.7,15,15C65,58.3,58.3,65,50,65z\" fill=\"currentColor\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"90 50 50\" dur=\"1s\" repeatCount=\"indefinite\"></animateTransform></path></g>";
 	var QSpinnerGears_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerGears",
@@ -23294,8 +23113,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerGrid.js
+	// src/components/spinner/QSpinnerGrid.js
 	const innerHTML$11 = "<circle cx=\"12.5\" cy=\"12.5\" r=\"12.5\"></circle><circle cx=\"12.5\" cy=\"52.5\" r=\"12.5\" fill-opacity=\".5\" style=\"animation-delay:-.9s\"></circle><circle cx=\"52.5\" cy=\"12.5\" r=\"12.5\" style=\"animation-delay:-.7s\"></circle><circle cx=\"52.5\" cy=\"52.5\" r=\"12.5\" style=\"animation-delay:-.4s\"></circle><circle cx=\"92.5\" cy=\"12.5\" r=\"12.5\" style=\"animation-delay:-.2s\"></circle><circle cx=\"92.5\" cy=\"52.5\" r=\"12.5\" style=\"animation-delay:-.6s\"></circle><circle cx=\"12.5\" cy=\"92.5\" r=\"12.5\" style=\"animation-delay:-.3s\"></circle><circle cx=\"52.5\" cy=\"92.5\" r=\"12.5\" style=\"animation-delay:-.5s\"></circle><circle cx=\"92.5\" cy=\"92.5\" r=\"12.5\" style=\"animation-delay:-.8s\"></circle>";
 	var QSpinnerGrid_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerGrid",
@@ -23315,8 +23133,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerHearts.js
+	// src/components/spinner/QSpinnerHearts.js
 	const innerHTML$10 = "<path d=\"M30.262 57.02L7.195 40.723c-5.84-3.976-7.56-12.06-3.842-18.063 3.715-6 11.467-7.65 17.306-3.68l4.52 3.76 2.6-5.274c3.716-6.002 11.47-7.65 17.304-3.68 5.84 3.97 7.56 12.054 3.842 18.062L34.49 56.118c-.897 1.512-2.793 1.915-4.228.9z\" fill-opacity=\".5\"></path><path d=\"M105.512 56.12l-14.44-24.272c-3.716-6.008-1.996-14.093 3.843-18.062 5.835-3.97 13.588-2.322 17.306 3.68l2.6 5.274 4.52-3.76c5.84-3.97 13.593-2.32 17.308 3.68 3.718 6.003 1.998 14.088-3.842 18.064L109.74 57.02c-1.434 1.014-3.33.61-4.228-.9z\" fill-opacity=\".5\" style=\"animation-delay:-.7s\"></path><path d=\"M67.408 57.834l-23.01-24.98c-5.864-6.15-5.864-16.108 0-22.248 5.86-6.14 15.37-6.14 21.234 0L70 16.168l4.368-5.562c5.863-6.14 15.375-6.14 21.235 0 5.863 6.14 5.863 16.098 0 22.247l-23.007 24.98c-1.43 1.556-3.757 1.556-5.188 0z\"></path>";
 	var QSpinnerHearts_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerHearts",
@@ -23336,8 +23153,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerHourglass.js
+	// src/components/spinner/QSpinnerHourglass.js
 	const innerHTML$9 = "<g><path fill=\"none\" stroke=\"currentColor\" stroke-width=\"5\" stroke-miterlimit=\"10\" d=\"M58.4,51.7c-0.9-0.9-1.4-2-1.4-2.3s0.5-0.4,1.4-1.4 C70.8,43.8,79.8,30.5,80,15.5H70H30H20c0.2,15,9.2,28.1,21.6,32.3c0.9,0.9,1.4,1.2,1.4,1.5s-0.5,1.6-1.4,2.5 C29.2,56.1,20.2,69.5,20,85.5h10h40h10C79.8,69.5,70.8,55.9,58.4,51.7z\"></path><clipPath id=\"uil-hourglass-clip1\"><rect x=\"15\" y=\"20\" width=\"70\" height=\"25\"><animate attributeName=\"height\" from=\"25\" to=\"0\" dur=\"1s\" repeatCount=\"indefinite\" values=\"25;0;0\" keyTimes=\"0;0.5;1\"></animate><animate attributeName=\"y\" from=\"20\" to=\"45\" dur=\"1s\" repeatCount=\"indefinite\" values=\"20;45;45\" keyTimes=\"0;0.5;1\"></animate></rect></clipPath><clipPath id=\"uil-hourglass-clip2\"><rect x=\"15\" y=\"55\" width=\"70\" height=\"25\"><animate attributeName=\"height\" from=\"0\" to=\"25\" dur=\"1s\" repeatCount=\"indefinite\" values=\"0;25;25\" keyTimes=\"0;0.5;1\"></animate><animate attributeName=\"y\" from=\"80\" to=\"55\" dur=\"1s\" repeatCount=\"indefinite\" values=\"80;55;55\" keyTimes=\"0;0.5;1\"></animate></rect></clipPath><path d=\"M29,23c3.1,11.4,11.3,19.5,21,19.5S67.9,34.4,71,23H29z\" clip-path=\"url(#uil-hourglass-clip1)\" fill=\"currentColor\"></path><path d=\"M71.6,78c-3-11.6-11.5-20-21.5-20s-18.5,8.4-21.5,20H71.6z\" clip-path=\"url(#uil-hourglass-clip2)\" fill=\"currentColor\"></path><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"180 50 50\" repeatCount=\"indefinite\" dur=\"1s\" values=\"0 50 50;0 50 50;180 50 50\" keyTimes=\"0;0.7;1\"></animateTransform></g>";
 	var QSpinnerHourglass_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerHourglass",
@@ -23357,8 +23173,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerInfinity.js
+	// src/components/spinner/QSpinnerInfinity.js
 	const innerHTML$8 = "<path d=\"M24.3,30C11.4,30,5,43.3,5,50s6.4,20,19.3,20c19.3,0,32.1-40,51.4-40C88.6,30,95,43.3,95,50s-6.4,20-19.3,20C56.4,70,43.6,30,24.3,30z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"8\" stroke-dasharray=\"10.691205342610678 10.691205342610678\" stroke-dashoffset=\"0\"></path>";
 	var QSpinnerInfinity_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerInfinity",
@@ -23377,8 +23192,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerIos.js
+	// src/components/spinner/QSpinnerIos.js
 	const innerHTML$7 = "<g stroke-width=\"4\" stroke-linecap=\"round\"><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(180)\" style=\"animation-delay:-750ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(210)\" style=\"animation-delay:-681.8ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(240)\" style=\"animation-delay:-613.6ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(270)\" style=\"animation-delay:-545.5ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(300)\" style=\"animation-delay:-477.3ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(330)\" style=\"animation-delay:-409.1ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(0)\" style=\"animation-delay:-340.9ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(30)\" style=\"animation-delay:-272.7ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(60)\" style=\"animation-delay:-204.5ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(90)\" style=\"animation-delay:-136.4ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(120)\" style=\"animation-delay:-68.2ms\"></line><line y1=\"17\" y2=\"29\" transform=\"translate(32,32) rotate(150)\"></line></g>";
 	var QSpinnerIos_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerIos",
@@ -23398,8 +23212,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerOrbit.js
+	// src/components/spinner/QSpinnerOrbit.js
 	const innerHTML$6 = "<circle cx=\"50\" cy=\"50\" r=\"44\" fill=\"none\" stroke-width=\"4\" stroke-opacity=\".5\" stroke=\"currentColor\"></circle><circle cx=\"8\" cy=\"54\" r=\"6\" fill=\"currentColor\" stroke-width=\"3\" stroke=\"currentColor\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 48\" to=\"360 50 52\" dur=\"2s\" repeatCount=\"indefinite\"></animateTransform></circle>";
 	var QSpinnerOrbit_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerOrbit",
@@ -23419,8 +23232,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerOval.js
+	// src/components/spinner/QSpinnerOval.js
 	const innerHTML$5 = "<g transform=\"translate(1 1)\" stroke-width=\"2\" fill=\"none\" fill-rule=\"evenodd\"><circle stroke-opacity=\".5\" cx=\"18\" cy=\"18\" r=\"18\"></circle><path d=\"M36 18c0-9.94-8.06-18-18-18\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 18 18\" to=\"360 18 18\" dur=\"1s\" repeatCount=\"indefinite\"></animateTransform></path></g>";
 	var QSpinnerOval_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerOval",
@@ -23440,8 +23252,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerPie.js
+	// src/components/spinner/QSpinnerPie.js
 	const innerHTML$4 = "<path d=\"M0 50A50 50 0 0 1 50 0L50 50L0 50\" fill=\"currentColor\" opacity=\"0.5\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"360 50 50\" dur=\"0.8s\" repeatCount=\"indefinite\"></animateTransform></path><path d=\"M50 0A50 50 0 0 1 100 50L50 50L50 0\" fill=\"currentColor\" opacity=\"0.5\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"360 50 50\" dur=\"1.6s\" repeatCount=\"indefinite\"></animateTransform></path><path d=\"M100 50A50 50 0 0 1 50 100L50 50L100 50\" fill=\"currentColor\" opacity=\"0.5\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"360 50 50\" dur=\"2.4s\" repeatCount=\"indefinite\"></animateTransform></path><path d=\"M50 100A50 50 0 0 1 0 50L50 50L50 100\" fill=\"currentColor\" opacity=\"0.5\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 50 50\" to=\"360 50 50\" dur=\"3.2s\" repeatCount=\"indefinite\"></animateTransform></path>";
 	var QSpinnerPie_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerPie",
@@ -23461,8 +23272,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerPuff.js
+	// src/components/spinner/QSpinnerPuff.js
 	const innerHTML$3 = "<g fill=\"none\" fill-rule=\"evenodd\" stroke-width=\"2\"><circle cx=\"22\" cy=\"22\" r=\"1\"></circle><circle cx=\"22\" cy=\"22\" r=\"1\" style=\"animation-delay:-.9s\"></circle></g>";
 	var QSpinnerPuff_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerPuff",
@@ -23482,8 +23292,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerRadio.js
+	// src/components/spinner/QSpinnerRadio.js
 	const innerHTML$2 = "<g transform=\"scale(0.55)\"><circle cx=\"30\" cy=\"150\" r=\"30\" fill=\"currentColor\"></circle><path d=\"M90,150h30c0-49.7-40.3-90-90-90v30C63.1,90,90,116.9,90,150z\" fill=\"currentColor\" style=\"animation-delay:-.9s\"></path><path d=\"M150,150h30C180,67.2,112.8,0,30,0v30C96.3,30,150,83.7,150,150z\" fill=\"currentColor\" style=\"animation-delay:-.8s\"></path></g>";
 	var QSpinnerRadio_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerRadio",
@@ -23503,8 +23312,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerRings.js
+	// src/components/spinner/QSpinnerRings.js
 	const innerHTML$1 = "<g fill=\"none\" fill-rule=\"evenodd\" transform=\"translate(1 1)\" stroke-width=\"2\"><circle cx=\"22\" cy=\"22\" r=\"6\" style=\"animation-delay:-1.5s\"></circle><circle cx=\"22\" cy=\"22\" r=\"6\"></circle><circle cx=\"22\" cy=\"22\" r=\"8\"></circle></g>";
 	var QSpinnerRings_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerRings",
@@ -23524,8 +23332,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/spinner/QSpinnerTail.js
+	// src/components/spinner/QSpinnerTail.js
 	const innerHTML = "<defs><linearGradient x1=\"8.042%\" y1=\"0%\" x2=\"65.682%\" y2=\"23.865%\" id=\"a\"><stop stop-color=\"currentColor\" stop-opacity=\"0\" offset=\"0%\"></stop><stop stop-color=\"currentColor\" stop-opacity=\".631\" offset=\"63.146%\"></stop><stop stop-color=\"currentColor\" offset=\"100%\"></stop></linearGradient></defs><g transform=\"translate(1 1)\" fill=\"none\" fill-rule=\"evenodd\"><path d=\"M36 18c0-9.94-8.06-18-18-18\" stroke=\"url(#a)\" stroke-width=\"2\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 18 18\" to=\"360 18 18\" dur=\"0.9s\" repeatCount=\"indefinite\"></animateTransform></path><circle fill=\"currentColor\" cx=\"36\" cy=\"18\" r=\"1\"><animateTransform attributeName=\"transform\" type=\"rotate\" from=\"0 18 18\" to=\"360 18 18\" dur=\"0.9s\" repeatCount=\"indefinite\"></animateTransform></circle></g>";
 	var QSpinnerTail_default = /*#__PURE__*/ createComponent({
 		name: "QSpinnerTail",
@@ -23544,8 +23351,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/splitter/QSplitter.js
+	// src/components/splitter/QSplitter.js
 	var QSplitter_default = /*#__PURE__*/ createComponent({
 		name: "QSplitter",
 		props: {
@@ -23724,8 +23530,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/stepper/StepHeader.js
+	// src/components/stepper/StepHeader.js
 	function preventSpace$1(e) {
 		if (e.keyCode === 32) stopAndPrevent(e);
 	}
@@ -23817,8 +23622,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/stepper/QStep.js
+	// src/components/stepper/QStep.js
 	function getStepWrapper(slots, vertical, style) {
 		return (0, vue.h)("div", {
 			class: "q-stepper__step-content" + (vertical ? "" : " q-panel scroll"),
@@ -23939,8 +23743,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/stepper/QStepper.js
+	// src/components/stepper/QStepper.js
 	const camelRE = /(-\w)/g;
 	function matchesName(pattern, name) {
 		if (Array.isArray(pattern)) return pattern.some((entry) => matchesName(entry, name));
@@ -23954,7 +23757,7 @@
 	function camelizeProps(props) {
 		const acc = {};
 		for (const key in props) {
-			const newKey = key.replace(camelRE, (m) => m[1].toUpperCase());
+			const newKey = key.replaceAll(camelRE, (m) => m[1].toUpperCase());
 			acc[newKey] = props[key];
 		}
 		return acc;
@@ -24048,16 +23851,14 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/stepper/QStepperNavigation.js
+	// src/components/stepper/QStepperNavigation.js
 	var QStepperNavigation_default = /*#__PURE__*/ createComponent({
 		name: "QStepperNavigation",
 		setup(_, { slots }) {
 			return () => (0, vue.h)("div", { class: "q-stepper__nav" }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/table/QTh.js
+	// src/components/table/QTh.js
 	var QTh_default = /*#__PURE__*/ createComponent({
 		name: "QTh",
 		props: {
@@ -24120,13 +23921,11 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/table/get-table-middle.js
+	// src/components/table/get-table-middle.js
 	function getTableMiddle(props, content) {
 		return (0, vue.h)("div", props, [(0, vue.h)("table", { class: "q-table" }, content)]);
 	}
-	//#endregion
-	//#region src/components/virtual-scroll/QVirtualScroll.js
+	// src/components/virtual-scroll/QVirtualScroll.js
 	const comps = {
 		list: QList_default,
 		table: QMarkupTable_default
@@ -24234,13 +24033,11 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/utils/private.sort/sort.js
+	// src/utils/private.sort/sort.js
 	function sortDate(a, b) {
 		return new Date(a) - new Date(b);
 	}
-	//#endregion
-	//#region src/components/table/table-sort.js
+	// src/components/table/table-sort.js
 	const useTableSortProps = {
 		sortMethod: Function,
 		binaryStateSort: Boolean,
@@ -24303,8 +24100,7 @@
 			sort
 		};
 	}
-	//#endregion
-	//#region src/components/table/table-filter.js
+	// src/components/table/table-filter.js
 	const useTableFilterProps = {
 		filter: [String, Object],
 		filterMethod: Function
@@ -24324,8 +24120,7 @@
 		}, { deep: true });
 		return { computedFilterMethod };
 	}
-	//#endregion
-	//#region src/components/table/table-pagination.js
+	// src/components/table/table-pagination.js
 	function samePagination(oldPag, newPag) {
 		for (const prop in newPag) if (newPag[prop] !== oldPag[prop]) return false;
 		return true;
@@ -24464,8 +24259,7 @@
 			lastPage
 		};
 	}
-	//#endregion
-	//#region src/components/table/table-row-selection.js
+	// src/components/table/table-row-selection.js
 	const useTableRowSelectionProps = {
 		selection: {
 			type: String,
@@ -24517,8 +24311,7 @@
 			updateSelection
 		};
 	}
-	//#endregion
-	//#region src/components/table/table-row-expand.js
+	// src/components/table/table-row-expand.js
 	function getVal(val) {
 		return Array.isArray(val) ? [...val] : [];
 	}
@@ -24555,8 +24348,7 @@
 			updateExpanded
 		};
 	}
-	//#endregion
-	//#region src/components/table/table-column-selection.js
+	// src/components/table/table-column-selection.js
 	const useTableColumnSelectionProps = { visibleColumns: Array };
 	function useTableColumnSelection(props, computedPagination, hasSelectionMode) {
 		const colList = (0, vue.computed)(() => {
@@ -24599,8 +24391,7 @@
 			computedColspan: (0, vue.computed)(() => props.tableColspan !== void 0 ? props.tableColspan : computedCols.value.length + (hasSelectionMode.value ? 1 : 0))
 		};
 	}
-	//#endregion
-	//#region src/components/table/QTable.js
+	// src/components/table/QTable.js
 	const bottomClass = "q-table__bottom row items-center";
 	const virtScrollPassthroughProps = {};
 	commonVirtScrollPropsList.forEach((p) => {
@@ -25263,8 +25054,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/table/QTr.js
+	// src/components/table/QTr.js
 	var QTr_default = /*#__PURE__*/ createComponent({
 		name: "QTr",
 		props: {
@@ -25279,8 +25069,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/table/QTd.js
+	// src/components/table/QTd.js
 	var QTd_default = /*#__PURE__*/ createComponent({
 		name: "QTd",
 		props: {
@@ -25305,8 +25094,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/tabs/QRouteTab.js
+	// src/components/tabs/QRouteTab.js
 	var QRouteTab_default = /*#__PURE__*/ createComponent({
 		name: "QRouteTab",
 		props: {
@@ -25324,8 +25112,7 @@
 			return () => renderTab(routeData.linkTag.value, routeData.linkAttrs.value);
 		}
 	});
-	//#endregion
-	//#region src/components/time/QTime.js
+	// src/components/time/QTime.js
 	const defaultDateRE = /^-?[\d]+\/[0-1]\d\/[0-3]\d$/;
 	function getViewByModel(model, withSeconds) {
 		if (model.hour !== null) {
@@ -25368,6 +25155,12 @@
 	function getWheelDist(a, b, threshold) {
 		const diff = Math.abs(a - b);
 		return Math.min(diff, threshold - diff);
+	}
+	function getNormalizedClockValue(val, { min, max, values, threshold }) {
+		if (val === min) return min;
+		if (val < min || val > max) return getWheelDist(val, min, threshold) <= getWheelDist(val, max, threshold) ? min : max;
+		const index = values.findIndex((v) => val <= v), before = values[index - 1], after = values[index];
+		return val - before <= after - val ? before : after;
 	}
 	function getValidValues(start, count, testFn) {
 		const values = Array.from({ length: count + 1 }, (_, index) => index + start).filter((i) => testFn(i));
@@ -25438,13 +25231,13 @@
 					second: time.second === null ? "--" : pad(time.second)
 				};
 			});
+			const formatDisplayModel = (value) => value === "--" ? value : fmtNum(value);
 			const displayModel = (0, vue.computed)(() => {
 				const units = stringModel.value;
-				const format = (value) => value === "--" ? value : fmtNum(value);
 				return {
-					hour: format(units.hour),
-					minute: format(units.minute),
-					second: format(units.second)
+					hour: formatDisplayModel(units.hour),
+					minute: formatDisplayModel(units.minute),
+					second: formatDisplayModel(units.second)
 				};
 			});
 			const pointerStyle = (0, vue.computed)(() => {
@@ -25533,12 +25326,6 @@
 				updateValue(date);
 				Object.assign(innerModel.value, date);
 				view.value = "hour";
-			}
-			function getNormalizedClockValue(val, { min, max, values, threshold }) {
-				if (val === min) return min;
-				if (val < min || val > max) return getWheelDist(val, min, threshold) <= getWheelDist(val, max, threshold) ? min : max;
-				const index = values.findIndex((v) => val <= v), before = values[index - 1], after = values[index];
-				return val - before <= after - val ? before : after;
 			}
 			function getMask() {
 				return props.calendar !== "persian" && props.mask !== null ? props.mask : `HH:mm${props.withSeconds ? ":ss" : ""}`;
@@ -25918,8 +25705,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/timeline/QTimeline.js
+	// src/components/timeline/QTimeline.js
 	const sideValues = ["left", "right"];
 	const layoutValues = [
 		"dense",
@@ -25952,8 +25738,7 @@
 			return () => (0, vue.h)("ul", { class: classes.value }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/timeline/QTimelineEntry.js
+	// src/components/timeline/QTimelineEntry.js
 	var QTimelineEntry_default = /*#__PURE__*/ createComponent({
 		name: "QTimelineEntry",
 		props: {
@@ -26012,8 +25797,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/toolbar/QToolbar.js
+	// src/components/toolbar/QToolbar.js
 	var QToolbar_default = /*#__PURE__*/ createComponent({
 		name: "QToolbar",
 		props: { inset: Boolean },
@@ -26025,8 +25809,7 @@
 			}, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/toolbar/QToolbarTitle.js
+	// src/components/toolbar/QToolbarTitle.js
 	var QToolbarTitle_default = /*#__PURE__*/ createComponent({
 		name: "QToolbarTitle",
 		props: { shrink: Boolean },
@@ -26034,8 +25817,7 @@
 			return () => (0, vue.h)("div", { class: "q-toolbar__title ellipsis" + (props.shrink ? " col-shrink" : "") }, hSlot(slots.default));
 		}
 	});
-	//#endregion
-	//#region src/components/tree/QTree.js
+	// src/components/tree/QTree.js
 	const tickStrategyOptions = [
 		"none",
 		"strict",
@@ -26634,11 +26416,11 @@
 			}
 			function useCollapsible(nodeProps) {
 				const elRef = (0, vue.shallowRef)(null);
-				const expanded = (0, vue.computed)(() => getMetaRef(nodeProps.node[props.nodeKey]).value?.expanded === true);
+				const expanded = (0, vue.computed)(() => expandedFlags.has(nodeProps.node[props.nodeKey]));
 				const hidden = (0, vue.ref)(!expanded.value);
 				const { onEnter, onLeave } = use_slide_transition_default(() => props.duration, onSlideEnd);
 				function hide() {
-					hidden.value = true;
+					hidden.value = !expanded.value;
 				}
 				function slide() {
 					if (elRef.value !== null) onEnter(elRef.value);
@@ -26936,8 +26718,7 @@
 			};
 		}
 	});
-	//#endregion
-	//#region src/components/uploader/uploader-core.js
+	// src/components/uploader/uploader-core.js
 	function getProgressLabel(p) {
 		return (p * 100).toFixed(2) + "%";
 	}
@@ -27258,8 +27039,7 @@
 			}, children);
 		};
 	}
-	//#endregion
-	//#region src/utils/private.get-emits-object/get-emits-object.js
+	// src/utils/private.get-emits-object/get-emits-object.js
 	const trueFn = () => true;
 	function getEmitsObject(emitsArray) {
 		const emitsObject = {};
@@ -27268,8 +27048,7 @@
 		});
 		return emitsObject;
 	}
-	//#endregion
-	//#region src/utils/create-uploader-component/create-uploader-component.js
+	// src/utils/create-uploader-component/create-uploader-component.js
 	const coreEmitsObject = /*#__PURE__*/ getEmitsObject(coreEmits);
 	function createUploaderComponent({ name, props, emits, injectPlugin }) {
 		return createComponent({
@@ -27287,8 +27066,7 @@
 			}
 		});
 	}
-	//#endregion
-	//#region src/components/uploader/xhr-uploader-plugin.js
+	// src/components/uploader/xhr-uploader-plugin.js
 	function getFn(prop) {
 		return typeof prop === "function" ? prop : () => prop;
 	}
@@ -27511,16 +27289,14 @@
 			upload
 		};
 	}
-	//#endregion
-	//#region src/components/uploader/QUploader.js
+	// src/components/uploader/QUploader.js
 	var QUploader_default = /*#__PURE__*/ createUploaderComponent({
 		name,
 		props: componentProps,
 		emits: emits$1,
 		injectPlugin
 	});
-	//#endregion
-	//#region src/components/uploader/QUploaderAddTrigger.js
+	// src/components/uploader/QUploaderAddTrigger.js
 	var QUploaderAddTrigger_default = /*#__PURE__*/ createComponent({
 		name: "QUploaderAddTrigger",
 		setup() {
@@ -27529,8 +27305,7 @@
 			return $trigger;
 		}
 	});
-	//#endregion
-	//#region src/components/video/QVideo.js
+	// src/components/video/QVideo.js
 	var QVideo_default = /*#__PURE__*/ createComponent({
 		name: "QVideo",
 		props: {
@@ -27570,8 +27345,7 @@
 			})]);
 		}
 	});
-	//#endregion
-	//#region src/components.js
+	// src/components.js
 	var components_exports = /* @__PURE__ */ __exportAll({
 		QAjaxBar: () => QAjaxBar_default,
 		QAvatar: () => QAvatar_default,
@@ -27697,8 +27471,7 @@
 		QVideo: () => QVideo_default,
 		QVirtualScroll: () => QVirtualScroll_default
 	});
-	//#endregion
-	//#region src/directives/close-popup/ClosePopup.js
+	// src/directives/close-popup/ClosePopup.js
 	function getDepth(value) {
 		if (value === false) return 0;
 		if (value === true || value === void 0) return 1;
@@ -27733,8 +27506,7 @@
 			}
 		}
 	});
-	//#endregion
-	//#region src/directives/drop-zone/DropZone.js
+	// src/directives/drop-zone/DropZone.js
 	const defaultActiveClass = "q-drop-zone--over";
 	function getOptions(value) {
 		if (typeof value === "function") return { handler: value };
@@ -27813,8 +27585,7 @@
 		},
 		beforeUnmount: destroy$2
 	});
-	//#endregion
-	//#region src/directives/intersection/Intersection.js
+	// src/directives/intersection/Intersection.js
 	function update$4(el, ctx, value) {
 		if (value === false || value === null || value === void 0) {
 			unobserve(el);
@@ -27865,8 +27636,7 @@
 			}
 		}
 	});
-	//#endregion
-	//#region src/utils/morph/morph.js
+	// src/utils/morph/morph.js
 	let id = 0;
 	let offsetBase = void 0;
 	function defaultCancel() {
@@ -28563,8 +28333,7 @@
 		requestAnimationFrame(calculateFinalState);
 		return (abort) => cancel(abort);
 	}
-	//#endregion
-	//#region src/directives/morph/Morph.js
+	// src/directives/morph/Morph.js
 	const morphGroups = /* @__PURE__ */ new Map();
 	const optionKeys = /* @__PURE__ */ new Set([
 		"duration",
@@ -28730,8 +28499,7 @@
 			el.__qmorph = void 0;
 		}
 	});
-	//#endregion
-	//#region src/directives/mutation/Mutation.js
+	// src/directives/mutation/Mutation.js
 	const defaultCfg = {
 		childList: true,
 		subtree: true,
@@ -28781,8 +28549,7 @@
 		},
 		beforeUnmount: destroy$1
 	});
-	//#endregion
-	//#region src/directives/resize/Resize.js
+	// src/directives/resize/Resize.js
 	function update$2(ctx, value) {
 		if (typeof value !== "function") {
 			ctx.handler = void 0;
@@ -28828,8 +28595,7 @@
 		},
 		beforeUnmount: destroy
 	});
-	//#endregion
-	//#region src/directives/scroll-fire/ScrollFire.js
+	// src/directives/scroll-fire/ScrollFire.js
 	function getThreshold(arg) {
 		return arg === void 0 ? 0 : Math.min(1, Math.max(0, Number(arg) || 0));
 	}
@@ -28876,8 +28642,7 @@
 			}
 		}
 	});
-	//#endregion
-	//#region src/directives/scroll/Scroll.js
+	// src/directives/scroll/Scroll.js
 	function onScroll(evt) {
 		const target = evt.currentTarget;
 		const top = getVerticalScrollPosition(target);
@@ -28922,8 +28687,7 @@
 			}
 		}
 	});
-	//#endregion
-	//#region src/directives/touch-hold/TouchHold.js
+	// src/directives/touch-hold/TouchHold.js
 	const { passive: passive$1, passiveCapture: passiveCapture$1, notPassiveCapture: notPassiveCapture$1 } = listenOpts;
 	function parseNumber(val, fallback) {
 		return Number.parseInt(val, 10) || fallback;
@@ -29091,8 +28855,7 @@
 			el.__qtouchhold = void 0;
 		}
 	});
-	//#endregion
-	//#region src/directives/touch-repeat/TouchRepeat.js
+	// src/directives/touch-repeat/TouchRepeat.js
 	const { passive, passiveCapture, notPassive, notPassiveCapture } = listenOpts;
 	const keyCodes = /* @__PURE__ */ new Map([
 		["esc", 27],
@@ -29324,8 +29087,7 @@
 			el.__qtouchrepeat = void 0;
 		}
 	});
-	//#endregion
-	//#region src/directives.js
+	// src/directives.js
 	var directives_exports = /* @__PURE__ */ __exportAll({
 		ClosePopup: () => ClosePopup_default,
 		DropZone: () => DropZone_default,
@@ -29341,15 +29103,13 @@
 		TouchRepeat: () => TouchRepeat_default,
 		TouchSwipe: () => TouchSwipe_default
 	});
-	//#endregion
-	//#region src/utils/css-var/get-css-var.js
+	// src/utils/css-var/get-css-var.js
 	function getCssVar(propName, element = document.body) {
 		if (typeof propName !== "string") throw new TypeError("Expected a string as propName");
 		if (!(element instanceof Element)) throw new TypeError("Expected a DOM element");
 		return getComputedStyle(element).getPropertyValue(`--q-${propName}`).trim() || null;
 	}
-	//#endregion
-	//#region src/plugins/addressbar/AddressbarColor.js
+	// src/plugins/addressbar/AddressbarColor.js
 	function getMetaTag(v) {
 		const els = document.getElementsByTagName("META");
 		for (const i in els) if (els[i].name === v) return els[i];
@@ -29367,7 +29127,8 @@
 	var AddressbarColor_default = {
 		set: client.is.mobile && (client.is.nativeMobile || client.is.safari || client.is.webkit || client.is.vivaldi) ? (hexColor) => {
 			const val = hexColor || getCssVar("primary");
-			if (client.is.nativeMobile && window.StatusBar) window.StatusBar.backgroundColorByHexString(val);
+			const statusBar = getNativeBridge("StatusBar");
+			if (client.is.nativeMobile && typeof statusBar?.backgroundColorByHexString === "function") statusBar.backgroundColorByHexString(val);
 			else setColor(val);
 		} : noop$1,
 		install({ $q }) {
@@ -29375,8 +29136,7 @@
 			if ($q.config.addressbarColor) this.set($q.config.addressbarColor);
 		}
 	};
-	//#endregion
-	//#region src/plugins/app-fullscreen/AppFullscreen.js
+	// src/plugins/app-fullscreen/AppFullscreen.js
 	function assignFn$1(fn) {
 		Object.assign(Plugin$8, {
 			request: fn,
@@ -29422,8 +29182,7 @@
 		if (Plugin$8.isActive) updateEl();
 		document.addEventListener("fullscreenchange", togglePluginState);
 	}
-	//#endregion
-	//#region src/plugins/app-network/AppNetwork.js
+	// src/plugins/app-network/AppNetwork.js
 	const connectionKeys = [
 		"effectiveType",
 		"downlink",
@@ -29457,16 +29216,14 @@
 		if (isRuntimeSsrPreHydration.value) onSSRHydrated.push(start);
 		else start();
 	} });
-	//#endregion
-	//#region src/plugins/app-visibility/AppVisibility.js
+	// src/plugins/app-visibility/AppVisibility.js
 	const Plugin$6 = /*#__PURE__*/ createReactivePlugin({ appVisible: true }, { install({ $q }) {
 		injectProp($q, "appVisible", () => this.appVisible);
 	} });
 	document.addEventListener("visibilitychange", () => {
 		Plugin$6.appVisible = !document.hidden;
 	}, false);
-	//#endregion
-	//#region src/plugins/app-wake-lock/AppWakeLock.js
+	// src/plugins/app-wake-lock/AppWakeLock.js
 	function assignFn(fn) {
 		Object.assign(Plugin$5, {
 			request: fn,
@@ -29529,13 +29286,11 @@
 			if (wanted && sentinel === null && !document.hidden) acquire().catch(() => {});
 		}, false);
 	}
-	//#endregion
-	//#region src/utils/private.dialog/dismiss-reason.js
+	// src/utils/private.dialog/dismiss-reason.js
 	function getDismissReason(evt) {
 		return evt === void 0 ? "programmatic" : evt.type.indexOf("key") === 0 ? "escape" : "backdrop";
 	}
-	//#endregion
-	//#region src/plugins/bottom-sheet/component/BottomSheetComponent.js
+	// src/plugins/bottom-sheet/component/BottomSheetComponent.js
 	var BottomSheetComponent_default = /*#__PURE__*/ createComponent({
 		name: "BottomSheetComponent",
 		props: {
@@ -29654,8 +29409,7 @@
 			}, getContent);
 		}
 	});
-	//#endregion
-	//#region src/utils/private.dialog/create-dialog.js
+	// src/utils/private.dialog/create-dialog.js
 	function merge(target, source) {
 		for (const key in source) if (key !== "spinner" && Object(source[key]) === source[key] && !Array.isArray(source[key])) {
 			target[key] = Object(target[key]) !== target[key] ? {} : { ...target[key] };
@@ -29760,13 +29514,11 @@
 			return API;
 		};
 	}
-	//#endregion
-	//#region src/plugins/bottom-sheet/BottomSheet.js
+	// src/plugins/bottom-sheet/BottomSheet.js
 	var BottomSheet_default = { install({ $q, parentApp }) {
 		$q.bottomSheet = this.create = createDialog(BottomSheetComponent_default, false, parentApp);
 	} };
-	//#endregion
-	//#region src/plugins/cookies/Cookies.js
+	// src/plugins/cookies/Cookies.js
 	function stringifyCookieValue(value) {
 		return encodeURIComponent(value === Object(value) ? JSON.stringify(value) : String(value));
 	}
@@ -30008,8 +29760,7 @@
 		$q.cookies = this;
 	} };
 	Object.assign(Plugin$4, getObject());
-	//#endregion
-	//#region src/composables/use-dialog-plugin-component/use-dialog-plugin-component.js
+	// src/composables/use-dialog-plugin-component/use-dialog-plugin-component.js
 	function useDialogPluginComponent() {
 		const { emit, proxy } = (0, vue.getCurrentInstance)();
 		const dialogRef = (0, vue.shallowRef)(null);
@@ -30046,8 +29797,7 @@
 	const emits = ["ok", "hide"];
 	useDialogPluginComponent.emits = emits;
 	useDialogPluginComponent.emitsObject = getEmitsObject(emits);
-	//#endregion
-	//#region src/plugins/dialog/component/DialogPluginComponent.js
+	// src/plugins/dialog/component/DialogPluginComponent.js
 	var DialogPluginComponent_default = /*#__PURE__*/ createComponent({
 		name: "DialogPluginComponent",
 		props: {
@@ -30210,13 +29960,11 @@
 			}, getContent);
 		}
 	});
-	//#endregion
-	//#region src/plugins/dialog/Dialog.js
+	// src/plugins/dialog/Dialog.js
 	var Dialog_default = { install({ $q, parentApp }) {
 		$q.dialog = this.create = createDialog(DialogPluginComponent_default, true, parentApp);
 	} };
-	//#endregion
-	//#region src/plugins/loading/Loading.js
+	// src/plugins/loading/Loading.js
 	let app;
 	let vm;
 	let uid$1 = 0;
@@ -30249,6 +29997,22 @@
 		activeGroups[newProps.group] = newProps;
 		return newProps;
 	}
+	function getContent() {
+		if (!Plugin$3.isActive) return null;
+		const content = [(0, vue.h)(props.spinner, {
+			class: "q-loading__spinner",
+			color: props.spinnerColor,
+			size: props.spinnerSize
+		})];
+		if (props.message) content.push((0, vue.h)("div", {
+			class: "q-loading__message" + (props.messageColor ? ` text-${props.messageColor}` : ""),
+			[props.html ? "innerHTML" : "textContent"]: props.message
+		}));
+		return (0, vue.h)("div", {
+			class: "q-loading fullscreen flex flex-center z-max " + props.customClass.trim(),
+			key: props.uid
+		}, [(0, vue.h)("div", { class: "q-loading__backdrop" + (props.backgroundColor ? ` bg-${props.backgroundColor}` : "") }), (0, vue.h)("div", { class: "q-loading__box column items-center " + props.boxClass }, content)]);
+	}
 	const Plugin$3 = /*#__PURE__*/ createReactivePlugin({ isActive: false }, {
 		show(opts) {
 			props = registerProps(opts);
@@ -30263,37 +30027,21 @@
 				timeout = setTimeout(() => {
 					timeout = null;
 					const el = createGlobalNode("q-loading");
+					function onAfterLeave() {
+						if (!Plugin$3.isActive && app !== void 0) {
+							preventScroll(false);
+							app.unmount(el);
+							removeGlobalNode(el);
+							app = void 0;
+							vm = void 0;
+						}
+					}
 					app = createChildApp({
 						name: "QLoading",
 						setup() {
 							(0, vue.onMounted)(() => {
 								preventScroll(true);
 							});
-							function onAfterLeave() {
-								if (!Plugin$3.isActive && app !== void 0) {
-									preventScroll(false);
-									app.unmount(el);
-									removeGlobalNode(el);
-									app = void 0;
-									vm = void 0;
-								}
-							}
-							function getContent() {
-								if (!Plugin$3.isActive) return null;
-								const content = [(0, vue.h)(props.spinner, {
-									class: "q-loading__spinner",
-									color: props.spinnerColor,
-									size: props.spinnerSize
-								})];
-								if (props.message) content.push((0, vue.h)("div", {
-									class: "q-loading__message" + (props.messageColor ? ` text-${props.messageColor}` : ""),
-									[props.html ? "innerHTML" : "textContent"]: props.message
-								}));
-								return (0, vue.h)("div", {
-									class: "q-loading fullscreen flex flex-center z-max " + props.customClass.trim(),
-									key: props.uid
-								}, [(0, vue.h)("div", { class: "q-loading__backdrop" + (props.backgroundColor ? ` bg-${props.backgroundColor}` : "") }), (0, vue.h)("div", { class: "q-loading__box column items-center " + props.boxClass }, content)]);
-							}
 							return () => (0, vue.h)(vue.Transition, {
 								name: "q-transition--fade",
 								appear: true,
@@ -30344,9 +30092,14 @@
 			if ($q.config.loading !== void 0) this.setDefaults($q.config.loading);
 		}
 	});
-	//#endregion
-	//#region src/plugins/loading-bar/LoadingBar.js
+	// src/plugins/loading-bar/LoadingBar.js
 	const barRef = (0, vue.shallowRef)(null);
+	function onStart() {
+		Plugin$2.isActive = true;
+	}
+	function onStop() {
+		Plugin$2.isActive = false;
+	}
 	const Plugin$2 = /*#__PURE__*/ createReactivePlugin({ isActive: false }, {
 		start: noop$1,
 		stop: noop$1,
@@ -30359,12 +30112,6 @@
 				return;
 			}
 			const props = (0, vue.ref)($q.config.loadingBar !== void 0 ? { ...$q.config.loadingBar } : {});
-			function onStart() {
-				Plugin$2.isActive = true;
-			}
-			function onStop() {
-				Plugin$2.isActive = false;
-			}
 			const el = createGlobalNode("q-loading-bar");
 			createChildApp({
 				name: "LoadingBar",
@@ -30392,8 +30139,7 @@
 			});
 		}
 	});
-	//#endregion
-	//#region src/plugins/meta/Meta.js
+	// src/plugins/meta/Meta.js
 	let updateId = null;
 	let currentClientMeta;
 	String.raw`\u003C`, String.raw`\u003E`, String.raw`\u0026`, String.raw`\u2028`, String.raw`\u2029`;
@@ -30529,8 +30275,7 @@
 			document.getElementById("qmeta-init").remove();
 		}
 	} };
-	//#endregion
-	//#region src/plugins/notify/Notify.js
+	// src/plugins/notify/Notify.js
 	let uid = 0;
 	const defaults = {};
 	const groups = {};
@@ -30845,8 +30590,7 @@
 			}
 		}
 	};
-	//#endregion
-	//#region src/plugins/storage/engine/web-storage.js
+	// src/plugins/storage/engine/web-storage.js
 	function encode(value) {
 		if (isDate(value)) return "__q_date|" + value.getTime();
 		if (isRegexp(value)) return "__q_expr|/" + value.source + "/" + value.flags;
@@ -31128,8 +30872,7 @@
 			useStorage
 		};
 	}
-	//#endregion
-	//#region src/plugins/storage/LocalStorage.js
+	// src/plugins/storage/LocalStorage.js
 	const storage$1 = !client.has.webStorage ? getEmptyStorage() : getStorage("local");
 	const Plugin$1 = {
 		install({ $q }) {
@@ -31137,8 +30880,7 @@
 		},
 		...storage$1
 	};
-	//#endregion
-	//#region src/plugins/storage/SessionStorage.js
+	// src/plugins/storage/SessionStorage.js
 	const storage = !client.has.webStorage ? getEmptyStorage() : getStorage("session");
 	const Plugin = {
 		install({ $q }) {
@@ -31146,8 +30888,7 @@
 		},
 		...storage
 	};
-	//#endregion
-	//#region src/plugins.js
+	// src/plugins.js
 	var plugins_exports = /* @__PURE__ */ __exportAll({
 		AddressbarColor: () => AddressbarColor_default,
 		AppFullscreen: () => Plugin$8,
@@ -31169,8 +30910,7 @@
 		Screen: () => Screen_default,
 		SessionStorage: () => Plugin
 	});
-	//#endregion
-	//#region src/utils/copy-to-clipboard/copy-to-clipboard.js
+	// src/utils/copy-to-clipboard/copy-to-clipboard.js
 	function fallback(text) {
 		const area = document.createElement("textarea");
 		area.value = text;
@@ -31191,8 +30931,7 @@
 		const res = fallback(text);
 		return res ? Promise.resolve(true) : Promise.reject(res);
 	}
-	//#endregion
-	//#region src/utils/create-meta-mixin/create-meta-mixin.js
+	// src/utils/create-meta-mixin/create-meta-mixin.js
 	function createMetaMixin(metaOptions) {
 		const mixin = {
 			activated() {
@@ -31236,8 +30975,7 @@
 		};
 		return mixin;
 	}
-	//#endregion
-	//#region src/utils/EventBus/EventBus.js
+	// src/utils/EventBus/EventBus.js
 	/**
 	* Forked from tiny-emitter
 	* Copyright (c) 2017 Scott Corgan
@@ -31284,8 +31022,7 @@
 			return this;
 		}
 	};
-	//#endregion
-	//#region src/utils/export-file/export-file.js
+	// src/utils/export-file/export-file.js
 	function clean(link) {
 		setTimeout(() => {
 			window.URL.revokeObjectURL(link.href);
@@ -31332,8 +31069,7 @@
 			return err;
 		}
 	}
-	//#endregion
-	//#region src/utils/open-url/open-url.js
+	// src/utils/open-url/open-url.js
 	function parseFeatures(winFeatures) {
 		const cfg = {
 			noopener: true,
@@ -31350,7 +31086,8 @@
 	function openWindow(url, reject, windowFeatures) {
 		let open = window.open;
 		if (Platform.is.cordova) {
-			if (cordova?.InAppBrowser?.open !== void 0) open = cordova.InAppBrowser.open;
+			const inAppBrowser = getNativeBridge("cordova")?.InAppBrowser;
+			if (typeof inAppBrowser?.open === "function") open = inAppBrowser.open;
 			else if (navigator?.app !== void 0) return navigator.app.loadUrl(url, { openExternal: true });
 		}
 		const cfg = {
@@ -31365,7 +31102,7 @@
 		} else if (!hasNoopener) reject?.();
 	}
 	function openUrl(url, reject, windowFeatures) {
-		const safariViewController = window.SafariViewController;
+		const safariViewController = getNativeBridge("SafariViewController");
 		if (Platform.is.ios && typeof safariViewController?.isAvailable === "function" && typeof safariViewController.show === "function") {
 			safariViewController.isAvailable((available) => {
 				if (available) safariViewController.show({ url }, noop$1, reject);
@@ -31375,8 +31112,7 @@
 		}
 		return openWindow(url, reject, windowFeatures);
 	}
-	//#endregion
-	//#region src/utils/run-sequential-promises/run-sequential-promises.js
+	// src/utils/run-sequential-promises/run-sequential-promises.js
 	function parsePromises(sequentialPromises) {
 		if (Array.isArray(sequentialPromises)) {
 			const totalJobs = sequentialPromises.length;
@@ -31475,8 +31211,7 @@
 		});
 		return Promise.all(threads).then(() => resultAggregator);
 	}
-	//#endregion
-	//#region src/utils.js
+	// src/utils.js
 	var utils_exports = /* @__PURE__ */ __exportAll({
 		EventBus: () => EventBus,
 		clone: () => cloneDeep,
@@ -31504,8 +31239,7 @@
 		throttle: () => throttle,
 		uid: () => uid_default
 	});
-	//#endregion
-	//#region src/composables/use-broadcast-channel/use-broadcast-channel.js
+	// src/composables/use-broadcast-channel/use-broadcast-channel.js
 	function useBroadcastChannel(name, options) {
 		const isChannelConnected = (0, vue.ref)(false);
 		const channelData = (0, vue.shallowRef)(null);
@@ -31571,8 +31305,7 @@
 			closeChannel
 		};
 	}
-	//#endregion
-	//#region src/composables/use-debounce/use-debounce.js
+	// src/composables/use-debounce/use-debounce.js
 	function ssrDebounceFn() {}
 	ssrDebounceFn.cancel = noop$1;
 	ssrDebounceFn.flush = noop$1;
@@ -31590,8 +31323,7 @@
 		(0, vue.onBeforeUnmount)(debounced.cancel);
 		return debounced;
 	}
-	//#endregion
-	//#region src/composables/use-event-listener/use-event-listener.js
+	// src/composables/use-event-listener/use-event-listener.js
 	function getEventTarget(target) {
 		const value = (0, vue.toValue)(target);
 		if (value === null || value === void 0) return null;
@@ -31653,8 +31385,7 @@
 			effect.stop();
 		} };
 	}
-	//#endregion
-	//#region src/composables/use-event-source/use-event-source.js
+	// src/composables/use-event-source/use-event-source.js
 	const statusClosed$1 = "closed";
 	const statusConnecting$1 = "connecting";
 	const statusOpen$1 = "open";
@@ -31807,8 +31538,7 @@
 			closeSource
 		};
 	}
-	//#endregion
-	//#region src/composables/use-file-picker/use-file-picker.js
+	// src/composables/use-file-picker/use-file-picker.js
 	function useFilePicker(options) {
 		const acceptedPickerFiles = (0, vue.shallowRef)([]);
 		const rejectedPickerFiles = (0, vue.shallowRef)([]);
@@ -31886,8 +31616,7 @@
 			resetFilePicker
 		};
 	}
-	//#endregion
-	//#region src/composables/use-idle/use-idle.js
+	// src/composables/use-idle/use-idle.js
 	const defaultTimeout = 6e4;
 	const defaultEvents = [
 		"mousemove",
@@ -31988,8 +31717,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/use-keyboard-shortcut/use-keyboard-shortcut.js
+	// src/composables/use-keyboard-shortcut/use-keyboard-shortcut.js
 	const modifierAliases = {
 		ctrl: "ctrl",
 		control: "ctrl",
@@ -32107,8 +31835,7 @@
 		});
 		return { stopKeyboardShortcut: stopEventListener };
 	}
-	//#endregion
-	//#region src/composables/use-interval/use-interval.js
+	// src/composables/use-interval/use-interval.js
 	function useInterval() {
 		const isIntervalActive = (0, vue.ref)(false);
 		let timer = null;
@@ -32135,8 +31862,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/use-meta/use-meta.js
+	// src/composables/use-meta/use-meta.js
 	function useMeta(metaOptions) {
 		{
 			const meta = { active: true };
@@ -32164,8 +31890,7 @@
 			});
 		}
 	}
-	//#endregion
-	//#region src/composables/use-mutation/use-mutation.js
+	// src/composables/use-mutation/use-mutation.js
 	const observeKeys = [
 		"childList",
 		"attributes",
@@ -32251,8 +31976,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/use-object-url/use-object-url.js
+	// src/composables/use-object-url/use-object-url.js
 	function useObjectUrl(source) {
 		const objectUrl = (0, vue.ref)(null);
 		let current = null, currentSource = null;
@@ -32287,8 +32011,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/use-throttle/use-throttle.js
+	// src/composables/use-throttle/use-throttle.js
 	function ssrThrottleFn() {}
 	ssrThrottleFn.cancel = noop$1;
 	ssrThrottleFn.flush = noop$1;
@@ -32298,8 +32021,7 @@
 		(0, vue.onBeforeUnmount)(throttled.cancel);
 		return throttled;
 	}
-	//#endregion
-	//#region src/composables/use-web-socket/use-web-socket.js
+	// src/composables/use-web-socket/use-web-socket.js
 	const statusClosed = "closed";
 	const statusConnecting = "connecting";
 	const statusOpen = "open";
@@ -32492,8 +32214,7 @@
 			closeSocket
 		};
 	}
-	//#endregion
-	//#region src/composables/use-web-worker/use-web-worker.js
+	// src/composables/use-web-worker/use-web-worker.js
 	function createWorker(source, opts) {
 		if (source instanceof Worker) return source;
 		if (typeof source === "function") return source.prototype === void 0 ? source(opts) : Reflect.construct(source, [opts]);
@@ -32562,8 +32283,7 @@
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables/use-web-worker-fn/use-web-worker-fn.js
+	// src/composables/use-web-worker-fn/use-web-worker-fn.js
 	const statusIdle = "idle";
 	const statusRunning = "running";
 	const statusSuccess = "success";
@@ -32686,8 +32406,7 @@ onmessage = evt => {
 			}
 		};
 	}
-	//#endregion
-	//#region src/composables.js
+	// src/composables.js
 	var composables_exports = /* @__PURE__ */ __exportAll({
 		useAnimationFrame: () => useAnimationFrame,
 		useBroadcastChannel: () => useBroadcastChannel,
@@ -32720,10 +32439,9 @@ onmessage = evt => {
 		useWebWorker: () => useWebWorker,
 		useWebWorkerFn: () => useWebWorkerFn
 	});
-	//#endregion
-	//#region src/index.umd.js
+	// src/index.umd.js
 	window.Quasar = {
-		version: "2.35.2",
+		version: "2.35.3",
 		install(app, opts) {
 			install_quasar_default(app, {
 				components: components_exports,
@@ -32740,5 +32458,4 @@ onmessage = evt => {
 		...composables_exports,
 		...utils_exports
 	};
-	//#endregion
 })(window.Vue);
