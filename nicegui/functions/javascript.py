@@ -7,7 +7,7 @@ def run_javascript(code: str, *, timeout: float = 1.0) -> AwaitableResponse:
 
     This function runs arbitrary JavaScript code on a page that is executed in the browser.
     To access a client-side Vue component or HTML element by ID,
-    use the JavaScript functions `getElement()` or `getHtmlElement()` (*added in version 2.9.0*).
+    use the JavaScript functions ``getElement()`` or ``getHtmlElement()`` (*added in version 2.9.0*).
 
     If the function is awaited, the result of the JavaScript code is returned.
     Otherwise, the JavaScript code is executed without waiting for a response.

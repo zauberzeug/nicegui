@@ -52,9 +52,6 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
             ),
         )
 
-        self._props.add_rename('resource_name', 'resource-name')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('use_mermaid', 'use-mermaid')  # DEPRECATED: remove in NiceGUI 4.0
-
     @staticmethod
     @lru_cache(maxsize=1)
     def _generate_codehilite_css() -> str:

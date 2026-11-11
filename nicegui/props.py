@@ -1,7 +1,7 @@
 import ast
 import re
 import weakref
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
@@ -46,7 +46,7 @@ PROPS_PATTERN = re.compile(r'''
             \}                  # Match the closing }
         )
         |                   # or, as a final alternative ....
-        (?P<unquoted>[\w\-.,%:\/=?&;+#@~$]+)  # a value without quotes
+        (?P<unquoted>\S+)   # any other whitespace-free token (also the fallback for unbalanced quotes or brackets)
     )
 )?                          # End of optional non-capturing group for value
 ($|\s)                      # Match end of string or whitespace
@@ -56,12 +56,13 @@ T = TypeVar('T', bound='Element')
 
 
 class Props(ObservableDict, Generic[T]):
+    __slots__ = ('_element', '_suspend_count', '_warnings')
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, on_change=self._update, **kwargs)
+        super().__init__(*args, **kwargs)
+        self._change_handlers.append((self._update, False))  # _update takes no arguments, so skip the signature check
         self._element = weakref.ref(element)
         self._warnings: dict[str, str] = {}
-        self._renames: dict[str, str] = {}
         self._suspend_count = 0
 
     def set_optional(self, key: str, value: Any) -> None:
@@ -79,7 +80,7 @@ class Props(ObservableDict, Generic[T]):
             self.pop(key, None)
 
     @contextmanager
-    def suspend_updates(self) -> Iterator[None]:
+    def suspend_updates(self) -> Generator[None]:
         """Suspend updates."""
         self._suspend_count += 1
         try:
@@ -102,9 +103,6 @@ class Props(ObservableDict, Generic[T]):
         for name, message in self._warnings.items():
             self._check_warning(name, message)
 
-        for name, rename in self._renames.items():
-            self._check_rename(name, rename)
-
         element = self._element()
         if element is not None:
             element.update()
@@ -114,22 +112,11 @@ class Props(ObservableDict, Generic[T]):
         self._warnings[prop] = message
         self._check_warning(prop, message)
 
-    def add_rename(self, prop: str, replacement: str) -> None:
-        """Add a rename warning for a prop."""
-        self._renames[prop] = replacement
-        self._check_rename(prop, replacement)
-
     def _check_warning(self, name: str, message: str) -> None:
         if name in self:
             with self.suspend_updates():
                 del self[name]
             helpers.warn_once(message)
-
-    def _check_rename(self, name: str, rename: str) -> None:
-        if name in self:
-            with self.suspend_updates():
-                self[rename] = self[name]
-            helpers.warn_once(f'The prop "{name}" is deprecated. Use "{rename}" instead.')
 
     def __call__(self,
                  add: str | None = None, *,

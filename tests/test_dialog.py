@@ -21,11 +21,9 @@ def test_open_close_dialog(screen: Screen):
     screen.should_not_contain('Content')
 
     screen.click('Open')
-    screen.wait(0.5)
     screen.should_contain('Content')
 
     screen.click('Close')
-    screen.wait(0.5)
     screen.should_not_contain('Content')
 
 
@@ -96,7 +94,6 @@ def test_dialog_in_menu(screen: Screen):
     screen.should_contain('Dialog content')  # even though the dialog is nested inside a hidden menu
 
     screen.click('Delete menu')
-    screen.wait(0.5)
     screen.should_not_contain('Dialog content')  # it has been deleted together with the menu
 
 

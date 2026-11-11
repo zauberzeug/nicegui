@@ -68,9 +68,10 @@ def test_fullscreen_button_click(screen: Screen):
 
     screen.open('/')
     screen.click('Enter Fullscreen')
-    screen.wait(0.5)
-    assert values == [True]
+    screen.wait_for(lambda: values == [True])
+    screen.wait_for_js('document.fullscreenElement !== null', True)  # exiting is ignored while entering is pending
 
     screen.click('Exit Fullscreen')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(values) == 2)
+    screen.wait(0.1)
     assert values == [True, False]

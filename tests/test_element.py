@@ -25,7 +25,6 @@ def test_classes(screen: Screen):
                                             f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
 
     screen.open('/')
-    screen.wait(0.5)
     assert_classes('')
 
     label.classes('one')
@@ -86,6 +85,11 @@ def test_style_parsing(value: str | None, expected: dict[str, str]):
     ("input-style='{ color: #ff0000 }'", {'input-style': '{ color: #ff0000 }'}),
     ("""input-style='{ myquote: "quote" }'""", {'input-style': '{ myquote: "quote" }'}),
     ('filename=foo=bar.txt', {'filename': 'foo=bar.txt'}),
+    ('src=/img/a(1).png color=primary dense flat',
+     {'src': '/img/a(1).png', 'color': 'primary', 'dense': True, 'flat': True}),
+    ('href=https://en.wikipedia.org/wiki/Nice_(GUI)', {'href': 'https://en.wikipedia.org/wiki/Nice_(GUI)'}),
+    ('href=http://[::1]:8080/img.png?x=1&y=2', {'href': 'http://[::1]:8080/img.png?x=1&y=2'}),
+    ('mask=(###)###-####', {'mask': '(###)###-####'}),
     ('array=["one"]', {'array': ['one']}),
     ('array=["one", "two"]', {'array': ['one', 'two']}),
     ('''object={'one': "foo"} baz''', {'object': {'one': 'foo'}, 'baz': True}),
@@ -107,7 +111,6 @@ def test_style(screen: Screen):
         assert screen.selenium.find_element(By.XPATH, f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
 
     screen.open('/')
-    screen.wait(0.5)
     assert_style('')
 
     label.style('color: red')
@@ -148,7 +151,6 @@ def test_props(screen: Screen):
         assert screen.selenium.find_element(By.XPATH, f'//label[{" and ".join(class_conditions)}]')
 
     screen.open('/')
-    screen.wait(0.5)
     assert_props('standard')
 
     input_.props('dark')
@@ -182,16 +184,16 @@ def test_move(screen: Screen):
     assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
 
     screen.click('Move X to B')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('B').location['y'] < screen.find('X').location['y']
+    screen.wait_for(lambda: screen.find('A').location['y'] < screen.find(
+        'B').location['y'] < screen.find('X').location['y'])
 
     screen.click('Move X to A')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+    screen.wait_for(lambda: screen.find('A').location['y'] < screen.find(
+        'X').location['y'] < screen.find('B').location['y'])
 
     screen.click('Move X to top')
-    screen.wait(0.5)
-    assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
+    screen.wait_for(lambda: screen.find('X').location['y'] < screen.find(
+        'A').location['y'] < screen.find('B').location['y'])
 
 
 def test_move_slots(screen: Screen):
@@ -214,16 +216,13 @@ def test_move_slots(screen: Screen):
     assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
 
     screen.click('Move X to header')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] == screen.find('X').location['y'], 'X is in A.header'
+    screen.wait_for(lambda: screen.find('A').location['y'] == screen.find('X').location['y'])  # X is in A.header
 
     screen.click('Move X to top')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
+    screen.wait_for(lambda: screen.find('A').location['y'] < screen.find('X').location['y'])  # X is in A.default
 
     screen.click('Move X to B')
-    screen.wait(0.5)
-    assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
+    screen.wait_for(lambda: screen.find('B').location['y'] < screen.find('X').location['y'])  # X is in B.default
 
 
 async def test_move_to_invalid_slot_keeps_element_in_place(user: User):
@@ -544,6 +543,23 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
     screen.open('/')
     screen.click('Check IDs')
     screen.should_contain('All IDs found')
+
+
+def test_template_slot_survives_rerender(screen: Screen):
+    @ui.page('/')
+    def page():
+        element = ui.element()
+        element.add_slot('default', '<input placeholder="type here">')
+        ui.button('Update', on_click=lambda: element.classes('bg-red-100'))
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//input[@placeholder="type here"]')
+    element.send_keys('hello')
+    assert element.get_attribute('value') == 'hello'
+
+    screen.click('Update')  # #6284: an unrelated re-render must not discard the slot's DOM
+    screen.find_by_class('bg-red-100')  # the re-render has reached the browser
+    assert element.get_attribute('value') == 'hello'
 
 
 async def test_element_unregistered_when_constructor_raises(user: User):

@@ -303,6 +303,10 @@ def toggle_fullscreen():
     - `sortBy`: The column name to sort by.
     - `descending`: Whether to sort in descending order.
     - `page`: The current page (1-based).
+
+    *Since version 4.0.0:*
+    The pagination controls are shown if pagination is provided, also when assigning `table.pagination` later.
+    Use `pagination_controls=False` to paginate the rows without showing the controls.
 ''')
 def pagination() -> None:
     columns = [
@@ -436,7 +440,7 @@ def table_cells_with_links():
     table = ui.table(columns=columns, rows=rows, row_key='name')
     with table.add_slot('body-cell-link'):
         with table.cell('link'):
-            ui.link().props(':href=props.value :innerHTML=props.value')
+            ui.link().props(':href=props.value :textContent=props.value')
 
 
 @doc.demo('Table cells with HTML', '''
@@ -469,10 +473,10 @@ def table_with_masonry_like_grid():
     with table.add_slot('item'):
         with ui.card().tight().props('flat bordered').classes('m-1 items-stretch text-center'):
             with ui.card_section():
-                ui.label().props(':innerHTML=props.row.name').classes('font-bold')
+                ui.label().props(':textContent=props.row.name').classes('font-bold')
             ui.separator()
             with ui.card_section():
-                ui.label().props(''' :innerHTML="props.row.age + ' years'" ''')
+                ui.label().props(''' :textContent="props.row.age + ' years'" ''')
 
 
 @doc.demo('Slot templates with NiceGUI elements', '''

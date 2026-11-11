@@ -78,7 +78,7 @@ def adding_rows_preserving_edits():
     To retrieve the currently selected rows, use the `get_selected_rows` method.
     This method returns a list of rows as dictionaries.
 
-    If `rowSelection` is set to `'single'` or to get the first selected row,
+    If `rowSelection` is set to `{'mode': 'singleRow'}` or to get the first selected row,
     you can also use the `get_selected_row` method.
     This method returns a single row as a dictionary or `None` if no row is selected.
 
@@ -412,6 +412,14 @@ doc.text('Debugging', '''
     - `Error while converting :getRowId attribute to function` if a JavaScript expression in the options does not evaluate
     - `Method "..." not found` if `run_grid_method` or `run_row_method` is called with an unknown method name
     - `Row "..." not found` if `run_row_method` is called with an unknown row ID
+
+    To let AG Grid validate the options, e.g. to spot misspelled properties or missing modules,
+    add its `ValidationModule`.
+    The findings are then shown in the browser console and in an overlay on the grid.
+    Note that AG Grid registers modules globally, so this applies to all grids on the page:
+    ```
+    ui.aggrid(options, modules=['AllCommunityModule', 'ValidationModule'])
+    ```
 
     To inspect the arguments of an event, register a JavaScript handler
     (see [Respond to an AG Grid event](#respond_to_an_ag_grid_event)):

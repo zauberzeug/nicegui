@@ -8,7 +8,7 @@ import time
 import warnings
 from collections.abc import Callable
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import Client, app, background_tasks, context, core, ui
@@ -101,7 +101,7 @@ def test_access_user_storage_from_fastapi(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.get(f'http://localhost:{Screen.PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
@@ -119,8 +119,8 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('switch')
-    screen.wait(0.5)
-    assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"test_switch":true}'
+    screen.wait_for(lambda: [p.read_text(encoding='utf-8') for p in Storage.path.glob('storage-user-*.json')] ==
+                    ['{"test_switch":true}'])
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -131,9 +131,8 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('test')
-    screen.wait(1)
-    assert \
-        next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"inner_function":"works"}'
+    screen.wait_for(lambda: [p.read_text(encoding='utf-8') for p in Storage.path.glob('storage-user-*.json')] ==
+                    ['{"inner_function":"works"}'])
 
 
 def test_access_user_storage_from_background_task(screen: Screen):
@@ -185,8 +184,8 @@ def test_rapid_storage(screen: Screen):
 
     screen.open('/')
     screen.click('test')
-    screen.wait(0.5)
-    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}'
+    screen.wait_for(lambda: (Storage.path / 'storage-general.json').exists() and
+                    (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}')
 
 
 def test_tab_storage_is_local(screen: Screen):
@@ -210,7 +209,9 @@ def test_tab_storage_is_local(screen: Screen):
     screen.should_contain('3')
 
 
-def test_tab_storage_is_auto_removed(screen: Screen):
+def test_tab_storage_is_auto_removed(screen: Screen, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(Storage, 'max_tab_storage_age', 0.5)
+
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -221,6 +222,12 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.should_contain('1')
     screen.open('/')
     screen.should_contain('2')
+
+    screen.wait(1.0)  # the tab storage outlives max_tab_storage_age while its client stays connected
+    background_tasks.create(prune_tab_storage())
+    screen.wait(0.1)
+    screen.open('/')
+    screen.should_contain('3')  # the storage of a connected tab is kept
 
     background_tasks.create(prune_tab_storage(force=True))
     screen.wait(0.1)
@@ -243,8 +250,7 @@ def test_clear_tab_storage(screen: Screen):
     assert next(iter(tab_storages.values())) == {'test': '123'}
 
     screen.click('clear')
-    screen.wait(0.5)
-    assert not tab_storages
+    screen.wait_for(lambda: not tab_storages)
 
 
 async def test_tab_storage_in_sync_connect_handler(user: User):
@@ -373,8 +379,8 @@ def test_deepcopy(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Loaded')
-    screen.wait(0.5)
-    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}'
+    screen.wait_for(lambda: (Storage.path / 'storage-general.json').exists() and
+                    (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}')
 
 
 def test_missing_storage_secret(screen: Screen):
@@ -453,7 +459,7 @@ async def test_user_storage_is_pruned(screen: Screen):
     assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/status')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
     assert len(Client.instances) == 1
@@ -589,7 +595,7 @@ def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
     if custom_cookie_headers:
         screen.ui_run_kwargs['session_middleware_kwargs'] = {'same_site': 'none', 'https_only': True}
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.get(f'http://localhost:{Screen.PORT}/')
         assert response.status_code == 200
         cookie_settings = str(response.headers.get('set-cookie')).lower()

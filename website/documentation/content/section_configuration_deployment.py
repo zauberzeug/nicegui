@@ -39,7 +39,7 @@ doc.intro(run_documentation)
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
 
-    Native mode requires a browser engine with ES module and import map support (Chrome 89+).
+    Native mode requires a recent browser engine (Chromium 121+ or WebKit/Safari 17.2+).
     On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.
 
     On Windows, native mode requires the .NET Framework to be installed,
@@ -158,6 +158,35 @@ def env_var_demo():
     from nicegui.elements import markdown
 
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
+
+
+@doc.demo('Custom JSON Serialization', '''
+    NiceGUI serializes everything it sends to the browser as JSON:
+    element properties, event arguments, arguments of `ui.run_javascript`, and FastAPI responses.
+    Basic Python types, dataclasses, enums, dates and NumPy arrays are supported out of the box.
+    For other types you can register a converter with `json.register_type`
+    that turns an object into something JSON-serializable, like a dict or a string.
+    Converters also apply to subclasses, so one registration covers a whole class hierarchy such as Pydantic's `BaseModel`.
+
+    Note that converters cannot override types which are supported natively, like dataclasses or datetimes.
+    And the conversion is one-way: when reading from `app.storage`, you get the converted JSON structure, not the original object.
+
+    *Added in version 3.19.0*
+''')
+def custom_json_demo():
+    from pydantic import BaseModel
+    from nicegui import json
+
+    class Person(BaseModel):
+        name: str
+        age: int
+
+    json.register_type(BaseModel, BaseModel.model_dump)
+
+    ui.aggrid({
+        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+        'rowData': [Person(name='Alice', age=18), Person(name='Bob', age=21)],
+    })
 
 
 @doc.demo('Background Tasks', '''

@@ -137,6 +137,12 @@ async def test_multi_user_navigation(create_user: Callable[[], User]) -> None:
         ui.label('Main page')
         ui.button('go to other', on_click=lambda: ui.navigate.to('/other'))
         ui.button('forward', on_click=ui.navigate.forward)
+        ui.button('send everyone to other', on_click=send_everyone_to_other)
+
+    def send_everyone_to_other():
+        for client in app.clients('/'):
+            with client:
+                ui.navigate.to('/other')
 
     @ui.page('/other')
     def other():
@@ -163,6 +169,12 @@ async def test_multi_user_navigation(create_user: Callable[[], User]) -> None:
     user1.find('forward').click()
     await user1.should_see('Other page')
     await user2.should_see('Main page')
+
+    user1.find('back').click()
+    await user1.should_see('Main page')
+    user1.find('send everyone to other').click()
+    await user1.should_see('Other page')
+    await user2.should_see('Other page')
 
 
 async def test_reload(user: User) -> None:
@@ -316,14 +328,15 @@ async def test_should_not_see_notification(user: User) -> None:
     await user.should_not_see('Hello')
 
 
-async def test_trigger_event(user: User) -> None:
+@pytest.mark.parametrize('event', ['keydown.enter', 'my-event'])
+async def test_trigger_event(user: User, event: str) -> None:
     @ui.page('/')
     def page():
-        ui.input().on('keydown.enter', lambda: ui.notify('Enter pressed'))
+        ui.input().on(event, lambda: ui.notify(f'{event} triggered'))
 
     await user.open('/')
-    user.find(ui.input).trigger('keydown.enter')
-    await user.should_see('Enter pressed')
+    user.find(ui.input).trigger(event)
+    await user.should_see(f'{event} triggered')
 
 
 @pytest.mark.parametrize('args_value,expected', [
@@ -417,7 +430,7 @@ async def test_page_to_string_output_used_in_error_messages(user: User) -> None:
               Button \[markers=second, label=World\]
               Icon \[markers=third, name=thumbs-up\]
             Avatar \[icon=star\]
-            Input \[value=typed, label=some input, for=c10, placeholder=type here, type=text\]
+            Input \[value=typed, label=some input, for=ng-10, placeholder=type here, type=text\]
             Markdown \[content=\#\# Markdown..., sanitize=True, resource-name=[^\]]+\]
             Card
              Image \[src=/image.jpg\]
@@ -640,7 +653,7 @@ async def test_download_file(user: User, data: str | bytes) -> None:
     @ui.page('/')
     def page():
         if isinstance(data, str):
-            ui.button('Download', on_click=lambda: ui.download.file(data))
+            ui.button('Download', on_click=lambda: ui.download.from_url(data))
         else:
             ui.button('Download', on_click=lambda: ui.download.content(data))
 
@@ -766,6 +779,23 @@ async def test_clearing_disabled_element(user: User) -> None:
 
     assert target.value == initial_value
     await user.should_see(initial_value)
+
+
+@pytest.mark.parametrize('kind, initial, expected', [
+    (ui.input, 'abc', ''),
+    (ui.textarea, 'abc', ''),
+    (ui.date_input, '2025-01-01', ''),
+    (ui.time_input, '12:00', ''),
+    (ui.color_input, '#ff0000', ''),
+])
+async def test_clearing_value_elements(user: User, kind: type[ui.element], initial: Any, expected: Any) -> None:
+    @ui.page('/')
+    def page():
+        kind(value=initial)
+
+    await user.open('/')
+    user.find(kind).clear()
+    assert next(iter(user.find(kind).elements)).value == expected
 
 
 async def test_drawer(user: User):

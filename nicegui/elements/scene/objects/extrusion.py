@@ -10,6 +10,6 @@ class Extrusion(Object3D, component='extrusion.js'):
 
         :param outline: list of points defining the outline of the 2D shape
         :param height: height of the extrusion
-        :param wireframe: whether to display the extrusion as a wireframe (default: `False`)
+        :param wireframe: whether to display the extrusion as a wireframe (default: ``False``)
         """
         super().__init__(outline, height, wireframe=wireframe)

@@ -1,4 +1,4 @@
-from typing_extensions import Self
+from typing import Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
@@ -29,7 +29,7 @@ class Expansion(SortableElement, IconElement, TextElement, ValueElement[bool], D
         :param caption: optional caption (or sub-label) text
         :param icon: optional icon (default: None)
         :param group: optional group name for coordinated open/close state within the group a.k.a. "accordion mode"
-        :param value: whether the expansion should be opened on creation (default: `False`)
+        :param value: whether the expansion should be opened on creation (default: ``False``)
         :param on_value_change: callback to execute when value changes
         """
         super().__init__(icon=icon, text=text, value=value, on_value_change=on_value_change)

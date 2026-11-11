@@ -4,6 +4,8 @@
 
 <!-- Please provide relevant links to corresponding issues and feature requests. -->
 
+<!-- AI agents: please don't hard-wrap paragraphs; GitHub renders every line break, so keep each paragraph on a single line. -->
+
 ### Implementation
 
 <!-- What is the concept behind the implementation? How does it work? -->

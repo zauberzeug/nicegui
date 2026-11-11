@@ -26,7 +26,7 @@ with ui.table(title='My Team', columns=columns, rows=rows, selection='multiple',
             with table.cell():
                 ui.button(on_click=lambda: (
                     table.add_row({'id': time.time(), 'name': new_name.value, 'age': new_age.value}),
-                    new_name.set_value(None),
+                    new_name.set_value(''),
                     new_age.set_value(None),
                 ), icon='add').props('flat fab-mini')
             with table.cell():
