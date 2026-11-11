@@ -152,7 +152,16 @@ class Props(ObservableDict, Generic[T]):
 
             for group in ['single', 'double', 'square', 'curly']:
                 if match_groups[group] is not None:
-                    props[key] = ast.literal_eval(match_groups[group])
+                    # For Vue-bindings (leading ":"), Vue evaluates the raw text as a JavaScript
+                    # expression on the client. literal_eval results for bracket values break
+                    # numeric arrays: `[1,2]` stringifies to "1,2" and the comma operator in
+                    # "return (1,2)" yields only 2. Quoted values literal_eval to a string that
+                    # is the expression source, so they are fine. See #6493.
+                    props[key] = (
+                        match_groups[group]
+                        if key.startswith(':') and group in ('square', 'curly')
+                        else ast.literal_eval(match_groups[group])
+                    )
                     break
             else:
                 if match_groups['unquoted'] is not None:
