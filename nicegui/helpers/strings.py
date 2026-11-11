@@ -4,8 +4,9 @@ def kebab_to_camel_case(string: str) -> str:
 
 
 def event_type_to_camel_case(string: str) -> str:
-    """Convert an event type string to camelCase."""
-    return '.'.join(kebab_to_camel_case(part) if part != '-' else part for part in string.split('.'))
+    """Convert an event type string to camelCase, leaving modifiers and keys after the first '.' untouched."""
+    event_name, *modifiers = string.split('.')
+    return '.'.join([kebab_to_camel_case(event_name), *modifiers])
 
 
 def remove_indentation(text: str) -> str:

@@ -23,17 +23,17 @@ class Number(LabelElement, ValidationElement[float | None], DisableableElement):
                  suffix: str | None = DEFAULT_PROP | None,
                  format: str | None = None,  # pylint: disable=redefined-builtin
                  on_change: Handler[ValueChangeEventArguments[float | None]] | None = None,
-                 validation: ValidationFunction | ValidationDict | None = None,
+                 validation: ValidationFunction[float | None] | ValidationDict[float | None] | None = None,
                  ) -> None:
         """Number Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
 
-        You can use the `validation` parameter to define a dictionary of validation rules,
+        You can use the ``validation`` parameter to define a dictionary of validation rules,
         e.g. ``{'Too small!': lambda value: value > 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
-        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
+        To disable the automatic validation on every value change, you can use the ``without_auto_validation`` method.
 
         :param label: displayed name for the number input
         :param placeholder: text to show if no value is entered
@@ -128,6 +128,8 @@ class Number(LabelElement, ValidationElement[float | None], DisableableElement):
     @property
     def out_of_limits(self) -> bool:
         """Whether the current value is out of the allowed limits."""
+        if self.value is None:
+            return False
         return not self.min <= self.value <= self.max
 
     def sanitize(self) -> None:
@@ -164,3 +166,6 @@ class Number(LabelElement, ValidationElement[float | None], DisableableElement):
         if self.label:
             return f'{self.label}: {value}'
         return value
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

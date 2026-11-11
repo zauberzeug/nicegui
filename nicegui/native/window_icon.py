@@ -107,7 +107,7 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
         SHGetPropertyStoreForWindow.restype = ctypes.HRESULT  # type: ignore[attr-defined]
 
         hr = SHGetPropertyStoreForWindow(hwnd, ctypes.byref(IID_IPropertyStore), ctypes.byref(pps))
-        if hr != 0 or not pps:
+        if hr != 0 or not pps.value:
             log.warning('Could not get IPropertyStore for window (HRESULT=0x%08X)', hr & 0xFFFFFFFF)
             return False
 
@@ -143,5 +143,5 @@ def _set_window_property_store(hwnd: int, app_id: str, icon_path: str) -> bool:
         log.exception('Error while setting native window property store values')
         return False
     finally:
-        if pps and release_fn is not None:
+        if pps.value and release_fn is not None:
             release_fn(pps)

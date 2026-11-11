@@ -1,9 +1,10 @@
 import builtins
-import importlib
 import importlib.util
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from .dependencies import register_esm
 
 _LAZY_IMPORTS = {
     'context': ('.context', 'context'),
@@ -81,6 +82,7 @@ _LAZY_IMPORTS = {
     'pagination': ('.elements.pagination', 'Pagination'),
     'parallax': ('.elements.parallax', 'Parallax'),
     'plotly': ('.elements.plotly', 'Plotly'),
+    'popup': ('.elements.popup', 'Popup'),
     'circular_progress': ('.elements.progress', 'CircularProgress'),
     'linear_progress': ('.elements.progress', 'LinearProgress'),
     'matplotlib': ('.elements.pyplot', 'Matplotlib'),
@@ -124,6 +126,7 @@ _LAZY_IMPORTS = {
     'tooltip': ('.elements.tooltip', 'Tooltip'),
     'tree': ('.elements.tree', 'Tree'),
     'upload': ('.elements.upload', 'Upload'),
+    'uplot': ('.elements.uplot', 'UPlot'),
     'video': ('.elements.video', 'Video'),
     'xterm': ('.elements.xterm', 'Xterm'),
     'clipboard': ('.functions.clipboard', None),
@@ -141,8 +144,6 @@ _LAZY_IMPORTS = {
     'state': ('.functions.refreshable', 'state'),
     'status_code': ('.functions.status_code', 'status_code'),
     'add_css': ('.functions.style', 'add_css'),
-    'add_sass': ('.functions.style', 'add_sass'),
-    'add_scss': ('.functions.style', 'add_scss'),
     'update': ('.functions.update', 'update'),
     'page': ('.page', 'page'),
     'run': ('.ui_run', 'run'),
@@ -153,8 +154,6 @@ __all__ = [
     'add_body_html',
     'add_css',
     'add_head_html',
-    'add_sass',
-    'add_scss',
     'aggrid',
     'altair',
     'anywidget',
@@ -240,6 +239,7 @@ __all__ = [
     'pagination',
     'parallax',
     'plotly',
+    'popup',
     'pyplot',
     'query',
     'radio',
@@ -289,6 +289,7 @@ __all__ = [
     'tree',
     'update',
     'upload',
+    'uplot',
     'video',
     'xterm',
 ]
@@ -369,6 +370,7 @@ if TYPE_CHECKING:
     from .elements.pagination import Pagination as pagination
     from .elements.parallax import Parallax as parallax
     from .elements.plotly import Plotly as plotly
+    from .elements.popup import Popup as popup
     from .elements.progress import CircularProgress as circular_progress
     from .elements.progress import LinearProgress as linear_progress
     from .elements.pyplot import Matplotlib as matplotlib
@@ -412,6 +414,7 @@ if TYPE_CHECKING:
     from .elements.tooltip import Tooltip as tooltip
     from .elements.tree import Tree as tree
     from .elements.upload import Upload as upload
+    from .elements.uplot import UPlot as uplot
     from .elements.video import Video as video
     from .elements.xterm import Xterm as xterm
     from .functions import clipboard
@@ -425,7 +428,7 @@ if TYPE_CHECKING:
     from .functions.page_title import page_title
     from .functions.refreshable import refreshable, refreshable_method, state
     from .functions.status_code import status_code
-    from .functions.style import add_css, add_sass, add_scss
+    from .functions.style import add_css
     from .functions.update import update
     from .page import page
     from .ui_run import run
@@ -447,8 +450,11 @@ def __getattr__(name: str) -> object:
 
 
 # Eagerly import element packages with 'dist' dirs so their __init__.py registers ESM modules in the importmap.
-for _module_path in {mp for mp, _ in _LAZY_IMPORTS.values()}:
-    _spec = importlib.util.find_spec(_module_path, package='nicegui')
-    if _spec and _spec.submodule_search_locations and (Path(_spec.submodule_search_locations[0]) / 'dist').is_dir():
-        importlib.import_module(_module_path, package='nicegui')
-del _module_path, _spec  # pylint: disable=undefined-loop-variable
+# We scan the file system rather than `_LAZY_IMPORTS`, because some packages (e.g. sortable) have no `ui` name.
+for _dist in sorted(Path(__file__).parent.glob('elements/*/dist')):
+    importlib.import_module(f'.elements.{_dist.parent.name}', package='nicegui')
+# The external highcharts package has no 'dist' dir here, so register its ESM module without importing it.
+if (_spec := importlib.util.find_spec('nicegui_highcharts')) and _spec.origin:
+    _dist = Path(_spec.origin).parent / 'dist'
+    if _dist.is_dir():
+        register_esm('nicegui-highcharts', _dist, max_time=_dist.stat().st_mtime)

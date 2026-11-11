@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Self
 
 from ...element import Element
 from ...events import Handler, SortableEventArguments, handle_event
@@ -28,6 +26,8 @@ class Sortable(Element, component='sortable.js', esm={'nicegui-sortable': 'dist'
         super().__init__()
         self._element = element
         self._props['element-id'] = element.html_id
+        # re-bind after (re-)mount
+        element.on('vnodeMounted', js_handler=f'() => mounted_app?.$refs.r{self.id}?.bind()')
         self._props['options'] = {
             'animation': animation * 1000,
             'ghostClass': ghost_class,

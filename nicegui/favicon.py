@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.routing import APIRouter
 
 from . import core
 from .helpers import is_file
@@ -16,11 +17,14 @@ if TYPE_CHECKING:
     from .page import page
 
 
-def create_favicon_route(path: str, favicon: str | Path | None) -> None:
-    """Create a favicon route for the given path."""
+def create_favicon_route(path: str, favicon: str | Path | None, router: APIRouter) -> None:
+    """Create a favicon route for the given path.
+
+    Registering it on the page's own router keeps it ahead of a catch-all page route and
+    lets ``app.include_router`` add the prefix to the favicon path as well.
+    """
     if is_file(favicon):
-        core.app.add_route('/favicon.ico' if path == '/' else f'{path}/favicon.ico',
-                           lambda _: FileResponse(favicon))  # type: ignore
+        router.add_route(f'{path.rstrip("/")}/favicon.ico', lambda _: FileResponse(favicon))  # type: ignore[arg-type]
 
 
 def get_favicon_url(page: page, prefix: str) -> str:
@@ -41,7 +45,7 @@ def get_favicon_url(page: page, prefix: str) -> str:
     if page.path == '/' or page.favicon is None:
         return f'{prefix}/favicon.ico'
 
-    return f'{prefix}{page.path}/favicon.ico'
+    return f'{prefix}{page.path.rstrip("/")}/favicon.ico'
 
 
 def get_favicon_response() -> Response:
@@ -102,6 +106,10 @@ def _svg_to_data_url(svg: str) -> str:
 
 
 def _data_url_to_bytes(data_url: str) -> tuple[str, bytes]:
-    media_type, base64_image = data_url.split(',', 1)
-    media_type = media_type.split(':')[1].split(';')[0]
-    return media_type, base64.b64decode(base64_image)
+    header, comma, data = data_url.partition(',')
+    if not comma:
+        raise ValueError(f'invalid data URL: {data_url}')
+    media_type = header.split(':')[1].split(';')[0]
+    if header.endswith(';base64'):
+        return media_type, base64.b64decode(data)
+    return media_type, urllib.parse.unquote_to_bytes(data)

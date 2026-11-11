@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Iterator
+from collections.abc import Callable, Iterator
 from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, TypeVar, cast
@@ -148,18 +148,35 @@ ValueT = TypeVar('ValueT')
 @dataclass(kw_only=True, slots=True)
 class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
     value: ValueT
-    previous_value: ValueT = ...  # type: ignore[assignment]
+    previous_value: ValueT
 
-    def __post_init__(self):
-        # DEPRECATED: previous_value will be required in NiceGUI 4.0
-        if self.previous_value is ...:
-            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
-                              'In NiceGUI 4.0 this will raise an error.')
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorAnchorChangeEventArguments(UiEventArguments):
+    anchors: dict[str, int]  # mapping of anchor id to its current 1-indexed line, as reported by the browser
 
 
 @dataclass(kw_only=True, slots=True)
 class TableSelectionEventArguments(UiEventArguments):
     selection: list[Any]
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorFocusChangeEventArguments(UiEventArguments):
+    focused: bool
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorViewportChangeEventArguments(UiEventArguments):
+    from_line: int
+    to_line: int
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorGeometryChangeEventArguments(UiEventArguments):
+    width: int
+    height: int
+    content_height: int
 
 
 @dataclass(kw_only=True, slots=True)
@@ -447,7 +464,7 @@ EventT = TypeVar('EventT', bound=EventArguments)
 Handler: TypeAlias = Callable[[EventT], Any] | Callable[[], Any]
 
 
-def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
+def handle_event(handler: Handler[EventT] | None, arguments: EventT, *, expect_args: bool | None = None) -> None:
     """Call the given event handler.
 
     The handler is called within the context of the parent slot of the sender.
@@ -457,6 +474,9 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
 
     :param handler: the event handler
     :param arguments: the event arguments
+    :param expect_args: whether the handler expects the arguments to be passed
+        (default: ``None`` meaning auto-detected from the handler's signature;
+        pass a pre-resolved bool to skip the per-call signature introspection, *added in version 3.15.0*)
     """
     if handler is None:
         return
@@ -468,20 +488,13 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT) -> None:
             parent_slot = nullcontext()
 
         with parent_slot:
-            if helpers.expects_arguments(handler):
+            if expect_args is None:
+                expect_args = helpers.expects_arguments(handler)
+            if expect_args:
                 result = cast(Callable[[EventT], Any], handler)(arguments)
             else:
                 result = cast(Callable[[], Any], handler)()
         if helpers.should_await(result):
-            background_tasks.create_or_defer(_await_and_handle_in_context(result, parent_slot), name=str(handler))
+            background_tasks.create_or_defer(result, name=str(handler), context=parent_slot)
     except Exception as e:
         core.app.handle_exception(e)
-
-
-async def _await_and_handle_in_context(awaitable: Awaitable, context: Slot | nullcontext) -> None:
-    """Await an event handler result within its slot context, handling exceptions in-context."""
-    with context:
-        try:
-            await awaitable
-        except Exception as e:
-            core.app.handle_exception(e)

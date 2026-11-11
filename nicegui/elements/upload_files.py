@@ -1,3 +1,4 @@
+import ntpath
 import weakref
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
@@ -126,6 +127,7 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
     buffer = BytesIO()
     buffer_size = 0
     temp_file: aiofiles.threadpool.binary.AsyncBufferedIOBase | None = None
+    success = False
 
     try:
         while (chunk := await upload.read(chunk_size)):
@@ -138,10 +140,13 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
                 buffer_size += len(chunk)
             else:
                 await temp_file.write(chunk)
+        success = True
     finally:
         await upload.close()
         if temp_file:
             await temp_file.close()
+            if not success:
+                _cleanup_path(Path(str(temp_file.name)))
 
     filename = _sanitize_filename(upload.filename)
     if temp_file:
@@ -151,5 +156,8 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
 
 
 def _sanitize_filename(name: str | None) -> str:
-    """Strip all path components from a filename to prevent path traversal."""
-    return (name or '').rsplit('/')[-1].rsplit('\\')[-1]
+    """Strip all path components (including drive prefixes like "C:") from a filename to prevent path traversal."""
+    name = name or ''
+    while (stripped := ntpath.basename(name)) != name:
+        name = stripped
+    return '' if name in ('.', '..') else name

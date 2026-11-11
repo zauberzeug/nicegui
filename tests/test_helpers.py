@@ -23,7 +23,7 @@ def test_is_port_open():
 
 
 def test_is_port_open_on_bad_ip():
-    assert not helpers.is_port_open('1.2', 0), 'should not be able to connect to a bad IP'
+    assert not helpers.is_port_open('256.0.0.1', 0), 'should not be able to connect to a bad IP'
 
 
 def test_format_url():
@@ -105,3 +105,5 @@ def test_event_type_to_camel_case():
     assert helpers.event_type_to_camel_case('keydown.enter') == 'keydown.enter'
     assert helpers.event_type_to_camel_case('keydown.+') == 'keydown.+'
     assert helpers.event_type_to_camel_case('keydown.-') == 'keydown.-'
+    assert helpers.event_type_to_camel_case('keydown.page-down') == 'keydown.page-down'
+    assert helpers.event_type_to_camel_case('keydown.arrow-left') == 'keydown.arrow-left'

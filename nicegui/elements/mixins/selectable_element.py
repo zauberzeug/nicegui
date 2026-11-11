@@ -1,7 +1,5 @@
 from collections.abc import Callable
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -20,8 +18,6 @@ class SelectableElement(Element):
         super().__init__(**kwargs)
         if not selectable:
             return
-
-        self._props['selectable'] = selectable
 
         self.selected = selected
         self._props['selected'] = selected

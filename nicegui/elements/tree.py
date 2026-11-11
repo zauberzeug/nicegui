@@ -1,7 +1,5 @@
 from collections.abc import Iterator
-from typing import Any, Literal
-
-from typing_extensions import Self
+from typing import Any, Literal, Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import GenericEventArguments, Handler, ValueChangeEventArguments, handle_event
@@ -180,3 +178,8 @@ class Tree(FilterElement):
         if node_keys is not None:
             return set(node_keys)
         return {node[self._props['node-key']] for node in self.nodes()}
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        LABEL_KEY = self._props['label-key']
+        nodes = self.nodes(visible=True if only_visible else None)
+        return [*super()._displayed_contents(only_visible=only_visible), *(node[LABEL_KEY] for node in nodes)]

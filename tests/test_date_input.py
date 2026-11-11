@@ -34,11 +34,10 @@ async def test_date_conversion(user: User, range_input: bool):
     await user.open('/')
     await user.should_see('Date')
 
-    pairs: list[tuple[str | None, str | dict[str, str] | None]] = [
+    pairs: list[tuple[str, str | dict[str, str]]] = [
         ('2025-01-01', '2025-01-01'),
         ('foo', 'foo'),
         ('', ''),
-        (None, None),
     ]
     if range_input:
         pairs.append(('2025-01-01 - 2025-01-02', {'from': '2025-01-01', 'to': '2025-01-02'}))
@@ -50,3 +49,6 @@ async def test_date_conversion(user: User, range_input: bool):
 
         date_input.picker.value = picker_value
         assert date_input.value == input_value
+
+    date_input.picker.value = None
+    assert date_input.value == ''

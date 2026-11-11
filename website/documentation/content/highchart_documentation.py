@@ -23,8 +23,41 @@ def main_demo() -> None:
     ui.button('Update', on_click=update)
 
 
+@doc.demo('Adding and removing series', '''
+    The ``options`` dictionary is the single source of truth for the chart:
+    when it changes, series and axes are added, updated and removed so that these always match the options.
+    State added on the client, e.g. via JavaScript, does not survive updates.
+
+    When adding and removing series dynamically, it is recommended to give each series an explicit ``id``.
+    Otherwise series are matched by position and user state like legend-click visibility
+    can end up attached to the wrong series.
+
+    **Note:** Server updates while a user is drilled into a chart (``extras=['drilldown']``) reset the drill view.
+''')
+def dynamic_series() -> None:
+    from random import random
+
+    chart = ui.highchart({
+        'title': False,
+        'series': [],
+    }).classes('w-full h-64')
+
+    def toggle(name: str, value: bool) -> None:
+        series = chart.options['series']
+        if value:
+            series.append({'id': name, 'name': name, 'data': [random() for _ in range(5)]})
+        else:
+            series.remove(next(s for s in series if s['id'] == name))
+
+    with ui.row():
+        ui.switch('Alpha', on_change=lambda e: toggle('Alpha', e.value))
+        ui.switch('Beta', on_change=lambda e: toggle('Beta', e.value))
+
+
 @doc.demo('Chart with extra dependencies', '''
     To use a chart type that is not included in the default dependencies, you can specify extra dependencies.
+    Prerequisites like the "treemap" module for a "treegraph" chart are loaded automatically,
+    so the order of the extras does not matter.
     This demo shows a solid gauge chart.
 ''')
 def extra_dependencies() -> None:
@@ -49,6 +82,10 @@ def extra_dependencies() -> None:
     - `on_point_drag_start`: called when a point drag starts
     - `on_point_drag`: called when a point is dragged
     - `on_point_drop`: called when a point is dropped
+
+    **Note:** The ``point_index`` in these events is Highcharts' internal point index.
+    After an update it can differ from the position in ``options``, e.g. for heatmaps or other series with duplicate x values.
+    Give each point an explicit ``id`` to keep the order stable, or look up points by ``point_x`` and ``point_y``.
 ''')
 def drag() -> None:
     ui.highchart(

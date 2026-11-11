@@ -1,13 +1,18 @@
+import asyncio
+import gc
 import weakref
+from collections.abc import Callable
 from typing import Literal
 
 import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
+from selenium.webdriver import ActionChains
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
-from nicegui.testing import Screen
+from nicegui.events import GenericEventArguments
+from nicegui.testing import Screen, User
 
 from .test_helpers import TEST_DIR
 
@@ -28,7 +33,7 @@ def test_moving_sphere_with_timer(screen: Screen):
         for _ in range(3):
             try:
                 pos = screen.selenium.execute_script(
-                    f'return scene_{scene.html_id}.getObjectByName("sphere").position.z')
+                    f'return scene_{scene.id}.getObjectByName("sphere").position.z')
                 if pos is not None:
                     return pos
             except JavascriptException as e:
@@ -56,18 +61,18 @@ def test_no_object_duplication_on_index_client(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_{scene.id}.children.length') == 5
 
 
 def test_no_object_duplication_with_page_builder(screen: Screen):
-    scene_html_ids: list[int] = []
+    scene_ids: list[int] = []
 
     @ui.page('/')
     def page():
         with ui.scene() as scene:
             sphere = scene.sphere().move(0, -4, 0)
             ui.timer(0.1, lambda: sphere.move(0, sphere.y + 0.5, 0))
-        scene_html_ids.append(scene.html_id)
+        scene_ids.append(scene.id)
 
     screen.open('/')
     screen.wait(0.4)
@@ -75,10 +80,10 @@ def test_no_object_duplication_with_page_builder(screen: Screen):
     screen.open('/')
     screen.switch_to(0)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_{scene_html_ids[0]}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_{scene_ids[0]}.children.length') == 5
     screen.switch_to(1)
     screen.wait(0.2)
-    assert screen.selenium.execute_script(f'return scene_{scene_html_ids[1]}.children.length') == 5
+    assert screen.selenium.execute_script(f'return scene_{scene_ids[1]}.children.length') == 5
 
 
 def test_deleting_group(screen: Screen):
@@ -93,11 +98,53 @@ def test_deleting_group(screen: Screen):
         ui.button('Delete group', on_click=group.delete)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert len(scene.objects) == 2
+    screen.wait_for(lambda: len(scene.objects) == 2)
     screen.click('Delete group')
-    screen.wait(0.5)
-    assert len(scene.objects) == 0
+    screen.wait_for(lambda: len(scene.objects) == 0)
+
+
+def test_deleting_object_right_after_creation(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().with_name('warmup')  # when the button is clicked, box.js is already loaded but group.js is not
+
+        def create_and_delete():
+            with scene, scene.group().with_name('group'):
+                scene.box().with_name('box').delete()
+
+        ui.button('Create and delete', on_click=create_and_delete)
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("warmup")?.type', 'Mesh')
+    screen.click('Create and delete')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("group")?.type', 'Group')
+    assert screen.selenium.execute_script(f'return scene_{scene.id}.getObjectByName("box")?.type ?? null') is None
+
+
+def test_moving_right_after_detaching(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+        def detach_and_move():
+            with scene, scene.group():
+                box = scene.box().with_name('box')
+            box.detach()
+            box.move(1, 2, 3)
+
+        ui.button('Detach and move', on_click=detach_and_move)
+
+    screen.open('/')
+    screen.click('Detach and move')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box")?.parent?.type', 'Scene')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box")?.position.x', 1)
 
 
 def test_replace_scene(screen: Screen):
@@ -118,12 +165,10 @@ def test_replace_scene(screen: Screen):
         ui.button('Replace scene', on_click=replace)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'sphere'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'sphere')
 
     screen.click('Replace scene')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'box'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'box')
 
 
 def test_create_dynamically(screen: Screen):
@@ -144,6 +189,14 @@ def test_rotation_matrix_from_euler():
     R = Rz @ Ry @ Rx
     assert np.allclose(Object3D.rotation_matrix_from_euler(omega, phi, kappa), R)
 
+    axis = {'x': Rx, 'y': Ry, 'z': Rz}
+    for order in ['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx']:
+        a, b, c = order
+        extrinsic = Object3D.rotation_matrix_from_euler(omega, phi, kappa, order)  # type: ignore[arg-type]
+        intrinsic = Object3D.rotation_matrix_from_euler(omega, phi, kappa, order.upper())  # type: ignore[arg-type]
+        assert np.allclose(extrinsic, axis[c] @ axis[b] @ axis[a]), f'{order} rotates about world axes'
+        assert np.allclose(intrinsic, axis[a] @ axis[b] @ axis[c]), f'{order.upper()} rotates about object axes'
+
 
 def test_object_creation_via_context(screen: Screen):
     scene = None
@@ -155,8 +208,7 @@ def test_object_creation_via_context(screen: Screen):
             scene.box().with_name('box')
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'box'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'box')
 
 
 def test_object_creation_via_attribute(screen: Screen):
@@ -169,8 +221,7 @@ def test_object_creation_via_attribute(screen: Screen):
         scene.box().with_name('box')
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children[4].name') == 'box'
+    screen.wait_for_js(f'scene_{scene.id}.children[4].name', 'box')
 
 
 def test_clearing_scene(screen: Screen):
@@ -186,11 +237,9 @@ def test_clearing_scene(screen: Screen):
         ui.button('Clear', on_click=scene.clear)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert len(scene.objects) == 3
+    screen.wait_for(lambda: len(scene.objects) == 3)
     screen.click('Clear')
-    screen.wait(0.5)
-    assert len(scene.objects) == 0
+    screen.wait_for(lambda: len(scene.objects) == 0)
 
 
 @pytest.mark.parametrize('set_material, color', [
@@ -210,11 +259,43 @@ def test_gltf(screen: Screen, set_material: bool, color: str):
                 gltf.material(f'#{color}')
 
     screen.open('/')
-    screen.wait(1.0)
-    assert screen.selenium.execute_script(f'return scene_{scene.html_id}.children.length') == 5
-    assert screen.selenium.execute_script(
-        f'return scene_{scene.html_id}.children[4].getObjectByProperty("isMesh", true).material.color.getHexString()'
-    ) == color
+    screen.wait_for_js(f'scene_{scene.id}.children.length', 5)
+    screen.wait_for_js(
+        f'scene_{scene.id}.children[4].getObjectByProperty("isMesh", true).material.color.getHexString()', color)
+
+
+def test_stl_wireframe(screen: Screen):
+    """A wireframe STL must render as edges (a LineSegments with EdgesGeometry), be colorable, and follow renames."""
+    scene = None
+    obj = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, obj
+        app.add_static_file(local_file=TEST_DIR / 'media' / 'cube.stl', url_path='/cube.stl')
+        with ui.scene() as scene:
+            obj = scene.stl('/cube.stl', wireframe=True).material('#ff0000')
+        ui.button('Rename', on_click=lambda: obj.with_name('renamed'))
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0', True)
+    result = screen.selenium.execute_script(f'''
+        const group = scene_{scene.id}.getObjectByProperty("object_id", "{obj.id}");
+        const child = group.children[0];
+        return {{
+            root_type: group.type,
+            child_geometry: child ? child.geometry.type : null,
+            edge_count: (child && child.geometry.attributes.position) ? child.geometry.attributes.position.count : 0,
+            child_color: (child && child.material) ? child.material.color.getHexString() : null,
+        }};
+    ''')
+    assert result['root_type'] == 'Group', f'expected a Group wrapper, got {result}'
+    assert result['child_geometry'] == 'EdgesGeometry', f'expected EdgesGeometry child, got {result}'
+    assert result['edge_count'] > 0, f'expected non-empty edges, got {result}'
+    assert result['child_color'] == 'ff0000', f'expected material to reach the wireframe lines, got {result}'
+
+    screen.click('Rename')  # rename AFTER the async load has completed
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByProperty("object_id", "{obj.id}").name', 'renamed')
 
 
 def test_no_cyclic_references(screen: Screen):
@@ -247,3 +328,349 @@ def test_custom_controls(screen: Screen, control_type: Literal['map', 'trackball
     screen.open('/')
     screen.wait_for(lambda: scene is not None)
     assert screen.selenium.execute_script(f'return getElement({scene.id}).controls.constructor.name') == constructor
+
+
+def test_moving_camera_keeps_controls_unless_up_vector_changes(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene()
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+    enable_rotate = f'getElement({scene.id}).controls.enableRotate'
+    screen.selenium.execute_script(f'{enable_rotate} = false')
+
+    camera_x = f'getElement({scene.id}).camera.position.x'
+    scene.move_camera(x=1, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_x}') == pytest.approx(1))
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is False, 'controls survive a plain camera move'
+
+    camera_up_y = f'getElement({scene.id}).camera.up.y'
+    scene.move_camera(up_y=1, up_z=0, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_up_y}') == pytest.approx(1))
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is True, 'controls are rebuilt for a new up vector'
+
+
+def test_moving_camera_keeps_trackball_controls_after_rotating(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(control_type='trackball')
+
+    screen.open('/')
+    screen.wait_for(lambda: scene is not None)
+    static_moving = f'getElement({scene.id}).controls.staticMoving'
+    screen.selenium.execute_script(f'{static_moving} = true')  # no rotation momentum after releasing the mouse
+
+    canvas = screen.find_by_tag('canvas')
+    screen.wait_for(canvas.is_displayed)  # the scene is hidden until it is initialized
+    ActionChains(screen.selenium).click_and_hold(canvas).move_by_offset(50, 50).release().perform()
+    camera_up_z = f'getElement({scene.id}).camera.up.z'
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_up_z}') != 1)  # the user rotated the scene
+
+    camera_x = f'getElement({scene.id}).camera.position.x'
+    scene.move_camera(x=1, duration=0)
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_x}') == pytest.approx(1))
+    assert screen.selenium.execute_script(f'return {static_moving}') is True
+
+
+def test_trackball_controls_follow_canvas_size(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(control_type='trackball').classes('w-full h-64')
+
+    screen.open('/')
+    canvas = screen.find_by_tag('canvas')
+    screen.wait_for(canvas.is_displayed)  # the scene is hidden until it is initialized
+    assert canvas.size['width'] != 400, 'the canvas has been resized from its default size'
+    screen_width = f'getElement({scene.id}).controls.screen.width'
+    assert screen.selenium.execute_script(f'return {screen_width}') == canvas.size['width']
+
+
+def test_configuring_controls_after_initialization(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    async def page():
+        nonlocal scene
+        scene = ui.scene()
+        scene.move_camera(up_y=1, up_z=0)
+        await scene.initialized()
+        ui.run_javascript(f'getElement({scene.id}).controls.enableRotate = false')
+
+    screen.open('/')
+    camera_up_y = f'getElement({scene.id}).camera.up.y'
+    screen.wait_for(lambda: screen.selenium.execute_script(f'return {camera_up_y}') == pytest.approx(1))
+    enable_rotate = f'getElement({scene.id}).controls.enableRotate'
+    assert screen.selenium.execute_script(f'return {enable_rotate}') is False, 'configuration survives initialization'
+
+
+async def test_dragend_after_object_deleted(user: User):
+    events: list[str] = []
+    scene = None
+    box = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene, box
+        with ui.scene(on_drag_end=lambda e: events.append(e.object_id)) as scene:
+            box = scene.box().draggable()
+
+    await user.open('/')
+    box.delete()
+    assert box.id not in scene.objects
+    scene._handle_drag(GenericEventArguments(sender=scene, client=scene.client, args={
+        'type': 'dragend', 'object_id': box.id, 'object_name': None, 'x': 1.0, 'y': 2.0, 'z': 3.0,
+    }))
+    assert events == [box.id]
+
+
+async def test_bound_object_is_released_on_delete(user: User):
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+        label = ui.label()
+        box = scene.box()
+        objects.add(box)
+        label.bind_text_from(box, 'x')
+        box.delete()
+
+    await user.open('/')
+    gc.collect()
+    assert len(objects) == 0
+
+
+async def test_scene_is_collected_after_client_deletion(user: User):
+    held = []  # stands in for a timer or handler holding the scene
+    objects: weakref.WeakSet = weakref.WeakSet()
+
+    @ui.page('/')
+    def page():
+        scene = ui.scene()
+        held.append(scene)
+        objects.add(scene)
+
+    await user.open('/')
+    user.client.delete()
+    objects.add(held[0].box())  # late access after the client is gone
+    held.clear()  # the timer finishes and drops its reference
+    gc.collect()
+    assert len(objects) == 0
+
+
+async def test_object_constructed_after_await_lands_in_own_scene(create_user: Callable[[], User]):
+    first_waiting = asyncio.Event()
+    other_scene_entered = asyncio.Event()
+    results: list[bool] = []
+
+    @ui.page('/first')
+    async def first():
+        with ui.scene() as scene:
+            first_waiting.set()
+            await other_scene_entered.wait()
+            results.append(ui.scene.box().scene is scene)
+
+    @ui.page('/second')
+    async def second():
+        await first_waiting.wait()
+        with ui.scene():
+            other_scene_entered.set()
+
+    await asyncio.gather(create_user().open('/first'), create_user().open('/second'))
+    assert results == [True]
+
+
+def test_context_loss_recovery_restores_objects(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            scene.box().material('#ff0000').move(1, 2, 3).with_name('box')
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box")?.position.x ?? null', 1)
+    screen.selenium.execute_script(f'''
+        window.sceneBeforeRecovery = scene_{scene.id};
+        document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext();
+    ''')
+    screen.click('Click to re-initialize')
+    screen.wait_for_js(f'scene_{scene.id} !== window.sceneBeforeRecovery', True)  # remounting replaces the scene
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box")?.position.x ?? null', 1)
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box").material.color.getHexString()', 'ff0000')
+
+
+def test_initialized_raises_without_webgl(screen: Screen):
+    @ui.page('/')
+    async def page():
+        scene = ui.scene()
+        view = ui.scene_view(scene)
+        for element in (scene, view):
+            try:
+                await element.initialized()
+            except RuntimeError as e:
+                ui.label(f'{type(element).__name__}: {e}')
+
+    script = screen.selenium.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {'source': '''
+        const getContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+            return type.startsWith('webgl') ? null : getContext.call(this, type, ...args);
+        };
+    '''})
+    screen.allowed_js_errors.append('Error creating WebGL context.')
+    try:
+        screen.open('/')
+        screen.should_contain('Scene: Could not create WebGL renderer.')
+        screen.should_contain('SceneView: Could not create WebGL renderer.')
+        for name in ('nicegui-scene', 'nicegui-scene-view'):
+            assert screen.find_by_class(name).text == 'Could not create WebGL renderer.', 'the fallback is visible'
+    finally:
+        screen.selenium.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', script)
+
+
+def test_objects_created_before_the_scene_is_mounted(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.tabs() as tabs:
+            one = ui.tab('one')
+            two = ui.tab('two')
+        with ui.tab_panels(tabs, value=one):
+            with ui.tab_panel(one):
+                ui.label('first panel')
+            with ui.tab_panel(two):
+                with ui.scene() as scene:
+                    scene.box().move(1, 2, 3).with_name('box')
+
+    screen.open('/')
+    screen.click('two')
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box")?.position.x ?? null', 1)
+
+
+def test_clicking_the_grid_reports_only_the_ground(screen: Screen):
+    hits: list[str] = []
+
+    @ui.page('/')
+    def page():
+        ui.scene(on_click=lambda e: hits.extend(hit.object_id for hit in e.hits))
+
+    screen.open('/')
+    screen.find_by_tag('canvas').click()
+    screen.wait_for(lambda: hits == ['ground'])
+
+
+def test_geometry_primitives(screen: Screen):
+    scene = None
+    objects = {}
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            objects['PlaneGeometry'] = scene.plane()
+            objects['ConeGeometry'] = scene.cone()
+            objects['TorusGeometry'] = scene.torus()
+            objects['CapsuleGeometry'] = scene.capsule()
+            objects['LatheGeometry'] = scene.lathe(points=[[0, 0], [0.5, 0.5], [0, 1]])
+            objects['polyline'] = scene.polyline(points=[[0, 0, 0], [1, 0, 0], [1, 1, 0]],
+                                                 colors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                                                 dashed=True)
+
+    screen.open('/')
+    for geometry, obj in objects.items():
+        if geometry != 'polyline':
+            screen.wait_for_js(f'getElement({scene.id}).objects.get("{obj.id}")?.mesh?.geometry.type', geometry)
+    material = f'getElement({scene.id}).objects.get("{objects["polyline"].id}")?.mesh?.material'
+    screen.wait_for_js(f'[{material}?.type, {material}?.vertexColors]', ['LineDashedMaterial', True])
+
+
+@pytest.mark.parametrize('points,colors,message', [
+    ([[0, 0, 0]], None, 'at least 2'),
+    ([[0, 0, 0], [1, 0, 0]], [[1, 0, 0]], 'colors length'),
+])
+def test_polyline_rejects_invalid_input(points: list[list[float]], colors: list[list[float]] | None, message: str):
+    with pytest.raises(ValueError, match=message):
+        ui.scene.polyline(points=points, colors=colors)
+
+
+@pytest.mark.parametrize('polar_grid,expected_args', [
+    ((1.0, 0, 5), (1.0, 0, 5, 64)),
+    ((1.0, 8, 5, 128), (1.0, 8, 5, 128)),
+])
+def test_polar_grid(screen: Screen, polar_grid: tuple, expected_args: tuple):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(polar_grid=polar_grid)
+
+    screen.open('/')
+    screen.wait_for_js(f'scene_{scene.id}.children.filter(c => c.type.endsWith("GridHelper")).map(c => c.type)',
+                       ['PolarGridHelper'])
+    screen.wait_for_js(f'(grid => grid.geometry.attributes.position.count == '
+                       f'new grid.constructor{expected_args}.geometry.attributes.position.count)'
+                       f'(scene_{scene.id}.getObjectsByProperty("type", "PolarGridHelper")[0])', True)
+
+
+def test_rotate_with_uppercase_order_matches_three_euler(screen: Screen):
+    orders: list[Literal['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX']] = ['XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX']
+    scene = None
+    boxes = {}
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene() as scene:
+            for order in orders:
+                boxes[order] = scene.box().rotate(0.4, -0.3, 0.5, order=order)
+
+    def matrices(order: str) -> tuple[list[float], list[float]] | None:
+        return screen.selenium.execute_script(
+            f'const mesh = getElement({scene.id}).objects.get("{boxes[order].id}")?.mesh;'
+            'if (!mesh) return null;'
+            'const Euler = mesh.rotation.constructor, Matrix4 = mesh.matrix.constructor;'
+            'const actual = new Matrix4().makeRotationFromEuler(mesh.rotation);'
+            f'const expected = new Matrix4().makeRotationFromEuler(new Euler(0.4, -0.3, 0.5, "{order}"));'
+            'return [actual.elements, expected.elements];'
+        )
+
+    screen.open('/')
+    for order in orders:
+        screen.wait_for(lambda order=order: (m := matrices(order)) is not None and np.allclose(m[0], m[1], atol=1e-6))
+
+
+def test_scene_initializes_when_created_hidden(screen: Screen):
+    scene = None
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        with ui.scene().classes('w-[200px] h-[100px]').set_visibility(False) as scene:
+            scene.box().move(1, 2, 3).with_name('box')
+        ui.button('Show', on_click=lambda: scene.set_visibility(True))
+
+    screen.open('/')
+    screen.click('Show')
+
+    # the init event is emitted once when the component mounts, so it must not be dropped while the scene is hidden;
+    # otherwise the server never re-sends the objects and the box never shows up
+    screen.wait_for_js(f'scene_{scene.id}.getObjectByName("box")?.position.x ?? null', 1)
+
+    # resizing while hidden would have shrunk the canvas to 0x0,
+    # and without resizing once shown it would keep the default 400x300 from the props;
+    # wait for the size because the box can arrive from the hidden init before the Show update reaches the browser
+    screen.wait_for(lambda: screen.find_by_tag('canvas').size == {'width': 200, 'height': 100})

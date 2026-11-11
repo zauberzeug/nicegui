@@ -13,7 +13,7 @@ The single most important rule: **everything is Python**. Reach for `ui.*` befor
 
 - **Backend-first**: All UI logic lives in Python. The framework handles web details automatically.
 - **Stack**: Python/FastAPI backend → WebSocket (socket.io) → Vue 3 / Quasar frontend
-- **Single worker**: One uvicorn worker with full async support; no multiprocessing needed.
+- **Single worker**: One uvicorn worker with full async support; no multiprocessing needed. `workers > 1` and `WEB_CONCURRENCY > 1` raise a `ValueError`.
 - **Outbox**: UI updates are accumulated and sent in batches to the client over the persistent WebSocket.
 - **Element lifecycle**: Python `Element` objects mirror Vue components on the client. Creating an element registers it immediately; calling `.update()` pushes changes.
 
@@ -119,9 +119,11 @@ Use `ui.run_javascript()` only for things that are truly impossible via the Pyth
 
 NiceGUI runs in a single asyncio event loop. Every page, every user, every timer shares it. Blocking the loop (with `time.sleep()`, `requests.get()`, heavy CPU work) freezes the **entire application** for all users. Rules:
 
-- All I/O must be async (`httpx`, `aiofiles`, `asyncio.sleep()`)
-- CPU-heavy work must run in a thread: `await asyncio.to_thread(cpu_func)` (Python 3.9+, simpler than `run_in_executor`; use `run_in_executor` when you need a custom executor like `ProcessPoolExecutor`)
+- All I/O must be async (`httpx2`, `aiofiles`, `asyncio.sleep()`) — or wrap a blocking call with `await run.io_bound(fn, *args)`, which runs it in a thread
+- CPU-heavy work must leave the event loop: `await run.cpu_bound(fn, *args)` runs it in a separate process (arguments and return value must be picklable)
+- `run.io_bound` / `run.cpu_bound` come from `from nicegui import run` — prefer them over `asyncio.to_thread()` or a hand-rolled `run_in_executor`, because NiceGUI manages the pools and their shutdown
 - `background_tasks.create()` for fire-and-forget coroutines — wraps `create_task` but keeps a reference (so the GC won't cancel it) and routes exceptions through NiceGUI's exception handler. Avoid bare `asyncio.create_task()` or `asyncio.ensure_future()` for this reason.
+- Pass `context=` (a container element or `ui.context.client`, since 3.18) to run the task inside that context: elements it creates land in the container, and exceptions also reach the page's `ui.on_exception` handlers instead of only the global `app.on_exception` ones.
 - Timers (`ui.timer()`) are safe: they schedule callbacks without blocking
 
 ### 8. Why `ui.storage.user` and not a global dict
@@ -167,19 +169,20 @@ async def index():
 
 **Never reach for raw CSS, Quasar props, or JavaScript unless NiceGUI's Python API is insufficient.**
 
-| Situation               | WRONG                                                      | RIGHT                                                                            |
-| ----------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Change background color | `ui.add_head_html('<style>body{background:blue}</style>')` | `ui.query('body').classes('bg-blue')`                                            |
-| Hide an element         | `element.run_method('hide')`                               | `element.visible = False`                                                        |
-| Style a button          | `ui.button(...).style('background-color: green')`          | `ui.button(..., color='green')`                                                  |
-| Center content          | raw flexbox CSS                                            | `with ui.row().classes('justify-center'):`                                       |
-| React to input          | JS event listener                                          | `ui.input(on_change=handler)`                                                    |
-| Repeat an action        | `asyncio.create_task(loop())`                              | `ui.timer(interval, callback)`                                                   |
-| Navigate                | `ui.run_javascript('window.location = ...')`               | `ui.navigate.to(url)`                                                            |
-| Show a message          | custom HTML overlay                                        | `ui.notify('message')`                                                           |
-| Copy to clipboard       | `ui.run_javascript("navigator.clipboard.writeText(...)")`  | `await ui.clipboard.write(text)`                                                 |
-| Styled download link    | `ui.html('<a href=... style=...>')`                        | `ui.button('Download').props('href=/download tag=a')`                            |
-| CPU work in thread      | `asyncio.get_event_loop().run_in_executor(None, fn)`       | `await asyncio.to_thread(fn)` (3.9+; use `run_in_executor` for custom executors) |
+| Situation               | WRONG                                                      | RIGHT                                                 |
+| ----------------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| Change background color | `ui.add_head_html('<style>body{background:blue}</style>')` | `ui.query('body').classes('bg-blue')`                 |
+| Hide an element         | `element.run_method('hide')`                               | `element.visible = False`                             |
+| Style a button          | `ui.button(...).style('background-color: green')`          | `ui.button(..., color='green')`                       |
+| Center content          | raw flexbox CSS                                            | `with ui.row().classes('justify-center'):`            |
+| React to input          | JS event listener                                          | `ui.input(on_change=handler)`                         |
+| Repeat an action        | `asyncio.create_task(loop())`                              | `ui.timer(interval, callback)`                        |
+| Navigate                | `ui.run_javascript('window.location = ...')`               | `ui.navigate.to(url)`                                 |
+| Show a message          | custom HTML overlay                                        | `ui.notify('message')`                                |
+| Copy to clipboard       | `ui.run_javascript("navigator.clipboard.writeText(...)")`  | `await ui.clipboard.write(text)`                      |
+| Styled download link    | `ui.html('<a href=... style=...>')`                        | `ui.button('Download').props('href=/download tag=a')` |
+| Blocking I/O call       | `requests.get(url)` in an async handler                    | `await run.io_bound(requests.get, url)`               |
+| CPU-heavy work          | `asyncio.get_event_loop().run_in_executor(None, fn)`       | `await run.cpu_bound(fn)`                             |
 
 ---
 
@@ -235,6 +238,19 @@ The `color` parameter (on button, badge, chip, etc.) accepts, in priority order:
 1. Quasar color names (`primary`, `secondary`, `positive`, `negative`, `warning`, `info`, `dark`, `grey-5`, …)
 2. Tailwind color names (`red-500`, `blue-200`, …)
 3. CSS color values (`#ff0000`, `rgb(255,0,0)`, `red`)
+
+### Custom colors
+
+For brand or domain colors, register named colors with `ui.colors` (per page) or `app.colors` (app-wide) instead of repeating hex values in inline styles.
+A registered name then works like a Quasar color name: in the `color` parameter, in the `color` and `text-color` props, and in the `text-<name>` and `bg-<name>` classes.
+These classes are `!important`, so no `!important` inline styles are needed to override Quasar.
+
+```python
+app.colors(brand='#187C61', warn_soft='#FDE68A')  # underscores become dashes: warn-soft
+ui.button('Save', color='brand')
+ui.button('Details').props('flat text-color=brand')
+ui.label('Hint').classes('bg-warn-soft')
+```
 
 ---
 
@@ -301,7 +317,7 @@ ui.skip_link('Skip to main content', target=main)    # keyboard-only link (WCAG 
 ## Input Elements
 
 ```python
-ui.input('Name', value='Alice', on_change=handler)
+ui.input('Name', value='Alice', on_change=handler)  # a cleared input holds '' (since 4.0), so test `not value`; ui.number and ui.select keep None
 ui.input('Password', password=True, password_toggle_button=True)
 ui.textarea('Notes', rows=5)
 ui.number('Age', min=0, max=120, step=1)
@@ -334,7 +350,26 @@ ui.label('Hello World')
 ui.markdown('**Bold** and *italic*')
 ui.markdown('```mermaid\ngraph TD; A-->B\n```',
             extras=['fenced-code-blocks', 'tables', 'mermaid'])  # `extras` REPLACES the default ['fenced-code-blocks', 'tables']
+ui.markdown.default_extras = ['fenced-code-blocks', 'tables', 'mermaid']  # change the default for all ui.markdown (since 3.14)
 ui.code('print("hello")', language='python')
+editor = ui.codemirror('def f():\n    return 42', language='Python')  # editable code editor
+editor.line_anchors = {'a': 2}          # line anchors (since 3.16): stable {id: line} references that follow
+                                        # their line through edits; read back for the current positions,
+                                        # on_anchor_change= fires whenever a tracked position moves
+editor.decorations = [                  # decorations (since 3.17): style, hide or annotate text without changing it
+    {'kind': 'mark', 'from': 4, 'to': 5, 'class': 'bg-yellow-200'},        # style a character range
+    {'kind': 'line', 'line': 2, 'class': 'bg-red-100'},                    # style a whole line (1-indexed)
+    {'kind': 'replace', 'from': 13, 'to': 22, 'text': '…'},                 # hide a range, or show `text` instead (block=True folds lines)
+    {'kind': 'widget', 'position': 0, 'text': '# hint', 'side': -1},       # insert text at a position (side: -1 before, 1 after)
+]                                       # from/to/position are Python str indices into editor.value; `class` takes Tailwind
+                                        # or your own CSS; in-place list edits sync too; reading back returns the specs as
+                                        # declared (positions are not tracked like line anchors); decoration_html=True
+                                        # renders `text` as sanitized HTML; `attributes` is applied raw — never pass untrusted input
+editor.reveal_line(42)                  # scroll a 1-indexed line into view (since 3.18)
+editor.on_focus_change(lambda e: ...)   # editor signals (since 3.18): e.focused
+editor.on_viewport_change(lambda e: ...)  # e.from_line / e.to_line, first and last visible line (throttled to 100 ms)
+editor.on_geometry_change(lambda e: ...)  # e.width / e.height / e.content_height (throttled to 100 ms)
+                                        # all three also as constructor kwargs; a signal is only computed while a listener exists
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -369,20 +404,28 @@ columns = [
     {'name': 'age', 'label': 'Age', 'field': 'age'},
 ]
 rows = [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
-ui.table(columns=columns, rows=rows, row_key='name')
+ui.table(columns=columns, rows=rows, row_key='name')  # pagination=10 for 10 rows per page; pagination_controls=False hides the bar (since 4.0)
 
 # AG Grid (advanced grid)
 grid = ui.aggrid({
-    'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+    'columnDefs': [
+        {'field': 'name'},
+        {'field': 'age', ':valueFormatter': 'params => `${params.value} years`'},
+    ],
     'rowData': rows,
+    ':getRowId': 'params => params.data.name',  # stable row IDs; needed for run_row_method and row updates
 })
+# Options are sent as JSON, so a string stays a string. Prefix a key with ':' to have its value
+# evaluated as a JavaScript expression (functions, regexes, objects) — without the colon, AG Grid
+# gets a plain string where it expects a function, shows no rows and only logs a TypeError in the browser.
+# AG Grid's own expression strings (e.g. 'x < 21' in cellClassRules) need no colon.
 # Build from a pandas DataFrame (auto column defs):
 # grid = ui.aggrid.from_pandas(df)
 
 # Drive the client-side AG Grid API from Python (from inside an async handler):
 async def select_all():
     await grid.run_grid_method('selectAll')
-    await grid.run_row_method('row-id', 'setSelected', True)
+    await grid.run_row_method('Alice', 'setSelected', True)  # row ID from getRowId (or the row index as a string)
 
 # Tree
 ui.tree([
@@ -425,11 +468,65 @@ with ui.pyplot(figsize=(6, 4)) as plot:
 with ui.line_plot(n=50, update_every=5) as plot:
     plot.push(x_value, [y1, y2])
 
+# uPlot (fast canvas charts for large or streaming time series; data = [x, y1, y2, ...])
+plot = ui.uplot({'series': [{}, {'label': 'y', 'stroke': 'red'}]},
+                [[0, 1, 2], [3, 1, 2]])  # keeps the user's x zoom on updates (keep_zoom=True)
+plot.data = [[0, 1, 2, 3], [3, 1, 2, 4]]
+
 # 3D Scene (Three.js)
-with ui.scene() as scene:
+with ui.scene() as scene:  # polar_grid=(radius, sectors, rings) for a circular floor (since 3.19)
     scene.sphere().move(x=1)
     scene.box().material('#ff0000')
+    scene.cone().rotate(1.57, 0, 0, order='XYZ')  # order (since 3.19): lowercase (default 'xyz') = fixed world axes,
+                                                  # uppercase = the object's own rotated axes, like THREE.Euler
+# Objects: box, sphere, cylinder, ring, plane, cone, torus, capsule, lathe, extrusion, line, polyline, curve,
+# quadratic_bezier_tube, point_cloud, text, text3d, texture, gltf, stl, group, spot_light, axes_helper
+# (plane, cone, torus, capsule, lathe and polyline since 3.19; polyline supports per-vertex colors and dashed=True)
 ```
+
+### Custom Three.js objects (since 3.16)
+
+Subclass `Object3D` and pair it with a sibling JS module.
+The `component=` path is resolved relative to the Python file — no manual registration needed.
+`super().__init__(...)` args are forwarded positionally to the JS factory; `self.run_method('<name>', *args)` dispatches to a same-named method on the component instance.
+
+```python
+# pulsing_sphere.py
+from nicegui.elements.scene import Object3D
+
+class PulsingSphere(Object3D, component='pulsing_sphere.js'):
+    def __init__(self, radius: float = 1.0) -> None:
+        super().__init__(radius)
+    def set_scale(self, s: float):
+        self.run_method('set_scale', s)
+```
+
+```js
+// pulsing_sphere.js — default-export a class
+import { THREE } from "nicegui-scene";
+
+export default class PulsingSphere {
+  mesh;
+  // or: create_geometry(...) for a plain BufferGeometry
+  create_mesh(radius) {
+    this.mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 32, 16),
+      new THREE.MeshPhongMaterial({ transparent: true }),
+    );
+    return this.mesh;
+  }
+  set_scale(s) { this.mesh.scale.set(s, s, s); }
+  // optional hooks: apply_material({ color, opacity, side }), created()
+}
+```
+
+Use `create_geometry(...args)` to return only a `THREE.BufferGeometry` — the framework wraps it in a `MeshPhongMaterial` and the built-in `material()` / `scale()` / `move()` controls work automatically; passing `wireframe=True` to `super().__init__()` renders it as line segments instead.
+Use `create_mesh(...args)` when you need to keep a handle on the mesh for your own methods.
+
+In event handlers and timers, create custom objects inside `with scene:`, otherwise they raise a `RuntimeError` (since 4.0); the same goes for custom `Layer` subclasses and `with leaflet:`.
+For the same reason, write `on_click=lambda: scene.box()` instead of `on_click=scene.box`.
+
+Optional lifecycle hooks (the framework calls them only if defined): `apply_material({ color, opacity, side })` overrides the default material handling (useful for groups/GLTF with many sub-meshes), `created()` runs after the mesh is created by the scene.
 
 ---
 
@@ -454,6 +551,13 @@ with ui.dialog() as dialog:
             ui.button('Yes', on_click=dialog.close)
             ui.button('No', on_click=dialog.close)
 ui.button('Open', on_click=dialog.open)
+# dialog, menu and popup share open() / close() / toggle()
+
+# Popup (since 3.15): placed *inside* the element that should open it;
+# shown as a menu, or as a dialog below the "breakpoint" prop (default 450px)
+with ui.label('Click me'):
+    with ui.popup() as popup:
+        ui.input('Name').props('autofocus').on('keydown.enter', popup.close)
 
 # Menu
 with ui.button('Menu'):
@@ -729,6 +833,9 @@ ui.run_javascript('document.title = "New Title"')
 # Run JS and await result
 result = await ui.run_javascript('return window.innerWidth')
 
+# Address a specific element; its DOM ID is element.html_id (`ng-12` since 4.0, formerly `c12`)
+ui.run_javascript(f'getHtmlElement({label.id}).innerText += " Hello!"')
+
 # Call a method on a specific element's Vue component
 await element.run_method('methodName', arg1, arg2)
 
@@ -737,12 +844,30 @@ value = await element.get_computed_prop('propName')
 
 # Add global CSS
 ui.add_css('body { font-family: monospace; }')
-ui.add_scss('$primary: blue; body { color: $primary; }')
 
 # Add raw HTML to <head> or <body> (last resort)
 ui.add_head_html('<link rel="preconnect" href="...">')
 ui.add_body_html('<script src="..."></script>')
 ```
+
+### Custom JSON serialization (since 3.19)
+
+Everything sent to the browser (element props, event arguments, `ui.run_javascript` arguments) and `app.storage` is serialized as JSON.
+Basic types, dataclasses, enums, dates and NumPy arrays work out of the box.
+For other types, register a converter instead of converting by hand at every call site:
+
+```python
+from pydantic import BaseModel
+from nicegui import json
+
+class Person(BaseModel):
+    name: str
+
+json.register_type(BaseModel, BaseModel.model_dump)  # also covers subclasses; first matching registration wins
+ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [Person(name='Alice')]})
+```
+
+Natively supported types (dataclasses, datetimes, …) cannot be overridden, and the conversion is one-way: `app.storage` returns the converted JSON structure, not the original object.
 
 ---
 
@@ -756,7 +881,7 @@ app.on_startup(async_function)
 app.on_shutdown(async_function)
 app.on_connect(handler)         # new client connects
 app.on_disconnect(handler)      # client disconnects
-app.on_exception(handler)       # unhandled exceptions (any context)
+app.on_exception(handler)       # unhandled exceptions (any context); per-page counterpart: ui.on_exception
 app.on_page_exception(handler)  # unhandled exceptions raised inside a @ui.page builder
 app.on_delete(handler)          # @ui.page client instance is being deleted (per-page teardown)
 
@@ -776,30 +901,36 @@ app.add_media_file(local_file='path/to/clip.mp4', url_path='/clip.mp4')
 from starlette.middleware.base import BaseHTTPMiddleware
 app.add_middleware(BaseHTTPMiddleware, dispatch=auth_dispatch)
 
-# Run — full flag surface
+# Run — most relevant flags (the values shown are examples; the default follows in the comment)
 ui.run(
-    host='0.0.0.0',
-    port=8080,
-    title='My App',
-    favicon='🚀',
-    dark=None,                       # None = follow system
-    language='en-US',                # Quasar element language
-    storage_secret='my-secret',      # required for app.storage.user and app.storage.browser
-    reload=True,                     # auto-reload on file change (dev only)
-    show=False,                      # don't open browser automatically
-    binding_refresh_interval=0.1,    # bindings pull-loop interval; raise to reduce CPU
-    tailwind=True,                   # disable to drop the Tailwind runtime
-    prod_js=True,                    # production-minified Vue/Quasar bundles
-    fastapi_docs=False,              # set True to expose /docs, /redoc, /openapi.json
-    markdown=False,                  # experimental: serve your own pages as Markdown to agents
+    host='0.0.0.0',                  # default: '0.0.0.0', or '127.0.0.1' in native mode
+    port=8080,                       # default: 8080, or an open port in native mode; set it here —
+                                     # NICEGUI_HOST/NICEGUI_PORT env vars are internal, ignored and warned about (since 3.17)
+    title='My App',                  # default: 'NiceGUI'; can be overwritten per page
+    favicon='🚀',                    # default: None (NiceGUI icon); emoji, local image path, http(s) URL, data URL or inline SVG
+    dark=None,                       # default: False; None = follow system
+    language='en-US',                # default: None (Quasar element language)
+    storage_secret='my-secret',      # default: None; required for app.storage.user and app.storage.browser
+    root=None,                       # default: None; root page function (since 3.0)
+    viewport='width=device-width, initial-scale=1',   # this is also the default
+    reload=True,                     # default: True; auto-reload on file change (dev only)
+    show=False,                      # default: True, i.e. the browser is opened automatically
+    reconnect_timeout=3.0,           # default: 3.0; grace period for a client to reconnect
+    binding_refresh_interval=0.1,    # default: 0.1; bindings pull-loop interval, raise to reduce CPU
+    tailwind=True,                   # default: True; disable to drop the Tailwind runtime
+    unocss=None,                     # default: None; 'mini'/'wind3'/'wind4' uses UnoCSS instead of Tailwind (since 3.7)
+    prod_js=True,                    # default: True; production-minified Vue/Quasar bundles
+    fastapi_docs=False,              # default: False; True exposes /docs, /redoc, /openapi.json
+    endpoint_documentation='none',   # default: 'none'; which routes those docs list ('internal'/'page'/'all')
+    markdown=False,                  # default: False; experimental: serve your own pages as Markdown to agents
                                      # (Accept: text/markdown, or recognized agent UAs); override per page via @ui.page(markdown=...)
     # Native desktop window (pywebview) — flagship offline mode:
-    native=False,                    # True opens a native window instead of a browser
-    window_size=(1024, 768),         # implies native=True
-    fullscreen=False,                # implies native=True
-    frameless=False,                 # implies native=True
+    native=False,                    # default: False; True opens a native window instead of a browser
+    window_size=(1024, 768),         # default: None; implies native=True
+    fullscreen=False,                # default: False; implies native=True
+    frameless=False,                 # default: False; implies native=True
     # Tech preview: temporary public URL without port-forwarding
-    on_air=None,                     # True for an anonymous tunnel, or a device token string
+    on_air=None,                     # default: None; True for an anonymous tunnel, or a device token string
 )
 
 # Mount NiceGUI inside an existing FastAPI app instead of using ui.run()
@@ -826,6 +957,10 @@ from nicegui import background_tasks
 # ALWAYS use background_tasks.create()
 background_tasks.create(my_coroutine(), name='my-task')
 
+# Run the task inside a page context (since 3.18): elements it creates go into `container`,
+# and exceptions reach the page's ui.on_exception handlers (not only the global app.on_exception)
+background_tasks.create(my_coroutine(), context=container)   # or context=ui.context.client
+
 # Inside a @ui.page handler, run something after the page is built
 async def long_work():
     await asyncio.sleep(5)
@@ -836,6 +971,29 @@ async def index():
     label = ui.label('Working…')
     background_tasks.create(long_work())
 ```
+
+---
+
+## Blocking Code (`run.io_bound` / `run.cpu_bound`)
+
+Anything that blocks freezes the whole app (see Mental Model #7). NiceGUI ships two wrappers so you don't have to manage executors yourself:
+
+```python
+from nicegui import run
+
+# Blocking I/O (requests, file access, DB drivers without async support) → thread pool
+response = await run.io_bound(requests.get, url, timeout=3)
+
+# CPU-heavy work → process pool (arguments and return value must be picklable,
+# so pass module-level functions, not lambdas or closures)
+result = await run.cpu_bound(compute, data)
+
+# Optional: choose the multiprocessing start method for the cpu_bound pool (since 3.15).
+# Set it before ui.run(); the default is 'spawn' (since 4.0), None keeps the platform default.
+run.process_pool_start_method = 'fork'
+```
+
+Both must be awaited from an async context and raise `asyncio.CancelledError` when the call is cancelled or the app has shut down (since 4.0; before they returned `None`). They still work in `app.on_shutdown` handlers.
 
 ---
 
@@ -913,6 +1071,7 @@ async def index():
 | `ui.footer()`                                                       | Page footer                                                                  |
 | `ui.left_drawer()`                                                  | Left sidebar drawer                                                          |
 | `ui.right_drawer()`                                                 | Right sidebar drawer                                                         |
+| `ui.drawer(side)`                                                   | Sidebar drawer with `side='left'` / `'right'` (base of the two above)        |
 | `ui.page_sticky(position)`                                          | Fixed-position overlay                                                       |
 | `ui.page_scroller()`                                                | Scroll-to-top button                                                         |
 | `ui.teleport(to)`                                                   | Render child in different DOM location                                       |
@@ -940,6 +1099,7 @@ async def index():
 | ---------------------- | ----------------------- |
 | `ui.dialog()`          | Modal dialog            |
 | `ui.menu()`            | Dropdown menu           |
+| `ui.popup()`           | Popup inside its anchor |
 | `ui.context_menu()`    | Right-click menu        |
 | `ui.tooltip(text)`     | Hover tooltip           |
 | `ui.notification(msg)` | Persistent notification |
@@ -962,6 +1122,7 @@ async def index():
 | `ui.altair(chart)`                | Vega-Altair chart              |
 | `ui.highchart(options)`           | Highcharts (requires license)  |
 | `ui.line_plot(n)`                 | Efficient streaming line chart |
+| `ui.uplot(options, data)`         | uPlot (fast canvas charts)     |
 
 ### Advanced / Specialized
 
@@ -979,33 +1140,33 @@ async def index():
 | `ui.fullscreen()`         | Programmatic fullscreen control (since 2.11.0) |
 | `ui.parallax(source)`     | Parallax-image header (Quasar QParallax)       |
 | `ui.dark_mode()`          | Dark mode toggle                               |
-| `ui.colors(primary, ...)` | Global theme colors                            |
+| `ui.colors(primary, ...)` | Theme colors and custom named colors           |
 | `ui.query(selector)`      | Style arbitrary DOM elements                   |
 
 ### Global Functions
 
-| Function                                | Description                                    |
-| --------------------------------------- | ---------------------------------------------- |
-| `ui.notify(msg)`                        | Toast notification                             |
-| `ui.navigate.to(url)`                   | Navigate to URL                                |
-| `ui.navigate.back/forward/reload()`     | Browser history navigation                     |
-| `ui.run_javascript(code)`               | Execute JS (await for result)                  |
-| `ui.download(src)`                      | Trigger file download                          |
-| `ui.clipboard.write(text)`              | Write to clipboard                             |
-| `ui.clipboard.read()`                   | Read from clipboard (await)                    |
-| `ui.update(element)`                    | Force push element update                      |
-| `ui.refreshable`                        | Decorator for rebuilding UI sections           |
-| `ui.refreshable_method`                 | Same, for class methods                        |
-| `ui.state(value)`                       | Local state inside `@ui.refreshable`           |
-| `ui.page_title(title)`                  | Set browser tab title                          |
-| `ui.add_css/add_scss/add_sass(code)`    | Global styles                                  |
-| `ui.add_head_html(html)`                | Inject into `<head>`                           |
-| `ui.add_body_html(html)`                | Inject into `<body>`                           |
-| `ui.on(event, handler)`                 | Global app event listener                      |
-| `ui.on_exception(handler)`              | Global exception handler                       |
-| `ui.status_code(code)`                  | Set HTTP response status                       |
-| `ui.context.client` / `ui.context.slot` | Access current client / slot from utility code |
-| `ui.run_with(fastapi_app, ...)`         | Mount NiceGUI inside an existing FastAPI app   |
+| Function                                | Description                                               |
+| --------------------------------------- | --------------------------------------------------------- |
+| `ui.notify(msg)`                        | Toast notification                                        |
+| `ui.navigate.to(url)`                   | Navigate to URL                                           |
+| `ui.navigate.back/forward/reload()`     | Browser history navigation                                |
+| `ui.run_javascript(code)`               | Execute JS (await for result)                             |
+| `ui.download(src)`                      | Trigger file download                                     |
+| `ui.clipboard.write(text)`              | Write to clipboard                                        |
+| `ui.clipboard.read()`                   | Read from clipboard (await)                               |
+| `ui.update(element)`                    | Force push element update                                 |
+| `ui.refreshable`                        | Decorator for rebuilding UI sections                      |
+| `ui.refreshable_method`                 | Same, for class methods                                   |
+| `ui.state(value)`                       | Local state inside `@ui.refreshable`                      |
+| `ui.page_title(title)`                  | Set browser tab title                                     |
+| `ui.add_css(code)`                      | Global styles                                             |
+| `ui.add_head_html(html)`                | Inject into `<head>`                                      |
+| `ui.add_body_html(html)`                | Inject into `<body>`                                      |
+| `ui.on(event, handler)`                 | Global app event listener                                 |
+| `ui.on_exception(handler)`              | Per-page exception handler (`app.on_exception` is global) |
+| `ui.status_code(code)`                  | Set HTTP response status                                  |
+| `ui.context.client` / `ui.context.slot` | Access current client / slot from utility code            |
+| `ui.run_with(fastapi_app, ...)`         | Mount NiceGUI inside an existing FastAPI app              |
 
 ---
 
@@ -1152,10 +1313,13 @@ ui.button('Download', icon='download') \
 # BAD: blocking I/O in async handler
 async def on_click():
     data = requests.get(url).json()  # blocks the event loop!
-# GOOD:
+# GOOD: an async client, …
 async def on_click():
-    async with httpx.AsyncClient() as client:
+    async with httpx2.AsyncClient() as client:
         data = (await client.get(url)).json()
+# … or the blocking call wrapped in a thread
+async def on_click():
+    data = (await run.io_bound(requests.get, url)).json()
 
 # BAD: rebuilding entire page on every change
 @ui.page('/')
@@ -1177,6 +1341,12 @@ ui.query('body').classes('bg-grey-2')
 ui.button().style('background-color: var(--q-primary)')
 # GOOD: let NiceGUI handle Quasar theme
 ui.button(color='primary')
+
+# BAD: configuring host/port via NICEGUI_* environment variables — they are internal to NiceGUI,
+#      ui.run() overwrites them and (since 3.17) logs a warning; the app serves on port= (default 8080)
+os.environ['NICEGUI_PORT'] = '8113'   # or: NICEGUI_PORT=8113 python main.py
+# GOOD: read your own variable and pass it explicitly
+ui.run(port=int(os.environ.get('PORT', 8080)))
 ```
 
 ---
@@ -1192,12 +1362,27 @@ async def test_counter(user: User) -> None:
     await user.should_see('Count: 1')
 ```
 
+`user.should_see(...)`, `user.should_not_see(...)` and `user.find(...)` always search the whole page (including header, drawers and footer).
+They match what the user would read: text, labels, placeholders, option labels, and (since 3.18) the values that input fields display — `ui.number(value=42)` is found by `'42'`, `ui.input`, `ui.textarea`, `ui.date_input` etc. by their value, `ui.input_chips` by each chip.
+Values that are not shown as text (sliders, checkboxes, hidden progress values) are deliberately not matched.
+When markers or content repeat across the page, limit them to one subtree with `user.scope(...)` (since 3.16):
+
+```python
+with user.scope(marker='left-card'):  # same filter args as user.find(), must match exactly one element
+    await user.should_see('Apple')
+    user.find('Buy').click()
+```
+
+The fixtures load the app's main file (`main_file` option, default `main.py`) before each test.
+To load none, leave it empty (`main_file = ""` under `[tool.pytest.ini_options]`) and register the pages each test needs, e.g. with `@ui.page` inside the test function.
+
 Use `Screen` fixture only when JavaScript or real browser rendering is required:
 
 ```python
 def test_chart(screen: Screen) -> None:
     screen.open('/')
     screen.should_contain('canvas')  # chart rendered
+    screen.should_not_contain('Loading')  # waits for the text to disappear (since 4.0); duration=0.5 also checks that it stays away
 ```
 
 ---
@@ -1273,19 +1458,15 @@ These follow NiceGUI project conventions and work well for NiceGUI-based apps:
 # NEVER block the event loop
 import time
 time.sleep(5)             # blocks everything — never do this in async context
-requests.get(url)         # synchronous HTTP — use httpx or aiohttp instead
+requests.get(url)         # synchronous HTTP — use httpx2, or await run.io_bound(requests.get, url)
 
 # ALWAYS use background_tasks for fire-and-forget coroutines
 from nicegui import background_tasks
 background_tasks.create(my_coroutine(), name='descriptive-name')
 
-# Handle exceptions in background tasks
-from nicegui import core
-async def safe_task():
-    try:
-        await do_work()
-    except Exception as e:
-        core.app.handle_exception(e)
+# Exceptions in background tasks reach app.on_exception automatically;
+# pass context= so the page's ui.on_exception handlers see them too (since 3.18)
+background_tasks.create(do_work(), context=ui.context.client)
 ```
 
 ### Fluent Interface Formatting
@@ -1311,6 +1492,7 @@ ui.button('Click me') \
 - **Raw CSS/JS** when a NiceGUI Python API exists
 - **`ui.add_head_html` / `ui.add_body_html`** for things `.classes()`, `.style()`, or `ui.query()` can handle
 - **`ui.run_javascript()`** for styling or visibility (use Python API)
+- **`NICEGUI_PORT` / `NICEGUI_HOST` environment variables** — internal only and ignored; pass `ui.run(host=..., port=...)`
 - **Creating new files** when editing existing ones suffices
 - **Over-engineering**: three similar lines beat a premature abstraction
 

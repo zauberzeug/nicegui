@@ -1,20 +1,24 @@
 import asyncio
+import contextlib
 import inspect
 import os
 import platform
+import secrets
 import signal
+import threading
 import time
-import urllib
-from collections.abc import Callable, Iterator
+import urllib.parse
+from collections.abc import Callable, Iterable, Iterator
 from enum import Enum
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
+from fastapi.routing import RouteContext, iter_route_contexts
+from starlette.routing import Route
 
 from .. import background_tasks, binding, core, helpers
 from ..client import Client
-from ..context import context
 from ..elements.mixins.color_elements import QUASAR_COLORS
 from ..logging import log
 from ..native import NativeConfig
@@ -25,6 +29,8 @@ from ..staticfiles import CacheControlledStaticFiles
 from ..storage import PersistentDict, Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
+
+USER_STORAGE_PRUNE_INTERVAL = 10.0
 
 
 class State(Enum):
@@ -87,7 +93,7 @@ class App(FastAPI):
         self.timer(10, Slot.prune_stacks)
         self.timer(10, prune_tab_storage)
         if self.storage.secret is not None:
-            self.timer(10, prune_user_storage)
+            self.timer(USER_STORAGE_PRUNE_INTERVAL, prune_user_storage)
         self._state = State.STARTED
 
     async def stop(self) -> None:
@@ -111,7 +117,7 @@ class App(FastAPI):
     def on_connect(self, handler: Callable) -> None:
         """Called every time a new client connects to NiceGUI.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -120,7 +126,7 @@ class App(FastAPI):
     def on_disconnect(self, handler: Callable) -> None:
         """Called every time a new client disconnects from NiceGUI.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
@@ -131,7 +137,7 @@ class App(FastAPI):
     def on_delete(self, handler: Callable) -> None:
         """Called when a client is deleted.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Added in version 3.0.0*
         """
@@ -144,7 +150,7 @@ class App(FastAPI):
 
         The callback can be synchronous or asynchronous.
 
-        Needs to be called before `ui.run()`.
+        Needs to be called before ``ui.run()``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -165,7 +171,7 @@ class App(FastAPI):
     def on_exception(self, handler: Callable) -> None:
         """Called when an exception occurs.
 
-        The callback has an optional parameter of `Exception`.
+        The callback has an optional parameter of ``Exception``.
         """
         if core.is_script_mode_re_execution():
             return  # already registered on the script's first execution
@@ -173,12 +179,20 @@ class App(FastAPI):
 
     def handle_exception(self, exception: Exception) -> None:
         """Handle an exception by invoking all registered exception handlers."""
-        if context.slot_stack and context.client is not None:
-            context.client.handle_exception(exception)
+        for slot in reversed(Slot.get_stack()):  # don't enter script mode by accessing `context.slot_stack`
+            with contextlib.suppress(RuntimeError):  # the slot's parent element or its client may have been deleted
+                slot.parent.client.handle_exception(exception)
+                break
+
         for handler in self._exception_handlers:
-            result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            name = getattr(handler, '__name__', handler)
+            try:
+                result = handler() if not inspect.signature(handler).parameters else handler(exception)
+            except Exception:  # one failing handler must not prevent the others from running
+                log.exception(f'Exception handler {name} raised an exception')
+                continue
             if helpers.should_await(result):
-                background_tasks.create(result, name=f'exception {handler.__name__}')
+                background_tasks.create(result, name=f'exception {name}')
 
     def on_page_exception(self, handler: Callable) -> None:
         """Called when an exception occurs in a page and allows to create a custom error page.
@@ -211,13 +225,13 @@ class App(FastAPI):
                          max_cache_age: int = 3600) -> None:
         """Add a directory of static files.
 
-        `add_static_files()` makes a local directory available at the specified endpoint, e.g. `'/static'`.
+        ``add_static_files()`` makes a local directory available at the specified endpoint, e.g. ``'/static'``.
         This is useful for providing local data like images to the frontend.
         Otherwise the browser would not be able to access the files.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
-        To make a single file accessible, you can use `add_static_file()`.
-        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
+        To make a single file accessible, you can use ``add_static_file()``.
+        For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
 
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as static content
@@ -245,16 +259,17 @@ class App(FastAPI):
         """Add a single static file.
 
         Allows a local file to be accessed online with enabled caching.
-        If `url_path` is not specified, a path will be generated.
+        If ``url_path`` is not specified, a path will be generated.
 
-        To make a whole folder of files accessible, use `add_static_files()` instead.
-        For media files which should be streamed, you can use `add_media_files()` or `add_media_file()` instead.
+        To make a whole folder of files accessible, use ``add_static_files()`` instead.
+        For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
 
         :param local_file: local file to serve as static content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the file has been downloaded once (default: False)
+            (only an auto-generated ``url_path`` is unguessable, an explicit one is the caller's responsibility)
         :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
-        :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*)
+        :param max_cache_age: value for max-age set in Cache-Control header (*added in version 2.8.0*, ignored in favor of ``no-store`` if ``single_use`` is True)
         :return: encoded URL which can be used to access the file
         """
         if max_cache_age < 0:
@@ -263,26 +278,29 @@ class App(FastAPI):
         file = Path(local_file).resolve()
         if strict and not file.is_file():
             raise FileNotFoundError(f'File not found: {file}')
-        path = f'/_nicegui/auto/static/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
+        token = secrets.token_urlsafe(32) if single_use else helpers.hash_file_path(file)
+        path = f'/_nicegui/auto/static/{token}/{file.name}' if url_path is None else url_path
+        consume = self._single_use_guard(path) if single_use else None
+        cache_control = 'no-store' if single_use else f'public, max-age={max_cache_age}'
 
-        @self.get(path)
+        @self.get(path, include_in_schema=not single_use)  # never list a single-use URL in the OpenAPI schema
         def read_item() -> FileResponse:
-            if single_use:
-                self.remove_route(path)
-            return FileResponse(file, headers={'Cache-Control': f'public, max-age={max_cache_age}'})
+            if consume is not None:
+                consume()
+            return FileResponse(file, headers={'Cache-Control': cache_control})
 
         return urllib.parse.quote(path)
 
     def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
         """Add directory of media files.
 
-        `add_media_files()` allows a local files to be streamed from a specified endpoint, e.g. `'/media'`.
+        ``add_media_files()`` allows a local files to be streamed from a specified endpoint, e.g. ``'/media'``.
         This should be used for media files to support proper streaming.
         Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
-        To make a single file accessible via streaming, you can use `add_media_file()`.
-        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
+        To make a single file accessible via streaming, you can use ``add_media_file()``.
+        For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
 
         :param url_path: string that starts with a slash "/" and identifies the path at which the files should be served
         :param local_directory: local folder with files to serve as media content
@@ -303,27 +321,33 @@ class App(FastAPI):
         """Add a single media file.
 
         Allows a local file to be streamed.
-        If `url_path` is not specified, a path will be generated.
+        If ``url_path`` is not specified, a path will be generated.
 
-        To make a whole folder of media files accessible via streaming, use `add_media_files()` instead.
-        For small static files, you can use `add_static_files()` or `add_static_file()` instead.
+        To make a whole folder of media files accessible via streaming, use ``add_media_files()`` instead.
+        For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
 
         :param local_file: local file to serve as media content
         :param url_path: string that starts with a slash "/" and identifies the path at which the file should be served (default: None -> auto-generated URL path)
         :param single_use: whether to remove the route after the media file has been downloaded once (default: False)
+            (only an auto-generated ``url_path`` is unguessable, an explicit one is the caller's responsibility)
         :param strict: whether to raise a ``FileNotFoundError`` if the file does not exist (default: True, *added in version 2.12.0*)
         :return: encoded URL which can be used to access the file
         """
         file = Path(local_file).resolve()
         if strict and not file.is_file():
             raise FileNotFoundError(f'File not found: {file}')
-        path = f'/_nicegui/auto/media/{helpers.hash_file_path(file)}/{file.name}' if url_path is None else url_path
+        token = secrets.token_urlsafe(32) if single_use else helpers.hash_file_path(file)
+        path = f'/_nicegui/auto/media/{token}/{file.name}' if url_path is None else url_path
+        consume = self._single_use_guard(path) if single_use else None
 
-        @self.get(path)
+        @self.get(path, include_in_schema=not single_use)  # never list a single-use URL in the OpenAPI schema
         def read_item(request: Request, nicegui_chunk_size: int = 8192) -> Response:
-            if single_use:
-                self.remove_route(path)
-            return get_range_response(file, request, chunk_size=nicegui_chunk_size)
+            if consume is not None:
+                consume()
+            response = get_range_response(file, request, chunk_size=nicegui_chunk_size)
+            if consume is not None:
+                response.headers['Cache-Control'] = 'no-store'
+            return response
 
         return urllib.parse.quote(path)
 
@@ -338,7 +362,7 @@ class App(FastAPI):
                info: str = '#31ccec',
                warning: str = '#f2c037',
                **custom_colors: str) -> None:
-        """Color Theming
+        r"""Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on an application-wide basis.
 
@@ -355,7 +379,7 @@ class App(FastAPI):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
-        :param custom_colors: Custom color definitions for branding
+        :param \*\*custom_colors: Custom color definitions for branding
         """
         brand: dict[str, str] = self.config.quasar_config['brand']
         brand['primary'] = primary
@@ -371,8 +395,67 @@ class App(FastAPI):
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
 
     def remove_route(self, path: str) -> None:
-        """Remove routes with the given path."""
-        self.routes[:] = [r for r in self.routes if getattr(r, 'path', None) != path]
+        """Remove routes with the given path, including those of included routers."""
+        routers = list(self._iter_routers())
+        # check the raw routes first: building the effective routes of included routers is expensive
+        if not any(path.endswith(route_path) for router in routers for route in router.routes
+                   if isinstance(route_path := getattr(route, 'path', None), str)):
+            return
+        removed = {id(route.original_route) for route in self._iter_routes() if route.path == path}
+        for router in routers:
+            if any(id(route) in removed for route in router.routes):
+                if sum(candidate is router for candidate in routers) > 1:
+                    helpers.warn_once(f'Removed {path} from a router that is included more than once, '
+                                      'so it is removed from all of its includes.')
+                router.routes[:] = [route for route in router.routes if id(route) not in removed]
+                self._mark_routes_changed([router])
+
+    def _iter_routes(self) -> Iterator[RouteContext]:
+        """Iterate over all routes, including those of included routers.
+
+        FastAPI keeps an included router as a single lazy entry in ``routes``.
+        This method looks inside and yields its routes with their full paths.
+        Use ``original_route`` to modify a route and call ``_mark_routes_changed`` afterwards.
+        """
+        yield from iter_route_contexts(self.routes)
+
+    def _iter_http_routes(self) -> Iterator[RouteContext]:
+        """Iterate over all HTTP routes, including those of included routers."""
+        yield from (route for route in self._iter_routes() if isinstance(route.original_route, Route))
+
+    def _iter_routers(self, router: APIRouter | None = None) -> Iterator[APIRouter]:
+        """Iterate over the app's router and all routers included into it, including nested ones."""
+        router = router or self.router
+        yield router
+        for route in router.routes:
+            included_router = getattr(route, 'original_router', None)
+            if included_router is not None:
+                yield from self._iter_routers(included_router)
+
+    def _mark_routes_changed(self, routers: Iterable[APIRouter] | None = None) -> None:
+        """Make FastAPI notice that routes of the given routers (default: all) have been removed or modified.
+
+        FastAPI caches the effective routes of each included router and only rebuilds them when a private counter changes.
+        There is no public API for this (https://github.com/fastapi/fastapi/issues/16301).
+        """
+        for router in routers if routers is not None else self._iter_routers():
+            mark_routes_changed = getattr(router, '_mark_routes_changed', None)
+            if mark_routes_changed is None:
+                helpers.warn_once('FastAPI has no APIRouter._mark_routes_changed(), '
+                                  'so routes of included routers cannot be removed or modified.')
+                return
+            mark_routes_changed()
+
+    def _single_use_guard(self, path: str) -> Callable[[], None]:
+        """Return a callable that lets exactly one request pass and removes the route behind it."""
+        ticket = threading.Lock()
+
+        def consume() -> None:
+            if not ticket.acquire(blocking=False):  # pylint: disable=consider-using-with
+                raise HTTPException(status_code=404, detail='Not Found')
+            self.remove_route(path)
+
+        return consume
 
     def reset(self) -> None:
         """Reset app to its initial state. (Useful for testing.)"""
@@ -405,10 +488,12 @@ class App(FastAPI):
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:
-    """Prune tab storage that is older than the configured ``max_tab_storage_age``."""
+    """Prune tab storage that is older than the configured ``max_tab_storage_age`` and not used by a client anymore."""
     tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
+    tab_ids_in_use = {client._pinned_tab_id for client in Client.instances.values()}  # pylint: disable=protected-access
     for tab_id, tab in list(tab_storages.items()):
-        if force or time.time() > tab.last_modified + core.app.storage.max_tab_storage_age:
+        is_expired = time.time() > tab.last_modified + core.app.storage.max_tab_storage_age
+        if force or (is_expired and tab_id not in tab_ids_in_use):
             tab.clear()
             if isinstance(tab, PersistentDict):
                 await tab.close()
@@ -418,13 +503,14 @@ async def prune_tab_storage(*, force: bool = False) -> None:
 async def prune_user_storage(*, force: bool = False) -> None:
     """Remove user storage objects without a client session."""
     client_session_ids = {client.request.session['id'] for client in Client.instances.values()}
+    active_request_sessions = core.app.storage._active_request_sessions  # pylint: disable=protected-access
     storages_to_close: list[PersistentDict] = []
     now = time.time()
     user_storages = core.app.storage._users  # pylint: disable=protected-access
     for session_id in list(user_storages):
-        if session_id not in client_session_ids:
+        if session_id not in client_session_ids and session_id not in active_request_sessions:  # avoid pruning mid-request
             age = now - user_storages[session_id].last_modified
-            if force or age > 10.0:  # do not remove storages created by middleware and still wait for client
+            if force or age > USER_STORAGE_PRUNE_INTERVAL:  # do not remove storages created by middleware and still wait for client
                 storages_to_close.append(user_storages.pop(session_id))
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:

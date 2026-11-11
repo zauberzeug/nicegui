@@ -1,16 +1,14 @@
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
-from ..events import Handler, ValueChangeEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .icon import Icon
 from .mixins.disableable_element import DisableableElement
 from .mixins.label_element import LabelElement
 from .mixins.validation_element import ValidationDict, ValidationElement, ValidationFunction
 
 
-class Input(LabelElement, ValidationElement[str | None], DisableableElement, component='input.js'):
+class Input(LabelElement, ValidationElement[str], DisableableElement, component='input.js'):
     VALUE_PROP: str = 'value'
     LOOPBACK = False
 
@@ -18,33 +16,33 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str | None = DEFAULT_PROP | '',  # DEPRECATED: change to None in 4.0 (also derived classes)
+                 value: str = DEFAULT_PROP | '',
                  password: bool = DEFAULT_PROP | False,
                  password_toggle_button: bool = False,
                  prefix: str | None = None,
                  suffix: str | None = None,
-                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  autocomplete: list[str] | None = DEFAULT_PROPS['_autocomplete'] | None,
-                 validation: ValidationFunction | ValidationDict | None = None,
+                 validation: ValidationFunction[str] | ValidationDict[str] | None = None,
                  ) -> None:
         """Text Input
 
         This element is based on Quasar's `QInput <https://quasar.dev/vue-components/input>`_ component.
 
-        The `on_change` event is called on every keystroke and the value updates accordingly.
+        The ``on_change`` event is called on every keystroke and the value updates accordingly.
         If you want to wait until the user confirms the input, you can register a custom event callback, e.g.
-        `ui.input(...).on('keydown.enter', ...)` or `ui.input(...).on('blur', ...)`.
+        ``ui.input(...).on('keydown.enter', ...)`` or ``ui.input(...).on('blur', ...)``.
 
-        You can use the `validation` parameter to define a dictionary of validation rules,
+        You can use the ``validation`` parameter to define a dictionary of validation rules,
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
-        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
+        To disable the automatic validation on every value change, you can use the ``without_auto_validation`` method.
 
         Note about styling the input:
-        Quasar's `QInput` component is a wrapper around a native `input` element.
+        Quasar's ``QInput`` component is a wrapper around a native ``input`` element.
         This means that you cannot style the input directly,
-        but you can use the `input-class` and `input-style` props to style the native input element.
+        but you can use the ``input-class`` and ``input-style`` props to style the native input element.
         See the "Style" props section on the `QInput <https://quasar.dev/vue-components/input>`_ documentation for more details.
 
         :param label: displayed label for the text input
@@ -80,7 +78,7 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
 
     def set_autocomplete(self, autocomplete: list[str] | None) -> Self:
         """Set the autocomplete list."""
-        self._props['_autocomplete'] = autocomplete
+        self._props['_autocomplete'] = autocomplete or []
         return self
 
     @property
@@ -118,8 +116,14 @@ class Input(LabelElement, ValidationElement[str | None], DisableableElement, com
         if self._send_update_on_value_change:
             self.run_method('updateValue')
 
+    def _event_args_to_value(self, e: GenericEventArguments) -> str:
+        return e.args or ''
+
     def _render_markdown(self) -> str:
         value = '' if self.value is None else str(self.value)
         if self.label:
             return f'{self.label}: {value}'
         return value
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

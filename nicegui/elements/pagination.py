@@ -10,7 +10,7 @@ class Pagination(ValueElement[int | None], DisableableElement):
     def __init__(self,
                  min: int, max: int, *,  # pylint: disable=redefined-builtin
                  direction_links: bool = DEFAULT_PROP | False,
-                 value: int | None = DEFAULT_PROPS['model-value'] | ...,  # type: ignore
+                 value: int | None = DEFAULT_PROPS['model-value'] | ...,  # type: ignore[assignment]
                  on_change: Handler[ValueChangeEventArguments[int | None]] | None = None) -> None:
         """Pagination
 
@@ -18,8 +18,8 @@ class Pagination(ValueElement[int | None], DisableableElement):
 
         :param min: minimum page number
         :param max: maximum page number
-        :param direction_links: whether to show first/last page links
-        :param value: initial page (defaults to `min` if no value is provided)
+        :param direction_links: whether to show direction links (previous/next); use ``.props('boundary-links')`` for first/last links
+        :param value: initial page (defaults to ``min`` if no value is provided)
         :param on_change: callback to be invoked when the value changes
         """
         if value is ...:
@@ -49,7 +49,7 @@ class Pagination(ValueElement[int | None], DisableableElement):
 
     @property
     def direction_links(self) -> bool:
-        """Whether to show first/last page links"""
+        """Whether to show direction links (previous/next)"""
         return self._props['direction-links']
 
     @direction_links.setter

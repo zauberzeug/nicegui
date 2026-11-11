@@ -214,6 +214,8 @@ def adding_sub_pages_demo() -> None:
     A path parameter specified in the route is injected into the functions matching parameter.
     For query parameters, the name is used for injection.
     Values are automatically converted if a type hint is provided (int, float, str).
+    Unions like `int | None` or `int | float` are supported as well:
+    `str` wins if present, otherwise `int` and `float` are tried in order.
     If no default value is provided in the builder function, the parameter will be required to match the route.
 ''')
 def url_parameters_demo():
@@ -270,6 +272,10 @@ def page_arguments_demo():
     For wildcard routing, where a single handler should match multiple paths,
     use `show_404=False` and access `PageArguments.remaining_path`.
     This is useful for routing patterns like "/item/*" where everything under "/item/" goes to one handler.
+    Note that `path` and `remaining_path` always add up to the path handled by the `ui.sub_pages` element:
+    the root route `/` yields a remaining path without leading slash (e.g. `'x/2/a'`),
+    while any other route keeps it (`'/x/2/a'`).
+    Splitting the remaining path and dropping empty segments, as done below, handles both cases uniformly.
 ''')
 def wildcard_demo():
     from nicegui import PageArguments

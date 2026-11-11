@@ -62,6 +62,14 @@ doc.intro(generic_events_documentation)
     The function needs to transfer the whole state of the passed function to the process, which is done with pickle.
     It is encouraged to create free functions or static methods which get all the data as simple parameters (i.e. no class or UI logic)
     and return the result, instead of writing it in class properties or global variables.
+
+    The process pool uses the "spawn" start method by default (*updated in version 4.0.0*, before it was the platform's default),
+    so workers start from a fresh import and do not inherit module globals or other process state.
+    The function must also be importable there: define it at module level in a script file or module,
+    not via `python -c`, stdin, a zipapp or a package's `__main__.py`, and not under `if __name__ == '__main__':`.
+    Set `run.process_pool_start_method` before `ui.run()` to "fork" or "forkserver" if you need them,
+    or to `None` to use the platform's default ("fork" on Linux up to Python 3.13, which is unsafe in threaded processes).
+    *Added in version 3.15.0*
 ''')
 def cpu_bound_demo():
     import time
@@ -91,13 +99,13 @@ def cpu_bound_demo():
     The function returns a future that can be awaited.
 ''')
 def io_bound_demo():
-    import httpx
+    import httpx2
 
     from nicegui import run
 
     async def handle_click():
         URL = 'https://httpbin.org/delay/1'
-        response = await run.io_bound(httpx.get, URL, timeout=3)
+        response = await run.io_bound(httpx2.get, URL, timeout=3)
         ui.notify(f'Downloaded {len(response.content)} bytes')
 
     ui.button('Download', on_click=handle_click)
@@ -124,7 +132,8 @@ doc.text('Error handling', '''
         Handler for in-page exceptions (**after** page sent to browser)
         - Applied per-page.
         - Handler may use UI elements with the original client at `ui.context.client`.
-        - Common sources: `ui.button(on_click=...)`, `ui.timer`, exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
+        - Common sources: `ui.button(on_click=...)`, `ui.timer`, `background_tasks.create(..., context=...)`,
+            exceptions in async `@ui.page` functions after `await ui.context.client.connected()`
 
     When an exception occurs:
 
@@ -132,6 +141,7 @@ doc.text('Error handling', '''
     - UI-context exceptions go to _either_, but never both:
         - `@app.on_page_exception` (2) if raised before client connection
         - `ui.on_exception` (3) if raised after client connection
+    - Once the client has been deleted, its `ui.on_exception` handlers are skipped.
 ''')
 
 

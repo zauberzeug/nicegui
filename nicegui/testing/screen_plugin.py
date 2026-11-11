@@ -6,8 +6,9 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
-from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 from nicegui import helpers
 
@@ -40,10 +41,10 @@ def pytest_runtest_makereport(item, call):  # pylint: disable=unused-argument
 
 
 @pytest.fixture(scope='session')
-def nicegui_chrome_options() -> webdriver.ChromeOptions:
+def nicegui_chrome_options() -> Options:
     """Configure the Chrome options for the NiceGUI tests."""
     assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
-    chrome_options = webdriver.ChromeOptions()
+    chrome_options = Options()
     chrome_options.add_argument('disable-dev-shm-usage')
     chrome_options.add_argument('disable-search-engine-choice-screen')
     chrome_options.add_argument('no-sandbox')
@@ -80,12 +81,12 @@ def nicegui_remove_all_screenshots() -> None:
 
 
 @pytest.fixture(scope='session')
-def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator[webdriver.Chrome, None, None]:
+def nicegui_driver(nicegui_chrome_options: Options) -> Generator[WebDriver, None, None]:
     """Create a new Chrome driver instance (reused across tests in the session)."""
     for executable_path in (None, shutil.which('chromedriver'), 'chromedriver'):  # Required for ARM devcontainers
         try:
             s = Service(executable_path=executable_path)
-            driver_ = webdriver.Chrome(service=s, options=nicegui_chrome_options)
+            driver_ = WebDriver(service=s, options=nicegui_chrome_options)
             break
         except Exception:
             continue
@@ -100,13 +101,15 @@ def nicegui_driver(nicegui_chrome_options: webdriver.ChromeOptions) -> Generator
 @pytest.fixture
 def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
            nicegui_remove_all_screenshots,  # pylint: disable=unused-argument
-           nicegui_driver: webdriver.Chrome,
+           nicegui_driver: WebDriver,
            request: pytest.FixtureRequest,
            caplog: pytest.LogCaptureFixture,
            ) -> Generator[Screen, None, None]:
     """Create a new SeleniumScreen fixture."""
     assert DOWNLOAD_DIR is not None, 'pytest_configure must run before this fixture'
     _reset_browser_state(nicegui_driver)
+    for name in ('NICEGUI_HOST', 'NICEGUI_PORT', 'NICEGUI_PROTOCOL'):
+        os.environ.pop(name, None)  # inherited from the shell or a parent NiceGUI app; would trigger a warning
     os.environ['NICEGUI_SCREEN_TEST_PORT'] = str(Screen.PORT)
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
     screen_ = Screen(nicegui_driver, caplog, request)
@@ -115,8 +118,9 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
 
         logs = [record for record in screen_.caplog.get_records('call') if record.levelname == 'ERROR']
         if screen_.is_open:
-            test_failed = hasattr(request.node, 'rep_call') and request.node.rep_call.failed
-            screen_.shot(request.node.name, failed=test_failed or bool(logs))
+            failed = (hasattr(request.node, 'rep_call') and request.node.rep_call.failed) or bool(logs)
+            if failed or Screen.SCREENSHOT_PASSED_TESTS:
+                screen_.shot(request.node.name, failed=failed)
         if logs:
             pytest.fail('There were unexpected ERROR logs.', pytrace=False)
         if screen_.is_open and Screen.CATCH_JS_ERRORS:
@@ -130,7 +134,7 @@ def screen(nicegui_reset_globals,  # noqa: F811, pylint: disable=unused-argument
         shutil.rmtree(DOWNLOAD_DIR, ignore_errors=True)
 
 
-def _reset_browser_state(driver: webdriver.Chrome) -> None:
+def _reset_browser_state(driver: WebDriver) -> None:
     """Reset browser state between tests when reusing the driver."""
     while len(driver.window_handles) > 1:
         driver.switch_to.window(driver.window_handles[-1])

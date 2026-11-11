@@ -28,7 +28,7 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
 
         :param content: the Markdown content to be displayed
         :param extras: list of `markdown2 extensions <https://github.com/trentm/python-markdown2/wiki/Extras#implemented-extras>`_
-            (default: ``['fenced-code-blocks', 'tables']``, can be set via ``ui.markdown.default_extras``)
+            (default: ``['fenced-code-blocks', 'tables']``, *since in version 3.14.0*: can be set via ``ui.markdown.default_extras``)
         :param sanitize: sanitization mode:
             ``True`` (default) uses client-side sanitization via DOMPurify,
             ``False`` disables sanitization (use only with trusted content),
@@ -51,9 +51,6 @@ class Markdown(ContentElement, component='markdown.js', default_classes='nicegui
                 headers={'Cache-Control': core.app.config.cache_control_directives},
             ),
         )
-
-        self._props.add_rename('resource_name', 'resource-name')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('use_mermaid', 'use-mermaid')  # DEPRECATED: remove in NiceGUI 4.0
 
     @staticmethod
     @lru_cache(maxsize=1)

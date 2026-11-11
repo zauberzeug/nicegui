@@ -1,7 +1,8 @@
 import os
 
+from .dataframes import pandas_to_records, polars_to_records
 from .elements import require_top_level_layout
-from .files import hash_file_path, is_file
+from .files import hash_file_path, is_file, unlink_with_retry, unlink_with_retry_async
 from .functions import (
     NoImplicitAwait,
     await_with_context,
@@ -29,10 +30,14 @@ __all__ = [
     'is_user_simulation',
     'kebab_to_camel_case',
     'normalize_lifecycle_handler',
+    'pandas_to_records',
+    'polars_to_records',
     'remove_indentation',
     'require_top_level_layout',
     'schedule_browser',
     'should_await',
+    'unlink_with_retry',
+    'unlink_with_retry_async',
     'warn_once',
 ]
 

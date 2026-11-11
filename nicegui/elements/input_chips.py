@@ -17,7 +17,7 @@ class InputChips(LabelElement, ValidationElement[list[str]], DisableableElement)
                  on_change: Handler[ValueChangeEventArguments[list[str]]] | None = None,
                  new_value_mode: Literal['add', 'add-unique', 'toggle'] = DEFAULT_PROP | 'toggle',
                  clearable: bool = DEFAULT_PROP | False,
-                 validation: ValidationFunction | ValidationDict | None = None,
+                 validation: ValidationFunction[list[str]] | ValidationDict[list[str]] | None = None,
                  ) -> None:
         """Input Chips
 
@@ -32,7 +32,7 @@ class InputChips(LabelElement, ValidationElement[list[str]], DisableableElement)
         e.g. ``{'Too long!': lambda value: len(value) < 3}``.
         The key of the first rule that fails will be displayed as an error message.
         Alternatively, you can pass a callable that returns an optional error message.
-        To disable the automatic validation on every value change, you can use the `without_auto_validation` method.
+        To disable the automatic validation on every value change, you can use the ``without_auto_validation`` method.
 
         *Added in version 2.22.0*
 
@@ -57,3 +57,6 @@ class InputChips(LabelElement, ValidationElement[list[str]], DisableableElement)
 
     def _event_args_to_value(self, e: GenericEventArguments) -> list[str]:
         return e.args or []
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), *(self.value or [])]

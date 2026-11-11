@@ -1,6 +1,4 @@
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
@@ -31,8 +29,6 @@ class Fullscreen(ValueElement[bool], component='fullscreen.js'):
         """
         super().__init__(value=False, on_value_change=on_value_change)
         self._props['require-escape-hold'] = require_escape_hold
-
-        self._props.add_rename('requireEscapeHold', 'require-escape-hold')  # DEPRECATED: remove in NiceGUI 4.0
 
     @property
     def require_escape_hold(self) -> bool:

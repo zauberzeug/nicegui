@@ -10,6 +10,7 @@ ICONS = {
     'python': 'ph-file-py',
     'console': 'ph-terminal-window',
     'ini': 'ph-file-ini',
+    'js': 'ph-file-js',
 }
 
 

@@ -5,16 +5,15 @@ import inspect
 import time
 import uuid
 from collections import defaultdict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
-from urllib.parse import quote
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
+from urllib.parse import parse_qs, quote
 
 from fastapi import Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
-from typing_extensions import Self
 
 from . import background_tasks, binding, core, helpers, json, storage
 from .awaitable_response import AwaitableResponse
@@ -61,14 +60,42 @@ HTML_ESCAPE_TABLE = str.maketrans({
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
 
+def _client_id_from_query(environ: dict[str, Any]) -> str | None:
+    """Read the ``client_id`` a socket connected with, or ``None`` if its environment does not carry one."""
+    query_string = environ.get('QUERY_STRING') or environ.get('asgi.scope', {}).get('query_string') or ''
+    if isinstance(query_string, (bytes, bytearray)):
+        query_string = query_string.decode()
+    return parse_qs(query_string).get('client_id', [None])[0]
+
+
 class ClientConnectionTimeout(TimeoutError):
     def __init__(self, client: Client) -> None:
         super().__init__(f'ClientConnectionTimeout: {client.id}')
         self.client = client
 
 
+class _PageRoutes(Mapping[Callable, str]):
+    """Maps page builders to their routes, which their pages resolve on access."""
+
+    def __init__(self) -> None:
+        self.pages: dict[Callable, page] = {}
+
+    def __getitem__(self, builder: Callable) -> str:
+        return self.pages[builder].path
+
+    def __iter__(self) -> Iterator[Callable]:
+        return iter(self.pages)
+
+    def __len__(self) -> int:
+        return len(self.pages)
+
+    def clear(self) -> None:
+        """Forget all pages."""
+        self.pages.clear()
+
+
 class Client:
-    page_routes: ClassVar[dict[Callable, str]] = {}
+    page_routes: ClassVar[_PageRoutes] = _PageRoutes()
     '''Maps page builders to their routes.'''
 
     instances: ClassVar[dict[str, Client]] = {}
@@ -99,6 +126,7 @@ class Client:
         self._deleted = False
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
+        self._pinned_tab_id: str | None = None
         self._exception_handlers: list[Callable[[Exception], Any] | Callable[[], Any]] = []
 
         self.page = page
@@ -114,6 +142,7 @@ class Client:
 
         self.title: str | None = None
         self.status_code: int = 200
+        self._response_built = False
 
         self._head_html = ''
         self._body_html = ''
@@ -123,8 +152,6 @@ class Client:
         self.connect_handlers: list[Callable] = []
         self.disconnect_handlers: list[Callable] = []
         self.delete_handlers: list[Callable] = []
-
-        self._temporary_socket_id: str | None = None
 
         with self:
             self.sub_pages_router = SubPagesRouter(request)
@@ -174,6 +201,8 @@ class Client:
 
     def build_response(self, request: Request, status_code: int = 200) -> Response:
         """Build a FastAPI response for the client."""
+        # After this point the initial HTML (incl. title/head/body) is emitted; later changes must be pushed via JS.
+        self._response_built = True
         if self.page.resolve_markdown() and _did_user_request_markdown(request):
             parts = []
             if title := self.resolve_title():
@@ -257,14 +286,15 @@ class Client:
         """Block execution until the client is connected.
 
         :param timeout: timeout in seconds (default: ``None``)
+        :raises ClientConnectionTimeout: if ``timeout`` elapses first
         """
-        if self.has_socket_connection:
+        if self.has_socket_connection or self.is_deleted:
             return
         self._waiting_for_connection.set()
         self._connected.clear()
         try:
             await asyncio.wait_for(self._connected.wait(), timeout=None if _is_prefetch(self.request) else timeout)
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise ClientConnectionTimeout(self) from e
 
     async def disconnected(self) -> None:
@@ -286,23 +316,33 @@ class Client:
         Internally, ``await client.connected()`` is called before the JavaScript code is executed (*since version 3.0.0*).
         This might delay the execution of the JavaScript code and is not covered by the ``timeout`` parameter.
 
+        *Updated in version 3.17.0: Awaiting the response resolves with ``None`` when the client has been deleted,
+        e.g. because the browser tab was closed.*
+
         :param code: JavaScript code to run
         :param timeout: timeout in seconds (default: 1.0)
 
-        :return: AwaitableResponse that can be awaited to get the result of the JavaScript code
+        :return: AwaitableResponse that can be awaited to get the result of the JavaScript code,
+            or ``None`` if the client has been deleted
         """
-        request_id = str(uuid.uuid4())
-        target_id = self._temporary_socket_id or self.id
+        # NOTE: the message is enqueued right away, so it keeps its place among other outbox messages (#6472);
+        # an awaited response adds the request ID to this very dict before the outbox gets a chance to send it,
+        # which relies on `AwaitableResponse.__await__` starting `wait_for_result()` without a loop step in between
+        data: dict[str, Any] = {'code': code}
+        if not self.is_deleted:
+            self.outbox.enqueue_message('run_javascript', data, self.id)
 
-        def send_and_forget():
-            self.outbox.enqueue_message('run_javascript', {'code': code}, target_id)
-
-        async def send_and_wait():
-            self.outbox.enqueue_message('run_javascript', {'code': code, 'request_id': request_id}, target_id)
+        async def send_and_wait() -> Any:
+            if self.is_deleted:
+                return None
+            request_id = str(uuid.uuid4())
+            data['request_id'] = request_id
             await self.connected()
+            if self.is_deleted:
+                return None
             return await JavaScriptRequest(request_id, timeout=timeout)
 
-        return AwaitableResponse(send_and_forget, send_and_wait)
+        return AwaitableResponse(None, send_and_wait)  # nothing to fire, the message is already enqueued
 
     def open(self, target: Callable | str, new_tab: bool = False) -> None:
         """Open a new page in the client."""
@@ -316,7 +356,7 @@ class Client:
     def on_connect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client connects.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
         """
 
         self.connect_handlers.append(helpers.normalize_lifecycle_handler(handler, 'client.on_connect()'))
@@ -324,7 +364,7 @@ class Client:
     def on_disconnect(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client disconnects.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Updated in version 3.0.0: The handler is also called when a client reconnects.*
         """
@@ -333,7 +373,7 @@ class Client:
     def on_delete(self, handler: Callable) -> None:
         """Add a callback to be invoked when the client is deleted.
 
-        The callback can be synchronous or asynchronous and has an optional parameter of `nicegui.Client`.
+        The callback can be synchronous or asynchronous and has an optional parameter of ``nicegui.Client``.
 
         *Added in version 3.0.0*
         """
@@ -342,19 +382,47 @@ class Client:
     def on_exception(self, handler: Callable[[Exception], Any] | Callable[[], Any]) -> None:
         """Add a callback to be invoked for in-page exceptions (after the page has been sent to the browser).
 
-        The callback has an optional parameter of `Exception`.
+        The callback has an optional parameter of ``Exception``.
         """
         self._exception_handlers.append(handler)
 
-    def handle_handshake(self, socket_id: str, document_id: str, next_message_id: int | None) -> None:
-        """Cancel pending disconnect task and invoke connect handlers. (For internal use only.)"""
-        self._waiting_for_connection.clear()
-        self._connected.set()
+    def accept_handshake(self, socket_id: str, tab_id: str, environ: dict[str, Any] | None) -> bool:
+        """Check whether a handshake may proceed, pinning the client's tab ID on the first one.
+
+        A browser opens one socket per client, handshakes it once, and keeps the same tab ID for the client's whole
+        lifetime, so a handshake that breaks any of these is a replayed frame.
+        A socket query without a client ID is tolerated:
+        the query is no trust boundary (a forger could simply echo the claimed client ID into it),
+        and query-less sockets must keep working (see ``test_disconnect_without_client_id_in_connect_query``).
+        (For internal use only.)
+        """
+        if socket_id in self._socket_to_document_id:
+            return False
+        if environ is not None and _client_id_from_query(environ) not in (None, self.id):
+            return False
+        if self._pinned_tab_id is None:
+            self._pinned_tab_id = tab_id
+        return self._pinned_tab_id == tab_id
+
+    async def handle_handshake(self, socket_id: str, tab_id: str, old_tab_id: str | None,
+                               document_id: str, next_message_id: int | str | None) -> None:
+        """Register the socket, create the tab storage and invoke connect handlers.
+
+        Both transports (local Socket.IO and On Air) call this after ``accept_handshake`` succeeded.
+        (For internal use only.)
+        """
+        self.tab_id = tab_id
         self._socket_to_document_id[socket_id] = document_id
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] += 1
         if next_message_id is not None:
-            self.outbox.try_rewind(next_message_id)
+            self.outbox.try_rewind(int(next_message_id))  # the implicit handshake takes it from the query string
+        # create the tab storage before waking connected() waiters and invoking connect handlers, which may access it
+        await core.app.storage._create_tab_storage(tab_id, old_tab_id)  # pylint: disable=protected-access
+        if socket_id not in self._socket_to_document_id:
+            return  # the socket disconnected while the tab storage was being created
+        self._waiting_for_connection.clear()
+        self._connected.set()
         storage.request_contextvar.set(self.request)
         for t in self.connect_handlers:
             self.safe_invoke(t)
@@ -369,7 +437,9 @@ class Client:
         self._cancel_delete_task(document_id)
         self._num_connections[document_id] -= 1
         tab_id_to_close = self.tab_id
-        self.tab_id = None
+        # keep the tab_id as long as any socket is live, e.g. one that reconnected before this one was reaped
+        if not self._socket_to_document_id:
+            self.tab_id = None
 
         for t in self.disconnect_handlers:
             self.safe_invoke(t)
@@ -381,8 +451,10 @@ class Client:
             if self._num_connections[document_id] == 0:
                 self._num_connections.pop(document_id)
                 self._delete_tasks.pop(document_id)
-                await core.app.storage.close_tab(tab_id_to_close)
-                self.delete()
+                self.delete()  # before closing the tab storage, so a reconnect in between cannot create a new one
+                # pylint: disable-next=protected-access
+                if all(client._pinned_tab_id != tab_id_to_close for client in Client.instances.values()):
+                    await core.app.storage.close_tab(tab_id_to_close)  # unless still in use, e.g. after a reload
         self._delete_tasks[document_id] = \
             background_tasks.create(delete_content(), name=f'delete content {document_id}')
 
@@ -394,11 +466,18 @@ class Client:
         """Forward an event to the corresponding element. (For internal use only.)"""
         with self:
             sender = self.elements.get(msg['id'])
-            if sender is not None and not sender.is_ignoring_events:
-                msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
-                if len(msg['args']) == 1:
-                    msg['args'] = msg['args'][0]
-                sender._handle_event(msg)  # pylint: disable=protected-access
+            if sender is None:
+                return
+            if sender.is_ignoring_events:
+                # the browser does not send the event type, so take it from the registered listener;
+                # a message is dispatched by its listener id, so this is also the type that will run
+                listener = sender._event_listeners.get(msg['listener_id'])  # pylint: disable=protected-access
+                if listener is None or not sender._handles_event_while_ignoring(listener.type):  # pylint: disable=protected-access
+                    return
+            msg['args'] = [None if arg is None else json.loads(arg) for arg in msg.get('args', [])]
+            if len(msg['args']) == 1:
+                msg['args'] = msg['args'][0]
+            sender._handle_event(msg)  # pylint: disable=protected-access
 
     def handle_log_message(self, msg: dict) -> None:
         """Log a message from the client. (For internal use only.)"""
@@ -420,12 +499,13 @@ class Client:
                 result = func(self) if len(inspect.signature(func).parameters) == 1 else func()
                 if helpers.should_await(result):
                     name = f'func with client {self.id} {func.__name__ if hasattr(func, "__name__") else func}'
-                    background_tasks.create(helpers.await_with_context(result, self), name=name)
+                    background_tasks.create(result, name=name, context=self)
         except Exception as e:
             core.app.handle_exception(e)
 
     def remove_elements(self, elements: Iterable[Element]) -> None:
         """Remove the given elements from the client."""
+        # NOTE: the rollback of a failed constructor in `Element.__init_subclass__` mirrors these steps
         element_list = list(elements)  # we need to iterate over the elements multiple times
         binding.remove(element_list)
         for element in element_list:
@@ -439,16 +519,22 @@ class Client:
         self.remove_elements(self.elements.values())
 
     def handle_exception(self, exception: Exception) -> None:
-        """Handle an in-page exception by invoking handlers registered via `ui.on_exception(...)`."""
+        """Handle an in-page exception by invoking handlers registered via ``ui.on_exception(...)``."""
+        if self.is_deleted:
+            return  # the page is gone, so there is no point in running its handlers
         for handler in self._exception_handlers:
-            with self.content:
-                if helpers.expects_arguments(handler):
-                    result = cast(Callable[[Exception], Any], handler)(exception)
-                else:
-                    result = cast(Callable[[], Any], handler)()
+            name = getattr(handler, '__name__', handler)
+            try:
+                with self.content:
+                    if helpers.expects_arguments(handler):
+                        result = cast(Callable[[Exception], Any], handler)(exception)
+                    else:
+                        result = cast(Callable[[], Any], handler)()
+            except Exception:  # one failing handler must not prevent the others from running
+                log.exception(f'Exception handler {name} raised an exception')
+                continue
             if helpers.should_await(result):
-                background_tasks.create(helpers.await_with_context(result, self.content),
-                                        name=f'UI exception {handler.__name__}')
+                background_tasks.create(helpers.await_with_context(result, self.content), name=f'UI exception {name}')
 
     def delete(self) -> None:
         """Delete a client and all its elements.
@@ -462,6 +548,8 @@ class Client:
             self.safe_invoke(t)
         self._waiting_for_disconnect.clear()
         self._deleted_event.set()
+        # NOTE: removing all elements before removing the client from Client.instances ensures
+        # that elements are marked as deleted before their client weakref can die (Timer._should_stop relies on this)
         self.remove_all_elements()
         self.outbox.stop()
         del Client.instances[self.id]

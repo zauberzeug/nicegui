@@ -31,6 +31,7 @@ class RedisPersistentDict(PersistentDict):
         }
         self.redis_client = redis.from_url(self.url, **self._redis_client_params)
         self.pubsub = self.redis_client.pubsub()
+        self.key_prefix = key_prefix
         self.key = key_prefix + id
         self.ttl = ttl
         self._listener_task: asyncio.Task | None = None
@@ -44,6 +45,15 @@ class RedisPersistentDict(PersistentDict):
             self._start_listening()
         except Exception:
             log.warning(f'Could not load data from Redis with key {self.key}')
+
+    async def inherit(self, id: str) -> None:  # pylint: disable=redefined-builtin
+        """Take over the data stored in Redis under another ID."""
+        key = self.key_prefix + id
+        try:
+            if data := await self.redis_client.get(key):
+                self.update(json.loads(data))
+        except Exception:
+            log.warning(f'Could not load data from Redis with key {key}')
 
     def initialize_sync(self) -> None:
         """Load initial data from Redis and start listening for changes in a synchronous context."""
@@ -64,6 +74,9 @@ class RedisPersistentDict(PersistentDict):
                     if t == 'message':
                         new_data = json.loads(message['data'])
                         if new_data != self:
+                            # NOTE: remove obsolete keys individually, because clear() would also delete the Redis key
+                            for key in set(self) - new_data.keys():
+                                del self[key]
                             self.update(new_data)
                     elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
                         break

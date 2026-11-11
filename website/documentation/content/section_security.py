@@ -61,7 +61,8 @@ doc.text('', '''
     - `ui.html()`,
     - `ui.markdown()`,
     - `ui.chat_message()`,
-    - `ui.interactive_image()`
+    - `ui.interactive_image()`,
+    - `ui.editor()`
     - Other elements with a well-defined purpose that the framework can protect automatically.
 
     **Require developer validation** (the framework cannot distinguish safe from unsafe values):
@@ -161,6 +162,36 @@ doc.text('', '''
 ''')
 
 
+doc.text('Values From the Browser', '''
+    Every value that arrives from the browser is untrusted input.
+    Client-side constraints like an input's `maxlength`, a number's `min` and `max` or a select's options
+    are a convenience for the user, not validation:
+    an attacker can send arbitrary values to the server, bypassing the browser entirely.
+
+    This matters most when one user's input is shown to other users,
+    e.g. when binding an element's value to `app.storage.general`.
+    `ui.editor()` sanitizes the HTML it displays by default,
+    but its value on the server is still whatever the browser sent.
+    Sanitize or validate such values on the server, e.g. in an `on_change` handler,
+    before they are stored or passed on.
+''')
+
+
+doc.text('Hidden and Disabled Elements', '''
+    Elements which are hidden (`visible = False`) or disabled (`disable()`) ignore events from the client:
+    a click on a disabled button or an upload to a hidden `ui.upload` is rejected on the server,
+    even if the element has been re-enabled in the browser's developer tools.
+
+    This check only covers the element itself.
+    It does not look at the element's ancestors, so an element inside a hidden container still accepts events.
+    It also does not know about closed dialogs, inactive tab panels or collapsed expansions, whose content stays reachable.
+
+    Therefore, do not use visibility as access control.
+    If a user is not allowed to trigger an action, do not create the element for them in the first place,
+    and check the permission again in the handler if the action is sensitive.
+''')
+
+
 doc.text('Client-Side Secrets', '''
     NiceGUI assigns each client session a unique `client_id` (a random UUID).
 
@@ -201,6 +232,23 @@ doc.text('Client-Side Secrets', '''
     - **Do not expose `client_id`** in logs, URLs, or API responses visible to other users.
     - **Treat `client_id` like a session token**: anyone who knows it can send events on behalf of that client.
     - **Secure pages, not `/_nicegui/`**: protect where the credential is issued, not where it is consumed.
+
+    **Not every random ID is a secret.**
+
+    NiceGUI mints a random UUID for several different jobs, and they do not all carry the same authority:
+
+    - **Public by design**: event listener, Leaflet layer and scene object IDs travel to the browser in plain sight.
+      They only need to be unique, and knowing one grants nothing.
+    - **A bearer capability**: the `client_id` above,
+      and the tab ID that keys `app.storage.tab` (minted by the browser and sent with the connection, not issued by the server).
+      Anyone who knows one can act as that client or read and write that tab's storage,
+      so both need the protections listed above.
+    - **A storage key**: the `app.storage.user` ID lives in a session cookie signed with your `storage_secret`.
+      The signature is the access boundary there, not the ID,
+      so guessing the ID alone does not unlock another user's storage.
+
+    Only the second class needs protecting as a secret.
+    Randomness is not what fails in practice — leakage is, which is what the practices above guard against.
 ''')
 
 

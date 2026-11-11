@@ -6,10 +6,8 @@ import weakref
 from collections.abc import Awaitable, Callable
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Generic, ParamSpec
 from weakref import WeakSet
-
-from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .client import Client
@@ -27,14 +25,23 @@ class Callback(Generic[P]):
     line: int
     slot: weakref.ref[Slot] | None = None
 
+    @property
+    def context(self) -> Slot | nullcontext:
+        """The slot context the callback runs in (or a null context if it was subscribed outside of any slot)."""
+        return (self.slot and self.slot()) or nullcontext()
+
     def run(self, *args: P.args, **kwargs: P.kwargs) -> Any:
-        """Run the callback."""
-        with (self.slot and self.slot()) or nullcontext():
-            return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
+        """Run the callback within its slot context."""
+        with self.context:
+            return self.invoke(*args, **kwargs)
+
+    def invoke(self, *args: P.args, **kwargs: P.kwargs) -> Any:
+        """Call the callback function, with or without arguments as it expects them."""
+        return self.func(*args, **kwargs) if self.expect_args else self.func()  # type: ignore[call-arg]
 
     async def await_result(self, result: Awaitable) -> Any:
         """Await the result of the callback."""
-        with (self.slot and self.slot()) or nullcontext():
+        with self.context:
             return await result
 
 
@@ -104,7 +111,7 @@ class Event(Generic[P]):
 
     def emit(self, *args: P.args, **kwargs: P.kwargs) -> None:
         """Fire the event without waiting for the subscribed callbacks to complete."""
-        for callback in self.callbacks:
+        for callback in list(self.callbacks):  # a callback might unsubscribe (e.g. by deleting a client) during the emit
             _invoke_and_forget(callback, *args, **kwargs)
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> None:
@@ -120,27 +127,42 @@ class Event(Generic[P]):
 
         def callback(*args: P.args, **kwargs: P.kwargs) -> None:  # pylint: disable=unused-argument
             if not future.done():
-                future.set_result(args[0] if len(args) == 1 else args if args else None)
+                future.set_result(args[0] if len(args) == 1 else args or None)
 
-        self.subscribe(callback, expect_args=True)
+        def cancel() -> None:
+            future.cancel()  # no-op for a done future, so an event that fired right before the deletion still wins
+
+        client: Client | None = None
+        if Slot.get_stack():  # additional check before accessing `context.client` which would enter script mode
+            client = context.client
+            if client.is_deleted:
+                # raise directly instead of task.cancel() so a caller catching the CancelledError keeps a clean task
+                raise asyncio.CancelledError
+            client.on_delete(cancel)
+
+        self.subscribe(callback, expect_args=True, unsubscribe_on_delete=False)  # cleaned up in the finally block below
         try:
             return await asyncio.wait_for(future, timeout)
         except TimeoutError as error:
             raise TimeoutError(f'Timed out waiting for event after {timeout} seconds') from error
         finally:
             self.unsubscribe(callback)
+            if client is not None:
+                client.delete_handlers.remove(cancel)
 
     def __await__(self):
         return self.emitted().__await__()
 
 
 def _invoke_and_forget(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:
-    try:
-        result = callback.run(*args, **kwargs)
-        if helpers.should_await(result):
-            background_tasks.create_or_defer(callback.await_result(result), name=f'{callback.filepath}:{callback.line}')
-    except Exception as e:
-        core.app.handle_exception(e)
+    with callback.context:  # handle exceptions in the subscriber's context so that its client's handlers are reached
+        try:
+            result = callback.invoke(*args, **kwargs)
+            if helpers.should_await(result):
+                background_tasks.create_or_defer(result, name=f'{callback.filepath}:{callback.line}',
+                                                 context=callback.context)
+        except Exception as e:
+            core.app.handle_exception(e)
 
 
 async def _invoke_and_await(callback: Callback[P], *args: P.args, **kwargs: P.kwargs) -> Any:

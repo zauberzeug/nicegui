@@ -1,8 +1,6 @@
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ... import core
 from ...binding import BindableProperty, bind, bind_from, bind_to
@@ -107,10 +105,13 @@ class SourceElement(Element):
         self._set_props(source)
 
     def _set_props(self, source: Any) -> None:
+        if isinstance(source, Path) and not source.exists():
+            raise FileNotFoundError(f'File not found: {source}')
+        if self.auto_route:
+            core.app.remove_route(self.auto_route)
+            self.auto_route = None
         if is_file(source):
             self._temp_path = source  # prevent cleanup of _TempPath until source changes
-            if self.auto_route:
-                core.app.remove_route(self.auto_route)
             if self.SOURCE_IS_MEDIA_FILE:
                 source = core.app.add_media_file(local_file=source)
             else:
@@ -118,8 +119,6 @@ class SourceElement(Element):
             self.auto_route = source
         else:
             self._temp_path = None
-        if isinstance(source, Path) and not source.exists():
-            raise FileNotFoundError(f'File not found: {source}')
         self._props['src'] = source
 
     def _handle_delete(self) -> None:
@@ -127,3 +126,6 @@ class SourceElement(Element):
         if self.auto_route:
             core.app.remove_route(self.auto_route)
         return super()._handle_delete()
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self.source]

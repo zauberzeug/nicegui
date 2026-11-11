@@ -1,4 +1,6 @@
 import copy
+import gc
+import pickle
 import weakref
 from typing import Any
 
@@ -7,6 +9,13 @@ from selenium.webdriver.common.keys import Keys
 
 from nicegui import binding, ui
 from nicegui.testing import Screen, User
+
+
+class PicklableModel:
+    value = binding.BindableProperty()
+
+    def __init__(self, value: int) -> None:
+        self.value = value
 
 
 def test_ui_select_with_tuple_as_key(screen: Screen):
@@ -27,9 +36,8 @@ def test_ui_select_with_tuple_as_key(screen: Screen):
     screen.should_not_contain('option B')
     element = screen.click('option A')
     screen.click_at_position(element, x=20, y=100)
-    screen.wait(0.3)
-    screen.should_contain('option B')
     screen.should_not_contain('option A')
+    screen.should_contain('option B')
     assert data.selection == (1, 2)
 
 
@@ -48,9 +56,8 @@ def test_ui_select_with_list_of_tuples(screen: Screen):
     screen.should_not_contain('2,2')
     element = screen.click('1,1')
     screen.click_at_position(element, x=20, y=100)
-    screen.wait(0.3)
-    screen.should_contain('2,2')
     screen.should_not_contain('1,1')
+    screen.should_contain('2,2')
     assert data.selection == (2, 2)
 
 
@@ -69,9 +76,8 @@ def test_ui_select_with_list_of_lists(screen: Screen):
     screen.should_not_contain('2,2')
     element = screen.click('1,1')
     screen.click_at_position(element, x=20, y=100)
-    screen.wait(0.3)
-    screen.should_contain('2,2')
     screen.should_not_contain('1,1')
+    screen.should_contain('2,2')
     assert data.selection == [2, 2]
 
 
@@ -91,8 +97,7 @@ def test_binding_to_input(screen: Screen):
     screen.type(Keys.TAB)
     screen.type('two')
     screen.should_contain_input('two')
-    screen.wait(0.1)
-    assert data.text == 'two'
+    screen.wait_for(lambda: data.text == 'two')
     data.text = 'three'
     screen.should_contain_input('three')
     element.set_value('four')
@@ -183,34 +188,124 @@ def test_automatic_cleanup(screen: Screen):
         def __init__(self, value: str) -> None:
             self.value = value
 
-    def create_model_and_label(value: str) -> tuple[int, weakref.ref, ui.label]:
+    def create_model_and_label(value: str) -> tuple[weakref.ref, ui.label]:
         model = Model(value)
         label = ui.label(value).bind_text(model, 'value')
-        return id(model), weakref.ref(model), label
+        return weakref.ref(model), label
 
-    model_id1 = ref1 = label1 = model_id2 = ref2 = label2 = None
+    ref1 = label1 = ref2 = label2 = None
 
     @ui.page('/')
     def page():
-        nonlocal model_id1, ref1, label1, model_id2, ref2, label2
-        model_id1, ref1, label1 = create_model_and_label('first label')
-        model_id2, ref2, label2 = create_model_and_label('second label')
+        nonlocal ref1, label1, ref2, label2
+        ref1, label1 = create_model_and_label('first label')
+        ref2, label2 = create_model_and_label('second label')
 
     def is_alive(ref: weakref.ref) -> bool:
         return ref() is not None
 
-    def has_bindable_property(model_id: int) -> bool:
-        return any(obj_id == model_id for obj_id, _ in binding.bindable_properties)
-
     screen.open('/')
     screen.should_contain('first label')
     screen.should_contain('second label')
-    assert is_alive(ref1) and has_bindable_property(model_id1)
-    assert is_alive(ref2) and has_bindable_property(model_id2)
+    assert is_alive(ref1)
+    assert is_alive(ref2)
 
     binding.remove([label1])
-    assert not is_alive(ref1) and not has_bindable_property(model_id1)
-    assert is_alive(ref2) and has_bindable_property(model_id2)
+    assert not is_alive(ref1)
+    assert is_alive(ref2)
+
+
+def test_remove_target_keeps_remaining_target_bound(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self) -> None:
+            self.value = 'initial'
+
+    class Target:
+        text = ''
+
+    source = Model()
+    target1 = Target()
+    target2 = Target()
+
+    binding.bind_to(source, 'value', target1, 'text')
+    binding.bind_to(source, 'value', target2, 'text')
+
+    binding.remove([target1])
+    source.value = 'changed'
+
+    assert target1.text == 'initial'
+    assert target2.text == 'changed'
+
+
+def test_remove_source_unbinds_all_targets(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self) -> None:
+            self.value = 'initial'
+
+    class Target:
+        text = ''
+
+    source = Model()
+    target = Target()
+
+    binding.bind_to(source, 'value', target, 'text')
+
+    binding.remove([source])
+    source.value = 'changed'
+
+    assert target.text == 'initial'
+    assert not binding.bindings
+    assert not binding._binding_keys_by_object  # pylint: disable=protected-access
+
+
+def test_remove_rebind_preserves_bindable_property_semantics(nicegui_reset_globals) -> None:
+    class Model:
+        value = binding.BindableProperty()
+
+        def __init__(self, value: list[int]) -> None:
+            self.value = value
+
+    class Target:
+        value: list[int] | None = None
+
+    source = Model([1])
+    target = Target()
+
+    binding.bind_to(source, 'value', target, 'value', forward=list)
+    assert len(binding.active_links) == 0
+    assert target.value == [1]
+
+    binding.remove([source])
+
+    binding.bind_to(source, 'value', target, 'value', forward=list)
+    source.value.append(2)
+    binding._refresh_step()  # pylint: disable=protected-access
+
+    assert len(binding.active_links) == 0
+    assert target.value == [1]
+
+
+def test_pickle_instance_with_bindable_property() -> None:
+    model = pickle.loads(pickle.dumps(PicklableModel(42)))
+    assert model.value == 42
+
+
+def test_local_class_with_bindable_property_is_garbage_collected() -> None:
+    def create_class() -> weakref.ref:
+        class Model:
+            value = binding.BindableProperty()
+
+        model = Model()
+        model.value = 1
+        return weakref.ref(Model)
+
+    ref = create_class()
+    gc.collect()
+    assert ref() is None
 
 
 async def test_nested_propagation(user: User):

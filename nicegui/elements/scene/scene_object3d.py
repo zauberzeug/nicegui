@@ -1,24 +1,64 @@
 from __future__ import annotations
 
+import inspect
 import math
 import uuid
-from typing import TYPE_CHECKING, Any, Literal
+import weakref
+from contextvars import ContextVar
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
-from typing_extensions import Self
+from ... import binding
+from ...awaitable_response import AwaitableResponse
+from ...dependencies import register_library
+from ...version import __version__
 
 if TYPE_CHECKING:
     from .scene import Scene, SceneObject
 
 
 class Object3D:
-    current_scene: Scene | None = None
+    _current_scene: ClassVar[ContextVar[weakref.ref[Scene] | None]] = ContextVar('_current_scene', default=None)
+    _component_url: ClassVar[str | None] = None
 
-    def __init__(self, type_: str, *args: Any) -> None:
-        self.type = type_
+    def __init_subclass__(cls, *, component: str | Path | None = None) -> None:
+        super().__init_subclass__()
+
+        if component:
+            path = Path(component)
+            if not path.is_absolute():
+                path = Path(inspect.getfile(cls)).parent / path
+            if not path.is_file():
+                raise ValueError(f'`component` must be an existing file, but "{component}" was not found')
+            qualname = cls.__qualname__.replace('<locals>.', '')  # keep classes of different scopes apart
+            import_name = f'{cls.__module__}.{qualname}'.replace('.', '__')
+            library = register_library(path, import_name=import_name, max_time=path.stat().st_mtime)
+            # Importing by URL rather than by importmap entry keeps classes registered after page render working.
+            cls._component_url = f'/_nicegui/{__version__}/libraries/{library.key}'
+        else:
+            # Fallback to parent's component to ease inheriting from Object3D classes
+            for base_cls in cls.__mro__[1:]:
+                if getattr(base_cls, '_component_url', False):
+                    break
+            else:
+                raise TypeError(f'Cannot subclass Object3D as {cls.__name__} without a `component` parameter. '
+                                'Pass `component=` or inherit from a built-in scene object instead.')
+
+    def __init__(self, *args: Any, wireframe: bool = False) -> None:
+        if self._component_url is None:
+            raise TypeError('Object3D cannot be instantiated directly. '
+                            'Subclass it with `component=` or use a built-in scene object instead.')
         self.id = str(uuid.uuid4())
+        self.wireframe = wireframe
         self.name: str | None = None
-        assert self.current_scene is not None
-        self.scene: Scene = self.current_scene
+        scene_ref = Object3D._current_scene.get()
+        scene = scene_ref() if scene_ref is not None else None
+        if scene is None:
+            raise RuntimeError('The current scene cannot be determined because no scene has been entered in this task '
+                               'or the scene has been deleted.\n'
+                               'This may happen if you create a 3D object from an event handler or a timer.\n'
+                               'To fix this, enter the target scene explicitly using `with scene:`.')
+        self.scene: Scene = scene
         self.scene.objects[self.id] = self
         self.parent: Object3D | SceneObject = self.scene.stack[-1]
         self.args: list = list(args)
@@ -43,20 +83,6 @@ class Object3D:
         self._name()
         return self
 
-    @property
-    def data(self) -> list[Any]:
-        """Data to be sent to the frontend."""
-        return [
-            self.type, self.id, self.parent.id, self.args,
-            self.name,
-            self.color, self.opacity, self.side_, self.material_is_set,
-            self.x, self.y, self.z,
-            self.R,
-            self.sx, self.sy, self.sz,
-            self.visible_,
-            self.draggable_,
-        ]
-
     def __enter__(self) -> Self:
         self.scene.stack.append(self)
         return self
@@ -65,7 +91,7 @@ class Object3D:
         self.scene.stack.pop()
 
     def _create(self) -> None:
-        self.scene.run_method('create', self.type, self.id, self.parent.id, *self.args)
+        self.scene.run_method('create', self._component_url, self.id, self.parent.id, self.wireframe, *self.args)
 
     def _name(self) -> None:
         self.scene.run_method('name', self.id, self.name)
@@ -91,6 +117,22 @@ class Object3D:
     def _delete(self) -> None:
         self.scene.run_method('delete', self.id)
 
+    def _resend(self) -> None:
+        """Re-send the object to the client, e.g. after the scene was re-initialized due to WebGL context loss."""
+        self._create()
+        self._move()
+        self._rotate()
+        self._scale()
+        if self.name:
+            self._name()
+        # Only override a component's own materials, like the ones of a GLTF model, if the user set one (#6118).
+        if self.material_is_set:
+            self._material()
+        if not self.visible_:
+            self._visible()
+        if self.draggable_:
+            self._draggable()
+
     def material(self,
                  color: str | None = '#ffffff',
                  opacity: float = 1.0,
@@ -100,7 +142,7 @@ class Object3D:
 
         :param color: CSS color string (default: '#ffffff')
         :param opacity: opacity between 0.0 and 1.0 (default: 1.0)
-        :param side: 'front', 'back', or 'double' (default: 'front')
+        :param side: 'front', 'back', or 'both' (default: 'front')
         """
         if self.color != color or self.opacity != opacity or self.side_ != side or not self.material_is_set:
             self.color = color
@@ -125,30 +167,66 @@ class Object3D:
         return self
 
     @staticmethod
-    def rotation_matrix_from_euler(r_x: float, r_y: float, r_z: float) -> list[list[float]]:
+    def rotation_matrix_from_euler(
+        r_x: float,
+        r_y: float,
+        r_z: float,
+        order: Literal['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx', 'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'xyz',
+    ) -> list[list[float]]:
         """Create a rotation matrix from Euler angles.
+
+        A lowercase ``order`` rotates about the fixed world axes, starting with its first letter:
+        ``'xyz'`` rotates about x, then y, then z, i.e. ``R = Rz @ Ry @ Rx``.
+        An uppercase ``order`` rotates about the axes of the already rotated object like ``THREE.Euler``:
+        ``'XYZ'`` yields ``R = Rx @ Ry @ Rz``, which is the same as ``'zyx'``.
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
+        :param order: Euler rotation order: lowercase like ``'xyz'`` for rotations about the fixed world axes,
+            uppercase like ``'XYZ'`` for rotations about the rotating object axes as in Three.js
+            (default: ``'xyz'``, *added in version 3.19.0*)
         """
         sx, cx = math.sin(r_x), math.cos(r_x)
         sy, cy = math.sin(r_y), math.cos(r_y)
         sz, cz = math.sin(r_z), math.cos(r_z)
+        single_axis: dict[str, list[list[float]]] = {
+            'x': [[1, 0, 0], [0, cx, -sx], [0, sx, cx]],
+            'y': [[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]],
+            'z': [[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]],
+        }
+        first, second, third = (single_axis[axis] for axis in (order if order.islower() else order[::-1].lower()))
+        return Object3D._matmul3(third, Object3D._matmul3(second, first))
+
+    @staticmethod
+    def _matmul3(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
+        (a00, a01, a02), (a10, a11, a12), (a20, a21, a22) = A
+        (b00, b01, b02), (b10, b11, b12), (b20, b21, b22) = B
         return [
-            [cz * cy, -sz * cx + cz * sy * sx, sz * sx + cz * sy * cx],
-            [sz * cy, cz * cx + sz * sy * sx, -cz * sx + sz * sy * cx],
-            [-sy, cy * sx, cy * cx],
+            [a00 * b00 + a01 * b10 + a02 * b20, a00 * b01 + a01 * b11 + a02 * b21, a00 * b02 + a01 * b12 + a02 * b22],
+            [a10 * b00 + a11 * b10 + a12 * b20, a10 * b01 + a11 * b11 + a12 * b21, a10 * b02 + a11 * b12 + a12 * b22],
+            [a20 * b00 + a21 * b10 + a22 * b20, a20 * b01 + a21 * b11 + a22 * b21, a20 * b02 + a21 * b12 + a22 * b22],
         ]
 
-    def rotate(self, r_x: float, r_y: float, r_z: float) -> Self:
+    def rotate(
+        self,
+        r_x: float,
+        r_y: float,
+        r_z: float,
+        order: Literal['xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx', 'XYZ', 'XZY', 'YXZ', 'YZX', 'ZXY', 'ZYX'] = 'xyz',
+    ) -> Self:
         """Rotate the object.
+
+        See ``rotation_matrix_from_euler`` for how ``order`` is interpreted.
 
         :param r_x: rotation around the x axis in radians
         :param r_y: rotation around the y axis in radians
         :param r_z: rotation around the z axis in radians
+        :param order: Euler rotation order: lowercase like ``'xyz'`` for rotations about the fixed world axes,
+            uppercase like ``'XYZ'`` for rotations about the rotating object axes as in Three.js
+            (default: ``'xyz'``, *added in version 3.19.0*)
         """
-        return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z))
+        return self.rotate_R(self.rotation_matrix_from_euler(r_x, r_y, r_z, order))
 
     def rotate_R(self, R: list[list[float]]) -> Self:
         """Rotate the object.
@@ -164,8 +242,8 @@ class Object3D:
         """Scale the object.
 
         :param sx: scale factor for the x axis
-        :param sy: scale factor for the y axis (default: `sx`)
-        :param sz: scale factor for the z axis (default: `sx`)
+        :param sy: scale factor for the y axis (default: ``sx``)
+        :param sz: scale factor for the z axis (default: ``sx``)
         """
         if sy is None:
             sy = sx
@@ -181,7 +259,7 @@ class Object3D:
     def visible(self, value: bool = True) -> Self:
         """Set the visibility of the object.
 
-        :param value: whether the object should be visible (default: `True`)
+        :param value: whether the object should be visible (default: ``True``)
         """
         if self.visible_ != value:
             self.visible_ = value
@@ -191,7 +269,7 @@ class Object3D:
     def draggable(self, value: bool = True) -> Self:
         """Set whether the object should be draggable.
 
-        :param value: whether the object should be draggable (default: `True`)
+        :param value: whether the object should be draggable (default: ``True``)
         """
         if self.draggable_ != value:
             self.draggable_ = value
@@ -342,9 +420,43 @@ class Object3D:
         """
         return [object for object in self.scene.objects.values() if object.parent == self]
 
+    @property
+    def ancestors(self) -> list[Object3D]:
+        """List of ancestors of the object, from the direct parent up to the root.
+
+        *Added in version 3.16.0*
+        """
+        ancestors: list[Object3D] = []
+        parent = self.parent
+        while isinstance(parent, Object3D):
+            ancestors.append(parent)
+            parent = parent.parent
+        return ancestors
+
     def delete(self) -> None:
         """Delete the object."""
         for child in self.children:
             child.delete()
         del self.scene.objects[self.id]
+        binding.remove([self])
         self._delete()
+
+    def run_method(self, name: str, *args: Any, timeout: float = 1) -> AwaitableResponse:
+        r"""Run a method on the JS component on the client side.
+
+        If the function is awaited, the result of the method call is returned.
+        Otherwise, the method is executed without waiting for a response.
+
+        Note that calls made before the scene is initialized are dropped;
+        keep ``self.args`` up to date if the state must survive.
+        Once the scene is initialized, the client dispatches the call only after the object has been created.
+        When awaiting a result right after creating an object with a slow-loading component
+        (e.g. a large glTF model), you may need to increase the ``timeout``.
+
+        *Added in version 3.16.0*
+
+        :param name: name of the method
+        :param \*args: arguments to pass to the method
+        :param timeout: maximum time to wait for a response (default: 1 second)
+        """
+        return self.scene.run_method('run_method_on_component', self.id, name, *args, timeout=timeout)

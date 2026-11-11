@@ -1,37 +1,32 @@
 from __future__ import annotations
 
 import asyncio
-import copyreg
 import dataclasses
 import time
-import weakref
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
-
-from typing_extensions import dataclass_transform
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, dataclass_transform, overload
 
 from . import core
 from .logging import log
 
 if TYPE_CHECKING:
-    from _typeshed import DataclassInstance, IdentityFunction
+    from _typeshed import DataclassInstance
 
 MAX_PROPAGATION_TIME = 0.01
 
-propagation_visited: ContextVar[set[tuple[int, tuple[str, ...]]] | None] = \
-    ContextVar('propagation_visited', default=None)
+BindingKey = tuple[int, tuple[str, ...]]
+Binding = tuple[Any, Any, tuple[str, ...], Callable[[Any], Any] | None]
+ActiveLink = tuple[Any, tuple[str, ...], Any, tuple[str, ...], Callable[[Any], Any] | None]
 
-bindings: defaultdict[
-    tuple[int, tuple[str, ...]],
-    list[tuple[Any, Any, tuple[str, ...], Callable[[Any], Any] | None]]
-] = defaultdict(list)
-bindable_properties: weakref.WeakValueDictionary[tuple[int, tuple[str, ...]], Any] = weakref.WeakValueDictionary()
-active_links: list[tuple[Any, tuple[str, ...], Any, tuple[str, ...], Callable[[Any], Any] | None]] = []
+propagation_visited: ContextVar[set[BindingKey] | None] = ContextVar('propagation_visited', default=None)
+
+bindings: defaultdict[BindingKey, list[Binding]] = defaultdict(list)
+active_links: list[ActiveLink] = []
 _active_links_added = asyncio.Event()
+_binding_keys_by_object: defaultdict[int, set[BindingKey]] = defaultdict(set)
 
-TC = TypeVar('TC', bound=type)
 T = TypeVar('T')
 
 _MISSING = object()
@@ -151,6 +146,19 @@ def _check_self_and_other_attribute(self_obj: Any, self_name: tuple[str, ...], o
         _check_attribute_exists(other_obj, other_name, role='other')
 
 
+def _bind_one_way(source_obj: Any, source_name: tuple[str, ...], target_obj: Any, target_name: tuple[str, ...],
+                  transform: Callable[[Any], Any] | None) -> None:
+    """Register a one-way binding and run its initial propagation."""
+    binding_key = (id(source_obj), source_name)
+    bindings[binding_key].append((source_obj, target_obj, target_name, transform))
+    _binding_keys_by_object[id(source_obj)].add(binding_key)
+    _binding_keys_by_object[id(target_obj)].add(binding_key)
+    if not _is_bindable_property(source_obj, source_name):
+        active_links.append((source_obj, source_name, target_obj, target_name, transform))
+        _active_links_added.set()
+    _propagate(source_obj, source_name)
+
+
 def bind_to(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...],
             forward: Callable[[Any], Any] | None = None, *,
             self_strict: bool | None = None, other_strict: bool | None = None) -> None:
@@ -173,11 +181,7 @@ def bind_to(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, oth
     self_name_tuple = _normalize_name(self_name)
     other_name_tuple = _normalize_name(other_name)
     _check_self_and_other_attribute(self_obj, self_name_tuple, other_obj, other_name_tuple, self_strict, other_strict)
-    bindings[(id(self_obj), self_name_tuple)].append((self_obj, other_obj, other_name_tuple, forward))
-    if (id(self_obj), self_name_tuple) not in bindable_properties:
-        active_links.append((self_obj, self_name_tuple, other_obj, other_name_tuple, forward))
-        _active_links_added.set()
-    _propagate(self_obj, self_name_tuple)
+    _bind_one_way(self_obj, self_name_tuple, other_obj, other_name_tuple, forward)
 
 
 def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...],
@@ -202,11 +206,7 @@ def bind_from(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, o
     self_name_tuple = _normalize_name(self_name)
     other_name_tuple = _normalize_name(other_name)
     _check_self_and_other_attribute(self_obj, self_name_tuple, other_obj, other_name_tuple, self_strict, other_strict)
-    bindings[(id(other_obj), other_name_tuple)].append((other_obj, self_obj, self_name_tuple, backward))
-    if (id(other_obj), other_name_tuple) not in bindable_properties:
-        active_links.append((other_obj, other_name_tuple, self_obj, self_name_tuple, backward))
-        _active_links_added.set()
-    _propagate(other_obj, other_name_tuple)
+    _bind_one_way(other_obj, other_name_tuple, self_obj, self_name_tuple, backward)
 
 
 def bind(self_obj: Any, self_name: str | tuple[str, ...], other_obj: Any, other_name: str | tuple[str, ...], *,
@@ -273,16 +273,28 @@ class BindableProperty:
 
     def __set__(self, owner: Any, value: Any) -> None:
         has_attr = hasattr(owner, '___' + self.name)
-        if not has_attr:
-            _make_copyable(type(owner))
         value_changed = has_attr and getattr(owner, '___' + self.name) != value
         if has_attr and not value_changed:
             return
         setattr(owner, '___' + self.name, value)
-        bindable_properties[(id(owner), (self.name,))] = owner
         _propagate(owner, (self.name,))
         if value_changed and self._change_handler is not None:
             self._change_handler(owner, value)
+
+
+def _is_bindable_property(obj: Any, name: tuple[str, ...]) -> bool:
+    """Check whether the attribute is a ``BindableProperty`` whose value is stored on the object."""
+    if len(name) != 1:
+        return False
+    attribute = next((vars(cls)[name[0]] for cls in type(obj).__mro__ if name[0] in vars(cls)), None)
+    return isinstance(attribute, BindableProperty) and '___' + name[0] in getattr(obj, '__dict__', {})
+
+
+def _discard_binding_key_from_object_index(obj_id: int, binding_key: BindingKey) -> None:
+    keys = _binding_keys_by_object[obj_id]
+    keys.discard(binding_key)
+    if not keys:
+        del _binding_keys_by_object[obj_id]
 
 
 def remove(objects: Iterable[Any]) -> None:
@@ -291,22 +303,30 @@ def remove(objects: Iterable[Any]) -> None:
     :param objects: The objects to remove.
     """
     object_ids = set(map(id, objects))
+    affected_binding_keys = {key for obj_id in object_ids for key in _binding_keys_by_object.pop(obj_id, ())}
+    if not affected_binding_keys:
+        return
+
     active_links[:] = [
         (source_obj, source_name, target_obj, target_name, transform)
         for source_obj, source_name, target_obj, target_name, transform in active_links
         if id(source_obj) not in object_ids and id(target_obj) not in object_ids
     ]
-    for key, binding_list in list(bindings.items()):
-        binding_list[:] = [
-            (source_obj, target_obj, target_name, transform)
-            for source_obj, target_obj, target_name, transform in binding_list
-            if id(source_obj) not in object_ids and id(target_obj) not in object_ids
-        ]
-        if not binding_list:
-            del bindings[key]
-    for obj_id, name in list(bindable_properties):
-        if obj_id in object_ids:
-            del bindable_properties[(obj_id, name)]
+    for binding_key in affected_binding_keys:
+        binding_list = bindings[binding_key]
+        source_obj_id = binding_key[0]
+        # Binding keys are source IDs; target-only removals only prune entries from the binding list.
+        if source_obj_id in object_ids:
+            for target_obj_id in {id(target_obj) for _, target_obj, _, _ in binding_list} - object_ids:
+                _discard_binding_key_from_object_index(target_obj_id, binding_key)
+            del bindings[binding_key]
+            continue
+        remaining_bindings = [binding for binding in binding_list if id(binding[1]) not in object_ids]
+        if remaining_bindings:
+            binding_list[:] = remaining_bindings
+        else:
+            del bindings[binding_key]
+            _discard_binding_key_from_object_index(source_obj_id, binding_key)
 
 
 def reset() -> None:
@@ -315,15 +335,27 @@ def reset() -> None:
     This function is intended for testing purposes only.
     """
     bindings.clear()
-    bindable_properties.clear()
     active_links.clear()
+    _binding_keys_by_object.clear()
+
+
+@overload
+def bindable_dataclass(cls: type[T], /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> type[T]: ...
+
+
+@overload
+def bindable_dataclass(cls: None = ..., /, *,
+                       bindable_fields: Iterable[str] | None = ...,
+                       **kwargs: Any) -> Callable[[type[T]], type[T]]: ...
 
 
 @dataclass_transform()
-def bindable_dataclass(cls: TC | None = None, /, *,
+def bindable_dataclass(cls: type[T] | None = None, /, *,
                        bindable_fields: Iterable[str] | None = None,
-                       **kwargs: Any) -> type[DataclassInstance] | IdentityFunction:
-    """A decorator that transforms a class into a dataclass with bindable fields.
+                       **kwargs: Any) -> type[T] | Callable[[type[T]], type[T]]:
+    r"""A decorator that transforms a class into a dataclass with bindable fields.
 
     This decorator extends the functionality of ``dataclasses.dataclass`` by making specified fields bindable.
     If ``bindable_fields`` is provided, only the listed fields are made bindable.
@@ -333,13 +365,13 @@ def bindable_dataclass(cls: TC | None = None, /, *,
 
     :param cls: class to be transformed into a dataclass
     :param bindable_fields: optional list of field names to make bindable (defaults to all fields)
-    :param kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``.
-    Usage of ``slots=True`` and ``frozen=True`` are not supported and will raise a ValueError.
+    :param \*\*kwargs: optional keyword arguments to be forwarded to ``dataclasses.dataclass``.
+        Usage of ``slots=True`` and ``frozen=True`` are not supported and will raise a ValueError.
 
     :return: resulting dataclass type
     """
     if cls is None:
-        def wrap(cls_):
+        def wrap(cls_: type[T]) -> type[T]:
             return bindable_dataclass(cls_, bindable_fields=bindable_fields, **kwargs)
         return wrap
 
@@ -347,8 +379,8 @@ def bindable_dataclass(cls: TC | None = None, /, *,
         if kwargs.get(unsupported_option):
             raise ValueError(f'`{unsupported_option}=True` is not supported with bindable_dataclass')
 
-    dataclass: type[DataclassInstance] = dataclasses.dataclass(**kwargs)(cls)
-    field_names = {field.name for field in dataclasses.fields(dataclass)}
+    dataclass: type[T] = dataclasses.dataclass(**kwargs)(cls)
+    field_names = {field.name for field in dataclasses.fields(cast('type[DataclassInstance]', dataclass))}
     if bindable_fields is None:
         bindable_fields = field_names
     for field_name in bindable_fields:
@@ -358,23 +390,3 @@ def bindable_dataclass(cls: TC | None = None, /, *,
         bindable_property.__set_name__(dataclass, field_name)
         setattr(dataclass, field_name, bindable_property)
     return dataclass
-
-
-def _make_copyable(cls: type[T]) -> None:
-    """Tell the copy module to update the ``bindable_properties`` dictionary when an object is copied."""
-    if cls in copyreg.dispatch_table:
-        return
-
-    def _pickle_function(obj: T) -> tuple[Callable[..., T], tuple[Any, ...]]:
-        reduced = obj.__reduce__()
-        assert isinstance(reduced, tuple)
-        creator = reduced[0]
-
-        def creator_with_hook(*args, **kwargs) -> T:
-            copy = creator(*args, **kwargs)
-            for attr_name in dir(obj):
-                if (id(obj), (attr_name,)) in bindable_properties:
-                    bindable_properties[(id(copy), (attr_name,))] = copy
-            return copy
-        return (creator_with_hook, *reduced[1:])
-    copyreg.pickle(cls, _pickle_function)

@@ -28,7 +28,7 @@ export default {
     };
   },
   beforeUnmount() {
-    const element = mounted_app.elements[this.$props.id.slice(1)];
+    const element = mounted_app.elements[parseHtmlId(this.$props.id)];
     if (element) element.props.value = this.inputValue;
   },
   watch: {
@@ -45,7 +45,7 @@ export default {
   computed: {
     shadowText() {
       if (!this.inputValue) return "";
-      const matchingOption = this._autocomplete.find((option) =>
+      const matchingOption = this._autocomplete?.find((option) =>
         option.toLowerCase().startsWith(this.inputValue.toLowerCase()),
       );
       return matchingOption ? matchingOption.slice(this.inputValue.length) : "";

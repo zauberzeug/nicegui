@@ -84,9 +84,7 @@ def test_set_value_preserves_cursor(screen: Screen):
     screen.wait(0.5)
 
     cm.send_keys(',')  # Insert comma after 'Hello'
-    screen.wait(0.5)
-
-    assert editor.value == 'Hello, Earth'
+    screen.wait_for(lambda: editor.value == 'Hello, Earth')
 
 
 def test_encode_codepoints():
@@ -245,8 +243,7 @@ def test_line_tooltip_api(screen: Screen):
 
     screen.click('Delete tooltip on line 3')
     ActionChains(screen.selenium).move_to_element(screen.find('gamma')).perform()
-    screen.wait(0.5)
-    screen.should_not_contain('info')
+    screen.should_not_contain('info', duration=1.0)
 
     screen.click('Update tooltips')
     ActionChains(screen.selenium).move_to_element(screen.find('beta')).perform()
@@ -256,13 +253,11 @@ def test_line_tooltip_api(screen: Screen):
     ActionChains(screen.selenium).move_to_element(screen.find('alpha')).perform()
     screen.should_contain('error')
     ActionChains(screen.selenium).move_to_element(screen.find('beta')).perform()
-    screen.wait(0.5)
-    screen.should_not_contain('warning')
+    screen.should_not_contain('warning', duration=1.0)
 
     screen.click('Clear tooltips')
     ActionChains(screen.selenium).move_to_element(screen.find('alpha')).perform()
-    screen.wait(0.5)
-    screen.should_not_contain('error')
+    screen.should_not_contain('error', duration=1.0)
 
 
 def test_line_tooltip_stick_to_text(screen: Screen):
@@ -274,6 +269,21 @@ def test_line_tooltip_stick_to_text(screen: Screen):
     screen.open('/')
     ActionChains(screen.selenium).move_to_element(screen.find('abc')).click().send_keys(Keys.HOME, Keys.ENTER).perform()
     ActionChains(screen.selenium).move_to_element(screen.find('abc')).perform()
+    screen.should_contain('tooltip')
+
+
+def test_line_tooltip_declared_for_a_value_sent_in_the_same_update(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('abc').classes('w-24')
+
+    screen.open('/')
+    editor.value = 'abc\ndef'
+    editor.line_tooltips = {2: 'tooltip'}
+    ActionChains(screen.selenium).move_to_element(screen.find('def')).perform()
     screen.should_contain('tooltip')
 
 

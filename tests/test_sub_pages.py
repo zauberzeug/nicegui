@@ -1,13 +1,17 @@
 import asyncio
 import sys
+from typing import TYPE_CHECKING
 
-import httpx
+import httpx2
 import pytest
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from nicegui import PageArguments, background_tasks, ui
-from nicegui.testing import Screen
+from nicegui import APIRouter, PageArguments, app, background_tasks, ui
+from nicegui.testing import Screen, User
+
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 # pylint: disable=missing-function-docstring
 
@@ -313,6 +317,31 @@ def test_async_nested_sub_pages(screen: Screen):
     assert calls == {'index': 2, 'sleep': 2, 'sleep_main': 2, 'background': 2, 'background_main': 2}
 
 
+def test_nested_sub_pages_rebuilt_after_navigation(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.sub_pages({'/users': users})
+
+    def users():
+        ui.link('Go to user 43', '/users/43')
+        ui.button('Rebuild', on_click=details.refresh)
+        details()
+
+    @ui.refreshable
+    def details():
+        ui.sub_pages({'/{id}': lambda id: ui.label(f'User {id}')})
+
+    screen.open('/users/42')
+    screen.should_contain('User 42')
+
+    screen.click('Go to user 43')
+    screen.should_contain('User 43')
+
+    screen.click('Rebuild')
+    screen.should_contain('User 43')
+
+
 def test_parameterized_sub_pages(screen: Screen):
     calls = {'index': 0, 'main': 0}
 
@@ -355,7 +384,7 @@ def test_parameterized_sub_pages(screen: Screen):
     assert calls == {'index': 1, 'main': 1}
 
     screen.click('Go to wrong match')
-    screen.should_not_contain('main_content')
+    screen.should_not_contain('main_content', duration=0.5)
     screen.should_not_contain('one-1-True')
     screen.should_not_contain('two-two')
     screen.should_contain('404: sub page /two-3 not found')
@@ -481,7 +510,6 @@ def test_adding_sub_pages_after_initialization(screen: Screen):
     assert screen.current_path == '/sub'
 
     screen.click('Add sub page')
-    screen.wait(0.2)
     screen.should_contain('sub-content')  # because browser points to /sub we see the sub page content
     assert screen.current_path == '/sub'
 
@@ -548,6 +576,50 @@ def test_starting_on_non_root_path(screen: Screen, page_route: str):
     screen.click('Go to sub')
     screen.should_contain('sub-content')
     assert screen.current_path.rstrip('/') == '/foo/sub'
+
+
+@pytest.mark.parametrize('root_path', ['/admin', '/admin/', '/admin;v1'])
+def test_navigating_to_path_outside_root_path(screen: Screen, root_path: str):
+    # regression test for https://github.com/zauberzeug/nicegui/issues/6385
+    @ui.page('/')
+    def index():
+        ui.label('Index page')
+
+    @ui.page('/other')
+    def other():
+        ui.label('Other page')
+
+    page_path = root_path.rstrip('/')
+
+    @ui.page(page_path)
+    @ui.page(page_path + '/{_:path}')
+    def admin():
+        ui.sub_pages({'/': overview, '/users': users}, root_path=root_path)
+        ui.link('Go to index', '/')
+        ui.link('Go to other', '/other')
+
+    def overview():
+        ui.label('Admin overview')
+
+    def users():
+        ui.sub_pages({'/{id}': lambda id: ui.label(f'User {id}')})
+
+    screen.open(page_path + '/users/42')
+    screen.should_contain('User 42')
+
+    screen.open(root_path)
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to index')
+    screen.should_contain('Index page')
+    screen.should_not_contain('Admin overview')
+
+    screen.open(root_path)
+    screen.should_contain('Admin overview')
+
+    screen.click('Go to other')
+    screen.should_contain('Other page')
+    screen.should_not_contain('Admin overview')
 
 
 @pytest.mark.parametrize('show_404', [True, False])
@@ -691,7 +763,7 @@ def test_async_sub_pages(screen: Screen):
     screen.click('/0.1')
     screen.wait(1)
     screen.should_contain('after 0.1 sec')
-    screen.should_not_contain('after 1.0 sec')
+    screen.should_not_contain('after 1.0 sec', duration=0.5)
 
 
 @pytest.mark.parametrize('use_page_arguments', [True, False])
@@ -825,6 +897,61 @@ def test_page_arguments_with_optional_parameters(screen: Screen):
     screen.should_contain('path=/user/123, user_id=123, role=admin, app=MyApp')
 
 
+async def test_pep604_optional_parameters_are_converted(user: User, caplog: pytest.LogCaptureFixture):
+    def from_path(count: int | None = None):
+        ui.label(f'path {type(count).__name__}:{count}')
+
+    def from_query(count: int | None = None, ratio: float | None = None, name: str | None = None):
+        ui.label(f'query {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(name).__name__}:{name}')
+
+    def from_union(a: int | float | None = None, b: int | str | None = None, c: int | float = 0, d: float | int | None = None):
+        ui.label(f'union {type(a).__name__}:{a} {type(b).__name__}:{b} {type(c).__name__}:{c} {type(d).__name__}:{d}')
+
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.sub_pages({
+            '/path/{count}': from_path,
+            '/query': from_query,
+            '/union': from_union,
+        })
+
+    await user.open('/path/5')
+    await user.should_see('path int:5')
+
+    await user.open('/query?count=5&ratio=2.5&name=abc')
+    await user.should_see('query int:5 float:2.5 str:abc')
+
+    await user.open('/union?a=1.5&b=7&c=2&d=2')
+    await user.should_see('union float:1.5 str:7 int:2 float:2.0')
+
+    await user.open('/union?a=2&b=abc&c=1e3')
+    await user.should_see('union int:2 str:abc float:1000.0 NoneType:None')
+
+    await user.open('/union?a=abc')
+    await user.should_see('500: sub page /union?a=abc produced an error')
+    assert "could not convert 'abc' to int | float | None" in caplog.text
+    caplog.clear()
+
+
+async def test_string_annotations(user: User):
+    # NOTE: string annotations as with `from __future__ import annotations`
+    def page(args: 'PageArguments', count: 'int', ratio: 'float | None', price: 'Decimal'):
+        ui.label(f'{args.path} {type(count).__name__}:{count} {type(ratio).__name__}:{ratio} {type(price).__name__}:{price}')
+        ui.label(f'tag:{args.query_parameters.get("tag")}')
+        ui.link('Add tag', '/5?ratio=2.5&tag=x')
+
+    @ui.page('/')
+    @ui.page('/{path:path}')
+    def index():
+        ui.sub_pages({'/{count}': page}, data={'price': 1.5})
+
+    await user.open('/5?ratio=2.5')
+    await user.should_see('/5 int:5 float:2.5 float:1.5')
+    user.find('Add tag').click()
+    await user.should_see('tag:x')
+
+
 def test_sub_pages_with_url_fragments(screen: Screen):
     calls = {'index': 0, 'main': 0, 'targets': 0}
 
@@ -857,40 +984,46 @@ def test_sub_pages_with_url_fragments(screen: Screen):
         ui.link('Go to top', '/page#top')
         ui.link('Back to main', '/')
 
+    def scroll_y() -> int:
+        return screen.selenium.execute_script('return window.scrollY')
+
+    def scroll_has_settled() -> bool:
+        y_before = scroll_y()
+        screen.wait(0.2)
+        return scroll_y() == y_before  # clicking while a smooth scroll is still moving the page would miss its target
+
     # Test 1: Direct navigation with fragment should work
     screen.open('/page#bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page#bottom'
-    screen.wait(1)
-    scroll_y = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y > 500, 'Expected scrolling to occur for fragment navigation'
+    screen.wait_for(lambda: scroll_y() > 500)
+    screen.wait_for(scroll_has_settled)
+    scroll_y_bottom = scroll_y()
     assert calls == {'index': 1, 'main': 0, 'targets': 1}
 
     # Test 2: Same-page fragment navigation should not rebuild pages but should work
     screen.click('Go to top')
     screen.should_contain('Top target content')
-    screen.wait(1)
-    scroll_y_top = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y_top < scroll_y, 'Expected scrolling to top to have smaller scroll position'
+    screen.wait_for(lambda: scroll_y() < scroll_y_bottom)
+    screen.wait_for(scroll_has_settled)
     assert calls == {'index': 1, 'main': 0, 'targets': 1}, 'Fragment navigation should not rebuild page'
 
     # Test 3: Cross-page navigation auto-scrolls to top
     screen.click('Go to bottom')
-    screen.wait(1)
-    assert screen.selenium.execute_script('return window.scrollY') > 500
+    screen.wait_for(lambda: scroll_y() > 500)
+    screen.wait_for(scroll_has_settled)
     screen.click('Back to main')
     screen.should_contain('Main page')
     assert screen.current_path == '/'
     assert calls == {'index': 1, 'main': 1, 'targets': 1}
-    assert screen.selenium.execute_script('return window.scrollY') == 0
+    screen.wait_for_js('window.scrollY', 0)
 
     # Test 4: Cross-page fragment navigation
     screen.click('Go to bottom')
     screen.should_contain('Bottom target content')
     assert screen.current_path == '/page#bottom'
-    screen.wait(1)
-    scroll_y = screen.selenium.execute_script('return window.scrollY')
-    assert scroll_y > 0, 'Expected scrolling after cross-page fragment navigation'
+    screen.wait_for(lambda: scroll_y() > 0)
+    screen.wait_for(scroll_has_settled)
     assert calls == {'index': 1, 'main': 1, 'targets': 2}
 
     # Test 5: Fragment navigation again
@@ -928,8 +1061,7 @@ def test_only_rebuild_page_when_builder_depends_on_it(screen: Screen, strategy: 
     screen.should_contain('home')
     screen.should_contain('param=none')
     screen.click('pass parameter')
-    screen.wait(0.5)
-    assert screen.current_path == '/?test=value'
+    screen.wait_for(lambda: screen.current_path == '/?test=value')
     screen.should_contain('home')
     screen.should_contain('param=value')
     assert calls == {'index': 1, 'home': 1, 'sub': 2}, \
@@ -1023,7 +1155,7 @@ def test_exception_in_page_builder(screen: Screen):
 
     screen.click('Go to async exception')
     msg_async = 'sub page /async produced an error'
-    screen.should_not_contain(f'500: {msg_async}')
+    screen.should_not_contain(f'500: {msg_async}', duration=0.5)
     screen.assert_py_logger('ERROR', 'async test exception')
     # the content should show, when an error occurs after async task is started
     screen.should_contain('async content before exception')
@@ -1034,6 +1166,28 @@ def test_exception_in_page_builder(screen: Screen):
     screen.should_not_contain('content before exception')
 
     assert len(exceptions) == 4
+
+
+def test_param_coercion_error_on_client_side_navigation(screen: Screen):
+    @ui.page('/')
+    @ui.page('/{_:path}')
+    def index():
+        ui.link('Go to bad int', '/int-abc')
+        ui.sub_pages({'/': main, '/int-{idx}': needs_int})
+
+    def main():
+        ui.label('main_content')
+
+    def needs_int(idx: int):
+        ui.label(f'int-{idx}')
+
+    screen.open('/')
+    screen.should_contain('main_content')
+
+    msg = 'sub page /int-abc produced an error'
+    screen.click('Go to bad int')
+    screen.should_contain(f'500: {msg}')
+    screen.assert_py_logger('ERROR', msg)
 
 
 def test_disabling_404(screen: Screen):
@@ -1052,7 +1206,7 @@ def test_disabling_404(screen: Screen):
     screen.open('/main')
     screen.should_contain('main page')
     screen.click('Link to 404')  # open by link
-    screen.should_not_contain('404: sub page /404 not found')
+    screen.should_not_contain('404: sub page /404 not found', duration=0.5)
     screen.should_contain('main page')
 
     screen.open('/bad_path')
@@ -1063,7 +1217,7 @@ def test_disabling_404(screen: Screen):
     screen.should_contain('main page')
 
     screen.click('Button to 404')  # open via navigate.to
-    screen.should_not_contain('not found')
+    screen.should_not_contain('not found', duration=0.5)
     screen.should_contain('main page')
 
 
@@ -1118,8 +1272,8 @@ def test_http_404_on_initial_request(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
@@ -1139,8 +1293,8 @@ def test_http_404_on_initial_request_with_async_page_builder(screen: Screen):
         ui.label('main page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/')
@@ -1168,11 +1322,11 @@ def test_http_404_on_initial_request_with_async_sub_page_builder(screen: Screen)
         ui.label('async sub page')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
-    assert httpx.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/sub').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/sub/bad_path').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/async-sub').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/async-sub/bad_path').status_code == 404
 
     screen.allowed_js_errors.append('/bad_path - Failed to load resource')
     screen.open('/sub')
@@ -1190,7 +1344,7 @@ def test_http_404_with_root_function_and_sub_pages(screen: Screen):
     screen.open('/')
     screen.should_contain('Home')
 
-    httpx.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
+    httpx2.get(f'http://localhost:{Screen.PORT}/bad_path')  # should not print an exception
 
 
 def test_clearing_sub_pages_element(screen: Screen):
@@ -1206,13 +1360,11 @@ def test_clearing_sub_pages_element(screen: Screen):
     screen.open('/')
     screen.should_contain('main page')
     screen.click('Clear')
-    screen.wait(0.5)
     screen.should_not_contain('main page')
 
     screen.open('/')
     screen.should_contain('main page')
     screen.click('Delete')
-    screen.wait(0.5)
     screen.should_not_contain('main page')
 
 
@@ -1302,6 +1454,48 @@ def test_navigate_from_root_page_to_other_page(screen: Screen):
     screen.click('Go to other page')
     screen.should_contain('Other')
     assert screen.current_path == '/other'
+
+
+@pytest.mark.parametrize('router_prefix, include_prefix', [('/other', ''), ('', '/other')])
+def test_navigate_from_sub_pages_to_api_router_page(screen: Screen, router_prefix: str, include_prefix: str):
+    router = APIRouter(prefix=router_prefix)
+
+    @router.page('/')
+    def other_page():
+        ui.label('Other')
+
+    app.include_router(router, prefix=include_prefix)
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', '/other')
+
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path == '/other/'
+
+
+@pytest.mark.parametrize('suffix', ['?x=1', '#section'])
+def test_navigate_from_sub_pages_to_page_with_query_or_fragment(screen: Screen, suffix: str):
+    @ui.page('/other')
+    def other_page():
+        ui.label('Other')
+
+    @ui.page('/')
+    def index():
+        ui.sub_pages({'/': lambda: ui.label('Index')})
+        ui.link('Go to other page', f'/other{suffix}')
+
+    screen.open('/')
+    screen.should_contain('Index')
+
+    screen.click('Go to other page')
+    screen.should_contain('Other')
+    assert screen.current_path == f'/other{suffix}'
 
 
 def test_remaining_path_for_wildcard_routing(screen: Screen):

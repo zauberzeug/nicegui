@@ -10,7 +10,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from starlette.routing import Route
 from starlette.types import ASGIApp
 from uvicorn.main import STARTUP_FAILURE
-from uvicorn.supervisors import ChangeReload, Multiprocess
+from uvicorn.supervisors import ChangeReload
 
 from . import core, helpers
 from . import native as native_module
@@ -79,51 +79,51 @@ def run(root: Callable | None = None, *,
         storage_secret: str | None = None,
         session_middleware_kwargs: dict[str, Any] | None = None,
         show_welcome_message: bool = True,
-        markdown: bool = False,  # DEPRECATED: default might change to True in 4.0
+        markdown: bool = False,
         **kwargs: Any,
         ) -> None:
-    """ui.run
+    r"""ui.run
 
-    You can call `ui.run()` with optional arguments.
+    You can call ``ui.run()`` with optional arguments.
     Most of them only apply after stopping and fully restarting the app and do not apply with auto-reloading.
 
     :param root: root page function (*added in version 3.0.0*)
-    :param host: start server with this host (defaults to `'127.0.0.1` in native mode, otherwise `'0.0.0.0'`)
+    :param host: start server with this host (defaults to ``'127.0.0.1'`` in native mode, otherwise ``'0.0.0.0'``)
     :param port: use this port (default: 8080 in normal mode, and an automatically determined open port in native mode)
-    :param title: page title (default: `'NiceGUI'`, can be overwritten per page)
-    :param viewport: page meta viewport content (default: `'width=device-width, initial-scale=1'`, can be overwritten per page)
-    :param favicon: relative filepath, absolute URL to a favicon (default: `None`, NiceGUI icon will be used) or emoji (e.g. `'🚀'`, works for most browsers).
-        In Windows native mode, a local `.ico` file path is also applied as the native window icon.
-    :param dark: whether to use Quasar's dark mode (default: `False`, use `None` for "auto" mode)
+    :param title: page title (default: ``'NiceGUI'``, can be overwritten per page)
+    :param viewport: page meta viewport content (default: ``'width=device-width, initial-scale=1'``, can be overwritten per page)
+    :param favicon: path to a local image file, absolute ``http(s)://`` URL, data URL, inline SVG or emoji (e.g. ``'🚀'``, works for most browsers; default: ``None``, NiceGUI icon will be used).
+        In Windows native mode, a local ``.ico`` file path is also applied as the native window icon.
+    :param dark: whether to use Quasar's dark mode (default: ``False``, use ``None`` for "auto" mode)
     :param language: language for Quasar elements and the ``lang`` attribute of the ``html`` tag
         (default: ``None``, in which case Quasar elements use ``'en-US'`` and the ``lang`` attribute is omitted, *updated in version 3.14.0*)
     :param binding_refresh_interval: interval for updating active links (default: 0.1 seconds, bigger is more CPU friendly, *since version 3.4.0*: can be ``None`` to disable update loop)
     :param reconnect_timeout: maximum time the server waits for the browser to reconnect (default: 3.0 seconds)
     :param message_history_length: maximum number of messages that will be stored and resent after a connection interruption (default: 1000, use 0 to disable, *added in version 2.9.0*)
-    :param cache_control_directives: cache control directives for internal static files (default: `'public, max-age=31536000, immutable, stale-while-revalidate=31536000'`)
+    :param cache_control_directives: cache control directives for internal static files (default: ``'public, max-age=31536000, immutable, stale-while-revalidate=31536000'``)
     :param gzip_middleware_factory: GZipMiddleware factory function (e.g. ``lambda app: GZipMiddleware(app, minimum_size=500, compresslevel=9)``, defaults to Starlette's ``GZipMiddleware``, can be ``None`` to disable, *added in version 3.5.0*)
-    :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: `False`, *updated in version 2.9.0*)
-    :param show: automatically open the UI in a browser tab (default: `True`, opens "/", *since version 3.6.0*: you can pass a specific path like "/path/to/page")
-    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to `True` (default: disabled)
-    :param native: open the UI in a native window of size 800x600 (default: `False`, deactivates `show`, automatically finds an open port)
-    :param window_size: open the UI in a native window with the provided size (e.g. `(1024, 786)`, default: `None`, also activates `native`)
-    :param fullscreen: open the UI in a fullscreen window (default: `False`, also activates `native`)
-    :param frameless: open the UI in a frameless window (default: `False`, also activates `native`)
-    :param reload: automatically reload the UI on file changes (default: `True`)
-    :param uvicorn_logging_level: logging level for uvicorn server (default: `'warning'`)
+    :param fastapi_docs: enable FastAPI's automatic documentation with Swagger UI, ReDoc, and OpenAPI JSON (bool or dictionary as described `here <https://fastapi.tiangolo.com/tutorial/metadata/>`_, default: ``False``, *updated in version 2.9.0*)
+    :param show: automatically open the UI in a browser tab (default: ``True``, opens "/", *since version 3.6.0*: you can pass a specific path like "/path/to/page")
+    :param on_air: tech preview: `allows temporary remote access <https://nicegui.io/documentation/section_configuration_deployment#nicegui_on_air>`_ if set to ``True`` (default: disabled)
+    :param native: open the UI in a native window of size 800x600 (default: ``False``, deactivates ``show``, automatically finds an open port)
+    :param window_size: open the UI in a native window with the provided size (e.g. ``(1024, 786)``, default: ``None``, also activates ``native``)
+    :param fullscreen: open the UI in a fullscreen window (default: ``False``, also activates ``native``)
+    :param frameless: open the UI in a frameless window (default: ``False``, also activates ``native``)
+    :param reload: automatically reload the UI on file changes (default: ``True``)
+    :param uvicorn_logging_level: logging level for uvicorn server (default: ``'warning'``)
     :param uvicorn_reload_dirs: string with comma-separated list for directories to be monitored (default is current working directory only)
-    :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: `'*.py'`)
-    :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: `'.*, .py[cod], .sw.*, ~*'`)
-    :param tailwind: whether to use Tailwind CSS (experimental, default: `True`)
+    :param uvicorn_reload_includes: string with comma-separated list of glob-patterns which trigger reload on modification (default: ``'*.py'``)
+    :param uvicorn_reload_excludes: string with comma-separated list of glob-patterns which should be ignored for reload (default: ``'.*, .py[cod], .sw.*, ~*'``)
+    :param tailwind: whether to use Tailwind CSS (experimental, default: ``True``)
     :param unocss: use UnoCSS with the specified preset instead of Tailwind CSS (default: ``None``, options: "mini", "wind3", "wind4", *added in version 3.7.0*)
-    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: `True`)
+    :param prod_js: whether to use the production version of Vue and Quasar dependencies (default: ``True``)
     :param endpoint_documentation: control what endpoints appear in the autogenerated OpenAPI docs (default: 'none', options: 'none', 'internal', 'page', 'all')
-    :param storage_secret: secret key for browser-based storage (default: `None`, a value is required to enable ui.storage.user and ui.storage.browser)
+    :param storage_secret: secret key for browser-based storage (default: ``None``, a value is required to enable ui.storage.user and ui.storage.browser)
     :param session_middleware_kwargs: additional keyword arguments passed to SessionMiddleware that creates the session cookies used for browser-based storage
-    :param show_welcome_message: whether to show the welcome message (default: `True`)
+    :param show_welcome_message: whether to show the welcome message (default: ``True``)
     :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
-        (experimental, default: `False`, can be overwritten per page, *added in version 3.11.0*)
-    :param kwargs: additional keyword arguments are passed to `uvicorn.run`
+        (experimental, default: ``False``, can be overwritten per page, *added in version 3.11.0*)
+    :param \*\*kwargs: additional keyword arguments are passed to ``uvicorn.run``
     """
     if core.script_mode:
         if Client.page_routes:
@@ -184,13 +184,15 @@ def run(root: Callable | None = None, *,
     core.app.add_middleware(RedirectWithPrefixMiddleware)
     core.app.add_middleware(SetCacheControlMiddleware)
 
-    for route in core.app.routes:
-        if not isinstance(route, Route):
+    for context in core.app._iter_routes():  # pylint: disable=protected-access
+        route = context.original_route
+        if not isinstance(route, Route) or context.path is None:
             continue
-        if route.path.startswith('/_nicegui') and hasattr(route, 'methods'):
+        if context.path.startswith('/_nicegui'):
             route.include_in_schema = endpoint_documentation in {'internal', 'all'}
-        if route.path == '/' or route.path in Client.page_routes.values():
+        if context.path == '/' or context.path in Client.page_routes.values():
             route.include_in_schema = endpoint_documentation in {'page', 'all'}
+    core.app._mark_routes_changed()  # pylint: disable=protected-access
 
     if fastapi_docs:
         if not core.app.docs_url:
@@ -262,6 +264,16 @@ def run(root: Callable | None = None, *,
         native = False
         show_welcome_message = False
 
+    # These variables are only set internally (below) and removed once the server stops,
+    # so a differing value must come from the user (or from a parent NiceGUI process).
+    for name, value, hint in (
+        ('NICEGUI_HOST', host, 'host=...'),
+        ('NICEGUI_PORT', str(port), 'port=...'),
+        ('NICEGUI_PROTOCOL', protocol, 'ssl_certfile=..., ssl_keyfile=...'),
+    ):
+        if (env_value := os.environ.get(name)) and env_value != value:
+            log.warning(f'Ignoring {name}={env_value}, which is only used internally. Use ui.run({hint}) instead.')
+
     # We save host and port in environment variables so the subprocess started in reload mode can access them.
     os.environ['NICEGUI_HOST'] = host
     os.environ['NICEGUI_PORT'] = str(port)
@@ -272,9 +284,6 @@ def run(root: Callable | None = None, *,
 
     def split_args(args: str) -> list[str]:
         return [a.strip() for a in args.split(',')]
-
-    if kwargs.get('workers', 1) > 1:
-        raise ValueError('NiceGUI does not support multiple workers yet.')
 
     # The following lines are basically a copy of `uvicorn.run`, but keep a reference to the `server`.
 
@@ -290,6 +299,8 @@ def run(root: Callable | None = None, *,
         ws='wsproto',
         **kwargs,
     )
+    if config.workers > 1:
+        raise ValueError('NiceGUI does not support multiple workers yet. Remove `workers=...` or unset `WEB_CONCURRENCY`.')
     config.storage_secret = storage_secret
     config.method_queue = native_module.native.method_queue if native else None
     config.response_queue = native_module.native.response_queue if native else None
@@ -297,20 +308,17 @@ def run(root: Callable | None = None, *,
     config.session_middleware_kwargs = session_middleware_kwargs
     Server.create_singleton(config)
 
-    if (reload or config.workers > 1) and not isinstance(config.app, str):
-        log.warning('You must pass the application as an import string to enable "reload" or "workers".')
-        sys.exit(1)
-
-    if config.should_reload:
-        sock = config.bind_socket()
-        ChangeReload(config, target=Server.instance.run, sockets=[sock]).run()
-    elif config.workers > 1:
-        sock = config.bind_socket()
-        Multiprocess(config, target=Server.instance.run, sockets=[sock]).run()
-    else:
-        Server.instance.run()
+    try:
+        if config.should_reload:
+            sock = config.bind_socket()
+            ChangeReload(config, target=Server.instance.run, sockets=[sock]).run()
+        else:
+            Server.instance.run()
+    finally:
+        for name in ('NICEGUI_HOST', 'NICEGUI_PORT', 'NICEGUI_PROTOCOL'):
+            os.environ.pop(name, None)
     if config.uds:
         os.remove(config.uds)  # pragma: py-win32
 
-    if not Server.instance.started and not config.should_reload and config.workers == 1:
+    if not Server.instance.started and not config.should_reload:
         sys.exit(STARTUP_FAILURE)

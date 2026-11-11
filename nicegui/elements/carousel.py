@@ -21,11 +21,11 @@ class Carousel(ValueElement[str | CarouselSlide | None]):
         This element represents `Quasar's QCarousel <https://quasar.dev/vue-components/carousel#qcarousel-api>`_ component.
         It contains individual carousel slides.
 
-        :param value: `ui.carousel_slide` or name of the slide to be initially selected (default: `None` meaning the first slide)
+        :param value: ``ui.carousel_slide`` or name of the slide to be initially selected (default: ``None`` meaning the first slide)
         :param on_value_change: callback to be executed when the selected slide changes
-        :param animated: whether to animate slide transitions (default: `False`)
-        :param arrows: whether to show arrows for manual slide navigation (default: `False`)
-        :param navigation: whether to show navigation dots for manual slide navigation (default: `False`)
+        :param animated: whether to animate slide transitions (default: ``False``)
+        :param arrows: whether to show arrows for manual slide navigation (default: ``False``)
+        :param navigation: whether to show navigation dots for manual slide navigation (default: ``False``)
         """
         super().__init__(tag='q-carousel', value=value, on_value_change=on_value_change)
         self._props['animated'] = animated
@@ -34,13 +34,6 @@ class Carousel(ValueElement[str | CarouselSlide | None]):
 
     def _value_to_model_value(self, value: Any) -> Any:
         return value.props['name'] if isinstance(value, CarouselSlide) else value
-
-    def _handle_value_change(self, value: Any) -> None:
-        super()._handle_value_change(value)
-        names = [slide.props['name'] for slide in self.default_slot]
-        for i, slide in enumerate(self):
-            done = i < names.index(value) if value in names else False
-            slide.props(f':done={done}')
 
     def next(self) -> None:
         """Show the next slide."""

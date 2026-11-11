@@ -27,12 +27,12 @@ def test_download_text_file(screen: Screen, test_route: str):  # pylint: disable
 
     screen.open('/')
     screen.click('Download 1')
-    screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'test1.txt').read_text(encoding='utf-8') == 'test 1'
+    screen.wait_for(lambda: (screen_plugin.DOWNLOAD_DIR / 'test1.txt').exists() and
+                    (screen_plugin.DOWNLOAD_DIR / 'test1.txt').read_text(encoding='utf-8') == 'test 1')
 
     screen.click('Download 2')
-    screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'test2.txt').read_text(encoding='utf-8') == 'test 2'
+    screen.wait_for(lambda: (screen_plugin.DOWNLOAD_DIR / 'test2.txt').exists() and
+                    (screen_plugin.DOWNLOAD_DIR / 'test2.txt').read_text(encoding='utf-8') == 'test 2')
 
 
 def test_downloading_local_file_as_src(screen: Screen):
@@ -47,14 +47,12 @@ def test_downloading_local_file_as_src(screen: Screen):
     screen.open('/')
     route_count_before_download = len(app.routes)
     screen.click('Download 1')
-    screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'slide1.jpg').exists()
-    assert len(app.routes) == route_count_before_download
+    screen.wait_for((screen_plugin.DOWNLOAD_DIR / 'slide1.jpg').exists)
+    screen.wait_for(lambda: len(app.routes) == route_count_before_download)
 
     screen.click('Download 2')
-    screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'slide2.jpg').exists()
-    assert len(app.routes) == route_count_before_download
+    screen.wait_for((screen_plugin.DOWNLOAD_DIR / 'slide2.jpg').exists)
+    screen.wait_for(lambda: len(app.routes) == route_count_before_download)
 
 
 def test_download_raw_data(screen: Screen):
@@ -66,13 +64,26 @@ def test_download_raw_data(screen: Screen):
 
     screen.open('/')
     screen.click('Download 1')
-    screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'test1.txt').read_text(encoding='utf-8') == 'test 1'
+    screen.wait_for(lambda: (screen_plugin.DOWNLOAD_DIR / 'test1.txt').exists() and
+                    (screen_plugin.DOWNLOAD_DIR / 'test1.txt').read_text(encoding='utf-8') == 'test 1')
 
     screen.click('Download 2')
-    screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'test2.txt').read_text(encoding='utf-8') == 'test 2'
+    screen.wait_for(lambda: (screen_plugin.DOWNLOAD_DIR / 'test2.txt').exists() and
+                    (screen_plugin.DOWNLOAD_DIR / 'test2.txt').read_text(encoding='utf-8') == 'test 2')
 
     screen.click('Download 3')
-    screen.wait(0.5)
-    assert (screen_plugin.DOWNLOAD_DIR / 'test3.txt').read_text(encoding='utf-8') == 'test 3'
+    screen.wait_for(lambda: (screen_plugin.DOWNLOAD_DIR / 'test3.txt').exists() and
+                    (screen_plugin.DOWNLOAD_DIR / 'test3.txt').read_text(encoding='utf-8') == 'test 3')
+
+
+def test_unfetched_download_route_is_removed_with_client(screen: Screen):
+    @ui.page('/', reconnect_timeout=1.0)
+    def page():
+        ui.label('Hello, world!')
+        ui.context.client.on_disconnect(lambda: ui.download.file(Path(__file__)))  # nobody is left to fetch it
+
+    screen.open('/')
+    route_count = len(app.routes)
+    screen.close()
+    screen.wait_for(lambda: len(app.routes) == route_count + 1)  # the download registers a single-use route
+    screen.wait_for(lambda: len(app.routes) == route_count)  # which goes with the client after reconnect_timeout

@@ -1,14 +1,15 @@
 import asyncio
+import functools
 import re
 from typing import Literal
 
-import httpx
+import httpx2
 import pytest
 from fastapi import HTTPException
 from fastapi.responses import PlainTextResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from nicegui import app, background_tasks, ui
+from nicegui import app, background_tasks, context, ui
 from nicegui.testing import Screen, User
 
 
@@ -104,7 +105,8 @@ def test_wait_for_disconnect(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 3)
+    screen.wait(0.1)
     assert events == ['connected', 'disconnected', 'connected']
 
 
@@ -119,7 +121,8 @@ def test_wait_for_disconnect_without_awaiting_connected(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 1)
+    screen.wait(0.1)
     assert events == ['disconnected']
 
 
@@ -184,7 +187,7 @@ def test_api_http_exception_404_returns_json(screen: Screen, exception_class: ty
         raise exception_class(404, 'item not found')
 
     screen.start_server()
-    response = httpx.get(f'http://localhost:{Screen.PORT}/api/missing')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/api/missing')
     assert response.status_code == 404, 'status code should be forwarded'
     assert response.headers['content-type'].startswith('application/json'), \
         "endpoints raising HTTPException(404) should get FastAPI's default JSON response, not NiceGUI's HTML error page"
@@ -199,10 +202,37 @@ def test_ui_page_http_exception_404_keeps_html(screen: Screen):
         ui.label(f'Blog post {id_}')
 
     screen.start_server()
-    response = httpx.get(f'http://localhost:{Screen.PORT}/blog/99')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/blog/99')
     assert response.status_code == 404, 'status code should be forwarded'
     assert response.headers['content-type'].startswith('text/html'), \
         'ui.page raising HTTPException(404) should render the HTML error page for browsers'
+
+
+def test_normal_response_when_async_page_is_cancelled(screen: Screen):
+    @ui.page('/')
+    async def page():
+        asyncio.current_task().cancel()
+        ui.label('The end')
+
+    screen.start_server()
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/')
+    assert response.status_code == 200, 'page cancelling its own task should still return a normal response'
+    assert 'The end' in response.text, 'elements created before the cancellation takes effect should be served'
+    screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled'))
+
+
+def test_error_page_when_client_is_deleted_during_page_build(screen: Screen):
+    @ui.page('/')
+    async def page():
+        button = ui.button('Click me')
+        context.client.delete()  # stand-in for pruning or user code deleting the client during the page build
+        await button.clicked()
+
+    screen.start_server()
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/')
+    assert response.status_code == 500, ('a deleted client must be served an error page, not a normal page '
+                                         'whose handshake would fail and reload-loop')
+    screen.assert_py_logger('WARNING', re.compile('Page building for / was cancelled because the client was deleted'))
 
 
 def test_page_with_args(screen: Screen):
@@ -361,7 +391,7 @@ def test_html_lang_attribute(screen: Screen, global_lang: str):
         ui.label('Ciao')
 
     def html_tag(path: str) -> str:
-        response = httpx.get(f'http://localhost:{Screen.PORT}{path}')
+        response = httpx2.get(f'http://localhost:{Screen.PORT}{path}')
         return re.search(r'<html[^>]*>', response.text).group()  # type: ignore
 
     screen.open('/')
@@ -406,3 +436,26 @@ async def test_async_page_does_not_leak_event_wait_tasks(user: User):
         t.get_name().startswith('wait for connection') and not t.done()
         for t in asyncio.all_tasks()
     ), 'connection-wait tasks should be cancelled after page coroutine completes'
+
+
+async def test_page_exception_with_nameless_async_handler(user: User, caplog: pytest.LogCaptureFixture):
+    handled: list[str] = []
+
+    async def handler(_request, exception: Exception, *, prefix: str) -> None:
+        handled.append(f'{prefix}: {exception}')
+
+    app.add_exception_handler(ValueError, functools.partial(handler, prefix='handled'))
+    app.on_page_exception(lambda: ui.label('custom error page'))
+
+    @ui.page('/')
+    def page():
+        raise ValueError('boom')
+
+    response = await user.http_client.get('/')
+    await asyncio.sleep(0)
+
+    assert response.status_code == 500
+    assert 'custom error page' in response.text, 'the page exception handler should render the error page'
+    assert handled == ['handled: boom'], 'the async exception handler should run'
+    assert all('boom' in record.message for record in caplog.records)
+    caplog.clear()

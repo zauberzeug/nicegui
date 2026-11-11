@@ -41,8 +41,7 @@ def test_replace_plotly(screen: Screen):
     assert screen.find_by_tag('text').text == 'A'
 
     screen.click('Replace')
-    screen.wait(0.5)
-    assert screen.find_by_tag('text').text == 'B'
+    screen.wait_for(lambda: screen.find_by_tag('text').text == 'B')
 
 
 def test_create_dynamically(screen: Screen):

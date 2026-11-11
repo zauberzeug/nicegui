@@ -1,5 +1,4 @@
-import SceneLib from "nicegui-scene";
-const { THREE, TWEEN, Stats } = SceneLib;
+import { find_object_with_id, THREE, TWEEN, Stats } from "nicegui-scene";
 
 export default {
   template: `
@@ -52,6 +51,8 @@ export default {
       this.$el.style.height = this.height + "px";
       this.$el.style.padding = "10px";
       this.$el.style.border = "1px solid silver";
+      this.$el.removeAttribute("data-initializing");
+      this.$emit("init-failed");
       return;
     }
     this.renderer.setClearColor("#eee");
@@ -60,6 +61,8 @@ export default {
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(this.$el);
 
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
@@ -77,11 +80,12 @@ export default {
       this.$emit("click3d", {
         hits: raycaster
           .intersectObjects(this.scene.children, true)
-          .filter((o) => o.object.object_id)
-          .map((o) => ({
-            object_id: o.object.object_id,
-            object_name: o.object.name,
-            point: o.point,
+          .map((hit) => ({ hit, owner: find_object_with_id(hit.object) }))
+          .filter(({ owner }) => owner)
+          .map(({ hit, owner }) => ({
+            object_id: owner.object_id,
+            object_name: owner.name,
+            point: hit.point,
           })),
         click_type: mouseEvent.type,
         button: mouseEvent.button,
@@ -104,6 +108,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
+    this.resizeObserver?.disconnect();
   },
 
   methods: {
@@ -124,20 +129,7 @@ export default {
         this.look_at.y,
         this.look_at.z,
       ])
-        .to(
-          [
-            x === null ? this.camera.position.x : x,
-            y === null ? this.camera.position.y : y,
-            z === null ? this.camera.position.z : z,
-            up_x === null ? this.camera.up.x : up_x,
-            up_y === null ? this.camera.up.y : up_y,
-            up_z === null ? this.camera.up.z : up_z,
-            look_at_x === null ? this.look_at.x : look_at_x,
-            look_at_y === null ? this.look_at.y : look_at_y,
-            look_at_z === null ? this.look_at.z : look_at_z,
-          ],
-          duration * 1000,
-        )
+        .to([x, y, z, up_x, up_y, up_z, look_at_x, look_at_y, look_at_z], duration * 1000)
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
           this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
@@ -147,6 +139,9 @@ export default {
         .start();
     },
     resize() {
+      // skip while the element has no layout box (e.g. hidden), otherwise the canvas would end up 0x0;
+      // the resize observer catches up once the element is shown
+      if (!this.$el.getClientRects().length) return;
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
       this.camera.aspect = clientWidth / clientHeight;
