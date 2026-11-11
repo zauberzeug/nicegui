@@ -5,15 +5,6 @@ from nicegui import ui
 from nicegui.testing import Screen
 
 
-def _diagnostic_count(screen: Screen, suffix: str = '') -> int:
-    selector = f'.cm-lintRange{suffix}'
-    return screen.selenium.execute_script(f'return document.querySelectorAll({selector!r}).length;')
-
-
-def _lint_panel_present(screen: Screen) -> bool:
-    return screen.selenium.execute_script("return document.querySelector('.cm-panel-lint') !== null;")
-
-
 def test_diagnostics_property(screen: Screen):
     editor = None
     counts: dict[str, dict[str, int]] = {}
@@ -160,3 +151,12 @@ def test_diagnostics_survive_an_edit(screen: Screen):
     screen.wait_for(lambda: editor.value == 'xabc\ndef')
     screen.wait(1.0)  # CodeMirror runs its lint sources 750 ms after an edit
     assert _diagnostic_count(screen) == 1
+
+
+def _diagnostic_count(screen: Screen, suffix: str = '') -> int:
+    selector = f'.cm-lintRange{suffix}'
+    return screen.selenium.execute_script(f'return document.querySelectorAll({selector!r}).length;')
+
+
+def _lint_panel_present(screen: Screen) -> bool:
+    return screen.selenium.execute_script("return document.querySelector('.cm-panel-lint') !== null;")
