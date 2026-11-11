@@ -561,6 +561,8 @@ export default {
           constructor(view) {
             this._last = {};
             this._toIndex = new WeakMap(); // document -> its UTF-16 offset to Python str index conversion
+            // A new editor, such as one rebuilt by a remount, starts with its cursor at the start.
+            if (self.hasListener("selection-change")) this._maybeEmit("selection-change", this._selection(view.state));
             // CodeMirror's own viewport is the rendered range (visible plus a margin) and only changes when
             // scrolling gets near its edge, so the visible lines are tracked through the scroller instead.
             this._scroller = view.scrollDOM;
@@ -581,13 +583,9 @@ export default {
                 u.changes.iterChanges((_fromA, _toA, _fromB, _toB, text) => (inserted += text.toString()));
                 if (!HIGH_SURROGATE.test(inserted)) this._toIndex.set(u.state.doc, identity);
               }
-              // An edit maps the selection through it, so a server-driven change can move it for real.
-              // Comparing against the pre-edit state tells the two apart, where the _maybeEmit dedupe cannot:
-              // it compares against the last payload sent, which may be none, e.g. right after a remount.
-              const now = this._selection(u.state);
-              if (u.selectionSet || JSON.stringify(now) !== JSON.stringify(this._selection(u.startState))) {
-                this._maybeEmit("selection-change", now);
-              }
+              // An edit maps the selection through it, so a server-driven change can move it for real;
+              // the dedupe, seeded on mount, drops a selection that stayed in place.
+              this._maybeEmit("selection-change", this._selection(u.state));
             }
             // Edits, folds and resizes all change which lines are visible without scrolling.
             if (u.geometryChanged) this._measureViewport(u.view);

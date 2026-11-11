@@ -31,20 +31,21 @@ def test_selection_change_event(screen: Screen):
         return ([(i, i)], 0)
 
     screen.open('/')
+    screen.wait_for(lambda: events == [([(0, 0)], 0)])
     screen.should_contain('cd')
-    # An edit after the cursor leaves it in place, so it is not reported, even before anything was sent.
+    # An edit after the cursor leaves it in place, so it is not reported.
     editor.set_value('ab\ncd changed')
     screen.should_contain('cd changed')
     run('view.dispatch({selection: {anchor: 3}});')
-    screen.wait_for(lambda: events == [cursor_before_cd()])
+    screen.wait_for(lambda: events == [([(0, 0)], 0), cursor_before_cd()])
 
     # An edit before the cursor moves it.
     editor.set_value('NEW\nab\ncd changed')
-    screen.wait_for(lambda: len(events) == 2 and events[-1] == cursor_before_cd())
+    screen.wait_for(lambda: len(events) == 3 and events[-1] == cursor_before_cd())
 
     # Positions are str indices: the emoji takes the two UTF-16 code units of "ab", but only one str index.
     editor.set_value('NEW\n😎\ncd changed')
-    screen.wait_for(lambda: len(events) == 3 and events[-1] == cursor_before_cd())
+    screen.wait_for(lambda: len(events) == 4 and events[-1] == cursor_before_cd())
 
     # A backward selection keeps the anchor where it started and the head at the cursor.
     run('view.dispatch({selection: {anchor: view.state.doc.length, head: 0}});')
@@ -55,13 +56,12 @@ def test_selection_change_event(screen: Screen):
         'view.dispatch({selection: S.create([S.cursor(1), S.range(cd, cd + 2)], 1)});')
     screen.wait_for(lambda: events[-1] == ([(1, 1), (editor.value.index('cd'), editor.value.index('cd') + 2)], 1))
 
-    # Leaving the tab destroys the editor client-side; the one built on return has its cursor at the start
-    # and has sent nothing yet, so selecting there is reported, replacing the selection from before.
+    # Leaving the tab destroys the editor client-side; the one built on return has its cursor at the start,
+    # which is reported without the user moving the cursor, replacing the selection from before.
     screen.click('Two')
     screen.should_contain('Second tab')
     screen.click('One')
     screen.should_contain('cd changed')
-    run('view.dispatch({selection: {anchor: 0}});')
     screen.wait_for(lambda: events[-1] == ([(0, 0)], 0))
 
 

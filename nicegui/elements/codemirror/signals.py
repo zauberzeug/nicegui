@@ -49,9 +49,10 @@ class SignalElement(Element):
         The event mirrors CodeMirror's ``EditorSelection``:
         ``ranges`` holds one range per cursor, and ``main`` is the one at ``main_index``.
         A range's ``anchor`` and ``head`` are ``str`` indices into ``value``, with ``head`` at the cursor.
-        Fires when the selection moves, including when an edit moves it, but not for an edit that leaves it in place.
+        Fires when the editor is mounted in the browser and when the selection moves,
+        including when an edit moves it, but not for an edit that leaves it in place.
 
-        *Added in version 3.19.0*
+        *Added in version 4.1.0*
         """
         self.on('selection-change', lambda e: handle_event(handler, CodeMirrorSelectionChangeEventArguments(
             sender=self,

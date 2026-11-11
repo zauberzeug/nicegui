@@ -48,7 +48,7 @@ def signals_and_reveal_demo() -> None:
     `ranges` holds one range per cursor, and `main` is the primary one.
     A range's `anchor` and `head` are `str` indices into the value, so they slice it directly.
 
-    *Added in version 3.19.0*
+    *Added in version 4.1.0*
 ''')
 def selection_demo() -> None:
     def show(e):
