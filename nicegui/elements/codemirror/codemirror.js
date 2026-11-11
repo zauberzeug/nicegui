@@ -716,8 +716,9 @@ export default {
         // outside of paren contexts. CM.linter() installs lintState (so
         // diagnostics dispatched via CM.setDiagnostics still render as inline
         // marks), and its only tooltip is a hoverTooltip that fires on mouseover,
-        // not on every keystroke. The empty source disables auto-linting.
-        CM.linter(() => []),
+        // not on every keystroke. A null source keeps CodeMirror from linting on its own:
+        // any source, even an empty one, runs after every edit and replaces the diagnostics set from Python.
+        CM.linter(null),
         tooltipField,
         decorationField,
         CM.EditorView.decorations.from(decorationField),

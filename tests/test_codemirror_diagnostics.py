@@ -1,3 +1,6 @@
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.keys import Keys
+
 from nicegui import ui
 from nicegui.testing import Screen
 
@@ -140,3 +143,20 @@ def test_diagnostics_declared_for_a_value_sent_in_the_same_update(screen: Screen
     editor.value = 'abc\ndef'
     editor.diagnostics = [{'line': 2, 'message': 'oops'}]
     screen.wait_for(lambda: _diagnostic_count(screen) == 1)
+
+
+def test_diagnostics_survive_an_edit(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('abc\ndef')
+
+    screen.open('/')
+    editor.diagnostics = [{'line': 2, 'message': 'oops'}]
+    screen.wait_for(lambda: _diagnostic_count(screen) == 1)
+    ActionChains(screen.selenium).move_to_element(screen.find('abc')).click().send_keys(Keys.HOME, 'x').perform()
+    screen.wait_for(lambda: editor.value == 'xabc\ndef')
+    screen.wait(1.0)  # CodeMirror runs its lint sources 750 ms after an edit
+    assert _diagnostic_count(screen) == 1
