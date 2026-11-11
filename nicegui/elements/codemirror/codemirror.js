@@ -383,11 +383,13 @@ export default {
         // Register a single autocompletion() carrying both sources and styling so
         // the second autocompletion() call below is skipped (it would stack a
         // duplicate state field).
-        exts.push(CM.autocompletion({
-          override: sources,
-          tooltipClass: tooltipClassFn,
-          optionClass,
-        }));
+        exts.push(
+          CM.autocompletion({
+            override: sources,
+            tooltipClass: tooltipClassFn,
+            optionClass,
+          }),
+        );
       } else {
         // Merge mode: register sources via languageData so they compose with the
         // active language pack's autocompletion (which basicSetup already enables).
@@ -398,10 +400,14 @@ export default {
         // basicSetup's autocompletion config without re-registering the source.
         const hasClassName = this.completions && this.completions.some((c) => c.class_name);
         if (tooltipClass || hasClassName) {
-          exts.push(CM.Prec.highest(CM.autocompletion({
-            tooltipClass: tooltipClassFn,
-            optionClass,
-          })));
+          exts.push(
+            CM.Prec.highest(
+              CM.autocompletion({
+                tooltipClass: tooltipClassFn,
+                optionClass,
+              }),
+            ),
+          );
         }
       }
       // basicSetup's autocompletion() already registers the snippet keymap, so
