@@ -146,6 +146,8 @@ export default {
     decorations: Array,
     decorationHtml: Boolean,
     lineAnchors: Object,
+    diagnostics: Array,
+    diagnosticMessageHtml: Boolean,
     keymap: Array,
     lineTooltips: Object,
     lineTooltipHtml: Boolean,
@@ -168,6 +170,9 @@ export default {
     },
     lineAnchors() {
       this._anchorsPending = true; // applied from setEditorValueFromProps
+    },
+    diagnostics() {
+      this._diagnosticsPending = true; // applied from setEditorValueFromProps
     },
     keymap() {
       this.setKeymap();
@@ -256,8 +261,8 @@ export default {
     },
     setEditorValueFromProps() {
       this.setEditorValue(this.value);
-      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors, tooltips
-      // and decorations sent together with a new value would otherwise be applied to the old document.
+      // Vue runs the prop watchers before nicegui.js calls this update method, so anchors, tooltips,
+      // decorations and diagnostics sent together with a new value would otherwise be applied to the old document.
       if (this._anchorsPending) {
         this._anchorsPending = false;
         this.applyLineAnchors(this.lineAnchors);
@@ -269,6 +274,10 @@ export default {
       if (this._decorationsPending) {
         this._decorationsPending = false;
         this.setDecorations(this.decorations);
+      }
+      if (this._diagnosticsPending) {
+        this._diagnosticsPending = false;
+        this.applyDiagnostics(this.diagnostics);
       }
     },
     setEditorValue(value) {
@@ -469,6 +478,60 @@ export default {
       const prop = "on" + event.replace(/(?:^|-)(\w)/g, (_, char) => char.toUpperCase());
       return Object.keys(this.$attrs).some((key) => key.startsWith(prop));
     },
+    applyDiagnostics(diagnostics) {
+      if (!this.editor) return;
+      const doc = this.editor.state.doc;
+      const useHtml = this.diagnosticMessageHtml;
+      const cmDiagnostics = [];
+      for (const d of diagnostics || []) {
+        if (!Number.isInteger(d.line) || d.line < 1 || d.line > doc.lines) {
+          logAndEmit("warning", `diagnostics: line ${d.line} out of range [1, ${doc.lines}]`);
+          continue;
+        }
+        const line = doc.line(d.line);
+        // Column values are 1-indexed; end_column is exclusive. Out-of-range values clamp to line bounds.
+        const startOffset = Number.isInteger(d.column) ? Math.max(1, d.column) - 1 : 0;
+        const endOffset = Number.isInteger(d.end_column) ? Math.max(1, d.end_column) - 1 : line.length;
+        const from = Math.min(line.from + startOffset, line.to);
+        const to = Math.min(line.from + endOffset, line.to);
+        const message = d.message;
+        cmDiagnostics.push({
+          from,
+          to: Math.max(from, to),
+          severity: d.severity || "error",
+          message,
+          source: d.source ?? undefined,
+          renderMessage: () => {
+            const span = document.createElement("span");
+            setContent(span, message, useHtml);
+            return span;
+          },
+        });
+      }
+      this.editor.dispatch(CM.setDiagnostics(this.editor.state, cmDiagnostics));
+    },
+    openLintPanel() {
+      if (this.editor) CM.openLintPanel(this.editor);
+    },
+    closeLintPanel() {
+      if (this.editor) CM.closeLintPanel(this.editor);
+    },
+    toggleLintPanel() {
+      if (!this.editor) return;
+      // @codemirror/lint exposes openLintPanel/closeLintPanel but no public "is open" predicate,
+      // so check the rendered panel directly.
+      const open = this.editor.dom.querySelector(".cm-panel-lint") !== null;
+      (open ? CM.closeLintPanel : CM.openLintPanel)(this.editor);
+    },
+    getDiagnosticCount() {
+      const counts = { error: 0, warning: 0, info: 0, hint: 0, total: 0 };
+      if (!this.editor) return counts;
+      CM.forEachDiagnostic(this.editor.state, (d) => {
+        if (counts[d.severity] !== undefined) counts[d.severity] += 1;
+        counts.total += 1;
+      });
+      return counts;
+    },
     buildUserKeymap() {
       return (this.keymap || []).map(({ key, mac, linux, win, preventDefault }) => ({
         key,
@@ -646,6 +709,16 @@ export default {
         anchorTracker,
         anchorField,
         updateDispatcher,
+        // NOTE: do NOT use CM.lintGutter() here — it pulls in lintGutterTooltip,
+        // a StateField that registers itself via showTooltip.from(field) and
+        // returns null on most transactions. That null provider sits in the
+        // showTooltip facet and silently suppresses the autocomplete popup
+        // outside of paren contexts. CM.linter() installs lintState (so
+        // diagnostics dispatched via CM.setDiagnostics still render as inline
+        // marks), and its only tooltip is a hoverTooltip that fires on mouseover,
+        // not on every keystroke. A null source keeps CodeMirror from linting on its own:
+        // any source, even an empty one, runs after every edit and replaces the diagnostics set from Python.
+        CM.linter(null),
         tooltipField,
         decorationField,
         CM.EditorView.decorations.from(decorationField),
@@ -707,6 +780,7 @@ export default {
     if (this.lineAnchors && Object.keys(this.lineAnchors).length > 0) {
       this.applyLineAnchors(this.lineAnchors);
     }
+    this.applyDiagnostics(this.diagnostics);
     this.setLineTooltips(this.lineTooltips);
     this.validateUserKeymap();
   },

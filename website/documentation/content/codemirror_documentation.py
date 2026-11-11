@@ -43,6 +43,39 @@ def signals_and_reveal_demo() -> None:
     ui.button('Reveal line 40', on_click=lambda: editor.reveal_line(40))
 
 
+@doc.demo('Linting Diagnostics', '''
+    The `diagnostics` property is a mutable list of `Diagnostic` dicts
+    rendered as inline error/warning marks with hover tooltips.
+    Each entry targets a 1-indexed line and carries a message.
+    `severity`, `source`, and the column range are optional
+    (`column` and `end_column` are 1-indexed, and `end_column` is exclusive).
+    `open_lint_panel`, `close_lint_panel`, and `toggle_lint_panel` show or hide CodeMirror's built-in panel
+    listing the diagnostics, and `get_diagnostic_count` returns the count by severity.
+
+    Messages render as plain text by default.
+    Pass `diagnostic_message_html=True` to the constructor to render them as sanitized HTML
+    via NiceGUI's `setHTML` polyfill.
+
+    *Added in version 4.1.0*
+''')
+def diagnostics_demo() -> None:
+    editor = ui.codemirror(
+        'def add(a, b):\n    return a + c\n', language='Python', diagnostic_message_html=True,
+    ).classes('h-32')
+    count_label = ui.label()
+
+    async def lint() -> None:
+        editor.diagnostics = [
+            {'line': 2, 'message': "undefined name <code>'c'</code>", 'severity': 'error',
+             'source': 'pyflakes', 'column': 16, 'end_column': 17},
+        ]
+        count_label.text = str(await editor.get_diagnostic_count())
+
+    ui.button('Lint', on_click=lint)
+    ui.button('Clear', on_click=lambda: setattr(editor, 'diagnostics', []))
+    ui.button('Toggle Panel', on_click=editor.toggle_lint_panel)
+
+
 @doc.demo('Custom Keybindings', '''
     Map keystrokes to Python callbacks via the `keymap` constructor parameter or the `map_key` method.
     Keys follow CodeMirror's [keymap syntax](https://codemirror.net/docs/ref/#view.KeyBinding) —
