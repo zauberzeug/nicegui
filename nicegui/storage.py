@@ -152,7 +152,7 @@ class Storage:
         return self._users[session_id]
 
     async def _create_user_storage(self, session_id: str) -> None:
-        """Create user storage for the given session ID unless it exists already.
+        """Create and load the user storage for the given session ID.
 
         A concurrent request of the same session waits for the storage to load instead of using it half-loaded.
         """

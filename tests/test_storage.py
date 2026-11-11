@@ -17,7 +17,7 @@ from nicegui.app import app as app_module
 from nicegui.app.app import prune_tab_storage, prune_user_storage
 from nicegui.nicegui import _on_handshake
 from nicegui.persistence.file_persistent_dict import FilePersistentDict
-from nicegui.storage import USER_PREFIX, Storage
+from nicegui.storage import Storage
 from nicegui.testing import Screen, User
 
 
@@ -495,13 +495,13 @@ async def test_concurrent_requests_wait_for_user_storage_to_load(user: User):
     seen: list[bool] = []
 
     @app.get('/')
-    def index():
+    async def index():
         seen.append('old' in app.storage.user)
         app.storage.user.setdefault('new', 1)
         return 'ok'
 
     @app.get('/seed')
-    def seed():
+    async def seed():
         app.storage.user['old'] = 'x' * 8_000_000  # reading it back takes longer than dispatching another request
         return 'ok'
 
@@ -514,7 +514,7 @@ async def test_concurrent_requests_wait_for_user_storage_to_load(user: User):
     assert seen == [True, True], 'every request must see the stored data, also while another request loads it'
     while background_tasks.lazy_tasks_running:
         await asyncio.sleep(0.01)
-    path = next(Storage.path.glob(f'storage-{USER_PREFIX}*.json'))
+    path = next(Storage.path.glob('storage-user-*.json'))
     assert set(json.loads(path.read_text(encoding='utf-8'))) == {'old', 'new'}
 
 
