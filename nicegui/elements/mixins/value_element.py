@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, Self, cast
+from typing import TYPE_CHECKING, Any, Generic, Self
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -20,8 +20,16 @@ class ValueElement(Element, Generic[ValueT]):
     - ``None``: The value is updated automatically by the Vue element.
     '''
 
-    value = BindableProperty(
-        on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
+    class _ValueBindableProperty(BindableProperty):
+        """Pushes the previous Python value onto the owner so
+        _handle_value_change can report it, without changing the
+        (self, value) signature that subclasses override."""
+
+        def _handle_change(self, owner: Any, value: Any, previous_value: Any) -> None:
+            owner._previous_python_values.append(previous_value)
+            owner._handle_value_change(value)
+
+    value = _ValueBindableProperty()
 
     if TYPE_CHECKING:
         value: ValueT  # type: ignore[no-redef]  # BindableProperty descriptor can't propagate generic type
@@ -35,6 +43,7 @@ class ValueElement(Element, Generic[ValueT]):
         super().__init__(**kwargs)
         self._send_update_on_value_change = True
         self._client_value: Any = _NO_CLIENT_VALUE
+        self._previous_python_values: list[Any] = []
         self.set_value(value)
         self._change_handlers: list[Handler[ValueChangeEventArguments[ValueT]]] = []
         if on_value_change:
@@ -132,7 +141,8 @@ class ValueElement(Element, Generic[ValueT]):
         return self
 
     def _handle_value_change(self, value: Any) -> None:
-        previous_value = self._props.get(self.VALUE_PROP)
+        previous_value = self._previous_python_values.pop()
+
         with self._props.suspend_updates():
             self._props[self.VALUE_PROP] = self._value_to_model_value(value)
         if self._send_update_on_value_change:
