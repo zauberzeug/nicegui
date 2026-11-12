@@ -57,7 +57,7 @@ class SignalElement(Element):
             client=self.client,
             ranges=[CodeMirrorSelectionRange(anchor=r['anchor'], head=r['head']) for r in e.args['ranges']],
             main_index=e.args['main_index'],
-        )), throttle=0.03)
+        )), throttle=0.05)
         return self
 
     def on_focus_change(self, handler: Handler[CodeMirrorFocusChangeEventArguments]) -> Self:

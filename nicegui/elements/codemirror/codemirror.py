@@ -93,7 +93,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: ``None``)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
-        :param on_selection_change: callback when the selection changes (throttled to 30 ms) (*added in version 4.1.0*)
+        :param on_selection_change: callback when the selection changes (throttled to 50 ms) (*added in version 4.1.0*)
         :param on_focus_change: callback when the editor gains or loses focus (*added in version 3.18.0*)
         :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms) (*added in version 3.18.0*)
         :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms) (*added in version 3.18.0*)
