@@ -88,38 +88,27 @@ const DECLARED_SPEC = Symbol("declared spec");
 const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet();
 
 // Python addresses the document by str index (one per code point), CodeMirror by UTF-16 code unit.
-// The two only differ once the document contains a character outside the Basic Multilingual Plane,
-// whose high surrogate is the only way such a character shows up in a JavaScript string.
-const HIGH_SURROGATE = /[\uD800-\uDBFF]/;
-const identity = (offset) => offset;
-function documentOffsets(doc) {
-  const text = doc.toString();
-  let length = text.length; // in Python str indices
-  let toUnit = identity;
-  let toIndex = identity;
-  if (HIGH_SURROGATE.test(text)) {
-    const units = []; // units[i] = UTF-16 offset of the i-th code point
-    let unit = 0;
-    for (const character of text) {
-      units.push(unit);
-      unit += character.length;
-    }
-    units.push(unit); // an offset may address the end of the document
-    length = units.length - 1;
-    toUnit = (index) => units[Math.max(0, Math.min(index, units.length - 1))];
-    toIndex = (unit) => {
-      let low = 0;
-      let high = units.length - 1;
-      while (low < high) {
-        const middle = (low + high + 1) >> 1;
-        if (units[middle] <= unit) low = middle;
-        else high = middle - 1;
-      }
-      return low;
-    };
+// The two only differ by the characters outside the Basic Multilingual Plane, which take two code units.
+const ASTRAL = /[\u{10000}-\u{10FFFF}]/u;
+
+// How many of the ascending `values`, taken through `key`, are below `limit`.
+function countBelow(values, limit, key) {
+  let low = 0;
+  let high = values.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (key(values[middle], middle) < limit) low = middle + 1;
+    else high = middle;
   }
+  return low;
+}
+
+// Conversions between the two kinds of offsets, given the UTF-16 offsets of the document's astral characters.
+function offsetConversions(doc, astral) {
+  const toIndex = (unit) => unit - countBelow(astral, unit, (offset) => offset);
+  const toUnit = (index) => index + countBelow(astral, index, (offset, i) => offset - i); // offset - i: its str index
   return {
-    length,
+    length: doc.length - astral.length, // in Python str indices
     toIndex,
     toUtf16(spec) {
       if (spec.kind === "mark" || spec.kind === "replace")
@@ -309,7 +298,7 @@ export default {
       // The server marks `decorations` as a preserved prop on unrelated updates, so this only runs on a
       // deliberate write, which re-applies every spec at its declared offset, as line anchors do.
       if (!this.editor) return;
-      const offsets = documentOffsets(this.editor.state.doc);
+      const offsets = this.documentOffsets(this.editor.state.doc);
       const all = [];
       for (const spec of decorations || []) {
         if (!this._fitsDocument(spec, offsets.length)) continue;
@@ -321,7 +310,7 @@ export default {
     // The specs as declared, with their offsets moved to where the state field has mapped each decoration.
     // A decoration that vanished with its text is left out.
     currentDecorationSpecs() {
-      const offsets = documentOffsets(this.editor.state.doc);
+      const offsets = this.documentOffsets(this.editor.state.doc);
       const specs = [];
       for (const cursor = this.editor.state.field(decorationField).iter(); cursor.value; cursor.next()) {
         const declared = cursor.value.spec[DECLARED_SPEC];
@@ -467,6 +456,16 @@ export default {
         effects: CM.EditorView.scrollIntoView(line.from, { y: "nearest", yMargin }),
       });
     },
+    // Documents are immutable, so each one is scanned for astral characters at most once.
+    documentOffsets(doc) {
+      let astral = this._astralOffsets.get(doc);
+      if (!astral) {
+        astral = [];
+        for (const match of doc.toString().matchAll(new RegExp(ASTRAL, "gu"))) astral.push(match.index);
+        this._astralOffsets.set(doc, astral);
+      }
+      return offsetConversions(doc, astral);
+    },
     // Whether the host listens to the given event; the listeners arrive as camel-cased "on<Event>" attributes,
     // followed by their modifiers if there are any.
     hasListener(event) {
@@ -560,7 +559,6 @@ export default {
         class {
           constructor(view) {
             this._last = {};
-            this._toIndex = new WeakMap(); // document -> its UTF-16 offset to Python str index conversion
             // A new editor, such as one rebuilt by a remount, starts with its cursor at the start.
             if (self.hasListener("selection-change")) this._maybeEmit("selection-change", this._selection(view.state));
             // CodeMirror's own viewport is the rendered range (visible plus a margin) and only changes when
@@ -576,15 +574,15 @@ export default {
             if (u.focusChanged && self.hasListener("focus-change")) {
               this._maybeEmit("focus-change", { focused: u.view.hasFocus });
             }
-            if ((u.selectionSet || u.docChanged) && self.hasListener("selection-change")) {
-              // Without a high surrogate before or in the edit, offsets and str indices stay equal: no scan needed.
-              if (u.docChanged && this._toIndex.get(u.startState.doc) === identity) {
-                let inserted = "";
-                u.changes.iterChanges((_fromA, _toA, _fromB, _toB, text) => (inserted += text.toString()));
-                if (!HIGH_SURROGATE.test(inserted)) this._toIndex.set(u.state.doc, identity);
+            if (u.docChanged) {
+              // An edit without astral characters keeps a document free of them, so the new one needs no scan.
+              const astral = self._astralOffsets.get(u.startState.doc);
+              if (astral?.length === 0 && !u.changes.inserted.some((text) => ASTRAL.test(text.toString()))) {
+                self._astralOffsets.set(u.state.doc, astral);
               }
-              // An edit maps the selection through it, so a server-driven change can move it for real;
-              // the dedupe, seeded on mount, drops a selection that stayed in place.
+            }
+            if ((u.selectionSet || u.docChanged) && self.hasListener("selection-change")) {
+              // An edit can move the selection too; the dedupe drops one that stayed in place.
               this._maybeEmit("selection-change", this._selection(u.state));
             }
             // Edits, folds and resizes all change which lines are visible without scrolling.
@@ -611,10 +609,8 @@ export default {
             }
           }
           // CodeMirror's EditorSelection with its positions as Python str indices.
-          // Documents are immutable, so a selection change without an edit reuses its document's conversion.
           _selection(state) {
-            let toIndex = this._toIndex.get(state.doc);
-            if (!toIndex) this._toIndex.set(state.doc, (toIndex = documentOffsets(state.doc).toIndex));
+            const { toIndex } = self.documentOffsets(state.doc);
             const { ranges, mainIndex } = state.selection;
             return {
               ranges: ranges.map((range) => ({ anchor: toIndex(range.anchor), head: toIndex(range.head) })),
@@ -705,6 +701,7 @@ export default {
   async mounted() {
     // This is used to prevent emitting the value we just received from the server.
     this.emitting = true;
+    this._astralOffsets = new WeakMap(); // document -> UTF-16 offsets of its astral characters
 
     // The Compartments are used to change the properties of the editor ("extensions") dynamically
     this.themes = { ...CM.themes, oneDark: CM.oneDark };

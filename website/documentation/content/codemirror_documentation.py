@@ -51,7 +51,9 @@ def signals_and_reveal_demo() -> None:
     *Added in version 4.1.0*
 ''')
 def selection_demo() -> None:
-    def show(e):
+    from nicegui import events
+
+    def show(e: events.CodeMirrorSelectionChangeEventArguments):
         value, head = editor.value, e.main.head
         line = value.count('\n', 0, head) + 1
         column = head - value.rfind('\n', 0, head)

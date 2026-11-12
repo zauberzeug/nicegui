@@ -90,9 +90,6 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         Editor signals report the focus, visible line range and geometry,
         and ``reveal_line`` scrolls a given line into view.
 
-        *Since version 4.1.0:*
-        ``on_selection_change`` reports the selection ranges as ``str`` indices into the value.
-
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: ``None``)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
