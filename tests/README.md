@@ -58,6 +58,16 @@ sudo pacman -S chromium
 If you are using a different distribution, the package manager and package names may differ.
 Please refer to the documentation for your distribution for more information.
 
+#### Snap-based Chromium
+
+Chromium installed via Snap comes with its own chromedriver that is not automatically picked up by Selenium Manager, which might cause tests to hang indefinitely.
+
+Set the `SE_CHROMEDRIVER` environment variable to point to the Snap chromedriver:
+
+```bash
+export SE_CHROMEDRIVER=$(which chromium.chromedriver)
+```
+
 ## Usage
 
 Because Selenium queries are quite cumbersome and lengthy, we introduced a `Screen` class.
