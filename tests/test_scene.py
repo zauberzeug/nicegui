@@ -539,6 +539,45 @@ def test_initialized_raises_without_webgl(screen: Screen):
         screen.selenium.execute_cdp_cmd('Page.removeScriptToEvaluateOnNewDocument', script)
 
 
+def test_scene_view_initializes_once_its_scene_is_mounted(screen: Screen):
+    @ui.page('/')
+    async def page():
+        with ui.tabs() as tabs:
+            one = ui.tab('one')
+            two = ui.tab('two')
+        with ui.tab_panels(tabs, value=one):
+            panel = ui.tab_panel(one)
+            with ui.tab_panel(two):
+                scene = ui.scene()
+        with panel:
+            view = ui.scene_view(scene)
+        await view.initialized()
+        ui.label('initialized')
+
+    screen.open('/')
+    screen.click('two')
+    screen.should_contain('initialized')
+
+
+@pytest.mark.parametrize('delete_scene_first', [True, False])
+async def test_scene_view_initialized_raises_when_scene_is_deleted(user: User, delete_scene_first: bool):
+    @ui.page('/')
+    async def page():
+        scene = ui.scene()
+        view = ui.scene_view(scene)
+        if delete_scene_first:
+            scene.delete()
+        else:
+            ui.timer(0.1, scene.delete, once=True)
+        try:
+            await view.initialized()
+        except RuntimeError as e:
+            ui.label(str(e))
+
+    await user.open('/')
+    await user.should_see('The scene of this scene view has been deleted.')
+
+
 def test_objects_created_before_the_scene_is_mounted(screen: Screen):
     scene = None
 

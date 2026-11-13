@@ -8,7 +8,16 @@ export default {
 
   async mounted() {
     await this.$nextTick();
-    this.scene = getElement(this.sceneId).scene;
+    this.scene = await new Promise((resolve) => {
+      const findScene = () => {
+        const scene = getElement(this.sceneId)?.scene;
+        if (!scene) return false;
+        clearInterval(this.sceneInterval);
+        resolve(scene);
+        return true;
+      };
+      if (!findScene()) this.sceneInterval = setInterval(findScene, 100); // the scene may not be mounted yet
+    });
     if (this.showStats) {
       this.stats = new Stats();
       this.stats.domElement.style.position = "absolute";
@@ -106,6 +115,7 @@ export default {
   },
 
   beforeUnmount() {
+    clearInterval(this.sceneInterval);
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
     this.resizeObserver?.disconnect();
