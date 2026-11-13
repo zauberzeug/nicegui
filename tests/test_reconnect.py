@@ -8,7 +8,6 @@ from nicegui.testing import Screen
 
 
 def test_reconnecting_without_page_reload(screen: Screen):
-    # A connectivity drop must not cause a page reload — regression guard for #6289.
     @ui.page('/', reconnect_timeout=3.0)
     def page():
         ui.input('Input').props('autofocus')
