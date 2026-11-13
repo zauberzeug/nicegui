@@ -82,7 +82,11 @@ def nicegui_remove_all_screenshots() -> None:
 
 @pytest.fixture(scope='session')
 def nicegui_driver(nicegui_chrome_options: Options) -> Generator[WebDriver, None, None]:
-    """Create a new Chrome driver instance (reused across tests in the session)."""
+    """Create a new Chrome driver instance (reused across tests in the session).
+
+    Set ``SE_CHROMEDRIVER`` to use a specific ChromeDriver (e.g. ``/snap/bin/chromium.chromedriver`` for snap Chromium)
+    and ``CHROME_BINARY_LOCATION`` to use a specific browser binary.
+    """
     for executable_path in (None, shutil.which('chromedriver'), 'chromedriver'):  # Required for ARM devcontainers
         try:
             s = Service(executable_path=executable_path)
