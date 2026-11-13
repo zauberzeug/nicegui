@@ -4,6 +4,7 @@ import mimetypes
 import weakref
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
+from email.utils import format_datetime
 from pathlib import Path
 from typing import BinaryIO
 
@@ -27,29 +28,35 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
     e_tag = f'"{hashlib.md5((str(last_modified_time) + str(file_size)).encode()).hexdigest()}"'
     headers = {
         'ETag': e_tag,
-        'Last-Modified': last_modified_time.strftime(r'%a, %d %b %Y %H:%M:%S GMT'),
+        'Last-Modified': format_datetime(last_modified_time, usegmt=True),
     }
     if_none_match = request.headers.get('If-None-Match', '')
     if if_none_match.strip() == '*' or e_tag in [tag.strip().removeprefix('W/') for tag in if_none_match.split(',')]:
         return Response(status_code=304, headers=headers)  # Not Modified
-    range_header = request.headers.get('range')
     media_type = mimetypes.guess_type(str(file))[0] or 'application/octet-stream'
-    if range_header is not None:
+    unit, _, range_spec = request.headers.get('range', '').partition('=')
+    if_range = request.headers.get('If-Range', '').strip()
+    is_byte_range = unit.strip().lower() == 'bytes' and ',' not in range_spec  # ignore other units and multiple ranges
+    is_unchanged = if_range in ('', e_tag, headers['Last-Modified'])  # else serve the whole file (RFC 9110, 13.1.5)
+    if is_byte_range and is_unchanged:
         try:
-            byte1, byte2 = range_header.split('=')[1].split('-')
-            start = int(byte1)
-            if byte2:
-                end = int(byte2)
-        except (IndexError, ValueError):
+            byte1, byte2 = range_spec.split('-', 1)
+            if byte1 == '':
+                # suffix range, e.g. "bytes=-4" is the last 4 bytes (RFC 9110)
+                suffix_length = int(byte2)
+                start = max(file_size - suffix_length, 0)
+            else:
+                start = int(byte1)
+                if byte2:
+                    end = min(int(byte2), end)
+        except ValueError:
             return Response(status_code=416, headers={'Content-Range': f'bytes */{file_size}'})
         if start > end or start >= file_size:
             return Response(status_code=416, headers={'Content-Range': f'bytes */{file_size}'})
-        end = min(end, file_size - 1)
         status_code = 206  # Partial Content
-    content_length = end - start + 1
+        headers['Content-Range'] = f'bytes {start}-{end}/{file_size}'
     headers.update({
-        'Content-Length': str(content_length),
-        'Content-Range': f'bytes {start}-{end}/{file_size}',
+        'Content-Length': str(end - start + 1),
         'Accept-Ranges': 'bytes',
     })
 
