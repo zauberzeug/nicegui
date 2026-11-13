@@ -314,8 +314,8 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
-        rows, columns = helpers.pandas_to_records(df)
-        return rows, [{'name': col, 'label': col, 'field': col} for col in columns]
+        rows, columns, labels = helpers.pandas_to_records(df)
+        return rows, [{'name': col, 'label': label, 'field': col} for col, label in zip(columns, labels, strict=True)]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:

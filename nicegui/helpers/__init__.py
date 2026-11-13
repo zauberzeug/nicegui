@@ -12,12 +12,13 @@ from .functions import (
     should_await,
 )
 from .network import find_free_port, format_url, is_port_open, schedule_browser
-from .strings import event_type_to_camel_case, kebab_to_camel_case, remove_indentation
+from .strings import camel_to_title_case, event_type_to_camel_case, kebab_to_camel_case, remove_indentation
 from .warnings import warn_once
 
 __all__ = [
     'NoImplicitAwait',
     'await_with_context',
+    'camel_to_title_case',
     'event_type_to_camel_case',
     'expects_arguments',
     'find_free_port',

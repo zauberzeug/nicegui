@@ -177,6 +177,7 @@ def test_create_from_dataframe(screen: Screen, df_type: str):
         if df_type == 'pandas':
             df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
             ui.aggrid.from_pandas(df)
+            ui.aggrid.from_pandas(pd.DataFrame([['Foo', 'Bar', 'Baz']], columns=['sameName', 'sameName', 'sameName_0']))
         else:
             df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], '42': 'answer'})
             ui.aggrid.from_polars(df)
@@ -188,6 +189,12 @@ def test_create_from_dataframe(screen: Screen, df_type: str):
     screen.should_contain('21')
     screen.should_contain('42')
     screen.should_contain('answer')
+    if df_type == 'pandas':
+        screen.should_contain('Foo')
+        screen.should_contain('Bar')
+        screen.should_contain('Baz')
+        screen.should_contain('Same Name_0')
+        screen.should_not_contain('Same Name_1')
 
 
 def test_create_dynamically(screen: Screen):
