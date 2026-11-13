@@ -1,10 +1,10 @@
-"""Serve the photos used in documentation demos and examples, cropped to any size like picsum.photos did.
+"""Serve the photos used in documentation demos and examples, center-cropped to a fixed set of sizes.
 
 Most photos are from Unsplash (https://unsplash.com/license).
 Their sources are listed in SOURCES.
 Photos with unknown Unsplash source were reconstructed from archived picsum.photos crops in the Wayback Machine.
 """
-from functools import lru_cache
+from functools import cache
 from io import BytesIO
 from pathlib import Path
 
@@ -15,7 +15,7 @@ from PIL import Image, ImageOps
 from nicegui import app
 
 PATH = Path(__file__).parent / 'demo_images'
-MAX_SIZE = 1280
+SIZES = {(640, 360), (270, 180), (300, 200), (1200, 800)}  # only sizes used in demos, to keep the cache bounded
 
 SOURCES = {
     'bench': 'https://unsplash.com/photos/eG3k60PrTGY',
@@ -39,13 +39,13 @@ images_app = FastAPI()
 def _image(name: str, width: int, height: int) -> Response:
     if name not in SOURCES:
         raise HTTPException(404, f'Unknown image "{name}"')
-    if not 0 < width <= MAX_SIZE or not 0 < height <= MAX_SIZE:
-        raise HTTPException(400, f'Width and height must be between 1 and {MAX_SIZE}')
+    if (width, height) not in SIZES:
+        raise HTTPException(404, f'Unsupported size {width}x{height}')
     return Response(_crop(name, width, height), media_type='image/jpeg',
                     headers={'Cache-Control': 'public, max-age=86400'})
 
 
-@lru_cache(maxsize=256)
+@cache
 def _crop(name: str, width: int, height: int) -> bytes:
     with Image.open(PATH / f'{name}.jpg') as image:
         cropped = ImageOps.fit(image, (width, height), Image.Resampling.LANCZOS)
