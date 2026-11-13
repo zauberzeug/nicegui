@@ -437,8 +437,10 @@ function createApp(elements, options) {
         options.query.next_message_id = window.nextMessageId;
       });
       window.did_handshake = false;
+      let skipAuthProbe = false; // while probing, or once the page answered without an auth wall since the last connect
       const messageHandlers = {
         connect: () => {
+          skipAuthProbe = false;
           function wrapFunction(originalFunction) {
             const MAX_WEBSOCKET_MESSAGE_SIZE = 1000000 - 100; // 1MB without 100 bytes of slack for the message header
             return function (...args) {
@@ -489,6 +491,19 @@ function createApp(elements, options) {
           } else if (err.message == "Implicit handshake failed") {
             console.log("reloading because implicit handshake failed for clientId " + window.clientId);
             window.location.reload();
+          } else if (!skipAuthProbe) {
+            // the error is indistinguishable from an outage, so probe the page before reloading (see #6289)
+            skipAuthProbe = true;
+            fetch(window.location.href, { headers: { "NiceGUI-Check": "connect_error" }, redirect: "manual" })
+              .then((response) => {
+                response.body?.cancel();
+                if (response.status >= 500) skipAuthProbe = false; // the page can't be served right now, so probe again on the next error
+                if (window.socket.connected) return; // recovered while probing
+                if (response.type !== "opaqueredirect" && ![401, 403].includes(response.status)) return; // not an auth wall
+                console.log("reloading because the connection was rejected: " + err.message);
+                window.location.reload();
+              })
+              .catch(() => (skipAuthProbe = false)); // the origin is unreachable, so probe again on the next error
           }
         },
         try_reconnect: async () => {
