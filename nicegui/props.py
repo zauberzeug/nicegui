@@ -152,7 +152,12 @@ class Props(ObservableDict, Generic[T]):
 
             for group in ['single', 'double', 'square', 'curly']:
                 if match_groups[group] is not None:
-                    props[key] = ast.literal_eval(match_groups[group])
+                    try:
+                        props[key] = ast.literal_eval(match_groups[group])
+                    except (ValueError, SyntaxError):
+                        if not key.startswith(':'):
+                            raise
+                        props[key] = match_groups[group]  # Vue bindings may be JS rather than Python literals (#6493)
                     break
             else:
                 if match_groups['unquoted'] is not None:

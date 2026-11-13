@@ -258,6 +258,12 @@ function renderRecursively(elements, id, propsContext) {
   };
   Object.entries(props).forEach(([key, value]) => {
     if (key.startsWith(":")) {
+      if (typeof value !== "string") {
+        // parsed lists and dicts are values, not JS expressions (#6493)
+        props[key.substring(1)] = value;
+        delete props[key];
+        return;
+      }
       try {
         try {
           props[key.substring(1)] = new Function("props", `return (${value})`)(propsContext);
