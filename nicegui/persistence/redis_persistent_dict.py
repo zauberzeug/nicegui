@@ -35,6 +35,7 @@ class RedisPersistentDict(PersistentDict):
         self.key = key_prefix + id
         self.ttl = ttl
         self._listener_task: asyncio.Task | None = None
+        self._is_receiving = False
         super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:
@@ -82,10 +83,16 @@ class RedisPersistentDict(PersistentDict):
                     if t == 'message':
                         new_data = json.loads(message['data'])
                         if new_data != self:
-                            # NOTE: remove obsolete keys individually, because clear() would also delete the Redis key
-                            for key in set(self) - new_data.keys():
-                                del self[key]
-                            self.update(new_data)
+                            self._is_receiving = True  # other change handlers run, but publishing would echo the data
+                            try:
+                                # NOTE: remove obsolete keys individually, because clear() would also delete the Redis key
+                                for key in set(self) - new_data.keys():
+                                    del self[key]
+                                self.update(new_data)
+                            finally:
+                                self._is_receiving = False
+                            if self != new_data:  # a change handler modified the received data
+                                self.publish()
                     elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
                         break
             except asyncio.CancelledError:
@@ -106,6 +113,9 @@ class RedisPersistentDict(PersistentDict):
 
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
+        if self._is_receiving:
+            return
+
         async def backup() -> None:
             if not await self.redis_client.exists(self.key) and not self:
                 return
