@@ -126,6 +126,12 @@ class RedisPersistentDict(PersistentDict):
             await pipeline.execute()
         background_tasks.create_lazy_or_defer(backup(), name=f'redis-{self.key}')
 
+    async def refresh_ttl(self) -> None:
+        """Reset the TTL of the Redis key, which is otherwise only renewed on writes."""
+        if self.ttl is None:
+            return
+        await self.redis_client.expire(self.key, self.ttl)
+
     async def close(self) -> None:
         """Close Redis connection and subscription."""
         if self._listener_task and not self._listener_task.done():

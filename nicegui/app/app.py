@@ -488,7 +488,10 @@ class App(FastAPI):
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:
-    """Prune tab storage that is older than the configured ``max_tab_storage_age`` and not used by a client anymore."""
+    """Prune tab storage that is older than the configured ``max_tab_storage_age`` and not used by a client anymore.
+
+    Tab storages still in use get their lifetime in the persistence layer refreshed instead.
+    """
     tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
     tab_ids_in_use = {client._pinned_tab_id for client in Client.instances.values()}  # pylint: disable=protected-access
     for tab_id, tab in list(tab_storages.items()):
@@ -498,6 +501,13 @@ async def prune_tab_storage(*, force: bool = False) -> None:
             if isinstance(tab, PersistentDict):
                 await tab.close()
             del tab_storages[tab_id]
+    # a Redis key expires after max_tab_storage_age unless refreshed, even while a client still uses the tab storage (#6487)
+    refreshes = [tab.refresh_ttl() for tab_id, tab in tab_storages.items()
+                 if tab_id in tab_ids_in_use and isinstance(tab, PersistentDict)]
+    results = await asyncio.gather(*refreshes, return_exceptions=True)
+    errors = [result for result in results if isinstance(result, Exception)]
+    if errors:  # one line per tick, a Redis outage would otherwise log one error per connected tab
+        log.error(f'Could not refresh the TTL of {len(errors)} tab storages', exc_info=errors[0])
 
 
 async def prune_user_storage(*, force: bool = False) -> None:
@@ -515,4 +525,4 @@ async def prune_user_storage(*, force: bool = False) -> None:
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:
         if isinstance(result, Exception):
-            log.exception(result)
+            log.error('Could not close user storage', exc_info=result)

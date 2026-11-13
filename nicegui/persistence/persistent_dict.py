@@ -17,5 +17,8 @@ class PersistentDict(observables.ObservableDict, abc.ABC):
         """Take over the loaded data without the change handler, which would only write the same data back."""
         dict.update(self, {key: self._observe(value) for key, value in data.items()})
 
+    async def refresh_ttl(self) -> None:
+        """Extend the lifetime of the data in the persistence layer, if it has one."""
+
     async def close(self) -> None:
         """Clean up the persistence layer."""
