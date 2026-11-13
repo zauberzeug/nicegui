@@ -338,9 +338,9 @@ class Table(FilterElement, component='table.js'):
 
     @columns.setter
     def columns(self, value: list[dict]) -> None:
-        value = self._normalize_columns(value)
-        if value != self._props['columns']:
-            self._props['columns'] = value
+        columns = self._normalize_columns(value)
+        if self._props['columns'] != columns:
+            self._props['columns'] = columns
 
     @property
     def column_defaults(self) -> dict | None:
