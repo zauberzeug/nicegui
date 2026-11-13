@@ -4,6 +4,7 @@ import mimetypes
 import weakref
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
+from email.utils import format_datetime
 from pathlib import Path
 from typing import BinaryIO
 
@@ -27,7 +28,7 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
     e_tag = f'"{hashlib.md5((str(last_modified_time) + str(file_size)).encode()).hexdigest()}"'
     headers = {
         'ETag': e_tag,
-        'Last-Modified': last_modified_time.strftime(r'%a, %d %b %Y %H:%M:%S GMT'),
+        'Last-Modified': format_datetime(last_modified_time, usegmt=True),
     }
     if_none_match = request.headers.get('If-None-Match', '')
     if if_none_match.strip() == '*' or e_tag in [tag.strip().removeprefix('W/') for tag in if_none_match.split(',')]:
@@ -46,7 +47,8 @@ def get_range_response(file: Path, request: Request, chunk_size: int) -> Respons
                 start = max(file_size - suffix_length, 0)
             else:
                 start = int(byte1)
-                end = min(int(byte2), file_size - 1) if byte2 else file_size - 1
+                if byte2:
+                    end = min(int(byte2), end)
         except ValueError:
             return Response(status_code=416, headers={'Content-Range': f'bytes */{file_size}'})
         if start > end or start >= file_size:
