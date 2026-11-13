@@ -38,10 +38,6 @@ class FilePersistentDict(PersistentDict):
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
 
-    def _load(self, data: dict) -> None:
-        """Take over the data read from the file without a backup, which would only write the same data back."""
-        dict.update(self, {key: self._observe(value) for key, value in data.items()})
-
     def backup(self) -> None:
         """Back up the data to the given file path."""
         if not self.filepath.exists():
