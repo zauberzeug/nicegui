@@ -9,8 +9,8 @@ from starlette.responses import FileResponse, PlainTextResponse, Response
 
 from nicegui import app, ui
 from nicegui.page_arguments import RouteMatch
-from website import design as d
 from website import (
+    demo_images,
     documentation,
     examples_page,
     fly,
@@ -23,6 +23,7 @@ from website import (
     sitemap,
     svg,
 )
+from website import design as d
 from website.components import footer_section
 from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
@@ -31,6 +32,7 @@ middlewares.setup()
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 rate_limits.setup()
+demo_images.setup()
 
 on_fly = fly.setup()
 

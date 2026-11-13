@@ -56,7 +56,7 @@ def link_to_other_page():
 ''')
 def link_from_elements():
     with ui.link(target='https://github.com/zauberzeug/nicegui'):
-        ui.image('https://picsum.photos/id/41/640/360').classes('w-64')
+        ui.image('https://nicegui.io/images/drops/640/360').classes('w-64')
 
 
 doc.reference(ui.link)

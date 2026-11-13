@@ -23,7 +23,7 @@ doc.intro(image_documentation)
     To overlay an SVG, make the `viewBox` exactly the size of the image and provide `100%` width/height to match the actual rendered size.
 ''')
 def captions_and_overlays_demo():
-    with ui.image('https://picsum.photos/id/29/640/360'):
+    with ui.image('https://nicegui.io/images/valley/640/360'):
         ui.label('Nice!').classes('absolute-bottom text-subtitle2 text-center')
 
     with ui.image('https://cdn.stocksnap.io/img-thumbs/960w/airplane-sky_DYPWDEEILG.jpg'):
