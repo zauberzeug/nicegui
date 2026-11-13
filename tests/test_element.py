@@ -94,8 +94,9 @@ def test_style_parsing(value: str | None, expected: dict[str, str]):
     ('array=["one", "two"]', {'array': ['one', 'two']}),
     ('''object={'one': "foo"} baz''', {'object': {'one': 'foo'}, 'baz': True}),
     ('''object={'one': "foo", "two": "bar"}''', {'object': {'one': 'foo', 'two': 'bar'}}),
-    # Vue-bindings keep the raw bracket text so the client evaluates the JS expression as written (#6493)
-    (':title=[1,2]', {':title': '[1,2]'}),
+    # Vue-bindings: parsed Python values pass through (the JS side skips non-strings);
+    # literal_eval failures fall back to the raw text for ':' keys (#6493)
+    (':title=[1,2]', {':title': [1, 2]}),
     (':title="[1,2]"', {':title': '[1,2]'}),
     (':options=[true,false]', {':options': '[true,false]'}),
     (':style={color:red}', {':style': '{color:red}'}),
