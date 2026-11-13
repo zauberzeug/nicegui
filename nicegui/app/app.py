@@ -505,9 +505,9 @@ async def prune_tab_storage(*, force: bool = False) -> None:
     refreshes = [tab.refresh_ttl() for tab_id, tab in tab_storages.items()
                  if tab_id in tab_ids_in_use and isinstance(tab, PersistentDict)]
     results = await asyncio.gather(*refreshes, return_exceptions=True)
-    for result in results:
-        if isinstance(result, Exception):
-            log.exception(result)
+    errors = [result for result in results if isinstance(result, Exception)]
+    if errors:  # one line per tick, a Redis outage would otherwise log one error per connected tab
+        log.error(f'Could not refresh the TTL of {len(errors)} tab storages', exc_info=errors[0])
 
 
 async def prune_user_storage(*, force: bool = False) -> None:
@@ -525,4 +525,4 @@ async def prune_user_storage(*, force: bool = False) -> None:
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:
         if isinstance(result, Exception):
-            log.exception(result)
+            log.error('Could not close user storage', exc_info=result)
