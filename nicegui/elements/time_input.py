@@ -1,5 +1,5 @@
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
-from ..events import Handler, ValueChangeEventArguments
+from ..events import GenericEventArguments, Handler, ValueChangeEventArguments
 from .button import Button as button
 from .menu import Menu as menu
 from .mixins.disableable_element import DisableableElement
@@ -8,15 +8,15 @@ from .mixins.value_element import ValueElement
 from .time import Time as time
 
 
-class TimeInput(LabelElement, ValueElement[str | None], DisableableElement):
+class TimeInput(LabelElement, ValueElement[str], DisableableElement):
     LOOPBACK = False
 
     @resolve_defaults
     def __init__(self,
                  label: str | None = DEFAULT_PROP | None, *,
                  placeholder: str | None = DEFAULT_PROP | None,
-                 value: str | None = DEFAULT_PROPS['model-value'] | '',
-                 on_change: Handler[ValueChangeEventArguments[str | None]] | None = None,
+                 value: str = DEFAULT_PROPS['model-value'] | '',
+                 on_change: Handler[ValueChangeEventArguments[str]] | None = None,
                  ) -> None:
         """Time Input
 
@@ -38,7 +38,10 @@ class TimeInput(LabelElement, ValueElement[str | None], DisableableElement):
                 with menu() as self.menu:
                     self.picker = time()
 
-        self.picker.bind_value(self)
+        self.picker.bind_value(self, forward=lambda v: v or '')
+
+    def _event_args_to_value(self, e: GenericEventArguments) -> str:
+        return e.args or ''
 
     def _displayed_contents(self, *, only_visible: bool) -> list:
         return [*super()._displayed_contents(only_visible=only_visible), self._props.get(self.VALUE_PROP)]

@@ -17,7 +17,7 @@ def icons() -> None:
         ui.button(icon='thumb_up')
         with ui.button():
             ui.label('sub-elements')
-            ui.image('https://picsum.photos/id/377/640/360') \
+            ui.image('https://nicegui.io/images/night/640/360') \
                 .classes('rounded-full size-16 ml-4')
 
 
@@ -43,7 +43,7 @@ async def await_button_click() -> None:
 def disable_context_manager() -> None:
     from contextlib import contextmanager
 
-    import httpx
+    import httpx2
 
     @contextmanager
     def disable(button: ui.button):
@@ -55,7 +55,7 @@ def disable_context_manager() -> None:
 
     async def get_slow_response(button: ui.button) -> None:
         with disable(button):
-            async with httpx.AsyncClient() as client:
+            async with httpx2.AsyncClient() as client:
                 response = await client.get('https://httpbin.org/delay/1', timeout=5)
                 ui.notify(f'Response code: {response.status_code}')
 

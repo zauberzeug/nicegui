@@ -47,8 +47,8 @@ def _collect_translatable_texts() -> set[str]:
             assert len(node.args) == 1 and not node.keywords, \
                 f'{path.relative_to(ROOT)}:{node.lineno}: t() should receive exactly one argument'
             argument = node.args[0]
-            assert isinstance(argument, ast.Constant) and isinstance(argument.value, str), \
-                f'{path.relative_to(ROOT)}:{node.lineno}: ' \
-                't() should receive a string literal so translations can be validated'
+            assert isinstance(argument, ast.Constant) and isinstance(argument.value, str), (
+                f'{path.relative_to(ROOT)}:{node.lineno}: '
+                't() should receive a string literal so translations can be validated')
             texts.add(remove_indentation(argument.value))
     return texts

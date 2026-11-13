@@ -48,3 +48,14 @@ def test_esm_modules_registered_on_import():
         assert not missing, f'ESM modules not registered on import: {sorted(missing)}'
     ''')], capture_output=True, text=True, timeout=30, check=False)
     assert result.returncode == 0, result.stderr
+
+
+def test_highcharts_esm_module_registered_on_import():
+    pytest.importorskip('nicegui_highcharts')
+    result = subprocess.run(['python3', '-c', dedent('''\
+        from nicegui import ui
+        from nicegui.dependencies import esm_modules
+        assert 'nicegui-highcharts' in {m.name for m in esm_modules.values()}
+        import nicegui_highcharts  # its own registration must match the one above
+    ''')], capture_output=True, text=True, timeout=30, check=False)
+    assert result.returncode == 0, result.stderr

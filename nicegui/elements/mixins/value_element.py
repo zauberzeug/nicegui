@@ -1,7 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, cast
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Generic, Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -26,7 +24,7 @@ class ValueElement(Element, Generic[ValueT]):
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
     if TYPE_CHECKING:
-        value: ValueT  # type: ignore[assignment,no-redef]  # BindableProperty descriptor can't propagate generic type
+        value: ValueT  # type: ignore[no-redef]  # BindableProperty descriptor can't propagate generic type
 
     def __init__(self, *,
                  value: ValueT,

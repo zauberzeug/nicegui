@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import time
 
-import httpx
+import httpx2
 from fastapi import Form, HTTPException
 from fastapi.responses import RedirectResponse
 
@@ -40,7 +40,7 @@ def logout() -> None:
 
 @app.post('/auth')
 async def google_auth(credential: str = Form(...)) -> RedirectResponse:
-    async with httpx.AsyncClient() as http_client:
+    async with httpx2.AsyncClient() as http_client:
         response = await http_client.get(f'https://oauth2.googleapis.com/tokeninfo?id_token={credential}')
     if response.status_code != 200:
         raise HTTPException(status_code=400, detail='Invalid token')

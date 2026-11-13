@@ -4,14 +4,13 @@ import os
 from pathlib import Path
 
 from fastapi import Request
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import FileResponse, PlainTextResponse, Response
 
-from nicegui import app, core, ui
+from nicegui import app, ui
 from nicegui.page_arguments import RouteMatch
-from website import design as d
 from website import (
+    demo_images,
     documentation,
     examples_page,
     fly,
@@ -19,29 +18,21 @@ from website import (
     i18n,
     imprint_privacy,
     main_page,
+    middlewares,
     rate_limits,
     sitemap,
     svg,
 )
+from website import design as d
 from website.components import footer_section
 from website.documentation.intersection_observer import IntersectionObserver as intersection_observer
 
-
-@app.add_middleware
-class DocsSetCacheControlMiddleware(BaseHTTPMiddleware):
-
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        response = await call_next(request)
-        if request.url.path.startswith('/fonts/') or request.url.path.startswith('/static/'):
-            response.headers['Cache-Control'] = core.app.config.cache_control_directives
-        elif request.url.path.startswith('/examples/images/'):
-            response.headers['Cache-Control'] = 'public, max-age=86400'  # 1 day
-        return response
-
+middlewares.setup()
 
 # session middleware is required for demo in documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 rate_limits.setup()
+demo_images.setup()
 
 on_fly = fly.setup()
 
@@ -113,7 +104,7 @@ def _build_page(language: str) -> None:
     ui.context.client.content.classes('p-0 gap-0')
 
     header.add_head_html()
-    _add_hreflang_links(language)
+    _add_search_engine_links(language)
 
     with ui.left_drawer().classes(f'column no-wrap gap-1 {d.BG_FOOTER} {d.BORDER_R} p-8') as menu:
         tree = ui.tree([], label_key='title', on_select=lambda e: ui.navigate.to(f'{prefix}/documentation/{e.value}')) \
@@ -163,11 +154,18 @@ def _build_page(language: str) -> None:
     _update_menu(ui.context.client.sub_pages_router.current_path)
 
 
-def _add_hreflang_links(language: str) -> None:
-    """Declare the language alternates of the current page for search engines."""
-    base_path = ui.context.client.request.url.path.removeprefix(f'/{language}') or '/'
-    ui.add_head_html('\n'.join(f'<link rel="alternate" hreflang="{iso}" href="{sitemap.SITE_URL}{html.escape(path)}">'
-                               for iso, path in i18n.alternates(base_path)))
+def _add_search_engine_links(language: str) -> None:
+    """Declare the canonical URL and the language alternates of the current page for search engines.
+
+    The canonical URL drops the query string and a trailing slash, so that variants like ``?ref=...`` count as one page.
+    """
+    path = ui.context.client.request.url.path.rstrip('/') or '/'
+    base_path = path.removeprefix(f'/{language}') or '/'
+    ui.add_head_html('\n'.join([
+        f'<link rel="canonical" href="{sitemap.SITE_URL}{html.escape(path)}">',
+        *(f'<link rel="alternate" hreflang="{iso}" href="{sitemap.SITE_URL}{html.escape(alternate)}">'
+          for iso, alternate in i18n.alternates(base_path)),
+    ]))
 
 
 def _documentation_detail_page(name: str, tree: ui.tree) -> None:

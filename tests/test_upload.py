@@ -1,13 +1,16 @@
+import asyncio
+import gc
 import tempfile
+import weakref
 from io import BytesIO
 from pathlib import Path
 
-import httpx
+import httpx2
 import pytest
 from starlette.datastructures import UploadFile
 from starlette.formparsers import MultiPartParser
 
-from nicegui import app, events, ui
+from nicegui import events, ui
 from nicegui.elements.upload_files import _sanitize_filename, create_file_upload
 from nicegui.testing import Screen, User
 
@@ -27,8 +30,7 @@ async def test_uploading_text_file(screen: Screen):
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.wait(0.1)
     screen.click('cloud_upload')
-    screen.wait(0.1)
-    assert len(results) == 1
+    screen.wait_for(lambda: len(results) == 1)
     assert results[0].file.name == test_path1.name
     assert results[0].file.content_type in {'text/x-python', 'text/x-python-script'}
     assert await results[0].file.read() == test_path1.read_bytes()
@@ -49,7 +51,7 @@ def test_upload_route_respects_disabled_and_hidden_state(screen: Screen, state: 
             upload.set_visibility(False)
 
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.post(f'http://localhost:{Screen.PORT}{upload.props["url"]}',
                                     files={'file': ('test.txt', b'content')})
     assert response.status_code == (200 if state == 'enabled' else 403)
@@ -69,8 +71,7 @@ def test_two_upload_elements(screen: Screen):
     screen.should_contain('Test Title 2')
     screen.find_all_by_class('q-uploader__input')[0].send_keys(str(test_path1))
     screen.find_all_by_class('q-uploader__input')[1].send_keys(str(test_path2))
-    screen.wait(0.1)
-    assert len(results) == 2
+    screen.wait_for(lambda: len(results) == 2)
     assert results[0].file.name == test_path1.name
     assert results[1].file.name == test_path2.name
 
@@ -87,7 +88,7 @@ def test_uploading_from_two_tabs(screen: Screen):
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.should_contain(f'uploaded {test_path1.name}')
     screen.switch_to(0)
-    screen.should_not_contain(f'uploaded {test_path1.name}')
+    screen.should_not_contain(f'uploaded {test_path1.name}', duration=0.5)
 
 
 def test_upload_with_header_slot(screen: Screen):
@@ -104,40 +105,19 @@ def test_replace_upload(screen: Screen):
     @ui.page('/')
     def page():
         with ui.row() as container:
-            ui.upload(label='A')
+            ui.upload(label='Upload A')
 
         def replace():
             with container.clear():
-                ui.upload(label='B')
+                ui.upload(label='Upload B')
         ui.button('Replace', on_click=replace)
 
     screen.open('/')
-    screen.should_contain('A')
+    screen.should_contain('Upload A')
 
     screen.click('Replace')
-    screen.wait(0.5)
-    screen.should_contain('B')
-    screen.should_not_contain('A')
-
-
-async def test_route_removal_when_deleting_upload_with_custom_url(user: User):
-    @app.post('/custom/upload')
-    def custom_upload() -> None:
-        pass
-
-    upload: ui.upload = None  # type: ignore[assignment]
-
-    @ui.page('/')
-    def page():
-        nonlocal upload
-        upload = ui.upload().props('url=/custom/upload')
-
-    await user.open('/')
-    assert any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
-
-    upload.delete()
-    assert not any(f'/upload/{upload.id}' in getattr(route, 'path', '') for route in app.routes)
-    assert any(getattr(route, 'path', None) == '/custom/upload' for route in app.routes)
+    screen.should_contain('Upload B')
+    screen.should_not_contain('Upload A')
 
 
 def test_reset_upload(screen: Screen):
@@ -150,7 +130,6 @@ def test_reset_upload(screen: Screen):
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
     screen.should_contain(test_path1.name)
     screen.click('Reset')
-    screen.wait(0.5)
     screen.should_not_contain(test_path1.name)
 
 
@@ -165,9 +144,7 @@ async def test_multi_upload_event(screen: Screen):
     screen.find_by_class('q-uploader__input').send_keys(f'{test_path1}\n{test_path2}')
     screen.wait(0.1)
     screen.click('cloud_upload')
-    screen.wait(0.1)
-
-    assert len(results) == 1
+    screen.wait_for(lambda: len(results) == 1)
     assert len(results[0].files) == 2
     assert results[0].files[0].name == test_path1.name
     assert results[0].files[1].name == test_path2.name
@@ -186,9 +163,7 @@ async def test_two_handlers_can_read_file(screen: Screen):
 
     screen.open('/')
     screen.find_by_class('q-uploader__input').send_keys(str(test_path1))
-    screen.wait(0.1)
-
-    assert len(reads) == 2
+    screen.wait_for(lambda: len(reads) == 2)
     upload_1 = await reads[0].file.text()
     upload_2 = await reads[1].file.text()
     assert upload_1 == upload_2 == test_path1.read_text(encoding='utf-8')
@@ -208,7 +183,7 @@ async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
 
     screen.open('/')
     screen.find_by_class('q-uploader__input').send_keys(str(tmp_file))
-    screen.wait(0.1)
+    screen.wait_for(lambda: len(reads) == 1)
     assert reads[0].file.size() == size
     assert await reads[0].file.text() == tmp_file.read_text()
 
@@ -218,6 +193,12 @@ async def test_different_file_sizes(screen: Screen, size: int, tmp_path: Path):
     ('../../etc/passwd', 'passwd'),
     ('..\\..\\windows\\evil.exe', 'evil.exe'),
     ('../..\\..\\mixed/traversal\\payload.txt', 'payload.txt'),
+    ('C:evil.py', 'evil.py'),
+    ('C:\\windows\\evil.exe', 'evil.exe'),
+    ('C:C:evil.py', 'evil.py'),
+    ('folder/C:evil.py', 'evil.py'),
+    ('..', ''),
+    ('C:..', ''),
     ('', ''),
     (None, ''),
 ])
@@ -243,3 +224,40 @@ async def test_spilled_temp_file_cleaned_up_on_error(monkeypatch: pytest.MonkeyP
         await create_file_upload(FlakyUpload(BytesIO(b''), filename='big.bin'), chunk_size=16)
 
     assert not any(tmp_path.iterdir()), 'spilled temp file should be removed when the upload fails'
+
+
+async def test_deleted_uploads_are_collectable(user: User):
+    uploads: list[weakref.ref[ui.upload]] = []
+
+    @ui.page('/')
+    def page():
+        uploads.append(weakref.ref(ui.upload()))
+
+    for _ in range(3):
+        client = await user.open('/')
+        client.delete()
+        await asyncio.sleep(0)
+    gc.collect()
+    assert all(upload() is None for upload in uploads), 'deleted uploads are garbage collected'
+
+
+@pytest.mark.parametrize('target', ['missing_client', 'missing_element', 'wrong_type', 'malformed', 'deleted'])
+async def test_invalid_upload_target(user: User, target: str):
+    results: list[events.UploadEventArguments] = []
+
+    @ui.page('/')
+    def page():
+        ui.upload(on_upload=results.append)
+        ui.label('Not an upload')
+
+    client = await user.open('/')
+    upload = user.find(ui.upload).elements.pop()
+    label = user.find(ui.label).elements.pop()
+    if target == 'deleted':
+        upload.delete()
+    client_id = 'missing' if target == 'missing_client' else client.id
+    element_id = {'missing_element': '-1', 'wrong_type': label.id, 'malformed': 'invalid'}.get(target, str(upload.id))
+    files = {'file': ('test.txt', b'test')}
+    response = await user.http_client.post(f'/_nicegui/client/{client_id}/upload/{element_id}', files=files)
+    assert response.status_code == (422 if target == 'malformed' else 404)
+    assert not results

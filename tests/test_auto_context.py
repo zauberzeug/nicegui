@@ -72,11 +72,11 @@ def test_autoupdate_after_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('before connected')
     screen.should_contain('after connected')
-    screen.should_not_contain('one')
+    screen.should_not_contain('one', duration=0.5)
     screen.wait_for('one')
-    screen.should_not_contain('two')
+    screen.should_not_contain('two', duration=0.5)
     screen.wait_for('two')
-    screen.should_not_contain('three')
+    screen.should_not_contain('three', duration=0.5)
     screen.wait_for('three')
 
 
@@ -95,7 +95,7 @@ def test_autoupdate_on_async_event_handler(screen: Screen):
     screen.open('/')
     screen.click('Dialog')
     screen.should_contain('This should be visible')
-    screen.should_not_contain('New text after 1 second')
+    screen.should_not_contain('New text after 1 second', duration=0.5)
     screen.should_contain('New text after 1 second')
 
 
@@ -112,9 +112,9 @@ def test_autoupdate_on_async_timer_callback(screen: Screen):
     screen.open('/')
     screen.click('start')
     screen.should_contain('0')
-    screen.should_not_contain('1')
+    screen.should_not_contain('1', duration=0.5)
     screen.wait_for('1')
-    screen.should_not_contain('2')
+    screen.should_not_contain('2', duration=0.5)
     screen.wait_for('2')
 
 

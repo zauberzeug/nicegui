@@ -2,13 +2,14 @@ import asyncio
 import contextlib
 import copy
 import gc
+import json
 import re
 import threading
 import time
 import warnings
 from collections.abc import Callable
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import Client, app, background_tasks, context, core, ui
@@ -101,7 +102,7 @@ def test_access_user_storage_from_fastapi(screen: Screen):
 
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.get(f'http://localhost:{Screen.PORT}/api')
         assert response.status_code == 200
         assert response.text == '"OK"'
@@ -119,8 +120,8 @@ def test_access_user_storage_on_interaction(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('switch')
-    screen.wait(0.5)
-    assert next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"test_switch":true}'
+    screen.wait_for(lambda: [p.read_text(encoding='utf-8') for p in Storage.path.glob('storage-user-*.json')] ==
+                    ['{"test_switch":true}'])
 
 
 def test_access_user_storage_from_button_click_handler(screen: Screen):
@@ -131,9 +132,8 @@ def test_access_user_storage_from_button_click_handler(screen: Screen):
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/')
     screen.click('test')
-    screen.wait(1)
-    assert \
-        next(Storage.path.glob('storage-user-*.json')).read_text(encoding='utf-8') == '{"inner_function":"works"}'
+    screen.wait_for(lambda: [p.read_text(encoding='utf-8') for p in Storage.path.glob('storage-user-*.json')] ==
+                    ['{"inner_function":"works"}'])
 
 
 def test_access_user_storage_from_background_task(screen: Screen):
@@ -185,8 +185,8 @@ def test_rapid_storage(screen: Screen):
 
     screen.open('/')
     screen.click('test')
-    screen.wait(0.5)
-    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}'
+    screen.wait_for(lambda: (Storage.path / 'storage-general.json').exists() and
+                    (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"one":1,"two":2,"three":3}')
 
 
 def test_tab_storage_is_local(screen: Screen):
@@ -210,7 +210,9 @@ def test_tab_storage_is_local(screen: Screen):
     screen.should_contain('3')
 
 
-def test_tab_storage_is_auto_removed(screen: Screen):
+def test_tab_storage_is_auto_removed(screen: Screen, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(Storage, 'max_tab_storage_age', 0.5)
+
     @ui.page('/')
     async def page():
         await context.client.connected()
@@ -221,6 +223,12 @@ def test_tab_storage_is_auto_removed(screen: Screen):
     screen.should_contain('1')
     screen.open('/')
     screen.should_contain('2')
+
+    screen.wait(1.0)  # the tab storage outlives max_tab_storage_age while its client stays connected
+    background_tasks.create(prune_tab_storage())
+    screen.wait(0.1)
+    screen.open('/')
+    screen.should_contain('3')  # the storage of a connected tab is kept
 
     background_tasks.create(prune_tab_storage(force=True))
     screen.wait(0.1)
@@ -243,8 +251,7 @@ def test_clear_tab_storage(screen: Screen):
     assert next(iter(tab_storages.values())) == {'test': '123'}
 
     screen.click('clear')
-    screen.wait(0.5)
-    assert not tab_storages
+    screen.wait_for(lambda: not tab_storages)
 
 
 async def test_tab_storage_in_sync_connect_handler(user: User):
@@ -373,8 +380,8 @@ def test_deepcopy(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Loaded')
-    screen.wait(0.5)
-    assert (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}'
+    screen.wait_for(lambda: (Storage.path / 'storage-general.json').exists() and
+                    (Storage.path / 'storage-general.json').read_text(encoding='utf-8') == '{"a":{"b":0}}')
 
 
 def test_missing_storage_secret(screen: Screen):
@@ -453,7 +460,7 @@ async def test_user_storage_is_pruned(screen: Screen):
     assert len(Client.instances) == 1
     assert len(app.storage._users) == 1
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/status')
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/status')
     assert response.status_code == 200
     assert response.text == '"ok"'
     assert len(Client.instances) == 1
@@ -482,6 +489,33 @@ def test_user_storage_survives_prune_during_request(screen: Screen, monkeypatch:
     screen.ui_run_kwargs['storage_secret'] = 'just a test'
     screen.open('/data')
     screen.should_contain('default')
+
+
+async def test_concurrent_requests_wait_for_user_storage_to_load(user: User):
+    seen: list[bool] = []
+
+    @app.get('/')
+    async def index():
+        seen.append('old' in app.storage.user)
+        app.storage.user.setdefault('new', 1)
+        return 'ok'
+
+    @app.get('/seed')
+    async def seed():
+        app.storage.user['old'] = 'x' * 8_000_000  # reading it back takes longer than dispatching another request
+        return 'ok'
+
+    await user.http_client.get('/seed')  # creates the session and its storage...
+    while background_tasks.lazy_tasks_running:
+        await asyncio.sleep(0.01)  # ...and backs it up
+    await prune_user_storage(force=True)  # so that the next request has to load it from the file again
+
+    await asyncio.gather(user.http_client.get('/'), user.http_client.get('/'))
+    assert seen == [True, True], 'every request must see the stored data, also while another request loads it'
+    while background_tasks.lazy_tasks_running:
+        await asyncio.sleep(0.01)
+    path = next(Storage.path.glob('storage-user-*.json'))
+    assert set(json.loads(path.read_text(encoding='utf-8'))) == {'old', 'new'}
 
 
 def test_storage_serialization_error_points_at_offending_key(screen: Screen):
@@ -579,6 +613,25 @@ async def test_clearing_storage_removes_leftover_temp_files(user: User):
     assert not Storage.path.exists(), 'temp files should be swept so the storage directory can be removed'
 
 
+@pytest.mark.parametrize('sync', [True, False])
+async def test_loading_storage_does_not_write_the_file_back(user: User, tmp_path, sync: bool):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    path = tmp_path / 'storage.json'
+    path.write_text('{"key": "value"}', encoding='utf-8')  # spaced, unlike what a backup writes
+    d = FilePersistentDict(path, encoding='utf-8')
+    if sync:
+        d.initialize_sync()  # as for app.storage.general when NiceGUI is imported
+    else:
+        await d.initialize()  # as for app.storage.user on a request
+    await background_tasks.teardown()  # awaits the backup, had loading scheduled one
+    assert d == {'key': 'value'}
+    assert path.read_text(encoding='utf-8') == '{"key": "value"}'
+
+
 @pytest.mark.parametrize('custom_cookie_headers', [False, True])
 def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
     @ui.page('/')
@@ -589,7 +642,7 @@ def test_storage_cookie_headers(screen: Screen, custom_cookie_headers: bool):
     if custom_cookie_headers:
         screen.ui_run_kwargs['session_middleware_kwargs'] = {'same_site': 'none', 'https_only': True}
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         response = http_client.get(f'http://localhost:{Screen.PORT}/')
         assert response.status_code == 200
         cookie_settings = str(response.headers.get('set-cookie')).lower()

@@ -1,6 +1,5 @@
 import asyncio
-
-from typing_extensions import Self
+from typing import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...events import (
@@ -21,7 +20,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
     @resolve_defaults
     def __init__(self,
                  scene: Scene,
-                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 *,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
                  camera: SceneCamera | None = None,
@@ -51,26 +50,34 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._props['fps'] = fps
         self._props['show-stats'] = show_stats
         self._props['scene-id'] = scene.id
+        self._scene = scene
+        scene._views.add(self)  # pylint: disable=protected-access
         self.camera = camera or Scene.perspective_camera()
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
+        self._settled_event = asyncio.Event()
+        self._webgl_failed = False
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
+        self.on('init-failed', self._handle_init_failed)
         self.on('click3d', self._handle_click)
 
-        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('scene_id', 'scene-id')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:
+        return event_type == 'init'
 
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
         return self
 
+    def _handle_init_failed(self) -> None:
+        self._webgl_failed = True
+        self._settled_event.set()
+
     def _handle_init(self) -> None:
         self._initialized_event.set()
+        self._settled_event.set()
         self.move_camera(duration=0)
         self.run_method('init')
 
@@ -79,8 +86,23 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
 
         *Updated in version 3.17.0: Awaiting scene view initialization cancels the awaiting task
         when the scene view is deleted, e.g. because the client disconnected.*
+
+        *Updated in version 3.19.0: Raises a ``RuntimeError`` if the browser could not create a WebGL renderer.*
+
+        *Updated in version 4.1.0: Raises a ``RuntimeError`` if the scene is deleted before the scene view is initialized.*
         """
-        await self._wait_for(self._initialized_event)
+        if not self._scene.is_deleted:
+            await self._wait_for(self._settled_event)
+        if self._initialized_event.is_set():
+            return
+        if self.is_deleted:  # deleted along with its scene, whose deletion woke this task without cancelling it
+            raise asyncio.CancelledError
+        if self._webgl_failed:
+            raise RuntimeError('Could not create WebGL renderer.')
+        raise RuntimeError('The scene of this scene view has been deleted.')
+
+    def _handle_scene_delete(self) -> None:
+        self._settled_event.set()
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
@@ -125,7 +147,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         :param up_x: x component of the camera up vector
         :param up_y: y component of the camera up vector
         :param up_z: z component of the camera up vector
-        :param duration: duration of the movement in seconds (default: `0.5`)
+        :param duration: duration of the movement in seconds (default: ``0.5``)
         """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y

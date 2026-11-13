@@ -1,6 +1,6 @@
 import asyncio
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import Client, Event, app, background_tasks, ui
@@ -221,7 +221,7 @@ async def test_event_memory_leak(screen: Screen):
         event.subscribe(ui.notify)
 
     screen.start_server()
-    httpx.get(f'http://localhost:{Screen.PORT}/memory_leak', timeout=5)
+    httpx2.get(f'http://localhost:{Screen.PORT}/memory_leak', timeout=5)
     await asyncio.sleep(1)
     Client.prune_instances(client_age_threshold=0)
     assert not event.callbacks, 'event callbacks should be cleared after pruning clients'

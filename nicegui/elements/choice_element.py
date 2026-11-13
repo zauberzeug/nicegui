@@ -1,6 +1,4 @@
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ..binding import BindableProperty
 from ..events import Handler, ValueChangeEventArguments

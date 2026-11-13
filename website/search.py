@@ -1,3 +1,5 @@
+import json
+
 from nicegui import __version__, background_tasks, events, ui
 
 from . import design as d
@@ -65,7 +67,7 @@ class Search:
                 indices = await ui.run_javascript(f'''
                     const isMobile = window.innerWidth < 610;
                     const limit = isMobile ? 25 : 100;
-                    return window.fuse.search("{e.value}", {{ limit }}).map(result => result.refIndex);
+                    return window.fuse.search({json.dumps(e.value)}, {{ limit }}).map(result => result.refIndex);
                 ''', timeout=6)
                 self.results.clear()
                 self.selected_index = 0
