@@ -489,17 +489,16 @@ function createApp(elements, options) {
           } else if (err.message == "Implicit handshake failed") {
             console.log("reloading because implicit handshake failed for clientId " + window.clientId);
             window.location.reload();
-          } else if (err.code === 'parser error' || err.context?.status >= 400) {
-            // an auth proxy intercepted the connection; probe before reloading to avoid reload-into-outage (see #6289)
-            fetch(window.location.href, { headers: { 'NiceGUI-Check': 'connect_error' } })
+          } else {
+            // the error is indistinguishable from an outage, so probe the page before reloading (see #6289)
+            fetch(window.location.href, { headers: { "NiceGUI-Check": "connect_error" }, redirect: "manual" })
               .then((response) => {
                 if (window.socket.connected) return; // recovered while probing
-                if (!response.redirected && ![401, 403].includes(response.status))
-                  return; // not an auth wall
-                console.log('reloading because the connection was rejected: ' + err.message);
+                if (response.type !== "opaqueredirect" && ![401, 403].includes(response.status)) return; // not an auth wall
+                console.log("reloading because the connection was rejected: " + err.message);
                 window.location.reload();
               })
-              .catch(() => {});
+              .catch(() => {}); // the origin is unreachable, so keep retrying
           }
         },
         try_reconnect: async () => {
