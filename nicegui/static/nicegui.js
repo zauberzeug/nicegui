@@ -497,6 +497,7 @@ function createApp(elements, options) {
             fetch(window.location.href, { headers: { "NiceGUI-Check": "connect_error" }, redirect: "manual" })
               .then((response) => {
                 response.body?.cancel();
+                if (response.status >= 500) skipAuthProbe = false; // the page can't be served right now, so probe again on the next error
                 if (window.socket.connected) return; // recovered while probing
                 if (response.type !== "opaqueredirect" && ![401, 403].includes(response.status)) return; // not an auth wall
                 console.log("reloading because the connection was rejected: " + err.message);
