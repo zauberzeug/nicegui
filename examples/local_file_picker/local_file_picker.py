@@ -1,3 +1,4 @@
+import html
 import platform
 from pathlib import Path
 
@@ -56,7 +57,7 @@ class local_file_picker(ui.dialog):
 
         self.grid.options['rowData'] = [
             {
-                'name': f'📁 <strong>{p.name}</strong>' if p.is_dir() else p.name,
+                'name': f'📁 <strong>{html.escape(p.name)}</strong>' if p.is_dir() else html.escape(p.name),
                 'path': str(p),
             }
             for p in paths
@@ -70,6 +71,8 @@ class local_file_picker(ui.dialog):
         self.grid.update()
 
     def handle_double_click(self, e: events.GenericEventArguments) -> None:
+        if not self._is_listed(e.args['data']['path']):
+            return
         self.path = Path(e.args['data']['path'])
         if self.path.is_dir():
             self.update_grid()
@@ -78,4 +81,8 @@ class local_file_picker(ui.dialog):
 
     async def _handle_ok(self):
         rows = await self.grid.get_selected_rows()
-        self.submit([r['path'] for r in rows])
+        self.submit([r['path'] for r in rows if self._is_listed(r['path'])])
+
+    def _is_listed(self, path: str) -> bool:
+        # only accept paths the server has listed itself, since the client could send any path
+        return any(row['path'] == path for row in self.grid.options['rowData'])

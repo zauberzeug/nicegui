@@ -13,5 +13,9 @@ class PersistentDict(observables.ObservableDict, abc.ABC):
     def initialize_sync(self) -> None:
         """Load initial data from the persistence layer in a synchronous context."""
 
+    def _load(self, data: dict) -> None:
+        """Take over the loaded data without the change handler, which would only write the same data back."""
+        dict.update(self, {key: self._observe(value) for key, value in data.items()})
+
     async def close(self) -> None:
         """Clean up the persistence layer."""

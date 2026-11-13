@@ -24,28 +24,13 @@
         blockquote, dd, dl, figure, h1, h2, h3, h4, h5, h6, hr, p, pre {
           margin: revert-layer; /* HACK: revert Quasar's margin styles */
         }
-        /* DEPRECATED: mirror of quasarframework/quasar#18413 + #18419, remove with the Quasar bump for NiceGUI 4.0 */
-        [dir="rtl"] .q-fab__actions--right {
-          transform-origin: 0 50%;
-          right: auto;
-          margin-right: 0;
-          left: 100%;
-          margin-left: 9px;
-          flex-direction: row-reverse;
+        code, kbd, pre, samp {
+          font-family: revert-layer; /* HACK: revert Quasar's monospace font so Tailwind's mono font stack applies */
         }
-        [dir="rtl"] .q-fab__actions--right:not(.q-fab__actions--opened) {
-          transform: scale(0.4) translateX(-62px);
-        }
-        [dir="rtl"] .q-fab__actions--left {
-          transform-origin: 100% 50%;
-          left: auto;
-          margin-left: 0;
-          right: 100%;
-          margin-right: 9px;
-          flex-direction: row;
-        }
-        [dir="rtl"] .q-fab__actions--left:not(.q-fab__actions--opened) {
-          transform: scale(0.4) translateX(62px);
+        .q-textarea--autogrow .q-field__native {
+          /* HACK: Quasar sizes autogrow textareas with "field-sizing: content", which also makes them as wide as their content */
+          contain: inline-size;
+          contain-intrinsic-inline-size: 10em;
         }
       }
       @layer overrides {
@@ -117,6 +102,7 @@
       import * as Vue from "vue";
       globalThis.Vue = Vue;
       document.getElementById("esm-fallback")?.remove();
+      document.getElementById("esm-fallback-style")?.remove();
     </script>
     {% if prod_js %}
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/quasar.umd.prod.js"></script>
@@ -128,7 +114,7 @@
     <script defer src="{{ prefix | safe }}/_nicegui/{{version}}/static/lang/{{ language }}.umd.prod.js"></script>
     {{ body_html | safe }}
 
-    <style>
+    <style id="esm-fallback-style">
       #esm-fallback {
         display: flex;
         justify-content: center;
@@ -149,7 +135,7 @@
         display: none;
       }
     </style>
-    <div id="esm-fallback">Your browser does not support ES modules.<br />Please use a modern browser.</div>
+    <div id="esm-fallback">This page needs JavaScript.<br />Please allow scripts for this site or use a modern browser.</div>
     <div id="app" {% if unocss %}class="nicegui-unocss-loading" {% endif %}></div>
     <div id="nicegui-keep-alive-cache" style="display: none" aria-hidden="true"></div>
     <div id="popup" class="nicegui-error-popup" aria-hidden="true">

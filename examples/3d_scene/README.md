@@ -1,5 +1,5 @@
 # 3D Scene
 
-Create a webGL view and load an STL mesh illuminated with a spotlight.
+Create a webGL view and load an STL mesh.
 
 ![Screenshot](screenshot.webp)

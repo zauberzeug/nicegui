@@ -1,8 +1,6 @@
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
-
-from typing_extensions import Self
+from typing import Any, Self, cast
 
 from ... import core
 from ...binding import BindableProperty, bind, bind_from, bind_to
@@ -128,3 +126,6 @@ class SourceElement(Element):
         if self.auto_route:
             core.app.remove_route(self.auto_route)
         return super()._handle_delete()
+
+    def _displayed_contents(self, *, only_visible: bool) -> list:
+        return [*super()._displayed_contents(only_visible=only_visible), self.source]

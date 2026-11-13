@@ -52,7 +52,7 @@ export default {
     this.objects = new Map();
     this.objects.set("scene", { mesh: this.scene });
 
-    this.clock = new THREE.Clock();
+    this.timer = new THREE.Timer();
     this.draggable_objects = [];
 
     if (this.showStats) {
@@ -62,7 +62,7 @@ export default {
       this.$el.appendChild(this.stats.domElement);
     }
 
-    window["scene_" + this.$el.id] = this.scene; // NOTE: for selenium tests only
+    window["scene_" + parseHtmlId(this.$el.id)] = this.scene; // NOTE: for selenium tests only
 
     if (this.cameraType === "perspective") {
       this.camera = new THREE.PerspectiveCamera(
@@ -104,6 +104,8 @@ export default {
       this.$el.style.height = this.height + "px";
       this.$el.style.padding = "10px";
       this.$el.style.border = "1px solid silver";
+      this.$el.removeAttribute("data-initializing");
+      this.$emit("init-failed");
       return;
     }
     this.renderer.setClearColor(this.backgroundColor);
@@ -118,7 +120,7 @@ export default {
       this.$el.addEventListener(
         "click",
         () => {
-          const elementDefinition = mounted_app.elements[this.$el.id.slice(1)];
+          const elementDefinition = mounted_app.elements[parseHtmlId(this.$el.id)];
           const originalTag = elementDefinition.tag;
           elementDefinition.tag = "";
           this.$nextTick(() => (elementDefinition.tag = originalTag));
@@ -140,26 +142,33 @@ export default {
     this.$nextTick(() => this.resize());
     window.addEventListener("resize", this.resize, false);
     window.addEventListener("DOMContentLoaded", this.resize, false);
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(this.$el);
 
-    const gridSize = this.grid[0] || 100;
-    const gridDivisions = this.grid[1] || 100;
-    if (this.grid) {
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(gridSize, gridSize),
-        new THREE.MeshPhongMaterial({ color: this.backgroundColor }),
-      );
+    let groundGeometry, grid;
+    if (this.polarGrid) {
+      const [radius, sectors, rings, divisions = 64] = this.polarGrid;
+      groundGeometry = new THREE.CircleGeometry(radius, divisions, -Math.PI / 2);
+      grid = new THREE.PolarGridHelper(radius, sectors, rings, divisions);
+    } else if (this.grid) {
+      const gridSize = this.grid[0] || 100;
+      const gridDivisions = this.grid[1] || 100;
+      groundGeometry = new THREE.PlaneGeometry(gridSize, gridSize);
+      grid = new THREE.GridHelper(gridSize, gridDivisions);
+    }
+    if (grid) {
+      const ground = new THREE.Mesh(groundGeometry, new THREE.MeshPhongMaterial({ color: this.backgroundColor }));
       ground.translateZ(-0.01);
       ground.object_id = "ground";
       this.scene.add(ground);
 
-      const grid = new THREE.GridHelper(gridSize, gridDivisions);
       grid.material.transparent = true;
       grid.material.opacity = 0.2;
       grid.rotateX(Math.PI / 2);
       this.scene.add(grid);
     }
     this.controlClass = { trackball: TrackballControls, map: MapControls }[this.controlType] || OrbitControls;
-    this.controls = new this.controlClass(this.camera, this.renderer.domElement);
+    this.create_controls(this.camera.up);
     this.drag_controls = new DragControls(this.draggable_objects, this.camera, this.renderer.domElement);
     this.drag_controls.transformGroup = true;
     const applyConstraint = (constraint, position) => {
@@ -188,7 +197,8 @@ export default {
     const render = () => {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
-      this.controls.update(this.clock.getDelta());
+      this.timer.update();
+      this.controls.update(this.timer.getDelta());
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
@@ -234,6 +244,7 @@ export default {
   beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("DOMContentLoaded", this.resize);
+    this.resizeObserver?.disconnect();
   },
 
   methods: {
@@ -372,9 +383,19 @@ export default {
       // The calls are only started, not awaited, just like they would be if each of them arrived as its own message.
       for (const [name, ...args] of calls) this[name](...args);
     },
+    create_controls(up) {
+      this.controls = new this.controlClass(this.camera, this.renderer.domElement);
+      // remember the up vector the controls were built for: camera.up may differ from it after a user rotation
+      // (TrackballControls) or an interrupted tween, so it cannot be used to decide whether a rebuild is needed
+      this.controls_up = up.clone();
+    },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
+      if (!this.controls) return; // WebGL renderer could not be created
       if (this.camera_tween) this.camera_tween.stop();
-      const camera_up_changed = up_x !== null || up_y !== null || up_z !== null;
+      const target_up = new THREE.Vector3(up_x, up_y, up_z);
+      // the controls are only rebuilt if the up vector they were built for really changes,
+      // because rebuilding resets their configuration
+      const camera_up_changed = !this.controls_up.equals(target_up);
       this.camera_tween = new TWEEN.Tween([
         this.camera.position.x,
         this.camera.position.y,
@@ -386,20 +407,7 @@ export default {
         this.look_at.y,
         this.look_at.z,
       ])
-        .to(
-          [
-            x === null ? this.camera.position.x : x,
-            y === null ? this.camera.position.y : y,
-            z === null ? this.camera.position.z : z,
-            up_x === null ? this.camera.up.x : up_x,
-            up_y === null ? this.camera.up.y : up_y,
-            up_z === null ? this.camera.up.z : up_z,
-            look_at_x === null ? this.look_at.x : look_at_x,
-            look_at_y === null ? this.look_at.y : look_at_y,
-            look_at_z === null ? this.look_at.z : look_at_z,
-          ],
-          duration * 1000,
-        )
+        .to([x, y, z, up_x, up_y, up_z, look_at_x, look_at_y, look_at_z], duration * 1000)
         .onUpdate((p) => {
           this.camera.position.set(p[0], p[1], p[2]);
           this.camera.up.set(p[3], p[4], p[5]); // before calling lookAt
@@ -410,12 +418,13 @@ export default {
         .onComplete(() => {
           if (camera_up_changed) {
             this.controls.dispose();
-            this.controls = new this.controlClass(this.camera, this.renderer.domElement);
+            this.create_controls(target_up);
             this.controls.target.copy(this.look_at);
             this.camera.lookAt(this.look_at);
           }
         })
         .start();
+      if (duration === 0) this.camera_tween.update(); // settle immediately, so subsequent JavaScript sees the final state
     },
     get_camera() {
       return {
@@ -435,6 +444,9 @@ export default {
       };
     },
     resize() {
+      // skip while the element has no layout box (e.g. hidden), otherwise the canvas would end up 0x0;
+      // the resize observer catches up once the element is shown
+      if (!this.$el.getClientRects().length) return;
       const { clientWidth, clientHeight } = this.$el;
       this.renderer.setSize(clientWidth, clientHeight);
       this.text_renderer.setSize(clientWidth, clientHeight);
@@ -445,6 +457,7 @@ export default {
         this.camera.right = (this.camera.aspect * this.cameraParams.size) / 2;
       }
       this.camera.updateProjectionMatrix();
+      this.controls.handleResize?.(); // TrackballControls caches the canvas rect
     },
   },
 
@@ -452,6 +465,7 @@ export default {
     width: Number,
     height: Number,
     grid: Object,
+    polarGrid: Array,
     cameraType: String,
     cameraParams: Object,
     clickEvents: Array,

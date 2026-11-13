@@ -17,16 +17,16 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         """Plotly Element
 
         Renders a Plotly chart.
-        There are two ways to pass a Plotly figure for rendering, see parameter `figure`:
+        There are two ways to pass a Plotly figure for rendering, see parameter ``figure``:
 
-        * Pass a `go.Figure` object, see https://plotly.com/python/
+        * Pass a ``go.Figure`` object, see https://plotly.com/python/
 
-        * Pass a Python `dict` object with keys `data`, `layout`, `config` (optional), see https://plotly.com/javascript/
+        * Pass a Python ``dict`` object with keys ``data``, ``layout``, ``config`` (optional), see https://plotly.com/javascript/
 
-        For best performance, use the declarative `dict` approach for creating a Plotly chart.
+        For best performance, use the declarative ``dict`` approach for creating a Plotly chart.
 
-        :param figure: Plotly figure to be rendered. Can be either a `go.Figure` instance, or
-                       a `dict` object with keys `data`, `layout`, `config` (optional).
+        :param figure: Plotly figure to be rendered. Can be either a ``go.Figure`` instance, or
+                       a ``dict`` object with keys ``data``, ``layout``, ``config`` (optional).
         """
         super().__init__()
 
@@ -41,7 +41,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         self.update()
 
     def run_plot_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a plotly.js library function against the chart's HTML element.
+        r"""Run a plotly.js library function against the chart's HTML element.
 
         See the `plotly.js function reference <https://plotly.com/javascript/plotlyjs-function-reference/>`_ for a list of methods.
         The chart's HTML element is passed as the first argument automatically.
@@ -53,7 +53,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         *Added in version 3.13.0*
 
         :param name: name of the plotly.js function (without the ``Plotly.`` prefix)
-        :param args: arguments to pass after the chart element
+        :param \*args: arguments to pass after the chart element
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call

@@ -1,6 +1,8 @@
+import DOMPurify from "dompurify";
+
 export default {
   template: `
-    <q-editor ref="qRef" :id="id" v-model="inputValue">
+    <q-editor ref="qRef" v-model="inputValue">
       <template v-for="(_, slot) in $slots" v-slot:[slot]="slotProps">
         <slot :name="slot" v-bind="slotProps || {}" />
       </template>
@@ -8,22 +10,22 @@ export default {
   `,
   props: {
     value: String,
-    id: String,
+    sanitize: Boolean,
   },
   data() {
     return {
-      inputValue: this.value,
+      inputValue: this.sanitizedValue(),
       emitting: true,
     };
   },
   beforeUnmount() {
-    const element = mounted_app.elements[this.$props.id.slice(1)];
+    const element = mounted_app.elements[parseHtmlId(this.$attrs.id)];
     if (element) element.props.value = this.inputValue;
   },
   watch: {
-    value(newValue) {
+    value() {
       this.emitting = false;
-      this.inputValue = newValue;
+      this.inputValue = this.sanitizedValue();
       this.$nextTick(() => (this.emitting = true));
     },
     inputValue(newValue) {
@@ -33,7 +35,10 @@ export default {
   },
   methods: {
     updateValue() {
-      this.inputValue = this.value;
+      this.inputValue = this.sanitizedValue();
+    },
+    sanitizedValue() {
+      return this.sanitize ? DOMPurify.sanitize(this.value ?? "") : this.value;
     },
   },
 };

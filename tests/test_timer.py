@@ -1,7 +1,7 @@
 import asyncio
 import gc
 
-import httpx
+import httpx2
 import pytest
 
 from nicegui import Client, app, background_tasks, ui
@@ -29,8 +29,7 @@ def test_timer(screen: Screen):
     assert counter.value == 0, 'timer is not running'
 
     screen.open('/')
-    screen.wait(0.5)
-    assert counter.value > 0, 'timer is running after opening the page'
+    screen.wait_for(lambda: counter.value > 0)
 
     t.deactivate()
     screen.wait(0.5)
@@ -39,8 +38,7 @@ def test_timer(screen: Screen):
     assert counter.value == c, 'timer is not running anymore after deactivating it'
 
     t.activate()
-    screen.wait(0.5)
-    assert counter.value > c, 'timer is running again after activating it'
+    screen.wait_for(lambda: counter.value > c)
 
     t.cancel()
     screen.wait(0.5)
@@ -62,8 +60,7 @@ def test_timer_on_private_page(screen: Screen):
     assert counter.value == 0, 'timer is not running even after starting the server'
 
     screen.open('/')
-    screen.wait(0.5)
-    assert counter.value > 0, 'timer is running after opening the page'
+    screen.wait_for(lambda: counter.value > 0)
 
     screen.close()
     count = counter.value
@@ -96,8 +93,7 @@ def test_awaiting_coroutine(screen: Screen):
         ui.timer(0.5, update_user)
 
     screen.open('/')
-    screen.wait(1)
-    assert user['name'] == 'Bob'
+    screen.wait_for(lambda: user['name'] == 'Bob')
 
 
 def test_timer_on_deleted_container(screen: Screen):
@@ -173,8 +169,7 @@ def test_app_timer(screen: Screen):
         ui.button('Deactivate', on_click=timer.deactivate)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert counter.value > 0, 'timer is running after starting the server'
+    screen.wait_for(lambda: counter.value > 0)
 
     screen.click('Deactivate')
     value = counter.value
@@ -182,21 +177,23 @@ def test_app_timer(screen: Screen):
     assert counter.value == value, 'timer is not running anymore after deactivating it'
 
     screen.click('Activate')
-    screen.wait(0.5)
-    assert counter.value > value, 'timer is running again after activating it'
+    screen.wait_for(lambda: counter.value > value)
     value = counter.value
 
     screen.open('/')
-    screen.wait(0.5)
-    assert counter.value > value, 'timer is also incrementing when opening another page'
+    screen.wait_for(lambda: counter.value > value)  # timer is also incrementing when opening another page
 
 
-def test_cancel_current_invocation(screen: Screen):
+@pytest.mark.parametrize('protected', [False, True])
+def test_cancel_current_invocation(screen: Screen, protected: bool):
     counter = Counter()
 
     async def update():
         await asyncio.sleep(1.0)
         counter.increment()
+
+    if protected:
+        update = background_tasks.await_on_shutdown(update)
 
     @ui.page('/')
     def page():
@@ -260,8 +257,7 @@ def test_once_timer_task_cancelled_on_client_delete(screen: Screen):
     assert count_sleeping_tasks() == 1, 'there is one timer task'
 
     screen.close()
-    screen.wait(0.5)
-    assert count_sleeping_tasks() == 0, 'timer task should be cancelled after client deletion'
+    screen.wait_for(lambda: count_sleeping_tasks() == 0)  # timer task should be cancelled after client deletion
 
 
 def test_no_leak_when_client_deleted(screen: Screen):
@@ -270,7 +266,7 @@ def test_no_leak_when_client_deleted(screen: Screen):
         ui.timer(0.1, lambda: None)
 
     screen.start_server()
-    httpx.get(screen.url)
+    httpx2.get(screen.url)
     screen.wait(1)
     Client.prune_instances(client_age_threshold=0)
     screen.wait(1)

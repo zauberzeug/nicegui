@@ -1,12 +1,14 @@
 import asyncio
 import gc
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 
-import httpx
+import httpx2
 import pytest
 
-from nicegui import __version__, app, ui
+from nicegui import __version__, app, helpers, ui
 from nicegui.app.range_response import get_range_response
 from nicegui.testing import Screen
 
@@ -27,7 +29,7 @@ def secret_file():
 
 
 def assert_video_file_streaming(path: str) -> None:
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         r = http_client.get(
             path if 'http' in path else f'http://localhost:{Screen.PORT}{path}',
             headers={'Range': 'bytes=0-1000'},
@@ -59,7 +61,7 @@ def test_media_files_against_path_traversal(screen: Screen, secret_file):
 
     screen.open('/')
 
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/media/%2e%2e/.env')
         assert 'TOP SECRET DATA' not in r.text
         assert r.status_code == 404
@@ -84,7 +86,7 @@ def test_invalid_range_header_returns_416(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         for range_value in ['bytes=1000-500', 'bytes=9999-10000', 'bytes=abc-def', 'invalid']:
             r = http_client.get(f'http://localhost:{Screen.PORT}/media/test.mp4', headers={'Range': range_value})
             assert r.status_code == 416, f'Expected 416 for Range: {range_value}'
@@ -98,7 +100,7 @@ def test_malicious_chunk_size_is_clamped(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         for chunk_size in [-1, 0, -9999]:
             r = http_client.get(
                 f'http://localhost:{Screen.PORT}/media/test.mp4?nicegui_chunk_size={chunk_size}',
@@ -116,7 +118,7 @@ def test_get_from_static_files_dir(url_path: str, screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg')
         assert r.status_code == 200
         assert 'max-age=3456' in r.headers['Cache-Control']
@@ -130,7 +132,7 @@ def test_404_for_non_existing_static_file(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}/static/does_not_exist.jpg')
         assert r.status_code == 404
         assert 'static/_nicegui' not in r.text, 'should use root_path, see https://github.com/zauberzeug/nicegui/issues/2570'
@@ -144,10 +146,72 @@ def test_adding_single_static_file(screen: Screen):
         ui.label('Hello, world!')
 
     screen.open('/')
-    with httpx.Client() as http_client:
+    with httpx2.Client() as http_client:
         r = http_client.get(f'http://localhost:{Screen.PORT}{url_path}')
         assert r.status_code == 200
         assert 'max-age=3456' in r.headers['Cache-Control']
+
+
+@pytest.mark.parametrize('add_file', [app.add_static_file, app.add_media_file], ids=['static', 'media'])
+def test_single_use_file_is_served_exactly_once(screen: Screen, secret_file: Path, add_file: Callable[..., str]):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    url_path = add_file(local_file=secret_file, single_use=True)
+    assert helpers.hash_file_path(secret_file.resolve()) not in url_path, 'URL must not be derivable from the file path'
+    assert add_file(local_file=secret_file, single_use=True) != url_path, 'URLs must not repeat'
+    route_count = len(app.routes)
+
+    with httpx2.Client() as http_client:
+        url = f'http://localhost:{Screen.PORT}{url_path}'
+        with ThreadPoolExecutor(max_workers=12) as pool:
+            responses = list(pool.map(lambda _: http_client.get(url), range(12)))
+        served = [r for r in responses if r.status_code == 200]
+        assert len(served) == 1, 'a single-use route must be served exactly once'
+        assert all(r.status_code == 404 for r in responses if r is not served[0]), 'all other requests must get 404'
+        assert served[0].text == 'TOP SECRET DATA'
+        assert served[0].headers['Cache-Control'] == 'no-store'
+        assert len(app.routes) == route_count - 1, 'the consumed route should be gone'
+        assert http_client.get(url).status_code == 404
+
+
+def test_single_use_media_file_partial_content_is_not_cacheable(screen: Screen, secret_file: Path):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    url_path = app.add_media_file(local_file=secret_file, single_use=True)
+
+    with httpx2.Client() as http_client:
+        ranged = http_client.get(f'http://localhost:{Screen.PORT}{url_path}', headers={'Range': 'bytes=0-3'})
+        assert ranged.status_code == 206
+        assert ranged.headers['Cache-Control'] == 'no-store', 'partial content must not be cacheable either'
+
+
+def test_media_file_revalidation(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    screen.open('/')
+    url = f'http://localhost:{Screen.PORT}{app.add_media_file(local_file=VIDEO_FILE)}'
+
+    with httpx2.Client() as http_client:
+        first = http_client.get(url)
+        assert first.status_code == 200
+        etag = first.headers['ETag']
+        assert etag.startswith('"') and etag.endswith('"'), 'an entity tag must be a quoted string'
+
+        for header in [etag, f'W/{etag}', f'"other", {etag}']:
+            revalidated = http_client.get(url, headers={'If-None-Match': header})
+            assert revalidated.status_code == 304, f'{header} should match the current file'
+            assert revalidated.headers['ETag'] == etag
+            assert not revalidated.content
+
+        assert http_client.get(url, headers={'If-None-Match': '"other"'}).status_code == 200
 
 
 def test_auto_serving_file_from_image_source(screen: Screen):
@@ -158,12 +222,11 @@ def test_auto_serving_file_from_image_source(screen: Screen):
     screen.open('/')
     img = screen.find_by_tag('img')
     assert '/_nicegui/auto/static/' in img.get_attribute('src')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script('''
+    screen.wait_for(lambda: screen.selenium.execute_script('''
     return arguments[0].complete &&
         typeof arguments[0].naturalWidth != "undefined" &&
         arguments[0].naturalWidth > 0
-    ''', img), 'image should load successfully'
+    ''', img))
 
 
 def test_auto_serving_file_from_video_source(screen: Screen):
@@ -184,15 +247,15 @@ def test_mimetypes_of_static_files(screen: Screen):
 
     screen.open('/')
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.esm-browser.js', timeout=5)
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/vue.esm-browser.js', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/dompurify.mjs', timeout=5)
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/dompurify.mjs', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/javascript')
 
-    response = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response = httpx2.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert response.status_code == 200
     assert response.headers['Content-Type'].startswith('text/css')
 
@@ -207,16 +270,16 @@ def test_cache_control_header_of_static_files(screen: Screen):
     screen.open('/')
 
     # resources are served with cache-control headers from `ui.run`
-    response1 = httpx.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
+    response1 = httpx2.get(f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/static/nicegui.css', timeout=5)
     assert 'immutable' in response1.headers.get('Cache-Control', '')
 
     # dynamic resources are _not_ served with cache-control headers from `ui.run`
-    response2 = httpx.get(
+    response2 = httpx2.get(
         f'http://localhost:{Screen.PORT}/_nicegui/{__version__}/dynamic_resources/codehilite.css', timeout=5)
     assert 'immutable' not in response2.headers.get('Cache-Control', '')
 
     # static resources are _not_ served with cache-control headers from `ui.run`
-    response3 = httpx.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg', timeout=5)
+    response3 = httpx2.get(f'http://localhost:{Screen.PORT}/static/examples/slideshow/slides/slide1.jpg', timeout=5)
     assert 'immutable' not in response3.headers.get('Cache-Control', '')
 
 

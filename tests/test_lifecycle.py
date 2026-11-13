@@ -1,11 +1,31 @@
 import asyncio
 import re
 
-import httpx
+import httpx2
+import pytest
 import socketio
 
-from nicegui import Client, app, ui
-from nicegui.testing import Screen
+from nicegui import Client, app, run, ui
+from nicegui.testing import Screen, User
+
+
+async def test_ui_on_exception_from_async_connect_handler(user: User, caplog: pytest.LogCaptureFixture):
+    seen: list[Exception] = []
+
+    @ui.page('/')
+    def page():
+        ui.on_exception(seen.append)
+
+        async def on_connect():
+            raise RuntimeError('boom')
+
+        ui.context.client.on_connect(on_connect)
+
+    await user.open('/')
+    await asyncio.sleep(0.1)
+    assert len(seen) == 1 and 'boom' in str(seen[0])
+    assert len(caplog.records) == 1 and 'boom' in caplog.records[0].message
+    caplog.records.pop(0)
 
 
 def test_adding_elements_during_onconnect_on_auto_index_page(screen: Screen):
@@ -43,17 +63,16 @@ def test_async_connect_handler(screen: Screen):
 
     screen.open('/')
     screen.should_contain('Hello')
-    screen.wait(0.5)
-    assert connections['count'] == 1
+    screen.wait_for(lambda: connections['count'] == 1)
 
     screen.open('/')
     screen.should_contain('Hello')
-    screen.wait(0.5)
-    assert connections['count'] == 2
+    screen.wait_for(lambda: connections['count'] == 2)
 
     screen.open('/')
     screen.should_contain('Hello')
-    screen.wait(0.5)
+    screen.wait_for(lambda: connections['count'] == 3)
+    screen.wait(0.1)
     assert connections['count'] == 3
 
 
@@ -71,7 +90,8 @@ def test_connect_disconnect_is_called_for_each_client(screen: Screen):
     screen.open('/')
     screen.wait(0.5)
     screen.open('/')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 5)
+    screen.wait(0.1)
     assert events == ['connect', 'disconnect', 'connect', 'disconnect', 'connect']
 
 
@@ -85,7 +105,7 @@ async def test_disconnect_without_client_id_in_connect_query(screen: Screen):
     app.on_disconnect(lambda: events.append('disconnect'))
 
     screen.start_server()
-    httpx.get(screen.url, timeout=5)
+    httpx2.get(screen.url, timeout=5)
     client_id = next(reversed(Client.instances))
     sio = socketio.AsyncClient()
     await sio.connect(screen.url, socketio_path='/_nicegui_ws/socket.io')  # no query parameters at all
@@ -109,29 +129,31 @@ def test_startup_and_shutdown_handlers(screen: Screen):
         events.append('shutdown')
 
     async def shutdown_async():
-        events.append('shutdown_async')
+        events.append(await run.io_bound(str, 'shutdown_async'))
+        events.append(await run.cpu_bound(str, 'shutdown_cpu_bound'))
 
     app.on_startup(startup)
     app.on_startup(startup_async)
-    app.on_startup(startup_async())
-    app.on_shutdown(shutdown)
     app.on_shutdown(shutdown_async)
-    app.on_shutdown(shutdown_async())
+    app.on_shutdown(shutdown)
 
-    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_startup.. is deprecated'))
-    screen.assert_py_logger('WARNING', re.compile('Passing an awaitable directly to app.on_shutdown.. is deprecated'))
+    coroutine = startup_async()
+    with pytest.raises(TypeError, match='expects a synchronous or asynchronous function'):
+        app.on_startup(coroutine)  # type: ignore[arg-type]
+    coroutine.close()
 
     @ui.page('/')
     def page():
         ui.label('Hello')
 
     screen.open('/')
-    screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async']
+    screen.wait_for(lambda: events == ['startup', 'startup_async'])
 
+    screen.allowed_js_errors.append('ERR_CONNECTION_REFUSED')  # the browser tries to reconnect to the stopped server
     app.shutdown()
-    screen.wait(0.5)
-    assert events == ['startup', 'startup_async', 'startup_async', 'shutdown', 'shutdown_async', 'shutdown_async']
+    # the first cpu_bound call spawns a worker process, which takes a while
+    screen.wait_for(lambda: 'shutdown' in events)
+    assert events == ['startup', 'startup_async', 'shutdown_async', 'shutdown_cpu_bound', 'shutdown']
 
 
 def test_all_lifecycle_handlers_are_called(screen: Screen):
@@ -150,22 +172,20 @@ def test_all_lifecycle_handlers_are_called(screen: Screen):
         ui.button('Delete', on_click=ui.context.client.delete)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert events == ['page connect', 'app connect']
+    screen.wait_for(lambda: events == ['page connect', 'app connect'])
 
     screen.selenium.execute_script('window.socket.disconnect();')
-    screen.wait(0.5)
-    assert events == ['page connect', 'app connect',
-                      'page disconnect', 'app disconnect']
+    screen.wait_for(lambda: events == ['page connect', 'app connect',
+                                       'page disconnect', 'app disconnect'])
 
     screen.selenium.execute_script('window.socket.connect();')
-    screen.wait(0.5)
-    assert events == ['page connect', 'app connect',
-                      'page disconnect', 'app disconnect',
-                      'page connect', 'app connect']
+    screen.wait_for(lambda: events == ['page connect', 'app connect',
+                                       'page disconnect', 'app disconnect',
+                                       'page connect', 'app connect'])
 
     screen.click('Delete')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 8)
+    screen.wait(0.1)
     assert events == ['page connect', 'app connect',
                       'page disconnect', 'app disconnect',
                       'page connect', 'app connect',
@@ -185,3 +205,12 @@ def test_no_double_delete(screen: Screen):
     Client.prune_instances(client_age_threshold=0)  # should do nothing because client is still trying to reconnect
     screen.wait(4)  # meanwhile client.delete() will be called without raising KeyError
     assert len(events) == 1, 'delete event should be called only once'
+
+
+@pytest.mark.parametrize('name', ['NICEGUI_HOST', 'NICEGUI_PORT', 'NICEGUI_PROTOCOL'])
+def test_warning_about_ignored_environment_variable(screen: Screen, monkeypatch: pytest.MonkeyPatch, name: str):
+    monkeypatch.setenv(name, 'x')
+
+    screen.start_server()
+    httpx2.get(screen.url, timeout=5)
+    screen.assert_py_logger('WARNING', re.compile(f'Ignoring {name}=x, which is only used internally.'))

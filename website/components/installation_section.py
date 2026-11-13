@@ -2,18 +2,19 @@ from nicegui import ui
 
 from .. import design as d
 from ..documentation.windows import bash_window, browser_window, python_window
+from ..i18n import t
 from .shared import phosphor_icon, section, section_heading
 
 
 def create() -> None:
     """Create the installation section with 3-step flow and Docker expansion."""
     with section('installation'):
-        section_heading('installation', 'Three lines to a running app.',
-                        'Write a Python file, install and run \u2014 that\u2019s it.')
+        section_heading('installation', t('Three lines to a running app.'),
+                        t('Write a Python file, install and run \u2014 that\u2019s it.'))
 
         with ui.grid().classes('grid-cols-3 max-lg:grid-cols-1 w-full gap-6 items-stretch'):
             with ui.column().classes('reveal gap-3 items-stretch'):
-                _step(1, 'Write')
+                _step(1, t('Write'))
                 python_window('''
                     from nicegui import ui
 
@@ -23,30 +24,30 @@ def create() -> None:
                 ''').classes('grow')
 
             with ui.column().classes('reveal gap-3 items-stretch delay-250!'):
-                _step(2, 'Run')
+                _step(2, t('Run'))
                 bash_window('''
                     $ pip3 install nicegui
                     $ python3 main.py
                 ''').classes('grow')
 
             with ui.column().classes('reveal gap-3 items-stretch delay-500!'):
-                _step(3, 'Enjoy')
+                _step(3, t('Enjoy'))
                 browser_window(lambda: ui.label('Hello NiceGUI!'), lazy=False).classes('grow')
 
         with ui.expansion().classes('w-full gap-2 mt-8 [&_.q-focus-helper]:hidden').props('expand-icon=none') as expansion:
             with expansion.add_slot('header'), ui.row(align_items='center'):
                 icon = phosphor_icon('ph-caret-right').classes(f'text-base {d.TEXT_BLUE} transition-transform')
-                ui.label('Or use Docker to run your main.py') \
+                ui.label(t('Or use Docker to run your main.py')) \
                     .classes(f'hover:text-[{d._TEXT_SECONDARY_LIGHT}] dark:hover:text-[{d._TEXT_SECONDARY_DARK}]')
                 expansion.on_value_change(lambda: icon.style(f'transform: rotate({90 if expansion.value else 0}deg)'))
             with ui.grid().classes('grid-cols-2 max-sm:grid-cols-1 w-full gap-6'):
-                ui.markdown('''
+                ui.markdown(t('''
                     With our [multi-arch Docker image](https://hub.docker.com/repository/docker/zauberzeug/nicegui)
                     you can start the server without installing any packages.
 
                     The command searches for `main.py` in your current directory and makes the app available
                     at http://localhost:8888.
-                ''').classes('max-w-xl')
+                ''')).classes('max-w-xl')
                 bash_window('''
                     docker run -it --rm -p 8888:8080 \\\\
                         -v "$PWD":/app zauberzeug/nicegui

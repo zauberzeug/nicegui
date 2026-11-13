@@ -6,7 +6,8 @@ from nicegui import core
 from nicegui.awaitable_response import AwaitableResponse, NullResponse
 
 
-async def test_awaitable_response():
+@pytest.mark.parametrize('with_fire_and_forget', [True, False])
+async def test_awaitable_response(with_fire_and_forget: bool):
     core.loop = asyncio.get_event_loop()
     actions = []
 
@@ -18,12 +19,13 @@ async def test_awaitable_response():
             actions.append('wait_for_result')
             return 'result'
 
-        return AwaitableResponse(fire_and_forget, wait_for_result)
+        return AwaitableResponse(fire_and_forget if with_fire_and_forget else None, wait_for_result)
 
+    fired = ['fire_and_forget'] if with_fire_and_forget else []
     actions.clear()
     do_something()
     await asyncio.sleep(0.1)
-    assert actions == ['fire_and_forget']
+    assert actions == fired
 
     actions.clear()
     result = await do_something()
@@ -35,7 +37,7 @@ async def test_awaitable_response():
     await asyncio.sleep(0.1)
     with pytest.raises(RuntimeError, match='AwaitableResponse must be awaited immediately after creation or not at all'):
         await result
-    assert actions == ['fire_and_forget']
+    assert actions == fired
 
 
 async def test_null_response():

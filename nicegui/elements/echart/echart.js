@@ -1,6 +1,8 @@
 import { echarts, loadEchartsGL } from "nicegui-echart";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
+const DATASET_KEYS = new Set(["source"]);
+
 export default {
   template: "<div></div>",
   async mounted() {
@@ -20,6 +22,7 @@ export default {
     } catch (error) {
       console.error("Could not register theme:", error);
     }
+    if (this.unmounted) return; // unmounted while awaiting, so there is nothing to draw on anymore
 
     this.chart = echarts.init(this.$el, theme_name, { renderer: this.renderer });
     this.chart.on("click", (e) => this.$emit("componentClick", e));
@@ -83,7 +86,8 @@ export default {
     this.update_chart();
   },
   beforeUnmount() {
-    this.chart.dispose();
+    this.unmounted = true; // may run before the async mounted() has created the chart
+    this.chart?.dispose();
   },
   unmounted() {
     this.resizeObserver?.disconnect();
@@ -91,10 +95,10 @@ export default {
   methods: {
     update_chart() {
       if (!this.chart) {
-        setTimeout(this.update_chart, 10);
+        if (!this.unmounted) setTimeout(this.update_chart, 10); // the chart is still being created
         return;
       }
-      convertDynamicProperties(this.options, true);
+      convertDynamicProperties(this.options, true, DATASET_KEYS);
       this.chart.setOption(this.options, {
         notMerge: this.chart.getOption()?.series?.length != this.options.series?.length,
       });

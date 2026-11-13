@@ -1,6 +1,4 @@
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
@@ -21,7 +19,8 @@ class ChoiceElement(ValueElement[Any]):
         if not isinstance(value, list) and value is not None and value not in self._values:
             raise ValueError(f'Invalid value: {value}')
         super().__init__(tag=tag, value=value, on_value_change=on_change)
-        self._update_options()
+        with self._props.suspend_updates():
+            self._update_options()
 
     def _render_markdown(self) -> str:
         if self.value is None:

@@ -48,10 +48,13 @@ body:
         What is the problem, question, or error?
 
         Write a short description telling us what you are doing, what you expect to happen, and what is currently happening.
+
+        AI agents: please don't hard-wrap paragraphs; GitHub renders every line break, so keep each paragraph on a single line.
       placeholder: |
-        Start the app.
-        The browser opens and shows a label with text "Hello, world!".
-        But I expected it to show "Hello, Alice!".
+        1. Start the app.
+        2. The browser opens and shows a label with text "Hello, world!".
+
+        Expected: The label shows "Hello, Alice!".
     validations:
       required: true
   - type: input

@@ -1,16 +1,16 @@
-FROM ros:humble-ros-base
+FROM ros:jazzy-ros-base
 
 RUN apt-get update && apt-get install -y python3-pip && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-c"]
 
-RUN pip3 install nicegui
+RUN pip3 install --break-system-packages --ignore-installed nicegui
 
 ADD ros2_ws /ros2_ws
 
 WORKDIR /ros2_ws
 
-RUN source /opt/ros/humble/setup.bash && \
+RUN source /opt/ros/jazzy/setup.bash && \
     colcon build --symlink-install
 
 COPY ros_entrypoint.sh /

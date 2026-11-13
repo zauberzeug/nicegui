@@ -223,8 +223,8 @@ def test_server_side_validation(screen: Screen, attribute: Literal['disabled', '
 
     screen.open('/')
     screen.click('Forbidden')
-    screen.wait(0.5)
-    screen.should_not_contain('Button clicked')  # triggering the click event through JavaScript does not work
+    # triggering the click event through JavaScript does not work
+    screen.should_not_contain('Button clicked', duration=1.0)
 
     screen.click('Allowed')
     screen.should_contain('Number changed')  # triggering the change event through Python works
@@ -255,7 +255,8 @@ def test_delegated_event_with_argument_filtering(screen: Screen) -> None:
     screen.click('Item A')
     screen.click('Item B')
     screen.click('Item C')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(ids) == 3)
+    screen.wait(0.1)
     assert ids == ['A', 'B', 'C']
 
 
@@ -268,11 +269,12 @@ def test_value_change_event_arguments(screen: Screen):
 
     screen.open('/')
     screen.click('Checkbox')
-    screen.wait(0.5)
-    assert events == [(True, False)]
+    screen.wait_for(lambda: events == [(True, False)])
+    screen.wait_for(lambda: screen.find_by_class('q-checkbox').get_attribute('aria-checked') == 'true')
 
     screen.click('Checkbox')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(events) == 2)
+    screen.wait(0.1)
     assert events == [(True, False), (False, True)]
 
 
@@ -294,3 +296,21 @@ async def test_late_event_registration(screen: Screen):
     assert 'Event listeners changed after initial definition. Re-rendering affected elements.' in screen.render_js_logs()
     screen.assert_py_logger('WARNING',
                             'Event listeners changed after initial definition. Re-rendering affected elements.')
+
+
+def test_late_global_event_registration(screen: Screen):
+    events = []
+
+    @ui.page('/')
+    def page():
+        ui.html('<input id="raw">', sanitize=False)
+        ui.button('Register', on_click=lambda: ui.on('some_event', lambda: events.append('fired')))
+
+    screen.open('/')
+    screen.selenium.execute_script('document.getElementById("raw").value = "kept"')
+    screen.click('Register')
+    screen.wait(0.5)
+    assert screen.selenium.execute_script('return document.getElementById("raw").value') == 'kept', \
+        'the page must not be re-rendered (see #6248)'
+    screen.selenium.execute_script('emitEvent("some_event")')
+    screen.wait_for(lambda: events == ['fired'])

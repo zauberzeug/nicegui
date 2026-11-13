@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Any
 from urllib.parse import urlparse
 
-from .. import background_tasks, helpers, json
+from .. import background_tasks, json
 from ..client import Client
 from ..context import context
 from ..element import Element
@@ -50,9 +50,9 @@ class Navigate:
 
         Can be used to programmatically open a different page or URL.
 
-        When using the `new_tab` parameter, the browser might block the new tab.
+        When using the ``new_tab`` parameter, the browser might block the new tab.
         This is a browser setting and cannot be changed by the application.
-        You might want to use `ui.link` and its `new_tab` parameter instead.
+        You might want to use ``ui.link`` and its ``new_tab`` parameter instead.
 
         :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
         :param new_tab: whether to open the target in a new tab (might be blocked by the browser)
@@ -72,7 +72,7 @@ class Navigate:
                     any(isinstance(el, SubPages) for el in context.client.layout.descendants()):
                 client = context.client
                 navigate_coro = client.sub_pages_router._handle_navigate(path)  # pylint: disable=protected-access
-                background_tasks.create(helpers.await_with_context(navigate_coro, client), name='navigate_sub_pages')
+                background_tasks.create(navigate_coro, name='navigate_sub_pages', context=client)
                 return
 
         context.client.open(path, new_tab)

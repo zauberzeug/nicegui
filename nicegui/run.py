@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import multiprocessing
 import multiprocessing.forkserver
 import signal
@@ -11,36 +10,33 @@ from contextlib import suppress
 from functools import partial
 from multiprocessing.context import BaseContext
 from pickle import PicklingError
-from typing import Any, Literal, TypeVar
-
-from typing_extensions import ParamSpec
+from typing import Any, Literal, ParamSpec, TypeVar
 
 from . import core, helpers
+from .logging import log
 
 process_pool: ProcessPoolExecutor | None = None
 thread_pool = ThreadPoolExecutor()
 
 # Start method for the run.cpu_bound process pool (None inherits the global multiprocessing default);
-# see the multiprocessing docs for the trade-offs between the methods. A one-time heads-up is logged
-# if the pool implicitly ends up on plain "fork", which is unsafe in a threaded process (#6117).
-# DEPRECATED: the None default will change to "spawn" in 4.0 (keeping the "fork" opt-out as long as Python supports it).
-process_pool_start_method: Literal['spawn', 'fork', 'forkserver'] | None = None
+# see the multiprocessing docs for the trade-offs between the methods.
+# The default is "spawn", because plain "fork" is unsafe in a threaded process (#6117).
+process_pool_start_method: Literal['spawn', 'fork', 'forkserver'] | None = 'spawn'
 
 # Always-spawn context, also shared with native.py's window subprocess (#1841). This is the context
 # used when process_pool_start_method == 'spawn'; it is independent of the global default.
 SPAWN_CONTEXT = multiprocessing.get_context('spawn')
 
-# Resolved once in setup() so the live pool, the heads-up warning and the BrokenProcessPool restart
-# all agree, even if process_pool_start_method is mutated after startup.
+# Resolved once in setup() so the live pool and the BrokenProcessPool restart
+# agree, even if process_pool_start_method is mutated after startup.
 _pool_context: BaseContext | None = None
-_pool_uses_implicit_fork = False
 
 P = ParamSpec('P')
 R = TypeVar('R')
 
 
 def _resolve_cpu_bound_context() -> BaseContext:
-    """Resolve the multiprocessing context for the cpu_bound pool from `process_pool_start_method`."""
+    """Resolve the multiprocessing context for the cpu_bound pool from ``process_pool_start_method``."""
     if process_pool_start_method is None:
         return multiprocessing.get_context()
     if process_pool_start_method == 'spawn':
@@ -52,23 +48,9 @@ def _resolve_cpu_bound_context() -> BaseContext:
                          f'this platform supports {multiprocessing.get_all_start_methods()}.') from e
 
 
-def _warn_if_implicit_fork() -> None:
-    """Warn once if the live pool fell back to plain fork because the start method was never chosen."""
-    if _pool_uses_implicit_fork:
-        helpers.warn_once(
-            'run.cpu_bound is using the "fork" start method (the platform default on Linux/Docker up to Python 3.13). '
-            'fork is unsafe in a threaded process and its workers inherit process state (module globals, '
-            'caches, preloaded objects) that spawn workers do not, so switching can change behavior. '
-            'NiceGUI 4.0 will default to "spawn". Set nicegui.run.process_pool_start_method to "spawn" to '
-            'opt in now (recommended) or to "fork" to keep fork and silence this heads-up; '
-            'the setting must be applied before the app starts up (i.e. before ui.run()). '
-            'See https://github.com/zauberzeug/nicegui/pull/6117'
-        )
-
-
 def setup() -> None:
     """Setup the process pool. (For internal use only.)"""
-    global process_pool, _pool_context, _pool_uses_implicit_fork  # pylint: disable=global-statement # noqa: PLW0603
+    global process_pool, _pool_context  # pylint: disable=global-statement # noqa: PLW0603
     _pool_context = _resolve_cpu_bound_context()
     if _pool_context.get_start_method() == 'forkserver':
         # drop __main__ from the preload so the workers re-import it, where the MainProcess guard catches it,
@@ -76,11 +58,10 @@ def setup() -> None:
         fork_server = multiprocessing.forkserver._forkserver  # pylint: disable=protected-access
         preload = fork_server._preload_modules  # type: ignore[attr-defined]  # pylint: disable=protected-access
         _pool_context.set_forkserver_preload([module for module in preload if module != '__main__'])
-    _pool_uses_implicit_fork = process_pool_start_method is None and _pool_context.get_start_method() == 'fork'
     try:
         process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)
     except NotImplementedError:
-        logging.warning('Failed to initialize ProcessPoolExecutor')
+        log.warning('Failed to initialize ProcessPoolExecutor')
 
 
 class SubprocessException(Exception):
@@ -111,41 +92,34 @@ def safe_callback(callback: Callable, *args, **kwargs) -> Any:
         raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
 
 
-async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
-    if core.app.is_stopping:
-        return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
+async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     try:
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(executor, partial(callback, *args, **kwargs))
     except RuntimeError as e:
         if 'cannot schedule new futures after shutdown' not in str(e):
             raise
-    except asyncio.CancelledError:
-        pass
-    return None  # DEPRECATED: This is an interim shape. NiceGUI 4.0 will instead raise CancelledError in this case.
+        raise asyncio.CancelledError('The app has shut down.') from e
 
 
-async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
+async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run a CPU-bound function in a separate process.
 
-    `run.cpu_bound` needs to execute the function in a separate process.
+    ``run.cpu_bound`` needs to execute the function in a separate process.
     For this it needs to transfer the whole state of the passed function to the process (which is done with pickle).
     It is encouraged to create static methods (or free functions) which get all the data as simple parameters (eg. no class/ui logic)
     and return the result (instead of writing it in class properties or global variables).
 
     The pool's multiprocessing start method can be configured via ``run.process_pool_start_method``
-    ("spawn", "fork", "forkserver", or ``None`` to inherit the platform default) before the app starts up.
+    ("spawn" by default, "fork", "forkserver", or ``None`` to inherit the platform default) before the app starts up.
 
-    Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
-    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
-    so ``if result is None: ...`` checks should be treated as temporary.
+    Raises ``asyncio.CancelledError`` when the call is cancelled or the app has shut down
+    (*updated in version 4.0.0*: before it returned ``None`` in these cases and while the app was shutting down).
     """
     global process_pool  # pylint: disable=global-statement # noqa: PLW0603
 
     if process_pool is None:
         raise RuntimeError('Process pool not set up.')
-
-    _warn_if_implicit_fork()
 
     try:
         return await _run(process_pool, safe_callback, callback, *args, **kwargs)
@@ -162,12 +136,11 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
             raise e
 
 
-async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R | None:
+async def io_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
     """Run an I/O-bound function in a separate thread.
 
-    Returns ``None`` (instead of the callback's result) when the call is cancelled or the app is shutting down.
-    This ``None`` return is an interim shape: NiceGUI 4.0 will instead raise ``CancelledError`` in these cases,
-    so ``if result is None: ...`` checks should be treated as temporary.
+    Raises ``asyncio.CancelledError`` when the call is cancelled or the app has shut down
+    (*updated in version 4.0.0*: before it returned ``None`` in these cases and while the app was shutting down).
     """
     return await _run(thread_pool, callback, *args, **kwargs)
 
