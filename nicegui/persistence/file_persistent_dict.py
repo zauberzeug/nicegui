@@ -24,7 +24,7 @@ class FilePersistentDict(PersistentDict):
                 data = json.loads(await asyncio.to_thread(self.filepath.read_text, encoding=self.encoding))
             else:
                 data = {}
-            self.update(data)
+            self._load(data)
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
 
@@ -34,7 +34,7 @@ class FilePersistentDict(PersistentDict):
                 data = json.loads(self.filepath.read_text(encoding=self.encoding))
             else:
                 data = {}
-            self.update(data)
+            self._load(data)
         except Exception:
             log.warning(f'Could not load storage file {self.filepath}')
 

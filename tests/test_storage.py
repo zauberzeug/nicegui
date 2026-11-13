@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import copy
 import gc
+import json
 import re
 import threading
 import time
@@ -490,6 +491,33 @@ def test_user_storage_survives_prune_during_request(screen: Screen, monkeypatch:
     screen.should_contain('default')
 
 
+async def test_concurrent_requests_wait_for_user_storage_to_load(user: User):
+    seen: list[bool] = []
+
+    @app.get('/')
+    async def index():
+        seen.append('old' in app.storage.user)
+        app.storage.user.setdefault('new', 1)
+        return 'ok'
+
+    @app.get('/seed')
+    async def seed():
+        app.storage.user['old'] = 'x' * 8_000_000  # reading it back takes longer than dispatching another request
+        return 'ok'
+
+    await user.http_client.get('/seed')  # creates the session and its storage...
+    while background_tasks.lazy_tasks_running:
+        await asyncio.sleep(0.01)  # ...and backs it up
+    await prune_user_storage(force=True)  # so that the next request has to load it from the file again
+
+    await asyncio.gather(user.http_client.get('/'), user.http_client.get('/'))
+    assert seen == [True, True], 'every request must see the stored data, also while another request loads it'
+    while background_tasks.lazy_tasks_running:
+        await asyncio.sleep(0.01)
+    path = next(Storage.path.glob('storage-user-*.json'))
+    assert set(json.loads(path.read_text(encoding='utf-8'))) == {'old', 'new'}
+
+
 def test_storage_serialization_error_points_at_offending_key(screen: Screen):
     @ui.page('/')
     def page():
@@ -583,6 +611,25 @@ async def test_clearing_storage_removes_leftover_temp_files(user: User):
     (Storage.path / 'storage-general.json.tmp').touch()  # stands in for a temp file left behind by an interrupted backup
     app.storage.clear()
     assert not Storage.path.exists(), 'temp files should be swept so the storage directory can be removed'
+
+
+@pytest.mark.parametrize('sync', [True, False])
+async def test_loading_storage_does_not_write_the_file_back(user: User, tmp_path, sync: bool):
+    @ui.page('/')
+    def page():
+        ui.label('ok')
+
+    await user.open('/')  # needed to ensure NiceGUI's event loop is running
+    path = tmp_path / 'storage.json'
+    path.write_text('{"key": "value"}', encoding='utf-8')  # spaced, unlike what a backup writes
+    d = FilePersistentDict(path, encoding='utf-8')
+    if sync:
+        d.initialize_sync()  # as for app.storage.general when NiceGUI is imported
+    else:
+        await d.initialize()  # as for app.storage.user on a request
+    await background_tasks.teardown()  # awaits the backup, had loading scheduled one
+    assert d == {'key': 'value'}
+    assert path.read_text(encoding='utf-8') == '{"key": "value"}'
 
 
 @pytest.mark.parametrize('custom_cookie_headers', [False, True])

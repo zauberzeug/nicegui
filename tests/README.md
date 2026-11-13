@@ -15,6 +15,7 @@ Our tests use this helper first, so on most systems installing the test dependen
 You only need to install a browser and driver by hand in two cases: on ARM machines other than Apple Silicon Macs (like a Raspberry Pi or an ARM dev container), where the helper has nothing to download, or when you'd rather use a browser that your system installed.
 If you do install ChromeDriver yourself, make sure its version matches your Chrome or Chromium — otherwise the tests won't start.
 If the browser isn't picked up automatically, point the tests at it with the `CHROME_BINARY_LOCATION` environment variable (our dev container sets it to `/usr/bin/chromium`).
+Likewise, the `SE_CHROMEDRIVER` environment variable points Selenium at a specific ChromeDriver and takes precedence over anything the tests would try on their own.
 
 ### Mac
 
@@ -48,6 +49,7 @@ sudo apt-get install chromium-driver
 
 On Ubuntu, both `chromium-chromedriver` and `chromium-driver` resolve to the same transitional stub that pulls in the Chromium snap, which is a dead end in containers, WSL, and minimal CI images.
 Prefer Selenium Manager (see above), or install a matching ChromeDriver manually.
+If Chromium is already installed as a snap, as it is on Ubuntu desktop, see [Snap-based Chromium](#snap-based-chromium) below.
 
 For Arch-based Linux distribution:
 
@@ -57,6 +59,15 @@ sudo pacman -S chromium
 
 If you are using a different distribution, the package manager and package names may differ.
 Please refer to the documentation for your distribution for more information.
+
+#### Snap-based Chromium
+
+Selenium Manager finds the snap's Chromium but downloads an upstream ChromeDriver that cannot launch the snap-confined browser, so the tests hang indefinitely.
+Use the ChromeDriver shipped with the snap instead and leave `CHROME_BINARY_LOCATION` unset, so that the driver starts its own Chromium:
+
+```bash
+export SE_CHROMEDRIVER=/snap/bin/chromium.chromedriver
+```
 
 ## Usage
 
