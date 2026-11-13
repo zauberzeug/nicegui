@@ -281,7 +281,7 @@ def test_value_change_event_arguments(screen: Screen):
     screen.click('Bob')
     screen.wait_for(lambda: len(events) == 3)
     screen.wait(0.1)
-    assert events[2] == (205, 101)
+    assert events == [(True, False), (False, True), (205, 101)]
 
 
 async def test_late_event_registration(screen: Screen):
