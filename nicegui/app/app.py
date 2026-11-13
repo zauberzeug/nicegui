@@ -26,7 +26,7 @@ from ..observables import ObservableSet
 from ..server import Server
 from ..slot import Slot
 from ..staticfiles import CacheControlledStaticFiles
-from ..storage import PersistentDict, RedisPersistentDict, Storage
+from ..storage import PersistentDict, Storage
 from .app_config import AppConfig
 from .range_response import get_range_response
 
@@ -488,7 +488,10 @@ class App(FastAPI):
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:
-    """Prune tab storage that is older than the configured ``max_tab_storage_age`` and not used by a client anymore."""
+    """Prune tab storage that is older than the configured ``max_tab_storage_age`` and not used by a client anymore.
+
+    Tab storages still in use get their lifetime in the persistence layer refreshed instead.
+    """
     tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
     tab_ids_in_use = {client._pinned_tab_id for client in Client.instances.values()}  # pylint: disable=protected-access
     for tab_id, tab in list(tab_storages.items()):
@@ -498,18 +501,13 @@ async def prune_tab_storage(*, force: bool = False) -> None:
             if isinstance(tab, PersistentDict):
                 await tab.close()
             del tab_storages[tab_id]
-    # With a Redis backend each tab storage carries a TTL so abandoned keys eventually
-    # expire even if an instance crashes. But a connected tab can go a long time
-    # without writing, and the TTL is only refreshed on writes -- the key then
-    # vanishes while the in-memory copy stays alive, and an instance switch or a
-    # duplicated tab finds an empty storage (#6487). Refresh the TTL for every tab
-    # storage that is still pinned to a connected client.
-    refreshes = [
-        tab.refresh_ttl()
-        for tab_id, tab in tab_storages.items()
-        if tab_id in tab_ids_in_use and isinstance(tab, RedisPersistentDict)
-    ]
-    await asyncio.gather(*refreshes, return_exceptions=True)
+    # a Redis key expires after max_tab_storage_age unless refreshed, even while a client still uses the tab storage (#6487)
+    refreshes = [tab.refresh_ttl() for tab_id, tab in tab_storages.items()
+                 if tab_id in tab_ids_in_use and isinstance(tab, PersistentDict)]
+    results = await asyncio.gather(*refreshes, return_exceptions=True)
+    for result in results:
+        if isinstance(result, Exception):
+            log.exception(result)
 
 
 async def prune_user_storage(*, force: bool = False) -> None:
