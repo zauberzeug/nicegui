@@ -199,7 +199,7 @@ def unocss_demo():
     label = ui.label('This label becomes red dynamically.')
 
     ui.button('Become red', on_click=lambda: ui.run_javascript(f'''
-        {label.html_id}.classList.add("text-red-500")
+        getHtmlElement({label.id}).classList.add("text-red-500")
     '''))
 
     # ui.run(unocss='mini')

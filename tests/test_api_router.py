@@ -1,3 +1,5 @@
+import httpx2
+
 from nicegui import APIRouter, app, ui
 from nicegui.testing import Screen
 
@@ -46,3 +48,47 @@ def test_relative_navigation_from_router_root_page(screen: Screen):
     screen.click('Go')
     screen.should_contain('Detail 4711')
     assert screen.current_path == '/some-prefix/4711'
+
+
+def test_remove_route(screen: Screen):
+    router = APIRouter(prefix='/some-prefix')
+
+    @router.page('/')
+    def page():
+        ui.label('Hello, world!')
+
+    app.include_router(router)
+
+    screen.open('/some-prefix/')
+    screen.should_contain('Hello, world!')
+
+    app.remove_route('/some-prefix/')
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/some-prefix/', timeout=5).status_code == 404
+
+
+def test_link_to_page_of_included_routers(screen: Screen):
+    inner = APIRouter(prefix='/inner')
+
+    @inner.page('/sub')
+    def sub():
+        ui.label('the subpage')
+
+    outer = APIRouter(prefix='/outer')
+    outer.include_router(inner, prefix='/middle')
+
+    @ui.page('/')
+    def index():
+        ui.link('Link', sub)
+        ui.button('Go', on_click=lambda: ui.navigate.to(sub))
+
+    app.include_router(outer, prefix='/v2')
+
+    screen.open('/')
+    screen.click('Link')
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'
+
+    screen.open('/')
+    screen.click('Go')
+    screen.should_contain('the subpage')
+    assert screen.current_path == '/v2/outer/middle/inner/sub'

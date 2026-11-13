@@ -1,8 +1,6 @@
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Self
 
-from typing_extensions import Self
-
-from .. import optional_features
+from .. import helpers, optional_features
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..element import Element
 from ..events import (
@@ -12,7 +10,6 @@ from ..events import (
     ValueChangeEventArguments,
     handle_event,
 )
-from ..helpers import prepare_pandas_df
 from ..logging import log
 from .mixins.filter_element import FilterElement
 
@@ -37,6 +34,7 @@ class Table(FilterElement, component='table.js'):
                  title: str | None = DEFAULT_PROP | None,
                  selection: Literal[None, 'single', 'multiple'] = DEFAULT_PROP | None,
                  pagination: int | dict | None = None,
+                 pagination_controls: bool | None = None,
                  on_select: Handler[TableSelectionEventArguments] | None = None,
                  on_pagination_change: Handler[ValueChangeEventArguments[dict]] | None = None,
                  ) -> None:
@@ -56,8 +54,9 @@ class Table(FilterElement, component='table.js'):
         :param column_defaults: optional default column properties, *added in version 2.0.0*
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
+        :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
         :param on_pagination_change: callback which is invoked when the pagination changes
         """
@@ -73,7 +72,8 @@ class Table(FilterElement, component='table.js'):
         self._props['rows'] = rows
         self._props['row-key'] = row_key
         self._props.set_optional('title', title)
-        self._props['hide-pagination'] = pagination is None
+        self._has_pagination = pagination is not None
+        self.pagination_controls = pagination_controls
         self._props['pagination'] = pagination if isinstance(pagination, dict) else {'rowsPerPage': pagination or 0}
         self._props['selection'] = selection or 'none'
         self._props['selected'] = []
@@ -95,7 +95,8 @@ class Table(FilterElement, component='table.js'):
 
         def handle_pagination_change(e: GenericEventArguments) -> None:
             previous_value = self.pagination
-            self.pagination = e.args
+            # NOTE: Quasar emits update:pagination on mount, so using the setter here would show the controls on every default table
+            self._props['pagination'] = e.args
             arguments = ValueChangeEventArguments(sender=self, client=self.client,
                                                   value=self.pagination, previous_value=previous_value)
             for handler in self._pagination_change_handlers:
@@ -163,18 +164,21 @@ class Table(FilterElement, component='table.js'):
                     title: str | None = None,
                     selection: Literal['single', 'multiple'] | None = None,
                     pagination: int | dict | None = None,
-                    on_select: Handler[TableSelectionEventArguments] | None = None) -> Self:
+                    pagination_controls: bool | None = None,
+                    on_select: Handler[TableSelectionEventArguments] | None = None,
+                    on_pagination_change: Handler[ValueChangeEventArguments[dict]] | None = None,
+                    ) -> Self:
         """Create a table from a Pandas DataFrame.
 
         Note:
-        If the DataFrame contains non-serializable columns of type `datetime64[ns]`, `timedelta64[ns]`, `complex128` or `period[M]`,
+        If the DataFrame contains non-serializable columns of type ``datetime64[ns]``, ``timedelta64[ns]``, ``complex128`` or ``period[M]``,
         they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
         *Added in version 2.0.0*
 
-        *Since version 3.12.0:
+        *Since version 3.12.0:*
         Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
         Pass ``df.reset_index(drop=True)`` to drop the index instead.
 
@@ -183,9 +187,11 @@ class Table(FilterElement, component='table.js'):
         :param column_defaults: optional default column properties
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
+        :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
+        :param on_pagination_change: callback which is invoked when the pagination changes (*added in version 4.0.0*)
         :return: table element
         """
         rows, columns_from_df = cls._pandas_df_to_rows_and_columns(df)
@@ -197,7 +203,9 @@ class Table(FilterElement, component='table.js'):
             title=title,
             selection=selection,
             pagination=pagination,
+            pagination_controls=pagination_controls,
             on_select=on_select,
+            on_pagination_change=on_pagination_change,
         )
         table._use_columns_from_df = columns is None
         return table
@@ -211,11 +219,15 @@ class Table(FilterElement, component='table.js'):
                     title: str | None = None,
                     selection: Literal['single', 'multiple'] | None = None,
                     pagination: int | dict | None = None,
-                    on_select: Handler[TableSelectionEventArguments] | None = None) -> Self:
+                    pagination_controls: bool | None = None,
+                    on_select: Handler[TableSelectionEventArguments] | None = None,
+                    on_pagination_change: Handler[ValueChangeEventArguments[dict]] | None = None,
+                    ) -> Self:
         """Create a table from a Polars DataFrame.
 
         Note:
-        If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
+        If the DataFrame contains non-serializable columns of type ``Binary``, ``Duration`` or ``Object``,
+        they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
 
         *Added in version 2.7.0*
@@ -225,9 +237,11 @@ class Table(FilterElement, component='table.js'):
         :param column_defaults: optional default column properties
         :param row_key: name of the column containing unique data identifying the row (default: "id")
         :param title: title of the table
-        :param selection: selection type ("single" or "multiple"; default: `None`)
-        :param pagination: a dictionary correlating to a pagination object or number of rows per page (`None` hides the pagination, 0 means "infinite"; default: `None`).
+        :param selection: selection type ("single" or "multiple"; default: ``None``)
+        :param pagination: a dictionary correlating to a pagination object or number of rows per page (``None`` hides the pagination unless ``pagination_controls`` is ``True``, 0 means "infinite"; default: ``None``).
+        :param pagination_controls: whether to show the pagination controls (default: ``None`` which shows them if ``pagination`` is provided, *added in version 4.0.0*)
         :param on_select: callback which is invoked when the selection changes
+        :param on_pagination_change: callback which is invoked when the pagination changes (*added in version 4.0.0*)
         :return: table element
         """
         rows, columns_from_df = cls._polars_df_to_rows_and_columns(df)
@@ -239,7 +253,9 @@ class Table(FilterElement, component='table.js'):
             title=title,
             selection=selection,
             pagination=pagination,
+            pagination_controls=pagination_controls,
             on_select=on_select,
+            on_pagination_change=on_pagination_change,
         )
         table._use_columns_from_df = columns is None
         return table
@@ -251,9 +267,9 @@ class Table(FilterElement, component='table.js'):
                            column_defaults: dict | None = None) -> None:
         """Update the table from a Pandas DataFrame.
 
-        See `from_pandas()` for more information about the conversion of non-serializable columns.
+        See ``from_pandas()`` for more information about the conversion of non-serializable columns.
 
-        If `columns` is not provided and the columns had been inferred from a DataFrame,
+        If ``columns`` is not provided and the columns had been inferred from a DataFrame,
         the columns will be updated to match the new DataFrame.
 
         :param df: Pandas DataFrame
@@ -270,6 +286,8 @@ class Table(FilterElement, component='table.js'):
                            columns: list[dict] | None = None,
                            column_defaults: dict | None = None) -> None:
         """Update the table from a Polars DataFrame.
+
+        See ``from_polars()`` for more information about the conversion of non-serializable columns.
 
         :param df: Polars DataFrame
         :param clear_selection: whether to clear the selection (default: True)
@@ -296,14 +314,13 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
-
-        df, col_labels = prepare_pandas_df(df)
-        return df.to_dict('records'), [{'name': name, 'label': label, 'field': name}
-                                       for name, label in zip(df.columns, col_labels, strict=True)]
+        rows, columns, labels = helpers.pandas_to_records(df)
+        return rows, [{'name': col, 'label': label, 'field': col} for col, label in zip(columns, labels, strict=True)]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
-        return df.to_dicts(), [{'name': col, 'label': col, 'field': col} for col in df.columns]
+        rows, columns = helpers.polars_to_records(df)
+        return rows, [{'name': col, 'label': col, 'field': col} for col in columns]
 
     @property
     def rows(self) -> list[dict]:
@@ -373,12 +390,25 @@ class Table(FilterElement, component='table.js'):
 
     @property
     def pagination(self) -> dict:
-        """Pagination object."""
+        """Pagination object (assigning shows the pagination controls unless ``pagination_controls`` is set)."""
         return self._props['pagination']
 
     @pagination.setter
     def pagination(self, value: dict) -> None:
         self._props['pagination'] = value
+        self._has_pagination = True
+        if self._pagination_controls is None:
+            self._props['hide-pagination'] = False
+
+    @property
+    def pagination_controls(self) -> bool | None:
+        """Whether the pagination controls are shown (``None``: shown if the table has pagination)."""
+        return self._pagination_controls
+
+    @pagination_controls.setter
+    def pagination_controls(self, value: bool | None) -> None:
+        self._pagination_controls = value
+        self._props['hide-pagination'] = not self._has_pagination if value is None else not value
 
     @property
     def is_fullscreen(self) -> bool:

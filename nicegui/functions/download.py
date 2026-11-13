@@ -69,7 +69,7 @@ class Download:
         :param filename: name of the file to download (default: name of the file on the server)
         :param media_type: media type of the file to download (default: "")
         """
-        is_relative = url.startswith('/') or url.startswith('./') or url.startswith('../')
+        is_relative = url.startswith(('/', './', '../'))
         if not is_relative:
             log.warning('Using `ui.download.from_url` with absolute URLs is not recommended.\n'
                         'Please refer to the documentation for more details.')

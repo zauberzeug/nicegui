@@ -7,9 +7,9 @@ def kebab_to_camel_case(string: str) -> str:
 
 
 def camel_to_title_case(string: str) -> str:
-    """Convert a camelCase string to Title Case."""
-    return ' '.join(word[:1].upper() + word[1:]
-                    for word in re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', string)).split())
+    """Convert a camelCase string to Title Case like AG Grid does for column headers."""
+    string = re.sub(r'([A-Z]+)([A-Z])([a-z])', r'\1 \2\3', re.sub(r'([a-z])([A-Z])', r'\1 \2', string))
+    return ' '.join(word[:1].upper() + word[1:] for word in string.replace('.', ' ').split(' '))
 
 
 def event_type_to_camel_case(string: str) -> str:

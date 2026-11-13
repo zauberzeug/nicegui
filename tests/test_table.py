@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pandas as pd
@@ -36,6 +36,7 @@ def test_table(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_contain('Lionel')
+    screen.should_not_contain('Records per page')
 
 
 def test_pagination_int(screen: Screen):
@@ -47,7 +48,7 @@ def test_pagination_int(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    screen.should_contain('1–2 of 3')  # noqa: RUF001
 
 
 def test_pagination_dict(screen: Screen):
@@ -59,7 +60,42 @@ def test_pagination_dict(screen: Screen):
     screen.should_contain('Alice')
     screen.should_contain('Bob')
     screen.should_not_contain('Lionel')
-    screen.should_contain('1-2 of 3')
+    screen.should_contain('1–2 of 3')  # noqa: RUF001
+
+
+@pytest.mark.parametrize('pagination,pagination_controls,expected', [
+    (None, None, False),
+    (5, None, True),
+    (5, False, False),
+    (None, True, True),
+])
+def test_pagination(screen: Screen, pagination: int | None, pagination_controls: bool | None, expected: bool):
+    @ui.page('/')
+    def page():
+        ui.table(columns=columns(), rows=rows(), pagination=pagination, pagination_controls=pagination_controls)
+
+    screen.open('/')
+    if expected:
+        screen.should_contain('Records per page')
+    else:
+        screen.should_not_contain('Records per page')
+
+
+@pytest.mark.parametrize('pagination_controls', [None, False])
+def test_pagination_setter(screen: Screen, pagination_controls: bool | None):
+    @ui.page('/')
+    def page():
+        table = ui.table(columns=columns(), rows=rows(), pagination_controls=pagination_controls)
+        table.pagination = {'rowsPerPage': 2}
+
+    screen.open('/')
+    screen.should_contain('Alice')
+    screen.should_contain('Bob')
+    screen.should_not_contain('Lionel')
+    if pagination_controls is None:
+        screen.should_contain('1–2 of 3')  # noqa: RUF001
+    else:
+        screen.should_not_contain('Records per page')
 
 
 def test_filter(screen: Screen):
@@ -94,7 +130,6 @@ def test_add_remove(screen: Screen):
     screen.should_contain('Carol')
 
     screen.click('Remove')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
 
 
@@ -135,7 +170,6 @@ def test_selection(screen: Screen):
 
     screen.open('/')
     screen.find('Alice').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
     screen.should_contain('1 record selected.')
 
     screen.find('Bob').find_element(By.XPATH, 'preceding-sibling::td').click()
@@ -146,13 +180,11 @@ def test_selection(screen: Screen):
     screen.wait(0.5)
 
     screen.find('Lionel').find_element(By.XPATH, 'preceding-sibling::td').click()
-    screen.wait(0.5)
     screen.should_contain('2 records selected.')
     assert table.selection == 'multiple'
 
     screen.click('none')
-    screen.wait(0.5)
-    screen.should_not_contain('1 record selected.')
+    screen.should_not_contain('1 record selected.', duration=1.0)
     assert table.selection is None
 
 
@@ -177,7 +209,6 @@ def test_remove_selection(screen: Screen):
     screen.should_contain('1 record selected.')
 
     screen.click('Remove first row')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('1 record selected.')
 
@@ -202,14 +233,12 @@ def test_replace_rows(screen: Screen):
     screen.should_contain('Lionel')
 
     screen.click('Replace rows with C.')
-    screen.wait(0.5)
     screen.should_not_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Lionel')
     screen.should_contain('Carol')
 
     screen.click('Replace rows with D.')
-    screen.wait(0.5)
     screen.should_not_contain('Carol')
     screen.should_contain('Daniel')
 
@@ -223,6 +252,7 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
             table = ui.table.from_pandas(df)
             update_from_df = table.update_from_pandas
+            ui.table.from_pandas(DataFrame([['Foo', 'Bar', 'Baz']], columns=['same', 'same', 'same_0']))
         else:
             DataFrame = pl.DataFrame
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
@@ -236,6 +266,12 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
     screen.should_contain('Bob')
     screen.should_contain('18')
     screen.should_contain('21')
+    if df_type == 'pandas':
+        screen.should_contain('Foo')
+        screen.should_contain('Bar')
+        screen.should_contain('Baz')
+        screen.should_contain('same_0')
+        screen.should_not_contain('same_1')
 
     screen.click('Update')
     screen.should_contain('Lionel')
@@ -249,18 +285,18 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         if df_type == 'pandas':
             df = pd.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
-                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
                 'Timedelta_col': [timedelta(days=5)],
                 'Complex_col': [1 + 2j],
                 'Period_col': pd.Series([pd.Period('2021-01')]),
-                'Int64_col': pd.array([None], dtype='Int64'),
             })
-            df.index = pd.DatetimeIndex(['2024-01-01'], name='date')
             ui.table.from_pandas(df)
         else:
             df = pl.DataFrame({
                 'Datetime_col': [datetime(2020, 1, 1)],
-                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'Datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
+                'Timedelta_col': [timedelta(days=5)],
+                'Binary_col': ['hällo'.encode()],
             })
             ui.table.from_polars(df)
 
@@ -276,9 +312,11 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         screen.should_contain('(1+2j)')
         screen.should_contain('Period_col')
         screen.should_contain('2021-01')
-        screen.should_contain('2024-01-01')
-        screen.should_contain('date')
-        screen.should_contain('Int64_col')
+    else:
+        screen.should_contain('Timedelta_col')
+        screen.should_contain('5 days, 0:00:00')
+        screen.should_contain('Binary_col')
+        screen.should_contain('hällo')
 
 
 def test_table_computed_props(screen: Screen):
@@ -356,14 +394,9 @@ def test_columns_from_df(screen: Screen, df_type: str):
             persons = ui.table.from_pandas(pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_pandas(pd.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
                                         columns=[{'name': 'make', 'label': 'make', 'field': 'make'}])
-            duplicate_cols = ui.table.from_pandas(pd.DataFrame([['Foo', 'Bar', 'Baz', 'Baz', 'Baz']],
-                                                  columns=['SameColName', 'SameColName', 'AnotherDuplicate',
-                                                  'AnotherDuplicate', 'SameColName_1']))
             DataFrame = pd.DataFrame
             update_persons_from_df = persons.update_from_pandas
             update_cars_from_df = cars.update_from_pandas
-            update_duplicate_cols = duplicate_cols.update_rows
-
         else:
             persons = ui.table.from_polars(pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]}))
             cars = ui.table.from_polars(pl.DataFrame({'make': ['Ford', 'Toyota'], 'model': ['Focus', 'Corolla']}),
@@ -386,20 +419,12 @@ def test_columns_from_df(screen: Screen, df_type: str):
                   on_click=lambda: update_cars_from_df(DataFrame({'make': ['Hyundai'], 'model': ['i30']}),
                                                        columns=[{'name': 'make', 'label': 'make', 'field': 'make'},
                                                                 {'name': 'model', 'label': 'model', 'field': 'model'}]))
-        if df_type == 'pandas':
-            ui.button('Update duplicate columns',
-                      on_click=lambda: update_duplicate_cols([{'SameColName_0': 'a', 'SameColName_2': 'b',
-                                                               'AnotherDuplicate_0': 'c', 'AnotherDuplicate_1': 'd',
-                                                               'SameColName_1': 'e'}]))
 
     screen.open('/')
     screen.should_contain('name')
     screen.should_contain('age')
     screen.should_contain('make')
     screen.should_not_contain('model')
-    if df_type == 'pandas':
-        screen.should_contain('Foo')
-        screen.should_not_contain('SameColName_0')
 
     screen.click('Update persons without columns')  # infer columns (like during instantiation)
     screen.should_contain('Dan')
@@ -417,11 +442,6 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.click('Update cars with columns')  # updated columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
-
-    if df_type == 'pandas':
-        screen.click('Update duplicate columns')
-        screen.should_contain('a')
-        screen.should_not_contain('Baz')
 
 
 def test_new_slots(screen: Screen):

@@ -1,6 +1,5 @@
 import asyncio
-
-from typing_extensions import Self
+from typing import Self
 
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...events import (
@@ -21,7 +20,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
     @resolve_defaults
     def __init__(self,
                  scene: Scene,
-                 # DEPRECATED: enforce keyword-only arguments in NiceGUI 4.0
+                 *,
                  width: int = DEFAULT_PROP | 400,
                  height: int = DEFAULT_PROP | 300,
                  camera: SceneCamera | None = None,
@@ -55,14 +54,14 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
+        self._settled_event = asyncio.Event()
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
+        self.on('init-failed', self._settled_event.set)
         self.on('click3d', self._handle_click)
 
-        self._props.add_rename('camera_params', 'camera-params')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('camera_type', 'camera-type')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('scene_id', 'scene-id')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('show_stats', 'show-stats')  # DEPRECATED: remove in NiceGUI 4.0
+    def _handles_event_while_ignoring(self, event_type: str) -> bool:
+        return event_type == 'init'
 
     def on_click(self, callback: Handler[ClickEventArguments]) -> Self:
         """Add a callback to be invoked when a 3D object is clicked."""
@@ -71,6 +70,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
 
     def _handle_init(self) -> None:
         self._initialized_event.set()
+        self._settled_event.set()
         self.move_camera(duration=0)
         self.run_method('init')
 
@@ -79,8 +79,12 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
 
         *Updated in version 3.17.0: Awaiting scene view initialization cancels the awaiting task
         when the scene view is deleted, e.g. because the client disconnected.*
+
+        *Updated in version 3.19.0: Raises a ``RuntimeError`` if the browser could not create a WebGL renderer.*
         """
-        await self._wait_for(self._initialized_event)
+        await self._wait_for(self._settled_event)
+        if not self._initialized_event.is_set():
+            raise RuntimeError('Could not create WebGL renderer.')
 
     def _handle_click(self, e: GenericEventArguments) -> None:
         arguments = SceneClickEventArguments(
@@ -125,7 +129,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         :param up_x: x component of the camera up vector
         :param up_y: y component of the camera up vector
         :param up_z: z component of the camera up vector
-        :param duration: duration of the movement in seconds (default: `0.5`)
+        :param duration: duration of the movement in seconds (default: ``0.5``)
         """
         self.camera.x = self.camera.x if x is None else x
         self.camera.y = self.camera.y if y is None else y

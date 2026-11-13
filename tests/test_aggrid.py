@@ -1,5 +1,5 @@
 import inspect
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -118,10 +118,9 @@ def test_run_grid_method_with_argument(screen: Screen):
     screen.should_contain('Carol')
 
     screen.click('Filter')
-    screen.wait(0.5)
-    screen.should_contain('Alice')
     screen.should_not_contain('Bob')
     screen.should_not_contain('Carol')
+    screen.should_contain('Alice')
 
 
 def test_get_selected_rows(screen: Screen):
@@ -178,9 +177,7 @@ def test_create_from_dataframe(screen: Screen, df_type: str):
         if df_type == 'pandas':
             df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], 42: 'answer'})
             ui.aggrid.from_pandas(df)
-            df = pd.DataFrame([['Foo', 'Bar', 'Baz']],
-                              columns=['sameColName', 'sameColName', 'SameColName_1'])
-            ui.aggrid.from_pandas(df)
+            ui.aggrid.from_pandas(pd.DataFrame([['Foo', 'Bar', 'Baz']], columns=['sameName', 'sameName', 'sameName_0']))
         else:
             df = pl.DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21], '42': 'answer'})
             ui.aggrid.from_polars(df)
@@ -194,8 +191,10 @@ def test_create_from_dataframe(screen: Screen, df_type: str):
     screen.should_contain('answer')
     if df_type == 'pandas':
         screen.should_contain('Foo')
-        screen.should_contain('Same Col Name')
-        screen.should_not_contain('Same Col Name_0')
+        screen.should_contain('Bar')
+        screen.should_contain('Baz')
+        screen.should_contain('Same Name_0')
+        screen.should_not_contain('Same Name_1')
 
 
 def test_create_dynamically(screen: Screen):
@@ -255,7 +254,7 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         if df_type == 'pandas':
             df = pd.DataFrame({
                 'datetime_col': [datetime(2020, 1, 1)],
-                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
                 'timedelta_col': [timedelta(days=5)],
                 'complex_col': [1 + 2j],
                 'period_col': pd.Series([pd.Period('2021-01')]),
@@ -264,7 +263,9 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         else:
             df = pl.DataFrame({
                 'datetime_col': [datetime(2020, 1, 1)],
-                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=timezone.utc)],
+                'datetime_col_tz': [datetime(2020, 1, 2, tzinfo=UTC)],
+                'timedelta_col': [timedelta(days=5)],
+                'binary_col': ['hällo'.encode()],
             })
             ui.aggrid.from_polars(df)
 
@@ -280,6 +281,11 @@ def test_problematic_datatypes(screen: Screen, df_type: str):
         screen.should_contain('(1+2j)')
         screen.should_contain('Period_col')
         screen.should_contain('2021-01')
+    else:
+        screen.should_contain('Timedelta_col')
+        screen.should_contain('5 days, 0:00:00')
+        screen.should_contain('Binary_col')
+        screen.should_contain('hällo')
 
 
 def test_run_row_method(screen: Screen):
@@ -367,12 +373,27 @@ def test_get_client_data(screen: Screen):
 
     screen.open('/')
     screen.click('Get Data')
-    screen.wait(0.5)
-    assert data == [{'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42}]
+    screen.wait_for(lambda: data == [
+        {'name': 'Alice', 'age': 18}, {'name': 'Bob', 'age': 21}, {'name': 'Carol', 'age': 42},
+    ])
 
     screen.click('Get Sorted Data')
-    screen.wait(0.5)
-    assert data == [{'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18}]
+    screen.wait_for(lambda: data == [
+        {'name': 'Carol', 'age': 42}, {'name': 'Bob', 'age': 21}, {'name': 'Alice', 'age': 18},
+    ])
+
+
+def test_dark_mode(screen: Screen):
+    @ui.page('/')
+    def page():
+        dark = ui.dark_mode()
+        ui.aggrid({'columnDefs': [{'field': 'name'}], 'rowData': [{'name': 'Alice'}]})
+        ui.button('Dark', on_click=dark.enable)
+
+    screen.open('/')
+    light_color = screen.find('Alice').value_of_css_property('color')
+    screen.click('Dark')
+    screen.wait_for(lambda: screen.find('Alice').value_of_css_property('color') != light_color)
 
 
 def test_version_matches_js(screen: Screen):
@@ -405,6 +426,35 @@ def test_pandas_with_index(screen: Screen, index: Any, expected: list[str], unex
         screen.should_contain(item)
     for item in unexpected:
         screen.should_not_contain(item)
+
+
+@pytest.mark.parametrize('source', ['pandas', 'polars', 'setGridOption', 'updateGridOptions', 'applyTransaction', 'setData'])
+def test_colon_column_is_not_evaluated(screen: Screen, source: str):
+    row = {':x': 'document.title = 6 * 7'}
+
+    @ui.page('/')
+    def page():
+        if source == 'pandas':
+            ui.aggrid.from_pandas(pd.DataFrame([row]))
+        elif source == 'polars':
+            ui.aggrid.from_polars(pl.DataFrame([row]))
+        else:
+            grid = ui.aggrid({'columnDefs': [{'field': ':x'}], 'rowData': [{':x': 'initial'}]})
+            if source == 'setGridOption':
+                ui.button('Load', on_click=lambda: grid.run_grid_method('setGridOption', 'rowData', [row]))
+            elif source == 'updateGridOptions':
+                ui.button('Load', on_click=lambda: grid.run_grid_method('updateGridOptions', {'rowData': [row]}))
+            elif source == 'applyTransaction':
+                ui.button('Load', on_click=lambda: grid.run_grid_method('applyTransaction', {'add': [row]}))
+            else:
+                ui.button('Load', on_click=lambda: grid.run_row_method('0', 'setData', row))
+
+    screen.open('/')
+    if source not in {'pandas', 'polars'}:
+        screen.should_contain('initial')
+        screen.click('Load')
+    screen.should_contain('document.title = 6 * 7')
+    assert screen.selenium.title != '42'
 
 
 @pytest.mark.parametrize('args,auto_size_strategy_expected', [

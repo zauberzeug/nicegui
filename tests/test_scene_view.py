@@ -21,9 +21,8 @@ def test_create_dynamically(screen: Screen):
 
     screen.open('/')
     screen.click('Create')
-    screen.wait(0.5)
-    assert scene_view is not None
-    assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
+    screen.wait_for(lambda: scene_view is not None)
+    screen.wait_for_js(f'getElement({scene_view.id}).scene == getElement({scene.id}).scene', True)
 
 
 def test_object_creation_via_context(screen: Screen):
@@ -38,8 +37,7 @@ def test_object_creation_via_context(screen: Screen):
         scene_view = ui.scene_view(scene)
 
     screen.open('/')
-    screen.wait(1)
-    assert screen.selenium.execute_script(f'return getElement({scene_view.id}).scene == getElement({scene.id}).scene')
+    screen.wait_for_js(f'getElement({scene_view.id}).scene == getElement({scene.id}).scene', True)
 
 
 def test_camera_move(screen: Screen):
@@ -77,7 +75,7 @@ def test_click_on_stl_with_untagged_children(screen: Screen):
         ui.scene_view(scene, width=200, height=150, on_click=lambda e: hits.extend(hit.object_id for hit in e.hits))
 
     screen.open('/')
-    query = f'scene_{scene.html_id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0'
+    query = f'scene_{scene.id}.getObjectByProperty("object_id", "{obj.id}")?.children.length > 0'
     screen.wait_for_js(query, True)  # the click must hit the child mesh created by the STL loader
     screen.find_all_by_tag('canvas')[1].click()
     screen.wait_for(lambda: obj.id in hits)

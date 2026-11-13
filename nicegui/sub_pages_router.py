@@ -83,6 +83,7 @@ class SubPagesRouter:
             not self._other_page_builder_matches_path(path, client)  # `ui.sub_pages` is still responsible
         ):
             current_path_string = json.dumps(self.current_path)
+            # NOTE: the user simulation recognizes this JavaScript in `User._simulate_javascript`
             client.run_javascript(f'''
                 const fullPath = (window.path_prefix || '') + {current_path_string};
                 if (window.location.pathname + window.location.search + window.location.hash !== fullPath) {{
@@ -147,6 +148,7 @@ class SubPagesRouter:
 def has_any_unresolved_path(client: Client, *, with_404_enabled_only: bool = False) -> bool:
     """Check if any sub_pages has an unresolved path.
 
+    :param client: client whose sub_pages are checked
     :param with_404_enabled_only: whether to only consider sub_pages with show_404 enabled
     """
     return any(

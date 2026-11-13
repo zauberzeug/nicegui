@@ -6,10 +6,8 @@ import weakref
 from collections.abc import Awaitable, Callable
 from contextlib import nullcontext
 from dataclasses import dataclass
-from typing import Any, ClassVar, Generic
+from typing import Any, ClassVar, Generic, ParamSpec
 from weakref import WeakSet
-
-from typing_extensions import ParamSpec
 
 from . import background_tasks, core, helpers
 from .client import Client
@@ -129,7 +127,7 @@ class Event(Generic[P]):
 
         def callback(*args: P.args, **kwargs: P.kwargs) -> None:  # pylint: disable=unused-argument
             if not future.done():
-                future.set_result(args[0] if len(args) == 1 else args if args else None)
+                future.set_result(args[0] if len(args) == 1 else args or None)
 
         def cancel() -> None:
             future.cancel()  # no-op for a done future, so an event that fired right before the deletion still wins
@@ -145,7 +143,7 @@ class Event(Generic[P]):
         self.subscribe(callback, expect_args=True, unsubscribe_on_delete=False)  # cleaned up in the finally block below
         try:
             return await asyncio.wait_for(future, timeout)
-        except asyncio.TimeoutError as error:
+        except TimeoutError as error:
             raise TimeoutError(f'Timed out waiting for event after {timeout} seconds') from error
         finally:
             self.unsubscribe(callback)

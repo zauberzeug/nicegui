@@ -88,11 +88,11 @@ class Outbox:
                 if not self._enqueue_event.is_set():
                     try:
                         await asyncio.wait_for(self._enqueue_event.wait(), timeout=1.0)
-                    except (TimeoutError, asyncio.TimeoutError):
+                    except TimeoutError:
                         continue
 
                 client = self.client
-                if not client or not client.has_socket_connection:
+                if not client.has_socket_connection:
                     await asyncio.sleep(0.1)
                     continue
 
@@ -101,7 +101,8 @@ class Outbox:
                 coros = []
                 if self.updates:
                     data = {
-                        element_id: None if element is deleted else element._to_dict()  # type: ignore  # pylint: disable=protected-access
+                        element_id: None if element is deleted
+                        else element._to_dict()  # type: ignore[union-attr]  # pylint: disable=protected-access
                         for element_id, element in self.updates.items()
                     }
                     js_components = [
@@ -120,8 +121,7 @@ class Outbox:
                     self.updates.clear()
 
                 if self.messages:
-                    for message in self.messages:
-                        coros.append(self._emit(message))
+                    coros.extend(self._emit(message) for message in self.messages)
                     self.messages.clear()
 
                 for coro in coros:
@@ -144,13 +144,12 @@ class Outbox:
             await core.air.emit(message_type, data, room=client_id)
 
         client = self.client
-        if client:
-            self.message_history.append((self.next_message_id, time.time(), message))
-            max_age = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + client.page.resolve_reconnect_timeout()
-            while self.message_history and self.message_history[0][1] < time.time() - max_age:
-                self.message_history.popleft()
-            while len(self.message_history) > core.app.config.message_history_length:
-                self.message_history.popleft()
+        self.message_history.append((self.next_message_id, time.time(), message))
+        max_age = core.sio.eio.ping_interval + core.sio.eio.ping_timeout + client.page.resolve_reconnect_timeout()
+        while self.message_history and self.message_history[0][1] < time.time() - max_age:
+            self.message_history.popleft()
+        while len(self.message_history) > core.app.config.message_history_length:
+            self.message_history.popleft()
 
         self.next_message_id += 1
 

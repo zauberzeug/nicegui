@@ -1,4 +1,4 @@
-from typing_extensions import Self
+from typing import Self
 
 from ..context import context
 from ..defaults import DEFAULT_PROP, DEFAULT_PROPS, resolve_defaults
@@ -24,14 +24,14 @@ class Header(ValueElement[bool], component='header.js', default_classes='nicegui
         Like other layout elements, the header can not be nested inside other elements.
 
         Note: The header is automatically placed above other layout elements in the DOM to improve accessibility.
-        To change the order, use the `move` method.
+        To change the order, use the ``move`` method.
 
-        :param value: whether the header is already opened (default: `True`)
-        :param fixed: whether the header should be fixed to the top of the page (default: `True`)
-        :param bordered: whether the header should have a border (default: `False`)
-        :param elevated: whether the header should have a shadow (default: `False`)
-        :param wrap: whether the header should wrap its content (default: `True`)
-        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: `True`)
+        :param value: whether the header is already opened (default: ``True``)
+        :param fixed: whether the header should be fixed to the top of the page (default: ``True``)
+        :param bordered: whether the header should have a border (default: ``False``)
+        :param elevated: whether the header should have a shadow (default: ``False``)
+        :param wrap: whether the header should wrap its content (default: ``True``)
+        :param add_scroll_padding: whether to automatically prevent link targets from being hidden behind the header (default: ``True``)
         """
         require_top_level_layout(self)
         with context.client.layout:
@@ -46,8 +46,6 @@ class Header(ValueElement[bool], component='header.js', default_classes='nicegui
         self.client.layout.props['view'] = ''.join(code)
 
         self.move(target_index=0)
-
-        self._props.add_rename('add_scroll_padding', 'add-scroll-padding')  # DEPRECATED: remove in NiceGUI 4.0
 
     def toggle(self) -> Self:
         """Toggle the header"""

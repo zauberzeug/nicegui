@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING, Literal, cast
-
-from typing_extensions import Self
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Literal, Self, cast
 
 from ... import helpers, optional_features
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
 from ...dependencies import register_importmap_override
 from ...element import Element
-from ...helpers import camel_to_title_case, prepare_pandas_df
 
 optional_features.try_register('pandas')
 if TYPE_CHECKING:
@@ -19,12 +17,12 @@ if TYPE_CHECKING:
 
 
 class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, default_classes='nicegui-aggrid'):
-    VERSION = '34.2.0'  # AG Grid version used by NiceGUI
+    VERSION = '36.2.0'  # AG Grid version used by NiceGUI
 
     @resolve_defaults
     def __init__(self,
                  options: dict, *,
-                 html_columns: list[int] = DEFAULT_PROP | [],
+                 html_columns: Sequence[int] = DEFAULT_PROP | (),
                  theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                  auto_size_columns: bool | None = None,
                  modules: Literal['community', 'enterprise'] | list[str] = 'community',
@@ -37,15 +35,13 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         The methods ``run_grid_method`` and ``run_row_method`` can be used to interact with the AG Grid instance on the client.
 
         :param options: dictionary of AG Grid options
-        :param html_columns: list of columns that should be rendered as HTML (default: ``[]``)
+        :param html_columns: list of columns that should be rendered as HTML (default: ``()``)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``None``, i.e. fit to width unless columns use ``flex``)
         :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         """
         if not isinstance(modules, list):
             modules = [f'All{modules.capitalize()}Module']
-
-        self._migrate_deprecated_checkbox_renderer(options)  # DEPRECATED: remove in NiceGUI 4.0
 
         super().__init__()
 
@@ -59,45 +55,22 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             **({'autoSizeStrategy': {'type': 'fitGridWidth'}} if auto_size_columns else {}),
             **options,
         }
-        self._props['html-columns'] = html_columns[:]
+        self._props['html-columns'] = list(html_columns)
         self._update_method = 'update_grid'
         self._props['modules'] = modules[:]
-
-        self._props.add_rename('html_columns', 'html-columns')  # DEPRECATED: remove in NiceGUI 4.0
 
     @staticmethod
     def _uses_flex(options: dict) -> bool:
         col_defs = [options.get('defaultColDef', {}), *options.get('columnDefs', [])]
         return any(col.get('flex') or ':flex' in col for col in col_defs)
 
-    @staticmethod
-    def _migrate_deprecated_checkbox_renderer(options: dict) -> None:
-        """Migrate deprecated checkboxRenderer to agCheckboxCellRenderer and warn the user."""
-        migrated = False
-        for col in options.get('columnDefs', []):
-            if col.get('cellRenderer') == 'checkboxRenderer':
-                del col['cellRenderer']
-                col['cellDataType'] = 'boolean'
-                col['editable'] = True
-                migrated = True
-        if migrated:
-            helpers.warn_once(
-                "AG Grid: 'checkboxRenderer' is deprecated.\n"
-                'Your code currently contains:\n'
-                "    'cellRenderer': 'checkboxRenderer',\n"
-                'But the native renderer is preferred for accessibility and styling:\n'
-                "    'cellDataType': 'boolean',\n"
-                "    'editable': True,\n"
-                'Please migrate ASAP as the backwards-compatibility will be removed in NiceGUI 4.0.'
-            )
-
     @classmethod
     def from_pandas(cls,
                     df: 'pd.DataFrame', *,
-                    html_columns: list[int] = [],  # noqa: B006
+                    html_columns: Sequence[int] = (),
                     theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                     auto_size_columns: bool | None = None,
-                    options: dict = {},  # noqa: B006
+                    options: dict | None = None,
                     modules: Literal['community', 'enterprise'] | list[str] = 'community',
                     ) -> Self:
         """Create an AG Grid from a Pandas DataFrame.
@@ -108,24 +81,25 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         To use a different conversion, convert the DataFrame manually before passing it to this method.
         See `issue 1698 <https://github.com/zauberzeug/nicegui/issues/1698>`_ for more information.
 
-        *Since version 3.12.0:
+        *Since version 3.12.0:*
         Any DataFrame index other than an unnamed ``RangeIndex`` is auto-included as column(s).
         Pass ``df.reset_index(drop=True)`` to drop the index instead.
 
         :param df: Pandas DataFrame
-        :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
+        :param html_columns: list of columns that should be rendered as HTML (default: ``()``, *added in version 2.19.0*)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``None``, i.e. fit to width unless columns use ``flex``)
         :param options: dictionary of additional AG Grid options
         :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
         """
-
-        df, col_labels = prepare_pandas_df(df)
+        options = options or {}
+        rows, columns, labels = helpers.pandas_to_records(df)
         return cls({
-            'columnDefs': [{'headerName': camel_to_title_case(str(label)), 'field': str(col)}
-                           for label, col in zip(col_labels, df.columns, strict=True)],
-            'rowData': df.to_dict('records'),
+            'columnDefs': [{'field': str(col)} if col == label else
+                           {'field': str(col), 'headerName': helpers.camel_to_title_case(str(label))}
+                           for col, label in zip(columns, labels, strict=True)],
+            'rowData': rows,
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
@@ -134,30 +108,33 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     @classmethod
     def from_polars(cls,
                     df: 'pl.DataFrame', *,
-                    html_columns: list[int] = [],  # noqa: B006
+                    html_columns: Sequence[int] = (),
                     theme: Literal['quartz', 'balham', 'material', 'alpine'] | None = None,
                     auto_size_columns: bool | None = None,
-                    options: dict = {},  # noqa: B006
+                    options: dict | None = None,
                     modules: Literal['community', 'enterprise'] | list[str] = 'community',
                     ) -> Self:
         """Create an AG Grid from a Polars DataFrame.
 
-        If the DataFrame contains non-UTF-8 datatypes, they will be converted to strings.
+        If the DataFrame contains non-serializable columns of type ``Binary``, ``Duration`` or ``Object``,
+        they will be converted to strings.
         To use a different conversion, convert the DataFrame manually before passing it to this method.
 
         *Added in version 2.7.0*
 
         :param df: Polars DataFrame
-        :param html_columns: list of columns that should be rendered as HTML (default: ``[]``, *added in version 2.19.0*)
+        :param html_columns: list of columns that should be rendered as HTML (default: ``()``, *added in version 2.19.0*)
         :param theme: AG Grid theme "quartz", "balham", "material", or "alpine" (default: ``options['theme']`` or "quartz")
         :param auto_size_columns: whether to automatically resize columns to fit the grid width (default: ``None``, i.e. fit to width unless columns use ``flex``)
         :param options: dictionary of additional AG Grid options
         :param modules: either "community", "enterprise", or a list of `AG Grid Modules <https://www.ag-grid.com/javascript-data-grid/modules/>`_ (default: "community")
         :return: AG Grid element
         """
+        options = options or {}
+        rows, columns = helpers.polars_to_records(df)
         return cls({
-            'columnDefs': [{'field': str(col)} for col in df.columns],
-            'rowData': df.to_dicts(),
+            'columnDefs': [{'field': str(col)} for col in columns],
+            'rowData': rows,
             'suppressFieldDotNotation': True,
             **options,
             'theme': theme or options.get('theme', 'quartz'),
@@ -207,7 +184,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
             self._props['options'].pop('autoSizeStrategy')
 
     def run_grid_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run an AG Grid API method.
+        r"""Run an AG Grid API method.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/grid-api/>`_ for a list of methods.
 
@@ -215,7 +192,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
@@ -223,7 +200,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         return self.run_method('run_grid_method', name, *args, timeout=timeout)
 
     def run_row_method(self, row_id: str, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run an AG Grid API method on a specific row.
+        r"""Run an AG Grid API method on a specific row.
 
         See `AG Grid Row Reference <https://www.ag-grid.com/javascript-data-grid/row-object/>`_ for a list of methods.
 
@@ -237,7 +214,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
 
         :param row_id: ID of the row (as defined by the ``getRowId`` option, or the row index as a string)
         :param name: name of the method
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
@@ -247,7 +224,7 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     async def get_selected_rows(self) -> list[dict]:
         """Get the currently selected rows.
 
-        This method is especially useful when the grid is configured with ``rowSelection: 'multiple'``.
+        This method is especially useful when the grid is configured with ``rowSelection: {'mode': 'multiRow'}``.
 
         See `AG Grid API <https://www.ag-grid.com/javascript-data-grid/row-selection/#reference-selection-getSelectedRows>`_ for more information.
 
@@ -259,9 +236,9 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
     async def get_selected_row(self) -> dict | None:
         """Get the single currently selected row.
 
-        This method is especially useful when the grid is configured with ``rowSelection: 'single'``.
+        This method is especially useful when the grid is configured with ``rowSelection: {'mode': 'singleRow'}``.
 
-        :return: row data of the first selection if any row is selected, otherwise `None`
+        :return: row data of the first selection if any row is selected, otherwise ``None``
         """
         rows = await self.get_selected_rows()
         return rows[0] if rows else None
@@ -317,6 +294,6 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         This sets a global import map override, affecting all pages and clients.
         Use this to switch to AG Grid Enterprise or a self-hosted bundle.
 
-        :param url: the ESM module URL (e.g., "https://cdn.jsdelivr.net/npm/ag-grid-enterprise@34.2.0/+esm")
+        :param url: the ESM module URL (e.g., "https://cdn.jsdelivr.net/npm/ag-grid-enterprise@36.2.0/+esm")
         """
         register_importmap_override('nicegui-aggrid', url)

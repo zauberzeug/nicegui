@@ -17,7 +17,7 @@ class Colors(Element, component='colors.js'):
                  info: str = DEFAULT_PROP | '#31ccec',
                  warning: str = DEFAULT_PROP | '#f2c037',
                  **custom_colors: str) -> None:
-        """Color Theming
+        r"""Color Theming
 
         Sets the main colors (primary, secondary, accent, ...) used by `Quasar <https://quasar.dev/style/theme-builder>`_ on a per-page basis.
 
@@ -32,7 +32,7 @@ class Colors(Element, component='colors.js'):
         :param negative: Negative color (default: "#c10015")
         :param info: Info color (default: "#31ccec")
         :param warning: Warning color (default: "#f2c037")
-        :param custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used, *added in version 2.2.0*)
+        :param \*\*custom_colors: Custom color definitions for branding (needs ``ui.colors`` to be called before custom color is ever used, *added in version 2.2.0*)
         """
         super().__init__()
         self._props['primary'] = primary
@@ -46,6 +46,3 @@ class Colors(Element, component='colors.js'):
         self._props['warning'] = warning
         self._props['custom-colors'] = custom_colors
         QUASAR_COLORS.update({name.replace('_', '-') for name in custom_colors})
-
-        self._props.add_rename('dark_page', 'dark-page')  # DEPRECATED: remove in NiceGUI 4.0
-        self._props.add_rename('custom_colors', 'custom-colors')  # DEPRECATED: remove in NiceGUI 4.0

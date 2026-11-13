@@ -148,13 +148,7 @@ ValueT = TypeVar('ValueT')
 @dataclass(kw_only=True, slots=True)
 class ValueChangeEventArguments(UiEventArguments, Generic[ValueT]):
     value: ValueT
-    previous_value: ValueT = ...  # type: ignore[assignment]
-
-    def __post_init__(self):
-        # DEPRECATED: previous_value will be required in NiceGUI 4.0
-        if self.previous_value is ...:
-            helpers.warn_once('The new event argument `ValueChangeEventArguments.previous_value` is not set. '
-                              'In NiceGUI 4.0 this will raise an error.')
+    previous_value: ValueT
 
 
 @dataclass(kw_only=True, slots=True)
@@ -165,6 +159,38 @@ class CodeMirrorAnchorChangeEventArguments(UiEventArguments):
 @dataclass(kw_only=True, slots=True)
 class TableSelectionEventArguments(UiEventArguments):
     selection: list[Any]
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class CodeMirrorSelectionRange:
+    anchor: int  # str index into the value where the selection started
+    head: int  # str index into the value where the cursor is
+
+    @property
+    def from_(self) -> int:
+        """The lower end of the range (CodeMirror's ``from``)."""
+        return min(self.anchor, self.head)
+
+    @property
+    def to(self) -> int:
+        """The upper end of the range."""
+        return max(self.anchor, self.head)
+
+    @property
+    def empty(self) -> bool:
+        """Whether the range is a bare cursor."""
+        return self.anchor == self.head
+
+
+@dataclass(kw_only=True, slots=True)
+class CodeMirrorSelectionChangeEventArguments(UiEventArguments):
+    ranges: list[CodeMirrorSelectionRange]
+    main_index: int
+
+    @property
+    def main(self) -> CodeMirrorSelectionRange:
+        """The main selection range (``ranges[main_index]``)."""
+        return self.ranges[self.main_index]
 
 
 @dataclass(kw_only=True, slots=True)

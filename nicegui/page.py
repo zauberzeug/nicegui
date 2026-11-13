@@ -27,15 +27,15 @@ class page:
                  title: str | None = None,
                  viewport: str | None = None,
                  favicon: str | Path | None = None,
-                 dark: bool | None = ...,  # type: ignore
-                 language: Language | None = ...,  # type: ignore
+                 dark: bool | None = ...,  # type: ignore[assignment]
+                 language: Language | None = ...,  # type: ignore[assignment]
                  response_timeout: float = 3.0,
                  reconnect_timeout: float | None = None,
                  markdown: bool | None = None,
                  api_router: APIRouter | None = None,
                  **kwargs: Any,
                  ) -> None:
-        """Page
+        r"""Page
 
         This decorator marks a function to be a page builder.
         Each user accessing the given route will see a new instance of the page.
@@ -44,25 +44,25 @@ class page:
         Notes:
 
         - The name of the decorated function is unused and can be anything.
-        - The page route is determined by the `path` argument and registered globally.
+        - The page route is determined by the ``path`` argument and registered globally.
         - The decorator does only work for free functions and static methods.
-          Instance methods or initializers would require a `self` argument, which the router cannot associate.
+          Instance methods or initializers would require a ``self`` argument, which the router cannot associate.
           See `our modularization example <https://github.com/zauberzeug/nicegui/tree/main/examples/modularization/>`_
           for strategies to structure your code.
 
         :param path: route of the new page (path must start with '/')
         :param title: optional page title
         :param viewport: optional viewport meta tag content
-        :param favicon: optional path to a local image file, absolute `http(s)://` URL, data URL, inline SVG or emoji (default: `None`, favicon of `ui.run` will be used)
-        :param dark: whether to use Quasar's dark mode (defaults to `dark` argument of `run` command)
+        :param favicon: optional path to a local image file, absolute ``http(s)://`` URL, data URL, inline SVG or emoji (default: ``None``, favicon of ``ui.run`` will be used)
+        :param dark: whether to use Quasar's dark mode (defaults to ``dark`` argument of ``run`` command)
         :param language: language of the page, used for Quasar elements and the ``lang`` attribute of the ``html`` tag
             (defaults to ``language`` argument of ``run`` command, *updated in version 3.14.0*: can be ``None`` to omit the ``lang`` attribute)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
-        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to `reconnect_timeout` argument of `run` command))
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to ``reconnect_timeout`` argument of ``run`` command))
         :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
-            (experimental, defaults to `markdown` argument of `run` command, *added in version 3.11.0*)
-        :param api_router: APIRouter instance to use, can be left `None` to use the default
-        :param kwargs: additional keyword arguments passed to FastAPI's @app.get method
+            (experimental, defaults to ``markdown`` argument of ``run`` command, *added in version 3.11.0*)
+        :param api_router: APIRouter instance to use, can be left ``None`` to use the default
+        :param \*\*kwargs: additional keyword arguments passed to FastAPI's @app.get method
         """
         self._path = path
         self.title = title
@@ -75,13 +75,19 @@ class page:
         self.api_router = api_router or core.app.router
         self.reconnect_timeout = reconnect_timeout
         self.markdown = markdown
+        self._endpoint: Callable[..., Any] | None = None
+        self._resolved_path: str | None = None
 
-        create_favicon_route(self.path, favicon)
+        create_favicon_route(self.path, favicon, self.api_router)
 
     @property
     def path(self) -> str:
-        """The path of the page including the APIRouter's prefix."""
-        return self.api_router.prefix + self._path
+        """The path of the page including the prefixes of its routers and of ``app.include_router``."""
+        if self._resolved_path is None and self._endpoint is not None:
+            # the prefix of an included route never changes, so the path is looked up only until it is found
+            self._resolved_path = next((route.path for route in core.app._iter_http_routes()  # pylint: disable=protected-access
+                                        if getattr(route, 'endpoint', None) is self._endpoint), None)
+        return self._resolved_path or self.api_router.prefix + self._path
 
     def resolve_title(self) -> str:
         """Return the title of the page."""
@@ -116,8 +122,9 @@ class page:
         if 'include_in_schema' not in self.kwargs:
             self.kwargs['include_in_schema'] = core.app.config.endpoint_documentation in {'page', 'all'}
 
-        self.api_router.get(self._path, **self.kwargs)(self._wrap(func))
-        Client.page_routes[func] = self.path
+        self._endpoint = self._wrap(func)
+        self.api_router.get(self._path, **self.kwargs)(self._endpoint)
+        Client.page_routes.pages[func] = self
         return func
 
     def _wrap(self, func: Callable[..., Any]) -> Callable[..., Any]:
@@ -152,7 +159,8 @@ class page:
                     if key == 500 or (isinstance(key, type) and isinstance(e, key)):
                         result = handler(request, e)
                         if helpers.should_await(result):
-                            background_tasks.create(result, name=f'exception handler {handler.__name__}')
+                            name = getattr(handler, '__name__', handler)
+                            background_tasks.create(result, name=f'exception handler {name}')
 
                 # NiceGUI exception handlers
                 core.app.handle_exception(e)
@@ -237,6 +245,6 @@ class page:
         if 'request' not in {p.name for p in parameters}:
             request = inspect.Parameter('request', inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request)
             parameters.insert(0, request)
-        decorated.__signature__ = inspect.Signature(parameters)  # type: ignore
+        decorated.__signature__ = inspect.Signature(parameters)  # type: ignore[attr-defined]
 
         return decorated

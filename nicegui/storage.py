@@ -97,6 +97,7 @@ class Storage:
         self._general = Storage._create_persistent_dict(GENERAL_ID)
         self._users: dict[str, PersistentDict] = {}
         self._tabs: dict[str, ObservableDict] = {}
+        self._user_creations: dict[str, asyncio.Event] = {}
         self._tab_creations: dict[str, asyncio.Event] = {}
         self._active_request_sessions: Counter[str] = Counter()
         '''Number of in-flight HTTP requests per session id, so prune_user_storage does not remove
@@ -115,7 +116,7 @@ class Storage:
         """Small storage that is saved directly within the user's browser (encrypted cookie).
 
         The data is shared between all browser tabs and can only be modified before the initial request has been submitted.
-        Therefore it is normally better to use `app.storage.user` instead,
+        Therefore it is normally better to use ``app.storage.user`` instead,
         which can be modified anytime, reduces overall payload, improves security and has larger storage capacity.
         """
         if core.is_script_mode_preflight():
@@ -151,8 +152,20 @@ class Storage:
         return self._users[session_id]
 
     async def _create_user_storage(self, session_id: str) -> None:
-        self._users[session_id] = Storage._create_persistent_dict(f'{USER_PREFIX}{session_id}')
-        await self._users[session_id].initialize()
+        """Create and load the user storage for the given session ID.
+
+        A concurrent request of the same session waits for the storage to load instead of using it half-loaded.
+        """
+        if creation := self._user_creations.get(session_id):
+            await creation.wait()
+            return
+        self._user_creations[session_id] = asyncio.Event()
+        try:
+            storage = Storage._create_persistent_dict(f'{USER_PREFIX}{session_id}')
+            await storage.initialize()
+            self._users[session_id] = storage
+        finally:
+            self._user_creations.pop(session_id).set()
 
     @property
     def general(self) -> PersistentDict:
@@ -163,7 +176,7 @@ class Storage:
     def client(self) -> ObservableDict:
         """A volatile storage that is only kept during the current connection to the client.
 
-        Like `app.storage.tab` data is unique per browser tab but is even more volatile as it is already discarded
+        Like ``app.storage.tab`` data is unique per browser tab but is even more volatile as it is already discarded
         when the connection to the client is lost through a page reload or a navigation.
         """
         return context.client.storage
