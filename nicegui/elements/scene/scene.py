@@ -3,7 +3,7 @@ import weakref
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
@@ -18,6 +18,9 @@ from ...events import (
 )
 from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .scene_object3d import Object3D
+
+if TYPE_CHECKING:
+    from .scene_view import SceneView
 
 
 @dataclass(kw_only=True, slots=True)
@@ -126,6 +129,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._batched_calls: list[list[Any]] | None = None
         self._initialized_event = asyncio.Event()
         self._settled_event = asyncio.Event()
+        self._views: weakref.WeakSet[SceneView] = weakref.WeakSet()
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = list(click_events)
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
@@ -327,6 +331,8 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
 
     def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()))
+        for view in self._views:
+            view._handle_scene_delete()  # pylint: disable=protected-access
         super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:
