@@ -57,9 +57,10 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         self._props['camera-params'] = self.camera.params
         self._initialized_event = asyncio.Event()
         self._settled_event = asyncio.Event()
+        self._webgl_failed = False
         self._click_handlers = [on_click] if on_click else []
         self.on('init', self._handle_init)
-        self.on('init-failed', self._settled_event.set)
+        self.on('init-failed', self._handle_init_failed)
         self.on('click3d', self._handle_click)
 
     def _handles_event_while_ignoring(self, event_type: str) -> bool:
@@ -69,6 +70,10 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         """Add a callback to be invoked when a 3D object is clicked."""
         self._click_handlers.append(callback)
         return self
+
+    def _handle_init_failed(self) -> None:
+        self._webgl_failed = True
+        self._settled_event.set()
 
     def _handle_init(self) -> None:
         self._initialized_event.set()
@@ -92,9 +97,9 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
             return
         if self.is_deleted:  # deleted along with its scene, whose deletion woke this task without cancelling it
             raise asyncio.CancelledError
-        if self._scene.is_deleted:
-            raise RuntimeError('The scene of this scene view has been deleted.')
-        raise RuntimeError('Could not create WebGL renderer.')
+        if self._webgl_failed:
+            raise RuntimeError('Could not create WebGL renderer.')
+        raise RuntimeError('The scene of this scene view has been deleted.')
 
     def _handle_scene_delete(self) -> None:
         self._settled_event.set()
