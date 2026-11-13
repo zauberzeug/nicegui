@@ -83,6 +83,8 @@ class RedisPersistentDict(PersistentDict):
                                 self.update(new_data)
                             finally:
                                 self._is_receiving = False
+                            if self != new_data:  # a change handler modified the received data
+                                self.publish()
                     elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
                         break
             except asyncio.CancelledError:
