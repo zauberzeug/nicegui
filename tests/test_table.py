@@ -252,7 +252,8 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
             table = ui.table.from_pandas(df)
             update_from_df = table.update_from_pandas
-            ui.table.from_pandas(DataFrame([['Foo', 'Bar', 'Baz']], columns=['same', 'same', 'same_0']))
+            ui.table.from_pandas(DataFrame([['Foo', 'Bar', 'Baz', 'Qux', 'Quux']],
+                                 columns=['same', 'same', 'same_0', 1, '1']))
         else:
             DataFrame = pl.DataFrame
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
@@ -270,6 +271,8 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
         screen.should_contain('Foo')
         screen.should_contain('Bar')
         screen.should_contain('Baz')
+        screen.should_contain('Qux')
+        screen.should_contain('Quux')
         screen.should_contain('same_0')
         screen.should_not_contain('same_1')
 

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 def pandas_to_records(df: 'pd.DataFrame') -> tuple[list[dict], list[Any], list[Any]]:
     """Convert a Pandas DataFrame into records, the corresponding column keys and the original column labels.
 
-    Duplicate column labels are numbered to get unique keys (e.g. "a_0" and "a_1"),
+    Column labels which are equal as strings are numbered to get unique keys (e.g. "a_0" and "a_1"),
     while the labels keep the original names.
     Columns which cannot be serialized to JSON (datetimes, timedeltas, complex numbers,
     objects, periods and intervals) are converted to strings.
@@ -28,9 +28,10 @@ def pandas_to_records(df: 'pd.DataFrame') -> tuple[list[dict], list[Any], list[A
         df = df.reset_index()
 
     labels = df.columns
-    is_duplicate = labels.duplicated(keep=False)
+    names = labels.map(str)  # labels like 1 and '1' differ in Pandas but collide as JSON keys
+    is_duplicate = names.duplicated(keep=False)
     if is_duplicate.any():
-        taken = set(labels)
+        taken = set(names)
 
         def unique_key(label: Any) -> str:
             key = next(f'{label}_{i}' for i in itertools.count() if f'{label}_{i}' not in taken)
@@ -39,9 +40,9 @@ def pandas_to_records(df: 'pd.DataFrame') -> tuple[list[dict], list[Any], list[A
 
         df = df.set_axis([unique_key(label) if duplicate else label
                           for label, duplicate in zip(labels, is_duplicate, strict=True)], axis=1)
-        duplicate_labels = sorted({str(label) for label in labels[is_duplicate]})
+        duplicate_labels = sorted(set(names[is_duplicate]))
         warn_once(f'The Pandas DataFrame has duplicate column names {duplicate_labels}. '
-                  'Their row keys are numbered to keep them unique, while the column labels stay unchanged.')
+                  'Their field names are numbered to keep them unique, while the column labels stay unchanged.')
 
     def is_special_dtype(dtype) -> bool:
         return (pd.api.types.is_datetime64_any_dtype(dtype) or
