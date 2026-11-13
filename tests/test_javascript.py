@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 from nicegui import Client, ui
 from nicegui.testing import Screen, User
@@ -113,3 +114,43 @@ async def test_awaited_run_javascript_resolves_when_client_is_deleted(user: User
 
     # calling on a deleted client resolves immediately
     assert await clients[0].run_javascript('window.innerWidth') is None
+
+
+async def test_in_flight_run_javascript_resolves_when_client_is_deleted(user: User):
+    """An await that is already waiting for the browser's response must resolve with None when the client is deleted."""
+    clients: list[Client] = []
+    results = []
+
+    @ui.page('/')
+    async def page():
+        clients.append(ui.context.client)
+        results.append(await ui.run_javascript('window.innerWidth', timeout=30))  # nobody ever answers
+
+    await user.open('/')
+    await asyncio.sleep(0.1)  # the page function is now waiting for the response
+    assert not results
+
+    clients[0].delete()
+    await asyncio.sleep(0.1)
+    assert results == [None]  # not a TimeoutError after 30 s
+
+
+async def test_received_response_is_not_overwritten_by_client_deletion(user: User):
+    """A response that has arrived but not yet been consumed must survive a client deletion."""
+    clients: list[Client] = []
+    results = []
+
+    def respond_and_delete(_):
+        asyncio.get_running_loop().call_soon(clients[0].delete)  # runs after the response, before the awaiter resumes
+        return 42
+    user.javascript_rules[re.compile(r'window\.innerWidth')] = respond_and_delete
+
+    @ui.page('/')
+    async def page():
+        clients.append(ui.context.client)
+        results.append(await ui.run_javascript('window.innerWidth', timeout=30))
+
+    await user.open('/')
+    await asyncio.sleep(0.1)
+    assert clients[0].is_deleted
+    assert results == [42]
