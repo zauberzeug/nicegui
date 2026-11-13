@@ -152,19 +152,12 @@ class Props(ObservableDict, Generic[T]):
 
             for group in ['single', 'double', 'square', 'curly']:
                 if match_groups[group] is not None:
-                    # Keep literal_eval first: a Python dict like {"a": True} or [1, None]
-                    # reaches the component as a real value, with None arriving as null
-                    # rather than undefined. For Vue-bindings (leading ":"), fall back to
-                    # the raw text when literal_eval raises - the client's JS evaluation
-                    # then handles JS-style literals ([true, false], {"width": 100px}).
-                    # See #6493.
                     try:
                         props[key] = ast.literal_eval(match_groups[group])
                     except (ValueError, SyntaxError):
-                        if key.startswith(':'):
-                            props[key] = match_groups[group]
-                        else:
+                        if not key.startswith(':'):
                             raise
+                        props[key] = match_groups[group]  # Vue bindings may be JS rather than Python literals (#6493)
                     break
             else:
                 if match_groups['unquoted'] is not None:

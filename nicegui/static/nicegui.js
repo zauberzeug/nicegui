@@ -259,8 +259,7 @@ function renderRecursively(elements, id, propsContext) {
   Object.entries(props).forEach(([key, value]) => {
     if (key.startsWith(":")) {
       if (typeof value !== "string") {
-        // Non-string values (parsed Python dicts, lists, numbers) pass through
-        // unchanged - they already reached the component as real values.
+        // parsed lists and dicts are values, not JS expressions (#6493)
         props[key.substring(1)] = value;
         delete props[key];
         return;

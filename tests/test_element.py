@@ -94,12 +94,11 @@ def test_style_parsing(value: str | None, expected: dict[str, str]):
     ('array=["one", "two"]', {'array': ['one', 'two']}),
     ('''object={'one': "foo"} baz''', {'object': {'one': 'foo'}, 'baz': True}),
     ('''object={'one': "foo", "two": "bar"}''', {'object': {'one': 'foo', 'two': 'bar'}}),
-    # Vue-bindings: parsed Python values pass through (the JS side skips non-strings);
-    # literal_eval failures fall back to the raw text for ':' keys (#6493)
     (':title=[1,2]', {':title': [1, 2]}),
     (':title="[1,2]"', {':title': '[1,2]'}),
+    # #6493: Vue bindings keep raw text that is not a Python literal
     (':options=[true,false]', {':options': '[true,false]'}),
-    (':style={color:red}', {':style': '{color:red}'}),
+    (':x={"a":null}', {':x': '{"a":null}'}),
 ])
 def test_props_parsing(value: str | None, expected: dict[str, str]):
     assert Props.parse(value) == expected
@@ -598,3 +597,17 @@ async def test_element_unregistered_when_constructor_raises(user: User):
     await user.should_not_see(kind=ui.image)
     await user.should_not_see('failed')
     await user.should_see('recovered')
+
+
+def test_unquoted_lists_in_vue_bindings(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('numbers').props(':title=[1,2]')
+        ui.label('strings').props(':title=["name","status"]')
+        label = ui.label('assigned')
+        label.props[':title'] = [3, 4]
+
+    screen.open('/')
+    assert screen.find('numbers').get_attribute('title') == '1,2'  # #6493: was "2", the last item
+    assert screen.find('strings').get_attribute('title') == 'name,status'  # was the value of window.status
+    assert screen.find('assigned').get_attribute('title') == '3,4'
