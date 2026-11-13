@@ -5,7 +5,7 @@ from . import doc
 
 @doc.demo(ui.image)
 def main_demo() -> None:
-    ui.image('https://picsum.photos/id/377/640/360')
+    ui.image('https://nicegui.io/images/night/640/360')
 
 
 @doc.demo('Local files', '''
@@ -49,7 +49,7 @@ def lottie():
 ''')
 def link():
     with ui.link(target='https://github.com/zauberzeug/nicegui'):
-        ui.image('https://picsum.photos/id/41/640/360').classes('w-64')
+        ui.image('https://nicegui.io/images/drops/640/360').classes('w-64')
 
 
 @doc.demo('Force reload', '''
@@ -57,7 +57,7 @@ def link():
     It will append a timestamp to the image URL, which will make the browser reload the image.
 ''')
 def force_reload():
-    img = ui.image('https://picsum.photos/640/360').classes('w-64')
+    img = ui.image('https://nicegui.io/images/drops/640/360').classes('w-64')
 
     ui.button('Force reload', on_click=img.force_reload)
 

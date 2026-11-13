@@ -17,7 +17,7 @@ def icons() -> None:
         ui.button(icon='thumb_up')
         with ui.button():
             ui.label('sub-elements')
-            ui.image('https://picsum.photos/id/377/640/360') \
+            ui.image('https://nicegui.io/images/night/640/360') \
                 .classes('rounded-full size-16 ml-4')
 
 

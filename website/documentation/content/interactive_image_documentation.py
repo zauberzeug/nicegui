@@ -12,7 +12,7 @@ def main_demo() -> None:
         ii.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="15" fill="none" stroke="{color}" stroke-width="4" />'
         ui.notify(f'{e.type} at ({e.image_x:.1f}, {e.image_y:.1f})')
 
-    src = 'https://picsum.photos/id/565/640/360'
+    src = 'https://nicegui.io/images/birds/640/360'
     ii = ui.interactive_image(src, on_mouse=mouse_handler, events=['mousedown', 'mouseup'], cross=True, sanitize=False)
 
 
@@ -36,7 +36,7 @@ def adding_layers():
         image.content += f'<circle cx="{e.image_x}" cy="{e.image_y}" r="30" fill="none" stroke="red" stroke-width="4" />'
         highlight.content = f'<circle cx="{e.image_x}" cy="{e.image_y}" r="28" fill="yellow" opacity="0.5" />'
 
-    src = 'https://picsum.photos/id/674/640/360'
+    src = 'https://nicegui.io/images/grapes/640/360'
     image = ui.interactive_image(src, on_mouse=mouse_handler, cross=True, sanitize=False)
     highlight = image.add_layer()
 
@@ -47,7 +47,7 @@ def adding_layers():
     Of course this can be done with plain CSS as well.
 ''')
 def nesting_elements():
-    with ui.interactive_image('https://picsum.photos/id/147/640/360'):
+    with ui.interactive_image('https://nicegui.io/images/sea/640/360'):
         ui.button(on_click=lambda: ui.notify('thumbs up'), icon='thumb_up') \
             .props('flat fab color=white') \
             .classes('absolute bottom-0 left-0 m-2')
@@ -58,7 +58,7 @@ def nesting_elements():
     It will append a timestamp to the image URL, which will make the browser reload the image.
 ''')
 def force_reload():
-    img = ui.interactive_image('https://picsum.photos/640/360').classes('w-64')
+    img = ui.interactive_image('https://nicegui.io/images/drops/640/360').classes('w-64')
 
     ui.button('Force reload', on_click=img.force_reload)
 
@@ -82,9 +82,10 @@ def blank_canvas():
 def loaded_event():
     import time
 
-    ii = ui.interactive_image('https://picsum.photos/640/360')
+    ii = ui.interactive_image('https://nicegui.io/images/drops/640/360')
     ii.on('loaded', lambda e: ui.notify(f'loaded {e.args}'))
-    ui.button('Change Source', on_click=lambda: ii.set_source(f'https://picsum.photos/640/360?time={time.time()}'))
+    ui.button('Change Source', on_click=lambda: ii.set_source(
+        f'https://nicegui.io/images/drops/640/360?time={time.time()}'))
 
 
 @doc.demo('Crosshairs', '''
@@ -96,9 +97,9 @@ def loaded_event():
     The `props.x` and `props.y` variables will be available in the template, representing the crosshair position.
 ''')
 def crosshairs():
-    ui.interactive_image('https://picsum.photos/id/565/640/360', cross='red')
+    ui.interactive_image('https://nicegui.io/images/birds/640/360', cross='red')
 
-    ui.interactive_image('https://picsum.photos/id/565/640/360').add_slot('cross', '''
+    ui.interactive_image('https://nicegui.io/images/birds/640/360').add_slot('cross', '''
         <circle :cx="props.x" :cy="props.y" r="30" stroke="red" fill="none" />
         <line :x1="props.x - 30" :y1="props.y" :x2="props.x + 30" :y2="props.y" stroke="red" />
         <line :x1="props.x" :y1="props.y - 30" :x2="props.x" :y2="props.y + 30" stroke="red" />
@@ -121,7 +122,7 @@ def crosshairs():
     - pointercancel
 ''')
 def svg_content():
-    ui.interactive_image('https://picsum.photos/id/565/640/360', cross=True, content='''
+    ui.interactive_image('https://nicegui.io/images/birds/640/360', cross=True, content='''
         <rect id="A" x="85" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
         <rect id="B" x="180" y="70" width="80" height="60" fill="none" stroke="red" pointer-events="all" cursor="pointer" />
     ''', sanitize=False).on('svg:pointerdown', lambda e: ui.notify(f'SVG clicked: {e.args}'))
