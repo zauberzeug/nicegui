@@ -106,7 +106,7 @@ types = [
     "types-requests>=2.32.4",
 ]
 website = [
-    "dnspython>=2.9.0,<3",  # https://github.com/zauberzeug/nicegui/security/dependabot/591
+    "dnspython>=2.9.2,<3",  # https://github.com/zauberzeug/nicegui/security/dependabot/608
     "html-sanitizer>=2.6.0,<3",
     "isort>=9.0.2,<10.0.0",
     "latex2mathml>=3.78.1,<4.0.0",
