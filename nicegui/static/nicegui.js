@@ -82,17 +82,6 @@ function setDark(dark) {
     .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
 }
 
-function parseElements(raw_elements) {
-  return JSON.parse(
-    raw_elements
-      .replace(/&#36;/g, "$")
-      .replace(/&#96;/g, "`")
-      .replace(/&gt;/g, ">")
-      .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&"),
-  );
-}
-
 function replaceUndefinedAttributes(element) {
   element.class ??= [];
   element.style ??= {};
