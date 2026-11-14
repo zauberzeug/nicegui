@@ -49,14 +49,6 @@ AI_AGENT_TOKENS = (
     'modelcontextprotocol',
 )
 
-HTML_ESCAPE_TABLE = str.maketrans({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '`': '&#96;',
-    '$': '&#36;',
-})
-
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
 
@@ -249,7 +241,7 @@ class Client:
             context={
                 'request': request,
                 'version': __version__,
-                'elements': elements.translate(HTML_ESCAPE_TABLE),
+                'elements': _escape_html(elements),
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
@@ -584,6 +576,21 @@ class Client:
 
         except Exception:
             log.exception('Error while pruning clients')
+
+
+def _escape_html(text: str) -> str:
+    """Escape the characters that must not appear verbatim in the template literal of ``index.html``.
+
+    ``parseElements`` in ``nicegui.js`` reverses this.
+    """
+    # chained replace calls are much faster than str.translate, which takes a slow path as soon as the text contains
+    # a non-ASCII character or one of the characters below; "&" must come first so that no entity is escaped twice
+    return text \
+        .replace('&', '&amp;') \
+        .replace('<', '&lt;') \
+        .replace('>', '&gt;') \
+        .replace('`', '&#96;') \
+        .replace('$', '&#36;')
 
 
 def _is_prefetch(request: Request) -> bool:
