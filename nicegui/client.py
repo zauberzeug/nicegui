@@ -241,7 +241,8 @@ class Client:
             context={
                 'request': request,
                 'version': __version__,
-                'elements': _escape_for_template_literal(elements),
+                # JSON escapes for the characters that would break the template literal; str.replace beats str.translate
+                'elements': elements.replace('<', '\\u003c').replace('`', '\\u0060').replace('$', '\\u0024'),
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
@@ -576,19 +577,6 @@ class Client:
 
         except Exception:
             log.exception('Error while pruning clients')
-
-
-def _escape_for_template_literal(text: str) -> str:
-    """Escape the characters of the element JSON that would break the template literal in ``index.html``.
-
-    They can only occur inside JSON strings, so JSON escapes keep the text valid JSON for ``JSON.parse``.
-    """
-    # chained replace calls are much faster than str.translate, which takes a slow path as soon as the text contains
-    # a non-ASCII character or one of the characters below
-    return text \
-        .replace('<', '\\u003c') \
-        .replace('`', '\\u0060') \
-        .replace('$', '\\u0024')
 
 
 def _is_prefetch(request: Request) -> bool:
