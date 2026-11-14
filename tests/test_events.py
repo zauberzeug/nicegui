@@ -266,6 +266,7 @@ def test_value_change_event_arguments(screen: Screen):
     @ui.page('/')
     def page():
         ui.checkbox('Checkbox', on_change=lambda e: events.append((e.value, e.previous_value)))
+        ui.radio({101: 'Alice', 205: 'Bob'}, value=101, on_change=lambda e: events.append((e.value, e.previous_value)))
 
     screen.open('/')
     screen.click('Checkbox')
@@ -276,6 +277,11 @@ def test_value_change_event_arguments(screen: Screen):
     screen.wait_for(lambda: len(events) == 2)
     screen.wait(0.1)
     assert events == [(True, False), (False, True)]
+
+    screen.click('Bob')
+    screen.wait_for(lambda: len(events) == 3)
+    screen.wait(0.1)
+    assert events == [(True, False), (False, True), (205, 101)]
 
 
 async def test_late_event_registration(screen: Screen):

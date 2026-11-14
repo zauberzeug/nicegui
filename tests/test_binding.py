@@ -332,6 +332,21 @@ async def test_nested_propagation(user: User):
     await user.should_see('a = 2')  # the final value of a should be 2
 
 
+async def test_previous_value_of_nested_assignment(user: User):
+    events = []
+
+    @ui.page('/')
+    def page():
+        source = ui.input(value='first', on_change=lambda e: events.append((e.value, e.previous_value)))
+        target = ui.input().bind_value_from(source)
+        target.on_value_change(lambda e: source.set_value('third') if e.value == 'second' else None)
+        source.set_value('second')
+
+    await user.open('/')
+    assert events == [('third', 'second'), ('second', 'first')], \
+        'each event should report the value replaced by its assignment, even if a handler assigns again'
+
+
 def test_binding_other_dict_is_strict(screen: Screen):
     data: dict[str, str] = {}
 
