@@ -58,7 +58,12 @@ class AnyWidget(ValueElement[Any], component='anywidget.js', dependencies=['lib/
                 self._state_lock[name] = new
                 self.run_method('update_trait', name, new)
 
-        widget.observe(observe_change, self._traits)
+        self._observe_change = observe_change
+        widget.observe(self._observe_change, self._traits)
+
+    def _handle_delete(self) -> None:
+        self._widget.unobserve(self._observe_change, self._traits)
+        super()._handle_delete()
 
     def _handle_value_change(self, value: Any) -> None:
         """Update the widget's state when the value changes from frontend"""
