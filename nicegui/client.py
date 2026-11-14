@@ -49,14 +49,6 @@ AI_AGENT_TOKENS = (
     'modelcontextprotocol',
 )
 
-HTML_ESCAPE_TABLE = str.maketrans({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '`': '&#96;',
-    '$': '&#36;',
-})
-
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
 
@@ -249,7 +241,8 @@ class Client:
             context={
                 'request': request,
                 'version': __version__,
-                'elements': elements.translate(HTML_ESCAPE_TABLE),
+                # JSON escapes for the characters that would break the template literal; str.replace beats str.translate
+                'elements': elements.replace('<', '\\u003c').replace('`', '\\u0060').replace('$', '\\u0024'),
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),

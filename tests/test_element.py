@@ -461,10 +461,10 @@ def test_invalid_tags(screen: Screen):
 def test_bad_characters(screen: Screen):
     @ui.page('/')
     def page():
-        ui.label(r'& <test> ` ${foo}')
+        ui.label(r'& <test> ` ${foo} </script> \ \u003c')
 
     screen.open('/')
-    screen.should_contain(r'& <test> ` ${foo}')
+    screen.should_contain(r'& <test> ` ${foo} </script> \ \u003c')
 
 
 def test_update_before_client_connection(screen: Screen):
