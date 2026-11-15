@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 import pytest
 
-from nicegui import app, background_tasks, ui
+from nicegui import app, background_tasks, core, ui
 from nicegui.testing import Screen, User
 
 # pylint: disable=missing-function-docstring
@@ -218,3 +218,37 @@ def test_create_tasks(screen: Screen) -> None:
         'G1', 'G2',
         'H1',
     ]
+
+
+async def test_create_without_a_started_app():
+    """A background task runs in async tests that never started the app (#6508)."""
+    events: list[str] = []
+
+    async def async_function() -> None:
+        events.append('ran')
+
+    original_loop = core.loop
+    core.loop = None
+    try:
+        await background_tasks.create(async_function())
+    finally:
+        core.loop = original_loop
+    assert events == ['ran']
+
+
+async def test_create_when_the_app_loop_is_closed():
+    """The closed loop of a previous run is not reused (#6508)."""
+    events: list[str] = []
+
+    async def async_function() -> None:
+        events.append('ran')
+
+    closed_loop = asyncio.new_event_loop()
+    closed_loop.close()
+    original_loop = core.loop
+    core.loop = closed_loop
+    try:
+        await background_tasks.create(async_function())
+    finally:
+        core.loop = original_loop
+    assert events == ['ran']

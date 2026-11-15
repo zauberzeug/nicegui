@@ -16,6 +16,21 @@ _await_tasks_on_shutdown: set[asyncio.Task] = set()
 _deferred_awaitables: list[Awaitable[Any]] = []
 
 
+def _task_loop() -> asyncio.AbstractEventLoop:
+    """The event loop to create background tasks on.
+
+    NiceGUI's loop while the app runs. Otherwise (async tests, scripts) ``core.loop`` is unset
+    or is the closed loop of a previous run, where a task would never run, so the caller's
+    running loop is used instead.
+    """
+    if core.is_loop_running():
+        return core.loop  # type: ignore[return-value]  # is_loop_running() guarantees it
+    try:
+        return asyncio.get_running_loop()
+    except RuntimeError:  # no loop at all, keep reporting it the way we always did
+        raise AssertionError('no event loop is running') from None
+
+
 def create(awaitable: Awaitable[Any], *,
            name: str = 'unnamed task',
            handle_exceptions: bool = True,
@@ -32,9 +47,9 @@ def create(awaitable: Awaitable[Any], *,
     :param context: a context manager to await the awaitable in, e.g. a container element or ``ui.context.client``
         (default: ``None``, *added in version 3.18.0*)
     """
-    assert core.loop is not None
+    loop = _task_loop()
     if context is None:
-        task = core.loop.create_task(_ensure_coroutine(awaitable), name=name)
+        task = loop.create_task(_ensure_coroutine(awaitable), name=name)
         if handle_exceptions:
             task.add_done_callback(_handle_exceptions)
     else:
@@ -44,7 +59,7 @@ def create(awaitable: Awaitable[Any], *,
             if slots:
                 client = slots[-1].parent.client  # resolve it now, because the element may be deleted while awaiting
         coro = _await_in_context(awaitable, context, client or nullcontext(), handle_exceptions=handle_exceptions)
-        task = core.loop.create_task(coro, name=name)
+        task = loop.create_task(coro, name=name)
         if handle_exceptions:
             task.add_done_callback(_retrieve_exception)  # the exception has already been handled in-context
         if asyncio.iscoroutine(awaitable):
