@@ -65,7 +65,7 @@ def test_clearable_number(screen: Screen):
     screen.should_contain('value: 42')
     screen.click('cancel')
     screen.should_contain('value: None')
-    screen.click('value: None')  # loose focus
+    screen.click('value: None')  # lose focus
     screen.wait(0.5)
     screen.should_contain('value: None')
 

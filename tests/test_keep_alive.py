@@ -108,7 +108,7 @@ def test_nested_keep_alive(screen: Screen) -> None:
         ui.button('Write', on_click=lambda: terminal.write('Hello, Nested!'))
 
     screen.open('/')
-    screen.click('Write')  # neither the tab panel nor the dialog have ever been opened
+    screen.click('Write')  # neither the tab panel nor the dialog has ever been opened
     screen.click('Two')
     screen.click('Open dialog')
     screen.should_contain('Hello, Nested!')

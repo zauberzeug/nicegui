@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from nicegui import app, ui
 
-# in reality users passwords would obviously need to be hashed
+# in reality users' passwords would obviously need to be hashed
 passwords = {'user1': 'pass1', 'user2': 'pass2'}
 
 # top-level static routes like /favicon.ico must be unrestricted, otherwise the middleware redirects them to /login

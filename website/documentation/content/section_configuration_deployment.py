@@ -237,7 +237,7 @@ doc.text('Custom Vue Components', '''
 
 doc.text('Server Hosting', '''
     To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
-    You can, for example, just install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
+    You can, for example, just install the [NiceGUI Python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
     In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the `ui.run` command to make it easily accessible from the outside.
 
     A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
@@ -534,7 +534,7 @@ doc.text('NiceGUI On Air', '''
     This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
 
     By setting `on_air=True` you will get a random URL which is valid for 1 hour.
-    If you sign-up at <https://on-air.nicegui.io>, you can setup an organization and device name to get a fixed URL:
+    If you sign up at <https://on-air.nicegui.io>, you can set up an organization and device name to get a fixed URL:
     `https://on-air.nicegui.io/<my-org>/<my_device_name>`.
     The device is then identified by a unique, private token which you can use instead of a boolean flag: `ui.run(on_air='<your token>')`.
     If you [sponsor us](https://github.com/sponsors/zauberzeug),

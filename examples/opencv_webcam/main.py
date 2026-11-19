@@ -49,7 +49,7 @@ def setup() -> None:
         ui.timer(interval=0.1, callback=video_image.force_reload)
 
     async def disconnect() -> None:
-        """Disconnect all clients from current running server."""
+        """Disconnect all clients from the currently running server."""
         for client_id in Client.instances:
             await core.sio.disconnect(client_id)
 

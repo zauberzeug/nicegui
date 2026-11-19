@@ -21,7 +21,7 @@ class KeepAlive(Element, component='keep_alive_anchor.js'):
         Internally the children are rendered into a hidden host at the page root
         and teleported to the wrapper's location whenever it becomes visible.
         As a consequence, the server-side element tree parents the children to this host, not to the surrounding container:
-        ``descendants()`` on the apparent parent and scoped ``ui.element_filter`` will not traverse into the subtree.
+        ``descendants()`` on the apparent parent and scoped ``ElementFilter`` will not traverse into the subtree.
         Keep a direct reference to the inner elements if you need to reach them programmatically.
 
         Note that this keeps the children alive for the full lifetime of the client, which costs memory.

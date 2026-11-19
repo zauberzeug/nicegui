@@ -190,7 +190,7 @@ doc.text('Using an ElementFilter', '''
     It may be desirable to use an [`ElementFilter`](/documentation/element_filter) to
 
     - preserve the order of elements to check their order on the page, and
-    - more granular filtering options, such as `ElementFilter(...).within(...)`
+    - get more granular filtering options, such as `ElementFilter(...).within(...)`
       (to simply restrict all assertions to one part of the page, use [`user.scope(...)`](#scoping)).
 
     By entering the `user` context and iterating over `ElementFilter`,

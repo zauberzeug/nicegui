@@ -434,7 +434,7 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.should_contain('5')
     screen.should_contain('male')
 
-    screen.click('Update persons with columns')  # updated columns via parameter
+    screen.click('Update persons with columns')  # update columns via parameter
     screen.should_contain('Stephen')
     screen.should_not_contain('32')
 
@@ -442,7 +442,7 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.should_contain('Honda')
     screen.should_not_contain('Civic')
 
-    screen.click('Update cars with columns')  # updated columns via parameter
+    screen.click('Update cars with columns')  # update columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
 

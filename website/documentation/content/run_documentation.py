@@ -69,7 +69,7 @@ def svg_favicon():
 
 
 @doc.demo('Custom welcome message', '''
-    You can mute the default welcome message on the command line setting the `show_welcome_message` to `False`.
+    You can mute the default welcome message on the command line by setting `show_welcome_message` to `False`.
     Instead you can print your own welcome message with a custom startup handler.
 ''')
 def custom_welcome_message():
