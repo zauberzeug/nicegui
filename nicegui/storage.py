@@ -225,7 +225,7 @@ class Storage:
             await tab.close()
 
     def clear(self) -> None:
-        """Clears all storage."""
+        """Clear all storage."""
         self._general.clear()
         self._users.clear()
         if not helpers.is_pytest():

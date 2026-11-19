@@ -363,7 +363,7 @@ doc.text('', '''
 
     - Specifying `--onefile` to `nicegui-pack` will create a single executable file.
     Whilst convenient for distribution, it will be slower to start up.
-    This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything
+    This is not NiceGUI's fault but just the way PyInstaller zips things into a single file, then unzips everything
     into a temporary directory before running.
     You can mitigate this by removing `--onefile` from the `nicegui-pack` command,
     and zip up the generated `dist` directory yourself, distribute it,

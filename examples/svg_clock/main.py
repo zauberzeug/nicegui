@@ -5,7 +5,7 @@ from nicegui import ui
 
 
 def build_svg() -> str:
-    """Returns an SVG showing the current time.
+    """Return an SVG showing the current time.
 
         The original was borrowed from https://de.m.wikipedia.org/wiki/Datei:Station_Clock.svg.
     """
