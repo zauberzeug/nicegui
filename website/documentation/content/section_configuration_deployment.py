@@ -248,7 +248,7 @@ doc.text('Server Hosting', '''
 @doc.ui
 def docker_run():
     bash_window('''
-        docker run -it --restart always \\
+        docker run -d --restart always \\
             -p 80:8080 \\
             -e PUID=$(id -u) \\
             -e PGID=$(id -g) \\

@@ -33,7 +33,7 @@ def create() -> None:
                 t('[Charts](/documentation/echart), [tables](/documentation/table), '
                   '[audio](/documentation/audio)/[video](/documentation/video)'),
                 t('[3D scenes](/documentation/scene)'),
-                t('Straight-forward [data binding](/documentation/section_binding_properties)'),
+                t('Straightforward [data binding](/documentation/section_binding_properties)'),
                 t('Built-in [timer](/documentation/timer) for data refresh'),
             ])
             _card('ph-paint-brush', t('Styling'), [

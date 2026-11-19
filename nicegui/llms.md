@@ -75,7 +75,7 @@ Understanding this prevents the mistake of trying to "re-run the page function" 
 
 ### 4. The slot stack — why context managers place elements automatically
 
-When you write `with ui.row(): ui.label('x')`, the label automatically becomes a child of the row. This works via a thread-local slot stack:
+When you write `with ui.row(): ui.label('x')`, the label automatically becomes a child of the row. This works via a task-local slot stack:
 
 - `with element:` pushes the element's default slot onto the stack
 - Any element created inside the `with` block is registered as a child of that slot
@@ -1353,7 +1353,7 @@ ui.run(port=int(os.environ.get('PORT', 8080)))
 
 ## Testing
 
-Prefer `User` fixture (no browser, fast, same async context):
+Prefer the `User` fixture (no browser, fast, same async context):
 
 ```python
 async def test_counter(user: User) -> None:
@@ -1376,7 +1376,7 @@ with user.scope(marker='left-card'):  # same filter args as user.find(), must ma
 The fixtures load the app's main file (`main_file` option, default `main.py`) before each test.
 To load none, leave it empty (`main_file = ""` under `[tool.pytest.ini_options]`) and register the pages each test needs, e.g. with `@ui.page` inside the test function.
 
-Use `Screen` fixture only when JavaScript or real browser rendering is required:
+Use the `Screen` fixture only when JavaScript or real browser rendering is required:
 
 ```python
 def test_chart(screen: Screen) -> None:

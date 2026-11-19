@@ -230,7 +230,7 @@ async def wait_for_init() -> None:
       Similar to orbit, but it keeps going around the poles.
       It is a good choice for applications where camera flexibility is important.
     - "map":
-      Allows to pan and zoom like in a 3D map view application.
+      Allows panning and zooming like in a 3D map view application.
       Good for map-like applications such as in [RoSys](https://rosys.io).
 ''')
 def change_controls() -> None:

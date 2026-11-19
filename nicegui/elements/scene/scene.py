@@ -97,7 +97,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100 unless ``polar_grid`` is given)
-        :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
+        :param camera: camera definition, either an instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``('click', 'dblclick')``)
         :param on_drag_start: callback to execute when a 3D object is dragged

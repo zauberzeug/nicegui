@@ -128,7 +128,7 @@ tiles = [
         This section covers fundamental techniques as well as several elements to structure your UI.
     '''),
     (section_styling_appearance, '''
-        NiceGUI allows to customize the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
+        NiceGUI allows customizing the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
     '''),
     (section_action_events, '''
         This section covers timers, UI events, and the lifecycle of NiceGUI apps.
@@ -137,7 +137,7 @@ tiles = [
         A NiceGUI app can consist of multiple pages and other FastAPI endpoints.
     '''),
     (section_configuration_deployment, '''
-        Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
+        Whether you want to run your app locally or on a server, native or in a browser, we've got you covered.
     '''),
     (section_testing, '''
         Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
