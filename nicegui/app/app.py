@@ -294,9 +294,9 @@ class App(FastAPI):
     def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
         """Add directory of media files.
 
-        ``add_media_files()`` allows a local files to be streamed from a specified endpoint, e.g. ``'/media'``.
+        ``add_media_files()`` allows local files to be streamed from a specified endpoint, e.g. ``'/media'``.
         This should be used for media files to support proper streaming.
-        Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream.
+        Otherwise the browser would not be able to access and load the files incrementally or jump to different positions in the stream.
         Do only put non-security-critical files in there, as they are accessible to everyone.
 
         To make a single file accessible via streaming, you can use ``add_media_file()``.
