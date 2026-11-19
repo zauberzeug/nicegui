@@ -27,8 +27,7 @@ class AwaitableResponse:
         self._is_fired = False
         self._is_awaited = False
         if fire_and_forget is None:
-            assert core.loop is not None
-            core.loop.call_soon(lambda: setattr(self, '_is_fired', True))  # no task, but a late await still raises
+            core.get_loop().call_soon(lambda: setattr(self, '_is_fired', True))  # no task, but a late await still raises
         else:
             stack = Slot.get_stack()  # don't enter script mode by accessing `context.slot_stack`
             background_tasks.create(self._fire(), name=name, context=stack[-1] if stack else None)

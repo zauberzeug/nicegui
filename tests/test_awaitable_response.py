@@ -2,13 +2,11 @@ import asyncio
 
 import pytest
 
-from nicegui import core
 from nicegui.awaitable_response import AwaitableResponse, NullResponse
 
 
 @pytest.mark.parametrize('with_fire_and_forget', [True, False])
 async def test_awaitable_response(with_fire_and_forget: bool):
-    core.loop = asyncio.get_event_loop()
     actions = []
 
     def do_something() -> AwaitableResponse:
@@ -43,5 +41,4 @@ async def test_awaitable_response(with_fire_and_forget: bool):
 async def test_null_response():
     NullResponse()
 
-    core.loop = asyncio.get_event_loop()
     await NullResponse()
