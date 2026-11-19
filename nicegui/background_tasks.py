@@ -25,7 +25,7 @@ def create(awaitable: Awaitable[Any], *,
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
 
-    The task is created on the running event loop (see ``core.get_loop()``).
+    The task is created on the app's event loop while the app runs (see ``core.get_loop()``).
     Outside the app, e.g. in async tests, this is the caller's loop and the task is not cancelled on shutdown.
 
     :param awaitable: the awaitable to wrap

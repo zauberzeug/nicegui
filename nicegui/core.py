@@ -33,17 +33,16 @@ def is_loop_running() -> bool:
 def get_loop() -> asyncio.AbstractEventLoop:
     """Return the event loop to schedule work on.
 
-    This is the loop running in the current thread, like for ``asyncio.create_task``.
-    A thread without a running loop, e.g. a hardware callback, gets the NiceGUI event loop while the app runs.
-    Code that runs outside the app, e.g. in async tests or scripts, therefore uses its own loop,
-    even if ``loop`` still holds the closed loop of a previous run.
+    This is the NiceGUI event loop while the app runs, also for callers in other threads.
+    Outside the app, e.g. in async tests that never started it, ``loop`` is unset or holds the closed loop
+    of a previous run, so the loop running in the current thread is used instead.
     """
+    app_loop = loop
+    if app_loop is not None and app_loop.is_running():
+        return app_loop
     try:
         return asyncio.get_running_loop()
     except RuntimeError:
-        if is_loop_running():
-            assert loop is not None
-            return loop
         raise RuntimeError('No running event loop. '
                            'Start the NiceGUI app or call from within a running asyncio loop.') from None
 
