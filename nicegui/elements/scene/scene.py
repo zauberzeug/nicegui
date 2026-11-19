@@ -172,7 +172,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
 
     @staticmethod
     def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
-        """Create a orthographic camera.
+        """Create an orthographic camera.
 
         The size defines the vertical size of the view volume, i.e. the distance between the top and bottom clipping planes.
         The left and right clipping planes are set such that the aspect ratio matches the viewport.

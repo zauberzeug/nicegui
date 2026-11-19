@@ -39,7 +39,7 @@ def bindings_demo():
     updating every affected node once and executing the transformation function once.
     If you are migrating from NiceGUI 2.15.0 or older, there may be extra runs on transformation functions,
     especially ones in the opposite direction to the current propagation direction,
-    which are no-longer ran in NiceGUI 2.16.0.
+    which are no longer run in NiceGUI 2.16.0.
     As a result, you would need to change your code appropriately.
 
     We would also like to mention that, for the most stable behaviour across releases,

@@ -37,5 +37,5 @@ you should notice the initiation of the `ui.shutdown` method.
 
 ### Storage Secret
 
-In the example `main.py` we read the [storage secret](https://nicegui.io/documentation/storage) from a environment variable.
+In the example `main.py` we read the [storage secret](https://nicegui.io/documentation/storage) from an environment variable.
 This can then be defined in the `docker-compose.yml` (or even passed on from an `.env` file).

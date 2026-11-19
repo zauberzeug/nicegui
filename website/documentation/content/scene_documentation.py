@@ -132,7 +132,7 @@ def context_menu_for_3d_objects():
 
 @doc.demo('Draggable objects', '''
     You can make objects draggable using the `.draggable` method.
-    There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
+    There are optional `on_drag_start` and `on_drag_end` arguments to `ui.scene` to handle drag events.
     The callbacks receive a `SceneDragEventArguments` object with the following attributes:
 
     - `type`: the type of drag event ("dragstart" or "dragend").

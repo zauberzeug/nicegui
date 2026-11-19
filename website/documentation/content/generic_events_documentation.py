@@ -88,9 +88,9 @@ def event_attributes() -> None:
 
 
 @doc.demo('Modifiers', '''
-    You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers>) (shown in input "A"),
+    You can also include [key modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers) (shown in input "A"),
     modifier combinations (shown in input "B"),
-    and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers>) (shown in input "C").
+    and [event modifiers](https://vuejs.org/guide/essentials/event-handling.html#mouse-button-modifiers) (shown in input "C").
 ''')
 def modifiers() -> None:
     with ui.row():

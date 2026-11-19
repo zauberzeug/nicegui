@@ -9,7 +9,7 @@ It starts up a user interface with virtual joystick and pose visualization reach
 The joystick publishes twist messages which are consumed by a simple simulator node which itself publishes the new pose of a virtual mobile robot.
 ROS2 and NiceGUI are fully functional in this example.
 
-Over all it is a bit more complex than a super minimal example to allow auto-reloading of the NiceGUI ROS2 node.
+Overall, it is a bit more complex than a super minimal example to allow auto-reloading of the NiceGUI ROS2 node.
 
 ## Usage
 

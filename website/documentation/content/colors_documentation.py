@@ -38,7 +38,7 @@ def custom_color_demo() -> None:
 @doc.demo('App-wide colors', '''
     You can set app-wide colors using `app.colors()`.
 
-    The API is same as the initializer of `ui.colors()`,
+    The API is the same as the initializer of `ui.colors()`,
     but the colors will be applied to all pages unless overridden by `ui.colors()` on a specific page.
 
     *Added in version 3.6.0*

@@ -31,7 +31,7 @@ def about() -> dict[str, Any]:
 
 
 async def logout() -> None:
-    """Logout the user."""
+    """Log out the user."""
     result = await ui.run_javascript('return await sdk.logout()')
     if result['code'] == 200:
         app.storage.user['descope'] = None

@@ -24,7 +24,7 @@ def emoji_favicon():
 
 @doc.demo(
     'Base64 favicon', '''
-    You can also use an base64-encoded image as favicon.
+    You can also use a base64-encoded image as favicon.
 ''', tab=lambda: (
         ui.image('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==')
         .classes('size-4'),

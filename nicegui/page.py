@@ -58,7 +58,7 @@ class page:
         :param language: language of the page, used for Quasar elements and the ``lang`` attribute of the ``html`` tag
             (defaults to ``language`` argument of ``run`` command, *updated in version 3.14.0*: can be ``None`` to omit the ``lang`` attribute)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
-        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to ``reconnect_timeout`` argument of ``run`` command))
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to ``reconnect_timeout`` argument of ``run`` command)
         :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
             (experimental, defaults to ``markdown`` argument of ``run`` command, *added in version 3.11.0*)
         :param api_router: APIRouter instance to use, can be left ``None`` to use the default

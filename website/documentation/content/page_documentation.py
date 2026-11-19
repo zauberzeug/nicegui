@@ -96,7 +96,7 @@ def multicasting():
     [FastAPI's APIRouter](https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter)
     to modularize your code by grouping pages and other routes together.
     This is especially useful if you want to reuse the same prefix for multiple pages.
-    The router and its pages can be neatly tugged away in a separate module (e.g. file) and
+    The router and its pages can be neatly tucked away in a separate module (e.g. file) and
     the router is simply imported and included in the main app.
     See our [modularization example](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/api_router_example.py)
     for a multi-file app structure using an API router.

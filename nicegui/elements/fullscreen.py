@@ -32,7 +32,7 @@ class Fullscreen(ValueElement[bool], component='fullscreen.js'):
 
     @property
     def require_escape_hold(self) -> bool:
-        """Whether the user needs to long-press of the escape key to exit fullscreen mode.
+        """Whether the user needs to long-press the escape key to exit fullscreen mode.
 
         This feature is only supported in some browsers like Google Chrome or Microsoft Edge.
         In unsupported browsers, this setting has no effect.

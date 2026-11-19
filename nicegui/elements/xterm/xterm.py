@@ -54,7 +54,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         return await self.run_method('getRows')
 
     async def get_columns(self) -> int:
-        """Get the number of columns  in the terminal's viewport."""
+        """Get the number of columns in the terminal's viewport."""
         return await self.run_method('getColumns')
 
     def fit(self) -> AwaitableResponse:
@@ -117,7 +117,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
         :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
-        # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
+        # Xterm.js accepts a `Uint8Array`, which we can get by converting `bytes` to a `list`
         return self.run_method('write', list(data) if isinstance(data, bytes) else data)
 
     def writeln(self, data: bytes | str) -> AwaitableResponse:
@@ -128,7 +128,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
         :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
-        # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
+        # Xterm.js accepts a `Uint8Array`, which we can get by converting `bytes` to a `list`
         return self.run_method('writeln', list(data) if isinstance(data, bytes) else data)
 
     def run_terminal_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:

@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 def setup() -> bool:
-    """Setup fly.io specific settings.
+    """Set up fly.io-specific settings.
 
     Returns True if running on fly.io, False otherwise.
     """
@@ -27,7 +27,7 @@ def setup() -> bool:
 
     @app.add_middleware
     class FlyReplayMiddleware(BaseHTTPMiddleware):
-        """Replay to correct fly.io instance.
+        """Replay to the correct fly.io instance.
 
         If the wrong instance was picked by the fly.io load balancer, we use the fly-replay header
         to repeat the request again on the right instance.

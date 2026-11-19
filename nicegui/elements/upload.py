@@ -48,7 +48,7 @@ class Upload(LabelElement, DisableableElement, component='upload.js'):
         :param max_file_size: maximum file size in bytes (default: ``0``)
         :param max_total_size: maximum total size of all files in bytes (default: ``0``)
         :param max_files: maximum number of files (default: ``0``)
-        :param on_begin_upload: callback to execute when upload begins  (*added in version 2.14.0*)
+        :param on_begin_upload: callback to execute when upload begins (*added in version 2.14.0*)
         :param on_upload: callback to execute for each uploaded file
         :param on_multi_upload: callback to execute after multiple files have been uploaded
         :param on_rejected: callback to execute when one or more files have been rejected during file selection

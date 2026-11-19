@@ -211,7 +211,7 @@ def adding_sub_pages_demo() -> None:
 
 @doc.demo('URL Parameters', '''
     You can pass URL parameters to the builder function.
-    A path parameter specified in the route is injected into the functions matching parameter.
+    A path parameter specified in the route is injected into the function's matching parameter.
     For query parameters, the name is used for injection.
     Values are automatically converted if a type hint is provided (int, float, str).
     Unions like `int | None` or `int | float` are supported as well:

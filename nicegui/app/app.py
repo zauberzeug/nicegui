@@ -292,7 +292,7 @@ class App(FastAPI):
         return urllib.parse.quote(path)
 
     def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
-        """Add directory of media files.
+        """Add a directory of media files.
 
         ``add_media_files()`` allows a local files to be streamed from a specified endpoint, e.g. ``'/media'``.
         This should be used for media files to support proper streaming.

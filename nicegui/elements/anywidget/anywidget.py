@@ -30,7 +30,7 @@ class AnyWidget(ValueElement[Any], component='anywidget.js', dependencies=['lib/
         and `quak <https://github.com/manzt/quak>`_.
 
         Implementation: The ``nicegui.anywidget`` element takes an ``AnyWidget`` and observes all ``sync=True`` traits
-        of the widget, trigger JS updates when the traits change.
+        of the widget, triggering JS updates when the traits change.
         Conversely, changes on the frontend will be synced back to the widget,
         using ``ValueElement``'s handling to listen to changes on ``traits``.
 

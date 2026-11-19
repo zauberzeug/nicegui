@@ -103,7 +103,7 @@ doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
     Therefore any configuration changes from code run under a
-    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
+    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) are ignored by the native app.
     The following examples show the difference between a working and a non-working configuration.
 
     For packaged apps (nicegui-pack, PyInstaller, etc.), also see the "Packaging with Native Mode" section below
@@ -546,6 +546,6 @@ doc.text('NiceGUI On Air', '''
     [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/TEpFeAaF4f).
 
     **Data Privacy:**
-    We take your privacy very serious.
+    We take your privacy very seriously.
     NiceGUI On Air does not log or store any content of the relayed data.
 ''')

@@ -116,7 +116,7 @@ class Table(FilterElement, component='table.js'):
                 if isinstance(value, (list, set, tuple)):
                     log.warning(
                         f'Found list in column "{name}": {value}.\n'
-                        'Unless there is slot template, table rows must not contain lists or the browser will crash.\n'
+                        'Unless there is a slot template, table rows must not contain lists or the browser will crash.\n'
                         'NiceGUI is intervening by adding a slot template to display the list as comma-separated values.'
                     )
                     self.add_slot(f'body-cell-{name}', '''
