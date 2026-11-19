@@ -30,6 +30,24 @@ def is_loop_running() -> bool:
     return loop is not None and loop.is_running()
 
 
+def get_loop() -> asyncio.AbstractEventLoop:
+    """Return the event loop to schedule work on.
+
+    This is the loop running in the current thread, like for ``asyncio.create_task``.
+    A thread without a running loop, e.g. a hardware callback, gets the NiceGUI event loop while the app runs.
+    Code that runs outside the app, e.g. in async tests or scripts, therefore uses its own loop,
+    even if ``loop`` still holds the closed loop of a previous run.
+    """
+    try:
+        return asyncio.get_running_loop()
+    except RuntimeError:
+        if is_loop_running():
+            assert loop is not None
+            return loop
+        raise RuntimeError('No running event loop. '
+                           'Start the NiceGUI app or call from within a running asyncio loop.') from None
+
+
 def is_script_mode_preflight() -> bool:
     """Return whether this is the preflight run of the script mode."""
     return script_mode and not app.is_started  # pylint: disable=undefined-variable # noqa: F821

@@ -182,10 +182,10 @@ def test_create_tasks(screen: Screen) -> None:
         await asyncio.sleep(1.0)
 
     # create before loop started
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match='No running event loop'):
         background_tasks.create(a := async_function('A'))
     a.close()
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match='No running event loop'):
         background_tasks.create_lazy(b := async_function('B'), name='B')
     b.close()
 
@@ -220,24 +220,13 @@ def test_create_tasks(screen: Screen) -> None:
     ]
 
 
-async def test_create_without_a_started_app():
-    """A background task runs in async tests that never started the app (#6508)."""
-    events: list[str] = []
+@pytest.mark.parametrize('app_loop', ['unset', 'closed'])
+async def test_create_outside_the_app(app_loop: str):
+    """A background task runs in async tests that never started the app (#6508).
 
-    async def async_function() -> None:
-        events.append('ran')
-
-    original_loop = core.loop
-    core.loop = None
-    try:
-        await background_tasks.create(async_function())
-    finally:
-        core.loop = original_loop
-    assert events == ['ran']
-
-
-async def test_create_when_the_app_loop_is_closed():
-    """The closed loop of a previous run is not reused (#6508)."""
+    ``core.loop`` is set explicitly, because whether it is unset or the closed loop of a previous run
+    would otherwise depend on the order of the tests.
+    """
     events: list[str] = []
 
     async def async_function() -> None:
@@ -246,7 +235,7 @@ async def test_create_when_the_app_loop_is_closed():
     closed_loop = asyncio.new_event_loop()
     closed_loop.close()
     original_loop = core.loop
-    core.loop = closed_loop
+    core.loop = {'unset': None, 'closed': closed_loop}[app_loop]
     try:
         await background_tasks.create(async_function())
     finally:
