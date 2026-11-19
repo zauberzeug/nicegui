@@ -157,7 +157,7 @@ class Notification(Element, component='notification.js'):
 
     @property
     def spinner(self) -> bool:
-        """Whether the notification is a spinner."""
+        """Whether the notification shows a spinner."""
         return self._props['options']['spinner']
 
     @spinner.setter

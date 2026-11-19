@@ -42,7 +42,7 @@ class LinkTarget(Element):
     def __init__(self, name: str) -> None:
         """Link target
 
-        Create an anchor tag that can be used as inner-page target for links.
+        Create an anchor tag that can be used as an in-page target for links.
 
         :param name: target name
         """

@@ -153,7 +153,7 @@ def max_tab_storage_age():
 
 @doc.demo('Short-term memory', '''
     The goal of `app.storage.client` is to store data only for the duration of the current page visit.
-    In difference to data stored in `app.storage.tab`
+    In contrast to data stored in `app.storage.tab`
     - which is persisted between page changes and even browser restarts as long as the tab is kept open -
     the data in `app.storage.client` will be discarded if the user closes the browser, reloads the page or navigates to another page.
     This is beneficial for resource-hungry, intentionally short-lived or sensitive data.
@@ -200,7 +200,7 @@ doc.text('Redis storage', '''
     - For `app.storage.user` it's all the data of the user.
     - For `app.storage.tab` it's all the data stored for this specific tab.
 
-    If you have large data sets, we suggest to use a database instead.
+    If you have large data sets, we suggest using a database instead.
     See our [database example](https://github.com/zauberzeug/nicegui/blob/main/examples/sqlite_database/main.py) for a demo with SQLite.
     But of course to sync between multiple instances you should replace SQLite with PostgreSQL or similar.
 

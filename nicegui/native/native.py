@@ -146,7 +146,7 @@ try:
                 assert response_queue is not None
                 try:
                     method_queue.put((name, args, kwargs))
-                    return response_queue.get()  # wait for the method to be called and writing its result to the queue
+                    return response_queue.get()  # wait for the method to be called and its result to be written to the queue
                 except Exception:
                     log.exception(f'error in {name}')
                     return None

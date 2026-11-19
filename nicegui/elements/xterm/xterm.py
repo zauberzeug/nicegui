@@ -94,7 +94,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         return self
 
     def input(self, data: str, *, was_user_input: bool = True) -> AwaitableResponse:
-        """Input data to application side.
+        """Input data to the application side.
 
         The data is treated the same way input typed into the terminal would (i.e. the ``data`` event will fire).
         To write data onto the terminal (e.g. data coming from a pty), use the ``write`` method instead.
@@ -121,7 +121,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         return self.run_method('write', list(data) if isinstance(data, bytes) else data)
 
     def writeln(self, data: bytes | str) -> AwaitableResponse:
-        """Write data to the terminal, followed by a break line character (``\\n``).
+        """Write data to the terminal, followed by a line break character (``\\n``).
 
         :param data: The data to write to the terminal.
                      This can either be UTF-8 encoded bytes or a string.

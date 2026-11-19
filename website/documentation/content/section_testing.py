@@ -21,7 +21,7 @@ doc.text('Running Integration Tests', '''
     you can also use the plugin `nicegui.testing.user_plugin` or `nicegui.testing.screen_plugin`.
 
     There are a multitude of ways to structure your project and tests.
-    Here we only present our preferred approach for small and large projects which is on the one hand very easy but yet super powerful.
+    Here we only present our preferred approach for small and large projects which is both very easy and super powerful.
     For other approaches please check the [pytest documentation](https://docs.pytest.org/en/stable/contents.html).
 ''')
 

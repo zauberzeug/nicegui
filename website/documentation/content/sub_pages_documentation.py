@@ -312,8 +312,8 @@ def wildcard_demo():
 
 
 @doc.demo('Nested Sub Pages', '''
-    Sub pages elements can be nested to create a hierarchical page structure.
-    Each of these elements determines which part of the path they should handle by:
+    Sub page elements can be nested to create a hierarchical page structure.
+    Each of these elements determines which part of the path it should handle by:
 
     1. getting the full URL path from `ui.context.client.sub_pages_router`,
     2. removing the leading part which was handled by the parent element,

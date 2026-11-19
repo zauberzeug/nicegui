@@ -61,7 +61,7 @@ class AnyWidget(ValueElement[Any], component='anywidget.js', dependencies=['lib/
         widget.observe(observe_change, self._traits)
 
     def _handle_value_change(self, value: Any) -> None:
-        """Update the widget's state when the value changes from frontend"""
+        """Update the widget's state when the value changes from the frontend."""
         self._state_lock = value
         try:
             super()._handle_value_change(value)

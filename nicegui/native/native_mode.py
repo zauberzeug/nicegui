@@ -142,7 +142,7 @@ def _start_window_method_executor(window: webview.Window,
                 method_name, args, kwargs = method_queue.get(block=False)
                 if method_name == 'signal_server_shutdown':
                     if pending_executions:
-                        log.warning('shutdown is possibly blocked by opened dialogs like a file picker')
+                        log.warning('shutdown is possibly blocked by open dialogs like a file picker')
                         while pending_executions:
                             pending_executions.pop().join()
                 elif method_name == 'get_always_on_top':

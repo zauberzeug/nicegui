@@ -36,7 +36,7 @@ class Plotly(Element, component='plotly.js', esm={'nicegui-plotly': 'dist'}):
         self._update_method = 'update'
 
     def update_figure(self, figure: dict | go.Figure):
-        """Overrides figure instance of this Plotly chart and updates chart on client side."""
+        """Override the figure of this Plotly chart and update the chart on the client side."""
         self.figure = figure
         self.update()
 

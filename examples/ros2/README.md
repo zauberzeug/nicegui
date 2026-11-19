@@ -1,6 +1,6 @@
 # ROS2
 
-Use NiceGUI as web interface for a ROS2 robot.
+Use NiceGUI as a web interface for a ROS2 robot.
 
 ![Screenshot](screenshot.webp)
 

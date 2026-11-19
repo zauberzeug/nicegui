@@ -43,7 +43,7 @@ def adding_layers():
 
 @doc.demo('Nesting elements', '''
     You can nest elements inside an interactive image.
-    Use Tailwind classes like "absolute top-0 left-0" to position the label absolutely with respect to the image.
+    Use Tailwind classes like "absolute top-0 left-0" to position the button absolutely with respect to the image.
     Of course this can be done with plain CSS as well.
 ''')
 def nesting_elements():

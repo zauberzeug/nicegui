@@ -43,7 +43,7 @@ def bindings_demo():
     As a result, you would need to change your code appropriately.
 
     We would also like to mention that, for the most stable behaviour across releases,
-    it is best-practice that transform functions have no side-effects and do basic transform operations only.
+    it is best practice that transform functions have no side effects and do basic transform operations only.
     This way, it will not matter how NiceGUI chooses to call them in what order and by how many times.
 ''')
 def transformation_functions():

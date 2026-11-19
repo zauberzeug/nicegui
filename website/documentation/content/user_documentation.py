@@ -40,7 +40,7 @@ def async_execution():
         The user simulation runs in the same async context as your app
         to make querying and interaction as easy as possible.
         But that also means that your tests must be `async`.
-        We suggest to activate the [pytest-asyncio auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode)
+        We suggest activating the [pytest-asyncio auto-mode](https://pytest-asyncio.readthedocs.io/en/latest/concepts.html#auto-mode)
         by either creating a `pytest.ini` file in your project root
         or adding the activation directly to your `pyproject.toml`.
 
@@ -318,7 +318,7 @@ def multiple_users():
     ''').classes('w-full')
 
 
-doc.text('Simulate JavasScript', '''
+doc.text('Simulate JavaScript', '''
     The `User` class has a `javascript_rules` dictionary to simulate JavaScript execution.
     The key is a compiled regular expression and the value is a function that returns the JavaScript response.
     The function will be called with the match object of the regular expression on the JavaScript command.

@@ -45,7 +45,7 @@ class page:
 
         - The name of the decorated function is unused and can be anything.
         - The page route is determined by the ``path`` argument and registered globally.
-        - The decorator does only work for free functions and static methods.
+        - The decorator only works for free functions and static methods.
           Instance methods or initializers would require a ``self`` argument, which the router cannot associate.
           See `our modularization example <https://github.com/zauberzeug/nicegui/tree/main/examples/modularization/>`_
           for strategies to structure your code.

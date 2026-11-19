@@ -184,7 +184,7 @@ class Screen:
     def should_not_contain(self, text: str, duration: float = 0, *, wait: float | None = None) -> None:
         """Assert that the page does not show the given text.
 
-        Like ``should_contain`` waits for the text to appear, this method waits up to ``IMPLICIT_WAIT`` seconds
+        Like ``should_contain``, which waits for the text to appear, this method waits up to ``IMPLICIT_WAIT`` seconds
         for the text to disappear.
 
         :param text: text that should not be shown

@@ -282,7 +282,7 @@ def docker_compose():
 
 doc.text('', '''
     There are other handy features in the Docker image like non-root user execution and signal pass-through.
-    For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
+    For more details we recommend having a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
 
     To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
     For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
