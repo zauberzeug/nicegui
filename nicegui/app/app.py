@@ -228,7 +228,7 @@ class App(FastAPI):
         ``add_static_files()`` makes a local directory available at the specified endpoint, e.g. ``'/static'``.
         This is useful for providing local data like images to the frontend.
         Otherwise the browser would not be able to access the files.
-        Do only put non-security-critical files in there, as they are accessible to everyone.
+        Only put non-security-critical files in there, as they are accessible to everyone.
 
         To make a single file accessible, you can use ``add_static_file()``.
         For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
@@ -297,7 +297,7 @@ class App(FastAPI):
         ``add_media_files()`` allows local files to be streamed from a specified endpoint, e.g. ``'/media'``.
         This should be used for media files to support proper streaming.
         Otherwise the browser would not be able to access and load the files incrementally or jump to different positions in the stream.
-        Do only put non-security-critical files in there, as they are accessible to everyone.
+        Only put non-security-critical files in there, as they are accessible to everyone.
 
         To make a single file accessible via streaming, you can use ``add_media_file()``.
         For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
