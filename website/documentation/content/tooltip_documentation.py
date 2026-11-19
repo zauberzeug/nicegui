@@ -29,7 +29,7 @@ def tooltip_html_demo():
 
 
 @doc.demo('Tooltip with other content', '''
-    Other elements like `ui.images` can also be nested inside a tooltip.
+    Other elements like `ui.image` can also be nested inside a tooltip.
 ''')
 def tooltip_with_other_content():
     with ui.label('Mountains...'):

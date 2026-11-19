@@ -21,7 +21,7 @@ class Timer:
                  ) -> None:
         """Timer
 
-        One major drive behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals,
+        One major driver behind the creation of NiceGUI was the necessity to have a simple approach to update the interface in regular intervals,
         for example to show a graph with incoming measurements.
         A timer will execute a callback repeatedly with a given interval.
 

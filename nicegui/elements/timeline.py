@@ -55,7 +55,7 @@ class TimelineEntry(IconElement, default_classes='nicegui-timeline-entry'):
         :param avatar: Avatar URL.
         :param title: Title text.
         :param subtitle: Subtitle text.
-        :param color: Color or the timeline.
+        :param color: Color of the timeline.
         """
         super().__init__(tag='q-timeline-entry', icon=icon)
         self._props.set_optional('body', body)

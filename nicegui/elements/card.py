@@ -12,7 +12,7 @@ class Card(SortableElement, default_classes='nicegui-card'):
         """Card
 
         This element is based on Quasar's `QCard <https://quasar.dev/vue-components/card>`_ component.
-        It provides a container with a dropped shadow.
+        It provides a container with a drop shadow.
 
         Note:
         In contrast to this element,

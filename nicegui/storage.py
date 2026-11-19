@@ -176,7 +176,7 @@ class Storage:
     def client(self) -> ObservableDict:
         """A volatile storage that is only kept during the current connection to the client.
 
-        Like ``app.storage.tab`` data is unique per browser tab but is even more volatile as it is already discarded
+        Like ``app.storage.tab``, data is unique per browser tab but is even more volatile as it is already discarded
         when the connection to the client is lost through a page reload or a navigation.
         """
         return context.client.storage
@@ -225,7 +225,7 @@ class Storage:
             await tab.close()
 
     def clear(self) -> None:
-        """Clears all storage."""
+        """Clear all storage."""
         self._general.clear()
         self._users.clear()
         if not helpers.is_pytest():

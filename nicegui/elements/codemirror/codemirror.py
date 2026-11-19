@@ -152,7 +152,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['theme'] = theme
 
     def set_theme(self, theme: SUPPORTED_THEMES) -> Self:
-        """Sets the theme of the editor."""
+        """Set the theme of the editor."""
         self._props['theme'] = theme
         return self
 
@@ -171,7 +171,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['language'] = _resolve_language(language)
 
     def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> Self:
-        """Sets the language of the editor (case-insensitive)."""
+        """Set the language of the editor (case-insensitive)."""
         self._props['language'] = _resolve_language(language)
         return self
 
@@ -193,7 +193,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['line-wrapping'] = value
 
     def set_line_wrapping(self, value: bool) -> Self:
-        """Sets whether line wrapping is enabled.
+        """Set whether line wrapping is enabled.
 
         *Added in version 3.2.0*
         """

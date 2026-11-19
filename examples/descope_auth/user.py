@@ -31,7 +31,7 @@ def about() -> dict[str, Any]:
 
 
 async def logout() -> None:
-    """Logout the user."""
+    """Log out the user."""
     result = await ui.run_javascript('return await sdk.logout()')
     if result['code'] == 200:
         app.storage.user['descope'] = None
@@ -45,7 +45,7 @@ class page(ui.page):
     """A page that requires the user to be logged in.
 
     It allows the same parameters as ui.page, but adds a login check.
-    As recommended by Descope, this is done via JavaScript and allows to use Flows.
+    As recommended by Descope, this is done via JavaScript and allows using Flows.
     But this means that the page has already awaited the client connection.
     So `ui.add_head_html` will not work.
     """

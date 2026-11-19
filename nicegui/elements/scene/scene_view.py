@@ -39,7 +39,7 @@ class SceneView(CancelableWaitElement, component='scene_view.js', default_classe
         :param scene: the scene which will be shown on the canvas
         :param width: width of the canvas
         :param height: height of the canvas
-        :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
+        :param camera: camera definition, either an instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked
         :param fps: target frame rate for the scene view in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)

@@ -49,5 +49,5 @@ def is_pytest() -> bool:
 
 
 def is_user_simulation() -> bool:
-    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
+    """Check if the code is running with user simulation (see https://nicegui.io/documentation/user)."""
     return 'NICEGUI_USER_SIMULATION' in os.environ

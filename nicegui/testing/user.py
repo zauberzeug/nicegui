@@ -49,7 +49,7 @@ class User:
     @property
     def _client(self) -> Client:
         if self.client is None:
-            raise ValueError('This user has not opened a page yet. Did you forgot to call .open()?')
+            raise ValueError('This user has not opened a page yet. Did you forget to call .open()?')
         return self.client
 
     def __enter__(self) -> Client:

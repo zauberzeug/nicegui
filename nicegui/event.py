@@ -51,7 +51,7 @@ class Event(Generic[P]):
     def __init__(self) -> None:
         """Event
 
-        Events are a powerful tool distribute information between different parts of your code,
+        Events are a powerful tool to distribute information between different parts of your code,
         especially from long-living objects like data models to the short-living UI.
 
         Handlers can be synchronous or asynchronous.

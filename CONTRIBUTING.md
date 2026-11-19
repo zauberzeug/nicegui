@@ -118,7 +118,7 @@ To run the tests you need some additional setup which is described in [tests/REA
 ./docker.sh up app
 ```
 
-By default, the development server listens to http://localhost:80/.
+By default, the development server listens on http://localhost:80/.
 
 The configuration is written in the `docker-compose.yml` file and automatically loads the `main.py` which contains the website https://nicegui.io.
 Every code change will result in reloading the content.
@@ -276,7 +276,7 @@ Run these from the project root:
 > Always work on a feature branch, never on `main`:
 >
 > 1. Working on `main` blocks you from contributing to multiple things simultaneously,
-> 2. It highly increases the chance of an unclean commit history,
+> 2. It greatly increases the chance of an unclean commit history,
 > 3. Your `main` branch should stay in sync with the upstream repository.
 
 > [!NOTE]

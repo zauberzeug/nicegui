@@ -88,7 +88,7 @@ const DECLARED_SPEC = Symbol("declared spec");
 const { setEffect: setDecorationsEffect, field: decorationField } = defineRemappableRangeSet();
 
 // Python addresses the document by str index (one per code point), CodeMirror by UTF-16 code unit.
-// The two only differ by the characters outside the Basic Multilingual Plane, which take two code units.
+// The two only differ for characters outside the Basic Multilingual Plane, which take two code units.
 const ASTRAL = /[\u{10000}-\u{10FFFF}]/u;
 
 // How many of the ascending `values`, taken through `key`, are below `limit`.

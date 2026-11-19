@@ -5,7 +5,7 @@ The single most important rule: **everything is Python**. Reach for `ui.*` befor
 
 **Where this file lives:** it ships with the `nicegui` PyPI package as `nicegui/llms.md`, so the copy bundled with the user's installed version matches the API they actually have. For the current `main`, fetch <https://nicegui.io/llms.txt>.
 
-**Fetching docs:** Every page on <https://nicegui.io> returns Markdown when requested with Accept: text/markdown. Commonly used AI agents (Claude, ChatGPT, GPTBot, Perplexity, Gemini, etc.) also receive Markdown via User-Agent detection, so most tools can read the documentation without parsing HTML. If you need to pull documentation related to a specific function or implementation family, use your `web_fetch` tool on the page that semantically matches, i.e `https://nicegui.io/documentation/section_text_elements`, `https://nicegui.io/documentation/label`, `https://nicegui.io/documentation/section_testing`, `https://nicegui.io/documentation/user`, and it will return formatted documentation.
+**Fetching docs:** Every page on <https://nicegui.io> returns Markdown when requested with Accept: text/markdown. Commonly used AI agents (Claude, ChatGPT, GPTBot, Perplexity, Gemini, etc.) also receive Markdown via User-Agent detection, so most tools can read the documentation without parsing HTML. If you need to pull documentation related to a specific function or implementation family, use your `web_fetch` tool on the page that semantically matches, e.g. `https://nicegui.io/documentation/section_text_elements`, `https://nicegui.io/documentation/label`, `https://nicegui.io/documentation/section_testing`, `https://nicegui.io/documentation/user`, and it will return formatted documentation.
 
 ---
 
@@ -75,7 +75,7 @@ Understanding this prevents the mistake of trying to "re-run the page function" 
 
 ### 4. The slot stack — why context managers place elements automatically
 
-When you write `with ui.row(): ui.label('x')`, the label automatically becomes a child of the row. This works via a thread-local slot stack:
+When you write `with ui.row(): ui.label('x')`, the label automatically becomes a child of the row. This works via a task-local slot stack:
 
 - `with element:` pushes the element's default slot onto the stack
 - Any element created inside the `with` block is registered as a child of that slot
@@ -126,7 +126,7 @@ NiceGUI runs in a single asyncio event loop. Every page, every user, every timer
 - Pass `context=` (a container element or `ui.context.client`, since 3.18) to run the task inside that context: elements it creates land in the container, and exceptions also reach the page's `ui.on_exception` handlers instead of only the global `app.on_exception` ones.
 - Timers (`ui.timer()`) are safe: they schedule callbacks without blocking
 
-### 8. Why `ui.storage.user` and not a global dict
+### 8. Why `app.storage.user` and not a global dict
 
 `app.storage.user` is per-user (session-scoped) and persistent across page reloads. A module-level `dict` is per-process (shared across all users) and lost on server restart. Always ask: "Should this be per-user, per-session, or global?" and pick accordingly:
 
@@ -1353,7 +1353,7 @@ ui.run(port=int(os.environ.get('PORT', 8080)))
 
 ## Testing
 
-Prefer `User` fixture (no browser, fast, same async context):
+Prefer the `User` fixture (no browser, fast, same async context):
 
 ```python
 async def test_counter(user: User) -> None:
@@ -1376,7 +1376,7 @@ with user.scope(marker='left-card'):  # same filter args as user.find(), must ma
 The fixtures load the app's main file (`main_file` option, default `main.py`) before each test.
 To load none, leave it empty (`main_file = ""` under `[tool.pytest.ini_options]`) and register the pages each test needs, e.g. with `@ui.page` inside the test function.
 
-Use `Screen` fixture only when JavaScript or real browser rendering is required:
+Use the `Screen` fixture only when JavaScript or real browser rendering is required:
 
 ```python
 def test_chart(screen: Screen) -> None:

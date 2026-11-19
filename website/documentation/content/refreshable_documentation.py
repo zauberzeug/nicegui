@@ -149,7 +149,7 @@ def global_scope():
 @doc.auto_execute
 @doc.demo('Local scope (variant A)', '''
     When defining a refreshable function in a local scope,
-    refreshable UI that is created by calling this function will refresh independently.
+    each refreshable UI that is created by calling this function will refresh independently.
     In contrast to the "global scope" demo,
     the time will be updated only in the tab where the "Refresh" button was clicked.
 ''')

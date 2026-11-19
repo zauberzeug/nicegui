@@ -8,7 +8,7 @@ import theme
 from nicegui import app, ui
 
 
-# Example 1: use a custom page decorator directly and putting the content creation into a separate function
+# Example 1: use a custom page decorator directly and put the content creation into a separate function
 @ui.page('/')
 def index_page() -> None:
     with theme.frame('Homepage'):

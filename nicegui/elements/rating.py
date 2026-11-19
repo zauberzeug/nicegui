@@ -25,7 +25,7 @@ class Rating(ValueElement[float | None], DisableableElement):
 
         :param value: initial value (default: ``None``)
         :param max: maximum rating, number of icons (default: 5)
-        :param icon: name of icons to be displayed (default: star)
+        :param icon: name of the icon to be displayed (default: star)
         :param icon_selected: name of an icon to be displayed when selected (default: same as ``icon``)
         :param icon_half: name of an icon to be displayed when half-selected (default: same as ``icon``)
         :param color: color(s) of the icons (Quasar, Tailwind, or CSS colors or ``None``, default: "primary")
