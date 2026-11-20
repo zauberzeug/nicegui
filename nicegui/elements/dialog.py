@@ -77,9 +77,10 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
         self._resolve(result)
 
     def _resolve(self, result: Any) -> None:
-        if self._pending_result is not None:
-            self._pending_result.set_result(result)
-            self._pending_result = None  # the awaiting tasks hold the future, so the dialog does not keep the result alive
+        # the awaiting tasks hold the future, so the dialog does not keep the result alive
+        future, self._pending_result = self._pending_result, None
+        if future is not None and not future.get_loop().is_closed():  # at interpreter exit nobody can be woken up anymore
+            future.set_result(result)
         self.submitted.set()
 
     def _handle_value_change(self, value: Any) -> None:
