@@ -312,6 +312,29 @@ We're thrilled to see your creations and look forward to watching your videos. H
 
 ## For maintainers
 
+### Updating Python dependencies
+
+Python dependencies are declared in `pyproject.toml` and locked in `uv.lock`.
+After changing `pyproject.toml`, run `uv lock` and commit both files.
+
+When a security advisory affects a Python package, check whether NiceGUI needs it at runtime:
+
+```bash
+uv tree --no-dev --invert --package <package>
+```
+
+- If the package shows up, raise its minimum version in `dependencies` (or in the extra that pulls it in) to the first fixed release, even if it is only a transitive dependency.
+  This way users get the fix when upgrading NiceGUI, because pip does not upgrade packages whose requirements are already satisfied.
+  Add a comment linking the public advisory (`https://github.com/advisories/GHSA-...`)
+  and, for transitive dependencies, naming the packages that need it (`for <package>`).
+- Otherwise, the package is only part of the development environment, which is fully pinned by `uv.lock`.
+  Run `uv lock --upgrade-package <package>` and leave `pyproject.toml` untouched.
+  The dependency groups only list packages we use directly.
+
+Transitive entries become obsolete when the packages named after `for` stop depending on them.
+The same command reveals this: if nothing but `nicegui` itself depends on the package
+and NiceGUI does not use it directly, remove the entry.
+
 ### Updating node dependencies
 
 We use `package.json` files to pin the versions of node dependencies.
