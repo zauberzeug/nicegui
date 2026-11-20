@@ -5,6 +5,8 @@ export default {
   template: "<div></div>",
   async mounted() {
     const emit_to_py = this.$emit;
+    this.controller = new AbortController();
+    const { signal } = this.controller;
 
     // Implement AFM: https://anywidget.dev/en/afm/
     // References:
@@ -33,7 +35,7 @@ export default {
       off: function (event, callback) {
         if (!event) this.callbacks = {};
         else if (!callback) this.callbacks[event] = [];
-        else this.callbacks[event]?.delete(callback);
+        else if (this.callbacks[event]) this.callbacks[event] = this.callbacks[event].filter((cb) => cb !== callback);
       },
       emit: function (event, value) {
         this.callbacks[event]?.forEach((cb) => cb(value));
@@ -45,15 +47,30 @@ export default {
 
     // Dynamically load esm_content as an ECMAScript module
     const mod = await load_widget(this.esm_content, this.traits._anywidget_id);
-    // TODO: cleanup_widget and cleanup_view should be called when the widget is destroyed
-    this.cleanup_widget = await mod.initialize?.({ model: this.model });
-    this.cleanup_view = await mod.render?.({ model: this.model, el: this.$el });
+    if (signal.aborted) return;  // the element was deleted while the module was loading
+    // AFM: initialize and render may return a cleanup function, which has to run when the element goes away
+    const cleanup_widget = await mod.initialize?.({ model: this.model, signal });
+    this.cleanup_widget = typeof cleanup_widget === 'function' ? cleanup_widget : null;
+    if (signal.aborted) return this._run_cleanups();  // the element was deleted while initialize was running
+    const cleanup_view = await mod.render?.({ model: this.model, el: this.$el, signal });
+    this.cleanup_view = typeof cleanup_view === 'function' ? cleanup_view : null;
+    if (signal.aborted) return this._run_cleanups();  // the element was deleted while render was running
 
     load_css(this.css_content, this.traits._anywidget_id);
+  },
+  unmounted() {
+    this.controller.abort();
+    this._run_cleanups();
   },
   methods: {
     update_trait(trait, value) {
       this.model.set(trait, value);
+    },
+    _run_cleanups() {
+      // the view's cleanup runs before the widget's, the reverse of the order in which they were created
+      this.cleanup_view?.();
+      this.cleanup_widget?.();
+      this.cleanup_view = this.cleanup_widget = null;
     },
   },
   props: {
