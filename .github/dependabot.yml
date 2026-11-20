@@ -36,3 +36,17 @@ updates:
       - dependency-name: "python"  # the development image stays on the oldest supported version, the release image follows the test matrix
     labels:
       - "dependencies"
+
+  - package-ecosystem: "docker-compose"
+    directories:
+      - "/"
+      - "/examples/*"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+    labels:
+      - "dependencies"
