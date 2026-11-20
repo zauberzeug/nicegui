@@ -151,7 +151,7 @@ def large_datasets():
 @doc.demo('Dynamic resampling', '''
     Binary encoding makes _transferring_ many points cheap, but plotly.js still has to _render_ every point it receives.
     This recipe keeps the full series on the server and sends only a downsampled version of the visible range:
-    the range is split into buckets, and only the minimum and maximum of each bucket are sent, so peaks are preserved.
+    the range is split into buckets, and only the minimum and maximum of each bucket plus the two endpoints of the range are sent, so peaks are preserved.
     Every zoom or pan resamples the new range, so you can drill down to full resolution.
     Double-click the chart to reset the axes.
 
