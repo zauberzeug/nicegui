@@ -1,18 +1,18 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11, <4"
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
-    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
-    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten'",
+    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version < '3.11.5' and sys_platform == 'win32'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
-    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version < '3.11.5' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
@@ -632,7 +632,7 @@ name = "clr-loader"
 version = "0.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cffi", marker = "(python_full_version >= '3.12' and sys_platform != 'emscripten') or sys_platform == 'win32'" },
+    { name = "cffi" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e4/46/7eea92b6aa2d68af78e049cbecec5f757f1aad44ecdecdc16bbad7eead51/clr_loader-0.3.1.tar.gz", hash = "sha256:2e073e9aaf49d1ae2f56ecba27987ad5fb68be4bcd9dd34a5bed8f0e4e128366", size = 86805, upload-time = "2026-04-18T17:49:44.287Z" }
 wheels = [
@@ -663,14 +663,14 @@ version = "1.3.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version < '3.11.5' and sys_platform == 'win32'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
-    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version < '3.11.5' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" } },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/58/01/1253e6698a07380cd31a736d248a3f2a50a7c88779a1813da27503cadc2a/contourpy-1.3.3.tar.gz", hash = "sha256:083e12155b210502d0bca491432bb04d56dc3432f95a979b429f2848c3dbe880", size = 13466174, upload-time = "2025-07-26T12:03:12.549Z" }
 wheels = [
@@ -753,14 +753,14 @@ version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
-    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
-    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten'",
+    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" } },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/5a/a55177dd22553a277388e8a1b3220e92de91bacb28356cdc73caa240121d/contourpy-1.4.0.tar.gz", hash = "sha256:20156f5a1ac4f8ce02656e39a61e82164a3d359796dc8026f75b062783d500e1", size = 13323726, upload-time = "2026-09-11T19:05:05.808Z" }
 wheels = [
@@ -892,14 +892,14 @@ version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version < '3.11.5' and sys_platform == 'win32'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
-    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version < '3.11.5' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 dependencies = [
-    { name = "wrapt", marker = "python_full_version < '3.12'" },
+    { name = "wrapt" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/49/85/12f0a49a7c4ffb70572b6c2ef13c90c88fd190debda93b23f026b25f9634/deprecated-1.3.1.tar.gz", hash = "sha256:b1b50e0ff0c1fddaa5708a2c6b0a6588bb09b892825ab2b214ac9ea9d92a5223", size = 2932523, upload-time = "2025-10-30T08:19:02.757Z" }
 wheels = [
@@ -912,14 +912,14 @@ version = "3.0.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
-    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
-    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten'",
+    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten'",
 ]
 dependencies = [
-    { name = "wrapt", marker = "python_full_version >= '3.12'" },
+    { name = "wrapt" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/61/46/f6958cdfa8a801fc845e981a8a958dba2e74a386b026a8fd5cae58423f1f/deprecated-3.0.1.tar.gz", hash = "sha256:2f5a9fecc9961e26462846cf1e57f73a612b1d0b79c27dceeed8de647beadcee", size = 1074378, upload-time = "2026-10-30T11:15:39.954Z" }
 wheels = [
@@ -1223,8 +1223,8 @@ name = "httpcore2"
 version = "2.16.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "h11", marker = "sys_platform != 'emscripten'" },
-    { name = "truststore", marker = "sys_platform != 'emscripten'" },
+    { name = "h11" },
+    { name = "truststore" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c0/61/afa9d6b7452f9eca73f73d45324eb0bb52f098fd5e6049bf6b8263be9b4e/httpcore2-2.16.0.tar.gz", hash = "sha256:c72cd0413563b17e1cd8354677dff887466f8ec2551679759e93126534428643", size = 69886, upload-time = "2026-10-21T07:09:45.31Z" }
 wheels = [
@@ -2454,7 +2454,6 @@ dependencies = [
     { name = "aiofiles" },
     { name = "aiohttp" },
     { name = "anyio" },
-    { name = "certifi" },
     { name = "docutils" },
     { name = "fastapi" },
     { name = "h11" },
@@ -2539,7 +2538,6 @@ dev = [
     { name = "types-aiofiles" },
     { name = "types-docutils" },
     { name = "types-pygments" },
-    { name = "types-requests" },
     { name = "urllib3" },
     { name = "vega-datasets" },
     { name = "virtualenv" },
@@ -2549,7 +2547,6 @@ types = [
     { name = "types-aiofiles" },
     { name = "types-docutils" },
     { name = "types-pygments" },
-    { name = "types-requests" },
 ]
 website = [
     { name = "dnspython" },
@@ -2573,7 +2570,6 @@ requires-dist = [
     { name = "altair", marker = "extra == 'altair'", specifier = ">=6.0.0" },
     { name = "anyio", specifier = ">=4.14.2" },
     { name = "anywidget", marker = "extra == 'anywidget'", specifier = ">=0.9.21" },
-    { name = "certifi", specifier = ">=2026.10.19" },
     { name = "docutils", specifier = ">=0.19.0" },
     { name = "fastapi", specifier = ">=0.143.1" },
     { name = "fonttools", marker = "extra == 'matplotlib'", specifier = ">=4.60.2" },
@@ -2640,7 +2636,6 @@ dev = [
     { name = "types-aiofiles", specifier = ">=23.1.0" },
     { name = "types-docutils", specifier = ">=0.22.3" },
     { name = "types-pygments", specifier = ">=2.15.1,<3.0.0" },
-    { name = "types-requests", specifier = ">=2.32.4" },
     { name = "urllib3", specifier = ">=2.8.0" },
     { name = "vega-datasets", specifier = ">=0.9.0,<0.10.0" },
     { name = "virtualenv", specifier = ">=21.14.9" },
@@ -2650,7 +2645,6 @@ types = [
     { name = "types-aiofiles", specifier = ">=23.1.0" },
     { name = "types-docutils", specifier = ">=0.22.3" },
     { name = "types-pygments", specifier = ">=2.15.1,<3.0.0" },
-    { name = "types-requests", specifier = ">=2.32.4" },
 ]
 website = [
     { name = "dnspython", specifier = ">=2.9.2,<3" },
@@ -2694,10 +2688,10 @@ version = "2.4.6"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version < '3.11.5' and sys_platform == 'win32'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
-    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'win32'",
+    "python_full_version < '3.11.5' and sys_platform == 'emscripten'",
     "python_full_version < '3.11.5' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d0/ad/fed0499ce6a338d2a03ebae59cd15093910c8875328855781952abf6c2fe/numpy-2.4.6.tar.gz", hash = "sha256:f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda", size = 20735807, upload-time = "2026-05-18T23:37:14.07Z" }
@@ -2781,10 +2775,10 @@ version = "2.5.4"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
-    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
-    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten'",
+    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/95/b0/c7453d0b6e2073c3264468b106ee1563750cecc910965e67357e3698c83e/numpy-2.5.4.tar.gz", hash = "sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a", size = 20866315, upload-time = "2026-10-10T20:05:31.422Z" }
@@ -3054,7 +3048,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
+    { name = "ptyprocess" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -3719,7 +3713,7 @@ name = "pyobjc-framework-cocoa"
 version = "13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pyobjc-core", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
+    { name = "pyobjc-core" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/30/50/55a8779d35f1f86d795264cbd6fe62e35b2cf4fb8343fc888e99268c988a/pyobjc_framework_cocoa-13.0.tar.gz", hash = "sha256:bb7a23941fc8d7866578dbc84e56140efd343a1d28510f530dd1dbf80807daf4", size = 3135308, upload-time = "2026-10-30T10:46:03.982Z" }
 wheels = [
@@ -3738,8 +3732,8 @@ name = "pyobjc-framework-quartz"
 version = "13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pyobjc-core", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
-    { name = "pyobjc-framework-cocoa", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
+    { name = "pyobjc-core" },
+    { name = "pyobjc-framework-cocoa" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7a/86/ffaa76ca28df5450cce14614c657b910bbd7bb737feaf47f74230c3b78d3/pyobjc_framework_quartz-13.0.tar.gz", hash = "sha256:b9a4942182efbbc7e18e6cb7f5a8faa166dc2fc5e33bece7c7b1355494274add", size = 3399243, upload-time = "2026-10-30T10:47:23.667Z" }
 wheels = [
@@ -3758,8 +3752,8 @@ name = "pyobjc-framework-security"
 version = "13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pyobjc-core", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
-    { name = "pyobjc-framework-cocoa", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
+    { name = "pyobjc-core" },
+    { name = "pyobjc-framework-cocoa" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/63/3a/58e0d6ef73812d279a89858ffd06b64d08eebe30bf84441c4b4df6e9665d/pyobjc_framework_security-13.0.tar.gz", hash = "sha256:e5c3f90773fb53dcd525075011f80a83e6f38cb0ad0bcd13fb8f629bf35d22aa", size = 180769, upload-time = "2026-10-30T10:47:33.878Z" }
 wheels = [
@@ -3778,8 +3772,8 @@ name = "pyobjc-framework-uniformtypeidentifiers"
 version = "13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pyobjc-core", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
-    { name = "pyobjc-framework-cocoa", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
+    { name = "pyobjc-core" },
+    { name = "pyobjc-framework-cocoa" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ba/3d/ab2b17b2d31286c405bc7d818cf85de538bd90144cd3163c693b0de1d623/pyobjc_framework_uniformtypeidentifiers-13.0.tar.gz", hash = "sha256:d70ae3722c91c57de71a77d1004a22a118e38798f66c30552cb93754f7a9cbb5", size = 20694, upload-time = "2026-10-30T10:47:49.642Z" }
 wheels = [
@@ -3791,8 +3785,8 @@ name = "pyobjc-framework-webkit"
 version = "13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pyobjc-core", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
-    { name = "pyobjc-framework-cocoa", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
+    { name = "pyobjc-core" },
+    { name = "pyobjc-framework-cocoa" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/5c/c3/8cf2bd403676ac956046150c666357f3eaf246e936bfd29069dba59534ce/pyobjc_framework_webkit-13.0.tar.gz", hash = "sha256:80debaa16c416895214c74e483bd13f510fc0965e4def34653e37705a5eef1a6", size = 334160, upload-time = "2026-10-30T10:47:54.863Z" }
 wheels = [
@@ -4023,7 +4017,7 @@ name = "pythonnet"
 version = "3.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "clr-loader", marker = "(python_full_version >= '3.12' and sys_platform != 'emscripten') or sys_platform == 'win32'" },
+    { name = "clr-loader" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ef/34/98f38d7ca1e9eb684d297d1d6a9420f3f3a32f411eae82a7f25a2b783539/pythonnet-3.2.1.tar.gz", hash = "sha256:c86e8dd31268f6e0c48fcc4d6030041316d49ed2764a1cb6ea8c37876e07c572", size = 257852, upload-time = "2026-10-08T12:23:35.866Z" }
 wheels = [
@@ -4112,7 +4106,7 @@ name = "qtpy"
 version = "2.4.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "packaging", marker = "(python_full_version >= '3.12' and sys_platform == 'win32') or (sys_platform != 'emscripten' and sys_platform != 'win32')" },
+    { name = "packaging" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/70/01/392eba83c8e47b946b929d7c46e0f04b35e9671f8bb6fc36b6f7945b4de8/qtpy-2.4.3.tar.gz", hash = "sha256:db744f7832e6d3da90568ba6ccbca3ee2b3b4a890c3d6fbbc63142f6e4cdf5bb", size = 66982, upload-time = "2025-02-11T15:09:25.759Z" }
 wheels = [
@@ -4675,10 +4669,10 @@ version = "4.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
-    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
-    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten'",
+    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'emscripten'",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'emscripten'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'win32'",
     "python_full_version >= '3.11.5' and python_full_version < '3.12' and sys_platform == 'emscripten'",
@@ -4893,18 +4887,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/84/2b/b3e929c39fb056f0e44560acbe53a7c3f28f428af5362d043642d80b31ec/types_pygments-2.21.0.20260819.tar.gz", hash = "sha256:68e0cb27115b08b681c843e30a153b5d9850c048e1158623ada36ccd4cf7e89b", size = 21509, upload-time = "2026-08-19T02:47:15.827Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d9/a5/10a2de06b53a36f4334391fcf292b51877cbc71d3f6eac353e7b87a0a17e/types_pygments-2.21.0.20260819-py3-none-any.whl", hash = "sha256:85e216770d616db6a7e96fb70c2de9d9f283b746c37edb7768ce645bdbcaddb2", size = 29099, upload-time = "2026-08-19T02:47:14.81Z" },
-]
-
-[[package]]
-name = "types-requests"
-version = "2.33.0.20261030"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "urllib3" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/15/63ec82f647272ae3df5124def156344ab8856d29d8c4931947f1f15c003b/types_requests-2.33.0.20261030.tar.gz", hash = "sha256:42d75eb02ed0f8220904c8fc08d3129742e7fce42fd5cf706395c8bb4c0ad990", size = 25538, upload-time = "2026-10-30T07:50:39.413Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/35/77ed86be430bd179d34905d62cdb5ba6747c635737092088fcf03c753c61/types_requests-2.33.0.20261030-py3-none-any.whl", hash = "sha256:06cfc2e92399bf46eda78a65cd0e2203d29ebbeede78b4ab0a5922f749ce1492", size = 21450, upload-time = "2026-10-30T07:50:38.247Z" },
 ]
 
 [[package]]
