@@ -1,3 +1,5 @@
+import importlib.util
+
 from nicegui import ui
 
 from . import doc
@@ -166,6 +168,9 @@ def large_datasets():
 def dynamic_resampling():
     import numpy as np
     import plotly.graph_objects as go
+    if importlib.util.find_spec('tsdownsample') is None:  # HIDE
+        ui.label('This demo does not run online because tsdownsample has no wheels for Python 3.15 yet.')  # HIDE
+        return  # HIDE
     from tsdownsample import MinMaxLTTBDownsampler
 
     from nicegui import events
