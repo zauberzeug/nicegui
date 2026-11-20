@@ -320,7 +320,7 @@ After changing `pyproject.toml`, run `uv lock` and commit both files.
 When a security advisory affects a Python package, check whether NiceGUI needs it at runtime:
 
 ```bash
-uv tree --no-dev --invert --package <package>
+uv tree --no-dev --universal --invert --package <package>
 ```
 
 - If the package shows up, raise its minimum version in `dependencies` (or in the extra that pulls it in) to the first fixed release, even if it is only a transitive dependency.

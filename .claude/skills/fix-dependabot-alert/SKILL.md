@@ -13,7 +13,7 @@ gh api 'repos/zauberzeug/nicegui/dependabot/alerts?state=open'
 ## Python alerts (`uv.lock`)
 
 Follow "Updating Python dependencies" in `CONTRIBUTING.md`.
-In short, `uv tree --no-dev --invert --package <pkg>` decides:
+In short, `uv tree --no-dev --universal --invert --package <pkg>` decides:
 
 - **Runtime dependency** (the package shows up):
   raise or add `"<pkg>>=<patched>",  # https://github.com/advisories/<GHSA-ID>` in `dependencies` or in the extra that pulls it in,
