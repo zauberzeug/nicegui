@@ -66,7 +66,9 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
             self.submitted.clear()
             self.open()
         result = yield from asyncio.shield(self._pending_result).__await__()
-        if not self.is_deleted:  # closing a deleted dialog would warn about using a deleted element
+        if not self.is_deleted and self._pending_result is None:
+            # closing a deleted dialog would warn about using a deleted element,
+            # and closing while a new round is already awaited would resolve that round with None
             self.close()
         return result
 
