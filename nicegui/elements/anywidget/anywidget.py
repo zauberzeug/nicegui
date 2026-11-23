@@ -45,21 +45,19 @@ class AnyWidget(ValueElement[Any], component='anywidget.js', dependencies=['lib/
         self._props['esm_content'] = _get_attribute(widget, '_esm')
         self._props['css_content'] = _get_attribute(widget, '_css')
         self._state_lock: dict | None = None  # only used while handling a value change from the client
-
-        def observe_change(change) -> None:
-            """Observe a trait change and update the frontend (but avoid echoing same values back to the client)."""
-            name = change['name']
-            new = change['new']
-            if self._state_lock is None:
-                # we're not handling a value change from the client, so we send an update to the client
-                self.run_method('update_trait', name, new)
-            elif not _equal(self._state_lock.get(name, UNDEFINED), new):
-                # an observer changed a trait to a new value, so we update the lock and send an update to the client
-                self._state_lock[name] = new
-                self.run_method('update_trait', name, new)
-
-        self._observe_change = observe_change
         widget.observe(self._observe_change, self._traits)
+
+    def _observe_change(self, change: dict) -> None:
+        """Observe a trait change and update the frontend (but avoid echoing same values back to the client)."""
+        name = change['name']
+        new = change['new']
+        if self._state_lock is None:
+            # we're not handling a value change from the client, so we send an update to the client
+            self.run_method('update_trait', name, new)
+        elif not _equal(self._state_lock.get(name, UNDEFINED), new):
+            # an observer changed a trait to a new value, so we update the lock and send an update to the client
+            self._state_lock[name] = new
+            self.run_method('update_trait', name, new)
 
     def _handle_delete(self) -> None:
         self._widget.unobserve(self._observe_change, self._traits)

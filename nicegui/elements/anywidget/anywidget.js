@@ -1,6 +1,14 @@
 import { load_widget, load_css } from "widget";
 import { cleanObject } from "../../static/utils/json.js";
 
+// AFM: a lifecycle hook may return a cleanup function, which has to run when its signal aborts
+async function run_hook(hook, props) {
+  const cleanup = await hook?.(props);
+  if (typeof cleanup !== "function") return; // initialize may also return an object of exports
+  if (props.signal.aborted) cleanup(); // the element was deleted while the hook was running
+  else props.signal.addEventListener("abort", () => cleanup());
+}
+
 export default {
   template: "<div></div>",
   async mounted() {
@@ -47,30 +55,25 @@ export default {
 
     // Dynamically load esm_content as an ECMAScript module
     const mod = await load_widget(this.esm_content, this.traits._anywidget_id);
-    if (signal.aborted) return;  // the element was deleted while the module was loading
-    // AFM: initialize and render may return a cleanup function, which has to run when the element goes away
-    const cleanup_widget = await mod.initialize?.({ model: this.model, signal });
-    this.cleanup_widget = typeof cleanup_widget === 'function' ? cleanup_widget : null;
-    if (signal.aborted) return this._run_cleanups();  // the element was deleted while initialize was running
-    const cleanup_view = await mod.render?.({ model: this.model, el: this.$el, signal });
-    this.cleanup_view = typeof cleanup_view === 'function' ? cleanup_view : null;
-    if (signal.aborted) return this._run_cleanups();  // the element was deleted while render was running
+    if (signal.aborted) return; // the element was deleted while the module was loading
+    try {
+      await run_hook(mod.initialize, { model: this.model, signal });
+      if (signal.aborted) return; // the element was deleted while initialize was running
+      await run_hook(mod.render, { model: this.model, el: this.$el, signal });
+      if (signal.aborted) return; // the element was deleted while render was running
+    } catch (error) {
+      this.controller.abort(); // AFM: a failing hook aborts its signal, which runs the cleanups wired to it
+      throw error;
+    }
 
     load_css(this.css_content, this.traits._anywidget_id);
   },
   unmounted() {
-    this.controller.abort();
-    this._run_cleanups();
+    this.controller.abort(); // runs the cleanups of the widget and the view
   },
   methods: {
     update_trait(trait, value) {
       this.model.set(trait, value);
-    },
-    _run_cleanups() {
-      // the view's cleanup runs before the widget's, the reverse of the order in which they were created
-      this.cleanup_view?.();
-      this.cleanup_widget?.();
-      this.cleanup_view = this.cleanup_widget = null;
     },
   },
   props: {
