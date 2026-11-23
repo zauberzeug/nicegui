@@ -25,7 +25,9 @@ updates:
       - "dependencies"
 
   - package-ecosystem: "docker"
-    directory: "/"
+    directories:
+      - "/"
+      - "/examples/*"
     schedule:
       interval: "weekly"
     cooldown:
