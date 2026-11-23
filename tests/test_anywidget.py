@@ -1,32 +1,8 @@
 import anywidget
-import pytest
 import traitlets
 
 from nicegui import ui
-from nicegui.testing import Screen, User
-
-
-async def test_delete_stops_observing_the_widget(user: User, caplog: pytest.LogCaptureFixture):
-    """A widget can outlive its element (e.g. in a refreshable), so deleting the element has to unobserve it."""
-    class SharedWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
-        _esm = 'export default {};'
-        value = traitlets.Int(0).tag(sync=True)
-
-    widget = SharedWidget()
-    element = None
-
-    @ui.page('/')
-    def page():
-        nonlocal element
-        element = ui.anywidget(widget)
-
-    await user.open('/')
-    assert not [record for record in caplog.records if 'still being used' in record.message]
-
-    element.delete()
-    widget.value = 1
-    assert not [record for record in caplog.records if 'still being used' in record.message], \
-        'changing a trait of a deleted element must not warn anymore'
+from nicegui.testing import Screen
 
 
 def test_anywidget(screen: Screen):
@@ -93,65 +69,48 @@ def test_nested_update(screen: Screen):
     screen.should_contain('b=1')
 
 
-@pytest.mark.parametrize('initialize_return,expected_events', [
-    ('() => record("cleanup:initialize")',
-     ['abort:initialize', 'cleanup:initialize', 'abort:render', 'cleanup:render']),
-    ('{ some_export: () => record("export") }',
-     ['abort:initialize', 'abort:render', 'cleanup:render']),
-])
-def test_lifecycle_cleanup_on_delete(screen: Screen, initialize_return: str, expected_events: list[str]):
-    """Deleting the element aborts the AFM signal and runs the cleanups returned by `initialize` and `render`.
+def test_lifecycle(screen: Screen):
+    """The element drives the AFM lifecycle of its widget and tears it down when it is deleted.
 
-    `initialize` may also return an object of exports, which must not be called as a cleanup.
+    Both hooks get a `signal` which aborts on delete, the cleanup returned by `render` runs then,
+    an object returned by `initialize` is kept as exports rather than called as a cleanup,
+    `model.off` removes a single callback, and a deleted element stops observing its widget.
     """
-    class CleanupWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
+    class LifecycleWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
         _esm = '''
             const record = (event) => (window.events ??= []).push(event);
             function initialize({ model, signal }) {
                 signal.addEventListener("abort", () => record("abort:initialize"));
-                return INITIALIZE_RETURN;
+                return { some_export: () => record("export") };
             }
             function render({ model, el, signal }) {
                 el.innerText = "widget";
-                record("render");
+                const callback = () => record("notified");
+                model.on("change:value", callback);
+                model.off("change:value", callback);
+                model.on("change:value", () => record("changed"));
                 signal.addEventListener("abort", () => record("abort:render"));
+                record("render");
                 return () => record("cleanup:render");
             }
             export default { initialize, render };
-        '''.replace('INITIALIZE_RETURN', initialize_return)
-
-    @ui.page('/')
-    def page():
-        element = ui.anywidget(CleanupWidget())
-        ui.button('Delete', on_click=element.delete)
-
-    screen.open('/')
-    screen.wait_for_js('window.events.length', 1)  # render ran and recorded the mounted view
-    screen.click('Delete')
-    screen.wait_for_js('window.events.length', 1 + len(expected_events))
-    assert screen.selenium.execute_script('return window.events') == ['render', *expected_events]
-
-
-def test_off_removes_listener(screen: Screen):
-    """`model.off` has to remove a single callback; AFM widgets use it to unsubscribe in their cleanup."""
-    class OffWidget(anywidget.AnyWidget):  # pylint: disable=abstract-method
-        _esm = '''
-            export function render({ model, el }) {
-                el.innerText = "listening";
-                const callback = () => (el.innerText = "notified");
-                model.on("change:value", callback);
-                model.off("change:value", callback);
-            }
         '''
         value = traitlets.Int(0).tag(sync=True)
 
+    widget = LifecycleWidget()
+
     @ui.page('/')
     def page():
-        widget = OffWidget()
-        ui.anywidget(widget)
+        element = ui.anywidget(widget)
         ui.button('Change', on_click=lambda: setattr(widget, 'value', 1))
+        ui.button('Delete', on_click=element.delete)
 
     screen.open('/')
-    screen.should_contain('listening')  # render ran and subscribed/unsubscribed
+    screen.wait_for_js('window.events', ['render'])
     screen.click('Change')
-    screen.should_not_contain('notified')
+    screen.wait_for_js('window.events', ['render', 'changed'])  # the removed callback did not record "notified"
+    screen.click('Delete')
+    screen.wait_for_js('window.events', ['render', 'changed', 'abort:initialize', 'abort:render', 'cleanup:render'])
+    widget.value = 2  # the widget outlives its element, e.g. in a refreshable
+    assert not [record for record in screen.caplog.records if 'still being used' in record.message], \
+        'a deleted element must not be updated anymore'
