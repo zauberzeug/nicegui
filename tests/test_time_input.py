@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 
 from nicegui import ui
-from nicegui.testing import Screen
+from nicegui.testing import Screen, User
 
 
 def test_time_input(screen: Screen):
@@ -19,3 +19,17 @@ def test_time_input(screen: Screen):
     screen.click('schedule')
     screen.should_contain('AM')
     screen.should_contain('PM')
+
+
+async def test_deselecting_time(user: User):
+    time_input = None
+
+    @ui.page('/')
+    def page():
+        nonlocal time_input
+        time_input = ui.time_input('Time', value='12:00')
+
+    await user.open('/')
+    assert isinstance(time_input, ui.time_input)
+    time_input.picker.value = None
+    assert time_input.value == ''

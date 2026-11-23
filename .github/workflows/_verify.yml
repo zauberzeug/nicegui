@@ -1,17 +1,33 @@
 name: Verify Docker Container
 
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to verify (e.g., 1.2.3)"
+        required: true
+        type: string
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
     steps:
-      - name: Pull latest Docker image
+      - name: Verify Docker image
+        env:
+          IMAGE: zauberzeug/nicegui:${{ inputs.version }}
         run: |
-          docker pull zauberzeug/nicegui:latest
-          docker run -d --name test_container zauberzeug/nicegui:latest
-          sleep 10
-          CONTAINER_OUTPUT=$(docker logs test_container)
+          docker pull "$IMAGE"
+          docker run -d --name test_container -p 8080:8080 "$IMAGE"
+
+          # Wait until the container answers HTTP requests
+          if ! curl --silent --fail --output /dev/null --max-time 2 --retry 30 --retry-delay 2 --retry-all-errors http://localhost:8080; then
+            echo "The container does not answer HTTP requests!"
+            docker logs test_container 2>&1
+            exit 1
+          fi
+          CONTAINER_OUTPUT=$(docker logs test_container 2>&1)
 
           # Check if the container is still running
           CONTAINER_STATUS=$(docker inspect -f '{{.State.Running}}' test_container)

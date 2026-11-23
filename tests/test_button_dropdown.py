@@ -32,5 +32,4 @@ def test_auto_close(screen: Screen):
 
     screen.click('Button 2')
     screen.click('Item 2')
-    screen.wait(0.5)
     screen.should_not_contain('Item 2')

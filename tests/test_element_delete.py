@@ -23,7 +23,6 @@ def test_remove_element_by_reference(screen: Screen):
 
     screen.open('/')
     screen.click('Remove')
-    screen.wait(0.5)
     screen.should_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
@@ -49,7 +48,6 @@ def test_remove_element_by_index(screen: Screen):
 
     screen.open('/')
     screen.click('Remove')
-    screen.wait(0.5)
     screen.should_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
@@ -75,7 +73,6 @@ def test_clear(screen: Screen):
 
     screen.open('/')
     screen.click('Clear')
-    screen.wait(0.5)
     screen.should_not_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_not_contain('Label C')
@@ -104,7 +101,6 @@ def test_remove_parent(screen: Screen):
 
     screen.open('/')
     screen.click('Remove parent')
-    screen.wait(0.5)
     screen.should_not_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_not_contain('Label C')
@@ -135,7 +131,6 @@ def test_delete_element(screen: Screen):
 
     screen.open('/')
     screen.click('Delete')
-    screen.wait(0.5)
     screen.should_contain('Label A')
     screen.should_not_contain('Label B')
     screen.should_contain('Label C')
@@ -175,7 +170,8 @@ def test_on_delete(screen: Screen):
     screen.click('Delete C')
     screen.click('Delete B')
     screen.click('Clear row')
-    screen.wait(0.5)
+    screen.wait_for(lambda: len(deleted_labels) == 3)
+    screen.wait(0.1)
     assert deleted_labels == ['Label C', 'Label B', 'Label A']
 
 

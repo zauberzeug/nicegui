@@ -39,8 +39,7 @@ def test_set_source_in_tab(screen: Screen):
         img.set_source(URL_PATH1)
 
     screen.open('/')
-    screen.wait(0.5)
-    assert screen.find_by_tag('img').get_attribute('src').endswith(URL_PATH1)
+    screen.wait_for(lambda: (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH1))
     screen.click('B')
     screen.wait(0.5)
     screen.click('A')
@@ -74,8 +73,7 @@ def test_replace_interactive_image(screen: Screen):
     screen.open('/')
     assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH1)
     screen.click('Replace')
-    screen.wait(0.5)
-    assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
+    screen.wait_for(lambda: (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2))
 
 
 @pytest.mark.parametrize('cross', [True, False])
@@ -104,12 +102,12 @@ def test_loaded_event(screen: Screen):
     @ui.page('/')
     def page():
         ii = ui.interactive_image(URL_PATH1)
-        ii.on('loaded', lambda: ui.label('loaded'))
+        ii.on('loaded', lambda e: ui.label(f'loaded {e.args["source"]}'))
         ui.button('Change Source', on_click=lambda: ii.set_source(URL_PATH2))
 
     screen.open('/')
     screen.click('Change Source')
-    screen.should_contain('loaded')
+    screen.should_contain(URL_PATH2)
     assert (screen.find_by_tag('img').get_attribute('src') or '').endswith(URL_PATH2)
 
 
@@ -177,3 +175,8 @@ def test_xss_sanitization(screen: Screen):
 
     screen.open('/')
     assert screen.find_all_by_tag('rect')[0].get_attribute('onclick') is None
+
+
+def test_sanitize_none_raises():
+    with pytest.raises(TypeError, match='`None` is no longer supported'):
+        ui.interactive_image(URL_PATH1, sanitize=None)  # type: ignore[arg-type]

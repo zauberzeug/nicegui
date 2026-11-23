@@ -29,12 +29,12 @@ def tooltip_html_demo():
 
 
 @doc.demo('Tooltip with other content', '''
-    Other elements like `ui.images` can also be nested inside a tooltip.
+    Other elements like `ui.image` can also be nested inside a tooltip.
 ''')
 def tooltip_with_other_content():
     with ui.label('Mountains...'):
         with ui.tooltip().classes('bg-transparent'):
-            ui.image('https://picsum.photos/id/377/640/360').classes('w-64')
+            ui.image('https://nicegui.io/images/night/640/360').classes('w-64')
 
 
 doc.reference(ui.tooltip)

@@ -14,7 +14,6 @@ options = {
     'allDaySlot': False,
     'timeZone': 'local',
     'height': 'auto',
-    'width': 'auto',
     'events': [
         {
             'title': 'Math',
@@ -45,8 +44,7 @@ options = {
 
 
 def handle_click(event: events.GenericEventArguments):
-    if 'info' in event.args:
-        ui.notify(event.args['info']['event'])
+    ui.notify(event.args['info']['event'])
 
 
 fullcalendar(options, on_click=handle_click)

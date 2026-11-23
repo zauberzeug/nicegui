@@ -39,7 +39,7 @@ doc.intro(run_documentation)
     In native mode the `app.native.main_window` object allows you to access the underlying window.
     It is an async version of [`Window` from pywebview](https://pywebview.flowrl.com/api/#webview-window).
 
-    Native mode requires a browser engine with ES module and import map support (Chrome 89+).
+    Native mode requires a recent browser engine (Chromium 121+ or WebKit/Safari 17.2+).
     On Linux, ensure you have a modern browser engine — e.g. an up-to-date WebKitGTK or Qt-based backend.
 
     On Windows, native mode requires the .NET Framework to be installed,
@@ -103,7 +103,7 @@ doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
     Therefore any configuration changes from code run under a
-    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
+    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) are ignored by the native app.
     The following examples show the difference between a working and a non-working configuration.
 
     For packaged apps (nicegui-pack, PyInstaller, etc.), also see the "Packaging with Native Mode" section below
@@ -160,11 +160,44 @@ def env_var_demo():
     ui.label(f'Markdown content cache size is {markdown.prepare_content.cache_info().maxsize}')
 
 
+@doc.demo('Custom JSON Serialization', '''
+    NiceGUI serializes everything it sends to the browser as JSON:
+    element properties, event arguments, arguments of `ui.run_javascript`, and FastAPI responses.
+    Basic Python types, dataclasses, enums, dates and NumPy arrays are supported out of the box.
+    For other types you can register a converter with `json.register_type`
+    that turns an object into something JSON-serializable, like a dict or a string.
+    Converters also apply to subclasses, so one registration covers a whole class hierarchy such as Pydantic's `BaseModel`.
+
+    Note that converters cannot override types which are supported natively, like dataclasses or datetimes.
+    And the conversion is one-way: when reading from `app.storage`, you get the converted JSON structure, not the original object.
+
+    *Added in version 3.19.0*
+''')
+def custom_json_demo():
+    from pydantic import BaseModel
+    from nicegui import json
+
+    class Person(BaseModel):
+        name: str
+        age: int
+
+    json.register_type(BaseModel, BaseModel.model_dump)
+
+    ui.aggrid({
+        'columnDefs': [{'field': 'name'}, {'field': 'age'}],
+        'rowData': [Person(name='Alice', age=18), Person(name='Bob', age=21)],
+    })
+
+
 @doc.demo('Background Tasks', '''
     `background_tasks.create()` allows you to run an async function in the background and return a task object.
     By default the task will be automatically cancelled during shutdown.
     You can prevent this by using the `@background_tasks.await_on_shutdown` decorator (added in version 2.16.0).
     This is useful for tasks that need to be completed even when the app is shutting down.
+
+    Exceptions in background tasks are passed to `app.on_exception` handlers.
+    If you pass a `context` like a container element or `ui.context.client`, the task runs within this context
+    and exceptions are also passed to the `ui.on_exception` handlers of the corresponding page (added in version 3.18.0).
 ''')
 def background_tasks_demo():
     # import aiofiles
@@ -204,7 +237,7 @@ doc.text('Custom Vue Components', '''
 
 doc.text('Server Hosting', '''
     To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
-    You can, for example, just install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
+    You can, for example, just install the [NiceGUI Python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
     In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the `ui.run` command to make it easily accessible from the outside.
 
     A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
@@ -215,7 +248,7 @@ doc.text('Server Hosting', '''
 @doc.ui
 def docker_run():
     bash_window('''
-        docker run -it --restart always \\
+        docker run -d --restart always \\
             -p 80:8080 \\
             -e PUID=$(id -u) \\
             -e PGID=$(id -g) \\
@@ -249,7 +282,7 @@ def docker_compose():
 
 doc.text('', '''
     There are other handy features in the Docker image like non-root user execution and signal pass-through.
-    For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
+    For more details we recommend having a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
 
     To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
     For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
@@ -330,7 +363,7 @@ doc.text('', '''
 
     - Specifying `--onefile` to `nicegui-pack` will create a single executable file.
     Whilst convenient for distribution, it will be slower to start up.
-    This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything
+    This is not NiceGUI's fault but just the way PyInstaller zips things into a single file, then unzips everything
     into a temporary directory before running.
     You can mitigate this by removing `--onefile` from the `nicegui-pack` command,
     and zip up the generated `dist` directory yourself, distribute it,
@@ -501,7 +534,7 @@ doc.text('NiceGUI On Air', '''
     This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
 
     By setting `on_air=True` you will get a random URL which is valid for 1 hour.
-    If you sign-up at <https://on-air.nicegui.io>, you can setup an organization and device name to get a fixed URL:
+    If you sign up at <https://on-air.nicegui.io>, you can set up an organization and device name to get a fixed URL:
     `https://on-air.nicegui.io/<my-org>/<my_device_name>`.
     The device is then identified by a unique, private token which you can use instead of a boolean flag: `ui.run(on_air='<your token>')`.
     If you [sponsor us](https://github.com/sponsors/zauberzeug),
@@ -513,6 +546,6 @@ doc.text('NiceGUI On Air', '''
     [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/TEpFeAaF4f).
 
     **Data Privacy:**
-    We take your privacy very serious.
+    We take your privacy very seriously.
     NiceGUI On Air does not log or store any content of the relayed data.
 ''')

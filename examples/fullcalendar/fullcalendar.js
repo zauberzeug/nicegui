@@ -2,6 +2,7 @@ import { loadResource } from "../../static/utils/resources.js";
 
 export default {
   template: "<div></div>",
+  emits: ["click"], // keep native clicks, e.g. on the toolbar buttons, from reaching the server
   props: {
     options: Array,
     resourcePath: String,

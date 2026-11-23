@@ -4,8 +4,7 @@ import tempfile
 import time
 from contextlib import suppress
 from pathlib import Path
-
-from typing_extensions import Self
+from typing import Self
 
 from .. import optional_features
 from ..logging import log

@@ -18,8 +18,7 @@ def test_log(screen: Screen):
     assert screen.find_element(log).text == 'B\nC\nD'
 
     log.clear()
-    screen.wait(0.5)
-    assert screen.find_element(log).text == ''
+    screen.wait_for(lambda: screen.find_element(log).text == '')
 
 
 def test_log_with_newlines(screen: Screen):

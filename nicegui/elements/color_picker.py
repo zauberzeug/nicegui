@@ -1,4 +1,4 @@
-from typing_extensions import Self
+from typing import Self
 
 from ..defaults import DEFAULT_PROPS, resolve_defaults
 from ..element import Element
@@ -19,7 +19,7 @@ class ColorPicker(Menu):
         `QColor <https://quasar.dev/vue-components/color-picker>`_ components.
 
         :param on_pick: callback to execute when a color is picked
-        :param value: whether the menu is already opened (default: `False`)
+        :param value: whether the menu is already opened (default: ``False``)
         """
         super().__init__(value=value)
         self._pick_handlers = [on_pick] if on_pick else []
@@ -34,7 +34,7 @@ class ColorPicker(Menu):
 
         :param color: the color to set
         """
-        self.q_color.props(f'model-value="{color}"')
+        self.q_color.props['model-value'] = color
         return self
 
     def on_pick(self, callback: Handler[ColorPickEventArguments]) -> Self:

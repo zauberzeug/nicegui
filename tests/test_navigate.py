@@ -77,8 +77,7 @@ def test_navigate_to_mailto_url(screen: Screen, sub_pages: bool):
     screen.selenium.execute_script('window.__open_calls = [];'
                                    'window.open = (url, target) => window.__open_calls.push([url, target]);')
     screen.click('Send mail')
-    screen.wait(0.5)
-    assert screen.selenium.execute_script('return window.__open_calls') == [['mailto:test@example.com', '_self']]
+    screen.wait_for_js('window.__open_calls', [['mailto:test@example.com', '_self']])
 
 
 def test_xss_via_history_push(screen: Screen):

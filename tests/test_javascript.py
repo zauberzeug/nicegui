@@ -1,5 +1,7 @@
-from nicegui import ui
-from nicegui.testing import Screen
+import asyncio
+
+from nicegui import Client, ui
+from nicegui.testing import Screen, User
 
 
 def test_run_javascript_on_button_press(screen: Screen):
@@ -10,8 +12,7 @@ def test_run_javascript_on_button_press(screen: Screen):
     screen.open('/')
     assert screen.selenium.title == 'NiceGUI'
     screen.click('change title')
-    screen.wait(0.5)
-    screen.should_contain('A New Title')
+    screen.wait_for_js('document.title', 'A New Title')
 
 
 def test_run_javascript_on_value_change(screen: Screen):
@@ -22,14 +23,11 @@ def test_run_javascript_on_value_change(screen: Screen):
         ui.run_javascript('document.title = "Initial Title"')
 
     screen.open('/')
-    screen.wait(0.5)
-    screen.should_contain('Initial Title')
+    screen.wait_for_js('document.title', 'Initial Title')
     screen.click('A')
-    screen.wait(0.5)
-    screen.should_contain('Page A')
+    screen.wait_for_js('document.title', 'Page A')
     screen.click('B')
-    screen.wait(0.5)
-    screen.should_contain('Page B')
+    screen.wait_for_js('document.title', 'Page B')
 
 
 def test_run_javascript_before_client_connected(screen: Screen):
@@ -42,15 +40,15 @@ def test_run_javascript_before_client_connected(screen: Screen):
     screen.open('/')
     screen.should_contain('before js')
     screen.should_contain('after js')
-    screen.wait(0.5)
-    screen.should_contain('New Title')
+    screen.wait_for_js('document.title', 'New Title')
 
 
 def test_response_from_javascript(screen: Screen):
     @ui.page('/')
     def page():
         async def compute() -> None:
-            response = await ui.run_javascript('1 + 41')
+            ui.run_javascript('window.answer = 41')  # must not be overtaken by the awaited call (#6472)
+            response = await ui.run_javascript('window.answer + 1')
             ui.label(response)
 
         ui.button('compute', on_click=compute)
@@ -93,3 +91,25 @@ def test_simultaneous_async_javascript(screen: Screen):
     screen.click('runB')
     screen.should_contain('A: 1')
     screen.should_contain('B: 2')
+
+
+async def test_awaited_run_javascript_resolves_when_client_is_deleted(user: User):
+    """The task awaiting run_javascript must not time out or wait forever when the client is deleted, e.g. after a disconnect."""
+    clients: list[Client] = []
+    results = []
+
+    @ui.page('/')
+    async def page():
+        clients.append(ui.context.client)
+        results.append(await ui.run_javascript('window.innerWidth'))
+
+    await user.http_client.get('/')  # request the page without ever opening the websocket
+    await asyncio.sleep(0)
+    assert not results
+
+    Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
+    await asyncio.sleep(0.1)  # let the page function resume
+    assert results == [None]  # the page function resumed with None instead of timing out
+
+    # calling on a deleted client resolves immediately
+    assert await clients[0].run_javascript('window.innerWidth') is None

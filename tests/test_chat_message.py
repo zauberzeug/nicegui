@@ -1,3 +1,4 @@
+import pytest
 from html_sanitizer import Sanitizer
 from selenium.webdriver.common.by import By
 
@@ -61,3 +62,8 @@ def test_xss_sanitization(screen: Screen):
     screen.allowed_js_errors.append('/x - Failed to load resource')
     screen.open('/')
     assert screen.find_by_tag('img').get_attribute('onerror') is None
+
+
+def test_sanitize_none_raises():
+    with pytest.raises(TypeError, match='`None` is no longer supported'):
+        ui.chat_message('<b>bold</b>', text_html=True, sanitize=None)  # type: ignore[arg-type]

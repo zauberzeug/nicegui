@@ -236,9 +236,13 @@
 .nicegui-echart,
 .nicegui-leaflet,
 .nicegui-log,
-.nicegui-scroll-area {
+.nicegui-scroll-area,
+.nicegui-uplot {
   width: 100%;
   height: 16rem;
+}
+.nicegui-uplot .u-select {
+  background: color-mix(in srgb, currentColor 7%, transparent) !important; /* uPlot.min.css is unlayered and would win otherwise */
 }
 .nicegui-leaflet video.leaflet-image-layer {
   max-width: none; /* HACK: make the video show up */
@@ -315,9 +319,6 @@ h6.q-timeline__title {
 }
 .nicegui-interactive-image-layer img {
   display: none;
-}
-.nicegui-codemirror .cm-editor.cm-focused {
-  outline: none;
 }
 .js-plotly-plot {
   box-sizing: content-box; /* HACK: fix overflow when adding borders to the Plotly plot */

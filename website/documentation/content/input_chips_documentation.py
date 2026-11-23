@@ -13,7 +13,7 @@ def main_demo() -> None:
 
     - "add" adds all values to the list (allowing duplicates).
     - "add-unique" adds only unique values to the list.
-    - "toggle" adds or removes the value (based on if it exists or not in the list).
+    - "toggle" adds or removes the value (depending on whether it exists in the list).
 ''')
 def new_value_modes():
     ui.input_chips('Add', new_value_mode='add')

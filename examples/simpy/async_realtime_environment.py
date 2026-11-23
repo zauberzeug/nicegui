@@ -26,7 +26,7 @@ class AsyncRealtimeEnvironment(RealtimeEnvironment):
         evt_time = self.peek()
 
         if evt_time is Infinity:
-            raise EmptySchedule()
+            raise EmptySchedule
 
         real_time = self.real_start + (evt_time - self.env_start) * self.factor
 
@@ -38,7 +38,7 @@ class AsyncRealtimeEnvironment(RealtimeEnvironment):
                 f'Simulation too slow for real time ({delta:.3f}s).'
             )
 
-        # Sleep in a loop to fix inaccuracies of windows (see
+        # Sleep in a loop to fix inaccuracies of Windows (see
         # https://stackoverflow.com/a/15967564 for details) and to ignore
         # interrupts.
         while True:

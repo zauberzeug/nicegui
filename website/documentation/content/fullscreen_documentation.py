@@ -27,7 +27,7 @@ def long_press_demo():
 @doc.demo('Tracking fullscreen state', '''
     You can track when the fullscreen state changes.
 
-    Note that due to security reasons, fullscreen mode can only be entered from a previous user interaction
+    Note that for security reasons, fullscreen mode can only be entered from a previous user interaction
     such as a button click.
 ''')
 def state_demo():
@@ -35,8 +35,8 @@ def state_demo():
         on_value_change=lambda e: ui.notify('Enter' if e.value else 'Exit')
     )
     ui.button('Toggle Fullscreen', on_click=fullscreen.toggle)
-    ui.label().bind_text_from(fullscreen, 'state',
-                              lambda state: 'Fullscreen' if state else '')
+    ui.label().bind_text_from(fullscreen, 'value',
+                              lambda value: 'Fullscreen' if value else '')
 
 
 doc.reference(ui.fullscreen)

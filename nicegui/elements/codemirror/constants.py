@@ -51,7 +51,7 @@ SUPPORTED_LANGUAGES = Literal[
     'IDL',
     'Java',
     'JavaScript',
-    'Jinja2',
+    'Jinja',
     'JSON',
     'JSON-LD',
     'JSX',

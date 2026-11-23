@@ -30,5 +30,5 @@ def test_replace_colors(screen: Screen):
     assert screen.find_by_tag('button').value_of_css_property('background-color') == 'rgba(0, 0, 255, 1)'
 
     screen.click('Replace')
-    screen.wait(0.5)
-    assert screen.find_by_tag('button').value_of_css_property('background-color') == 'rgba(255, 0, 0, 1)'
+    screen.wait_for(lambda: screen.find_by_tag('button').value_of_css_property(
+        'background-color') == 'rgba(255, 0, 0, 1)')

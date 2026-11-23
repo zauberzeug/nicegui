@@ -22,7 +22,8 @@ class Slider(ValueElement[float | None], DisableableElement):
         :param max: upper bound of the slider
         :param step: step size
         :param value: initial value to set position of the slider
-        :param on_change: callback which is invoked when the user releases the slider
+        :param on_change: callback to execute when the value changes, including while dragging
+            (to react only when the slider is released, use ``.on('change', ...)`` instead)
         """
         super().__init__(tag='q-slider', value=value, on_value_change=on_change, throttle=0.05)
         self._props['min'] = min

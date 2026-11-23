@@ -21,11 +21,9 @@ def test_open_close_dialog(screen: Screen):
     screen.should_not_contain('Content')
 
     screen.click('Open')
-    screen.wait(0.5)
     screen.should_contain('Content')
 
     screen.click('Close')
-    screen.wait(0.5)
     screen.should_not_contain('Content')
 
 
@@ -96,7 +94,6 @@ def test_dialog_in_menu(screen: Screen):
     screen.should_contain('Dialog content')  # even though the dialog is nested inside a hidden menu
 
     screen.click('Delete menu')
-    screen.wait(0.5)
     screen.should_not_contain('Dialog content')  # it has been deleted together with the menu
 
 
@@ -185,3 +182,33 @@ def test_reopening_dialog_with_various_inputs(element_factory: Callable, selecto
     def element_has_expected_content():
         element = screen.selenium.find_element(By.XPATH, selector)
         return element.get_attribute('value') or element.text == text
+
+
+async def test_dialog_awaited_twice(user: User):
+    """Every task awaiting the same dialog must receive the submitted result, e.g. after a double-click."""
+    results = []
+
+    @ui.page('/')
+    def page():
+        with ui.dialog() as dialog, ui.card():
+            ui.button('Yes', on_click=lambda: dialog.submit('Yes'))
+            ui.button('No', on_click=lambda: dialog.submit('No'))
+
+        async def show() -> None:
+            results.append(await dialog)
+
+        ui.button('Open', on_click=show)
+
+    await user.open('/')
+    user.find('Open').click()
+    user.find('Open').click()
+    await asyncio.sleep(0.1)  # let both handlers start awaiting the dialog
+    user.find('Yes').click()
+    await asyncio.sleep(0.1)  # let both handlers resume
+    assert results == ['Yes', 'Yes']
+
+    user.find('Open').click()
+    await asyncio.sleep(0.1)
+    user.find('No').click()
+    await asyncio.sleep(0.1)
+    assert results == ['Yes', 'Yes', 'No']

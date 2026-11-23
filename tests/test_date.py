@@ -71,5 +71,4 @@ def test_date_with_filter(screen: Screen):
     screen.click('15')
     screen.should_contain('2023-01-15')
     screen.click('16')
-    screen.wait(0.5)
-    screen.should_not_contain('2023-01-16')
+    screen.should_not_contain('2023-01-16', duration=1.0)

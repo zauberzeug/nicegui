@@ -5,9 +5,12 @@ on:
     tags:
       - v**
 
+permissions: {}
+
 jobs:
   extract-version:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     outputs:
       version: ${{ steps.get_version.outputs.version }}
     steps:
@@ -19,21 +22,84 @@ jobs:
           VERSION=${VERSION#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          enable-cache: false
+      - name: Install Python
+        run: uv python install
+      - name: Build
+        run: uv build
+      - name: Check wheel contents
+        run: |
+          if unzip -l dist/*.whl | grep -q '\.map$'; then
+            echo "The wheel must not contain JavaScript source maps"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: dist
+          path: dist/
+
   pypi:
-    needs: extract-version
-    uses: ./.github/workflows/_pypi.yml
-    with:
-      version: ${{ needs.extract-version.outputs.version }}
-    secrets: inherit
+    needs: [extract-version, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
+      - name: Verify PyPI package
+        env:
+          VERSION: ${{ needs.extract-version.outputs.version }}
+        run: |
+          for i in {1..100}
+          do
+            sleep 2
+            python -m pip install "nicegui==$VERSION" && sleep 5 && exit 0
+          done
+          exit 1
+
+  release:
+    needs: [extract-version, pypi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.extract-version.outputs.version }}
+        run: gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --title "v$VERSION" $([[ "$VERSION" == *rc* ]] && echo --prerelease)
 
   docker:
     needs: [extract-version, pypi]
-    uses: ./.github/workflows/_docker.yml
+    permissions:
+      contents: read
+    uses: $/.github/workflows/_docker.yml
     with:
       version: ${{ needs.extract-version.outputs.version }}
-    secrets: inherit
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   verify:
-    needs: docker
-    uses: ./.github/workflows/_verify.yml
-    secrets: inherit
+    needs: [extract-version, docker]
+    permissions: {}
+    uses: $/.github/workflows/_verify.yml
+    with:
+      version: ${{ needs.extract-version.outputs.version }}

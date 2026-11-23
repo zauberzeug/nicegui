@@ -11,7 +11,7 @@ export default {
     sourcemap: true,
   },
   plugins: [
-    nodeResolve(),
+    nodeResolve({ browser: true }),
     commonjs(),
     json(),
     terser({

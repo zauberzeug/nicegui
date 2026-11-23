@@ -25,7 +25,7 @@ class Ring(Object3D, component='ring.js'):
         :param phi_segments: number of vertical segments (default: 1)
         :param theta_start: start angle in radians (default: 0)
         :param theta_length: central angle in radians (default: 2π)
-        :param wireframe: whether to display the ring as a wireframe (default: `False`)
+        :param wireframe: whether to display the ring as a wireframe (default: ``False``)
         """
         super().__init__(
             inner_radius, outer_radius, theta_segments, phi_segments, theta_start, theta_length, wireframe=wireframe

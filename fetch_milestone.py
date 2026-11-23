@@ -3,7 +3,7 @@ import argparse
 import re
 import sys
 
-import httpx
+import httpx2
 
 BASE_URL = 'https://api.github.com/repos/zauberzeug/nicegui'
 
@@ -17,7 +17,7 @@ check: bool = args.check
 page = 0
 while True:
     page += 1
-    response = httpx.get(f'{BASE_URL}/milestones?state=all&page={page}&per_page=100', timeout=5)
+    response = httpx2.get(f'{BASE_URL}/milestones?state=all&page={page}&per_page=100', timeout=5)
     milestones = response.json()
     if not milestones:
         print(f'Milestone "{milestone_title}" not found!')
@@ -39,7 +39,7 @@ issues = []
 page = 0
 while True:
     page += 1
-    response = httpx.get(f'{BASE_URL}/issues?milestone={milestone_number}&state=all&page={page}', timeout=5)
+    response = httpx2.get(f'{BASE_URL}/issues?milestone={milestone_number}&state=all&page={page}', timeout=5)
     page_issues = response.json()
     if not page_issues:
         break

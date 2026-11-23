@@ -12,7 +12,6 @@ def test_removable_chip(screen: Screen):
     screen.should_contain('Chip')
 
     screen.click('Set value to False')
-    screen.wait(0.5)
     screen.should_not_contain('Chip')
 
 

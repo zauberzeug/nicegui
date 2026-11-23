@@ -1,3 +1,4 @@
+import ntpath
 import weakref
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
@@ -155,5 +156,8 @@ async def create_file_upload(upload: UploadFile, *, chunk_size: int = 1024 * 102
 
 
 def _sanitize_filename(name: str | None) -> str:
-    """Strip all path components from a filename to prevent path traversal."""
-    return (name or '').rsplit('/')[-1].rsplit('\\')[-1]
+    """Strip all path components (including drive prefixes like "C:") from a filename to prevent path traversal."""
+    name = name or ''
+    while (stripped := ntpath.basename(name)) != name:
+        name = stripped
+    return '' if name in ('.', '..') else name

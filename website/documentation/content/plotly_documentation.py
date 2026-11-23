@@ -148,4 +148,54 @@ def large_datasets():
     ui.plotly(fig).classes('w-full h-40')
 
 
+@doc.demo('Dynamic resampling', '''
+    Binary encoding makes _transferring_ many points cheap, but plotly.js still has to _render_ every point it receives.
+    This recipe keeps the full series on the server and sends only a downsampled version of the visible range:
+    the range is split into buckets, and only the minimum and maximum of each bucket plus the two endpoints of the range are sent, so peaks are preserved.
+    Every zoom or pan resamples the new range, so you can drill down to full resolution.
+    Double-click the chart to reset the axes.
+
+    Two details matter:
+
+    - `uirevision` keeps the zoom across updates. Without it, each update resets the axes to the initial range.
+    - The range is widened by one point on each side, so the line reaches the edge of the plot.
+
+    The recipe handles one numeric x series.
+    For other data shapes, adapt the functions to your data.
+    Libraries like [tsdownsample](https://github.com/predict-idlab/tsdownsample) offer faster and more refined algorithms.
+''')
+def dynamic_resampling():
+    import numpy as np
+    import plotly.graph_objects as go
+
+    from nicegui import events
+
+    N_BUCKETS = 500
+    x = np.arange(100_000)
+    y = np.sin(x / 1_000) + np.random.normal(0, 0.1, x.size)
+
+    fig = go.Figure(go.Scattergl(mode='lines'), layout={'uirevision': True, 'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0}})
+    plot = ui.plotly(fig).classes('w-full h-40')
+
+    def show(start: int = 0, end: int = len(x)) -> None:
+        if end - start > 2 * N_BUCKETS:
+            buckets = np.array_split(np.arange(start, end), N_BUCKETS)
+            extrema = [(b[y[b].argmin()], b[y[b].argmax()]) for b in buckets]
+            indices = np.unique([start, *np.ravel(extrema), end - 1])
+        else:
+            indices = np.arange(start, end)
+        fig.update_traces(x=x[indices], y=y[indices])
+        plot.update()
+
+    def handle_relayout(e: events.GenericEventArguments) -> None:
+        if 'xaxis.range[0]' in e.args:
+            start, end = np.searchsorted(x, [e.args['xaxis.range[0]'], e.args['xaxis.range[1]']]).tolist()
+            show(max(start - 1, 0), min(end + 1, len(x)))
+        elif 'xaxis.autorange' in e.args:
+            show()
+
+    plot.on('plotly_relayout', handle_relayout)
+    show()
+
+
 doc.reference(ui.plotly)

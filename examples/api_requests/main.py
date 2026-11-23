@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import random
 
-import httpx
+import httpx2
 
 from nicegui import ui
 
 
 async def show_new_quote():
-    async with httpx.AsyncClient() as client:
+    async with httpx2.AsyncClient() as client:
         response = await client.get('https://zenquotes.io/api/quotes')
         quote = random.choice(response.json())['q']
     label.text = f'“{quote}”'

@@ -1,7 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, cast
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Generic, Self, cast
 
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
@@ -26,7 +24,7 @@ class ValueElement(Element, Generic[ValueT]):
         on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
 
     if TYPE_CHECKING:
-        value: ValueT  # type: ignore[assignment,no-redef]  # BindableProperty descriptor can't propagate generic type
+        value: ValueT  # type: ignore[no-redef]  # BindableProperty descriptor can't propagate generic type
 
     def __init__(self, *,
                  value: ValueT,
@@ -38,10 +36,7 @@ class ValueElement(Element, Generic[ValueT]):
         self._send_update_on_value_change = True
         self._client_value: Any = _NO_CLIENT_VALUE
         self.set_value(value)
-        self._props[self.VALUE_PROP] = self._value_to_model_value(value)
-        self._props['loopback'] = self.LOOPBACK
         self._change_handlers: list[Handler[ValueChangeEventArguments[ValueT]]] = []
-
         if on_value_change:
             self.on_value_change(on_value_change)
 
@@ -50,7 +45,10 @@ class ValueElement(Element, Generic[ValueT]):
             self.set_value(self._event_args_to_value(e))
             self._send_update_on_value_change = True
             self._client_value = e.args if self.LOOPBACK is False else _NO_CLIENT_VALUE
-        self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
+        with self._props.suspend_updates():  # don't run an `update()` override on a half-constructed element
+            self._props[self.VALUE_PROP] = self._value_to_model_value(value)
+            self._props['loopback'] = self.LOOPBACK
+            self.on(f'update:{self.VALUE_PROP}', handle_change, [None], throttle=throttle)
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments[ValueT]]) -> Self:
         """Add a callback to be invoked when the value changes."""

@@ -34,7 +34,7 @@ class PageScroller(Element):
         :param expand: whether to fully expand instead of shrinking to fit the content (default: ``False``)
         :param scroll_offset: the vertical offset in pixels at which the scroller becomes visible (default: 1000)
         :param duration: the duration in seconds for the scroll animation (default: 0.3)
-        :param reverse: if True, the scroller will work in reverse, showing when at the top of the page, and scrolls to bottom when triggered (default: ``False``)
+        :param reverse: if True, the scroller will work in reverse, showing when at the top of the page and scrolling to the bottom when triggered (default: ``False``)
         """
         super().__init__('q-page-scroller')
         self._props['position'] = position

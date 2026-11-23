@@ -1,4 +1,4 @@
-import httpx
+import httpx2
 
 from nicegui import ui
 from nicegui.testing import Screen
@@ -11,7 +11,7 @@ def test_status_code(screen: Screen):
         ui.label('not found')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 404
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 404
 
 
 def test_default_status_code(screen: Screen):
@@ -20,4 +20,4 @@ def test_default_status_code(screen: Screen):
         ui.label('hello')
 
     screen.start_server()
-    assert httpx.get(f'http://localhost:{Screen.PORT}/').status_code == 200
+    assert httpx2.get(f'http://localhost:{Screen.PORT}/').status_code == 200

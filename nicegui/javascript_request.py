@@ -26,7 +26,7 @@ class JavaScriptRequest:
     def __await__(self) -> Any:
         try:
             yield from asyncio.wait_for(self._event.wait(), self.timeout).__await__()
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             raise TimeoutError(f'JavaScript did not respond within {self.timeout:.1f} s') from e
         else:
             return self._result

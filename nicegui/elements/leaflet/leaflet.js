@@ -143,6 +143,12 @@ export default {
     });
     this.observer.observe(this.$el);
   },
+  beforeUpdate() {
+    this.leafletClasses = [...this.$el.classList].filter((c) => c.startsWith("leaflet-"));
+  },
+  updated() {
+    this.$el.classList.add(...this.leafletClasses); // Vue replaced the root's class attribute
+  },
   unmounted() {
     this.observer?.disconnect();
   },

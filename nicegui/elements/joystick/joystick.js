@@ -10,7 +10,7 @@ export default {
       ...this.options,
     });
     joystick.on("start", (e) => this.$emit("start", e));
-    joystick.on("move", (_, data) => this.$emit("move", { data }));
+    joystick.on("move", (e) => this.$emit("move", { data: e.data }));
     joystick.on("end", (e) => this.$emit("end", e));
   },
   props: {

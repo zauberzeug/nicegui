@@ -15,7 +15,8 @@ def test_dynamic_classes(screen: Screen, unocss: Literal['mini', 'wind3', 'wind4
         ui.table(rows=[]).add_slot('no-data', '<div class="text-red-500">Red slot</div>')
 
         label = ui.label('Label')
-        ui.button('Make green', on_click=lambda: ui.run_javascript(f'{label.html_id}.classList.add("text-green-500")'))
+        ui.button('Make green', on_click=lambda: ui.run_javascript(
+            f'getHtmlElement({label.id}).classList.add("text-green-500")'))
         ui.button('Make yellow', on_click=lambda: label.classes('text-yellow-500'))
         ui.button('Create blue', on_click=lambda: ui.label('Blue Label').classes('text-blue-500'))
 

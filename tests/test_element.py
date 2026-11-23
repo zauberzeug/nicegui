@@ -1,5 +1,7 @@
+import contextlib
 import platform
 import weakref
+from pathlib import Path
 
 import pytest
 from selenium.webdriver.common.by import By
@@ -23,7 +25,6 @@ def test_classes(screen: Screen):
                                             f'//*[normalize-space(@class)="{classes}" and text()="Some label"]')
 
     screen.open('/')
-    screen.wait(0.5)
     assert_classes('')
 
     label.classes('one')
@@ -84,10 +85,20 @@ def test_style_parsing(value: str | None, expected: dict[str, str]):
     ("input-style='{ color: #ff0000 }'", {'input-style': '{ color: #ff0000 }'}),
     ("""input-style='{ myquote: "quote" }'""", {'input-style': '{ myquote: "quote" }'}),
     ('filename=foo=bar.txt', {'filename': 'foo=bar.txt'}),
+    ('src=/img/a(1).png color=primary dense flat',
+     {'src': '/img/a(1).png', 'color': 'primary', 'dense': True, 'flat': True}),
+    ('href=https://en.wikipedia.org/wiki/Nice_(GUI)', {'href': 'https://en.wikipedia.org/wiki/Nice_(GUI)'}),
+    ('href=http://[::1]:8080/img.png?x=1&y=2', {'href': 'http://[::1]:8080/img.png?x=1&y=2'}),
+    ('mask=(###)###-####', {'mask': '(###)###-####'}),
     ('array=["one"]', {'array': ['one']}),
     ('array=["one", "two"]', {'array': ['one', 'two']}),
     ('''object={'one': "foo"} baz''', {'object': {'one': 'foo'}, 'baz': True}),
     ('''object={'one': "foo", "two": "bar"}''', {'object': {'one': 'foo', 'two': 'bar'}}),
+    (':title=[1,2]', {':title': [1, 2]}),
+    (':title="[1,2]"', {':title': '[1,2]'}),
+    # #6493: Vue bindings keep raw text that is not a Python literal
+    (':options=[true,false]', {':options': '[true,false]'}),
+    (':x={"a":null}', {':x': '{"a":null}'}),
 ])
 def test_props_parsing(value: str | None, expected: dict[str, str]):
     assert Props.parse(value) == expected
@@ -105,7 +116,6 @@ def test_style(screen: Screen):
         assert screen.selenium.find_element(By.XPATH, f'//*[normalize-space(@style)="{style}" and text()="Some label"]')
 
     screen.open('/')
-    screen.wait(0.5)
     assert_style('')
 
     label.style('color: red')
@@ -146,7 +156,6 @@ def test_props(screen: Screen):
         assert screen.selenium.find_element(By.XPATH, f'//label[{" and ".join(class_conditions)}]')
 
     screen.open('/')
-    screen.wait(0.5)
     assert_props('standard')
 
     input_.props('dark')
@@ -180,16 +189,16 @@ def test_move(screen: Screen):
     assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
 
     screen.click('Move X to B')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('B').location['y'] < screen.find('X').location['y']
+    screen.wait_for(lambda: screen.find('A').location['y'] < screen.find(
+        'B').location['y'] < screen.find('X').location['y'])
 
     screen.click('Move X to A')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('X').location['y'] < screen.find('B').location['y']
+    screen.wait_for(lambda: screen.find('A').location['y'] < screen.find(
+        'X').location['y'] < screen.find('B').location['y'])
 
     screen.click('Move X to top')
-    screen.wait(0.5)
-    assert screen.find('X').location['y'] < screen.find('A').location['y'] < screen.find('B').location['y']
+    screen.wait_for(lambda: screen.find('X').location['y'] < screen.find(
+        'A').location['y'] < screen.find('B').location['y'])
 
 
 def test_move_slots(screen: Screen):
@@ -212,16 +221,13 @@ def test_move_slots(screen: Screen):
     assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
 
     screen.click('Move X to header')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] == screen.find('X').location['y'], 'X is in A.header'
+    screen.wait_for(lambda: screen.find('A').location['y'] == screen.find('X').location['y'])  # X is in A.header
 
     screen.click('Move X to top')
-    screen.wait(0.5)
-    assert screen.find('A').location['y'] < screen.find('X').location['y'], 'X is in A.default'
+    screen.wait_for(lambda: screen.find('A').location['y'] < screen.find('X').location['y'])  # X is in A.default
 
     screen.click('Move X to B')
-    screen.wait(0.5)
-    assert screen.find('B').location['y'] < screen.find('X').location['y'], 'X is in B.default'
+    screen.wait_for(lambda: screen.find('B').location['y'] < screen.find('X').location['y'])  # X is in B.default
 
 
 async def test_move_to_invalid_slot_keeps_element_in_place(user: User):
@@ -455,10 +461,10 @@ def test_invalid_tags(screen: Screen):
 def test_bad_characters(screen: Screen):
     @ui.page('/')
     def page():
-        ui.label(r'& <test> ` ${foo}')
+        ui.label(r'& <test> ` ${foo} </script> \ \u003c')
 
     screen.open('/')
-    screen.should_contain(r'& <test> ` ${foo}')
+    screen.should_contain(r'& <test> ` ${foo} </script> \ \u003c')
 
 
 def test_update_before_client_connection(screen: Screen):
@@ -526,6 +532,7 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
             ui.toggle([]),
             ui.radio([]),
             ui.upload(),
+            ui.codemirror(),
         ]
         with ui.tabs() as tabs:
             elements += [ui.tab('One')]
@@ -541,3 +548,66 @@ def test_even_special_elements_have_an_html_id(screen: Screen):
     screen.open('/')
     screen.click('Check IDs')
     screen.should_contain('All IDs found')
+
+
+def test_template_slot_survives_rerender(screen: Screen):
+    @ui.page('/')
+    def page():
+        element = ui.element()
+        element.add_slot('default', '<input placeholder="type here">')
+        ui.button('Update', on_click=lambda: element.classes('bg-red-100'))
+
+    screen.open('/')
+    element = screen.selenium.find_element(By.XPATH, '//input[@placeholder="type here"]')
+    element.send_keys('hello')
+    assert element.get_attribute('value') == 'hello'
+
+    screen.click('Update')  # #6284: an unrelated re-render must not discard the slot's DOM
+    screen.find_by_class('bg-red-100')  # the re-render has reached the browser
+    assert element.get_attribute('value') == 'hello'
+
+
+async def test_element_unregistered_when_constructor_raises(user: User):
+    class FailingComponent(ui.element):
+
+        def __init__(self, text: str) -> None:
+            super().__init__()
+            with self:
+                ui.label(text)
+            raise RuntimeError
+
+    class RecoveringComponent(FailingComponent):
+
+        def __init__(self, text: str) -> None:
+            with contextlib.suppress(RuntimeError):
+                super().__init__(text)
+
+    @ui.page('/')
+    def page():
+        with pytest.raises(ValueError):
+            ui.html('<script>alert("xss")</script>')
+        with pytest.raises(FileNotFoundError):
+            ui.image(Path('does_not_exist.png'))
+        with pytest.raises(RuntimeError):
+            FailingComponent('failed')
+        RecoveringComponent('recovered')
+
+    await user.open('/')
+    await user.should_not_see(kind=ui.html)
+    await user.should_not_see(kind=ui.image)
+    await user.should_not_see('failed')
+    await user.should_see('recovered')
+
+
+def test_unquoted_lists_in_vue_bindings(screen: Screen):
+    @ui.page('/')
+    def page():
+        ui.label('numbers').props(':title=[1,2]')
+        ui.label('strings').props(':title=["name","status"]')
+        label = ui.label('assigned')
+        label.props[':title'] = [3, 4]
+
+    screen.open('/')
+    assert screen.find('numbers').get_attribute('title') == '1,2'  # #6493: was "2", the last item
+    assert screen.find('strings').get_attribute('title') == 'name,status'  # was the value of window.status
+    assert screen.find('assigned').get_attribute('title') == '3,4'

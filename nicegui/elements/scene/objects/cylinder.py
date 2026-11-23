@@ -21,6 +21,6 @@ class Cylinder(Object3D, component='cylinder.js'):
         :param height: height of the cylinder (default: 1.0)
         :param radial_segments: number of horizontal segments (default: 8)
         :param height_segments: number of vertical segments (default: 1)
-        :param wireframe: whether to display the cylinder as a wireframe (default: `False`)
+        :param wireframe: whether to display the cylinder as a wireframe (default: ``False``)
         """
         super().__init__(top_radius, bottom_radius, height, radial_segments, height_segments, wireframe=wireframe)

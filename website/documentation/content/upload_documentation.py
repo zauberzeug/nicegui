@@ -60,7 +60,7 @@ def show_file_content() -> None:
     Large file uploads may encounter issues due to the default file size parameter set within the underlying Starlette library.
     To ensure smooth uploads of larger files, it is recommended to increase the `spool_max_size` parameter in Starlette's `MultiPartParser` class from the default of `1024 * 1024` (1 MB) to a higher limit that aligns with the expected file sizes.
 
-    This demo increases Starlette Multiparser's `max_file_size` to be kept in RAM to 5 MB.
+    This demo increases the `spool_max_size` of Starlette's `MultiPartParser`, the size up to which files are kept in RAM, to 5 MB.
     This change allows the system to handle larger files more efficiently by keeping them in RAM, thus avoiding the need to write data to temporary files on disk and preventing upload "stuttering".
 
     However, be mindful of the potential impact on your server when allowing users to upload large files and retaining them in RAM.

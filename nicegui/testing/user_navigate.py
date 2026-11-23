@@ -1,38 +1,37 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-from nicegui import Client, background_tasks, ui
+from nicegui import background_tasks
 from nicegui.elements.sub_pages import SubPages
-from nicegui.functions.navigate import Navigate
 from nicegui.sub_pages_router import has_any_unresolved_path
 
 if TYPE_CHECKING:
     from .user import User
 
 
-class UserNavigate(Navigate):
+class UserNavigate:
 
     def __init__(self, user: User) -> None:
-        super().__init__()
         self.user = user
 
-    def to(self, target: Callable[..., Any] | str | ui.element, new_tab: bool = False) -> None:
-        if isinstance(target, ui.element):
+    def to(self, path: str) -> None:
+        """Navigate to the given path."""
+        if path.startswith('#'):
             # navigation to an element does not do anything in the user simulation (the whole content is always visible)
             return
-        path = Client.page_routes[target] if callable(target) else target
         background_tasks.create(self._open(path, clear_forward_history=True), name=f'navigate to {path}')
 
     def back(self) -> None:
+        """Navigate back in the history."""
         current = self.user.back_history.pop()
         self.user.forward_history.append(current)
         target = self.user.back_history.pop()
         background_tasks.create(self._open(target, clear_forward_history=False), name=f'navigate back to {target}')
 
     def forward(self) -> None:
+        """Navigate forward in the history."""
         if not self.user.forward_history:
             return
         target = self.user.forward_history[0]
@@ -40,6 +39,7 @@ class UserNavigate(Navigate):
         background_tasks.create(self._open(target, clear_forward_history=False), name=f'navigate forward to {target}')
 
     def reload(self) -> None:
+        """Reload the current page."""
         target = self.user.back_history.pop()
         background_tasks.create(self.user.open(target, clear_forward_history=False),
                                 name=f'navigate reload to {target}')

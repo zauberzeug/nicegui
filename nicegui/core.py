@@ -30,6 +30,23 @@ def is_loop_running() -> bool:
     return loop is not None and loop.is_running()
 
 
+def get_loop() -> asyncio.AbstractEventLoop:
+    """Return the event loop to schedule work on.
+
+    This is the NiceGUI event loop while the app runs, also for callers in other threads.
+    Outside the app, e.g. in async tests that never started it, ``loop`` is unset or holds the closed loop
+    of a previous run, so the loop running in the current thread is used instead.
+    """
+    app_loop = loop
+    if app_loop is not None and app_loop.is_running():
+        return app_loop
+    try:
+        return asyncio.get_running_loop()
+    except RuntimeError:
+        raise RuntimeError('No running event loop. '
+                           'Start the NiceGUI app or call from within a running asyncio loop.') from None
+
+
 def is_script_mode_preflight() -> bool:
     """Return whether this is the preflight run of the script mode."""
     return script_mode and not app.is_started  # pylint: disable=undefined-variable # noqa: F821
@@ -54,11 +71,18 @@ def stop_and_exit() -> None:
             future.result(timeout=30)
         except Exception:
             log.exception('Error or timeout awaiting graceful shutdown before hard exit')
-    run.tear_down()  # kill the process/thread pools before atexit, so multiprocessing's atexit join can't block
-    atexit._run_exitfuncs()  # pylint: disable=protected-access
-    sys.stdout.flush()
-    sys.stderr.flush()
-    os._exit(0)
+    try:
+        run.tear_down()  # kill the process/thread pools before atexit, so multiprocessing's atexit join can't block
+    except Exception:
+        log.exception('Error tearing down process and thread pools before hard exit')
+    try:
+        atexit._run_exitfuncs()  # pylint: disable=protected-access
+        if sys.stdout is not None:
+            sys.stdout.flush()
+        if sys.stderr is not None:
+            sys.stderr.flush()
+    finally:
+        os._exit(0)
 
 
 def reset() -> None:

@@ -82,17 +82,6 @@ function setDark(dark) {
     .setAttribute("content", dark === None ? "normal" : dark ? "dark" : "light");
 }
 
-function parseElements(raw_elements) {
-  return JSON.parse(
-    raw_elements
-      .replace(/&#36;/g, "$")
-      .replace(/&#96;/g, "`")
-      .replace(/&gt;/g, ">")
-      .replace(/&lt;/g, "<")
-      .replace(/&amp;/g, "&"),
-  );
-}
-
 function replaceUndefinedAttributes(element) {
   element.class ??= [];
   element.style ??= {};
@@ -106,15 +95,21 @@ function replaceUndefinedAttributes(element) {
   };
 }
 
+const HTML_ID_PREFIX = "ng-";
+
+function parseHtmlId(htmlId) {
+  return htmlId.startsWith(HTML_ID_PREFIX) ? Number(htmlId.slice(HTML_ID_PREFIX.length)) : NaN;
+}
+
 function getElement(id) {
-  const _id = id instanceof Element ? id.id.slice(1) : id;
+  const _id = id instanceof Element ? parseHtmlId(id.id) : id;
   return mounted_app.$refs["r" + _id];
 }
 
 function getHtmlElement(id) {
   let id_as_a_string = id.toString();
-  if (!id_as_a_string.startsWith("c")) {
-    id_as_a_string = "c" + id_as_a_string;
+  if (!id_as_a_string.startsWith(HTML_ID_PREFIX)) {
+    id_as_a_string = HTML_ID_PREFIX + id_as_a_string;
   }
   return document.getElementById(id_as_a_string);
 }
@@ -232,6 +227,10 @@ function throttle(callback, time, leading, trailing, id) {
   }
 }
 
+// One component per slot template, so Vue sees the same component type on every render
+// and patches the slot in place instead of unmounting and remounting it (#6284).
+const slotComponents = new Map();
+
 function renderRecursively(elements, id, propsContext) {
   const element = elements[id];
   if (element === undefined) {
@@ -239,7 +238,7 @@ function renderRecursively(elements, id, propsContext) {
   }
 
   const props = {
-    id: "c" + id,
+    id: HTML_ID_PREFIX + id,
     ref: "r" + id,
     key: id, // HACK: workaround for #600 and #898
     class: element.class.join(" ") || undefined,
@@ -248,6 +247,12 @@ function renderRecursively(elements, id, propsContext) {
   };
   Object.entries(props).forEach(([key, value]) => {
     if (key.startsWith(":")) {
+      if (typeof value !== "string") {
+        // parsed lists and dicts are values, not JS expressions (#6493)
+        props[key.substring(1)] = value;
+        delete props[key];
+        return;
+      }
       try {
         try {
           props[key.substring(1)] = new Function("props", `return (${value})`)(propsContext);
@@ -307,17 +312,13 @@ function renderRecursively(elements, id, propsContext) {
     slots[name] = (props) => {
       const rendered = [];
       if (data.template) {
-        rendered.push(
-          Vue.h(
-            {
-              props: { props: { type: Object, default: {} } },
-              template: data.template,
-            },
-            {
-              props: props,
-            },
-          ),
-        );
+        if (!slotComponents.has(data.template)) {
+          slotComponents.set(data.template, {
+            props: { props: { type: Object, default: () => ({}) } },
+            template: data.template,
+          });
+        }
+        rendered.push(Vue.h(slotComponents.get(data.template), { props: props }));
       }
       const children = data.ids.map((id) => renderRecursively(elements, id, props || propsContext));
       if (name === "default" && element.text !== null) {
@@ -431,8 +432,10 @@ function createApp(elements, options) {
         options.query.next_message_id = window.nextMessageId;
       });
       window.did_handshake = false;
+      let skipAuthProbe = false; // while probing, or once the page answered without an auth wall since the last connect
       const messageHandlers = {
         connect: () => {
+          skipAuthProbe = false;
           function wrapFunction(originalFunction) {
             const MAX_WEBSOCKET_MESSAGE_SIZE = 1000000 - 100; // 1MB without 100 bytes of slack for the message header
             return function (...args) {
@@ -483,6 +486,19 @@ function createApp(elements, options) {
           } else if (err.message == "Implicit handshake failed") {
             console.log("reloading because implicit handshake failed for clientId " + window.clientId);
             window.location.reload();
+          } else if (!skipAuthProbe) {
+            // the error is indistinguishable from an outage, so probe the page before reloading (see #6289)
+            skipAuthProbe = true;
+            fetch(window.location.href, { headers: { "NiceGUI-Check": "connect_error" }, redirect: "manual" })
+              .then((response) => {
+                response.body?.cancel();
+                if (response.status >= 500) skipAuthProbe = false; // the page can't be served right now, so probe again on the next error
+                if (window.socket.connected) return; // recovered while probing
+                if (response.type !== "opaqueredirect" && ![401, 403].includes(response.status)) return; // not an auth wall
+                console.log("reloading because the connection was rejected: " + err.message);
+                window.location.reload();
+              })
+              .catch(() => (skipAuthProbe = false)); // the origin is unreachable, so probe again on the next error
           }
         },
         try_reconnect: async () => {
@@ -504,6 +520,7 @@ function createApp(elements, options) {
           for (const [id, element] of Object.entries(msg)) {
             if (element === null) continue;
             if (!(id in this.elements)) continue;
+            if (id === "0") continue; // the layout's event props are refreshed without remounting (see #6248)
             const oldListenerIds = new Set((this.elements[id]?.events || []).map((ev) => ev.listener_id));
             if (element.events?.some((e) => !oldListenerIds.has(e.listener_id))) {
               delete this.elements[id];

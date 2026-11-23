@@ -19,14 +19,16 @@ export default {
       this.$emit("update:model-value", Quasar.AppFullscreen.isActive);
     },
     enter() {
-      Quasar.AppFullscreen.request().then(() => {
+      this.pendingRequest = Quasar.AppFullscreen.request().then(() => {
         if (this.requireEscapeHold && navigator.keyboard && typeof navigator.keyboard.lock === "function") {
           navigator.keyboard.lock(["Escape"]);
         }
       });
     },
     exit() {
-      Quasar.AppFullscreen.exit();
+      Promise.resolve(this.pendingRequest).catch(() => {}).then(() => {
+        if (document.fullscreenElement) document.exitFullscreen();
+      });
     },
   },
 };

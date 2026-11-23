@@ -14,7 +14,7 @@ placeholder = Response(content=base64.b64decode(black_1px.encode('ascii')), medi
 
 
 def convert(frame: np.ndarray) -> bytes:
-    """Converts a frame from OpenCV to a JPEG image.
+    """Convert a frame from OpenCV to a JPEG image.
 
     This is a free function (not in a class or inner-function),
     to allow run.cpu_bound to pickle it and send it to a separate process.
@@ -49,7 +49,7 @@ def setup() -> None:
         ui.timer(interval=0.1, callback=video_image.force_reload)
 
     async def disconnect() -> None:
-        """Disconnect all clients from current running server."""
+        """Disconnect all clients from the currently running server."""
         for client_id in Client.instances:
             await core.sio.disconnect(client_id)
 
@@ -68,7 +68,7 @@ def setup() -> None:
 
     app.on_shutdown(cleanup)
     # We also need to disconnect clients when the app is stopped with Ctrl+C,
-    # because otherwise they will keep requesting images which lead to unfinished subprocesses blocking the shutdown.
+    # because otherwise they will keep requesting images, which leads to unfinished subprocesses blocking the shutdown.
     signal.signal(signal.SIGINT, handle_sigint)
 
 

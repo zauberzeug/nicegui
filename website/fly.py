@@ -7,9 +7,11 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 from nicegui import app
 
+log = logging.getLogger(__name__)
+
 
 def setup() -> bool:
-    """Setup fly.io specific settings.
+    """Set up fly.io-specific settings.
 
     Returns True if running on fly.io, False otherwise.
     """
@@ -25,7 +27,7 @@ def setup() -> bool:
 
     @app.add_middleware
     class FlyReplayMiddleware(BaseHTTPMiddleware):
-        """Replay to correct fly.io instance.
+        """Replay to the correct fly.io instance.
 
         If the wrong instance was picked by the fly.io load balancer, we use the fly-replay header
         to repeat the request again on the right instance.
@@ -56,9 +58,9 @@ def setup() -> bool:
                 await self.app(scope, receive, send_wrapper)
             except RuntimeError as e:
                 if 'No response returned.' in str(e):
-                    logging.warning(f'no response returned for {scope["path"]}')
+                    log.warning(f'no response returned for {scope["path"]}')
                 else:
-                    logging.exception('could not handle request')
+                    log.exception('could not handle request')
 
         def is_online(self, fly_instance_id: str) -> bool:
             hostname = f'{fly_instance_id}.vm.{self.app_name}.internal'

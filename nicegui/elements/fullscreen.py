@@ -1,6 +1,4 @@
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 from ..defaults import DEFAULT_PROP, resolve_defaults
 from ..events import Handler, ValueChangeEventArguments
@@ -21,7 +19,7 @@ class Fullscreen(ValueElement[bool], component='fullscreen.js'):
 
         Important notes:
 
-        * Due to security reasons, the fullscreen mode can only be entered from a previous user interaction such as a button click.
+        * For security reasons, the fullscreen mode can only be entered from a previous user interaction such as a button click.
         * The long-press escape requirement only works in some browsers like Google Chrome or Microsoft Edge.
 
         *Added in version 2.11.0*
@@ -32,11 +30,9 @@ class Fullscreen(ValueElement[bool], component='fullscreen.js'):
         super().__init__(value=False, on_value_change=on_value_change)
         self._props['require-escape-hold'] = require_escape_hold
 
-        self._props.add_rename('requireEscapeHold', 'require-escape-hold')  # DEPRECATED: remove in NiceGUI 4.0
-
     @property
     def require_escape_hold(self) -> bool:
-        """Whether the user needs to long-press of the escape key to exit fullscreen mode.
+        """Whether the user needs to long-press the escape key to exit fullscreen mode.
 
         This feature is only supported in some browsers like Google Chrome or Microsoft Edge.
         In unsupported browsers, this setting has no effect.

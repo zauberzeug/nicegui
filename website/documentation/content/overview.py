@@ -113,7 +113,7 @@ tiles = [
         Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
     '''),
     (section_controls, '''
-        NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
+        NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.input`, etc.
     '''),
     (section_audiovisual_elements, '''
         You can use elements like `ui.image`, `ui.audio`, `ui.video`, etc. to display audiovisual content.
@@ -128,7 +128,7 @@ tiles = [
         This section covers fundamental techniques as well as several elements to structure your UI.
     '''),
     (section_styling_appearance, '''
-        NiceGUI allows to customize the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
+        NiceGUI allows customizing the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
     '''),
     (section_action_events, '''
         This section covers timers, UI events, and the lifecycle of NiceGUI apps.
@@ -137,7 +137,7 @@ tiles = [
         A NiceGUI app can consist of multiple pages and other FastAPI endpoints.
     '''),
     (section_configuration_deployment, '''
-        Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
+        Whether you want to run your app locally or on a server, native or in a browser, we've got you covered.
     '''),
     (section_testing, '''
         Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
@@ -294,6 +294,7 @@ def map_of_nicegui():
             - [`ui.tooltip`](/documentation/tooltip)
             - [`ui.tree`](/documentation/tree)
             - [`ui.upload`](/documentation/upload)
+            - [`ui.uplot`](/documentation/uplot)
             - [`ui.video`](/documentation/video)
             - [`ui.xterm`](/documentation/xterm)
         - special layout [elements](/documentation/page_layout):
@@ -305,9 +306,7 @@ def map_of_nicegui():
         - special functions and objects:
             - [`ui.add_body_html`](/documentation/section_pages_routing#add_html_to_the_page) and
                 [`ui.add_head_html`](/documentation/section_pages_routing#add_html_to_the_page): add HTML to the body and head of the page
-            - [`ui.add_css`](/documentation/add_style#add_css_style_definitions_to_the_page),
-                [`ui.add_sass`](/documentation/add_style#add_sass_style_definitions_to_the_page) (deprecated) and
-                [`ui.add_scss`](/documentation/add_style#add_scss_style_definitions_to_the_page) (deprecated): add CSS, SASS and SCSS to the page
+            - [`ui.add_css`](/documentation/add_style#add_css_style_definitions_to_the_page): add CSS to the page
             - [`ui.clipboard`](/documentation/clipboard): interact with the browser's clipboard
             - [`ui.colors`](/documentation/colors): define the main color theme for a page
             - `ui.context`: get the current UI context including the `client` and `request` objects
@@ -319,7 +318,7 @@ def map_of_nicegui():
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler
-            - [`ui.on_exception`](/documentation/on_exception): register a handler for in-page exceptions (after the page has been sent to the browser)
+            - [`ui.on_exception`](/documentation/section_action_events#ui_on_exception): register a handler for in-page exceptions (after the page has been sent to the browser)
             - [`ui.page_title`](/documentation/page_title): change the current page title
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions
             - [`ui.run`](/documentation/run) and `ui.run_with`: run the app (standalone or attached to a FastAPI app)

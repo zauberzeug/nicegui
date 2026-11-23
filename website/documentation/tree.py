@@ -21,7 +21,7 @@ def build_tree() -> None:
 def _children(page: DocumentationPage) -> list[dict[str, Any]]:
     return [
         {
-            'id': part.link if part.link else f'{page.name}#{part.link_target}',
+            'id': part.link or f'{page.name}#{part.link_target}',
             'title': _plain(part.title),
             'children': _children(registry[part.link]) if part.link else [],
         }

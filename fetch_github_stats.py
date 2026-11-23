@@ -4,7 +4,7 @@ import os
 import re
 from pathlib import Path
 
-import httpx
+import httpx2
 
 # requires a GitHub token with the necessary permissions read:org and read:user
 # call with `GITHUB_TOKEN=ghp_XXX ./fetch_github_stats.py`
@@ -14,7 +14,7 @@ HEADERS = {
     'Accept': 'application/vnd.github.v3+json',
 }
 
-response = httpx.post(
+response = httpx2.post(
     'https://api.github.com/graphql',
     json={
         'query': '''
@@ -76,7 +76,7 @@ sponsors.sort(key=lambda s: s['created_at'])
 contributors = []
 page = 1
 while True:
-    contributors_response = httpx.get(
+    contributors_response = httpx2.get(
         f'https://api.github.com/repos/zauberzeug/nicegui/contributors?page={page}&per_page=100',
         headers=HEADERS,
         timeout=10.0,
@@ -88,7 +88,7 @@ while True:
     contributors.extend(page_contributors)
     page += 1
 
-repo_response = httpx.get('https://api.github.com/repos/zauberzeug/nicegui', headers=HEADERS, timeout=10.0)
+repo_response = httpx2.get('https://api.github.com/repos/zauberzeug/nicegui', headers=HEADERS, timeout=10.0)
 repo_response.raise_for_status()
 stars = repo_response.json()['stargazers_count']
 

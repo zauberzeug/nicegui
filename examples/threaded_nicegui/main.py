@@ -32,7 +32,7 @@ class GUI:
 if __name__ == '__main__':
     gui = GUI()
     gui.start()
-    print('Type messages to update website from the main thread (or "quit" to exit).\n')
+    print('Type messages to update the website from the main thread (or "quit" to exit).\n')
     try:
         while (user_input := input('> ')) != 'quit':
             gui.message.emit(user_input)

@@ -1,3 +1,5 @@
+import asyncio
+import gc
 import textwrap
 from pathlib import Path
 
@@ -83,6 +85,64 @@ async def test_main_file(tmp_path: Path, file_content: str):
         await user.should_see('Main file content')
 
 
+async def test_earlier_runs_of_main_file_are_freed(tmp_path: Path):
+    main_file = tmp_path / 'main.py'
+    main_file.write_text(textwrap.dedent('''
+        from fastapi.responses import PlainTextResponse
+        from nicegui import app, ui
+
+        class Greeting(ui.label):
+            pass
+
+        class NotFound(Exception):
+            pass
+
+        @app.exception_handler(NotFound)
+        async def handle_not_found(request, error):
+            return PlainTextResponse(str(error), status_code=404)
+
+        @ui.page("/")
+        def page():
+            Greeting("Main file content")
+
+        ui.run()
+    '''), encoding='utf-8')
+
+    async def count_greeting_classes() -> int:
+        async with user_simulation(main_file=main_file) as user:
+            await user.open('/')
+            await user.should_see('Main file content')
+            gc.collect()
+            return [cls.__name__ for cls in ui.label.__subclasses__()].count('Greeting')
+
+    # Like separate tests, each simulation runs in its own task, so the request kept in a context variable ends with it.
+    assert [await asyncio.create_task(count_greeting_classes()) for _ in range(3)] == [1, 1, 1]
+
+
+async def test_refreshable_forgets_pages_of_earlier_simulations():
+    renders = 0
+
+    @ui.refreshable
+    def content():
+        nonlocal renders
+        renders += 1
+        ui.label('Content')
+
+    def root():
+        content()
+
+    async def count_renders_on_refresh() -> int:
+        nonlocal renders
+        async with user_simulation(root) as user:
+            await user.open('/')
+            await user.should_see('Content')
+            renders = 0
+            await content.refresh()
+            return renders
+
+    assert [await asyncio.create_task(count_renders_on_refresh()) for _ in range(3)] == [1, 1, 1]
+
+
 async def test_adding_page_to_root_function():
     def root():
         ui.button('Click me', on_click=lambda: ui.notify('Hello World!'))
@@ -125,3 +185,27 @@ async def test_main_file_with_submodule_pages(tmp_path: Path, _first_run: bool):
     async with user_simulation(main_file=main_file) as user:
         await user.open('/dashboard')
         await user.should_see('Dashboard Content')
+
+
+async def test_exception_does_not_break_the_next_simulation(tmp_path: Path):
+    """https://github.com/zauberzeug/nicegui/issues/6469"""
+    main_file = tmp_path / 'main.py'
+    main_file.write_text(textwrap.dedent('''
+        from nicegui import app, ui
+
+        app.on_startup(lambda: None)
+
+        @ui.page('/')
+        def index():
+            ui.label('simulated page')
+
+        ui.run()
+    '''))
+
+    with pytest.raises(RuntimeError, match='boom'):
+        async with user_simulation(main_file=main_file):
+            raise RuntimeError('boom')
+
+    async with user_simulation(main_file=main_file) as user:
+        await user.open('/')
+        await user.should_see('simulated page')

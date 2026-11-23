@@ -4,7 +4,7 @@ Use multiple third-party NPM modules as dependencies in a NiceGUI app.
 
 ![Screenshot](screenshot.webp)
 
-The app uses the [is-odd](https://www.npmjs.com/package/is-odd) node modules to check if a number is even or odd.
+The app uses the [is-odd](https://www.npmjs.com/package/is-odd) node module to check if a number is even or odd.
 We chose this package to demonstrate a very simple node module which has a dependency itself,
 namely the [is-number](https://www.npmjs.com/package/is-number) package.
 Using NPM, we can easily install both packages and bundle them into a single file which can be used in the app.

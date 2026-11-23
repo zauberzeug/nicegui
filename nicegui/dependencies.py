@@ -125,7 +125,7 @@ def register_vue_component(path: Path, *, max_time: float | None) -> Component:
 
 
 def register_library(path: Path, *, import_name: str | None = None, max_time: float | None) -> Library:
-    """Register a *.js library."""
+    """Register a ``*.js`` library."""
     key = compute_key(path, max_time=max_time)
     name = import_name or _get_name(path)
     if path.suffix in {'.js', '.mjs'}:
@@ -237,8 +237,6 @@ def generate_resources(prefix: str, elements: Iterable[Element]) -> tuple[list[s
     vue_styles: list[str] = []
     imports: dict[str, str] = {
         'vue': f'{prefix}/_nicegui/{__version__}/static/vue.esm-browser{".prod" if core.app.config.prod_js else ""}.js',
-        'sass': f'{prefix}/_nicegui/{__version__}/static/sass.default.js',
-        'immutable': f'{prefix}/_nicegui/{__version__}/static/immutable.es.js',
         'dompurify': f'{prefix}/_nicegui/{__version__}/static/dompurify.mjs',
     }
     js_imports: list[str] = []

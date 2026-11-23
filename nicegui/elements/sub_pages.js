@@ -24,9 +24,13 @@ function handleStateEvent(event) {
   emitEvent("sub_pages_open", cleanPath);
 }
 
+function findFragmentTarget(fragmentName) {
+  return document.getElementById(fragmentName) || document.querySelector(`a[name="${fragmentName}"]`);
+}
+
 function handleFragmentNavigation(href, targetUrl) {
   const fragmentName = targetUrl.hash.substring(1);
-  const target = document.getElementById(fragmentName) || document.querySelector(`a[name="${fragmentName}"]`);
+  const target = findFragmentTarget(fragmentName);
   if (!target) return false;
 
   target.scrollIntoView({ behavior: "smooth" });
@@ -65,4 +69,11 @@ document.addEventListener("click", (e) => {
 
 export default {
   template: `<div><slot></slot></div>`,
+  mounted() {
+    // the browser's native fragment scrolling can fire before Vue has rendered the target, so we scroll explicitly
+    const fragmentName = window.location.hash.substring(1);
+    if (fragmentName) {
+      findFragmentTarget(fragmentName)?.scrollIntoView();
+    }
+  },
 };

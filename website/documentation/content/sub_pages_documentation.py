@@ -211,9 +211,11 @@ def adding_sub_pages_demo() -> None:
 
 @doc.demo('URL Parameters', '''
     You can pass URL parameters to the builder function.
-    A path parameter specified in the route is injected into the functions matching parameter.
+    A path parameter specified in the route is injected into the function's matching parameter.
     For query parameters, the name is used for injection.
     Values are automatically converted if a type hint is provided (int, float, str).
+    Unions like `int | None` or `int | float` are supported as well:
+    `str` wins if present, otherwise `int` and `float` are tried in order.
     If no default value is provided in the builder function, the parameter will be required to match the route.
 ''')
 def url_parameters_demo():
@@ -270,6 +272,10 @@ def page_arguments_demo():
     For wildcard routing, where a single handler should match multiple paths,
     use `show_404=False` and access `PageArguments.remaining_path`.
     This is useful for routing patterns like "/item/*" where everything under "/item/" goes to one handler.
+    Note that `path` and `remaining_path` always add up to the path handled by the `ui.sub_pages` element:
+    the root route `/` yields a remaining path without leading slash (e.g. `'x/2/a'`),
+    while any other route keeps it (`'/x/2/a'`).
+    Splitting the remaining path and dropping empty segments, as done below, handles both cases uniformly.
 ''')
 def wildcard_demo():
     from nicegui import PageArguments
@@ -306,8 +312,8 @@ def wildcard_demo():
 
 
 @doc.demo('Nested Sub Pages', '''
-    Sub pages elements can be nested to create a hierarchical page structure.
-    Each of these elements determines which part of the path they should handle by:
+    Sub page elements can be nested to create a hierarchical page structure.
+    Each of these elements determines which part of the path it should handle by:
 
     1. getting the full URL path from `ui.context.client.sub_pages_router`,
     2. removing the leading part which was handled by the parent element,

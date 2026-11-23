@@ -25,8 +25,12 @@ export default {
         return;
       }
 
-      // default responsive to true
       const options = this.options;
+
+      // hide the "Share chart" button, which uploads the chart data to cloud.plotly.com
+      options.config = { showSendToCloud: false, ...options.config };
+
+      // default responsive to true
       if (options.config?.responsive === true) options.config.responsive = undefined;
 
       // reuse plotly instance if config is the same

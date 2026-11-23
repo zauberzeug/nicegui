@@ -147,7 +147,8 @@ def test_async_handler(screen: Screen):
     assert count == 0
 
     screen.click('Append 42')
-    screen.wait(0.5)
+    screen.wait_for(lambda: count > 0)
+    screen.wait(0.1)
     assert count == 1
 
 
@@ -163,15 +164,25 @@ def test_setting_change_handler():
 
 
 def test_copy():
-    a = ObservableList([[1, 2, 3], [4, 5, 6]])
+    changes = []
+    root = ObservableDict({'a': [[1, 2, 3], [4, 5, 6]]}, on_change=changes.append)
+    a = root['a']
     b = copy.copy(a)
     c = copy.deepcopy(a)
+    d = copy.deepcopy(root)
     a.append([7, 8, 9])
     a[0][0] = 0
 
     assert a == [[0, 2, 3], [4, 5, 6], [7, 8, 9]]
     assert b == [[0, 2, 3], [4, 5, 6]]
     assert c == [[1, 2, 3], [4, 5, 6]]
+    assert d == {'a': [[1, 2, 3], [4, 5, 6]]}
+
+    changes.clear()
+    b.append([10])
+    c[0].append(11)
+    d['a'][0].append(12)
+    assert changes == [], 'changing a copy should not notify the original'
 
 
 async def test_no_infinite_recursion(user: User):
@@ -360,3 +371,15 @@ def test_no_op_set_mutations_do_not_fire_change_events():
     data.add(3)
     data.discard(3)
     assert count == 2, 'real mutations still fire exactly one change event each'
+
+
+async def test_collections_reject_arbitrary_attributes(user: User):
+    @ui.page('/')
+    def page():
+        ui.label('Hello')
+
+    await user.open('/')
+    label = user.find(ui.label).elements.pop()
+    for data in [ObservableDict(), ObservableList(), ObservableSet(), label.props, label.classes, label.style]:
+        with pytest.raises(AttributeError):
+            data.foo = 1

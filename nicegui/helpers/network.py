@@ -42,14 +42,18 @@ def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[th
     """Wait non-blockingly for the port to be open, then start a webbrowser.
 
     This function launches a thread in order to be non-blocking.
-    This thread then uses `is_port_open` to check when the port opens.
-    When connectivity is confirmed, the webbrowser is launched using `webbrowser.open`.
+    This thread then uses ``is_port_open`` to check when the port opens.
+    When connectivity is confirmed, the webbrowser is launched using ``webbrowser.open``.
 
     The thread is created as a daemon thread, in order to not interfere with Ctrl+C.
 
     If you need to stop this thread, you can do this by setting the Event, that gets returned.
     The thread will stop with the next loop without opening the browser.
 
+    :param protocol: URL scheme, e.g. ``http``
+    :param host: host to connect to
+    :param port: port to wait for
+    :param path: path to open in the browser
     :return: A tuple consisting of the actual thread object and an event for stopping the thread.
     """
     cancel = threading.Event()

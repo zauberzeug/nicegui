@@ -1,6 +1,5 @@
 from contextlib import AbstractContextManager, nullcontext
-
-from typing_extensions import Self
+from typing import Self
 
 from .. import core
 from ..client import Client

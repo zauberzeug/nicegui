@@ -93,6 +93,12 @@ Each line follows this pattern:
 
 - One item per story (a story is usually an issue with a PR that fixes it, but may include follow-up fixes)
 
+- **Keep each item short: name the user-visible effect in one line, typically 15–25 words before the parentheses.**
+  Details such as root causes, mechanisms, implementation choices, measurements or lists of edge cases belong in the tickets, not in the notes; readers who want more will follow the ticket numbers.
+  An item may run a little longer only when it bundles several tickets or when a single clause would otherwise be ambiguous.
+  Prior releases set the bar: compare against the last release on https://github.com/zauberzeug/nicegui/releases and shorten anything that stands out.
+  The same applies to a `**Breaking change:**` block: one or two sentences with the old and the new behavior, no rationale.
+
 - Check PR descriptions for references to feature requests, discussions, or other issues that led to the change — include those ticket numbers too
 
 - Group related tickets into a single item — all ticket numbers for the milestone should appear somewhere

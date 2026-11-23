@@ -6,6 +6,8 @@ from typing import Any
 import orjson
 from fastapi.responses import JSONResponse
 
+from .registry import find_converter
+
 try:
     HAS_NUMPY = importlib.util.find_spec('numpy') is not None
 except (ModuleNotFoundError, ValueError):
@@ -22,13 +24,12 @@ def dumps(obj: Any,
 
     By default, this function supports serializing NumPy arrays, which Python's json module does not.
 
-    Uses package `orjson` internally.
+    Uses package ``orjson`` internally.
     """
     # note that parameters `sort_keys` and `separators` are required by AsyncServer's
     # internal calls, which match Python's default `json.dumps` API.
     assert separators is None or separators == (',', ':'), \
-        'NiceGUI JSON serializer only supports Python''s default ' +\
-        f'JSON separators "," and ":", but got {separators} instead.'
+        f'NiceGUI JSON serializer only supports Python\'s default JSON separators "," and ":", but got {separators} instead.'
 
     opts = ORJSON_OPTS
 
@@ -43,16 +44,18 @@ def dumps(obj: Any,
     return orjson.dumps(obj, option=opts, default=_orjson_converter).decode('utf-8')
 
 
-def loads(value: str) -> Any:
-    """Deserialize a JSON-encoded string to a corresponding Python object/value.
+def loads(value: str | bytes) -> Any:
+    """Deserialize a JSON-encoded string or bytes to a corresponding Python object/value.
 
-    Uses package `orjson` internally.
+    Uses package ``orjson`` internally.
     """
     return orjson.loads(value)
 
 
 def _orjson_converter(obj):
-    """Custom serializer/converter, e.g. for NumPy object arrays."""
+    """Custom serializer/converter, e.g. for NumPy object arrays and registered custom types."""
+    if converter := find_converter(obj):
+        return converter(obj)
     if HAS_NUMPY:
         import numpy as np  # pylint: disable=import-outside-toplevel
         if isinstance(obj, np.ndarray) and obj.dtype == np.object_:
@@ -65,7 +68,7 @@ def _orjson_converter(obj):
 class NiceGUIJSONResponse(JSONResponse):
     """FastAPI response class to support our custom json serializer implementation.
 
-    Uses package `orjson` internally.
+    Uses package ``orjson`` internally.
     """
 
     def render(self, content: Any) -> bytes:

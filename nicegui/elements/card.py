@@ -1,6 +1,4 @@
-from typing import Literal
-
-from typing_extensions import Self
+from typing import Literal, Self
 
 from ..element import Element
 from .mixins.sortable_element import SortableElement
@@ -14,16 +12,16 @@ class Card(SortableElement, default_classes='nicegui-card'):
         """Card
 
         This element is based on Quasar's `QCard <https://quasar.dev/vue-components/card>`_ component.
-        It provides a container with a dropped shadow.
+        It provides a container with a drop shadow.
 
         Note:
         In contrast to this element,
         the original QCard has no padding by default and hides outer borders and shadows of nested elements.
-        If you want the original behavior, use the `tight` method.
+        If you want the original behavior, use the ``tight`` method.
 
         *Updated in version 2.0.0: Don't hide outer borders and shadows of nested elements anymore.*
 
-        :param align_items: alignment of the items in the card ("start", "end", "center", "baseline", or "stretch"; default: `None`)
+        :param align_items: alignment of the items in the card ("start", "end", "center", "baseline", or "stretch"; default: ``None``)
         """
         super().__init__('q-card')
         if align_items:

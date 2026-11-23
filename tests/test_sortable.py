@@ -37,6 +37,30 @@ def test_basic_reorder(screen: Screen):
     screen.should_contain('A moved from index 0 to 1')
 
 
+def test_reorder_in_dialog(screen: Screen):
+    @ui.page('/')
+    def page():
+        with ui.dialog().props('transition-duration=0') as dialog, ui.column():
+            with ui.card().classes('card') as card:
+                ui.label('A')
+                ui.label('B')
+                ui.label('C')
+            ui.button('Done', on_click=dialog.close)
+        card.make_sortable()
+        ui.button('Open', on_click=dialog.open)
+
+    screen.open('/')
+    screen.click('Open')
+    _drag(screen, screen.find('A'), screen.find('B'), dy=5)
+    _assert_order(screen, 'card', ['B', 'A', 'C'])
+
+    screen.click('Done')
+    screen.wait_for_js('document.querySelector(".q-dialog")', None)
+    screen.click('Open')
+    _drag(screen, screen.find('B'), screen.find('A'), dy=5)
+    _assert_order(screen, 'card', ['A', 'B', 'C'])
+
+
 def test_cross_container(screen: Screen):
     @ui.page('/')
     def page():

@@ -16,7 +16,7 @@ class Splitter(ValueElement[float | None], DisableableElement, default_classes='
                  ) -> None:
         """Splitter
 
-        The `ui.splitter` element divides the screen space into resizable sections,
+        The ``ui.splitter`` element divides the screen space into resizable sections,
         allowing for flexible and responsive layouts in your application.
 
         Based on Quasar's Splitter component:
@@ -26,9 +26,9 @@ class Splitter(ValueElement[float | None], DisableableElement, default_classes='
         which can be used to embed other elements within the splitter.
 
         :param horizontal: Whether to split horizontally instead of vertically
+        :param reverse: Whether to apply the model size to the second panel instead of the first
         :param limits: Two numbers representing the minimum and maximum split size of the two panels
         :param value: Size of the first panel (or second if using reverse)
-        :param reverse: Whether to apply the model size to the second panel instead of the first
         :param on_change: callback which is invoked when the user releases the splitter
         """
         super().__init__(tag='q-splitter', value=value, on_value_change=on_change, throttle=0.05)

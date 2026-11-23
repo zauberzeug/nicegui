@@ -14,11 +14,11 @@ class Step(IconElement, DisableableElement, default_classes='nicegui-step'):
         """Step
 
         This element represents `Quasar's QStep <https://quasar.dev/vue-components/stepper#qstep-api>`_ component.
-        It is a child of a `ui.stepper` element.
+        It is a child of a ``ui.stepper`` element.
 
-        :param name: name of the step (will be the value of the `ui.stepper` element)
-        :param title: title of the step (default: `None`, meaning the same as `name`)
-        :param icon: icon of the step (default: `None`)
+        :param name: name of the step (will be the value of the ``ui.stepper`` element)
+        :param title: title of the step (default: ``None``, meaning the same as ``name``)
+        :param icon: icon of the step (default: ``None``)
         """
         super().__init__(tag='q-step', icon=icon)
         self._props['name'] = name

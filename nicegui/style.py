@@ -1,5 +1,5 @@
 import weakref
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Generic, TypeVar
 
@@ -12,14 +12,16 @@ T = TypeVar('T', bound='Element')
 
 
 class Style(ObservableDict, Generic[T]):
+    __slots__ = ('_element', '_suspend_count')
 
     def __init__(self, *args, element: T, **kwargs) -> None:
-        super().__init__(*args, on_change=self._update, **kwargs)
+        super().__init__(*args, **kwargs)
+        self._change_handlers.append((self._update, False))  # _update takes no arguments, so skip the signature check
         self._element = weakref.ref(element)
         self._suspend_count = 0
 
     @contextmanager
-    def suspend_updates(self) -> Iterator[None]:
+    def suspend_updates(self) -> Generator[None]:
         """Suspend updates."""
         self._suspend_count += 1
         try:
@@ -55,15 +57,24 @@ class Style(ObservableDict, Generic[T]):
         :param replace: semicolon-separated list of styles to use instead of existing ones
         """
         element = self.element
-        style_dict = {**self} if replace is None else {}
-        for key in self.parse(remove):
-            style_dict.pop(key, None)
-        style_dict.update(self.parse(add))
-        style_dict.update(self.parse(replace))
-        if self != style_dict:
+        new_style = self.update_dict(self, add, remove, replace)
+        if self != new_style:
             self.clear()
-            self.update(style_dict)
+            self.update(new_style)
         return element
+
+    @staticmethod
+    def update_dict(style: dict[str, str],
+                    add: str | None = None,
+                    remove: str | None = None,
+                    replace: str | None = None) -> dict[str, str]:
+        """Update a dictionary of styles."""
+        style_dict = {**style} if replace is None else {}
+        for key in Style.parse(remove):
+            style_dict.pop(key, None)
+        style_dict.update(Style.parse(add))
+        style_dict.update(Style.parse(replace))
+        return style_dict
 
     @staticmethod
     def parse(text: str | None) -> dict[str, str]:

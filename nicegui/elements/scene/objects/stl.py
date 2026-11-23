@@ -8,6 +8,6 @@ class Stl(Object3D, component='stl.js'):
         This element is used to create a mesh from an STL file.
 
         :param url: URL of the STL file
-        :param wireframe: whether to display the STL as a wireframe (default: `False`)
+        :param wireframe: whether to display the STL as a wireframe (default: ``False``)
         """
         super().__init__(url, wireframe)

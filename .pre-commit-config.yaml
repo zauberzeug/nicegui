@@ -1,11 +1,11 @@
 default_language_version:
-  python: python3.10
+  python: python3.11
 default_install_hook_types: [pre-commit, pre-push]
 default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.5
+    rev: v0.17.3
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -21,7 +21,7 @@ repos:
       - id: end-of-file-fixer
       - id: double-quote-string-fixer
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.3
     hooks:
       - id: codespell
         # most are excluded based on config in pyproject.toml
@@ -33,14 +33,11 @@ repos:
             .*/package-lock.json|
             nicegui/static/vue\..*|
             nicegui/static/quasar\..*|
-            nicegui/static/sass\..*|
             nicegui/static/dompurify\..*|
             nicegui/static/unocss/.*|
             nicegui/translations\.py|
             website/static/fuse\.js\@.*|
           )$
-        additional_dependencies:
-          - tomli; python_version<'3.11'
   - repo: https://github.com/executablebooks/mdformat
     rev: 1.0.0
     hooks:
@@ -50,3 +47,30 @@ repos:
           - mdformat-frontmatter
           - mdformat-gfm
           - mdformat-simple-breaks
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.5.0
+    hooks:
+      - id: flake8
+        name: docstrings (pydoclint, flake8-rst-docstrings)
+        files: ^nicegui/
+        # only docstring checks; Ruff and pylint cover everything else
+        args:
+          - --select=DOC1,RST
+          - --style=sphinx
+          - --arg-type-hints-in-docstring=False
+          - --allow-init-docstring=True
+        additional_dependencies:
+          - pydoclint==0.12.0
+          - flake8-rst-docstrings==0.4.0
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.32.0
+    hooks:
+      - id: zizmor
+  - repo: local
+    hooks:
+      - id: docstrings-rst
+        name: docstrings (sphinx-lint)
+        entry: uv run python check_docstrings.py
+        language: system
+        types: [python]
+        files: ^nicegui/

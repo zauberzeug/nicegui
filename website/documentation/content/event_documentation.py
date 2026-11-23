@@ -45,7 +45,7 @@ def emitting_vs_calling_events():
             button.disable()
             try:
                 await data_submitted.call(data.value)
-                data.value = None
+                data.value = ''
             except Exception as e:
                 ui.notify(f'Error: {e}', color='negative')
             finally:

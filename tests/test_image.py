@@ -35,7 +35,6 @@ def test_base64_image(screen: Screen):
         ui.image(example_data).style('width: 50px;')
 
     screen.open('/')
-    screen.wait(0.2)
     image = screen.find_by_class('q-img__image')
     assert 'data:image/png;base64,iVB' in image.get_attribute('src')
 

@@ -9,9 +9,9 @@ class Log(Element, component='log.js', default_classes='nicegui-log'):
     def __init__(self, max_lines: int | None = None) -> None:
         """Log View
 
-        Create a log view that allows to add new lines without re-transmitting the whole history to the client.
+        Create a log view that allows adding new lines without re-transmitting the whole history to the client.
 
-        :param max_lines: maximum number of lines before dropping oldest ones (default: `None`)
+        :param max_lines: maximum number of lines before dropping oldest ones (default: ``None``)
         """
         super().__init__()
         self.max_lines = max_lines

@@ -1,6 +1,5 @@
 from pathlib import Path
-
-from typing_extensions import Self
+from typing import Self
 
 from ...awaitable_response import AwaitableResponse
 from ...defaults import DEFAULT_PROP, resolve_defaults
@@ -55,7 +54,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         return await self.run_method('getRows')
 
     async def get_columns(self) -> int:
-        """Get the number of columns  in the terminal's viewport."""
+        """Get the number of columns in the terminal's viewport."""
         return await self.run_method('getColumns')
 
     def fit(self) -> AwaitableResponse:
@@ -95,7 +94,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         return self
 
     def input(self, data: str, *, was_user_input: bool = True) -> AwaitableResponse:
-        """Input data to application side.
+        """Input data to the application side.
 
         The data is treated the same way input typed into the terminal would (i.e. the ``data`` event will fire).
         To write data onto the terminal (e.g. data coming from a pty), use the ``write`` method instead.
@@ -118,22 +117,22 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
 
         :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
-        # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
+        # Xterm.js accepts a `Uint8Array`, which we can get by converting `bytes` to a `list`
         return self.run_method('write', list(data) if isinstance(data, bytes) else data)
 
     def writeln(self, data: bytes | str) -> AwaitableResponse:
-        """Write data to the terminal, followed by a break line character (``\\n``).
+        """Write data to the terminal, followed by a line break character (``\\n``).
 
         :param data: The data to write to the terminal.
                      This can either be UTF-8 encoded bytes or a string.
 
         :return: AwaitableResponse that can be awaited to wait for the completion of the method call
         """
-        # Xterm.js accepts an `Uint8Array`, which we can get by converting `bytes` to a `list`
+        # Xterm.js accepts a `Uint8Array`, which we can get by converting `bytes` to a `list`
         return self.run_method('writeln', list(data) if isinstance(data, bytes) else data)
 
     def run_terminal_method(self, name: str, *args, timeout: float = 1) -> AwaitableResponse:
-        """Run a method of the Xterm.js terminal instance.
+        r"""Run a method of the Xterm.js terminal instance.
 
         Refer to the `Xterm.js documentation <https://xtermjs.org/docs/api/terminal/classes/terminal/#methods>`_
         for a list of methods.
@@ -142,7 +141,7 @@ class Xterm(Element, component='xterm.js', esm={'nicegui-xterm': 'dist'}):
         Otherwise, the method is executed without waiting for a response.
 
         :param name: name of the method (a prefix ":" indicates that the arguments are JavaScript expressions)
-        :param args: arguments to pass to the method
+        :param \*args: arguments to pass to the method
         :param timeout: timeout in seconds (default: 1 second)
 
         :return: AwaitableResponse that can be awaited to get the result of the method call
