@@ -12,12 +12,11 @@ services:
       - traefik.http.routers.app.rule=PathPrefix(`/app`)
       - traefik.http.services.app.loadbalancer.server.port=8080
       - traefik.http.middlewares.app-prefix.stripprefix.prefixes=/app
-      - traefik.http.middlewares.app-prefix.stripprefix.forceSlash=false # see https://doc.traefik.io/traefik/middlewares/stripprefix/#forceslash
       - traefik.http.routers.app.middlewares=app-prefix
 
-  # setup a proxy to test hosting on a sub-path; here localhost:8080/app
+  # set up a proxy to test hosting on a sub-path; here localhost:8888/app
   proxy:
-    image: traefik:v2.3
+    image: traefik:v3
     command:
       - --providers.docker
       - --accesslog # http access log

@@ -29,7 +29,7 @@ class Button(IconElement, TextElement, DisableableElement, BackgroundColorElemen
         In such cases the Quasar color will be used.
 
         :param text: the label of the button
-        :param on_click: callback which is invoked when button is pressed
+        :param on_click: callback which is invoked when the button is pressed
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or ``None``, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: ``None``)
         """

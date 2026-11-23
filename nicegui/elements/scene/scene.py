@@ -97,12 +97,12 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100 unless ``polar_grid`` is given)
-        :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
+        :param camera: camera definition, either an instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``('click', 'dblclick')``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
-        :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
+        :param drag_constraints: comma-separated JavaScript expressions for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
@@ -172,7 +172,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
 
     @staticmethod
     def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
-        """Create a orthographic camera.
+        """Create an orthographic camera.
 
         The size defines the vertical size of the view volume, i.e. the distance between the top and bottom clipping planes.
         The left and right clipping planes are set such that the aspect ratio matches the viewport.

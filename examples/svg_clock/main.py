@@ -5,9 +5,9 @@ from nicegui import ui
 
 
 def build_svg() -> str:
-    """Returns an SVG showing the current time.
+    """Return an SVG showing the current time.
 
-        Original was borrowed from https://de.m.wikipedia.org/wiki/Datei:Station_Clock.svg.
+        The original was borrowed from https://de.m.wikipedia.org/wiki/Datei:Station_Clock.svg.
     """
     now = datetime.now()
     seconds_angle = now.second / 60 * 360

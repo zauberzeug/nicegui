@@ -10,7 +10,7 @@ One component is implemented using JavaScript, the other using Vue's Single-File
 
 The `Counter` component is a simple counter that increments a value.
 On change, it emits an event with the new value.
-A reset method allows to reset the counter to 0.
+A reset method allows resetting the counter to 0.
 
 The JavaScript code in `counter.js` defines the front-end logic of the component using JavaScript.
 

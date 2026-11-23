@@ -29,7 +29,7 @@ from website.documentation.intersection_observer import IntersectionObserver as 
 
 middlewares.setup()
 
-# session middleware is required for demo in documentation
+# session middleware is required for the demo in the documentation
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('NICEGUI_SECRET_KEY', ''))
 rate_limits.setup()
 demo_images.setup()

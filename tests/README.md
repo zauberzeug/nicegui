@@ -51,7 +51,7 @@ On Ubuntu, both `chromium-chromedriver` and `chromium-driver` resolve to the sam
 Prefer Selenium Manager (see above), or install a matching ChromeDriver manually.
 If Chromium is already installed as a snap, as it is on Ubuntu desktop, see [Snap-based Chromium](#snap-based-chromium) below.
 
-For Arch-based Linux distribution:
+For Arch-based Linux distributions:
 
 ```bash
 sudo pacman -S chromium

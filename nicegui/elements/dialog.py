@@ -38,7 +38,7 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
             canary, lambda: self.delete() if not self.is_deleted and self._parent_slot and self._parent_slot() else None
         )
 
-        self._result: Any = None
+        self._pending_result: asyncio.Future | None = None
         self._submitted: asyncio.Event | None = None
 
     @property
@@ -61,29 +61,35 @@ class Dialog(OpenableElement, NoImplicitAwait, component='dialog.js'):
     def __await__(self):
         if not self._is_safe_to_interact():
             return None  # the dialog cannot be submitted anymore, so we resolve immediately instead of waiting forever
-        self._result = None
-        self.submitted.clear()
-        self.open()
-        yield from self.submitted.wait().__await__()  # pylint: disable=no-member
-        result = self._result
-        self._result = None  # release the result so a deleted dialog does not keep it alive (close() would do the same)
-        if not self.is_deleted:  # closing a deleted dialog would warn about using a deleted element
+        if self._pending_result is None:  # otherwise join the awaits that are already waiting, e.g. after a double-click
+            self._pending_result = asyncio.get_running_loop().create_future()
+            self.submitted.clear()
+            self.open()
+        result = yield from asyncio.shield(self._pending_result).__await__()
+        if not self.is_deleted and self._pending_result is None:
+            # closing a deleted dialog would warn about using a deleted element,
+            # and closing while a new round is already awaited would resolve that round with None
             self.close()
         return result
 
     def submit(self, result: Any) -> None:
         """Submit the dialog with the given result."""
-        self._result = result
+        self._resolve(result)
+
+    def _resolve(self, result: Any) -> None:
+        # the awaiting tasks hold the future, so the dialog does not keep the result alive
+        future, self._pending_result = self._pending_result, None
+        if future is not None and not future.get_loop().is_closed():  # at interpreter exit nobody can be woken up anymore
+            future.set_result(result)
         self.submitted.set()
 
     def _handle_value_change(self, value: Any) -> None:
         super()._handle_value_change(value)
         if not self.value:
-            self._result = None
-            self.submitted.set()
+            self._resolve(None)
 
     def _handle_delete(self) -> None:
         # resolve pending awaits so their tasks don't wait forever, e.g. when the client is deleted after a disconnect
-        # (keep self._result untouched: a result submitted just before deletion should still reach the awaiting task)
-        self.submitted.set()
+        # (a result submitted just before deletion has already resolved them, so it still reaches the awaiting tasks)
+        self._resolve(None)
         super()._handle_delete()

@@ -4,11 +4,11 @@ Build a simple ZeroMQ PUSH/PULL server and client.
 
 ![Screenshot](screenshot.webp)
 
-This example is a basic Zeromq implementation with NiceGUI.
+This example is a basic ZeroMQ implementation with NiceGUI.
 It shows how to stream data from a ZeroMQ socket to a NiceGUI plot.
 
 In order to do this, the zmq Python library is used to create a publisher and a subscriber.
-The main interesting aspect is that the zmq.async library is used to create a subscriber that can be used in an asyncio loop, which is necessary to run the NiceGUI server.
+The main interesting aspect is that the zmq.asyncio library is used to create a subscriber that can be used in an asyncio loop, which is necessary to run the NiceGUI server.
 
 ## Running the example
 

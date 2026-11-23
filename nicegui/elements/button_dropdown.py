@@ -34,7 +34,7 @@ class DropdownButton(IconElement, TextElement, DisableableElement, BackgroundCol
         :param text: the label of the button
         :param value: if the dropdown is open or not (default: ``False``)
         :param on_value_change: callback which is invoked when the dropdown is opened or closed
-        :param on_click: callback which is invoked when button is pressed
+        :param on_click: callback which is invoked when the button is pressed
         :param color: the color of the button (either a Quasar, Tailwind, or CSS color or ``None``, default: 'primary')
         :param icon: the name of an icon to be displayed on the button (default: ``None``)
         :param auto_close: whether the dropdown should close automatically when an item is clicked (default: ``False``)

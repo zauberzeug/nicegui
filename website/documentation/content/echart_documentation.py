@@ -60,7 +60,7 @@ def clickable_components() -> None:
 
 
 @doc.demo('EChart with dynamic properties', '''
-    Dynamic properties can be passed to chart elements to customize them such as apply an axis label format.
+    Dynamic properties can be passed to chart elements to customize them, e.g. to apply an axis label format.
     To make a property dynamic, prefix a colon ":" to the property name.
 ''')
 def dynamic_properties() -> None:

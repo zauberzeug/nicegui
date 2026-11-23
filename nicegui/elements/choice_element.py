@@ -1,19 +1,17 @@
-from typing import Any, Self, cast
+from typing import Any, Self
 
-from ..binding import BindableProperty
 from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
-class _ChoiceValue(BindableProperty):
+class _ChoiceValue(ValueElement._ValueProperty):  # pylint: disable=protected-access
 
     def __set__(self, owner: Any, value: Any) -> None:
         super().__set__(owner, owner._to_valid_value(value))  # pylint: disable=protected-access
 
 
 class ChoiceElement(ValueElement[Any]):
-    value = _ChoiceValue(
-        on_change=lambda sender, value: cast(Self, sender)._handle_value_change(value))  # pylint: disable=protected-access
+    value = _ChoiceValue()
 
     def __init__(self, *,
                  tag: str | None = None,

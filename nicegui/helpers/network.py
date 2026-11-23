@@ -2,6 +2,9 @@ import socket
 import threading
 import time
 import webbrowser
+from urllib.parse import quote
+
+from starlette.requests import Request
 
 
 def is_port_open(host: str, port: int) -> bool:
@@ -69,3 +72,20 @@ def schedule_browser(protocol: str, host: str, port: int, path: str) -> tuple[th
     thread = threading.Thread(target=in_thread, args=(protocol, host, port, path), daemon=True)
     thread.start()
     return thread, cancel
+
+
+def get_forwarded_prefix(request: Request) -> str:
+    """Get the X-Forwarded-Prefix header as a relative path that is safe to put into URLs, or an empty string.
+
+    The header is client-controllable on a directly exposed app or behind a pass-through proxy.
+    Percent-encoding it with the RFC 3986 path-legal characters as the safe set
+    (unreserved + sub-delims + ":" "@" "/", plus "%" so an already-encoded prefix isn't double-encoded)
+    only touches characters illegal in a URL path (quotes, angle brackets, backslash, space, control characters, non-ASCII),
+    so it can't break out of an HTML, CSS or JS sink, yet it's a no-op for any well-formed ASCII prefix.
+    The only exception is "&", which is encoded as well,
+    because an HTML attribute would otherwise decode character references like "&sol;" into "/".
+    Requiring a single leading slash additionally rejects absolute and protocol-relative URLs,
+    which would otherwise move resources and redirects to another origin.
+    """
+    prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$'()*+,;=%").rstrip('/')
+    return prefix if prefix.startswith('/') and not prefix.startswith('//') else ''

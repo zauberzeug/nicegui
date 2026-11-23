@@ -113,7 +113,7 @@ tiles = [
         Elements like `ui.label`, `ui.markdown`, `ui.restructured_text` and `ui.html` can be used to display text and other content.
     '''),
     (section_controls, '''
-        NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.inputs`, etc.
+        NiceGUI provides a variety of elements for user interaction, e.g. `ui.button`, `ui.slider`, `ui.input`, etc.
     '''),
     (section_audiovisual_elements, '''
         You can use elements like `ui.image`, `ui.audio`, `ui.video`, etc. to display audiovisual content.
@@ -128,7 +128,7 @@ tiles = [
         This section covers fundamental techniques as well as several elements to structure your UI.
     '''),
     (section_styling_appearance, '''
-        NiceGUI allows to customize the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
+        NiceGUI allows customizing the appearance of UI elements in various ways, including CSS, Tailwind CSS and Quasar properties.
     '''),
     (section_action_events, '''
         This section covers timers, UI events, and the lifecycle of NiceGUI apps.
@@ -137,7 +137,7 @@ tiles = [
         A NiceGUI app can consist of multiple pages and other FastAPI endpoints.
     '''),
     (section_configuration_deployment, '''
-        Whether you want to run your app locally or on a server, native or in a browser, we got you covered.
+        Whether you want to run your app locally or on a server, native or in a browser, we've got you covered.
     '''),
     (section_testing, '''
         Write automated UI tests which run in a headless browser (slow) or fully simulated in Python (fast).
@@ -318,7 +318,7 @@ def map_of_nicegui():
             - [`ui.navigate`](/documentation/navigate): let the browser navigate to another location
             - [`ui.notify`](/documentation/notify): show a notification
             - [`ui.on`](/documentation/generic_events#custom_events): register an event handler
-            - [`ui.on_exception`](/documentation/on_exception): register a handler for in-page exceptions (after the page has been sent to the browser)
+            - [`ui.on_exception`](/documentation/section_action_events#ui_on_exception): register a handler for in-page exceptions (after the page has been sent to the browser)
             - [`ui.page_title`](/documentation/page_title): change the current page title
             - [`ui.query`](/documentation/query): query HTML elements on the client side to modify props, classes and style definitions
             - [`ui.run`](/documentation/run) and `ui.run_with`: run the app (standalone or attached to a FastAPI app)

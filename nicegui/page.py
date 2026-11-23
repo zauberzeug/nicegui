@@ -45,7 +45,7 @@ class page:
 
         - The name of the decorated function is unused and can be anything.
         - The page route is determined by the ``path`` argument and registered globally.
-        - The decorator does only work for free functions and static methods.
+        - The decorator only works for free functions and static methods.
           Instance methods or initializers would require a ``self`` argument, which the router cannot associate.
           See `our modularization example <https://github.com/zauberzeug/nicegui/tree/main/examples/modularization/>`_
           for strategies to structure your code.
@@ -58,7 +58,7 @@ class page:
         :param language: language of the page, used for Quasar elements and the ``lang`` attribute of the ``html`` tag
             (defaults to ``language`` argument of ``run`` command, *updated in version 3.14.0*: can be ``None`` to omit the ``lang`` attribute)
         :param response_timeout: maximum time for the decorated function to build the page (default: 3.0 seconds)
-        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to ``reconnect_timeout`` argument of ``run`` command))
+        :param reconnect_timeout: maximum time the server waits for the browser to reconnect (defaults to ``reconnect_timeout`` argument of ``run`` command)
         :param markdown: whether to serve a Markdown representation when a client sends ``Accept: text/markdown``
             (experimental, defaults to ``markdown`` argument of ``run`` command, *added in version 3.11.0*)
         :param api_router: APIRouter instance to use, can be left ``None`` to use the default

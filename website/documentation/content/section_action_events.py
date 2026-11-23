@@ -116,7 +116,7 @@ doc.intro(clipboard_documentation)
 doc.intro(event_documentation)
 
 doc.text('Error handling', '''
-    There are 3 error handling means in NiceGUI:
+    There are 3 error handling mechanisms in NiceGUI:
 
     1. [`app.on_exception`](#lifecycle_events):
         Global exception handler for **all** exceptions in the NiceGUI app.

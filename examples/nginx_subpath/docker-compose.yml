@@ -4,7 +4,9 @@ services:
     volumes:
       - ./app:/app # mount local app directory
   proxy:
-    image: nginx:1.16.0-alpine
+    image: nginx:stable-alpine
+    depends_on:
+      - app
     ports:
       - "80:80" # map internal port 80 to external port 80
     volumes:

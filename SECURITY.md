@@ -73,7 +73,7 @@ We (the team at Zauberzeug) will review it thoroughly and get back to you.
 
 ## Public Discussions
 
-Please restrain from publicly discussing a potential security vulnerability. 🙊
+Please refrain from publicly discussing a potential security vulnerability. 🙊
 
 It's better to discuss privately and try to find a solution first, to limit the potential impact as much as possible.
 

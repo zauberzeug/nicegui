@@ -14,7 +14,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: content
+    id: contribution
     attributes:
       label: Contribution
       description: |

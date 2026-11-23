@@ -199,8 +199,8 @@ class Element(Visibility):
         Elements can have multiple slots, each possibly with a number of children.
         Most elements only have one slot, e.g. a ``ui.card`` (QCard) only has a default slot.
         But more complex elements like ``ui.table`` (QTable) can have more slots like "header", "body" and so on.
-        If you nest NiceGUI elements via with ``ui.row(): ...`` you place new elements inside of the row's default slot.
-        But if you use with ``table.add_slot(...): ...``, you enter a different slot.
+        If you nest NiceGUI elements via ``with ui.row(): ...`` you place new elements inside of the row's default slot.
+        But if you use ``with table.add_slot(...): ...``, you enter a different slot.
 
         The slot stack helps NiceGUI to keep track of which slot is currently used for new elements.
         The ``parent`` field holds a reference to its element.

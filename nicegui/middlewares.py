@@ -2,14 +2,14 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from . import core
+from . import core, helpers
 from .version import __version__
 
 
 class RedirectWithPrefixMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        prefix = request.headers.get('X-Forwarded-Prefix', '')
+        prefix = helpers.get_forwarded_prefix(request)
         response = await call_next(request)
         if 'Location' in response.headers and response.headers['Location'].startswith('/'):
             new_location = prefix + response.headers['Location']

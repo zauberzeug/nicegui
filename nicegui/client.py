@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
-from urllib.parse import parse_qs, quote
+from urllib.parse import parse_qs
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -48,14 +48,6 @@ AI_AGENT_TOKENS = (
     'gemini-deep-research',
     'modelcontextprotocol',
 )
-
-HTML_ESCAPE_TABLE = str.maketrans({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '`': '&#96;',
-    '$': '&#36;',
-})
 
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
@@ -217,15 +209,7 @@ class Client:
                 background=BackgroundTask(self.delete),
             )
         self.outbox.updates.clear()
-        # Defense in depth: `prefix` is reflected into the page (importmap, <script src>, JS `prefix:`, CSS @import)
-        # via `| safe`, and the X-Forwarded-Prefix part is client-controllable on a directly-exposed app or a
-        # pass-through proxy. Percent-encode it with the RFC 3986 path-legal characters as the safe set (unreserved +
-        # sub-delims + ":" "@" "/", plus "%" so an already-encoded prefix isn't double-encoded): quote() then only
-        # touches characters illegal in a URL path (`"` `<` `>` `\` space, non-ASCII), so nothing can break out of a
-        # sink, yet it's a no-op for any well-formed ASCII prefix. Non-ASCII is always encoded (never raw) but can't
-        # round-trip cleanly, since headers are latin-1.
-        prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$&'()*+,;=%") \
-            + request.scope.get('root_path', '')
+        prefix = helpers.get_forwarded_prefix(request) + request.scope.get('root_path', '')
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
@@ -249,7 +233,8 @@ class Client:
             context={
                 'request': request,
                 'version': __version__,
-                'elements': elements.translate(HTML_ESCAPE_TABLE),
+                # JSON escapes for the characters that would break the template literal; str.replace beats str.translate
+                'elements': elements.replace('<', '\\u003c').replace('`', '\\u0060').replace('$', '\\u0024'),
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),

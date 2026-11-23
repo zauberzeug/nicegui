@@ -45,7 +45,7 @@ class ElementFilter(Generic[T]):
         It also provides a fluent interface to apply more filters like excluding elements or filtering for elements within a specific parent.
         The filter can be used as an iterator to iterate over the found elements and is always applied while iterating and not when being instantiated.
 
-        And element is yielded if it matches all of the following conditions:
+        An element is yielded if it matches all of the following conditions:
 
         - The element is of the specified kind (if specified).
         - The element is none of the excluded kinds.

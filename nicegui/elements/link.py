@@ -21,7 +21,7 @@ class Link(TextElement, component='link.js', default_classes='nicegui-link'):
         and link to it with ``ui.link(target="#name")``.
 
         :param text: display text
-        :param target: page function, NiceGUI element on the same page or string that is a an absolute URL or relative path from base URL
+        :param target: page function, NiceGUI element on the same page or string that is an absolute URL or relative path from base URL
         :param new_tab: open link in new tab (default: False)
         """
         super().__init__(text=text)
@@ -42,7 +42,7 @@ class LinkTarget(Element):
     def __init__(self, name: str) -> None:
         """Link target
 
-        Create an anchor tag that can be used as inner-page target for links.
+        Create an anchor tag that can be used as an in-page target for links.
 
         :param name: target name
         """

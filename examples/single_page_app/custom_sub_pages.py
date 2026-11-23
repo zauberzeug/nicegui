@@ -33,7 +33,7 @@ class CustomSubPages(ui.sub_pages):
             ui.icon('error_outline', size='4rem').classes('text-red')
             ui.label('500 - Internal Server Error').classes('text-2xl text-red')
             ui.label(f'The page "{self._router.current_path}" produced an error.').classes('text-gray-600')
-            # we do not recommend to show exception messages in production (security risk)
+            # we do not recommend showing exception messages in production (security risk)
             ui.label(str(error)).classes('text-gray-600')
             with ui.row().classes('mt-4'):
                 ui.button('Go Home', icon='home', on_click=lambda: ui.navigate.to('/')).props('outline')
