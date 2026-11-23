@@ -82,8 +82,10 @@ def get_forwarded_prefix(request: Request) -> str:
     (unreserved + sub-delims + ":" "@" "/", plus "%" so an already-encoded prefix isn't double-encoded)
     only touches characters illegal in a URL path (quotes, angle brackets, backslash, space, control characters, non-ASCII),
     so it can't break out of an HTML, CSS or JS sink, yet it's a no-op for any well-formed ASCII prefix.
+    The only exception is "&", which is encoded as well,
+    because an HTML attribute would otherwise decode character references like "&sol;" into "/".
     Requiring a single leading slash additionally rejects absolute and protocol-relative URLs,
     which would otherwise move resources and redirects to another origin.
     """
-    prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$&'()*+,;=%").rstrip('/')
+    prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$'()*+,;=%").rstrip('/')
     return prefix if prefix.startswith('/') and not prefix.startswith('//') else ''
