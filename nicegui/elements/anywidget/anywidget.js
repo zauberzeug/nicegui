@@ -62,6 +62,7 @@ export default {
       await run_hook(mod.render, { model: this.model, el: this.$el, signal });
       if (signal.aborted) return; // the element was deleted while render was running
     } catch (error) {
+      if (signal.aborted) return; // the element was deleted while the hook was awaiting the signal, e.g. in a fetch
       this.controller.abort(); // AFM: a failing hook aborts its signal, which runs the cleanups wired to it
       throw error;
     }
