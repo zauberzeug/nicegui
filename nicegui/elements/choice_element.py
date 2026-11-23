@@ -46,9 +46,9 @@ class ChoiceElement(ValueElement[Any]):
         return f'{form_label}: {display}' if form_label else display
 
     def _to_valid_value(self, value: Any) -> Any:
+        if isinstance(value, list):
+            return value  # a list may hold entries outside the options, as accepted by the constructor
         self._update_values_and_labels()
-        if getattr(self, 'multiple', False) and isinstance(value, list):
-            return [v for v in value if v in self._values]
         return value if value in self._values else None
 
     def _update_values_and_labels(self) -> None:
@@ -59,7 +59,7 @@ class ChoiceElement(ValueElement[Any]):
         before_value = self.value
         self._props['options'] = [{'value': index, 'label': option} for index, option in enumerate(self._labels)]
         self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
-        self.value = before_value  # re-validated against the current options by _ChoiceValue
+        self.value = before_value  # a scalar is re-validated against the current options by _ChoiceValue
 
     def update(self) -> None:
         with self._props.suspend_updates():
