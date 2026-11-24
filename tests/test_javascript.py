@@ -151,6 +151,5 @@ async def test_received_response_is_not_overwritten_by_client_deletion(user: Use
         results.append(await ui.run_javascript('window.innerWidth', timeout=30))
 
     await user.open('/')
-    await asyncio.sleep(0.1)
-    assert clients[0].is_deleted
+    await clients[0].disconnected()  # the simulated browser answers once the outbox has polled for the connection
     assert results == [42]
