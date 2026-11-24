@@ -138,7 +138,7 @@ async def test_in_flight_run_javascript_resolves_when_client_is_deleted(user: Us
 async def test_received_response_is_not_overwritten_by_client_deletion(user: User):
     """A response that has arrived but not yet been consumed must survive a client deletion."""
     clients: list[Client] = []
-    results = []
+    result: asyncio.Future = asyncio.get_running_loop().create_future()
 
     def respond_and_delete(_):
         asyncio.get_running_loop().call_soon(clients[0].delete)  # runs after the response, before the awaiter resumes
@@ -148,8 +148,7 @@ async def test_received_response_is_not_overwritten_by_client_deletion(user: Use
     @ui.page('/')
     async def page():
         clients.append(ui.context.client)
-        results.append(await ui.run_javascript('window.innerWidth', timeout=30))
+        result.set_result(await ui.run_javascript('window.innerWidth', timeout=30))
 
     await user.open('/')
-    await clients[0].disconnected()  # the simulated browser answers once the outbox has polled for the connection
-    assert results == [42]
+    assert await asyncio.wait_for(result, timeout=1.0) == 42
