@@ -370,6 +370,9 @@ editor.on_focus_change(lambda e: ...)   # editor signals (since 3.18): e.focused
 editor.on_viewport_change(lambda e: ...)  # e.from_line / e.to_line, first and last visible line (throttled to 100 ms)
 editor.on_geometry_change(lambda e: ...)  # e.width / e.height / e.content_height (throttled to 100 ms)
                                         # all three also as constructor kwargs; a signal is only computed while a listener exists
+editor.on_selection_change(lambda e: ...)  # since 4.1: e.ranges (one per cursor), e.main_index, e.main;
+                                        # each range has anchor/head and from_/to/empty as str indices into editor.value,
+                                        # so value[r.from_:r.to] is the selected text; throttled to 50 ms, also as constructor kwarg
 ui.image('/path/to/image.png')          # or URL or base64
 ui.audio('/path/to/audio.mp3')
 ui.video('/path/to/video.mp4')
@@ -1248,6 +1251,7 @@ ui.button('Add', on_click=lambda: (names.append('New'), name_list.refresh()))
 ```python
 ui.input('Email', validation={'Must contain @': lambda v: '@' in v})
 ui.number('Age', min=0, max=150, validation={'Too young': lambda v: v >= 18})
+ui.input('Name', validation={'Name taken': is_available})  # async checks in the dict are awaited (since 4.1)
 ```
 
 ### Async data loading
