@@ -1,6 +1,8 @@
 import asyncio
 import re
 
+import pytest
+
 from nicegui import Client, ui
 from nicegui.testing import Screen, User
 
@@ -94,30 +96,10 @@ def test_simultaneous_async_javascript(screen: Screen):
     screen.should_contain('B: 2')
 
 
-async def test_awaited_run_javascript_resolves_when_client_is_deleted(user: User):
-    """The task awaiting run_javascript must not time out or wait forever when the client is deleted, e.g. after a disconnect."""
-    clients: list[Client] = []
-    results = []
-
-    @ui.page('/')
-    async def page():
-        clients.append(ui.context.client)
-        results.append(await ui.run_javascript('window.innerWidth'))
-
-    await user.http_client.get('/')  # request the page without ever opening the websocket
-    await asyncio.sleep(0)
-    assert not results
-
-    Client.prune_instances(client_age_threshold=0)  # delete the client, waking up connected()
-    await asyncio.sleep(0.1)  # let the page function resume
-    assert results == [None]  # the page function resumed with None instead of timing out
-
-    # calling on a deleted client resolves immediately
-    assert await clients[0].run_javascript('window.innerWidth') is None
-
-
-async def test_in_flight_run_javascript_resolves_when_client_is_deleted(user: User):
-    """An await that is already waiting for the browser's response must resolve with None when the client is deleted."""
+@pytest.mark.parametrize('connected', [False, True])
+async def test_awaited_run_javascript_resolves_when_client_is_deleted(user: User, connected: bool):
+    """The task awaiting run_javascript must not time out or wait forever when the client is deleted, e.g. after a disconnect,
+    neither while waiting for the connection nor while waiting for the browser's response."""
     clients: list[Client] = []
     results = []
 
@@ -126,13 +108,19 @@ async def test_in_flight_run_javascript_resolves_when_client_is_deleted(user: Us
         clients.append(ui.context.client)
         results.append(await ui.run_javascript('window.innerWidth', timeout=30))  # nobody ever answers
 
-    await user.open('/')
-    await asyncio.sleep(0.1)  # the page function is now waiting for the response
+    if connected:
+        await user.open('/')  # the code is sent, the page function waits for the response
+    else:
+        await user.http_client.get('/')  # request the page without ever opening the websocket
+    await asyncio.sleep(0.1)
     assert not results
 
-    clients[0].delete()
-    await asyncio.sleep(0.1)
-    assert results == [None]  # not a TimeoutError after 30 s
+    clients[0].delete()  # as done by Client.prune_instances() or after the reconnect timeout
+    await asyncio.sleep(0.1)  # let the page function resume
+    assert results == [None]  # the page function resumed with None instead of timing out
+
+    # calling on a deleted client resolves immediately
+    assert await clients[0].run_javascript('window.innerWidth') is None
 
 
 async def test_received_response_is_not_overwritten_by_client_deletion(user: User):
