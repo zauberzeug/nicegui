@@ -49,17 +49,37 @@ def test_update(screen: Screen):
     assert screen.find_by_tag('canvas')
 
 
-def test_colon_key_in_dataset_is_not_evaluated(screen: Screen):
+EVIL = {':x': 'document.title = 6 * 7'}
+AXES = {'xAxis': {'type': 'category'}, 'yAxis': {}}
+
+
+@pytest.mark.parametrize('options', [
+    {**AXES, 'dataset': {'source': [EVIL]}, 'series': [{'type': 'bar'}]},
+    {**AXES, 'series': [{'type': 'bar', 'data': [{'value': 1, **EVIL}]}]},
+    {**AXES, 'xAxis': {'type': 'category', 'data': [{'value': 'A', **EVIL}]}, 'series': [{'type': 'bar', 'data': [1]}]},
+    {**AXES, 'series': [{'type': 'line', 'data': [1, 2], 'markPoint': {'data': [{'type': 'max', **EVIL}]}}]},
+    {'series': [{'type': 'graph', 'layout': 'circular', 'nodes': [{'name': 'a', **EVIL}, {'name': 'b'}],
+                 'links': [{'source': 'a', 'target': 'b'}]}]},
+    {'series': [{'type': 'graph', 'layout': 'circular', 'nodes': [{'name': 'a'}, {'name': 'b'}],
+                 'links': [{'source': 'a', 'target': 'b', **EVIL}]}]},
+    {'series': [{'type': 'graph', 'layout': 'circular', 'nodes': [{'name': 'a', 'category': 0}],
+                 'categories': [{'name': 'A', **EVIL}]}]},
+    {'radar': {'indicator': [{'name': 'A', 'max': 1, **EVIL}, {'name': 'B', 'max': 1}, {'name': 'C', 'max': 1}]},
+     'series': [{'type': 'radar', 'data': [{'value': [1, 1, 1]}]}]},
+    {**AXES, 'legend': {'selected': EVIL}, 'series': [{'type': 'bar', 'data': [1]}]},
+    {'series': [{'type': 'pie', 'selectedMap': EVIL, 'data': [{'name': 'a', 'value': 1}]}]},
+], ids=['dataset.source', 'series.data', 'xAxis.data', 'markPoint.data', 'graph.nodes', 'graph.links',
+        'graph.categories', 'radar.indicator', 'legend.selected', 'pie.selectedMap'])
+@pytest.mark.parametrize('via_update', [False, True], ids=['create', 'update'])
+def test_colon_key_in_data_is_not_evaluated(screen: Screen, options: dict, via_update: bool):
     @ui.page('/')
     def page():
-        ui.echart({
-            'dataset': {'source': [{':x': 'document.title = 6 * 7'}]},
-            'xAxis': {'type': 'category'},
-            'yAxis': {},
-            'series': [{'type': 'bar'}],
-        })
+        chart = ui.echart({} if via_update else options)
+        ui.button('Update', on_click=lambda: chart.options.update(options))
 
     screen.open('/')
+    if via_update:
+        screen.click('Update')
     assert screen.find_by_tag('canvas')
     assert screen.selenium.title != '42'
 
