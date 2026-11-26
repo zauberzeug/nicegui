@@ -103,7 +103,7 @@ doc.text('', '''
     Note that the native app is run in a separate
     [process](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Process).
     Therefore any configuration changes from code run under a
-    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) is ignored by the native app.
+    [main guard](https://docs.python.org/3/library/__main__.html#idiomatic-usage) are ignored by the native app.
     The following examples show the difference between a working and a non-working configuration.
 
     For packaged apps (nicegui-pack, PyInstaller, etc.), also see the "Packaging with Native Mode" section below
@@ -237,7 +237,7 @@ doc.text('Custom Vue Components', '''
 
 doc.text('Server Hosting', '''
     To deploy your NiceGUI app on a server, you will need to execute your `main.py` (or whichever file contains your `ui.run(...)`) on your cloud infrastructure.
-    You can, for example, just install the [NiceGUI python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
+    You can, for example, just install the [NiceGUI Python package via pip](https://pypi.org/project/nicegui/) and use systemd or similar service to start the main script.
     In most cases, you will set the port to 80 (or 443 if you want to use HTTPS) with the `ui.run` command to make it easily accessible from the outside.
 
     A convenient alternative is the use of our [pre-built multi-arch Docker image](https://hub.docker.com/r/zauberzeug/nicegui) which contains all necessary dependencies.
@@ -248,7 +248,7 @@ doc.text('Server Hosting', '''
 @doc.ui
 def docker_run():
     bash_window('''
-        docker run -it --restart always \\
+        docker run -d --restart always \\
             -p 80:8080 \\
             -e PUID=$(id -u) \\
             -e PGID=$(id -g) \\
@@ -282,7 +282,7 @@ def docker_compose():
 
 doc.text('', '''
     There are other handy features in the Docker image like non-root user execution and signal pass-through.
-    For more details we recommend to have a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
+    For more details we recommend having a look at our [Docker example](https://github.com/zauberzeug/nicegui/tree/main/examples/docker_image).
 
     To serve your application with [HTTPS](https://fastapi.tiangolo.com/deployment/https/) encryption, you can provide SSL certificates in multiple ways.
     For instance, you can directly provide your certificates to [Uvicorn](https://www.uvicorn.org/), which NiceGUI is based on, by passing the
@@ -363,7 +363,7 @@ doc.text('', '''
 
     - Specifying `--onefile` to `nicegui-pack` will create a single executable file.
     Whilst convenient for distribution, it will be slower to start up.
-    This is not NiceGUI's fault but just the way Pyinstaller zips things into a single file, then unzips everything
+    This is not NiceGUI's fault but just the way PyInstaller zips things into a single file, then unzips everything
     into a temporary directory before running.
     You can mitigate this by removing `--onefile` from the `nicegui-pack` command,
     and zip up the generated `dist` directory yourself, distribute it,
@@ -534,7 +534,7 @@ doc.text('NiceGUI On Air', '''
     This makes it blazing fast even if your app only has a poor internet connection (e.g. a mobile robot in the field).
 
     By setting `on_air=True` you will get a random URL which is valid for 1 hour.
-    If you sign-up at <https://on-air.nicegui.io>, you can setup an organization and device name to get a fixed URL:
+    If you sign up at <https://on-air.nicegui.io>, you can set up an organization and device name to get a fixed URL:
     `https://on-air.nicegui.io/<my-org>/<my_device_name>`.
     The device is then identified by a unique, private token which you can use instead of a boolean flag: `ui.run(on_air='<your token>')`.
     If you [sponsor us](https://github.com/sponsors/zauberzeug),
@@ -546,6 +546,6 @@ doc.text('NiceGUI On Air', '''
     [Reddit](https://www.reddit.com/r/nicegui/), or [Discord](https://discord.gg/TEpFeAaF4f).
 
     **Data Privacy:**
-    We take your privacy very serious.
+    We take your privacy very seriously.
     NiceGUI On Air does not log or store any content of the relayed data.
 ''')

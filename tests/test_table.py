@@ -252,6 +252,8 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
             table = ui.table.from_pandas(df)
             update_from_df = table.update_from_pandas
+            ui.table.from_pandas(DataFrame([['Foo', 'Bar', 'Baz', 'Qux', 'Quux']],
+                                 columns=['same', 'same', 'same_0', 1, '1']))
         else:
             DataFrame = pl.DataFrame
             df = DataFrame({'name': ['Alice', 'Bob'], 'age': [18, 21]})
@@ -265,6 +267,14 @@ def test_create_and_update_from_df(screen: Screen, df_type: str):
     screen.should_contain('Bob')
     screen.should_contain('18')
     screen.should_contain('21')
+    if df_type == 'pandas':
+        screen.should_contain('Foo')
+        screen.should_contain('Bar')
+        screen.should_contain('Baz')
+        screen.should_contain('Qux')
+        screen.should_contain('Quux')
+        screen.should_contain('same_0')
+        screen.should_not_contain('same_1')
 
     screen.click('Update')
     screen.should_contain('Lionel')
@@ -424,7 +434,7 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.should_contain('5')
     screen.should_contain('male')
 
-    screen.click('Update persons with columns')  # updated columns via parameter
+    screen.click('Update persons with columns')  # update columns via parameter
     screen.should_contain('Stephen')
     screen.should_not_contain('32')
 
@@ -432,7 +442,7 @@ def test_columns_from_df(screen: Screen, df_type: str):
     screen.should_contain('Honda')
     screen.should_not_contain('Civic')
 
-    screen.click('Update cars with columns')  # updated columns via parameter
+    screen.click('Update cars with columns')  # update columns via parameter
     screen.should_contain('Hyundai')
     screen.should_contain('i30')
 

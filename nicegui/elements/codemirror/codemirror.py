@@ -12,6 +12,7 @@ from ...events import (
     CodeMirrorFocusChangeEventArguments,
     CodeMirrorGeometryChangeEventArguments,
     CodeMirrorKeyBindingEventArguments,
+    CodeMirrorSelectionChangeEventArguments,
     CodeMirrorViewportChangeEventArguments,
     GenericEventArguments,
     Handler,
@@ -87,6 +88,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         *,
         on_change: Handler[ValueChangeEventArguments[str]] | None = None,
         keymap: dict[str, Handler[CodeMirrorKeyBindingEventArguments] | CodeMirror.KeyBinding] | None = None,
+        on_selection_change: Handler[CodeMirrorSelectionChangeEventArguments] | None = None,
         on_focus_change: Handler[CodeMirrorFocusChangeEventArguments] | None = None,
         on_viewport_change: Handler[CodeMirrorViewportChangeEventArguments] | None = None,
         on_geometry_change: Handler[CodeMirrorGeometryChangeEventArguments] | None = None,
@@ -147,6 +149,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: ``None``)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
+        :param on_selection_change: callback when the selection changes (throttled to 50 ms) (*added in version 4.1.0*)
         :param on_focus_change: callback when the editor gains or loses focus (*added in version 3.18.0*)
         :param on_viewport_change: callback when the visible line range changes (throttled to 100 ms) (*added in version 3.18.0*)
         :param on_geometry_change: callback when the editor or content size changes (throttled to 100 ms) (*added in version 3.18.0*)
@@ -183,7 +186,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         super().__init__(value=value, on_value_change=self._update_codepoints, keymap=keymap,
                          decorations=decorations, decoration_html=decoration_html,
                          line_anchors=line_anchors, on_anchor_change=on_anchor_change,
-                         on_focus_change=on_focus_change,
+                         on_selection_change=on_selection_change, on_focus_change=on_focus_change,
                          on_viewport_change=on_viewport_change, on_geometry_change=on_geometry_change)
         self._codepoints = b''
         self._update_codepoints()
@@ -227,7 +230,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['theme'] = theme
 
     def set_theme(self, theme: SUPPORTED_THEMES) -> Self:
-        """Sets the theme of the editor."""
+        """Set the theme of the editor."""
         self._props['theme'] = theme
         return self
 
@@ -246,7 +249,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['language'] = _resolve_language(language)
 
     def set_language(self, language: SUPPORTED_LANGUAGES | None = None) -> Self:
-        """Sets the language of the editor (case-insensitive)."""
+        """Set the language of the editor (case-insensitive)."""
         self._props['language'] = _resolve_language(language)
         return self
 
@@ -268,7 +271,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         self._props['line-wrapping'] = value
 
     def set_line_wrapping(self, value: bool) -> Self:
-        """Sets whether line wrapping is enabled.
+        """Set whether line wrapping is enabled.
 
         *Added in version 3.2.0*
         """

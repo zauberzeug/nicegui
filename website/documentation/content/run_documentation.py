@@ -24,7 +24,7 @@ def emoji_favicon():
 
 @doc.demo(
     'Base64 favicon', '''
-    You can also use an base64-encoded image as favicon.
+    You can also use a base64-encoded image as favicon.
 ''', tab=lambda: (
         ui.image('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==')
         .classes('size-4'),
@@ -69,7 +69,7 @@ def svg_favicon():
 
 
 @doc.demo('Custom welcome message', '''
-    You can mute the default welcome message on the command line setting the `show_welcome_message` to `False`.
+    You can mute the default welcome message on the command line by setting `show_welcome_message` to `False`.
     Instead you can print your own welcome message with a custom startup handler.
 ''')
 def custom_welcome_message():

@@ -11,7 +11,7 @@ def screen_fixture():
         The `screen` fixture starts a real (headless) browser to interact with your application.
         This is only necessary if you have browser-specific behavior to test.
         NiceGUI itself is thoroughly tested with this fixture to ensure each component works as expected.
-        Therefore we recommend to only use it if you absolutely have to.
+        Therefore we recommend using it only if you absolutely have to.
     ''')
 
     python_window(title='example', code='''
@@ -47,7 +47,7 @@ def web_driver():
     ui.markdown('''
         The `screen` fixture uses Selenium under the hood.
         Currently it is only tested with the Chrome driver.
-        To automatically use it for the tests we suggest to add the option `--driver Chrome` to your `pytest.ini`:
+        To automatically use it for the tests we suggest adding the option `--driver Chrome` to your `pytest.ini`:
     ''')
 
     code_window(title='pytest.ini', language='ini', code='''

@@ -195,7 +195,7 @@ class App(FastAPI):
                 background_tasks.create(result, name=f'exception {name}')
 
     def on_page_exception(self, handler: Callable) -> None:
-        """Called when an exception occurs in a page and allows to create a custom error page.
+        """Called when an exception occurs in a page and allows creating a custom error page.
 
         The callback can accept an optional ``Exception`` as argument.
         All UI elements created in the callback are displayed on the error page.
@@ -228,7 +228,7 @@ class App(FastAPI):
         ``add_static_files()`` makes a local directory available at the specified endpoint, e.g. ``'/static'``.
         This is useful for providing local data like images to the frontend.
         Otherwise the browser would not be able to access the files.
-        Do only put non-security-critical files in there, as they are accessible to everyone.
+        Only put non-security-critical files in there, as they are accessible to everyone.
 
         To make a single file accessible, you can use ``add_static_file()``.
         For media files which should be streamed, you can use ``add_media_files()`` or ``add_media_file()`` instead.
@@ -292,12 +292,12 @@ class App(FastAPI):
         return urllib.parse.quote(path)
 
     def add_media_files(self, url_path: str, local_directory: str | Path) -> None:
-        """Add directory of media files.
+        """Add a directory of media files.
 
-        ``add_media_files()`` allows a local files to be streamed from a specified endpoint, e.g. ``'/media'``.
+        ``add_media_files()`` allows local files to be streamed from a specified endpoint, e.g. ``'/media'``.
         This should be used for media files to support proper streaming.
-        Otherwise the browser would not be able to access and load the the files incrementally or jump to different positions in the stream.
-        Do only put non-security-critical files in there, as they are accessible to everyone.
+        Otherwise the browser would not be able to access and load the files incrementally or jump to different positions in the stream.
+        Only put non-security-critical files in there, as they are accessible to everyone.
 
         To make a single file accessible via streaming, you can use ``add_media_file()``.
         For small static files, you can use ``add_static_files()`` or ``add_static_file()`` instead.
@@ -488,7 +488,10 @@ class App(FastAPI):
 
 
 async def prune_tab_storage(*, force: bool = False) -> None:
-    """Prune tab storage that is older than the configured ``max_tab_storage_age`` and not used by a client anymore."""
+    """Prune tab storage that is older than the configured ``max_tab_storage_age`` and not used by a client anymore.
+
+    Tab storages still in use get their lifetime in the persistence layer refreshed instead.
+    """
     tab_storages = core.app.storage._tabs  # pylint: disable=protected-access
     tab_ids_in_use = {client._pinned_tab_id for client in Client.instances.values()}  # pylint: disable=protected-access
     for tab_id, tab in list(tab_storages.items()):
@@ -498,6 +501,13 @@ async def prune_tab_storage(*, force: bool = False) -> None:
             if isinstance(tab, PersistentDict):
                 await tab.close()
             del tab_storages[tab_id]
+    # a Redis key expires after max_tab_storage_age unless refreshed, even while a client still uses the tab storage (#6487)
+    refreshes = [tab.refresh_ttl() for tab_id, tab in tab_storages.items()
+                 if tab_id in tab_ids_in_use and isinstance(tab, PersistentDict)]
+    results = await asyncio.gather(*refreshes, return_exceptions=True)
+    errors = [result for result in results if isinstance(result, Exception)]
+    if errors:  # one line per tick, a Redis outage would otherwise log one error per connected tab
+        log.error(f'Could not refresh the TTL of {len(errors)} tab storages', exc_info=errors[0])
 
 
 async def prune_user_storage(*, force: bool = False) -> None:
@@ -515,4 +525,4 @@ async def prune_user_storage(*, force: bool = False) -> None:
     results = await asyncio.gather(*[storage.close() for storage in storages_to_close], return_exceptions=True)
     for result in results:
         if isinstance(result, Exception):
-            log.exception(result)
+            log.error('Could not close user storage', exc_info=result)

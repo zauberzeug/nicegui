@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 import pytest
 
-from nicegui import app, background_tasks, ui
+from nicegui import app, background_tasks, core, ui
 from nicegui.testing import Screen, User
 
 # pylint: disable=missing-function-docstring
@@ -182,10 +182,10 @@ def test_create_tasks(screen: Screen) -> None:
         await asyncio.sleep(1.0)
 
     # create before loop started
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match='No running event loop'):
         background_tasks.create(a := async_function('A'))
     a.close()
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match='No running event loop'):
         background_tasks.create_lazy(b := async_function('B'), name='B')
     b.close()
 
@@ -218,3 +218,26 @@ def test_create_tasks(screen: Screen) -> None:
         'G1', 'G2',
         'H1',
     ]
+
+
+@pytest.mark.parametrize('app_loop', ['unset', 'closed'])
+async def test_create_outside_the_app(app_loop: str):
+    """A background task runs in async tests that never started the app (#6508).
+
+    ``core.loop`` is set explicitly, because whether it is unset or the closed loop of a previous run
+    would otherwise depend on the order of the tests.
+    """
+    events: list[str] = []
+
+    async def async_function() -> None:
+        events.append('ran')
+
+    closed_loop = asyncio.new_event_loop()
+    closed_loop.close()
+    original_loop = core.loop
+    core.loop = {'unset': None, 'closed': closed_loop}[app_loop]
+    try:
+        await background_tasks.create(async_function())
+    finally:
+        core.loop = original_loop
+    assert events == ['ran']

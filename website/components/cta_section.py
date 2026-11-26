@@ -13,7 +13,7 @@ def create() -> None:
             ui.label(t('Browse through plenty of live demos.')) \
                 .classes(f'{d.TEXT_CTA_TITLE} font-semibold tracking-tight mb-2 {d.TEXT_PRIMARY}') \
                 .props('role=heading aria-level=2')
-            ui.label(t('Fun-Fact: This whole website is also made with NiceGUI.')) \
+            ui.label(t('Fun fact: This whole website is also made with NiceGUI.')) \
                 .classes(f'{d.TEXT_19PX} mb-8 {d.TEXT_SECONDARY}')
             cta_button(t('Documentation'), on_click=lambda: ui.navigate.to(url('/documentation'))).classes('mb-12')
             ui.markdown(t('''

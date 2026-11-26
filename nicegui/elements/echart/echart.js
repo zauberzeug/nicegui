@@ -1,7 +1,22 @@
 import { echarts, loadEchartsGL } from "nicegui-echart";
 import { convertDynamicProperties } from "../../static/utils/dynamic_properties.js";
 
-const DATASET_KEYS = new Set(["source"]);
+// Options whose content comes from data: lists of items and dictionaries keyed by data names.
+// Derived from the ECharts option types (types/dist/shared.d.ts); recheck when updating ECharts.
+const DATA_KEYS = new Set([
+  "data",
+  "source",
+  "nodes",
+  "links",
+  "edges",
+  "categories",
+  "indicator",
+  "regions",
+  "nameMap",
+  "selected",
+  "selectedMap",
+  "geoCoord",
+]);
 
 export default {
   template: "<div></div>",
@@ -98,7 +113,7 @@ export default {
         if (!this.unmounted) setTimeout(this.update_chart, 10); // the chart is still being created
         return;
       }
-      convertDynamicProperties(this.options, true, DATASET_KEYS);
+      convertDynamicProperties(this.options, true, DATA_KEYS);
       this.chart.setOption(this.options, {
         notMerge: this.chart.getOption()?.series?.length != this.options.series?.length,
       });

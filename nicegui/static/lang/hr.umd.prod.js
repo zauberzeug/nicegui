@@ -1,5 +1,5 @@
 /*!
-* Quasar Framework v2.35.2
+* Quasar Framework v2.35.3
 * (c) 2015-present Razvan Stoenescu
 * Released under the MIT License.
 */

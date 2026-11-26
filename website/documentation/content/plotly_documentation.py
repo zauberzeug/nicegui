@@ -150,8 +150,8 @@ def large_datasets():
 
 @doc.demo('Dynamic resampling', '''
     Binary encoding makes _transferring_ many points cheap, but plotly.js still has to _render_ every point it receives.
-    This recipe keeps the full series on the server and sends only a downsampled version of the visible range,
-    selected with the MinMaxLTTB algorithm from [tsdownsample](https://github.com/predict-idlab/tsdownsample) (`pip install tsdownsample`).
+    This recipe keeps the full series on the server and sends only a downsampled version of the visible range:
+    the range is split into buckets, and only the minimum and maximum of each bucket plus the two endpoints of the range are sent, so peaks are preserved.
     Every zoom or pan resamples the new range, so you can drill down to full resolution.
     Double-click the chart to reset the axes.
 
@@ -162,15 +162,15 @@ def large_datasets():
 
     The recipe handles one numeric x series.
     For other data shapes, adapt the functions to your data.
+    Libraries like [tsdownsample](https://github.com/predict-idlab/tsdownsample) offer faster and more refined algorithms.
 ''')
 def dynamic_resampling():
     import numpy as np
     import plotly.graph_objects as go
-    from tsdownsample import MinMaxLTTBDownsampler
 
     from nicegui import events
 
-    N_SAMPLES = 1000
+    N_BUCKETS = 500
     x = np.arange(100_000)
     y = np.sin(x / 1_000) + np.random.normal(0, 0.1, x.size)
 
@@ -178,8 +178,10 @@ def dynamic_resampling():
     plot = ui.plotly(fig).classes('w-full h-40')
 
     def show(start: int = 0, end: int = len(x)) -> None:
-        if end - start > N_SAMPLES:
-            indices = start + MinMaxLTTBDownsampler().downsample(x[start:end], y[start:end], n_out=N_SAMPLES)
+        if end - start > 2 * N_BUCKETS:
+            buckets = np.array_split(np.arange(start, end), N_BUCKETS)
+            extrema = [(b[y[b].argmin()], b[y[b].argmax()]) for b in buckets]
+            indices = np.unique([start, *np.ravel(extrema), end - 1])
         else:
             indices = np.arange(start, end)
         fig.update_traces(x=x[indices], y=y[indices])

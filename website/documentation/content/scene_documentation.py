@@ -132,7 +132,7 @@ def context_menu_for_3d_objects():
 
 @doc.demo('Draggable objects', '''
     You can make objects draggable using the `.draggable` method.
-    There is an optional `on_drag_start` and `on_drag_end` argument to `ui.scene` to handle drag events.
+    There are optional `on_drag_start` and `on_drag_end` arguments to `ui.scene` to handle drag events.
     The callbacks receive a `SceneDragEventArguments` object with the following attributes:
 
     - `type`: the type of drag event ("dragstart" or "dragend").
@@ -230,7 +230,7 @@ async def wait_for_init() -> None:
       Similar to orbit, but it keeps going around the poles.
       It is a good choice for applications where camera flexibility is important.
     - "map":
-      Allows to pan and zoom like in a 3D map view application.
+      Allows panning and zooming like in a 3D map view application.
       Good for map-like applications such as in [RoSys](https://rosys.io).
 ''')
 def change_controls() -> None:

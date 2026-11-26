@@ -3,7 +3,7 @@ import weakref
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self
 
 from ... import binding
 from ...awaitable_response import AwaitableResponse, NullResponse
@@ -18,6 +18,9 @@ from ...events import (
 )
 from ..mixins.cancelable_wait_element import CancelableWaitElement
 from .scene_object3d import Object3D
+
+if TYPE_CHECKING:
+    from .scene_view import SceneView
 
 
 @dataclass(kw_only=True, slots=True)
@@ -94,12 +97,12 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param width: width of the canvas
         :param height: height of the canvas
         :param grid: whether to display a grid (boolean or tuple of ``size`` and ``divisions`` for `Three.js' GridHelper <https://threejs.org/docs/#api/en/helpers/GridHelper>`_, default: 100x100 unless ``polar_grid`` is given)
-        :param camera: camera definition, either instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
+        :param camera: camera definition, either an instance of ``ui.scene.perspective_camera`` (default) or ``ui.scene.orthographic_camera``
         :param on_click: callback to execute when a 3D object is clicked (use ``click_events`` to specify which events to subscribe to)
         :param click_events: list of JavaScript click events to subscribe to (default: ``('click', 'dblclick')``)
         :param on_drag_start: callback to execute when a 3D object is dragged
         :param on_drag_end: callback to execute when a 3D object is dropped
-        :param drag_constraints: comma-separated JavaScript expression for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
+        :param drag_constraints: comma-separated JavaScript expressions for constraining positions of dragged objects (e.g. ``'x = 0, z = y / 2'``)
         :param background_color: background color of the scene (default: "#eee")
         :param control_type: type of controls to use for navigating the scene, one of "orbit", "trackball", "map" (default: "orbit", *added in version 3.9.0*)
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
@@ -126,6 +129,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._batched_calls: list[list[Any]] | None = None
         self._initialized_event = asyncio.Event()
         self._settled_event = asyncio.Event()
+        self._views: weakref.WeakSet[SceneView] = weakref.WeakSet()
         self._click_handlers = [on_click] if on_click else []
         self._props['click-events'] = list(click_events)
         self._drag_start_handlers = [on_drag_start] if on_drag_start else []
@@ -168,7 +172,7 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
 
     @staticmethod
     def orthographic_camera(*, size: float = 10, near: float = 0.1, far: float = 1000) -> SceneCamera:
-        """Create a orthographic camera.
+        """Create an orthographic camera.
 
         The size defines the vertical size of the view volume, i.e. the distance between the top and bottom clipping planes.
         The left and right clipping planes are set such that the aspect ratio matches the viewport.
@@ -327,6 +331,8 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
 
     def _handle_delete(self) -> None:
         binding.remove(list(self.objects.values()))
+        for view in self._views:
+            view._handle_scene_delete()  # pylint: disable=protected-access
         super()._handle_delete()
 
     def delete_objects(self, predicate: Callable[[Object3D], bool] = lambda _: True) -> None:

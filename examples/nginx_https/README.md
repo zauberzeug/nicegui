@@ -38,15 +38,15 @@ For running the app under a subpath, have a look at https://github.com/zauberzeu
 ## Deploy in production in your self-hosted NGINX
 
 - For production, you will need your own domain and a proper SSL certificate issued by a recognized Certificate Authority (CA).
-  You can consider the free CA [Let's Encrypt](https://letsencrypt.org/) provided by the Internal Security Research Group, and use their [Certbox](https://certbot.eff.org/instructions) tool to generate the certificates for your own domain.
+  You can consider the free CA [Let's Encrypt](https://letsencrypt.org/) provided by the Internet Security Research Group, and use their [Certbot](https://certbot.eff.org/instructions) tool to generate the certificates for your own domain.
 
 - If you already have an NGINX server running and want to add your NiceGUI app,
   you can reuse a stripped-down version of the nginx.conf file,
-  [nginx_site.conf](https://github.com/zauberzeug/nicegui/blob/main/example/nginx_https/nginx_site.conf).
+  [nginx_site.conf](https://github.com/zauberzeug/nicegui/blob/main/examples/nginx_https/nginx_site.conf).
 
 ```bash
 sudo cp nginx_site.conf /etc/nginx/sites-available/my_nicegui_app.conf
 sudo nano /etc/nginx/sites-available/my_nicegui_app.conf # customize your domain, certificates, port number, etc.
-sudo ln -s /etc/nginx/sites-available/mynicegui_app.conf /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/my_nicegui_app.conf /etc/nginx/sites-enabled
 sudo systemctl reload nginx
 ```

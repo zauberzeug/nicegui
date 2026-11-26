@@ -273,12 +273,22 @@ class BindableProperty:
 
     def __set__(self, owner: Any, value: Any) -> None:
         has_attr = hasattr(owner, '___' + self.name)
-        value_changed = has_attr and getattr(owner, '___' + self.name) != value
+        previous_value = getattr(owner, '___' + self.name) if has_attr else None
+        value_changed = has_attr and previous_value != value
         if has_attr and not value_changed:
             return
         setattr(owner, '___' + self.name, value)
         _propagate(owner, (self.name,))
-        if value_changed and self._change_handler is not None:
+        if value_changed:
+            self._handle_change(owner, value, previous_value)
+
+    def _handle_change(self, owner: Any, value: Any, previous_value: Any) -> None:  # pylint: disable=unused-argument
+        """Notify about a changed value.
+
+        The default calls the ``on_change`` handler with the new value only;
+        subclasses can override this method to also receive the previous value.
+        """
+        if self._change_handler is not None:
             self._change_handler(owner, value)
 
 

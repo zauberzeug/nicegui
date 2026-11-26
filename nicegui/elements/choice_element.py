@@ -4,7 +4,14 @@ from ..events import Handler, ValueChangeEventArguments
 from .mixins.value_element import ValueElement
 
 
+class _ChoiceValue(ValueElement._ValueProperty):  # pylint: disable=protected-access
+
+    def __set__(self, owner: Any, value: Any) -> None:
+        super().__set__(owner, owner._to_valid_value(value))  # pylint: disable=protected-access
+
+
 class ChoiceElement(ValueElement[Any]):
+    value = _ChoiceValue()
 
     def __init__(self, *,
                  tag: str | None = None,
@@ -36,6 +43,12 @@ class ChoiceElement(ValueElement[Any]):
         form_label = getattr(self, 'label', None) or ''
         return f'{form_label}: {display}' if form_label else display
 
+    def _to_valid_value(self, value: Any) -> Any:
+        if isinstance(value, list):
+            return value  # a list may hold entries outside the options, as accepted by the constructor
+        self._update_values_and_labels()
+        return value if value in self._values else None
+
     def _update_values_and_labels(self) -> None:
         self._values = self.options if isinstance(self.options, list) else list(self.options.keys())
         self._labels = self.options if isinstance(self.options, list) else list(self.options.values())
@@ -44,8 +57,7 @@ class ChoiceElement(ValueElement[Any]):
         before_value = self.value
         self._props['options'] = [{'value': index, 'label': option} for index, option in enumerate(self._labels)]
         self._props[self.VALUE_PROP] = self._value_to_model_value(before_value)
-        if not isinstance(before_value, list):  # no need to update value in case of multi-select
-            self.value = before_value if before_value in self._values else None
+        self.value = before_value  # a scalar is re-validated against the current options by _ChoiceValue
 
     def update(self) -> None:
         with self._props.suspend_updates():

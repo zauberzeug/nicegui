@@ -12,10 +12,17 @@ gh api 'repos/zauberzeug/nicegui/dependabot/alerts?state=open'
 
 ## Python alerts (`uv.lock`)
 
-Alerts on `uv.lock` are fixed by a pin in `pyproject.toml`, not by only re-locking:
-add `"<pkg>>=<patched>",  # https://github.com/zauberzeug/nicegui/security/dependabot/<number>` to the section that pulls the package in
-(`dependencies` for runtime deps, the `dev` group for test-only deps; append `, for <parent>` if it is transitive — `uv tree --invert --package <pkg>` shows the parents),
-then run `uv lock` and check that the patched version satisfies `requires-python`.
+Follow "Updating Python dependencies" in `CONTRIBUTING.md`.
+In short, `uv tree --no-dev --universal --invert --package <pkg>` decides:
+
+- **Runtime dependency** (the package shows up):
+  raise or add `"<pkg>>=<patched>",  # https://github.com/advisories/<GHSA-ID>` in `dependencies` or in the extra that pulls it in,
+  appending `, for <parent>` if it is transitive.
+  The GHSA ID is in the alert's `security_advisory.ghsa_id`.
+- **Development-only dependency** (the package does not show up):
+  run `uv lock --upgrade-package <pkg>` and leave `pyproject.toml` untouched.
+
+Check that the patched version satisfies `requires-python`.
 Commit `pyproject.toml` and `uv.lock` together; `DEPENDENCIES.md` only covers npm packages and stays unchanged.
 
 ## Prebuilt bundles (plotly, json_editor, mermaid)

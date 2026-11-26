@@ -86,7 +86,8 @@ class DecorationElement(Element):
     def decorations(self, decorations: list[dict] | None) -> None:
         decorations = decorations or []
         _validate_decorations(decorations)
-        self._props['decorations'][:] = decorations
+        if decorations or self._props['decorations']:  # equal non-empty decorations are re-applied on purpose
+            self._props['decorations'][:] = decorations
 
     def _mark_decorations_pending(self) -> None:
         self._decorations_pending = True

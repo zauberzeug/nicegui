@@ -25,6 +25,9 @@ def create(awaitable: Awaitable[Any], *,
     Also a reference to the task is kept until it is done, so that the task is not garbage collected mid-execution.
     See https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task.
 
+    The task is created on the app's event loop while the app runs (see ``core.get_loop()``).
+    Outside the app, e.g. in async tests, this is the caller's loop and the task is not cancelled on shutdown.
+
     :param awaitable: the awaitable to wrap
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
     :param handle_exceptions: if ``True`` (default) possible exceptions are forwarded to the exception handlers
@@ -32,9 +35,9 @@ def create(awaitable: Awaitable[Any], *,
     :param context: a context manager to await the awaitable in, e.g. a container element or ``ui.context.client``
         (default: ``None``, *added in version 3.18.0*)
     """
-    assert core.loop is not None
+    loop = core.get_loop()
     if context is None:
-        task = core.loop.create_task(_ensure_coroutine(awaitable), name=name)
+        task = loop.create_task(_ensure_coroutine(awaitable), name=name)
         if handle_exceptions:
             task.add_done_callback(_handle_exceptions)
     else:
@@ -44,7 +47,7 @@ def create(awaitable: Awaitable[Any], *,
             if slots:
                 client = slots[-1].parent.client  # resolve it now, because the element may be deleted while awaiting
         coro = _await_in_context(awaitable, context, client or nullcontext(), handle_exceptions=handle_exceptions)
-        task = core.loop.create_task(coro, name=name)
+        task = loop.create_task(coro, name=name)
         if handle_exceptions:
             task.add_done_callback(_retrieve_exception)  # the exception has already been handled in-context
         if asyncio.iscoroutine(awaitable):
@@ -61,7 +64,7 @@ def create(awaitable: Awaitable[Any], *,
 
 def create_or_defer(awaitable: Awaitable, *, name: str = 'unnamed task',
                     context: AbstractContextManager | None = None) -> None:
-    """Create a background task, or defer to app startup if the event loop isn't running yet.
+    """Create a background task, or defer to app startup if the app's event loop isn't running yet.
 
     :param awaitable: the awaitable to schedule
     :param name: the name of the task which is helpful for debugging (default: "unnamed task")
@@ -96,7 +99,7 @@ def create_lazy(awaitable: Awaitable[Any], *, name: str) -> None:
 
 
 def create_lazy_or_defer(awaitable: Awaitable, *, name: str) -> None:
-    """Create a lazy task, or defer to app startup if the event loop isn't running yet."""
+    """Create a lazy task, or defer to app startup if the app's event loop isn't running yet."""
     if core.is_loop_running():
         create_lazy(awaitable, name=name)
     else:
@@ -186,22 +189,25 @@ def _handle_exceptions(task: asyncio.Task) -> None:
 
 async def teardown() -> None:
     """Cancel all running tasks and coroutines on shutdown. (For internal use only.)"""
-    while running_tasks or lazy_tasks_running:
-        tasks = running_tasks | set(lazy_tasks_running.values())
+    loop = asyncio.get_running_loop()
+    while True:
+        # tasks of other loops, e.g. of async tests that never started the app, can't be cancelled or awaited from here
+        tasks = {t for t in running_tasks | set(lazy_tasks_running.values()) if t.get_loop() is loop}
+        if not tasks:
+            break
         for task in tasks:
             if task.done() or task.cancelled() or task in _await_tasks_on_shutdown:
                 continue
             task.cancel()
-        if tasks:
-            await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it shuts down
-            try:
-                await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
-            except TimeoutError:
-                log.error('Could not cancel %s tasks within timeout: %s',
-                          len(tasks),
-                          ', '.join(t.get_name() for t in tasks if not t.done()))
-            except Exception:
-                log.exception('Error while cancelling tasks')
+        await asyncio.sleep(0)  # ensure the loop can cancel the tasks before it shuts down
+        try:
+            await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=2.0)
+        except TimeoutError:
+            log.error('Could not cancel %s tasks within timeout: %s',
+                      len(tasks),
+                      ', '.join(t.get_name() for t in tasks if not t.done()))
+        except Exception:
+            log.exception('Error while cancelling tasks')
     for awaitable in lazy_coroutines_waiting.values():
         if asyncio.iscoroutine(awaitable):
             awaitable.close()

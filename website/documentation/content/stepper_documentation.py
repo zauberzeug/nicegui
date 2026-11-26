@@ -23,7 +23,7 @@ def main_demo() -> None:
 
 
 @doc.demo('Dynamic Stepper', '''
-    Steps can be added dynamically and positioned via `ui.move()`.
+    Steps can be added dynamically and positioned via `move()`.
 ''')
 def dynamic_stepper() -> None:
     def next_step() -> None:

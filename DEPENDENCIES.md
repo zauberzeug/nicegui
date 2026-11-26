@@ -4,7 +4,7 @@
 - @unocss/reset: 66.12.0 ([MIT](https://opensource.org/licenses/MIT))
 - @unocss/runtime: 66.12.0 ([MIT](https://opensource.org/licenses/MIT))
 - dompurify: 3.4.17 ([MPL-2.0](https://opensource.org/licenses/MPL-2.0) or [Apache-2.0](https://opensource.org/licenses/Apache-2.0))
-- quasar: 2.35.2 ([MIT](https://opensource.org/licenses/MIT))
+- quasar: 2.35.3 ([MIT](https://opensource.org/licenses/MIT))
 - socket.io: 4.8.4 ([MIT](https://opensource.org/licenses/MIT))
 - vue: 3.5.44 ([MIT](https://opensource.org/licenses/MIT))
 - ag-grid-community: 36.2.0 ([MIT](https://opensource.org/licenses/MIT))

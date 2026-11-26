@@ -94,9 +94,11 @@ class AgGrid(Element, component='aggrid.js', esm={'nicegui-aggrid': 'dist'}, def
         :return: AG Grid element
         """
         options = options or {}
-        rows, columns = helpers.pandas_to_records(df)
+        rows, columns, labels = helpers.pandas_to_records(df)
         return cls({
-            'columnDefs': [{'field': str(col)} for col in columns],
+            'columnDefs': [{'field': str(col)} if str(col) == str(label) else
+                           {'field': str(col), 'headerName': helpers.camel_to_title_case(str(label))}
+                           for col, label in zip(columns, labels, strict=True)],
             'rowData': rows,
             'suppressFieldDotNotation': True,
             **options,

@@ -78,18 +78,46 @@ def test_adding_single_media_file(screen: Screen):
     assert_video_file_streaming(url_path)
 
 
-def test_invalid_range_header_returns_416(screen: Screen):
-    app.add_media_files('/media', Path(TEST_DIR) / 'media')
+def test_media_file_ranges(tmp_path: Path, screen: Screen):
+    media = tmp_path / 'clip.bin'
+    media.write_bytes(b'abcdefghij')
+    url_path = app.add_media_file(local_file=media)
 
     @ui.page('/')
     def page():
         ui.label('Hello, world!')
 
     screen.open('/')
+    cases = [
+        ('bytes=-4', 206, 'bytes 6-9/10', b'ghij'),
+        ('bytes=-10', 206, 'bytes 0-9/10', b'abcdefghij'),
+        ('bytes=-100', 206, 'bytes 0-9/10', b'abcdefghij'),
+        ('bytes=6-', 206, 'bytes 6-9/10', b'ghij'),
+        ('bytes=2-5', 206, 'bytes 2-5/10', b'cdef'),
+        ('bytes=2-500', 206, 'bytes 2-9/10', b'cdefghij'),
+        ('bytes=-0', 416, 'bytes */10', b''),
+        ('bytes=5-2', 416, 'bytes */10', b''),
+        ('bytes=10-20', 416, 'bytes */10', b''),
+        ('bytes=abc-def', 416, 'bytes */10', b''),
+        ('invalid', 200, None, b'abcdefghij'),
+        ('items=0-5', 200, None, b'abcdefghij'),
+        ('bytes=0-1,5-6', 200, None, b'abcdefghij'),
+    ]
+    url = f'http://localhost:{Screen.PORT}{url_path}'
     with httpx2.Client() as http_client:
-        for range_value in ['bytes=1000-500', 'bytes=9999-10000', 'bytes=abc-def', 'invalid']:
-            r = http_client.get(f'http://localhost:{Screen.PORT}/media/test.mp4', headers={'Range': range_value})
-            assert r.status_code == 416, f'Expected 416 for Range: {range_value}'
+        for range_header, status_code, content_range, content in cases:
+            response = http_client.get(url, headers={'Range': range_header})
+            assert response.status_code == status_code, f'Range: {range_header} should return {status_code}'
+            assert response.headers.get('Content-Range') == content_range, f'Range: {range_header}'
+            assert response.headers['Content-Length'] == str(len(content)), f'Range: {range_header}'
+            assert response.content == content, f'Range: {range_header}'
+
+        etag = http_client.get(url).headers['ETag']
+        matching = http_client.get(url, headers={'Range': 'bytes=-4', 'If-Range': etag})
+        assert matching.status_code == 206, 'a matching If-Range should keep the range'
+        stale = http_client.get(url, headers={'Range': 'bytes=-4', 'If-Range': '"other"'})
+        assert stale.status_code == 200, 'a stale If-Range should serve the whole file'
+        assert stale.content == b'abcdefghij'
 
 
 def test_malicious_chunk_size_is_clamped(screen: Screen):

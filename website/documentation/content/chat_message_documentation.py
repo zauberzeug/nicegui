@@ -43,7 +43,7 @@ def multiple_messages():
 def child_elements():
     with ui.chat_message():
         ui.label('Guess where I am!')
-        ui.image('https://picsum.photos/id/249/640/360').classes('w-64')
+        ui.image('https://nicegui.io/images/bridge/640/360').classes('w-64')
 
 
 doc.reference(ui.chat_message)

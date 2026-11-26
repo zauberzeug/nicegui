@@ -27,8 +27,8 @@ with ui.row().classes('w-full flex items-center'):
         </filter>
     '''
 ui.markdown(
-    'Images where discovered through <https://stackoverflow.com/a/57579290/364388>. '
-    'SVG filters where used to colorize the mask. You may want to check out <https://webplatform.github.io/docs/svg/tutorials/smarter_svg_filters/>.'
+    'Images were discovered through <https://stackoverflow.com/a/57579290/364388>. '
+    'SVG filters were used to colorize the mask. You may want to check out <https://webplatform.github.io/docs/svg/tutorials/smarter_svg_filters/>.'
 ).classes('mt-4')
 
 ui.run()

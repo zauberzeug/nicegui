@@ -27,7 +27,7 @@ def long_press_demo():
 @doc.demo('Tracking fullscreen state', '''
     You can track when the fullscreen state changes.
 
-    Note that due to security reasons, fullscreen mode can only be entered from a previous user interaction
+    Note that for security reasons, fullscreen mode can only be entered from a previous user interaction
     such as a button click.
 ''')
 def state_demo():

@@ -20,7 +20,7 @@ async def index():
     textarea = ui.textarea(value='Hello World!')
     ui.button('Download', on_click=lambda: ui.download(download_path))
 
-    # cleanup the download route after the client disconnected
+    # clean up the download route after the client disconnects
     await ui.context.client.disconnected()
     app.routes[:] = [route for route in app.routes if route.path != download_path]
 

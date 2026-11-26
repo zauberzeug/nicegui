@@ -5,7 +5,7 @@ from . import doc
 
 @doc.demo(ui.context_menu)
 def main_demo() -> None:
-    with ui.image('https://picsum.photos/id/377/640/360'):
+    with ui.image('https://nicegui.io/images/night/640/360'):
         with ui.context_menu():
             ui.menu_item('Flip horizontally')
             ui.menu_item('Flip vertically')
@@ -25,7 +25,7 @@ def update_context_menu() -> None:
         with context_menu.clear():
             ui.menu_item(f'Add circle at ({e.image_x:.0f}, {e.image_y:.0f})')
 
-    source = 'https://picsum.photos/id/377/640/360'
+    source = 'https://nicegui.io/images/night/640/360'
     with ui.interactive_image(source, on_mouse=update_menu, events=['contextmenu']):
         context_menu = ui.context_menu()
 

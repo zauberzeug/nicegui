@@ -39,5 +39,5 @@ fi
 export PATH=/home/appuser/.local/bin:$PATH
 
 # Switch to appuser and execute the Docker CMD or passed in command-line arguments.
-# Using setpriv let's it run as PID 1 which is required for proper signal handling (similar to gosu/su-exec).
+# Using setpriv lets it run as PID 1 which is required for proper signal handling (similar to gosu/su-exec).
 exec setpriv --reuid=$PUID --regid=$PGID --init-groups $@

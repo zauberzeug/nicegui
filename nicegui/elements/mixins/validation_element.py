@@ -28,7 +28,7 @@ class ValidationElement(ValueElement[ValueT]):
 
     @validation.setter
     def validation(self, validation: ValidationFunction[ValueT] | ValidationDict[ValueT] | None) -> None:
-        """Sets the validation function or dictionary of validation functions.
+        """Set the validation function or dictionary of validation functions.
 
         :param validation: validation function or dictionary of validation functions (``None`` to disable validation)
         """
@@ -42,7 +42,7 @@ class ValidationElement(ValueElement[ValueT]):
 
     @error.setter
     def error(self, error: str | None) -> None:
-        """Sets the error message.
+        """Set the error message.
 
         :param error: The optional error message
         """
