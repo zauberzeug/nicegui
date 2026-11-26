@@ -93,9 +93,6 @@ jobs:
     uses: $/.github/workflows/_docker.yml
     with:
       version: ${{ needs.extract-version.outputs.version }}
-    secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   verify:
     needs: [extract-version, docker]

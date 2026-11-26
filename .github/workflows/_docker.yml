@@ -7,11 +7,6 @@ on:
         description: "Version to build (e.g., 1.2.3)"
         required: true
         type: string
-    secrets:
-      DOCKER_USERNAME:
-        required: true
-      DOCKER_PASSWORD:
-        required: true
 
 jobs:
   docker:
@@ -27,10 +22,9 @@ jobs:
       - name: Prepare Docker image
         id: prep
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           VERSION: ${{ inputs.version }}
         run: |
-          DOCKER_IMAGE=${DOCKER_USERNAME}/${GITHUB_REPOSITORY#*/}
+          DOCKER_IMAGE=zauberzeug/${GITHUB_REPOSITORY#*/}
           SHORTREF=${GITHUB_SHA::8}
           TAGS="${DOCKER_IMAGE}:${VERSION},${DOCKER_IMAGE}:${SHORTREF}"
 
@@ -50,8 +44,8 @@ jobs:
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1  # v4.4.0
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550  # v4.8.0
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: zauberzeug
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
         with:
@@ -84,7 +78,7 @@ jobs:
           cache-to: type=registry,ref=${{ steps.prep.outputs.docker_image }}:buildcache-arm64,mode=max
       - uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa  # v5.0.0
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: zauberzeug
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: zauberzeug/nicegui
           short-description: "Web Based User Interface for Python with Buttons, Dialogs, Markdown, 3D Scenes and Plots"
