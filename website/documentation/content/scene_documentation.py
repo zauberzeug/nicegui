@@ -491,16 +491,16 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
-@doc.demo('Orientation axes inset', '''
-    `set_axes_inset` overlays a small XYZ orientation gizmo in the corner of the scene
-    (using Three.js' `ViewHelper`). Click an axis on the inset to snap-animate the camera
-    so it looks down that axis. `set_axes_labels` replaces the default `X`/`Y`/`Z` labels
-    and customizes their font, color, and disc radius.
+@doc.demo('Axes Inset', '''
+    The `axes_inset` parameter of `ui.scene` shows the axes in a corner, `True` for the bottom right.
+    Clicking one of them turns the camera to view the scene from that side.
+    `axes_labels` names the axes.
+
+    *Added in version 4.2.0*
 ''')
 def axes_inset() -> None:
-    scene = ui.scene().classes('w-full h-64')
-    scene.set_axes_inset(enabled=True, anchor='top-right')
-    scene.set_axes_labels(labels=('Forward', 'Left', 'Up'), color='#ffffff', radius=18)
+    with ui.scene(axes_inset='top-right', axes_labels=('E', 'N', 'U')).classes('w-full h-64') as scene:
+        scene.box()
 
 
 doc.reference(ui.scene)

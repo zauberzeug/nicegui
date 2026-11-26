@@ -209,7 +209,7 @@ export default {
         this.renderer.autoClear = false;
         this.viewHelper.render(this.renderer);
         this.renderer.autoClear = autoClear;
-        if (this.viewHelper.animating) this.viewHelper.update(delta);
+        if (this.viewHelper.animating) this.turn_to_inset_axis(delta);
       }
       if (this.stats) this.stats.update();
     };
@@ -217,6 +217,7 @@ export default {
 
     const raycaster = new THREE.Raycaster();
     const click_handler = (mouseEvent) => {
+      if (this.inset_pressed) return; // the click turned the camera to an axis of the inset
       let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
       raycaster.setFromCamera({ x: x, y: y }, this.camera);
@@ -240,15 +241,16 @@ export default {
     };
     this.clickEvents.forEach((event) => this.$el.addEventListener(event, click_handler));
 
-    // Forward pointerdown to viewHelper.handleClick so clicking an X/Y/Z axis sprite snap-animates
-    // the camera. We register in capture phase + stopImmediatePropagation when handleClick consumes
-    // the event so OrbitControls' pointerdown listener (registered earlier on the same element)
-    // doesn't try to start a drag-rotate on what was meant to be an inset axis click.
-    this.renderer.domElement.addEventListener("pointerdown", (event) => {
-      if (this.viewHelper && this.viewHelper.handleClick(event)) {
-        event.stopImmediatePropagation();
-      }
-    }, true);
+    // in the capture phase, so that a press on an axis of the inset neither starts the controls nor a drag
+    this.renderer.domElement.addEventListener(
+      "pointerdown",
+      (event) => {
+        this.inset_pressed = Boolean(this.viewHelper?.handleClick(event));
+        if (this.inset_pressed) event.stopImmediatePropagation();
+      },
+      true,
+    );
+    this.apply_axes_inset();
 
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
@@ -371,43 +373,36 @@ export default {
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
-    set_axes_inset(opts) {
-      this._axes = opts || {};
-      if (this._axes.enabled) {
-        if (!this.viewHelper) {
-          this.viewHelper = new ViewHelper(this.camera, this.renderer.domElement);
-          if (this.controls && this.controls.target) this.viewHelper.center = this.controls.target;
-          // Re-apply previously configured labels/style — toggling enabled=False then True
-          // disposes the helper, so labels would otherwise reset to the unlabeled default.
-          if (this._axesLabels && this._axesLabels.enabled) this.set_axes_labels(this._axesLabels);
-        }
-        // r184's ViewHelper exposes a `location` field that controls inset positioning. The
-        // field accepts pixel offsets from the corresponding edges; null on the opposite axis
-        // selects which side anchors. Internal dim is hardcoded to 128 px.
-        const mx = (this._axes.marginX ?? this._axes.margin) ?? 0;
-        const my = (this._axes.marginY ?? this._axes.margin) ?? 0;
-        const anchor = this._axes.anchor || "bottom-right";
-        this.viewHelper.location = {
-          top: anchor.includes("top") ? my : null,
-          bottom: anchor.includes("top") ? null : my,
-          left: anchor.includes("left") ? mx : null,
-          right: anchor.includes("left") ? null : mx,
-        };
-      } else if (this.viewHelper) {
-        if (this.viewHelper.dispose) this.viewHelper.dispose();
-        this.viewHelper = null;
-      }
+    apply_axes_inset() {
+      if (!this.controls) return; // WebGL renderer could not be created
+      this.viewHelper?.dispose();
+      this.viewHelper = null;
+      if (!this.axesInset) return;
+      const [vertical, horizontal] = (this.axesInset === true ? "bottom-right" : this.axesInset).split("-");
+      this.viewHelper = new ViewHelper(this.camera, this.renderer.domElement);
+      this.viewHelper.center = this.controls.target;
+      this.viewHelper.location = {
+        top: vertical === "top" ? 0 : null,
+        bottom: vertical === "bottom" ? 0 : null,
+        left: horizontal === "left" ? 0 : null,
+        right: horizontal === "right" ? 0 : null,
+      };
+      this.viewHelper.setLabels(...this.axesLabels);
     },
-    set_axes_labels(opts) {
-      this._axesLabels = opts;
-      if (!this.viewHelper || !opts || !opts.enabled) return;
-      const labels = Array.isArray(opts.labels) && opts.labels.length === 3
-        ? opts.labels
-        : ["X", "Y", "Z"];
-      // Style first, then labels — both call updateLabels() internally and the label canvas
-      // reads font/color/radius at paint time (see ViewHelper.js getSpriteMaterial).
-      this.viewHelper.setLabelStyle(opts.font ?? "24px Arial", opts.color ?? "#000000", opts.radius ?? 14);
-      this.viewHelper.setLabels(labels[0], labels[1], labels[2]);
+    turn_to_inset_axis(delta) {
+      // The inset moves the camera along the sphere around the target, but orients it for a Y-up world,
+      // so the camera is aimed with the scene's up vector instead.
+      this.viewHelper.update(delta);
+      const view = this.camera.position.clone().sub(this.controls.target);
+      if (!this.viewHelper.animating && view.clone().cross(this.controls_up).lengthSq() < 1e-12 * view.lengthSq()) {
+        // Looking along the up vector leaves the roll open; the camera then leans to the front, as the orbit
+        // controls do at their poles: -Y for the default Z-up, so a view from the top shows X right and Y up.
+        const toUp = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), this.controls_up);
+        const front = new THREE.Vector3(0, 0, 1).applyQuaternion(toUp);
+        this.camera.position.addScaledVector(front, 1e-6 * view.length());
+      }
+      this.camera.up.copy(this.controls_up);
+      this.camera.lookAt(this.controls.target);
     },
     async delete(object_id) {
       const object = await get_object(this.objects, object_id);
@@ -445,6 +440,7 @@ export default {
       // remember the up vector the controls were built for: camera.up may differ from it after a user rotation
       // (TrackballControls) or an interrupted tween, so it cannot be used to decide whether a rebuild is needed
       this.controls_up = up.clone();
+      if (this.viewHelper) this.viewHelper.center = this.controls.target;
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (!this.controls) return; // WebGL renderer could not be created
@@ -531,5 +527,15 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    axesInset: [Boolean, String],
+    axesLabels: Array,
+  },
+  watch: {
+    axesInset() {
+      this.apply_axes_inset();
+    },
+    axesLabels() {
+      this.apply_axes_inset();
+    },
   },
 };

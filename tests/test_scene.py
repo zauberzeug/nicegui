@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
 from selenium.webdriver import ActionChains
+from selenium.webdriver.remote.webelement import WebElement
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
@@ -715,153 +716,46 @@ def test_scene_initializes_when_created_hidden(screen: Screen):
     screen.wait_for(lambda: screen.find_by_tag('canvas').size == {'width': 200, 'height': 100})
 
 
-def _wait_for_scene_ready(screen: Screen, scene_id: int) -> None:
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return !!getElement({scene_id}) && !!getElement({scene_id}).renderer'
-    ))
-
-
-async def test_axes_inset_opts_cached_for_replay_on_init(user: User):
-    # The reload-survival contract: state set via set_axes_inset/set_axes_labels is cached on
-    # Scene and replayed in _handle_init, so a fresh client connect re-applies the inset.
+@pytest.mark.parametrize('control_type', ['orbit', 'trackball'])
+def test_clicking_an_axis_of_the_inset_turns_the_camera(screen: Screen, control_type: Literal['orbit', 'trackball']):
     scene = None
+    clicks = []
 
     @ui.page('/')
     def page():
         nonlocal scene
-        scene = ui.scene()
-
-    await user.open('/')
-    assert scene._axes_inset_opts is None
-    assert scene._axes_labels_opts is None
-    scene.set_axes_inset(enabled=True, anchor='top-left', margin=8)
-    assert scene._axes_inset_opts == {
-        'enabled': True, 'marginX': 8, 'marginY': 8, 'anchor': 'top-left',
-    }
-    scene.set_axes_labels(enabled=True, labels=('A', 'B', 'C'), color='#ff0000')
-    assert scene._axes_labels_opts == {
-        'enabled': True, 'labels': ['A', 'B', 'C'],
-        'font': '24px Arial', 'color': '#ff0000', 'radius': 14,
-    }
-
-
-def test_set_axes_inset_and_labels(screen: Screen):
-    scene = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene
-        scene = ui.scene()
+        scene = ui.scene(axes_inset=True, control_type=control_type, on_click=clicks.append)
 
     screen.open('/')
-    _wait_for_scene_ready(screen, scene.id)
+    canvas = screen.find_by_tag('canvas')
+    screen.wait_for(canvas.is_displayed)  # the scene is hidden until it is initialized
+    scene.move_camera(x=0, y=-5, z=0, duration=0)  # from the front, so the inset shows X to the right and Z up
 
-    scene.set_axes_inset(enabled=True, anchor='top-left', margin=8)
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return !!getElement({scene.id}).viewHelper'
-    ))
-    # location is what the r184 ViewHelper reads to position the inset; verify it matches.
-    location = screen.selenium.execute_script(
-        f'return getElement({scene.id}).viewHelper.location'
-    )
-    assert location == {'top': 8, 'bottom': None, 'left': 8, 'right': None}
+    _click_inset(screen, canvas, right=0, up=1)
+    screen.wait_for(lambda: _camera(screen, scene) == [[0, 0, 5], [0, 1, 0]])  # from the top
 
-    # Labels and style are forwarded to viewHelper.setLabels / setLabelStyle. The cached opts
-    # on the JS side are the most stable observable across three.js versions; deeper checks
-    # against sprite material uuids are brittle.
-    scene.set_axes_labels(enabled=True, labels=('Forward', 'Left', 'Up'),
-                          font='20px sans-serif', color='#ff0000', radius=18)
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id});'
-        'return el.viewHelper && el._axesLabels && el._axesLabels.color === "#ff0000"'
-    ))
+    _click_inset(screen, canvas, right=1, up=0)
+    screen.wait_for(lambda: _camera(screen, scene) == [[5, 0, 0], [0, 0, 1]])  # from the right
 
-    # Toggling enabled=False rebuilds a fresh ViewHelper on re-enable; the cached labels/style
-    # must be reapplied so users don't lose their configuration.
-    scene.set_axes_inset(enabled=False)
-    screen.wait_for(lambda: not screen.selenium.execute_script(
-        f'return !!getElement({scene.id}).viewHelper'
-    ))
-    scene.set_axes_inset(enabled=True, anchor='top-left', margin=8)
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'const el = getElement({scene.id});'
-        'return !!el.viewHelper && el._axesLabels && el._axesLabels.color === "#ff0000"'
-    ))
+    scene.move_camera(x=0, y=-5, z=0, up_x=1, up_z=0, duration=0)
+    scene.move_camera(x=2, y=-5, z=0, look_at_x=2, up_x=0, up_z=1, duration=0)
+    _click_inset(screen, canvas, right=1, up=0)
+    screen.wait_for(lambda: _camera(screen, scene) == [[7, 0, 0], [0, 0, 1]])  # around the new target
+    assert not clicks, 'a click on the inset does not click the scene behind it'
 
 
-def test_axes_inset_preserves_main_scene_render(screen: Screen):
-    """``viewHelper.render()`` clears the framebuffer when ``renderer.autoClear`` is true,
-    which wipes the main scene one draw after it renders. The render loop must save/restore
-    ``autoClear`` around the helper call so the main scene survives each frame."""
-    scene = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene
-        scene = ui.scene()
-
-    screen.open('/')
-    _wait_for_scene_ready(screen, scene.id)
-    scene.set_axes_inset(enabled=True)
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return !!getElement({scene.id}).viewHelper'
-    ))
-    # Patch viewHelper.render to record renderer.autoClear at call time. The render loop
-    # must drop it to false before the helper draws — otherwise the helper wipes the main
-    # scene's framebuffer.
-    screen.selenium.execute_script(
-        f'const el = getElement({scene.id});'
-        'const orig = el.viewHelper.render.bind(el.viewHelper);'
-        'window.__autoClearLog = [];'
-        'el.viewHelper.render = function (renderer) {'
-        '  window.__autoClearLog.push(renderer.autoClear);'
-        '  return orig(renderer);'
-        '};'
-    )
-    # Let the rAF loop run several frames.
-    screen.wait(0.3)
-    log = screen.selenium.execute_script('return window.__autoClearLog')
-    assert len(log) >= 2, f'expected multiple viewHelper.render calls, got {log}'
-    assert all(v is False for v in log), \
-        f'renderer.autoClear must be false during viewHelper.render; got {log}'
+def _click_inset(screen: Screen, canvas: WebElement, *, right: int, up: int) -> None:
+    """Click the inset in the bottom right corner where an axis points to on screen."""
+    # three.js draws the inset 128 px wide for 4 units, and each axis is 1 unit long.
+    x = canvas.size['width'] / 2 - 64 + 32 * right
+    y = canvas.size['height'] / 2 - 64 - 32 * up
+    ActionChains(screen.selenium).move_to_element_with_offset(canvas, x, y).click().perform()
 
 
-def test_axes_inset_handle_click_snaps_camera(screen: Screen):
-    scene = None
-
-    @ui.page('/')
-    def page():
-        nonlocal scene
-        scene = ui.scene()
-
-    screen.open('/')
-    _wait_for_scene_ready(screen, scene.id)
-    scene.set_axes_inset(enabled=True)  # default anchor='bottom-right', margin=0
-    screen.wait_for(lambda: screen.selenium.execute_script(
-        f'return !!getElement({scene.id}).viewHelper'
-    ))
-
-    # +X axis sprite is at world (1, 0, 0), which projects to inset NDC (0.5, 0) in the
-    # orthoCamera's [-2, 2, -2, 2] frustum. Dispatch a pointerdown at that pixel and verify
-    # viewHelper.animating flips on (then off when the snap-animation completes). Inset is
-    # 128 px hardcoded inside three.js' ViewHelper; we use anchor=bottom-right, margin=0.
-    animating = screen.selenium.execute_script(
-        f'const el = getElement({scene.id});'
-        'const canvas = el.renderer.domElement;'
-        'const dim = 128;'
-        'const relX = (0.5 + 1) / 2 * dim;'
-        'const relY = (1 - 0) / 2 * dim;'
-        'const insetLeft = canvas.clientWidth - dim;'
-        'const insetTop = canvas.clientHeight - dim;'
-        'const rect = canvas.getBoundingClientRect();'
-        'canvas.dispatchEvent(new PointerEvent("pointerdown", {'
-        '  clientX: rect.left + insetLeft + relX,'
-        '  clientY: rect.top + insetTop + relY,'
-        '  bubbles: true, cancelable: true'
-        '}));'
-        'return el.viewHelper.animating;'
-    )
-    assert animating, 'Clicking the +X axis sprite should set viewHelper.animating = true'
-    screen.wait_for(lambda: not screen.selenium.execute_script(
-        f'return getElement({scene.id}).viewHelper.animating'
-    ))
+def _camera(screen: Screen, scene: ui.scene) -> list[list[float]]:
+    """The camera's position and the direction that points up on screen, to two decimals."""
+    return screen.selenium.execute_script(f'''
+        const camera = getElement({scene.id}).camera;
+        const up = camera.up.clone().set(0, 1, 0).applyQuaternion(camera.quaternion);
+        return [camera.position, up].map((v) => v.toArray().map((n) => Math.round(n * 100) / 100));
+    ''')
