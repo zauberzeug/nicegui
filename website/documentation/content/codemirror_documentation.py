@@ -78,7 +78,7 @@ def selection_demo() -> None:
     Pass `diagnostic_message_html=True` to the constructor to render them as sanitized HTML
     via NiceGUI's `setHTML` polyfill.
 
-    *Added in version 4.1.0*
+    *Added in version 4.2.0*
 ''')
 def diagnostics_demo() -> None:
     editor = ui.codemirror(
