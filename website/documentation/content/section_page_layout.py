@@ -67,7 +67,7 @@ doc.intro(skip_link_documentation)
 
 
 @doc.demo('Clear Containers', '''
-    To remove all elements from a row, column or card container, use can call
+    To remove all elements from a row, column or card container, you can call
     ```py
     container.clear()
     ```

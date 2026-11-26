@@ -52,11 +52,11 @@ def link_to_other_page():
 @doc.demo('Link from images and other elements', '''
     By nesting elements inside a link you can make the whole element clickable.
     This works with all elements but is most useful for non-interactive elements like
-    [ui.image](/documentation/image), [ui.avatar](/documentation/image) etc.
+    [ui.image](/documentation/image), [ui.avatar](/documentation/avatar) etc.
 ''')
 def link_from_elements():
     with ui.link(target='https://github.com/zauberzeug/nicegui'):
-        ui.image('https://picsum.photos/id/41/640/360').classes('w-64')
+        ui.image('https://nicegui.io/images/drops/640/360').classes('w-64')
 
 
 doc.reference(ui.link)

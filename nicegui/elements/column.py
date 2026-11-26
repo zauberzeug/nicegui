@@ -11,7 +11,7 @@ class Column(SortableElement, default_classes='nicegui-column'):
                  ) -> None:
         """Column Element
 
-        Provides a container which arranges its child in a column.
+        Provides a container which arranges its children in a column.
 
         :param wrap: whether to wrap the content (default: ``False``)
         :param align_items: alignment of the items in the column ("start", "end", "center", "baseline", or "stretch"; default: ``None``)

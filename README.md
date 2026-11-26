@@ -105,7 +105,7 @@ When building NiceGUI projects with AI assistants, point them at [`nicegui/llms.
 
 We at [Zauberzeug](https://zauberzeug.com) like [Streamlit](https://streamlit.io/)
 but find it does [too much magic](https://github.com/zauberzeug/nicegui/issues/1#issuecomment-847413651) when it comes to state handling.
-In search for an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
+In search of an alternative nice library to write simple graphical user interfaces in Python we discovered [JustPy](https://justpy.io/).
 Although we liked the approach, it is too "low-level HTML" for our daily usage.
 But it inspired us to use [Vue](https://vuejs.org/) and [Quasar](https://quasar.dev/) for the frontend.
 

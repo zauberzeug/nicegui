@@ -11,17 +11,19 @@ from .functions import (
     normalize_lifecycle_handler,
     should_await,
 )
-from .network import find_free_port, format_url, is_port_open, schedule_browser
-from .strings import event_type_to_camel_case, kebab_to_camel_case, remove_indentation
+from .network import find_free_port, format_url, get_forwarded_prefix, is_port_open, schedule_browser
+from .strings import camel_to_title_case, event_type_to_camel_case, kebab_to_camel_case, remove_indentation
 from .warnings import warn_once
 
 __all__ = [
     'NoImplicitAwait',
     'await_with_context',
+    'camel_to_title_case',
     'event_type_to_camel_case',
     'expects_arguments',
     'find_free_port',
     'format_url',
+    'get_forwarded_prefix',
     'hash_file_path',
     'is_coroutine_function',
     'is_file',
@@ -48,5 +50,5 @@ def is_pytest() -> bool:
 
 
 def is_user_simulation() -> bool:
-    """Check if the code is running in with user simulation (see https://nicegui.io/documentation/user)."""
+    """Check if the code is running with user simulation (see https://nicegui.io/documentation/user)."""
     return 'NICEGUI_USER_SIMULATION' in os.environ

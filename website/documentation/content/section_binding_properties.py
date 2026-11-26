@@ -39,11 +39,11 @@ def bindings_demo():
     updating every affected node once and executing the transformation function once.
     If you are migrating from NiceGUI 2.15.0 or older, there may be extra runs on transformation functions,
     especially ones in the opposite direction to the current propagation direction,
-    which are no-longer ran in NiceGUI 2.16.0.
+    which are no longer run in NiceGUI 2.16.0.
     As a result, you would need to change your code appropriately.
 
     We would also like to mention that, for the most stable behaviour across releases,
-    it is best-practice that transform functions have no side-effects and do basic transform operations only.
+    it is best practice that transform functions have no side effects and do basic transform operations only.
     This way, it will not matter how NiceGUI chooses to call them in what order and by how many times.
 ''')
 def transformation_functions():
@@ -118,7 +118,7 @@ def ui_state():
 
     The following demo shows how binding to a non-existing object attribute causes a warning,
     unless `strict` is set to `False`.
-    Binding to a possibly empty storage dictionary, does not cause any warnings,
+    Binding to a possibly empty storage dictionary does not cause any warnings,
     unless `strict` is set to `True`.
 
     *Added in version 3.0.0*
@@ -165,7 +165,7 @@ def strict():
     we show a warning if one step of the `refresh_loop()` takes too long.
     You can configure the threshold via `binding.MAX_PROPAGATION_TIME` which defaults to 0.01 seconds.
     But often the warning is a valuable indicator for a performance or memory issue.
-    If your CPU would be busy updating bindings a significant duration,
+    If your CPU were busy updating bindings for a significant duration,
     nothing else could happen on the main thread and the UI "hangs".
 
     The following demo shows how to define and use bindable properties for a `Demo` class like in the first demo.

@@ -28,7 +28,7 @@ def auto_close():
 
 
 @doc.demo('Menu with sub-menus', '''
-    You can use a `ui.menu` nested inside a `ui.menu_item` to created nested sub-menus.
+    You can use a `ui.menu` nested inside a `ui.menu_item` to create nested sub-menus.
     The "anchor" and "self" props can be used to position the sub-menu.
     Make sure to disable `auto-close` on the corresponding menu item to keep the menu open while navigating the sub-menu.
 ''')

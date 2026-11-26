@@ -52,7 +52,7 @@ class Skeleton(Element):
         :param tag: HTML tag to use for this element (default: "div")
         :param animation: animation effect of the skeleton placeholder (default: "wave")
         :param animation_speed: animation speed in seconds (default: 1.5)
-        :param square: whether to remover border-radius so borders are squared (default: ``False``)
+        :param square: whether to remove border-radius so borders are squared (default: ``False``)
         :param bordered: whether to apply a default border to the component (default: ``False``)
         :param size: size in CSS units (overrides ``width`` and ``height``)
         :param width: width in CSS units (overridden by ``size`` if set)

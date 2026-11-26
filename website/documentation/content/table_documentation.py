@@ -167,16 +167,16 @@ def table_with_buttons():
             )
 
 
-@doc.demo('Table with drop down selection', '''
-    Here is an example of how to use a drop down selection in a table.
-    After emitting a "update:model-value" event from the `ui.select` element,
+@doc.demo('Table with dropdown selection', '''
+    Here is an example of how to use a dropdown selection in a table.
+    After emitting an "update:model-value" event from the `ui.select` element,
     the `rename` function updates the table rows.
 
     *Since version 3.5.0:*
     UI elements in scoped slots can access the `props` object to get the current row and column.
     Previously, the `props` object was only available in Vue templates.
 ''')
-def table_with_drop_down_selection():
+def table_with_dropdown_selection():
     from nicegui import events
 
     columns = [

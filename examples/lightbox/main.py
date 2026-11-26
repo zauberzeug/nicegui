@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import httpx2
-
 from nicegui import events, ui
 
 
@@ -38,18 +36,15 @@ class Lightbox:
 
 
 @ui.page('/')
-async def page():
+def page():
     lightbox = Lightbox()
-    async with httpx2.AsyncClient() as client:  # using async httpx2 instead of sync requests to avoid blocking the event loop
-        images = await client.get('https://picsum.photos/v2/list?page=4&limit=30')
     with ui.row().classes('w-full'):
-        for image in images.json():  # picsum returns a list of images as json data
-            # we can use the image ID to construct the image URLs
-            image_base_url = f'https://picsum.photos/id/{image["id"]}'
+        for name in ['valley', 'mug', 'feet', 'bench', 'drops', 'sea', 'bridge', 'night', 'birds', 'grapes', 'hikers']:
             # the lightbox allows us to add images which can be opened in a full screen dialog
             lightbox.add_image(
-                thumb_url=f'{image_base_url}/300/200',
-                orig_url=f'{image_base_url}/{image["width"]}/{image["height"]}',
+                thumb_url=f'https://nicegui.io/images/{name}/300/200',
+                orig_url=f'https://nicegui.io/images/{name}/1200/800',
             ).classes('w-[300px] h-[200px]')
+
 
 ui.run()

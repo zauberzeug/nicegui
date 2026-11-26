@@ -48,7 +48,7 @@ def styling():
     - by passing a callable that returns an error message or `None`, or
     - by passing a dictionary that maps error messages to callables that return `True` if the input is valid.
 
-    Both of these validations **run on Python-side**,
+    Both of these validations **run on the Python side**,
     bringing security against client-side circumventions and flexibility in validation logic.
     However they do not correspond to Quasar's validation-related props and methods,
     and require server communication and processing.

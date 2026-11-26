@@ -14,14 +14,14 @@ doc.text('Running Integration Tests', '''
     The NiceGUI package provides a [pytest plugin](https://docs.pytest.org/en/stable/how-to/writing_plugins.html)
     which can be activated via `-p nicegui.testing.plugin` parameter.
     This makes specialized [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html)
-    available which allows you to write integration tests for your NiceGUI user interface.
+    available which allow you to write integration tests for your NiceGUI user interface.
     With the [`screen` fixture](/documentation/screen) you can run integration tests through a headless browser (slow).
     On the other hand the [`user` fixture](/documentation/user) allows integration tests to be fully simulated in Python (fast).
     If you only want one kind of test fixtures,
     you can also use the plugin `nicegui.testing.user_plugin` or `nicegui.testing.screen_plugin`.
 
     There are a multitude of ways to structure your project and tests.
-    Here we only present our preferred approach for small and large projects which is on the one hand very easy but yet super powerful.
+    Here we only present our preferred approach for small and large projects which is both very easy and super powerful.
     For other approaches please check the [pytest documentation](https://docs.pytest.org/en/stable/contents.html).
 ''')
 

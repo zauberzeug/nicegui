@@ -33,7 +33,7 @@ class ColorInput(LabelElement, ValueElement[str], DisableableElement):
         :param placeholder: text to show if no color is selected
         :param value: the current color value
         :param on_change: callback to execute when the value changes
-        :param preview: change button background to selected color (default: False)
+        :param preview: change the button background to the selected color (default: False)
         """
         super().__init__(tag='q-input', label=label, value=value, on_value_change=on_change)
         self._props['for'] = self.html_id

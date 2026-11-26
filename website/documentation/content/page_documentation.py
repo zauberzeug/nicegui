@@ -45,7 +45,7 @@ def page_with_path_parameters_demo():
     To wait for a client connection, you can await `ui.context.client.connected()`.
     All code below that statement is executed after the websocket connection between server and client has been established.
 
-    For example, this allows you to run JavaScript commands; which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
+    For example, this allows you to run JavaScript commands, which is only possible with a client connection (see [#112](https://github.com/zauberzeug/nicegui/issues/112)).
     Also it is possible to do async stuff while the user already sees some content.
 ''')
 def wait_for_connected_demo():
@@ -96,7 +96,7 @@ def multicasting():
     [FastAPI's APIRouter](https://fastapi.tiangolo.com/tutorial/bigger-applications/?h=apirouter#apirouter)
     to modularize your code by grouping pages and other routes together.
     This is especially useful if you want to reuse the same prefix for multiple pages.
-    The router and its pages can be neatly tugged away in a separate module (e.g. file) and
+    The router and its pages can be neatly tucked away in a separate module (e.g. file) and
     the router is simply imported and included in the main app.
     See our [modularization example](https://github.com/zauberzeug/nicegui/blob/main/examples/modularization/api_router_example.py)
     for a multi-file app structure using an API router.

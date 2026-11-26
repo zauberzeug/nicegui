@@ -153,12 +153,12 @@ def max_tab_storage_age():
 
 @doc.demo('Short-term memory', '''
     The goal of `app.storage.client` is to store data only for the duration of the current page visit.
-    In difference to data stored in `app.storage.tab`
+    In contrast to data stored in `app.storage.tab`
     - which is persisted between page changes and even browser restarts as long as the tab is kept open -
     the data in `app.storage.client` will be discarded if the user closes the browser, reloads the page or navigates to another page.
     This is beneficial for resource-hungry, intentionally short-lived or sensitive data.
     An example is a database connection, which should be closed as soon as the user leaves the page.
-    Additionally, this storage useful if you want to return a page with default settings every time a user reloads.
+    Additionally, this storage is useful if you want to return a page with default settings every time a user reloads.
     Meanwhile, it keeps the data alive during in-page navigation.
     This is also helpful when updating elements on the site at intervals, such as a live feed.
 ''')
@@ -190,7 +190,7 @@ doc.text('Redis storage', '''
     To activate this feature install the `redis` package (`pip install nicegui[redis]`)
     and provide the `NICEGUI_REDIS_URL` environment variable to point to your Redis server.
     Our [Redis storage example](https://github.com/zauberzeug/nicegui/tree/main/examples/redis_storage) shows
-    how you can setup it up with a reverse proxy or load balancer.
+    how you can set it up with a reverse proxy or load balancer.
     To ensure connections are kept to the minimum, you should start the Redis server with `--timeout <seconds>` CLI option
     or set env variable `REDIS_TIMEOUT`.
 
@@ -200,7 +200,7 @@ doc.text('Redis storage', '''
     - For `app.storage.user` it's all the data of the user.
     - For `app.storage.tab` it's all the data stored for this specific tab.
 
-    If you have large data sets, we suggest to use a database instead.
+    If you have large data sets, we suggest using a database instead.
     See our [database example](https://github.com/zauberzeug/nicegui/blob/main/examples/sqlite_database/main.py) for a demo with SQLite.
     But of course to sync between multiple instances you should replace SQLite with PostgreSQL or similar.
 

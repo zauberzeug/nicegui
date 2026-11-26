@@ -37,7 +37,7 @@ async def _page():
         try:
             os.write(pty_fd, event.data.encode('utf-8'))
         except OSError:
-            pass  # error writing to the pty; probably the process was exited
+            pass  # error writing to the pty; probably the process has exited
 
     @terminal.on_resize
     def resize_terminal(event: events.XtermResizeEventArguments):
@@ -75,7 +75,7 @@ async def _page():
         try:
             data = os.read(pty_fd, 1024)
         except OSError:
-            data = b''  # error reading the pty; probably the process was exited
+            data = b''  # error reading the pty; probably the process has exited
         if not data:  # EOF on some platforms arrives as an empty read, not an OSError
             print('Stopping reading from pty')
             core.loop.remove_reader(pty_fd)

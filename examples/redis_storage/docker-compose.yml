@@ -26,7 +26,7 @@ services:
       - "6379:6379"
 
   proxy:
-    image: traefik:v2.10
+    image: traefik:v3
     command:
       - --providers.docker
       - --entrypoints.web.address=:80

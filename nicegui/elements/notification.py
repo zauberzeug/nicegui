@@ -44,7 +44,7 @@ class Notification(Element, component='notification.js'):
         r"""Notification element
 
         Displays a notification on the screen.
-        In contrast to ``ui.notify``, this element allows to update the notification message and other properties once the notification is displayed.
+        In contrast to ``ui.notify``, this element allows updating the notification message and other properties once the notification is displayed.
         The notification can be removed with ``dismiss()``.
 
         :param message: content of the notification
@@ -99,7 +99,9 @@ class Notification(Element, component='notification.js'):
 
     @message.setter
     def message(self, value: Any) -> None:
-        self._props['options']['message'] = str(value)
+        message = str(value)
+        if self._props['options'].get('message') != message:
+            self._props['options']['message'] = message
 
     @property
     def position(self) -> NotificationPosition:
@@ -157,7 +159,7 @@ class Notification(Element, component='notification.js'):
 
     @property
     def spinner(self) -> bool:
-        """Whether the notification is a spinner."""
+        """Whether the notification shows a spinner."""
         return self._props['options']['spinner']
 
     @spinner.setter
@@ -174,7 +176,9 @@ class Notification(Element, component='notification.js'):
 
     @timeout.setter
     def timeout(self, value: float | None) -> None:
-        self._props['options']['timeout'] = (value or 0) * 1000
+        timeout = (value or 0) * 1000
+        if self._props['options'].get('timeout') != timeout:
+            self._props['options']['timeout'] = timeout
 
     @property
     def close_button(self) -> bool | str:

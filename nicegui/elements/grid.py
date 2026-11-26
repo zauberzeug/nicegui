@@ -10,7 +10,7 @@ class Grid(SortableElement, default_classes='nicegui-grid'):
                  ) -> None:
         """Grid Element
 
-        Provides a container which arranges its child in a grid.
+        Provides a container which arranges its children in a grid.
 
         :param rows: number of rows in the grid or a string with the grid-template-rows CSS property (e.g. 'auto 1fr')
         :param columns: number of columns in the grid or a string with the grid-template-columns CSS property (e.g. 'auto 1fr')

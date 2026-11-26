@@ -35,13 +35,18 @@ class RedisPersistentDict(PersistentDict):
         self.key = key_prefix + id
         self.ttl = ttl
         self._listener_task: asyncio.Task | None = None
+        self._is_receiving = False
         super().__init__(data={}, on_change=self.publish)
 
     async def initialize(self) -> None:
         """Load initial data from Redis and start listening for changes."""
         try:
-            data = await self.redis_client.get(self.key)
-            self.update(json.loads(data) if data else {})
+            pipeline = self.redis_client.pipeline()
+            pipeline.get(self.key)
+            if self.ttl is not None:
+                pipeline.expire(self.key, self.ttl)  # loading a tab storage counts as using it
+            data, *_ = await pipeline.execute()
+            self._load(json.loads(data) if data else {})
             self._start_listening()
         except Exception:
             log.warning(f'Could not load data from Redis with key {self.key}')
@@ -59,8 +64,12 @@ class RedisPersistentDict(PersistentDict):
         """Load initial data from Redis and start listening for changes in a synchronous context."""
         with redis_sync.from_url(self.url, **self._redis_client_params) as redis_client_sync:
             try:
-                data = redis_client_sync.get(self.key)
-                self.update(json.loads(data) if data else {})
+                pipeline = redis_client_sync.pipeline()
+                pipeline.get(self.key)
+                if self.ttl is not None:
+                    pipeline.expire(self.key, self.ttl)  # loading a tab storage counts as using it
+                data, *_ = pipeline.execute()
+                self._load(json.loads(data) if data else {})
                 self._start_listening()
             except Exception:
                 log.warning(f'Could not load data from Redis with key {self.key}')
@@ -74,10 +83,16 @@ class RedisPersistentDict(PersistentDict):
                     if t == 'message':
                         new_data = json.loads(message['data'])
                         if new_data != self:
-                            # NOTE: remove obsolete keys individually, because clear() would also delete the Redis key
-                            for key in set(self) - new_data.keys():
-                                del self[key]
-                            self.update(new_data)
+                            self._is_receiving = True  # other change handlers run, but publishing would echo the data
+                            try:
+                                # NOTE: remove obsolete keys individually, because clear() would also delete the Redis key
+                                for key in set(self) - new_data.keys():
+                                    del self[key]
+                                self.update(new_data)
+                            finally:
+                                self._is_receiving = False
+                            if self != new_data:  # a change handler modified the received data
+                                self.publish()
                     elif t in ('unsubscribe', 'punsubscribe') and message.get('data') == 0:
                         break
             except asyncio.CancelledError:
@@ -98,6 +113,9 @@ class RedisPersistentDict(PersistentDict):
 
     def publish(self) -> None:
         """Publish the data to Redis and notify other instances."""
+        if self._is_receiving:
+            return
+
         async def backup() -> None:
             if not await self.redis_client.exists(self.key) and not self:
                 return
@@ -107,6 +125,12 @@ class RedisPersistentDict(PersistentDict):
             pipeline.publish(self.key + 'changes', data)
             await pipeline.execute()
         background_tasks.create_lazy_or_defer(backup(), name=f'redis-{self.key}')
+
+    async def refresh_ttl(self) -> None:
+        """Reset the TTL of the Redis key, which is otherwise only renewed on writes."""
+        if self.ttl is None:
+            return
+        await self.redis_client.expire(self.key, self.ttl)
 
     async def close(self) -> None:
         """Close Redis connection and subscription."""

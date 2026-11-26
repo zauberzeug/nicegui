@@ -116,7 +116,7 @@ class Table(FilterElement, component='table.js'):
                 if isinstance(value, (list, set, tuple)):
                     log.warning(
                         f'Found list in column "{name}": {value}.\n'
-                        'Unless there is slot template, table rows must not contain lists or the browser will crash.\n'
+                        'Unless there is a slot template, table rows must not contain lists or the browser will crash.\n'
                         'NiceGUI is intervening by adding a slot template to display the list as comma-separated values.'
                     )
                     self.add_slot(f'body-cell-{name}', '''
@@ -314,8 +314,8 @@ class Table(FilterElement, component='table.js'):
 
     @staticmethod
     def _pandas_df_to_rows_and_columns(df: 'pd.DataFrame') -> tuple[list[dict], list[dict]]:
-        rows, columns = helpers.pandas_to_records(df)
-        return rows, [{'name': col, 'label': col, 'field': col} for col in columns]
+        rows, columns, labels = helpers.pandas_to_records(df)
+        return rows, [{'name': col, 'label': label, 'field': col} for col, label in zip(columns, labels, strict=True)]
 
     @staticmethod
     def _polars_df_to_rows_and_columns(df: 'pl.DataFrame') -> tuple[list[dict], list[dict]]:
@@ -338,7 +338,9 @@ class Table(FilterElement, component='table.js'):
 
     @columns.setter
     def columns(self, value: list[dict]) -> None:
-        self._props['columns'] = self._normalize_columns(value)
+        columns = self._normalize_columns(value)
+        if self._props['columns'] != columns:
+            self._props['columns'] = columns
 
     @property
     def column_defaults(self) -> dict | None:

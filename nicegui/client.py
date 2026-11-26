@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
-from urllib.parse import parse_qs, quote
+from urllib.parse import parse_qs
 
 from fastapi import Request
 from fastapi.responses import Response
@@ -48,14 +48,6 @@ AI_AGENT_TOKENS = (
     'gemini-deep-research',
     'modelcontextprotocol',
 )
-
-HTML_ESCAPE_TABLE = str.maketrans({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '`': '&#96;',
-    '$': '&#36;',
-})
 
 HEADWIND_CONTENT = (Path(__file__).parent / 'static' / 'headwind.css').read_text().strip()
 
@@ -124,6 +116,7 @@ class Client:
         self._num_connections: defaultdict[str, int] = defaultdict(int)
         self._delete_tasks: dict[str, asyncio.Task] = {}
         self._deleted = False
+        self._javascript_request_ids: set[str] = set()
         self._socket_to_document_id: dict[str, str] = {}
         self.tab_id: str | None = None
         self._pinned_tab_id: str | None = None
@@ -217,15 +210,7 @@ class Client:
                 background=BackgroundTask(self.delete),
             )
         self.outbox.updates.clear()
-        # Defense in depth: `prefix` is reflected into the page (importmap, <script src>, JS `prefix:`, CSS @import)
-        # via `| safe`, and the X-Forwarded-Prefix part is client-controllable on a directly-exposed app or a
-        # pass-through proxy. Percent-encode it with the RFC 3986 path-legal characters as the safe set (unreserved +
-        # sub-delims + ":" "@" "/", plus "%" so an already-encoded prefix isn't double-encoded): quote() then only
-        # touches characters illegal in a URL path (`"` `<` `>` `\` space, non-ASCII), so nothing can break out of a
-        # sink, yet it's a no-op for any well-formed ASCII prefix. Non-ASCII is always encoded (never raw) but can't
-        # round-trip cleanly, since headers are latin-1.
-        prefix = quote(request.headers.get('X-Forwarded-Prefix', ''), safe="/:@!$&'()*+,;=%") \
-            + request.scope.get('root_path', '')
+        prefix = helpers.get_forwarded_prefix(request) + request.scope.get('root_path', '')
         elements = json.dumps({
             id: element._to_dict() for id, element in self.elements.items()  # pylint: disable=protected-access
         })
@@ -249,7 +234,8 @@ class Client:
             context={
                 'request': request,
                 'version': __version__,
-                'elements': elements.translate(HTML_ESCAPE_TABLE),
+                # JSON escapes for the characters that would break the template literal; str.replace beats str.translate
+                'elements': elements.replace('<', '\\u003c').replace('`', '\\u0060').replace('$', '\\u0024'),
                 'head_html': self.head_html,
                 'body_html': '<style>' + '\n'.join(vue_styles) + '</style>\n' + self.body_html + '\n' + '\n'.join(vue_html),
                 'vue_scripts': '\n'.join(vue_scripts),
@@ -340,7 +326,11 @@ class Client:
             await self.connected()
             if self.is_deleted:
                 return None
-            return await JavaScriptRequest(request_id, timeout=timeout)
+            self._javascript_request_ids.add(request_id)
+            try:
+                return await JavaScriptRequest(request_id, timeout=timeout)
+            finally:
+                self._javascript_request_ids.discard(request_id)
 
         return AwaitableResponse(None, send_and_wait)  # nothing to fire, the message is already enqueued
 
@@ -556,6 +546,8 @@ class Client:
         self._deleted = True
         self._connected.set()  # for terminating connected() waits
         self._connected.clear()
+        for request_id in list(self._javascript_request_ids):
+            JavaScriptRequest.resolve(request_id, None)  # for terminating pending run_javascript() awaits
 
     def check_existence(self) -> None:
         """Check if the client still exists and print a warning if it doesn't."""

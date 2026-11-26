@@ -53,11 +53,6 @@ def test_fullscreen_methods(screen: Screen):
 
 
 def test_fullscreen_button_click(screen: Screen):
-    """Test that clicking a button to enter fullscreen creates the correct JavaScript call.
-
-    Note: We cannot test actual fullscreen behavior as it requires user interaction,
-    but we can verify the JavaScript method is called correctly.
-    """
     values = []
 
     @ui.page('/')
@@ -65,13 +60,17 @@ def test_fullscreen_button_click(screen: Screen):
         fullscreen = ui.fullscreen(on_value_change=lambda e: values.append(e.value))
         ui.button('Enter Fullscreen', on_click=fullscreen.enter)
         ui.button('Exit Fullscreen', on_click=fullscreen.exit)
+        ui.button('Enter and Exit', on_click=lambda: (fullscreen.enter(), fullscreen.exit()))
 
     screen.open('/')
     screen.click('Enter Fullscreen')
     screen.wait_for(lambda: values == [True])
-    screen.wait_for_js('document.fullscreenElement !== null', True)  # exiting is ignored while entering is pending
+    screen.wait_for_js('Boolean(document.fullscreenElement)', True)
 
     screen.click('Exit Fullscreen')
-    screen.wait_for(lambda: len(values) == 2)
-    screen.wait(0.1)
-    assert values == [True, False]
+    screen.wait_for(lambda: values == [True, False])
+    screen.wait_for_js('Boolean(document.fullscreenElement)', False)
+
+    screen.click('Enter and Exit')  # exiting waits for the pending request
+    screen.wait_for(lambda: values == [True, False, True, False, True, False])
+    screen.wait_for_js('Boolean(document.fullscreenElement)', False)
