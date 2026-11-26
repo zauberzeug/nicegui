@@ -143,9 +143,6 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         Editor signals report the focus, visible line range and geometry,
         and ``reveal_line`` scrolls a given line into view.
 
-        *Since version 4.1.0:*
-        Custom autocomplete entries, optionally with snippet fields, can be supplied via ``completions``.
-
         :param value: initial value of the editor (default: "")
         :param on_change: callback to be executed when the value changes (default: ``None``)
         :param keymap: mapping of CodeMirror key strings (e.g. "Mod-s", "F5") to handlers, optionally wrapped with ``KeyBinding`` (default: ``None``, *added in version 3.14.0*)
@@ -158,23 +155,11 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         :param indent: string to use for indentation (any string consisting entirely of the same whitespace character, default: "    ")
         :param line_wrapping: whether to wrap lines (default: ``False``)
         :param highlight_whitespace: whether to highlight whitespace (default: ``False``)
-        :param completions: list of autocomplete entries shown in the dropdown.
-            Each item is a ``CompletionItem`` dict; only ``label`` is required.
-            By default these merge with whatever the active language pack provides.
-            *Added in version 4.1.0*
-        :param replace_language_completions: if ``True``, suppress the active language pack's
-            built-in completions and show only ``completions`` (and word-from-document, if enabled).
-            Default: ``False`` (merge).
-            *Added in version 4.1.0*
-        :param complete_words_in_document: if ``True``, also suggest identifiers already present
-            elsewhere in the document (CodeMirror's ``completeAnyWord`` source). Default: ``False``.
-            *Added in version 4.1.0*
-        :param completion_info_html: render the side-panel ``info`` text as sanitized HTML rather than
-            plain text. Default: ``False``.
-            *Added in version 4.1.0*
-        :param tooltip_class: CSS class added to the autocomplete popup container.
-            Combine with ``ui.add_css`` to style the popup.
-            *Added in version 4.1.0*
+        :param completions: list of ``CompletionItem`` dicts shown in the autocomplete dropdown next to the language's own completions; only ``label`` is required (default: ``None``, *added in version 4.2.0*)
+        :param replace_language_completions: show ``completions`` (and words from the document, if enabled) instead of the language's own completions (default: ``False``, *added in version 4.2.0*)
+        :param complete_words_in_document: also suggest words that appear elsewhere in the document (CodeMirror's ``completeAnyWord``, default: ``False``, *added in version 4.2.0*)
+        :param completion_info_html: render the ``info`` side panel as sanitized HTML rather than plain text (default: ``False``, *added in version 4.2.0*)
+        :param tooltip_class: CSS class added to the autocomplete popup, to style it with ``ui.add_css`` (default: ``None``, *added in version 4.2.0*)
         :param decorations: initial list of decoration specs applied to the editor;
             spec offsets (``from``/``to``/``position``) are Python ``str`` indices (default: ``None``, *added in version 3.17.0*)
         :param decoration_html: render the ``text`` field of replace/widget decorations as sanitized HTML rather than plain text (default: ``False``, *added in version 3.17.0*)
@@ -286,7 +271,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
         Returns a copy.
         Reassign the property to update the editor (pass ``None`` or an empty list to remove all entries).
 
-        *Added in version 4.1.0*
+        *Added in version 4.2.0*
         """
         return list(self._props['completions'])
 
@@ -298,7 +283,7 @@ class CodeMirror(KeyBindingElement, DecorationElement, LineAnchorElement, Signal
     def trigger_completion(self) -> None:
         """Open the autocomplete popup programmatically (equivalent to Ctrl-Space).
 
-        *Added in version 4.1.0*
+        *Added in version 4.2.0*
         """
         self.run_method('triggerCompletion')
 

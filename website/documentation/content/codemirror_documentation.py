@@ -83,7 +83,7 @@ def selection_demo() -> None:
     Pass `completion_info_html=True` to the constructor to render it as sanitized HTML via NiceGUI's `setHTML` polyfill,
     which is useful for code samples, links, or formatted notes.
 
-    *Added in version 4.1.0*
+    *Added in version 4.2.0*
 ''')
 def custom_completions_demo() -> None:
     editor = ui.codemirror('', language='Python', completion_info_html=True, completions=[
