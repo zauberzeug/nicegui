@@ -110,6 +110,7 @@ function offsetConversions(doc, astral) {
   return {
     length: doc.length - astral.length, // in Python str indices
     toIndex,
+    toUnit,
     toUtf16(spec) {
       if (spec.kind === "mark" || spec.kind === "replace")
         return { ...spec, from: toUnit(spec.from), to: toUnit(spec.to) };
@@ -484,6 +485,7 @@ export default {
     applyDiagnostics(diagnostics) {
       if (!this.editor) return;
       const doc = this.editor.state.doc;
+      const offsets = this.documentOffsets(doc);
       const useHtml = this.diagnosticMessageHtml;
       const cmDiagnostics = [];
       for (const d of diagnostics || []) {
@@ -492,11 +494,14 @@ export default {
           continue;
         }
         const line = doc.line(d.line);
-        // Column values are 1-indexed; end_column is exclusive. Out-of-range values clamp to line bounds.
-        const startOffset = Number.isInteger(d.column) ? Math.max(1, d.column) - 1 : 0;
-        const endOffset = Number.isInteger(d.end_column) ? Math.max(1, d.end_column) - 1 : line.length;
-        const from = Math.min(line.from + startOffset, line.to);
-        const to = Math.min(line.from + endOffset, line.to);
+        // Columns count the line's characters from 1, like a Python str does; end_column is exclusive.
+        // Out-of-range values clamp to the line.
+        const start = offsets.toIndex(line.from);
+        const end = offsets.toIndex(line.to);
+        const index = (column, fallback) =>
+          Number.isInteger(column) ? Math.min(start + Math.max(1, column) - 1, end) : fallback;
+        const from = offsets.toUnit(index(d.column, start));
+        const to = offsets.toUnit(index(d.end_column, end));
         const message = d.message;
         cmDiagnostics.push({
           from,

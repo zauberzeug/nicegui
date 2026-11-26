@@ -31,6 +31,7 @@ class Diagnostic(TypedDict):
     ``severity`` defaults to ``'error'`` if omitted.
     ``source`` is shown next to the message.
     ``column`` and ``end_column`` (1-indexed; ``end_column`` is exclusive) narrow the mark to a sub-line range.
+    They count the line's characters as a Python ``str`` does.
     If both are omitted the mark spans the whole line.
     """
     line: int

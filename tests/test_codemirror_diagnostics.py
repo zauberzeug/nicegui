@@ -153,6 +153,21 @@ def test_diagnostics_survive_an_edit(screen: Screen):
     assert _diagnostic_count(screen) == 1
 
 
+def test_diagnostic_columns_count_characters(screen: Screen):
+    editor: ui.codemirror = None  # type: ignore[assignment]
+
+    @ui.page('/')
+    def page():
+        nonlocal editor
+        editor = ui.codemirror('x = "😎" + y')
+
+    screen.open('/')
+    column = editor.value.index('y') + 1
+    editor.diagnostics = [{'line': 1, 'message': 'undefined name', 'column': column, 'end_column': column + 1}]
+    screen.wait_for(lambda: _diagnostic_count(screen) == 1)
+    assert screen.selenium.execute_script("return document.querySelector('.cm-lintRange').textContent;") == 'y'
+
+
 def _diagnostic_count(screen: Screen, suffix: str = '') -> int:
     selector = f'.cm-lintRange{suffix}'
     return screen.selenium.execute_script(f'return document.querySelectorAll({selector!r}).length;')
