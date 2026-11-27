@@ -4,6 +4,18 @@ from typing import Any
 
 from fastapi import Request
 
+# NOTE: nicegui.js restores these defaults in `replaceUndefinedAttributes`
+_DEFAULTS: dict[str, Any] = {
+    'specials': [],
+    'modifiers': [],
+    'keys': [],
+    'args': None,
+    'throttle': 0,
+    'leading_events': True,
+    'trailing_events': True,
+    'js_handler': None,
+}
+
 
 @dataclass(kw_only=True, slots=True)
 class EventListener:
@@ -30,7 +42,7 @@ class EventListener:
             modifier_names |= {'left', 'right'}
         modifiers = [w for w in words if w in modifier_names]
         keys = [w for w in words if w not in specials + modifiers]
-        return {
+        listener_dict = {
             'listener_id': self.id,
             'type': type_,
             'specials': specials,
@@ -42,3 +54,4 @@ class EventListener:
             'trailing_events': self.trailing_events,
             'js_handler': self.js_handler,
         }
+        return {key: value for key, value in listener_dict.items() if key not in _DEFAULTS or value != _DEFAULTS[key]}
