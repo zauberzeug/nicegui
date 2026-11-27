@@ -22,6 +22,8 @@ from .scene_object3d import Object3D
 if TYPE_CHECKING:
     from .scene_view import SceneView
 
+AxesInsetCorner = Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+
 
 @dataclass(kw_only=True, slots=True)
 class SceneCamera:
@@ -86,6 +88,8 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
                  fps: int = DEFAULT_PROP | 20,
                  show_stats: bool = DEFAULT_PROP | False,
                  polar_grid: tuple[float, int, int] | tuple[float, int, int, int] | None = DEFAULT_PROP | None,
+                 axes_inset: bool | AxesInsetCorner = DEFAULT_PROP | False,
+                 axes_labels: tuple[str, str, str] = DEFAULT_PROP | ('X', 'Y', 'Z'),
                  ) -> None:
         """3D Scene
 
@@ -108,6 +112,8 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         :param fps: target frame rate for the scene in frames per second (default: 20, *added in version 3.2.0*)
         :param show_stats: whether to show performance stats (default: ``False``, *added in version 3.2.0*)
         :param polar_grid: optional tuple of ``(radius, sectors, rings)`` or ``(radius, sectors, rings, divisions)`` for a `Three.js' PolarGridHelper <https://threejs.org/docs/#api/en/helpers/PolarGridHelper>`_ floor; ``divisions`` controls the visual smoothness of each ring (default: ``64``); cannot be combined with ``grid`` (default: ``None``, *added in version 3.19.0*)
+        :param axes_inset: show the axes in a corner, ``True`` for the bottom right; clicking an axis turns the camera to view the scene from that side (default: ``False``, *added in version 4.2.0*)
+        :param axes_labels: labels of the X, Y and Z axes in the inset (default: ``('X', 'Y', 'Z')``, *added in version 4.2.0*)
         """
         super().__init__()
         if grid is None:
@@ -121,6 +127,8 @@ class Scene(CancelableWaitElement, component='scene.js', esm={'nicegui-scene': '
         self._props['grid'] = grid
         self._props['polar-grid'] = polar_grid
         self._props['background-color'] = background_color
+        self._props['axes-inset'] = axes_inset
+        self._props['axes-labels'] = axes_labels
         self.camera = camera or self.perspective_camera()
         self._props['camera-type'] = self.camera.type
         self._props['camera-params'] = self.camera.params

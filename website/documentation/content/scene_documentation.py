@@ -491,4 +491,16 @@ def attach_detach() -> None:
     ui.button('Attach', on_click=lambda: a.attach(group))
 
 
+@doc.demo('Axes Inset', '''
+    The `axes_inset` parameter of `ui.scene` shows the axes in a corner, `True` for the bottom right.
+    Clicking one of them turns the camera to view the scene from that side.
+    `axes_labels` names the axes.
+
+    *Added in version 4.2.0*
+''')
+def axes_inset() -> None:
+    with ui.scene(axes_inset='top-right', axes_labels=('E', 'N', 'U')).classes('w-full h-64') as scene:
+        scene.box()
+
+
 doc.reference(ui.scene)

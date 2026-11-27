@@ -7,6 +7,7 @@ import {
   MapControls,
   OrbitControls,
   TrackballControls,
+  ViewHelper,
   THREE,
   TWEEN,
   Stats,
@@ -198,16 +199,25 @@ export default {
       requestAnimationFrame(() => setTimeout(() => render(), 1000 / this.fps));
       this.camera_tween?.update();
       this.timer.update();
-      this.controls.update(this.timer.getDelta());
+      const delta = this.timer.getDelta();
+      this.controls.update(delta);
       this.renderer.render(this.scene, this.camera);
       this.text_renderer.render(this.scene, this.camera);
       this.text3d_renderer.render(this.scene, this.camera);
+      if (this.viewHelper) {
+        const autoClear = this.renderer.autoClear;
+        this.renderer.autoClear = false;
+        this.viewHelper.render(this.renderer);
+        this.renderer.autoClear = autoClear;
+        if (this.viewHelper.animating) this.turn_to_inset_axis(delta);
+      }
       if (this.stats) this.stats.update();
     };
     render();
 
     const raycaster = new THREE.Raycaster();
     const click_handler = (mouseEvent) => {
+      if (this.inset_pressed) return; // the click turned the camera to an axis of the inset
       let x = (mouseEvent.offsetX / this.renderer.domElement.width) * 2 - 1;
       let y = -(mouseEvent.offsetY / this.renderer.domElement.height) * 2 + 1;
       raycaster.setFromCamera({ x: x, y: y }, this.camera);
@@ -230,6 +240,17 @@ export default {
       });
     };
     this.clickEvents.forEach((event) => this.$el.addEventListener(event, click_handler));
+
+    // in the capture phase, so that a press on an axis of the inset neither starts the controls nor a drag
+    this.renderer.domElement.addEventListener(
+      "pointerdown",
+      (event) => {
+        this.inset_pressed = Boolean(this.viewHelper?.handleClick(event));
+        if (this.inset_pressed) event.stopImmediatePropagation();
+      },
+      true,
+    );
+    this.apply_axes_inset();
 
     const connectInterval = setInterval(() => {
       if (window.socket.id === undefined) return;
@@ -352,6 +373,37 @@ export default {
         if (index != -1) this.draggable_objects.splice(index, 1);
       }
     },
+    apply_axes_inset() {
+      if (!this.controls) return; // WebGL renderer could not be created
+      this.viewHelper?.dispose();
+      this.viewHelper = null;
+      if (!this.axesInset) return;
+      const [vertical, horizontal] = (this.axesInset === true ? "bottom-right" : this.axesInset).split("-");
+      this.viewHelper = new ViewHelper(this.camera, this.renderer.domElement);
+      this.viewHelper.center = this.controls.target;
+      this.viewHelper.location = {
+        top: vertical === "top" ? 0 : null,
+        bottom: vertical === "bottom" ? 0 : null,
+        left: horizontal === "left" ? 0 : null,
+        right: horizontal === "right" ? 0 : null,
+      };
+      this.viewHelper.setLabels(...this.axesLabels);
+    },
+    turn_to_inset_axis(delta) {
+      // The inset moves the camera along the sphere around the target, but orients it for a Y-up world,
+      // so the camera is aimed with the scene's up vector instead.
+      this.viewHelper.update(delta);
+      const view = this.camera.position.clone().sub(this.controls.target);
+      if (!this.viewHelper.animating && view.clone().cross(this.controls_up).lengthSq() < 1e-12 * view.lengthSq()) {
+        // Looking along the up vector leaves the roll open; the camera then leans to the front, as the orbit
+        // controls do at their poles: -Y for the default Z-up, so a view from the top shows X right and Y up.
+        const toUp = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), this.controls_up);
+        const front = new THREE.Vector3(0, 0, 1).applyQuaternion(toUp);
+        this.camera.position.addScaledVector(front, 1e-6 * view.length());
+      }
+      this.camera.up.copy(this.controls_up);
+      this.camera.lookAt(this.controls.target);
+    },
     async delete(object_id) {
       const object = await get_object(this.objects, object_id);
       this.objects.delete(object_id); // even if creation failed, the stale registry entry must go
@@ -388,6 +440,7 @@ export default {
       // remember the up vector the controls were built for: camera.up may differ from it after a user rotation
       // (TrackballControls) or an interrupted tween, so it cannot be used to decide whether a rebuild is needed
       this.controls_up = up.clone();
+      if (this.viewHelper) this.viewHelper.center = this.controls.target;
     },
     move_camera(x, y, z, look_at_x, look_at_y, look_at_z, up_x, up_y, up_z, duration) {
       if (!this.controls) return; // WebGL renderer could not be created
@@ -474,5 +527,15 @@ export default {
     fps: Number,
     showStats: Boolean,
     controlType: String,
+    axesInset: [Boolean, String],
+    axesLabels: Array,
+  },
+  watch: {
+    axesInset() {
+      this.apply_axes_inset();
+    },
+    axesLabels() {
+      this.apply_axes_inset();
+    },
   },
 };

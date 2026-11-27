@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 from selenium.common.exceptions import JavascriptException
 from selenium.webdriver import ActionChains
+from selenium.webdriver.remote.webelement import WebElement
 
 from nicegui import app, ui
 from nicegui.elements.scene import Object3D
@@ -713,3 +714,48 @@ def test_scene_initializes_when_created_hidden(screen: Screen):
     # and without resizing once shown it would keep the default 400x300 from the props;
     # wait for the size because the box can arrive from the hidden init before the Show update reaches the browser
     screen.wait_for(lambda: screen.find_by_tag('canvas').size == {'width': 200, 'height': 100})
+
+
+@pytest.mark.parametrize('control_type', ['orbit', 'trackball'])
+def test_clicking_an_axis_of_the_inset_turns_the_camera(screen: Screen, control_type: Literal['orbit', 'trackball']):
+    scene = None
+    clicks = []
+
+    @ui.page('/')
+    def page():
+        nonlocal scene
+        scene = ui.scene(axes_inset=True, control_type=control_type, on_click=clicks.append)
+
+    screen.open('/')
+    canvas = screen.find_by_tag('canvas')
+    screen.wait_for(canvas.is_displayed)  # the scene is hidden until it is initialized
+    scene.move_camera(x=0, y=-5, z=0, duration=0)  # from the front, so the inset shows X to the right and Z up
+
+    _click_inset(screen, canvas, right=0, up=1)
+    screen.wait_for(lambda: _camera(screen, scene) == [[0, 0, 5], [0, 1, 0]])  # from the top
+
+    _click_inset(screen, canvas, right=1, up=0)
+    screen.wait_for(lambda: _camera(screen, scene) == [[5, 0, 0], [0, 0, 1]])  # from the right
+
+    scene.move_camera(x=0, y=-5, z=0, up_x=1, up_z=0, duration=0)
+    scene.move_camera(x=2, y=-5, z=0, look_at_x=2, up_x=0, up_z=1, duration=0)
+    _click_inset(screen, canvas, right=1, up=0)
+    screen.wait_for(lambda: _camera(screen, scene) == [[7, 0, 0], [0, 0, 1]])  # around the new target
+    assert not clicks, 'a click on the inset does not click the scene behind it'
+
+
+def _click_inset(screen: Screen, canvas: WebElement, *, right: int, up: int) -> None:
+    """Click the inset in the bottom right corner where an axis points to on screen."""
+    # three.js draws the inset 128 px wide for 4 units, and each axis is 1 unit long.
+    x = canvas.size['width'] / 2 - 64 + 32 * right
+    y = canvas.size['height'] / 2 - 64 - 32 * up
+    ActionChains(screen.selenium).move_to_element_with_offset(canvas, x, y).click().perform()
+
+
+def _camera(screen: Screen, scene: ui.scene) -> list[list[float]]:
+    """The camera's position and the direction that points up on screen, to two decimals."""
+    return screen.selenium.execute_script(f'''
+        const camera = getElement({scene.id}).camera;
+        const up = camera.up.clone().set(0, 1, 0).applyQuaternion(camera.quaternion);
+        return [camera.position, up].map((v) => v.toArray().map((n) => Math.round(n * 100) / 100));
+    ''')
