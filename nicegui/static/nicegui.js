@@ -88,6 +88,17 @@ function replaceUndefinedAttributes(element) {
   element.props ??= {};
   element.text ??= null;
   element.events ??= [];
+  // NOTE: these are the defaults omitted by `EventListener.to_dict` in event_listener.py
+  element.events.forEach((event) => {
+    event.specials ??= [];
+    event.modifiers ??= [];
+    event.keys ??= [];
+    event.args ??= null;
+    event.throttle ??= 0;
+    event.leading_events ??= true;
+    event.trailing_events ??= true;
+    event.js_handler ??= null;
+  });
   element.update_method ??= null;
   element.slots = {
     default: { ids: element.children || [] },
