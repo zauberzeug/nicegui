@@ -59,8 +59,10 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def _handle_change(self) -> None:
         self.last_modified = time.time()
+        # NOTE: fast path for element props, classes and style; the condition mirrors the handler sources
+        # of _change_handlers_with_args and the except clause the exception handling of events.handle_event
         if not self._change_handlers and not self._observer_refs and self._parent_ref is None:
-            if (own_update := self._own_update) is not None:  # fast path for element props, classes and style
+            if (own_update := self._own_update) is not None:
                 try:
                     own_update()  # pylint: disable=not-callable
                 except Exception as e:
