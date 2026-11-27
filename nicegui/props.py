@@ -1,7 +1,7 @@
 import ast
 import re
 import weakref
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
@@ -60,7 +60,6 @@ class Props(ObservableDict, Generic[T]):
 
     def __init__(self, *args, element: T, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._change_handlers.append((self._update, False))  # _update takes no arguments, so skip the signature check
         self._element = weakref.ref(element)
         self._warnings: dict[str, str] = {}
         self._suspend_count = 0
@@ -95,6 +94,10 @@ class Props(ObservableDict, Generic[T]):
         if element is None:
             raise RuntimeError('The element this props object belongs to has been deleted.')
         return element
+
+    @property
+    def _own_update(self) -> Callable[[], None] | None:
+        return self._update
 
     def _update(self) -> None:
         if self._suspend_count > 0:
