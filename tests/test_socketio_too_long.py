@@ -14,7 +14,7 @@ def test_socketio_too_long(screen: Screen, transport: Literal['websocket', 'poll
 
     @ui.page('/')
     def page():
-        ui.textarea(value='x' * (1_000_000 - 242), on_change=lambda: events.append('changed'))
+        ui.textarea(value='x' * (1_000_000 - 205), on_change=lambda: events.append('changed'))
 
     screen.open('/')
     screen.type(Keys.TAB)

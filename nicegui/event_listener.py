@@ -1,6 +1,5 @@
-import uuid
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from fastapi import Request
@@ -8,7 +7,7 @@ from fastapi import Request
 
 @dataclass(kw_only=True, slots=True)
 class EventListener:
-    id: str = field(init=False)
+    id: int
     element_id: int
     type: str
     args: Sequence[Sequence[str] | None]
@@ -18,9 +17,6 @@ class EventListener:
     leading_events: bool
     trailing_events: bool
     request: Request | None
-
-    def __post_init__(self) -> None:
-        self.id = str(uuid.uuid4())
 
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of the event listener."""
