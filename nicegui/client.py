@@ -341,6 +341,7 @@ class Client:
 
     def download(self, src: str | bytes, filename: str | None = None, media_type: str = '') -> None:
         """Download a file from a given URL or raw bytes."""
+        # NOTE: this is the only message that may carry bytes, so it must not be listed in `_EVENTS_WITHOUT_BYTES`
         self.outbox.enqueue_message('download', {'src': src, 'filename': filename, 'media_type': media_type}, self.id)
 
     def on_connect(self, handler: Callable) -> None:
