@@ -11,6 +11,15 @@ from collections.abc import Callable
 from typing import Any
 
 
+def safe_callback(callback: Callable, *args, **kwargs) -> Any:
+    """Run a callback; catch and wrap any exceptions that might occur."""
+    try:
+        return callback(*args, **kwargs)
+    except Exception as e:
+        # we do not want to pass the original exception because it might be unpicklable
+        raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
+
+
 class SubprocessException(Exception):
     """A picklable exception to represent exceptions raised in subprocesses."""
 
@@ -28,12 +37,3 @@ class SubprocessException(Exception):
                 f'  Type: {self.original_type}\n'
                 f'  Message: {self.original_message}\n'
                 f'  {self.original_traceback}')
-
-
-def safe_callback(callback: Callable, *args, **kwargs) -> Any:
-    """Run a callback; catch and wrap any exceptions that might occur."""
-    try:
-        return callback(*args, **kwargs)
-    except Exception as e:
-        # we do not want to pass the original exception because it might be unpicklable
-        raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None

@@ -107,6 +107,7 @@ doc.text('Keeping NiceGUI out of worker processes', '''
     so anything the function relies on, like a logging configuration, belongs above the guard.
     The guard makes no difference with the "fork" start method, which does not re-import the main module,
     or in packaged apps (nicegui-pack, PyInstaller), where the main module runs before the process gets its name.
+
     *Added in version 4.2.0*
 ''')
 
@@ -129,7 +130,7 @@ def cpu_bound_worker_guard():
                 ui.button('Compute', on_click=handle_click)
 
             ui.run()
-    ''')
+    ''').classes('w-full')
 
 
 @doc.demo('Running I/O-bound tasks', '''

@@ -130,7 +130,10 @@ requires = [
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
-packages = [{ include = "nicegui" }, { include = "_nicegui_worker.py" }]
+packages = [
+    { include = "nicegui" },
+    { include = "_nicegui_worker.py" },
+]
 exclude = ["nicegui/**/*.map"]
 include = [
     { path = "nicegui/static/*.map", format = "sdist" },
