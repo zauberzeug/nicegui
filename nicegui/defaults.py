@@ -2,7 +2,7 @@ import functools
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, ParamSpec, TypeVar
+from typing import Any, ParamSpec, TypeVar, cast
 
 from .element import Element
 
@@ -46,19 +46,23 @@ def resolve_defaults(original_func: Callable[P, R]) -> Callable[P, R]:
     If a parameter has a default value which looks like ``DEFAULT_PROP | default_value``,
     the dictionary key will be inferred from the parameter name (converting snake_case to kebab-case).
     """
-    signature = inspect.signature(original_func)
+    positional_kinds = {inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD}
+    sentinel_parameters = [
+        (index if parameter.kind in positional_kinds else None, name, parameter.default)
+        for index, (name, parameter) in enumerate(inspect.signature(original_func).parameters.items())
+        if isinstance(parameter.default, SentinelValue)
+    ]
 
     @functools.wraps(original_func)
     def decorated(*args: P.args, **kwargs: P.kwargs) -> R:
-        bound = signature.bind(*args, **kwargs)
-        bound.apply_defaults()
-
-        el: Element = bound.arguments['self']
-
-        for param_name, value in bound.arguments.items():
+        element = cast(Element, args[0])
+        for index, name, default in sentinel_parameters:
+            if index is not None and index < len(args):
+                continue  # passed positionally
+            value = kwargs.get(name, default)
             if isinstance(value, SentinelValue):
-                key = value.key or param_name.replace('_', '-')
-                kwargs[param_name] = el._default_props.get(key, value.default)  # pylint: disable=protected-access
+                key = value.key or name.replace('_', '-')
+                kwargs[name] = element._default_props.get(key, value.default)  # pylint: disable=protected-access
         return original_func(*args, **kwargs)
 
     return decorated
