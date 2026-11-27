@@ -6,7 +6,7 @@ import weakref
 from collections.abc import Callable, Collection, Iterable
 from typing import TYPE_CHECKING, Any, SupportsIndex, cast
 
-from . import events, helpers
+from . import core, events, helpers
 
 _MISSING = object()
 
@@ -25,9 +25,10 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         super().__init__(factory() if data is None else data)  # type: ignore[call-arg]
         self._parent = _parent
         self.last_modified = time.time()
-        self._change_handlers: list[tuple[Callable, bool]] = \
-            [(on_change, helpers.expects_arguments(on_change))] if on_change else []
-        self._observer_refs: list[weakref.ref[ObservableCollection]] = []
+        # immutable empty tuples are shared, so collections without handlers or observers cost no extra list each
+        self._change_handlers: tuple[tuple[Callable, bool], ...] = \
+            ((on_change, helpers.expects_arguments(on_change)),) if on_change else ()
+        self._observer_refs: tuple[weakref.ref[ObservableCollection], ...] = ()
 
     @property
     def _parent(self) -> ObservableCollection | None:
@@ -46,7 +47,9 @@ class ObservableCollection(abc.ABC):  # noqa: B024
     @property
     def _change_handlers_with_args(self) -> list[tuple[Callable, bool]]:
         """Return change handlers with pre-resolved ``expect_args`` flag, including those of parents and observers."""
-        change_handlers = self._change_handlers[:]
+        # the own update takes no arguments, so skip the signature check; created on demand to not store a bound method
+        change_handlers = [(own_update, False)] if (own_update := self._own_update) is not None else []
+        change_handlers.extend(self._change_handlers)
         observers = [ref() for ref in self._observer_refs]
         change_handlers.extend((observer._handle_change, False)  # pylint: disable=protected-access
                                for observer in observers if observer is not None)
@@ -56,13 +59,25 @@ class ObservableCollection(abc.ABC):  # noqa: B024
 
     def _handle_change(self) -> None:
         self.last_modified = time.time()
+        if not self._change_handlers and not self._observer_refs and self._parent_ref is None:
+            if (own_update := self._own_update) is not None:  # fast path for element props, classes and style
+                try:
+                    own_update()  # pylint: disable=not-callable
+                except Exception as e:
+                    core.app.handle_exception(e)
+            return
         for handler, expect_args in self._change_handlers_with_args:
             events.handle_event(handler, events.ObservableChangeEventArguments(sender=self), expect_args=expect_args)
+
+    @property
+    def _own_update(self) -> Callable[[], None] | None:
+        """Update method of a subclass that is called first on every change, e.g. to update the element of its props."""
+        return None
 
     def on_change(self, handler: Callable) -> None:
         """Register a handler to be called when the collection changes."""
         if handler != self._handle_change:  # pylint: disable=comparison-with-callable
-            self._change_handlers.append((handler, helpers.expects_arguments(handler)))
+            self._change_handlers = (*self._change_handlers, (handler, helpers.expects_arguments(handler)))
 
     def _register_observer(self, observer: ObservableCollection) -> None:
         """Register a collection which contains this collection and should be notified about changes."""
@@ -71,13 +86,13 @@ class ObservableCollection(abc.ABC):  # noqa: B024
         alive_refs = [ref for ref in self._observer_refs if ref() is not None]
         if any(ref() is observer for ref in alive_refs):
             return
-        self._observer_refs = [*alive_refs, weakref.ref(observer)]
+        self._observer_refs = (*alive_refs, weakref.ref(observer))
 
     def _unregister_observer(self, observer: ObservableCollection) -> None:
         """Unregister a collection so that it is no longer notified about changes."""
         if self._parent is observer:
             self._parent = None
-        self._observer_refs = [ref for ref in self._observer_refs if ref() is not None and ref() is not observer]
+        self._observer_refs = tuple(ref for ref in self._observer_refs if ref() is not None and ref() is not observer)
 
     def _observe(self, data: Any) -> Any:
         if isinstance(data, ObservableCollection):
