@@ -423,7 +423,7 @@ class Element(Visibility):
                 id=self.client.next_listener_id,
                 element_id=self.id,
                 type=helpers.event_type_to_camel_case(type),
-                args=[args] if args and isinstance(args[0], str) else args,  # type: ignore[arg-type,list-item]
+                args=[args] if args and isinstance(args[0], str) else args,  # type: ignore[list-item]
                 handler=handler,
                 js_handler=None if js_handler == '(...args) => emit(...args)' else js_handler,
                 throttle=throttle,

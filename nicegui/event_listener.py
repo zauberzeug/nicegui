@@ -22,7 +22,7 @@ class EventListener:
     id: int
     element_id: int
     type: str
-    args: Sequence[Sequence[str] | None]
+    args: Sequence[Sequence[str] | None] | None
     handler: Callable | None
     js_handler: str | None
     throttle: float
