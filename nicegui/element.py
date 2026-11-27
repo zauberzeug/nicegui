@@ -67,7 +67,7 @@ class Element(Visibility):
         self._style: Style[Self] = Style(self._default_style, element=cast(Self, self))
         self._props: Props[Self] = Props(self._default_props, element=cast(Self, self))
         self._markers: list[str] = []
-        self._event_listeners: dict[str, EventListener] = {}
+        self._event_listeners: dict[int, EventListener] = {}
         self._text: str | None = None
         self.slots: dict[str, Slot] = {}
         self.default_slot = self.add_slot('default')
@@ -420,6 +420,7 @@ class Element(Visibility):
         """
         if handler or js_handler:
             listener = EventListener(
+                id=self.client.next_listener_id,
                 element_id=self.id,
                 type=helpers.event_type_to_camel_case(type),
                 args=[args] if args and isinstance(args[0], str) else args,  # type: ignore[arg-type,list-item]
@@ -430,6 +431,7 @@ class Element(Visibility):
                 trailing_events=trailing_events,
                 request=storage.request_contextvar.get(),
             )
+            self.client.next_listener_id += 1
             self._event_listeners[listener.id] = listener
             if not self._props._suspend_count:  # pylint: disable=protected-access
                 self.update()

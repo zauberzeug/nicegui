@@ -107,6 +107,7 @@ class Client:
 
         self.elements: dict[int, Element] = {}
         self.next_element_id: int = 0
+        self.next_listener_id: int = 0
         self._waiting_for_connection = asyncio.Event()
         self._waiting_for_disconnect = asyncio.Event()
         self._connected = asyncio.Event()
