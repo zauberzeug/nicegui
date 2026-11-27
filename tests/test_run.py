@@ -141,12 +141,29 @@ async def test_forkserver_pool_does_not_preload_main():
     assert await run.cpu_bound(good_function)
 
 
-@pytest.mark.usefixtures('isolate_pool_state')
-def test_spawn_pool_reuses_shared_spawn_context():
-    """The default "spawn" pool reuses the module-level SPAWN_CONTEXT shared with native.py (no duplicate context)."""
-    run.setup()
-    assert run.process_pool is not None
-    assert run.process_pool._mp_context is run.SPAWN_CONTEXT  # pylint: disable=protected-access
+def test_guarded_main_module_keeps_nicegui_out_of_workers(tmp_path: Path):
+    """Workers are named "NiceGUIWorker-<n>", so a main module can skip its NiceGUI code in them (#5684)."""
+    (tmp_path / 'main.py').write_text(dedent('''\
+        import multiprocessing
+        import sys
+
+        def probe():
+            return multiprocessing.current_process().name, 'nicegui' in sys.modules
+
+        if not multiprocessing.current_process().name.startswith('NiceGUIWorker'):
+            import asyncio
+
+            from nicegui import run
+
+            run.setup()
+            print(*asyncio.run(run.cpu_bound(probe)))
+    '''), encoding='utf-8')
+    result = subprocess.run([sys.executable, 'main.py'], cwd=tmp_path,
+                            capture_output=True, text=True, timeout=30, check=False)
+    assert result.returncode == 0, result.stderr
+    name, nicegui_imported = result.stdout.split()[-2:]
+    assert name.startswith('NiceGUIWorker-')
+    assert nicegui_imported == 'False'
 
 
 @pytest.mark.usefixtures('isolate_pool_state')

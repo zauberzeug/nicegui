@@ -11,9 +11,9 @@ jobs:
           - name: pre-commit
             command: pre-commit run --all-files
           - name: mypy
-            command: mypy ./nicegui
+            command: mypy ./nicegui ./_nicegui_worker.py
           - name: pylint
-            command: pylint ./nicegui
+            command: pylint ./nicegui ./_nicegui_worker.py
       fail-fast: false
     runs-on: ubuntu-latest
     timeout-minutes: 5

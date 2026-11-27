@@ -1,8 +1,8 @@
 import asyncio
+import itertools
 import multiprocessing
 import multiprocessing.forkserver
 import signal
-import traceback
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
@@ -11,6 +11,8 @@ from functools import partial
 from multiprocessing.context import BaseContext
 from pickle import PicklingError
 from typing import Any, Literal, ParamSpec, TypeVar
+
+from _nicegui_worker import SubprocessException, safe_callback  # noqa: F401  # pylint: disable=unused-import
 
 from . import core, helpers
 from .logging import log
@@ -23,8 +25,9 @@ thread_pool = ThreadPoolExecutor()
 # The default is "spawn", because plain "fork" is unsafe in a threaded process (#6117).
 process_pool_start_method: Literal['spawn', 'fork', 'forkserver'] | None = 'spawn'
 
-# Always-spawn context, also shared with native.py's window subprocess (#1841). This is the context
-# used when process_pool_start_method == 'spawn'; it is independent of the global default.
+# Always-spawn context, also used by native.py's window subprocess (#1841).
+# The cpu_bound pool derives its own context from it when process_pool_start_method == 'spawn'.
+# It is independent of the global default.
 SPAWN_CONTEXT = multiprocessing.get_context('spawn')
 
 # Resolved once in setup() so the live pool and the BrokenProcessPool restart
@@ -58,38 +61,35 @@ def setup() -> None:
         fork_server = multiprocessing.forkserver._forkserver  # pylint: disable=protected-access
         preload = fork_server._preload_modules  # type: ignore[attr-defined]  # pylint: disable=protected-access
         _pool_context.set_forkserver_preload([module for module in preload if module != '__main__'])
+    _pool_context = _with_worker_names(_pool_context)
     try:
-        process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)
+        process_pool = _create_process_pool()
     except NotImplementedError:
         log.warning('Failed to initialize ProcessPoolExecutor')
 
 
-class SubprocessException(Exception):
-    """A picklable exception to represent exceptions raised in subprocesses."""
+def _with_worker_names(context: BaseContext) -> BaseContext:
+    """Create a context of the same type whose processes are named "NiceGUIWorker-<n>".
 
-    def __init__(self, original_type, original_message, original_traceback) -> None:
-        self.original_type = original_type
-        self.original_message = original_message
-        self.original_traceback = original_traceback
-        super().__init__(f'{original_type}: {original_message}')
+    A spawned worker gets its name before it re-imports the main module,
+    so the main module can check the name to skip its NiceGUI code (#5684).
+    Overriding the context's ``Process`` factory keeps the process object itself a plain one,
+    which the worker unpickles without importing NiceGUI (unlike a ``Process`` subclass defined here).
+    """
+    numbers = itertools.count(1)
 
-    def __reduce__(self):
-        return (SubprocessException, (self.original_type, self.original_message, self.original_traceback))
-
-    def __str__(self):
-        return (f'Exception in subprocess:\n'
-                f'  Type: {self.original_type}\n'
-                f'  Message: {self.original_message}\n'
-                f'  {self.original_traceback}')
+    class WorkerContext(type(context)):  # type: ignore[misc]
+        def Process(self, *args, **kwargs):
+            """Create a process named "NiceGUIWorker-<n>"."""
+            kwargs['name'] = f'NiceGUIWorker-{next(numbers)}'
+            return super().Process(*args, **kwargs)
+    return WorkerContext()
 
 
-def safe_callback(callback: Callable, *args, **kwargs) -> Any:
-    """Run a callback; catch and wrap any exceptions that might occur."""
-    try:
-        return callback(*args, **kwargs)
-    except Exception as e:
-        # we do not want to pass the original exception because it might be unpicklable
-        raise SubprocessException(type(e).__name__, str(e), traceback.format_exc()) from None
+def _create_process_pool() -> ProcessPoolExecutor:
+    # ignore SIGINT in worker processes so only the parent handles Ctrl-C (#6025);
+    # signal.signal is passed directly, because unpickling a NiceGUI function would import NiceGUI in the worker (#5684)
+    return ProcessPoolExecutor(mp_context=_pool_context, initializer=signal.signal, initargs=(signal.SIGINT, signal.SIG_IGN))
 
 
 async def _run(executor: Any, callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
@@ -131,7 +131,7 @@ async def cpu_bound(callback: Callable[P, R], *args: P.args, **kwargs: P.kwargs)
         try:
             await _run(process_pool, safe_callback, lambda: None)
         except BrokenProcessPool:
-            process_pool = ProcessPoolExecutor(mp_context=_pool_context, initializer=_ignore_sigint)
+            process_pool = _create_process_pool()
         finally:
             raise e
 
@@ -169,11 +169,6 @@ def tear_down() -> None:
         _kill_processes()
         process_pool.shutdown(wait=True, cancel_futures=True)
     thread_pool.shutdown(wait=False, cancel_futures=True)
-
-
-def _ignore_sigint() -> None:
-    """Ignore SIGINT in worker processes so only the parent handles Ctrl-C (see #6025)."""
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
 def _kill_processes() -> None:
