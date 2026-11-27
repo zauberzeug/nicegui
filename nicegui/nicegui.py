@@ -48,9 +48,32 @@ class SocketIoApp(socketio.ASGIApp):
         return await super().__call__(scope, receive, send)
 
 
+# NOTE: message types that NiceGUI emits without bytes (see `Client` and `Outbox`); `download` may carry bytes;
+# a message type missing here is only searched for bytes, which costs performance but nothing else
+_EVENTS_WITHOUT_BYTES = frozenset({'update', 'load_js_components', 'run_javascript', 'open', 'notify'})
+
+
+class _Packet(socketio.packet.Packet):
+    """Socket.IO packet that skips the search for bytes in NiceGUI's own messages without bytes.
+
+    NiceGUI sends bytes only with ``download`` messages; its other messages must be JSON-serializable anyway.
+    Skipping the recursive search through them makes emitting large element updates considerably cheaper.
+    Event data has the form ``[event_name, *args]`` as defined by the Socket.IO protocol;
+    any other data, including events emitted by user code, is checked by the original implementation.
+    """
+
+    @classmethod
+    def data_is_binary(cls, data: Any, *args: Any, **kwargs: Any) -> bool:
+        if isinstance(data, list) and data and isinstance(data[0], str) and data[0] in _EVENTS_WITHOUT_BYTES:
+            return False
+        # call the base class explicitly, so that its recursion into nested lists does not end up here again
+        return socketio.packet.Packet.data_is_binary(data, *args, **kwargs)
+
+
 core.app = app = App(default_response_class=NiceGUIJSONResponse, lifespan=_lifespan)
 core.app.storage.general.initialize_sync()
-core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*', json=json)  # custom orjson wrapper
+core.sio = sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*',
+                                      serializer=_Packet, json=json)  # custom orjson wrapper
 sio_app = SocketIoApp(socketio_server=sio, socketio_path='/socket.io')
 app.mount('/_nicegui_ws/', sio_app)
 
