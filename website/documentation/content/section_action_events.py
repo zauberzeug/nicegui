@@ -99,8 +99,9 @@ doc.text('Keeping NiceGUI out of worker processes', '''
     and with it NiceGUI and its web stack, which costs about 80 MB of memory and a few hundred milliseconds per worker.
     To avoid this, put everything that uses NiceGUI behind a guard that checks the name of the current process.
     The workers are named "NiceGUIWorker-1", "NiceGUIWorker-2", etc., and get this name before they import the main module.
-    A plain `if __name__ == '__main__':` guard does not work here,
-    because with `reload=True` the server process imports the main module the same way.
+    A plain `if __name__ == '__main__':` guard is not enough,
+    because with `reload=True` the server process imports the main module the same way
+    and would skip the guarded code as well.
 
     Keep the function outside the guard or in a separate module that does not import NiceGUI.
     Code under the guard does not run in the workers,
