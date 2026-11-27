@@ -6,6 +6,7 @@ services:
     volumes:
       - ./:/app
       - ../../nicegui:/app/nicegui
+      - ../../_nicegui_worker.py:/app/_nicegui_worker.py
     labels:
       - traefik.enable=true
       - traefik.http.routers.nicegui.rule=PathPrefix(`/`)

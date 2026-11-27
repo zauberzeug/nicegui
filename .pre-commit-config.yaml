@@ -52,7 +52,7 @@ repos:
     hooks:
       - id: flake8
         name: docstrings (pydoclint, flake8-rst-docstrings)
-        files: ^nicegui/
+        files: ^(nicegui/|_nicegui_worker\.py$)
         # only docstring checks; Ruff and pylint cover everything else
         args:
           - --select=DOC1,RST
@@ -73,4 +73,4 @@ repos:
         entry: uv run python check_docstrings.py
         language: system
         types: [python]
-        files: ^nicegui/
+        files: ^(nicegui/|_nicegui_worker\.py$)

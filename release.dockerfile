@@ -22,6 +22,7 @@ RUN uv sync --no-install-project --no-dev --all-extras --group website
 COPY main.py README.md ./
 COPY examples ./examples
 COPY nicegui ./nicegui
+COPY _nicegui_worker.py ./
 COPY website ./website
 RUN mkdir /resources
 COPY docker-entrypoint.sh /resources

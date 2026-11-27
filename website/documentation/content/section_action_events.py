@@ -1,5 +1,6 @@
 from nicegui import app, ui
 
+from ..windows import python_window
 from . import (
     clipboard_documentation,
     doc,
@@ -91,6 +92,44 @@ def cpu_bound_demo():
         await asyncio.sleep(1)
         ui.notify('Sum is 3')
     ui.button('Compute', on_click=mock_click)
+
+
+doc.text('Keeping NiceGUI out of worker processes', '''
+    Each worker process of `run.cpu_bound` imports your main module again,
+    and with it NiceGUI and its web stack, which costs about 80 MB of memory and a few hundred milliseconds per worker.
+    To avoid this, put everything that uses NiceGUI behind a guard that checks the name of the current process.
+    The workers are named "NiceGUIWorker-1", "NiceGUIWorker-2", etc., and get this name before they import the main module.
+    A plain `if __name__ == '__main__':` guard does not work here,
+    because with `reload=True` the server process imports the main module the same way.
+
+    Keep the function outside the guard or in a separate module that does not import NiceGUI.
+    Code under the guard does not run in the workers,
+    so anything the function relies on, like a logging configuration, belongs above the guard.
+    The guard makes no difference with the "fork" start method, which does not re-import the main module,
+    or in packaged apps (nicegui-pack, PyInstaller), where the main module runs before the process gets its name.
+    *Added in version 4.2.0*
+''')
+
+
+@doc.ui
+def cpu_bound_worker_guard():
+    python_window('''
+        import multiprocessing
+
+        def compute(n: int) -> int:
+            return sum(i * i for i in range(n))
+
+        if not multiprocessing.current_process().name.startswith('NiceGUIWorker'):
+            from nicegui import run, ui
+
+            @ui.page('/')
+            def index():
+                async def handle_click():
+                    ui.notify(await run.cpu_bound(compute, 10**7))
+                ui.button('Compute', on_click=handle_click)
+
+            ui.run()
+    ''')
 
 
 @doc.demo('Running I/O-bound tasks', '''

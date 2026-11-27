@@ -32,8 +32,8 @@ Run the project's tests and linters and review your own diff for unintended scop
 
 ```bash
 uv run pre-commit run --all-files
-uv run --isolated --python 3.11 mypy ./nicegui
-uv run --isolated --python 3.11 pylint ./nicegui
+uv run --isolated --python 3.11 mypy ./nicegui ./_nicegui_worker.py
+uv run --isolated --python 3.11 pylint ./nicegui ./_nicegui_worker.py
 uv run pytest
 ```
 
