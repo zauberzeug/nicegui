@@ -88,6 +88,8 @@ def _refresh_step() -> None:
 
 
 def _propagate(source_obj: Any, source_name: tuple[str, ...]) -> None:
+    if (id(source_obj), source_name) not in bindings:
+        return  # most properties are not bound, so skip setting up the propagation
     token = propagation_visited.set(set())
     try:
         _propagate_recursively(source_obj, source_name)
