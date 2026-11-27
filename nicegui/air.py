@@ -13,6 +13,7 @@ import socketio
 import socketio.exceptions
 
 from . import background_tasks, core, helpers
+from . import json as nicegui_json  # pylint: disable=reimported
 from .client import Client
 from .logging import log
 from .timer import Timer as timer
@@ -48,7 +49,7 @@ class Air:
     def _create_relay(self) -> socketio.AsyncClient:
         import httpx2  # pylint: disable=import-outside-toplevel
 
-        relay = socketio.AsyncClient(reconnection=False)  # we reconnect via our own timer
+        relay = socketio.AsyncClient(reconnection=False, json=nicegui_json)  # we reconnect via our own timer
 
         @relay.on('http')
         async def _handle_http(data: dict[str, Any]) -> dict[str, Any]:
