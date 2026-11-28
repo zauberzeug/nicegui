@@ -18,6 +18,7 @@ class EventListener:
     leading_events: bool
     trailing_events: bool
     request: Request | None
+    expect_args: bool | None = field(default=None, init=False)  # resolved on the first event
 
     def __post_init__(self) -> None:
         self.id = str(uuid.uuid4())

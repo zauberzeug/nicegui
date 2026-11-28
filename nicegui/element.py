@@ -447,7 +447,10 @@ class Element(Visibility):
         listener = self._event_listeners[msg['listener_id']]
         storage.request_contextvar.set(listener.request)
         args = events.GenericEventArguments(sender=self, client=self.client, args=msg['args'])
-        events.handle_event(listener.handler, args)
+        if listener.expect_args is None and listener.handler is not None:
+            with contextlib.suppress(Exception):  # if this fails, `handle_event` fails as well and reports the error
+                listener.expect_args = helpers.expects_arguments(listener.handler)
+        events.handle_event(listener.handler, args, expect_args=listener.expect_args)
 
     def _is_safe_to_interact(self) -> bool:
         """Return True if it is safe to send messages to this element's client.

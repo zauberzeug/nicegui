@@ -523,9 +523,9 @@ def handle_event(handler: Handler[EventT] | None, arguments: EventT, *, expect_a
             if expect_args is None:
                 expect_args = helpers.expects_arguments(handler)
             if expect_args:
-                result = cast(Callable[[EventT], Any], handler)(arguments)
+                result = cast('Callable[[EventT], Any]', handler)(arguments)
             else:
-                result = cast(Callable[[], Any], handler)()
+                result = cast('Callable[[], Any]', handler)()
         if helpers.should_await(result):
             background_tasks.create_or_defer(result, name=str(handler), context=parent_slot)
     except Exception as e:
