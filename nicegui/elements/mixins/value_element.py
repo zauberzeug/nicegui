@@ -1,6 +1,8 @@
+import contextlib
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Generic, Self
 
+from ... import helpers
 from ...binding import BindableProperty, bind, bind_from, bind_to
 from ...element import Element
 from ...events import GenericEventArguments, Handler, ValueChangeEventArguments, ValueT, handle_event
@@ -47,7 +49,7 @@ class ValueElement(Element, Generic[ValueT]):
         self._client_value: Any = _NO_CLIENT_VALUE
         self._previous_values: list[Any] = []
         self.set_value(value)
-        self._change_handlers: list[Handler[ValueChangeEventArguments[ValueT]]] = []
+        self._change_handlers: list[tuple[Handler[ValueChangeEventArguments[ValueT]], bool | None]] = []
         if on_value_change:
             self.on_value_change(on_value_change)
 
@@ -63,7 +65,7 @@ class ValueElement(Element, Generic[ValueT]):
 
     def on_value_change(self, callback: Handler[ValueChangeEventArguments[ValueT]]) -> Self:
         """Add a callback to be invoked when the value changes."""
-        self._change_handlers.append(callback)
+        self._change_handlers.append((callback, None))  # whether it expects arguments is resolved on the first change
         return self
 
     def bind_value_to(self,
@@ -152,8 +154,13 @@ class ValueElement(Element, Generic[ValueT]):
         args = ValueChangeEventArguments(sender=self, client=self.client,
                                          value=self._value_to_event_value(value),
                                          previous_value=self._value_to_event_value(previous_value))
-        for handler in self._change_handlers:
-            handle_event(handler, args)
+        for i, (handler, cached_expect_args) in enumerate(self._change_handlers):
+            expect_args = cached_expect_args
+            if expect_args is None:
+                with contextlib.suppress(Exception):  # if this fails, `handle_event` fails as well and reports the error
+                    expect_args = helpers.expects_arguments(handler)
+                    self._change_handlers[i] = (handler, expect_args)
+            handle_event(handler, args, expect_args=expect_args)
 
     def _to_dict(self) -> dict[str, Any]:
         dict_ = super()._to_dict()
