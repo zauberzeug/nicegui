@@ -264,23 +264,24 @@ class Element(Visibility):
         }
 
     def _to_dict(self) -> dict[str, Any]:
-        return {
-            'tag': self.tag,
-            **({'text': self._text} if self._text is not None else {}),
-            **{
-                key: value
-                for key, value in {
-                    'class': self._classes,
-                    'style': self._style,
-                    'props': self._props,
-                    'slots': self._collect_slot_dict(),
-                    'children': [child.id for child in self.default_slot.children],
-                    'events': [listener.to_dict() for listener in self._event_listeners.values()],
-                    'update_method': self._update_method,
-                }.items()
-                if value
-            },
-        }
+        dict_: dict[str, Any] = {'tag': self.tag}
+        if self._text is not None:
+            dict_['text'] = self._text
+        if self._classes:
+            dict_['class'] = self._classes
+        if self._style:
+            dict_['style'] = self._style
+        if self._props:
+            dict_['props'] = self._props
+        if slots := self._collect_slot_dict():
+            dict_['slots'] = slots
+        if children := self.default_slot.children:
+            dict_['children'] = [child.id for child in children]
+        if self._event_listeners:
+            dict_['events'] = [listener.to_dict() for listener in self._event_listeners.values()]
+        if self._update_method:
+            dict_['update_method'] = self._update_method
+        return dict_
 
     @property
     def classes(self) -> Classes[Self]:
