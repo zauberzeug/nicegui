@@ -267,17 +267,19 @@ class BindableProperty:
 
     def __set_name__(self, _, name: str) -> None:
         self.name = name  # pylint: disable=attribute-defined-outside-init
+        self._attribute_name = '___' + name  # pylint: disable=attribute-defined-outside-init
 
     def __get__(self, owner: Any, _=None) -> Any:
-        return getattr(owner, '___' + self.name)
+        return getattr(owner, self._attribute_name)
 
     def __set__(self, owner: Any, value: Any) -> None:
-        has_attr = hasattr(owner, '___' + self.name)
-        previous_value = getattr(owner, '___' + self.name) if has_attr else None
+        attribute_name = self._attribute_name
+        has_attr = hasattr(owner, attribute_name)
+        previous_value = getattr(owner, attribute_name) if has_attr else None
         value_changed = has_attr and previous_value != value
         if has_attr and not value_changed:
             return
-        setattr(owner, '___' + self.name, value)
+        setattr(owner, attribute_name, value)
         _propagate(owner, (self.name,))
         if value_changed:
             self._handle_change(owner, value, previous_value)

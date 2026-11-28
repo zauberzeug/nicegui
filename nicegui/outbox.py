@@ -36,7 +36,7 @@ class Outbox:
 
     def __init__(self, client: Client) -> None:
         self._client = weakref.ref(client)
-        self.updates: weakref.WeakValueDictionary[ElementId, Element | Deleted] = weakref.WeakValueDictionary()
+        self.updates: dict[ElementId, Element | Deleted] = {}
         self.messages: deque[Message] = deque()
         self.message_history: deque[HistoryEntry] = deque()
         self.next_message_id: int = 0
