@@ -1,5 +1,5 @@
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from fastapi import Request
@@ -29,9 +29,18 @@ class EventListener:
     leading_events: bool
     trailing_events: bool
     request: Request | None
+    _dict: dict[str, Any] | None = field(default=None, init=False, repr=False, compare=False)
 
     def to_dict(self) -> dict[str, Any]:
-        """Return a dictionary representation of the event listener."""
+        """Return a dictionary representation of the event listener.
+
+        The result is computed once and reused for every serialization, so it must not be modified.
+        """
+        if self._dict is None:
+            self._dict = self._build_dict()
+        return self._dict
+
+    def _build_dict(self) -> dict[str, Any]:
         words = self.type.split('.')
         type_ = words.pop(0)
         specials = [w for w in words if w in {'capture', 'once', 'passive'}]
